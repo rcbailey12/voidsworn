@@ -1,0 +1,26 @@
+GPU: waiting for solo claim, weight 1 (opus1158e9)
+GPU: acquired solo claim 216756b1-bbc0-4239-954b-36207c14eecc
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5c51484c0cf8415a8ca2632c9bfff89f\godot-profile-a48ed444615e4ed38db42aeb8069145b
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[209] bench {"draw_calls":0.0,"frame_median_ms":0.488,"frame_p99_ms":0.767,"gpu_median_ms":0.386000007390976,"label":"empty_1.0","lod_threshold":1.0,"primitives":0,"render_cpu_median_ms":0.11599999666214,"scaling_3d":1.0}
+[209] bench {"draw_calls":0.0,"frame_median_ms":1.482,"frame_p99_ms":1.801,"gpu_median_ms":1.37300002574921,"label":"empty_2.0","lod_threshold":1.0,"primitives":0,"render_cpu_median_ms":0.116999998688698,"scaling_3d":2.0}
+[209] bench {"draw_calls":75.0,"frame_median_ms":0.526,"frame_p99_ms":0.752,"gpu_median_ms":0.42399999499321,"label":"S9_off_1","lod_threshold":0.0,"primitives":276090,"render_cpu_median_ms":0.157000005245209,"scaling_3d":1.0}
+[209] bench {"draw_calls":150.0,"frame_median_ms":1.078,"frame_p99_ms":1.352,"gpu_median_ms":0.973999977111816,"label":"S9_off_20_1.0","lod_threshold":0.0,"primitives":5245710,"render_cpu_median_ms":0.229000002145767,"scaling_3d":1.0}
+[209] bench {"draw_calls":150.0,"frame_median_ms":2.269,"frame_p99_ms":2.59,"gpu_median_ms":2.15700006484985,"label":"S9_off_20_2.0","lod_threshold":0.0,"primitives":5245710,"render_cpu_median_ms":0.279000014066696,"scaling_3d":2.0}
+[209] bench {"draw_calls":75.0,"frame_median_ms":0.552,"frame_p99_ms":0.966,"gpu_median_ms":0.416999995708466,"label":"S9_auto_1","lod_threshold":1.0,"primitives":164100,"render_cpu_median_ms":0.159999996423721,"scaling_3d":1.0}
+[209] bench {"draw_calls":156.0,"frame_median_ms":0.865,"frame_p99_ms":1.127,"gpu_median_ms":0.760999977588654,"label":"S9_auto_20_1.0","lod_threshold":1.0,"primitives":3118890,"render_cpu_median_ms":0.234999999403954,"scaling_3d":1.0}
+[209] bench {"draw_calls":156.0,"frame_median_ms":2.04,"frame_p99_ms":2.362,"gpu_median_ms":1.92599999904633,"label":"S9_auto_20_2.0","lod_threshold":1.0,"primitives":3118890,"render_cpu_median_ms":0.279000014066696,"scaling_3d":2.0}
+[209] bench {"draw_calls":0.0,"frame_median_ms":0.52,"frame_p99_ms":0.867,"gpu_median_ms":0.386000007390976,"label":"S9_hand_1","lod_threshold":0.0,"primitives":0,"render_cpu_median_ms":0.17399999499321,"scaling_3d":1.0}
+[209] bench {"draw_calls":77.0,"frame_median_ms":0.879,"frame_p99_ms":1.146,"gpu_median_ms":0.77700001001358,"label":"S9_hand_20_1.0","lod_threshold":0.0,"primitives":2915570,"render_cpu_median_ms":0.168999999761581,"scaling_3d":1.0}
+[209] bench {"draw_calls":77.0,"frame_median_ms":2.043,"frame_p99_ms":2.352,"gpu_median_ms":1.92999994754791,"label":"S9_hand_20_2.0","lod_threshold":0.0,"primitives":2915570,"render_cpu_median_ms":0.202000007033348,"scaling_3d":2.0}
+[209] bench {"draw_calls":77.0,"frame_median_ms":0.882,"frame_p99_ms":1.147,"gpu_median_ms":0.776000022888184,"label":"S9_hand_20_1.0","lod_threshold":0.0,"primitives":2915570,"render_cpu_median_ms":0.171000003814697,"scaling_3d":1.0}
+[209] bench {"draw_calls":77.0,"frame_median_ms":2.038,"frame_p99_ms":2.359,"gpu_median_ms":1.92400002479553,"label":"S9_hand_20_2.0","lod_threshold":0.0,"primitives":2915570,"render_cpu_median_ms":0.202000007033348,"scaling_3d":2.0}
+[209] bench {"draw_calls":156.0,"frame_median_ms":0.866,"frame_p99_ms":1.161,"gpu_median_ms":0.763999998569489,"label":"S9_auto_20_1.0","lod_threshold":1.0,"primitives":3118890,"render_cpu_median_ms":0.237000003457069,"scaling_3d":1.0}
+[209] bench {"draw_calls":156.0,"frame_median_ms":2.037,"frame_p99_ms":2.35,"gpu_median_ms":1.92200005054474,"label":"S9_auto_20_2.0","lod_threshold":1.0,"primitives":3118890,"render_cpu_median_ms":0.28099998831749,"scaling_3d":2.0}
+[209] bench {"draw_calls":150.0,"frame_median_ms":1.104,"frame_p99_ms":1.476,"gpu_median_ms":0.981000006198883,"label":"S9_off_20_1.0","lod_threshold":0.0,"primitives":5245710,"render_cpu_median_ms":0.229000002145767,"scaling_3d":1.0}
+[209] bench {"draw_calls":150.0,"frame_median_ms":2.283,"frame_p99_ms":2.625,"gpu_median_ms":2.17199993133545,"label":"S9_off_20_2.0","lod_threshold":0.0,"primitives":5245710,"render_cpu_median_ms":0.275000005960464,"scaling_3d":2.0}
+[209] BENCH DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5c51484c0cf8415a8ca2632c9bfff89f\godot-profile-a48ed444615e4ed38db42aeb8069145b
+GPU: released solo claim 216756b1-bbc0-4239-954b-36207c14eecc

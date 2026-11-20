@@ -1,0 +1,1 @@
+ M godot/assets/ships/manifest.json

@@ -1,0 +1,5 @@
+[audit] {"problems": [], "parts": 164, "crossing_break_lines": [], "structure_across_seams": ["L2p", "L2s"], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.061538696289958006, 0.2523086547888278], "l_line": [0.05680790901266749, -0.39692459107022915, -0.06923103332620276], "l_lines": [[0.05680790901266749, -0.39692459107022915, -0.06923103332620276], [-0.018423147201806177, -0.053846359253713255, 0.23846244812358727]]}, "result": "PASS"}
+[audit] PASS
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-c1e1f55f271a47f3a8c11c74b6fdec50

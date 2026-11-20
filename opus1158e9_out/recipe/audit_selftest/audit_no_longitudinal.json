@@ -1,0 +1,18 @@
+{
+ "problems": [],
+ "parts": 164,
+ "crossing_break_lines": [],
+ "structure_across_seams": [],
+ "guns_with_normals": 3,
+ "guns_into_ship": 0,
+ "guns": 3,
+ "break_lines": {
+  "t_lines": [
+   -0.061538696289958006,
+   0.2523086547888278
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "PASS"
+}

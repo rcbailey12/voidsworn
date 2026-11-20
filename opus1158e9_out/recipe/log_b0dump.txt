@@ -1,0 +1,11 @@
+GPU: waiting for shared claim, weight 2 (opus1158e9)
+GPU: acquired shared claim 5bc6f579-d0cf-4a08-847c-e13b6a56b9cf
+10:56:33 | INFO: Data are loaded, start creating Blender stuff
+10:56:33 | INFO: Blender create Mesh node geometry_0
+10:56:34 | INFO: glTF import finished in 0.61s
+[ai_align] measured shape_ref_yaw 179.9 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\b0.npz (594300, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim 5bc6f579-d0cf-4a08-847c-e13b6a56b9cf

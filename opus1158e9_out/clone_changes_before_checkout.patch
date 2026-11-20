@@ -1,0 +1,90 @@
+diff --git a/godot/assets/ships/manifest.json b/godot/assets/ships/manifest.json
+index 8b648b950..818722ece 100644
+--- a/godot/assets/ships/manifest.json
++++ b/godot/assets/ships/manifest.json
+@@ -1474,52 +1474,57 @@
+    "preview": "previews/S2_23.jpg"
+   },
+   "V14_23": {
+-   "name": "Warden-class frigate",
++   "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
+    "faction": "voidsworn",
+    "cls": "Frigate",
+    "band": "S",
++   "game_ship": "warden",
+    "length_world": 6.5,
+    "hardpoints": {
+-    "gun": 3,
++    "gun": 7,
+     "engine": 2,
+-    "breach": 4,
+-    "core": 1
++    "breach": 2,
++    "core": 1,
++    "rcs": 4,
++    "board": 2
+    },
+-   "breaches": 4,
+-   "skins": 9,
++   "breaches": 2,
++   "turrets": 2,
+    "files": {
+     "V14_23.glb": {
+-     "bytes": 5261576,
+-     "sha256": "d16ba875b838731fa5df48c724838ca5253ce58fe03408f8bb81713b964f5bcc"
++     "bytes": 6003024,
++     "sha256": "6fcf53844e1076d4038876f4b8f94e7c9853489fa7a3a7dd7ed57bdf1dd03da4"
+     },
+     "V14_23_base.jpg": {
+-     "bytes": 1278949,
+-     "sha256": "cddee4279e643cca2524b2b3f8d55f5cfc7d8c8320e709676a829503a1839b9c"
++     "bytes": 1230099,
++     "sha256": "372b00f8213de5b8f1c998975e84a03c4fd986475140445b57a6491b44afac0e"
++    },
++    "V14_23_glow_emission.jpg": {
++     "bytes": 448458,
++     "sha256": "5e34cc24a0ff3b76a8621cb28933af97baa6bea909dc22db7d6c811d4791fb93"
+     },
+-    "V14_23_damage.glb": {
+-     "bytes": 19825748,
+-     "sha256": "16e373b26e29d353418fab266f3503d506e2706296c202bb6717f744bec0b883"
++    "V14_23_normal.png": {
++     "bytes": 4581606,
++     "sha256": "ff07dfd53b8911b763be3c29b03cbc6c1052109da1ec97f4c9f4e6b148cdbcae"
+     },
+-    "V14_23_emissive.jpg": {
+-     "bytes": 140036,
+-     "sha256": "a17d250dfc3c6568c135492eff2f4e6481ac6aab86dcf3b94b9f48e1a696fe4d"
++    "V14_23_orm.png": {
++     "bytes": 6649219,
++     "sha256": "f122e44396de26b4fc1efa96785c1dc9227724dfcb384b3c8a7586fb264240ab"
+     },
+-    "V14_23_normal.jpg": {
+-     "bytes": 2295707,
+-     "sha256": "b994bd7e3cfbe8302d49736b7e2c59d742158cf9477cbcd3d099894f8587450f"
++    "V14_23_parts_base.jpg": {
++     "bytes": 1066587,
++     "sha256": "951b8cbd4856a17480578aaf64ce9c3dba7b958efcd25b1a6ef82c292efe40c3"
+     },
+-    "V14_23_orm.jpg": {
+-     "bytes": 1900870,
+-     "sha256": "6f675da05e755ede7ad9ae2d0459bdd5f892c925331b71fabfb154abae157cd3"
++    "V14_23_parts_normal.png": {
++     "bytes": 3282898,
++     "sha256": "9a9f9617c68d03c1ce2bad5f92e314995eae3834ba04d7889755ae77e2f99144"
+     },
+-    "V14_23_wreck.glb": {
+-     "bytes": 2964328,
+-     "sha256": "a1ffc7c00a1b2c2435f0d5c6bce663959c16ca0b1dfd25d905881d076636e4e6"
++    "V14_23_parts_orm.png": {
++     "bytes": 6292081,
++     "sha256": "49b55f774c3673b25cf311e68990ae64f8422cf493c4f4fbdfe41c709f2e2a0b"
+     }
+    },
+-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\",
+-   "preview": "previews/V14_23.jpg",
+-   "damage_preview": "previews/V14_23_damage.jpg"
++   "pc_path": "godot/assets/ships/V14_23/"
+   },
+   "V15_37": {
+    "name": "Harrow-class destroyer",

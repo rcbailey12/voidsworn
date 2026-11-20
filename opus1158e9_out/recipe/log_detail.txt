@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (opus1158e9)
+GPU: acquired shared claim 4362fd11-7646-4af3-83a4-3b6403fe7d6d
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\S9.blend"
+detail check (reported, this ship has no surface_detail floor): normal relief 2.77 deg (floor 3.50), albedo contrast 0.308 (floor 0.040), roughness spread 0.116 (floor 0.080), 6468 texels
+GPU: released shared claim 4362fd11-7646-4af3-83a4-3b6403fe7d6d

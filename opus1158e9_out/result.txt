@@ -1,0 +1,39 @@
+start voidsworn_S9 V14_23 opus/issue-1158-ember Fri 11/20/2026 10:56:04.42 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261120_105603_7725600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1119zzzs10 -> board/pc-out-1119zzzs10
+   eef9fd814..8ff56fe18  opus/issue-1157         -> opus/issue-1157
+   068deeb36..f7df0def1  opus/issue-1239         -> opus/issue-1239
+   eef9fd814..8ff56fe18  refs/pull/1166/head     -> refs/pull/1166/head
+ + a4660dbbe...ddede72a9 refs/pull/1166/merge    -> refs/pull/1166/merge  (forced update)
+   068deeb36..f7df0def1  refs/pull/1329/head     -> refs/pull/1329/head
+ + 036cb2511...2ce9c5ec3 refs/pull/1329/merge    -> refs/pull/1329/merge  (forced update)
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=b1687ca1a6d3210e700544c5b347473e807a8417
+import exit 0 
+1_concept_in start 10:56:26.36 
+1_concept_in exit 0 at 10:56:28.82 
+2_shape_ref start 10:56:28.82 
+2_shape_ref exit 0 at 10:56:29.55 
+3_trace_hull start 10:56:29.55 
+3_trace_hull exit 0 at 10:57:43.10 
+4_parts_kit start 10:57:43.10 
+4_parts_kit exit 0 at 10:58:07.73 
+5_paint_bake start 10:58:07.73 
+5_paint_bake exit 0 at 11:02:33.31 
+6_lod start 11:02:33.31 
+6_lod exit 0 at 11:03:29.54 
+7_export start 11:03:29.54 
+7_export exit 0 at 11:04:22.62 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\repo\godot\assets\ships\V14_23\V14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 11:04:45.34 
+all done 
+pin ok b1687ca1a6d3210e700544c5b347473e807a8417  

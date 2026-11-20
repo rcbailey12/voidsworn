@@ -1,0 +1,61 @@
+diff --git a/godot/assets/ships/manifest.json b/godot/assets/ships/manifest.json
+index 8b648b950..521767d22 100644
+--- a/godot/assets/ships/manifest.json
++++ b/godot/assets/ships/manifest.json
+@@ -1733,36 +1733,36 @@
+    "turrets": 4,
+    "files": {
+     "V1b_r_23.glb": {
+-     "bytes": 13271080,
+-     "sha256": "e5686f47f2e6c45235f2eb4ca5c7fc3c7d7a17855304a92ecfb708ae6587615a"
++     "bytes": 13087572,
++     "sha256": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498"
+     },
+     "V1b_r_23_base.jpg": {
+-     "bytes": 1653241,
+-     "sha256": "243df4319f41a5d277e07ba80e1edb840f567b21397f2ccaf305cfc8dd0e6519"
++     "bytes": 1657935,
++     "sha256": "b99bd336c57934a3142c41ecac5fb244d4f66151a2870ad6eb0cbffd4cd7acdc"
+     },
+     "V1b_r_23_glow_emission.jpg": {
+-     "bytes": 938731,
+-     "sha256": "be0907037ed4baa9635f833ff60408b0f3e723fb372d61c8931205b8be3a9354"
++     "bytes": 558216,
++     "sha256": "24c2c1caadfc1fef3a8f749ea9a31cec4e30523f48dd2eba905a6c712daf60ec"
+     },
+-    "V1b_r_23_normal.jpg": {
+-     "bytes": 527520,
+-     "sha256": "c7e868ae1687f9eea466984abbf1a8f6cbd88f645733ab3765de8b61b7aff420"
++    "V1b_r_23_normal.png": {
++     "bytes": 4219522,
++     "sha256": "41b53e038f3cf7c959abd6e8240ab7e505b85dbfa793684e5f54e0a1926c7ca9"
+     },
+-    "V1b_r_23_orm.jpg": {
+-     "bytes": 2008858,
+-     "sha256": "f3596754c4dcf51be0fa2111f5bb53fe03d2d14c775b4f622952361cfe1a241c"
++    "V1b_r_23_orm.png": {
++     "bytes": 8302546,
++     "sha256": "c49cbf3abf1b9be560593891eca83d8200c1384665f3ab0407e995882ab679d3"
+     },
+     "V1b_r_23_parts_base.jpg": {
+-     "bytes": 1145097,
+-     "sha256": "a0b1ed987072c5b7f0790028e25604bc5c86cc6a16629bac6997aac96d160bfa"
++     "bytes": 1167837,
++     "sha256": "672dd31da40dda35060b169f8a3882f6ad4d567eee609b5c08a94fe2f101953e"
+     },
+-    "V1b_r_23_parts_normal.jpg": {
+-     "bytes": 292006,
+-     "sha256": "75b6607f79bede829adbf09e9e48b280dc23884ea103a56b619cb85a0981188f"
++    "V1b_r_23_parts_normal.png": {
++     "bytes": 2962014,
++     "sha256": "613dac535d36a154b3d1853d264249016f56acdca0c3d004dfed28809721bab0"
+     },
+-    "V1b_r_23_parts_orm.jpg": {
+-     "bytes": 1705233,
+-     "sha256": "939d8b070a8a96c5050b82716290d94b9045f47b777871756189503306a80e5f"
++    "V1b_r_23_parts_orm.png": {
++     "bytes": 6797776,
++     "sha256": "f9451c278646285678d23c38f03a7875b48ca35e6fd3707dfdcb40087f38dc1e"
+     }
+    },
+    "pc_path": "godot/assets/ships/V1b_r_23/"

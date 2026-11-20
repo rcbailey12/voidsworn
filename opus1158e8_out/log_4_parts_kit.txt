@@ -1,0 +1,44 @@
+{
+ "problems": [],
+ "parts": 322,
+ "crossing_break_lines": [],
+ "structure_across_seams": [],
+ "guns_with_normals": 14,
+ "guns_into_ship": 0,
+ "guns": 14,
+ "break_lines": {
+  "t_lines": [
+   -0.1018622282051561,
+   0.185204051282102
+  ],
+  "l_line": [
+   0.054542593102579036,
+   -0.34077545435906764,
+   -0.11297447128208221
+  ],
+  "l_lines": [
+   [
+    0.054542593102579036,
+    -0.34077545435906764,
+    -0.11297447128208221
+   ],
+   [
+    -0.026595301764109847,
+    -0.092602025641051,
+    0.1740918082051759
+   ]
+  ]
+ },
+ "result": "PASS"
+}REPORT S8 outline overlap 50.1 percent, outline_gate 90 is context only (not a pass bar)
+  outline S8: bow 49.5, midship 66.7, stern 12.1, whole 50.1 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 59.5, midship 53.6, stern 77.2
+  REPORT bow overlap 49.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 66.7 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 12.1 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 50.1 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera S8: game bow 37.0 midship 62.1 stern 23.7 whole 40.1, studio bow 31.7 midship 56.1 stern 21.9 whole 36.6
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+Stage 4: skipped C15s clay close-ups for sheet ship voidsworn_S8. 
+Stage 4 done: audit PASS, outline overlap reported above (not a pass bar, RULEBOOK 5.8)

@@ -1,0 +1,19 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+10:53:14 | INFO: Starting glTF 2.0 export
+10:53:14 | INFO: Extracting primitive: S8_lod0
+10:53:15 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+10:53:15 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+10:53:15 | INFO: Primitives created: 16
+10:53:15 | INFO: Extracting primitive: S8_lod1
+10:53:16 | INFO: Primitives created: 4
+10:53:16 | INFO: Extracting primitive: S8_lod2
+10:53:16 | INFO: Primitives created: 4
+10:53:16 | INFO: Extracting primitive: S8_lod3
+10:53:16 | INFO: Primitives created: 3
+10:53:16 | INFO: Finished glTF 2.0 export in 2.0263187885284424 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\glb\S8.glb {"lod0": {"triangles": 114274, "objects": 449, "materials": 16}, "lod1": {"triangles": 94802, "objects": 336, "materials": 4}, "lod2": {"triangles": 50208, "objects": 260, "materials": 4}, "lod3": {"triangles": 13542, "objects": 133, "materials": 3}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\S8.blend"
+
+Blender quit

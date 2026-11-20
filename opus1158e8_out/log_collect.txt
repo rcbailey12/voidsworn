@@ -1,0 +1,474 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         41	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\
+	    New File  		     577	audit.json100%  
+	    New File  		   38460	bow_blink.gif.provenance.json100%  
+	    New File  		     509	concept_camera.json100%  
+	    New File  		    4030	density.json100%  
+	    New File  		     280	detail_check.json100%  
+	    New File  		     543	licences.json100%  
+	    New File  		     636	log_audit.txt100%  
+	    New File  		    4597	log_audit_selftest.txt100%  
+	    New File  		     607	log_b0dump.txt100%  
+	    New File  		  192937	log_bake.txt 67%  100%  
+	    New File  		     156	log_battle.txt100%  
+	    New File  		     127	log_blink.txt100%  
+	    New File  		     991	log_build.txt100%  
+	    New File  		      68	log_clay.txt100%  
+	    New File  		      63	log_close.txt100%  
+	    New File  		     515	log_detail.txt100%  
+	    New File  		    1811	log_export.txt100%  
+	    New File  		     767	log_export_check.txt100%  
+	    New File  		    2148	log_export_selftest.txt100%  
+	    New File  		    4616	log_godot.txt100%  
+	    New File  		     652	log_install_cache.txt100%  
+	    New File  		     443	log_install_readback.txt100%  
+	    New File  		    1460	log_lod.txt100%  
+	    New File  		   2.0 m	log_render.txt 24%   48%   73%   97%  100%  
+	    New File  		  392358	log_render_concept.txt 33%   66%  100%  
+	    New File  		  785356	log_render_far.txt 33%   66%  100%  
+	    New File  		    1271	log_sheet_contract.txt100%  
+	    New File  		      97	log_sil.txt100%  
+	    New File  		     186	log_sildump.txt100%  
+	    New File  		     682	log_standing.txt100%  
+	    New File  		     682	log_standing4.txt100%  
+	    New File  		    1230	log_standing_all.txt100%  
+	    New File  		     213	log_standing_battle.txt100%  
+	    New File  		      95	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		  274229	log_surface.txt 47%   95%  100%  
+	    New File  		     689	log_thirds.txt100%  
+	    New File  		     689	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	    New File  		    4639	S8.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\audit_selftest\
+	    New File  		     226	audit_bad_longitudinal.json100%  
+	    New File  		     222	audit_empty_break_lines.json100%  
+	    New File  		     638	audit_into_ship.json100%  
+	    New File  		     588	audit_machine_across.json100%  
+	    New File  		     242	audit_no_break_lines.json100%  
+	    New File  		     310	audit_no_longitudinal.json100%  
+	    New File  		     255	audit_no_normals.json100%  
+	    New File  		     227	audit_one_normal_missing.json100%  
+	    New File  		     589	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\build\
+	    New File  		    1076	S8_build.json100%  
+	    New File  		    2068	sheet_contract_selftest.json100%  
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\clay\
+	    New File  		   70563	S8_aft_clay.png.provenance.json100%  
+	    New File  		   81054	S8_aft_concept.png.provenance.json100%  
+	    New File  		   82237	S8_aft_studio.png.provenance.json100%  
+	    New File  		   87155	S8_bow_clay.png.provenance.json100%  
+	    New File  		   72526	S8_bow_concept.png.provenance.json100%  
+	    New File  		   84401	S8_bow_studio.png.provenance.json100%  
+	    New File  		   53999	S8_cas_clay.png.provenance.json100%  
+	    New File  		   54250	S8_cas_concept.png.provenance.json100%  
+	    New File  		   53965	S8_cas_studio.png.provenance.json100%  
+	    New File  		   74885	S8_drums_clay.png.provenance.json100%  
+	    New File  		   92220	S8_drums_concept.png.provenance.json100%  
+	    New File  		   89939	S8_drums_studio.png.provenance.json100%  
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\close\
+	    New File  		   70519	S8_aft_clay.png.provenance.json100%  
+	    New File  		   97086	S8_aft_concept.png.provenance.json100%  
+	    New File  		  101437	S8_aft_studio.png.provenance.json100%  
+	    New File  		   86279	S8_bow_clay.png.provenance.json100%  
+	    New File  		   77694	S8_bow_concept.png.provenance.json100%  
+	    New File  		   90369	S8_bow_studio.png.provenance.json100%  
+	    New File  		   53995	S8_cas_clay.png.provenance.json100%  
+	    New File  		   54178	S8_cas_concept.png.provenance.json100%  
+	    New File  		   54009	S8_cas_studio.png.provenance.json100%  
+	    New File  		   73289	S8_drums_clay.png.provenance.json100%  
+	    New File  		  106608	S8_drums_concept.png.provenance.json100%  
+	    New File  		  105131	S8_drums_studio.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\glb\
+	    New File  		     313	S8_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\
+	    New File  		   21126	bench209.json100%  
+	    New File  		    6141	S8_auto_20.png.provenance.json100%  
+	    New File  		    6143	S8_auto_d1.2.png.provenance.json100%  
+	    New File  		    6144	S8_auto_d16.0.png.provenance.json100%  
+	    New File  		    6143	S8_auto_d3.0.png.provenance.json100%  
+	    New File  		    6143	S8_auto_d8.0.png.provenance.json100%  
+	    New File  		    6141	S8_hand_20.png.provenance.json100%  
+	    New File  		    6143	S8_hand_d1.2.png.provenance.json100%  
+	    New File  		    6144	S8_hand_d17.4.png.provenance.json100%  
+	    New File  		    6144	S8_hand_d18.6.png.provenance.json100%  
+	    New File  		    6143	S8_hand_d2.9.png.provenance.json100%  
+	    New File  		    6143	S8_hand_d3.1.png.provenance.json100%  
+	    New File  		    6144	S8_hand_d7.75.png.provenance.json100%  
+	    New File  		    6144	S8_hand_d8.25.png.provenance.json100%  
+	    New File  		    6140	S8_off_20.png.provenance.json100%  
+	    New File  		    6142	S8_off_d1.2.png.provenance.json100%  
+	    New File  		    6143	S8_off_d16.0.png.provenance.json100%  
+	    New File  		    6142	S8_off_d3.0.png.provenance.json100%  
+	    New File  		    6142	S8_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\r\
+	    New File  		   11339	S8_battle.png.provenance.json100%  
+	    New File  		   41696	S8_below.png.provenance.json100%  
+	    New File  		   41653	S8_below_clay.png.provenance.json100%  
+	    New File  		   41697	S8_concept.png.provenance.json100%  
+	    New File  		   41792	S8_concept_cl.png.provenance.json100%  
+	    New File  		   41706	S8_concept_clay.png.provenance.json100%  
+	    New File  		   41821	S8_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41661	S8_hero.png.provenance.json100%  
+	    New File  		   41714	S8_hero_clay.png.provenance.json100%  
+	    New File  		   41659	S8_hero_s.png.provenance.json100%  
+	    New File  		   41688	S8_hero_s_clay.png.provenance.json100%  
+	    New File  		   41687	S8_side.png.provenance.json100%  
+	    New File  		   41708	S8_side_clay.png.provenance.json100%  
+	    New File  		   41681	S8_side_s.png.provenance.json100%  
+	    New File  		   41642	S8_side_s_clay.png.provenance.json100%  
+	    New File  		   41678	S8_top.png.provenance.json100%  
+	    New File  		   41675	S8_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\surface\
+	    New File  		     796	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        13        10         3         0         0         0
+   Files :       114       114         0         0         0         0
+   Bytes :    6.24 m    6.24 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            77089388 Bytes/sec.
+   Speed :            4411.090 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\clay\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\clay\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\clay\
+	    New File  		   1.0 m	S8_aft_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   1.1 m	S8_aft_concept.png 21%   43%   65%   87%  100%  
+	    New File  		   1.1 m	S8_aft_studio.png 21%   43%   64%   86%  100%  
+	    New File  		  575429	S8_bow_clay.png 45%   91%  100%  
+	    New File  		  606836	S8_bow_concept.png 43%   86%  100%  
+	    New File  		  627596	S8_bow_studio.png 41%   83%  100%  
+	    New File  		  981083	S8_cas_clay.png 26%   53%   80%  100%  
+	    New File  		  942505	S8_cas_concept.png 27%   55%   83%  100%  
+	    New File  		  984852	S8_cas_studio.png 26%   53%   79%  100%  
+	    New File  		   1.0 m	S8_drums_clay.png 23%   47%   71%   95%  100%  
+	    New File  		   1.1 m	S8_drums_concept.png 21%   43%   65%   87%  100%  
+	    New File  		   1.1 m	S8_drums_studio.png 21%   43%   65%   86%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   11.15 m   11.15 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           615848684 Bytes/sec.
+   Speed :           35239.144 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\r\
+	    New File  		   83166	S8_battle.png100%  
+	    New File  		   2.3 m	S8_below.png 21%   43%   65%   86%  100%  
+	    New File  		   2.2 m	S8_below_clay.png 22%   44%   67%   89%  100%  
+	    New File  		  928513	S8_concept.png 28%   56%   84%  100%  
+	    New File  		  894838	S8_concept_cl.png 29%   58%   87%  100%  
+	    New File  		  860100	S8_concept_clay.png 30%   60%   91%  100%  
+	    New File  		  853182	S8_concept_clay_cl.png 30%   61%   92%  100%  
+	    New File  		   1.1 m	S8_hero.png 22%   44%   67%   89%  100%  
+	    New File  		   1.0 m	S8_hero_clay.png 23%   47%   71%   95%  100%  
+	    New File  		   1.1 m	S8_hero_s.png 22%   44%   66%   88%  100%  
+	    New File  		   1.1 m	S8_hero_s_clay.png 22%   45%   67%   90%  100%  
+	    New File  		   2.2 m	S8_side.png 22%   44%   66%   88%  100%  
+	    New File  		   2.1 m	S8_side_clay.png 23%   46%   69%   93%  100%  
+	    New File  		   2.2 m	S8_side_s.png 22%   44%   66%   89%  100%  
+	    New File  		   2.1 m	S8_side_s_clay.png 23%   46%   69%   92%  100%  
+	    New File  		   2.4 m	S8_top.png 20%   40%   61%   81%  100%  
+	    New File  		   2.2 m	S8_top_clay.png 22%   44%   67%   89%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   25.88 m   25.88 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1507968833 Bytes/sec.
+   Speed :            86286.668 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\close\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\close\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\close\
+	    New File  		 1047224	S8_aft_clay.png 25%   50%   75%  100%  
+	    New File  		   1.2 m	S8_aft_concept.png 20%   40%   61%   81%  100%  
+	    New File  		   1.2 m	S8_aft_studio.png 19%   38%   58%   77%   97%  100%  
+	    New File  		  570328	S8_bow_clay.png 45%   91%  100%  
+	    New File  		  712519	S8_bow_concept.png 36%   73%  100%  
+	    New File  		  724646	S8_bow_studio.png 36%   72%  100%  
+	    New File  		  977926	S8_cas_clay.png 26%   53%   80%  100%  
+	    New File  		  978769	S8_cas_concept.png 26%   53%   80%  100%  
+	    New File  		 1017834	S8_cas_studio.png 25%   51%   77%  100%  
+	    New File  		   1.0 m	S8_drums_clay.png 23%   47%   71%   95%  100%  
+	    New File  		   1.2 m	S8_drums_concept.png 20%   40%   60%   80%  100%  
+	    New File  		   1.2 m	S8_drums_studio.png 19%   38%   58%   77%   97%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   11.83 m   11.83 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           620281200 Bytes/sec.
+   Speed :           35492.774 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\surface\
+	    New File  		   72521	surface_below.png100%  
+	    New File  		   61231	surface_bow.png100%  
+	    New File  		   68084	surface_port.png100%  
+	    New File  		   68333	surface_starboard.png100%  
+	    New File  		   61957	surface_stern.png100%  
+	    New File  		   73865	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   396.4 k   396.4 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           135330333 Bytes/sec.
+   Speed :            7743.663 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\godot\
+	    New File  		  408640	S8_auto_20.png 32%   64%   96%  100%  
+	    New File  		  519131	S8_auto_d1.2.png 25%   50%   75%  100%  
+	    New File  		  202283	S8_auto_d16.0.png 64%  100%  
+	    New File  		  263154	S8_auto_d3.0.png 49%   99%  100%  
+	    New File  		  211520	S8_auto_d8.0.png 61%  100%  
+	    New File  		  405947	S8_hand_20.png 32%   64%   96%  100%  
+	    New File  		  519114	S8_hand_d1.2.png 25%   50%   75%  100%  
+	    New File  		  201722	S8_hand_d17.4.png 64%  100%  
+	    New File  		  201149	S8_hand_d18.6.png 65%  100%  
+	    New File  		  267817	S8_hand_d2.9.png 48%   97%  100%  
+	    New File  		  259291	S8_hand_d3.1.png 50%  100%  
+	    New File  		  212032	S8_hand_d7.75.png 61%  100%  
+	    New File  		  210127	S8_hand_d8.25.png 62%  100%  
+	    New File  		  409995	S8_off_20.png 31%   63%   95%  100%  
+	    New File  		  518925	S8_off_d1.2.png 25%   50%   75%  100%  
+	    New File  		  202076	S8_off_d16.0.png 64%  100%  
+	    New File  		  263390	S8_off_d3.0.png 49%   99%  100%  
+	    New File  		  210997	S8_off_d8.0.png 62%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.23 m    5.23 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           422100769 Bytes/sec.
+   Speed :           24152.799 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:56:03 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\export\V1b_r_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\out\recipe\export\V1b_r_23\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\export\V1b_r_23\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         16	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\export\V1b_r_23\
+	    New File  		      27	export_status.txt100%  
+	    New File  		    1510	manifest_entry.json100%  
+	    New File  		  12.4 m	V1b_r_23.glb  8.0% 16.0% 24.0% 32.0% 40.0% 48.0% 56.0% 64.0% 72.1% 80.1% 88.1% 96.1%100%  
+	    New File  		   1.5 m	V1b_r_23_base.jpg 15%   31%   47%   63%   79%   94%  100%  
+	    New File  		    9681	V1b_r_23_check.json100%  
+	    New File  		   24871	V1b_r_23_export.json100%  
+	    New File  		  558103	V1b_r_23_glow_emission.jpg 46%   93%  100%  
+	    New File  		  527491	V1b_r_23_normal.jpg 49%   99%  100%  
+	    New File  		   4.0 m	V1b_r_23_normal.png 12%   24%   37%   49%   62%   74%   86%   99%  100%  
+	    New File  		   1.9 m	V1b_r_23_orm.jpg 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   7.9 m	V1b_r_23_orm.png  6.3% 12.6% 18.9% 25.2% 31.5% 37.8% 44.2% 50.5% 56.8% 63.1% 69.4% 75.7% 82.0% 88.4% 94.7%100%  
+	    New File  		   1.1 m	V1b_r_23_parts_base.jpg 22%   44%   67%   89%  100%  
+	    New File  		  299917	V1b_r_23_parts_normal.jpg 43%   87%  100%  
+	    New File  		   2.8 m	V1b_r_23_parts_normal.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   1.6 m	V1b_r_23_parts_orm.jpg 15%   30%   46%   61%   76%   92%  100%  
+	    New File  		   6.4 m	V1b_r_23_parts_orm.png  7.7% 15.4% 23.1% 30.8% 38.5% 46.2% 53.9% 61.7% 69.4% 77.1% 84.8% 92.5%100%  
+	  New Dir         16	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8\export\V1b_r_23\_gltf_source\
+	    New File  		  748935	S8_engine_emission.jpg 35%   70%  100%  
+	    New File  		   1.6 m	S8_engine_emission.png 15%   30%   46%   61%   76%   92%  100%  
+	    New File  		   1.5 m	S8_hull_albedo.jpg 15%   31%   47%   63%   79%   95%  100%  
+	    New File  		   5.6 m	S8_hull_albedo.png  8%   17%   26%   35%   44%   52%   61%   70%   79%   88%   97%  100%  
+	    New File  		  527491	S8_hull_normal.jpg 49%   99%  100%  
+	    New File  		   4.0 m	S8_hull_normal.png 12%   24%   37%   49%   62%   74%   86%   99%  100%  
+	    New File  		   1.9 m	S8_hull_orm.jpg 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   7.9 m	S8_hull_orm.png  6.3% 12.6% 18.9% 25.2% 31.5% 37.8% 44.2% 50.5% 56.8% 63.1% 69.4% 75.7% 82.0% 88.4% 94.7%100%  
+	    New File  		   1.0 m	S8_parts_albedo.jpg 22%   45%   68%   91%  100%  
+	    New File  		   4.6 m	S8_parts_albedo.png 10%   21%   32%   43%   53%   64%   75%   86%   96%  100%  
+	    New File  		  299917	S8_parts_normal.jpg 43%   87%  100%  
+	    New File  		   2.8 m	S8_parts_normal.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   1.6 m	S8_parts_orm.jpg 15%   30%   46%   61%   76%   92%  100%  
+	    New File  		   6.4 m	S8_parts_orm.png  7.7% 15.4% 23.1% 30.8% 38.5% 46.2% 53.9% 61.7% 69.4% 77.1% 84.8% 92.5%100%  
+	    New File  		  12.4 m	V1b_r_23.bin  8.0% 16.0% 24.1% 32.1% 40.2% 48.2% 56.3% 64.3% 72.4% 80.4% 88.5% 96.5%100%  
+	    New File  		   73904	V1b_r_23.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        32        32         0         0         0         0
+   Bytes :   94.72 m   94.72 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1805849054 Bytes/sec.
+   Speed :           103331.511 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:56:03 AM
+

@@ -1,0 +1,40 @@
+[audit] {"problems": ["gun A1 aims into the ship (aim . mount normal -1.00)"], "parts": 164, "crossing_break_lines": [], "structure_across_seams": ["L2p", "L2s"], "guns_with_normals": 3, "guns_into_ship": 1, "guns": 3, "break_lines": {"t_lines": [-0.061538696289958006, 0.2523086547888278], "l_line": [0.05680790901266749, -0.39692459107022915, -0.06923103332620276], "l_lines": [[0.05680790901266749, -0.39692459107022915, -0.06923103332620276], [-0.018423147201806177, -0.053846359253713255, 0.23846244812358727]]}, "result": "FAIL"}
+[audit] FAIL
+ok   into_ship: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull's"], "problems": [], "crossing_break_lines": [], "guns": 3, "guns_with_normals": 3}
+[audit] FAIL
+ok   no_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's break lines are empty (r209_t_lines): an empty list tests no break line"], "problems": [], "crossing_break_lines": [], "guns": 3, "guns_with_normals": 3}
+[audit] FAIL
+ok   empty_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's longitudinal seam is not one [z, x0, x1] with x0 below x1: [0.0, 0.2, -0.2]"], "problems": [], "crossing_break_lines": [], "guns": 3, "guns_with_normals": 3}
+[audit] FAIL
+ok   bad_longitudinal: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["3 of 3 guns carry no mount normal, so the into-the-ship test could not run for them: A1, F1, F2"], "problems": [], "crossing_break_lines": [], "guns": 3, "guns_with_normals": 0}
+[audit] FAIL
+ok   no_normals: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["1 of 3 guns carry no mount normal, so the into-the-ship test could not run for them: F2"], "problems": [], "crossing_break_lines": [], "guns": 3, "guns_with_normals": 2}
+[audit] FAIL
+ok   one_normal_missing: the audit failed as it must
+[audit] {"problems": [], "parts": 164, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.061538696289958006, 0.2523086547888278], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   no_longitudinal: a build with no longitudinal seam is audited on its transverse seams
+[audit] {"problems": [], "parts": 164, "crossing_break_lines": ["A1"], "structure_across_seams": ["L2p", "L2s"], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.061538696289958006, 0.2523086547888278], "l_line": [0.05680790901266749, -0.39692459107022915, -0.06923103332620276], "l_lines": [[0.05680790901266749, -0.39692459107022915, -0.06923103332620276], [-0.018423147201806177, -0.053846359253713255, 0.23846244812358727]]}, "result": "FAIL"}
+[audit] FAIL
+ok   machine_across: A1 on the seam is refused
+[audit] {"problems": [], "parts": 164, "crossing_break_lines": [], "structure_across_seams": ["H1", "L2p", "L2s"], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.061538696289958006, 0.2523086547888278], "l_line": [0.05680790901266749, -0.39692459107022915, -0.06923103332620276], "l_lines": [[0.05680790901266749, -0.39692459107022915, -0.06923103332620276], [-0.018423147201806177, -0.053846359253713255, 0.23846244812358727]]}, "result": "PASS"}
+[audit] PASS
+ok   structure_across: H1 on the seam is allowed (structure)
+PASS the audit fails when it should
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\S9.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-5158117732234b04b9c576ccbe1859b0

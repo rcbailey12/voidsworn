@@ -1,0 +1,8 @@
+chain AX waiting for 1157 shipjob 9 exit in chain_1119aw.txt Fri 11/20/2026  9:52:18.67 
+mirror refresh 10:46:18.17 
+mirror fetch exit 0
+b1687ca1a6d3210e700544c5b347473e807a8417 reachable in the mirror
+1158 ember 2 start 10:46:19.83 
+1158 ember 2 exit 0 at 11:04:45.38 
+after-job janitor ran, output in janitor_after_1119ax.txt 11:04:45.85 
+all done Fri 11/20/2026 11:04:45.85 

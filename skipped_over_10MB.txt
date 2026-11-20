@@ -1,0 +1,2 @@
+opus1158e8\recipe\export\V1b_r_23\V1b_r_23.glb 12.5 MB
+opus1158e8\recipe\export\V1b_r_23\_gltf_source\V1b_r_23.bin 12.4 MB
