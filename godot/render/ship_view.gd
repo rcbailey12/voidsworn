@@ -53,6 +53,11 @@ static func clear_static() -> void:
 	_gt = null
 
 
+# issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
+static func clear_look_cache() -> void:
+	_look_cache.clear()
+
+
 func _exit_tree() -> void:
 	# The dummy renderer can query instance shader parameters during hull teardown,
 	# after a damaged mesh's surface materials have been freed. Detach the render
@@ -180,6 +185,10 @@ func _look() -> void:
 			if not _look_cache.has(k):
 				_look_cache[k] = LOOK.hull(src, fac, true)
 			mi.set_surface_override_material(i, _look_cache[k])
+	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
+	# just added is queued once already; touch does not queue it twice)
+	if is_inside_tree():
+		load("res://render/mesh_watch.gd").touch(self)
 
 
 func _collect(n: Node) -> void:

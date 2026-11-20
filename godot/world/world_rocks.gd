@@ -16,10 +16,16 @@ extends RefCounted
 const LIB_DIR := "res://world/rocks/"
 
 static var _meshes := {}      # name -> Mesh
-static var _lib: Dictionary = {}
+static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
-static var _scans: Array = []
+static var _scans: Array = []   # not GPU: scan names
 static var _scans_checked := false
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_meshes.clear()
+	_detail = null
 
 # The eight CC0 scans and their explicit far meshes are one package. A partial
 # copy must not make some of the seeded choices turn into fallback spheres.

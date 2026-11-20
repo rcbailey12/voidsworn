@@ -113,7 +113,8 @@ func _selection(c: Campaign, ui: UI) -> void:
 	for fac in c.RUN_FACTIONS:
 		c.picked_faction = fac; c.picked_admiral = "anuket" if fac == "deathless" else ""
 		c.admiralScreen()
-		var panel: Control = ui._admiral()
+		ui._acts = c.page["acts"]
+		var panel: Control = ui._desk()   # issue 1217: the faction and admiral desk
 		var txt := _text(panel)
 		_check(expected[fac].all(func(s): return s in txt) and "sets your ships and shipyards" not in txt,
 			fac + ": selection shows two live mechanics and their tradeoff")
@@ -151,7 +152,7 @@ func _repairs_and_joins(c: Campaign, ui: UI) -> void:
 	_check(lines.any(func(l): return l.begins_with("The Unbroken joins the fleet under ")), "an event ship joins with one article")
 	c.RUN["fleet"].pop_back()
 	c.FNAMES["deathless"] = names; c.MORE_SHIP_NAMES["deathless"] = more
-	c.RUN["reward"] = {"prizes": [{"tpl": "d_scythe", "name": "The Unbroken", "cp": 1, "hpf": 1}], "prizeSel": ["add"], "wrecks": [], "stage": "prize", "modOffer": null}
+	c.RUN["reward"] = {"kind": "elite", "prizes": [{"tpl": "d_scythe", "name": "The Unbroken", "cp": 1, "hpf": 1}], "prizeSel": ["add"], "wrecks": [], "stage": "prize", "modOffer": null}
 	c.W["rw"] = {"k": "mod"}
 	c.ACT_prizeConfirm()
 	_check("The Unbroken joins." in c.toasts, "a prize ship joins with one article")
@@ -205,6 +206,7 @@ func _new_run(c: Campaign, fac: String) -> void:
 func _text(node: Node) -> String:
 	var text := ""
 	if node is Label or node is RichTextLabel: text = node.text + "\n"
+	if node is Control and (node as Control).tooltip_text != "": text += (node as Control).tooltip_text + "\n"   # moved to hover still counts (R177)
 	for child in node.get_children(): text += _text(child)
 	return text
 

@@ -215,7 +215,8 @@ async function execute(c, baseline) {
       childArgs = ['-e', bootstrap, original, target, ...c.args];
     }
     const run = await new Promise(resolve => {
-      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT }, windowsHide: true });
+      // Issue 1194: tmo.bat hands steps to the installed tools_live copy; a check tests this checkout's own watchdog.
+      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT, TMO_OWN_COPY: '1' }, windowsHide: true });
       let output = '', error, timedOut = false;
       const timer = setTimeout(() => {
         timedOut = true;

@@ -34,14 +34,8 @@ func quit_clean(code := 0) -> void:
 		campaign.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	load("res://render/ship_view.gd").clear_static()
-	load("res://scenes/battle/fx_stub.gd").clear_static()
-	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
-		if ResourceLoader.exists(sp):
-			var sc = load(sp)
-			if sc != null and sc.has_method("clear_static"):
-				sc.clear_static()
+	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
+	load("res://render/static_caches.gd").clear_all()
 	get_tree().quit(code)
 
 
@@ -292,6 +286,39 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
+# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
+# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
+# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
+static var _showcase_i := -1
+
+static func showcase_factions() -> Array:
+	var out: Array = []
+	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
+			continue
+		for id in m["ships"]:
+			var e = m["ships"][id]
+			var f := str(e.get("faction", "")) if e is Dictionary else ""
+			if f != "" and f != "voidsworn" and not out.has(f):
+				out.append(f)
+		if not out.is_empty():
+			break
+	out.sort()
+	return out if not out.is_empty() else ["hegemony", "corsair"]
+
+
+static func next_showcase_fac() -> String:
+	var facs := showcase_factions()
+	if _showcase_i < 0:
+		_showcase_i = randi() % facs.size()
+	else:
+		_showcase_i = (_showcase_i + 1) % facs.size()
+	return str(facs[_showcase_i])
+
+
 func _start_showcase() -> void:
 	if title == null or not is_instance_valid(title) or showcase != null:
 		return
@@ -299,7 +326,7 @@ func _start_showcase() -> void:
 	showcase.showcase = true
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
-	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)

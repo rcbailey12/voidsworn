@@ -258,9 +258,9 @@ func choose(c: CampaignScript, acts: Array, rng: RandomNumberGenerator) -> Array
 		var events := nodes.filter(func(a): return c.findNode(a[1])["type"] == "event")
 		var pool := nodes if events.is_empty() else events
 		return [] if pool.is_empty() else pool[rng.randi_range(0, pool.size() - 1)]
-	for preferred in ["battle", "refuseCoreEat", "repairAll", "prizeConfirm", "salvageStep",
+	for preferred in ["battle", "refuseCoreEat", "repairAll", "repairStop", "prizeConfirm",
 		"takeRelic", "takeMod", "takeBoon", "pickAspect", "eventChoice", "closeModal", "beat3",
-		"storyCore", "rewardNext", "prizeStep", "takeSalvage", "takePerk", "leaveYard", "boonDecline"]:
+		"storyCore", "rewardNext", "takeSalvage", "takePerk", "leaveYard", "boonDecline"]:
 		for a in acts:
 			if a[0] == preferred:
 				return a

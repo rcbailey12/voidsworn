@@ -160,9 +160,40 @@ def exercise(root, fault):
     print(f'PASS {fault or "install"}')
 
 
+def exercise_scratch(root, failed):
+    project, _, _, _, _, _ = setup(root)
+    job = root / 'job'
+    job.mkdir()
+    export = root / 'export'
+    snapshots = []
+
+    def run_check(command, log):
+        snapshot = Path(command[4])
+        (snapshot / (CODE + '_check.json')).write_text('{}', encoding='utf-8')
+
+    def install(project, code, snapshot, expected, refresh, readback):
+        stage.verify(snapshot, expected)
+        snapshots.append(snapshot)
+        if failed:
+            raise RuntimeError('injected install failure')
+
+    with patch.object(stage.tempfile, 'tempdir', str(root)), patch.object(stage, 'run_check', run_check), patch.object(stage, 'install', install):
+        try:
+            assert stage.install_export(export, project, CODE, 'godot', job, 'ship.json') == 0
+        except RuntimeError as exc:
+            assert failed and 'injected install failure' in str(exc)
+        else:
+            assert not failed
+    assert len(snapshots) == 1 and snapshots[0].exists() == failed
+    print('PASS stage 7 scratch ' + ('kept after failed install' if failed else 'removed after successful install'))
+
+
 if __name__ == '__main__':
-    root = Path(tempfile.mkdtemp(prefix='stage7-selftest-'))
-    check_stray_maps(root / 'stray')
-    for fault in (None, 'changed_checked_glb', 'stage_copy', 'backup_copy', 'backup_move',
-                  'refresh', 'readback', 'changed_installed_map'):
-        exercise(root / (fault or 'success'), fault)
+    with tempfile.TemporaryDirectory(prefix='stage7-selftest-') as temp:
+        root = Path(temp)
+        check_stray_maps(root / 'stray')
+        for fault in (None, 'changed_checked_glb', 'stage_copy', 'backup_copy', 'backup_move',
+                      'refresh', 'readback', 'changed_installed_map'):
+            exercise(root / (fault or 'success'), fault)
+        exercise_scratch(root / 'scratch_success', False)
+        exercise_scratch(root / 'scratch_failure', True)
