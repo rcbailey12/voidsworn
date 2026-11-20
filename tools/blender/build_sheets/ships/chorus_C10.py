@@ -455,10 +455,9 @@ def build(K):
     # armadillo bands of grown chitin over the back behind the head, down to the flank fold,
     # broken round the flank folds, the crown, the brood sacs, the siphons and the tail; small fused chitin clusters on the
     # belly between the spore glands. The brood sacs stay uncapped: their birth slits must stay clear (fit check EXIT)
-    # lap 1.9: the shortest band (0.75 of band * lap) still reaches the next band's root at the longest step (1.35 * band), so
-    # no bare strip opens across the back; lo -0.2: on this hull the bands stop just under the flank fold, because the brood
+    # lap 1.45 (the kit closes the bare strip a long step would leave, close_gaps, issue 1291); lo -0.2: on this hull the bands stop just under the flank fold, because the brood
     # sacs and their necks fill the lower flank and cut the bands there into scraps; the lower flank and belly carry fused chitin
-    plates.armadillo(K, _k, 7.3, -7.7, seed=1352, lo=-0.2, band=1.25, lap=1.9, thick=0.19,
+    plates.armadillo(K, _k, 7.3, -7.7, seed=1352, lo=-0.2, band=1.25, lap=1.45, thick=0.19,
                      keep=('flank_fold', 'head_folds', 'pores_', 'tail_folds', 'scar'),
                      note='armadillo bands of grown chitin over the back down to the flank folds, lips aft; broken round the flank folds, the crown, the brood sacs, siphons and vents; hide rolled at the edges')
     spots = [(6.8, -1.3, 0.95, 3), (2.6, -1.25, 1.05, 4), (-2.4, -1.28, 1.0, 3), (-7.0, -1.3, 0.8, 3),   # the belly, between the glands
