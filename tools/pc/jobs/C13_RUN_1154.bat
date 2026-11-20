@@ -4,6 +4,7 @@ rem Issue 1154: the Chorus spitter destroyer chorus_C13 (data.js b_spitter, game
 rem Two runs, one file (the Board queues each through queue\q_c1154.bat):
 rem   C13_RUN_1154.bat front   stages 1 to 4 (concept in, the AI shape reference, the outline fit, the sheet hull and its audit)
 rem   C13_RUN_1154.bat trace   stages 3 and 4 only, on the stage 2 shape reference already on the PC
+rem   C13_RUN_1154.bat kit     stage 4 only, on the stage 3 camera and concept already on the PC
 rem   C13_RUN_1154.bat paint   stages 1 to 7, the install into this job's own clone, the GPU readback, the authored interiors
 rem                            check, the death seam check and the in-game shots at camera 170 and 60. Set PAINT_BASE to a
 rem                            branch to merge first (codex/issue-1058 while PR 1083 carries the Chorus paint stack): the
@@ -40,6 +41,10 @@ set CODE=B20_11
 set CAMJ=
 set FAILED=
 cd /d "%C%"
+if "%MODE%"=="kit" (
+  call :stage 4_parts_kit
+  goto end
+)
 if "%MODE%"=="trace" (
   for %%S in (3_trace_hull 4_parts_kit) do call :stage %%S
   goto end
@@ -50,7 +55,12 @@ if "%MODE%"=="front" (
 )
 call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
-for %%S in (1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export) do call :stage %%S
+rem Stages 1 and 2 ran in the front run (the concept and the AI shape reference do not change with the sheet); set FULL=1 to rerun them.
+set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
+if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
+rem SKIP3=1 starts at stage 4 when stage 3 already ran on this sheet outline (a hard point or paint change only).
+if "%SKIP3%"=="1" set STAGES=4_parts_kit 5_paint_bake 6_lod 7_export
+for %%S in (%STAGES%) do call :stage %%S
 if defined FAILED (
   echo checks SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
   goto end

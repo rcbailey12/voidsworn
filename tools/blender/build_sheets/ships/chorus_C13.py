@@ -64,14 +64,12 @@ def dense(key, step=0.32):
 
 
 HULL = dense(KEY)
-PL = dict(size=(0.3, 0.62), thick=(0.018, 0.04), skip=0.15, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.4},
-          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.024)
 # the glands: (id, slot, mouth point, aim, opening radius, knoll radius, spines)
 GLAND_R = 0.25
 GLANDS = (
     ('W1', 'F', (4.52, 0.02, 0.02), (0.92, 0.0, 0.38), 0.25, 0.5, 14),     # the prow gland, low in the nose bulb behind its round front
     ('W2', 'T', (1.75, 0.2, 1.48), (0.3, 0.12, 0.95), GLAND_R, 0.62, 16),  # the fore dorsal knoll
-    ('W3', 'T', (-0.1, -0.26, 1.72), (-0.12, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships
+    ('W3', 'T', (-0.1, -0.26, 1.72), (0.0, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships (aimed straight up: the stage 4 audit refuses a gun aimed backward)
 )
 # bile sacs on the lower flanks: (x, section angle, radius) per side; port and starboard differ (asymmetric)
 SACS = {1: ((2.5, -0.55, 0.4), (1.2, -0.32, 0.7), (-0.45, -0.52, 0.68), (-1.85, -0.3, 0.48)),
@@ -85,17 +83,24 @@ def build(K):
     from mathutils import Vector
     import bpy as _bpy
     import random
+    import sys
+    if _k._KITS not in sys.path:
+        sys.path.append(_k._KITS)
+    from chorus import plates
     HP = _k.HP
     rnd = random.Random(1154)
+    plates.register(_k)   # the armour shell's materials (R341)
 
-    hull = K.hull(HULL, 'flesh', shell=0.22, plates=dict(PL, seed=31, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
+    hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the broad lumpy body', hull, 'dark olive flesh', note='a rounded nose bulb, broad in the middle, short at the tail')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
+    K.mark('hide', 'plate', ['pad', 'pore'])
 
     def side_th(th, side):
         return th if side > 0 else math.pi - th
 
     # ---------------- the spine glands (the two spine volleys) ----------------
+    gland_rings = []
     for fid, slot, mouth, aim, r, rk, ns in GLANDS:
         a = Vector(aim).normalized(); L_ = 0.95
         root = Vector(mouth) - a * L_
@@ -104,6 +109,9 @@ def build(K):
         K.spinal(fid, tuple(root), L_, r=r, slot=slot, weapon='bioplasma', inv='glands_f' if slot == 'F' else 'glands_t', style='gland', aim=tuple(a),
                  band=(-10, 0, 10, 20) if slot == 'F' else (20, 35, 50, 70), knoll=rk, spines=ns, seed=40 + int(fid[1:]), gland_at=0.5, note=what)
         K.mass('Spine gland %s' % fid, _bpy.data.objects['%s_mount_flesh' % fid], 'flesh knoll', note=what.split(':')[0])
+        # R341 (Ryan, Nov 19: close the gaps round the open skin): a ring of scutes round the gland knoll's lower slopes, under
+        # its spines; the vent and the spines stay open
+        gland_rings.append((('%s_mount_flesh' % fid,), tuple(root + a * (L_ * 0.98 - rk * 0.92)), tuple(a), rk * 1.1, 1.8, 1.28))
 
     # ---------------- the spine bed (regrowth of spent spines) ----------------
     pos, nrm = K.hpt(-1.55, math.pi / 2 + 0.18, out=-0.12)
@@ -112,11 +120,13 @@ def build(K):
     K.mass('Spine bed', _bpy.data.objects['SB1_mount_flesh'], 'flesh knoll', note='the knoll aft of the dorsal glands')
     # the lumps of the back and shoulders: knolls of grown flesh between the glands (the picture's lumpy mass)
     items = []
+    caps = []   # the domes the armour caps (R341, the Board: the knolls and the flank sacs wrapped, the glands open)
     for k, (x, th, rr) in enumerate(((2.9, 1.1, 0.55), (0.9, 2.0, 0.7), (-0.9, 0.95, 0.75), (-0.75, 2.3, 0.62), (2.55, 2.15, 0.5), (-2.0, 1.5, 0.5),
                                      (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38),
                                      (0.1, 0.3, 0.62), (-0.4, 2.85, 0.6))):   # the mid-body's side blisters bulge out (the Board on v2)
         pos, nrm = K.hpt(x, th, out=-rr * 0.5)
-        items.append((HP.knoll(rr, seed=70 + k), HP.frame(pos, (1, 0, 0), nrm)))
+        items.append((HP.knoll(rr, seed=70 + k, armour=True), HP.frame(pos, (1, 0, 0), nrm)))
+        caps.append((('knolls_',), tuple(pos), tuple(nrm), rr * 1.15, 1.25))
     K.grown_hull('knolls', items, inv='knolls', kind='knoll')
     K.mass('Back and shoulder knolls', _bpy.data.objects['knolls_flesh'], 'flesh', note='lumps of grown flesh over the back and shoulders')
 
@@ -126,9 +136,10 @@ def build(K):
         for i, (x, th, rr) in enumerate(SACS[side]):
             pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(rr, h=rr * 1.05, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            K.organ(fid, HP.sac(rr, h=rr * 1.05, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, armour=True), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, %.1f across' % (2 * rr), note='a round bile sac bulging from the lower flank; it swells before a volley')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome')
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), rr, 1.2, 0.5))   # the crown's bile window open
     for a_, b_ in (('S1p', 'S2p'), ('S2p', 'S3p'), ('S3p', 'S4p'), ('S1s', 'S2s'), ('S2s', 'S3s'), ('S3s', 'S4s'), ('S2s', 'H2'), ('S2p', 'H1'), ('S3p', 'H3')):
         K.allow_touch(a_, b_, 'the bile sacs grow in a cluster along the flank, swelling into each other (the picture\'s merged sacs)')
     for i, (x, y, rr) in enumerate(HANGING):
@@ -158,60 +169,13 @@ def build(K):
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='three pulse vents at the short stern')
 
     # ---------------- grown detail on the hull ----------------
-    # pore fields: the nose bulb and the upper flanks
-    for name, x0, x1, t0, t1, nper in (('nose', 3.0, 4.5, -0.3, 1.4, 55), ('flank', -2.2, 2.8, 0.1, 0.75, 45)):
-        V, F = [], []
-        for side in (1, -1):
-            for _ in range(nper):
-                x = rnd.uniform(x0, x1); th = rnd.uniform(t0, t1)
-                if any(abs(x - sx) < 0.4 and abs(th - st) < 0.35 for sx, st in ((3.55, -0.15), (-2.45, 0.35))):
-                    continue   # clear of the siphons
-                pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-                vv, ff = HP.pore(pos, nrm, rnd.uniform(0.018, 0.04), n=6)
-                o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
-        K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
-    # veins: from the flank sacs forward and up to the glands
-    for side in (1, -1):
-        V, F = [], []
+    # R341 (Ryan, Nov 19): the whole body is armoured, so the skin folds, the pore fields, the flank veins and the scar patches of
+    # v2 are gone: they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
-        def run(pts_xt, w):
-            pts = []; nrms = []
-            for x, th in pts_xt:
-                p_, n_ = K.hpt(x, side_th(th, side), out=0.0); pts.append(p_); nrms.append(n_)
-            vv, ff = HP.welt(pts, nrms, w, w * 0.5, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        run([(2.1 + 0.2 * k, -0.3 + 0.03 * k) for k in range(6)], 0.07)
-        run([(-1.9 + 0.32 * k, -0.05 + 0.04 * math.sin(k)) for k in range(13)] + [(2.3 + 0.2 * k, 0.05 + 0.13 * k) for k in range(1, 5)], 0.06)
-        K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
-    # skin folds: broken runs swept back from the nose, wrapping the knolls (the picture's wrinkled flesh)
-    V, F = [], []
-    for side in (1, -1):
-        for k in range(34):
-            th0 = rnd.choice((rnd.uniform(0.05, 1.3), rnd.uniform(-1.25, -0.75)))
-            xa = rnd.uniform(-1.6, 4.4); ln = rnd.uniform(1.6, 3.6)
-            pts = []; nrms = []; ws = []; hs = []
-            for j in range(10):
-                t = j / 9
-                x = xa - ln * t
-                if x < -2.6 or any(abs(x - sx) < 0.45 and abs(th0 - st) < 0.4 for sx, st in ((3.55, -0.15), (-2.45, 0.35))) or \
-                        any(abs(x - sx) < sr * 1.15 and abs(th0 - st) < 0.45 for sx, st, sr in SACS[side]):
-                    break   # stop short of the siphons and the flank sacs
-                th = th0 + 0.03 * math.sin(j * 1.1 + k) + (0.06 * t if th0 > 0 else -0.04 * t)
-                p_, n_ = K.hpt(x, side_th(th, side), out=-0.015); pts.append(p_); nrms.append(n_)
-                env = math.sin(math.pi * (0.08 + 0.84 * t))
-                ws.append(0.36 * env + 0.04); hs.append(0.12 * env + 0.01)
-            if len(pts) < 4:
-                continue
-            vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('skin_folds', (V, F), 'flesh2', inv='skin_folds', kind='welt', subs=['welt'])
-    # regrown hide: ragged scar patches on the shoulders and flanks (regen 4)
-    for k, (x, th, r, side) in enumerate(((2.9, 0.95, 0.34, 1), (1.6, 0.85, 0.4, -1), (-0.4, 0.7, 0.36, 1), (-1.8, 0.95, 0.3, -1), (0.9, -0.2, 0.28, 1),
-                                          (3.0, 0.5, 0.24, -1))):
-        pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-        (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=20 + k, knits=3)
-        K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])
-        K.hull_detail('scar%d_knit' % k, (kv, kf), 'tissue')
+    # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
+    plates.dome_caps(K, _k, caps + gland_rings, seed=1342)
+    plates.armour(K, _k, 4.45, -2.9, seed=1343, keep=('knolls',), rows=6, scute=0.6, thick=0.15, belly=-1.4,
+                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; glands, siphons and vents stand clear, the knolls and flank sacs capped in smaller scutes')
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 4.75, -2.95, 'whole body')
@@ -219,7 +183,8 @@ def build(K):
     K.colour('raw transition tissue', 4.7, -2.0, 'the vent lips and the spine collars')
     K.colour('bile yellow-green light', 4.7, 0.0, 'deep in the three gland vents')
     K.colour('bile yellow-green light', -2.95, -4.75, 'the vents and the membranes\' roots')
-    K.colour('dim bile', 3.0, -2.5, 'the veins, the sac windows, the pores')
+    K.colour('dim bile', 3.0, -2.5, 'the sac windows')
+    K.colour('brown keratin scutes over warm brown hide (R341)', 4.45, -2.8, 'the armour shell, belly to back')
 
     # ---------- INSIDE: flesh, bone and organs ----------
     K.septum('lower', -0.75, 4.1, -2.5)
@@ -246,8 +211,8 @@ def build(K):
     # two break lines (Destroyer: 2), torn by the Chorus rule: sacs rupture first, then the body tears open on ragged lines
     K.break_line('B-1', 3.0, 'behind the nose bulb: the prow gland and the nose tear away, opening the spine sac and the Node',
                  path=[(3.3, 6.0), (3.3, 2.2), (2.8, 1.2), (3.2, 0.3), (2.75, -0.7), (3.15, -1.6), (2.85, -6.0)])
-    K.break_line('B-2', -0.95, 'behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first',
-                 path=[(-0.75, 6.0), (-0.75, 2.4), (-1.2, 1.3), (-0.8, 0.3), (-1.25, -0.8), (-0.85, -2.3), (-0.85, -6.0)])
+    K.break_line('B-2', -1.3, 'behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first',
+                 path=[(-1.1, 6.0), (-1.1, 2.4), (-1.55, 1.3), (-1.15, 0.3), (-1.6, -0.8), (-1.2, -2.3), (-1.2, -6.0)])   # 0.35 aft of v2: the stage 4 audit found the great gland W3 across it
     K.inside.append(dict(kind='note', name='insides', note='Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, '
                                                           'membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, '
                                                           'then the body tears open along ragged lines (R186).'))
@@ -259,6 +224,10 @@ def build(K):
     for i, (x, th, side) in enumerate(((3.55, -0.15, 1), (3.55, -0.15, -1), (-2.45, 0.35, 1), (-2.45, 0.35, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+    # boarding origins (export7: one port, one starboard on the mid hull): where a boarding party leaves the body
+    for i, side in enumerate((1, -1)):
+        pos, nrm = K.hpt(1.3, side_th(0.45, side), out=0.02)
+        K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone', 'R204 and the lore: the colour is fixed in the build; the picture\'s hide is grey-brown with amber light')
@@ -273,6 +242,9 @@ def build(K):
              'the picture\'s round sacs; uneven sides keep the asymmetric, scarred read (designs.md); every sac stores bile for the volleys')
     K.change('Three pulse vents with two wide veils each at the short stern (the kit\'s veil trail, shared with C12, R333)', 'factions.md: no nozzles; the picture\'s three glow points and ragged membranes. The veils are cut '
              'to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour\'s jet')
+    K.change('An armour shell of banded overlapping keratin scutes over the whole body; the knolls capped in scute rings; the skin folds, pore fields, '
+             'flank veins and scar patches of v2 removed', 'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, '
+             'minus the spine, maw, engines and weapons; the glands, sacs, siphons, vents and spine bed stand in open sockets')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
-    K.change('No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards', 'the stinger variant (b_spitter_s, tendril T) is its own job')
+    K.change('Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril', 'the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job')
     K.open_item('The variant b_spitter_s (Spitter stinger: bioplasma T, tendril T) is not built here; it needs a named variant (ships.md, issue 812)')

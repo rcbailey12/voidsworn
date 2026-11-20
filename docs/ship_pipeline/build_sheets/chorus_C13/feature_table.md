@@ -22,9 +22,9 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | beam top | 3.875 |
 | beam bow | 3.987 |
 | beam disagreement percent | 1.18 |
-| height side | 3.638 |
-| height bow | 3.625 |
-| height disagreement percent | 0.13 |
+| height side | 3.688 |
+| height bow | 3.688 |
+| height disagreement percent | 0.0 |
 | widest at station percent | 57.3 |
 | hull beam | 2.95 |
 | hull depth | 2.57 |
@@ -41,7 +41,7 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 |---|---|---:|---:|---:|---:|---|---|---|---|
 | W1 | spine volley, throat (fixed) | 1 barrel | 12.5 | 0.02 | -0.34 | forward, +22 elev | F bioplasma | picture | the prow gland: a knoll grown into the nose bulb, a puckered vent at its crown, short spines round it; it spits forward |
 | W2 | spine volley, throat (fixed) | 1 barrel | 35.3 | 0.09 | 0.58 | 22 deg off the bow to port, +71 elev | T bioplasma | picture | a dorsal spine gland: a puckered vent at the crown of a knoll on the back, short spines out of the knoll round it; it faces up and spits every way |
-| W3 | spine volley, throat (fixed) | 1 barrel | 50.5 | -0.17 | 0.78 | 140 deg off the bow to starboard, +81 elev | T bioplasma | picture | a dorsal spine gland: a puckered vent at the crown of a knoll on the back, short spines out of the knoll round it; it faces up and spits every way |
+| W3 | spine volley, throat (fixed) | 1 barrel | 51.7 | -0.17 | 0.78 | 90 deg off the bow to starboard, +84 elev | T bioplasma | picture | a dorsal spine gland: a puckered vent at the crown of a knoll on the back, short spines out of the knoll round it; it faces up and spits every way |
 | SB1 | spine bed, 1.2 across | 1 | 66.6 | -0.19 | 0.94 | - | - | picture | a knoll aft of the glands studded with growing spines: the spent spines regrow here (regrow, regen 4) |
 | S1p | bile sac, 0.8 across | 1 | 24.5 | 0.90 | -0.56 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
 | S2p | bile sac, 1.4 across | 1 | 38.1 | 1.34 | -0.40 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
@@ -83,7 +83,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Hull: the broad lumpy body | 4.6 to 82.1 | -1.41 to 1.54 | -1.28 to 1.29 | dark olive flesh | a rounded nose bulb, broad in the middle, short at the tail |
 | Spine gland W1 | 2.0 to 16.7 | -0.56 to 0.56 | -0.76 to 0.42 | flesh knoll | the prow gland |
 | Spine gland W2 | 27.2 to 41.3 | -0.55 to 0.85 | 0.20 to 1.58 | flesh knoll | a dorsal spine gland |
-| Spine gland W3 | 43.2 to 58.6 | -0.93 to 0.55 | 0.44 to 1.77 | flesh knoll | a dorsal spine gland |
+| Spine gland W3 | 44.0 to 59.4 | -0.93 to 0.55 | 0.44 to 1.76 | flesh knoll | a dorsal spine gland |
 | Spine bed | 60.5 to 72.6 | -0.77 to 0.37 | 0.43 to 1.48 | flesh knoll | the knoll aft of the dorsal glands |
 | Back and shoulder knolls | 10.6 to 76.8 | -1.45 to 1.49 | -0.36 to 1.27 | flesh | lumps of grown flesh over the back and shoulders |
 | Bile sac 1 (port) | 19.9 to 28.9 | 0.52 to 1.32 | -0.95 to -0.18 | flesh dome |  |
@@ -133,7 +133,7 @@ Bulkhead and frame stations: F0 8.2%, F1 15.6%, F2 23.4%, F3 31.8%, F4 40.7%, F5
 | Break line | Station % | What it opens |
 |---|---|---|
 | B-1 | 19.2 (seam wanders 16.1 to 21.9) | behind the nose bulb: the prow gland and the nose tear away, opening the spine sac and the Node |
-| B-2 | 60.7 (seam wanders 58.6 to 63.8) | behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first |
+| B-2 | 64.3 (seam wanders 62.2 to 67.5) | behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first |
 
 Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, then the body tears open along ragged lines (R186).
 
@@ -150,10 +150,12 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 | hp_rcs_1 | 13.4 | -0.71 | -0.23 | stbd |  |  |
 | hp_rcs_2 | 76.5 | 0.81 | 0.26 | port |  |  |
 | hp_rcs_3 | 76.5 | -0.79 | 0.26 | stbd |  |  |
+| hp_board_0 | 37.0 | 1.21 | 0.47 | port |  |  |
+| hp_board_1 | 37.0 | -1.23 | 0.50 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 757 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 756 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -168,7 +170,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Bile sacs: four a side along the lower flank, port and starboard at different sizes, three more hanging under the belly.** the picture's round sacs; uneven sides keep the asymmetric, scarred read (designs.md); every sac stores bile for the volleys.
 - **Three pulse vents with two wide veils each at the short stern (the kit's veil trail, shared with C12, R333).** factions.md: no nozzles; the picture's three glow points and ragged membranes. The veils are cut to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour's jet.
 - **Siphons added, a pair forward and a pair aft.** a ship in space must turn; the picture shows none.
-- **No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards.** the stinger variant (b_spitter_s, tendril T) is its own job.
+- **Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril.** the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job.
 
 ## Designed here, not shown in the picture
 
