@@ -615,12 +615,39 @@ function Assert-NoLiveWorktree($candidate) {
     if ($live.Count -ne 1) { throw "checkout may be shared with another worktree: $(($live | Select-Object -Skip 1) -join ', ')" }
   }
 }
+function Read-BoardKeepList($file) {
+  # The Board's keep list (issue 1180, Nov 20): voidsworn_test\janitor_keep.txt, one exact folder path per line, # for
+  # notes. A missing file is an empty list; a file that cannot be read stops the janitor rather than ignoring it.
+  $item = Get-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+  if (-not $item) { return ,@() }
+  if ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Board keep list is not a plain file: $file" }
+  $paths = @()
+  foreach ($line in [IO.File]::ReadAllLines($file)) {
+    $p = $line.Trim().TrimStart([char]0xFEFF)
+    if (-not $p -or $p.StartsWith('#')) { continue }
+    $paths += [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
+  }
+  return ,$paths
+}
+function Get-BoardKeepReason($path) {
+  # Whole-path match: the candidate is a listed path, holds one, or sits inside one. Never a partial name match.
+  if (-not $script:boardKeep) { return '' }
+  $full = [IO.Path]::GetFullPath($path).TrimEnd('\', '/')
+  foreach ($keep in $script:boardKeep) {
+    if ($full -eq $keep -or $keep.StartsWith($full + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+        $full.StartsWith($keep + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+        [string]::Equals($full, $keep, [StringComparison]::OrdinalIgnoreCase)) { return 'kept: on the Board keep list' }
+  }
+  return ''
+}
 function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvageName, $keepReason = '') {
   $candidate = $copy.FullName
   $size = 'size unavailable'
   try {
     $stats = Measure-CleanupDirectory $copy -Checkout
     $size = "$($stats.Bytes) bytes"
+    $listed = Get-BoardKeepReason $candidate
+    if ($listed) { throw $listed }
     if ($keepReason) { throw $keepReason }
     if ($salvageRoot -and $stats.WorktreeLatest -gt $now.AddHours(-3)) { throw 'touched in the last 3 hours' }
     Assert-NoGitLocalState $candidate

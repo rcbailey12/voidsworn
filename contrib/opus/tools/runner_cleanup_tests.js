@@ -301,6 +301,10 @@ try {
     dated(dir, hours);
   }
   const tokenOnly = scratch(temp, 'owned-tool-output', 4);
+  // The Board keep list (issue 1180, Nov 20): an owned scratch that would otherwise go stays when listed by exact path.
+  const boardKept = scratch(temp, ownerName(309, 'a'), 26);
+  markOwned(boardKept, 26);
+  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n\r\n`);
   for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, tokenOnly]) markOwned(dir, 26);
   for (const [dir, hours] of [[oldRetry, 25], [freshRetry, 4]]) {
     const marker = path.join(dir, '.voidsworn-run-failed');
@@ -471,7 +475,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, ...recover];
-  const preserve = [worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -526,6 +530,8 @@ try {
   assert.match(decision(dry, helperSibling, 'would keep'), /1 files outside out are not in a rebuildable checkout/);
   assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
+  assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
+  assert.match(dry, /Board keep list: 1 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder \(process 0 fixture\)/);
