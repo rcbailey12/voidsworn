@@ -404,11 +404,13 @@ def build(K):
                  path=[(-1.4, SPZ - 0.2), (-2.8, SPZ - 0.21), (-4.4, SPZ - 0.2), (-5.9, SPZ - 0.21)], kind='long')
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit gun galleries, frames, the reactor, the lance\'s capacitor room. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly (R186).'))
     K.point('core', 'hp_core', (-4.4, 0, -0.25))
-    # four breach anchors (Cruiser base 4, Sunward +0) on open plating. Stage 7 (export7.py authored) needs each one 0.03 ship
-    # lengths (0.43) clear of every part, within 0.04 lengths of where it is placed, and 0.05 lengths (0.72) from the anchors
-    # before it measured in x and height only, so a mirrored pair at one station fails its second side (the Nov 19 PC run at
-    # 4.6); each pair is staggered 0.8 along the hull, on the clearest spots of a scan of both sides
-    for i, (x, z, sec, side) in enumerate(((5.0, BALL_Z, 'prow', 1), (4.2, BALL_Z + 0.15, 'prow', -1), (-3.5, BALL_Z - 0.3, 'eng', 1), (-4.3, BALL_Z - 0.3, 'eng', -1))):
+    # four breach anchors (Cruiser base 4, Sunward +0), in the contract's layout for 4 (hardpoints.breach_layout: prow port,
+    # mid starboard, mid port, eng starboard), each on open plating. Stage 7 (export7.py authored) needs each one 0.03 ship
+    # lengths (0.43) clear of every part within 0.04 lengths of where it is placed, and 0.05 lengths (0.72) from the anchors
+    # before it measured in x and height only; the spots are the clearest of a scan of both sides (Nov 20, after the PC runs
+    # found 4.6 closed on the starboard side and then no mid anchor)
+    for i, (x, z, sec, side) in enumerate(((5.0, BALL_Z, 'prow', 1), (0.2, BALL_Z - 0.45, 'mid', -1), (1.0, BALL_Z + 0.15, 'mid', 1),
+                                           (-3.5, BALL_Z - 0.3, 'eng', -1))):
         K.point('breach', 'hp_breach_%d' % i, (x, side * hw_at(x, z), z), side='port' if side > 0 else 'stbd', section=sec, note='on open side plating')
     for i, side in enumerate((1, -1)):
         p, n = lower_pt(5.6, side, 0.45)
