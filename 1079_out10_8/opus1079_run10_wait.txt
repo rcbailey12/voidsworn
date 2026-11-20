@@ -1,0 +1,4 @@
+waiting for all done in opus1077_pass6_wait.txt Thu 11/19/2026 23:47:54.38 
+OPUS1079_RUN10 start Fri 11/20/2026  0:43:54.13 
+OPUS1079_RUN10 exit 0 at  1:21:29.90 
+all done  1:21:29.90 

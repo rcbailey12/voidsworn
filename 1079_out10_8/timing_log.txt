@@ -1,0 +1,466 @@
+GPU: waiting for solo claim, weight 1 (1079)
+GPU: still waiting for solo claim
+GPU: acquired solo claim d3b3c3b3-1e18-4d35-ab1d-8a8ce9c192a8
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7ef848527bc2467ab0fdd2a2432bd186\godot-profile-5c59c6b93fbf4e8c9c3c58391920b4a9
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 306 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[world] baked 6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf 4096x2048 in 16727 ms (worker)
+[world] baked 269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db 4096x2048 in 19347 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 19858 ms (worker)
+[world] baked 04a596a828fed691583b58022709b95f3d020e6d603ddcf6fedc3df1c6c4a941 1024x512 in 20294 ms (worker)
+[world] baked 1cc730ea14ee372aa5f25d7a79f468a83be64cdc653280721129e8bbe9e1ad33 4096x2048 in 2298 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2185 ms (worker)
+[world] baked 5216a2b099522b47e00358f3fbfd1bdf4dbd70ae7f38841c71baff49e061ff35 1024x512 in 2357 ms (worker)
+[hud] rebuilt for 1920 x 1080 (scale 1.000)
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.675,"median":2.819,"p95":2.882,"p99":2.932},"frames":2929,"gpu_ms":{"max":2.65499997138977,"median":2.34100008010864,"p95":2.51500010490417,"p99":2.53399991989136},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.866999983787537,"median":0.412999987602234,"p95":0.523999989032745,"p99":0.601000010967255},"resolution":"1080p","session":1,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":15.255,"median":7.448,"p95":7.743,"p99":9.189},"frames":1069,"gpu_ms":{"max":11.2040004730225,"median":6.98000001907349,"p95":7.27099990844727,"p99":8.75500011444092},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.949000000953674,"median":0.497000008821487,"p95":0.649999976158142,"p99":0.76800000667572},"resolution":"4K","session":1,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 30 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 32 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 32 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 6298 59026.2 ms
+[fx] late shader: mat STREAK frame 6298 59124.3 ms
+[fx] late shader: mat RING frame 6298 59184.9 ms
+[fx] late shader: mat RIBBON frame 6298 59224.2 ms
+[fx] late shader: mat ECLIPSE_ARC frame 6298 59279.2 ms
+[fx] late shader: mat NULL_SLUG frame 6298 59320.4 ms
+[fx] late shader: mat SHARD frame 6298 59349.2 ms
+[fx] late shader: hit fragments frame 6298 59471.6 ms
+[fx] late shader: mat DISTORT frame 6298 59592.4 ms
+[fx] late shader: death debris body frame 6298 59622.2 ms
+[fx] late shader: mat TEAR frame 6298 59721.0 ms
+[sfx] 71 cues, 67 clip sets, loaded in 286 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[fx] late shader: mat TRAIL frame 6300 63003.9 ms
+[fx] late shader: mat SHIELD frame 6300 63120.1 ms
+[fx] late shader: mat CRAFT_TRAIL frame 6300 65057.8 ms
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.437,"median":2.936,"p95":3.017,"p99":3.163},"frames":2800,"gpu_ms":{"max":2.71900010108948,"median":2.46900010108948,"p95":2.65000009536743,"p99":2.67199993133545},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.91100001335144,"median":0.435000002384186,"p95":0.547999978065491,"p99":0.71399998664856},"resolution":"1080p","session":1,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.571,"median":2.936,"p95":3.028,"p99":3.141},"frames":2794,"gpu_ms":{"max":2.73699998855591,"median":2.47399997711182,"p95":2.65100002288818,"p99":2.69400000572205},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.990000009536743,"median":0.437000006437302,"p95":0.573000013828278,"p99":0.672999978065491},"resolution":"1080p","session":1,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":15.993,"median":7.808,"p95":8.136,"p99":8.203},"frames":1020,"gpu_ms":{"max":7.86399984359741,"median":7.39400005340576,"p95":7.66800022125244,"p99":7.70300006866455},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.944000005722046,"median":0.513000011444092,"p95":0.680000007152557,"p99":0.820999979972839},"resolution":"4K","session":1,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":15.484,"median":7.803,"p95":7.94,"p99":7.99},"frames":1024,"gpu_ms":{"max":7.71199989318848,"median":7.38700008392334,"p95":7.44999980926514,"p99":7.52699995040894},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.843999981880188,"median":0.492000013589859,"p95":0.649999976158142,"p99":0.726999998092651},"resolution":"4K","session":1,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 48 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 292 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[world] baked bc5965b84d113d8bad6ee982f7b9003b6c194df84ee71a0a9b4b733e5c012cd9 4096x2048 in 8306 ms (worker)
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.376,"median":2.448,"p95":2.654,"p99":2.709},"frames":3259,"gpu_ms":{"max":2.25200009346008,"median":1.95799994468689,"p95":2.15400004386902,"p99":2.16300010681152},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.192999958992,"median":0.352999985218048,"p95":0.479999989271164,"p99":0.582000017166138},"resolution":"1080p","session":1,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.724,"median":7.41,"p95":7.565,"p99":7.741},"frames":1078,"gpu_ms":{"max":7.4689998626709,"median":7.0310001373291,"p95":7.18900012969971,"p99":7.23799991607666},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.830999970436096,"median":0.395999997854233,"p95":0.521000027656555,"p99":0.614000022411346},"resolution":"4K","session":1,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 34 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 32 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 32 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 284 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.136,"median":2.834,"p95":2.914,"p99":2.962},"frames":2908,"gpu_ms":{"max":2.48600006103516,"median":2.36800003051758,"p95":2.39800000190735,"p99":2.40499997138977},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.02600002288818,"median":0.351999998092651,"p95":0.476999998092651,"p99":0.593999981880188},"resolution":"1080p","session":1,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.712,"median":2.846,"p95":2.933,"p99":2.967},"frames":2895,"gpu_ms":{"max":2.42600011825562,"median":2.375,"p95":2.3989999294281,"p99":2.40599989891052},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.939000010490417,"median":0.352999985218048,"p95":0.439999997615814,"p99":0.505999982357025},"resolution":"1080p","session":1,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":16.91,"median":8.445,"p95":8.606,"p99":8.701},"frames":946,"gpu_ms":{"max":8.7189998626709,"median":8.03400039672852,"p95":8.22299957275391,"p99":8.23900032043457},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.796000003814697,"median":0.377000004053116,"p95":0.544000029563904,"p99":0.633000016212463},"resolution":"4K","session":1,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":16.629,"median":8.47,"p95":8.616,"p99":8.74},"frames":944,"gpu_ms":{"max":8.47200012207031,"median":8.05599975585938,"p95":8.24100017547607,"p99":8.26099967956543},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.06099998950958,"median":0.372000008821487,"p95":0.555999994277954,"p99":0.663999974727631},"resolution":"4K","session":1,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 40 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[fx] late shader: mat SPRITE frame 30784 191400.8 ms
+[sfx] 71 cues, 67 clip sets, loaded in 281 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[world] baked 02a45cbc07c261c942614e4815066cc667319f84e3c4321e0501ea9417710b7e 2048x1024 in 4758 ms (worker)
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.721,"median":2.255,"p95":2.467,"p99":2.526},"frames":3549,"gpu_ms":{"max":2.21499991416931,"median":1.77600002288818,"p95":1.97500002384186,"p99":1.9889999628067},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.688000023365021,"median":0.333000004291534,"p95":0.41499999165535,"p99":0.47299998998642},"resolution":"1080p","session":1,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":13.565,"median":6.757,"p95":6.94,"p99":7.083},"frames":1184,"gpu_ms":{"max":6.93900012969971,"median":6.31199979782104,"p95":6.58099985122681,"p99":6.70499992370605},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.763999998569489,"median":0.382999986410141,"p95":0.527999997138977,"p99":0.624000012874603},"resolution":"4K","session":1,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 24 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 288 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.559,"median":2.329,"p95":2.536,"p99":2.601},"frames":3436,"gpu_ms":{"max":2.14000010490417,"median":1.84700000286102,"p95":2.0460000038147,"p99":2.06200003623962},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.652999997138977,"median":0.344999998807907,"p95":0.444999992847443,"p99":0.514999985694885},"resolution":"1080p","session":1,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":4.696,"median":2.319,"p95":2.549,"p99":2.612},"frames":3439,"gpu_ms":{"max":2.11999988555908,"median":1.84599995613098,"p95":2.05399990081787,"p99":2.08200001716614},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.40299999713898,"median":0.333999991416931,"p95":0.425999999046326,"p99":0.515999972820282},"resolution":"1080p","session":1,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.544,"median":6.999,"p95":7.16,"p99":7.279},"frames":1144,"gpu_ms":{"max":7.19299983978271,"median":6.52899980545044,"p95":6.80100011825562,"p99":6.8289999961853},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.02300000190735,"median":0.386999994516373,"p95":0.521000027656555,"p99":0.583000004291534},"resolution":"4K","session":1,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":13.829,"median":7.001,"p95":7.156,"p99":7.213},"frames":1144,"gpu_ms":{"max":7.14099979400635,"median":6.53200006484985,"p95":6.79099988937378,"p99":6.82200002670288},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.654999971389771,"median":0.363000005483627,"p95":0.504000008106232,"p99":0.574000000953674},"resolution":"4K","session":1,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 46 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 293 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.631,"median":2.283,"p95":2.529,"p99":2.589},"frames":3466,"gpu_ms":{"max":2.16499996185303,"median":1.84200000762939,"p95":2.04500007629395,"p99":2.05800008773804},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.889999985694885,"median":0.326999992132187,"p95":0.42399999499321,"p99":0.510999977588654},"resolution":"1080p","session":2,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":4.513,"median":2.279,"p95":2.524,"p99":2.585},"frames":3472,"gpu_ms":{"max":2.15100002288818,"median":1.83899998664856,"p95":2.03900003433228,"p99":2.05299997329712},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.643999993801117,"median":0.328000009059906,"p95":0.425000011920929,"p99":0.485000014305115},"resolution":"1080p","session":2,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.094,"median":6.996,"p95":7.154,"p99":7.25},"frames":1145,"gpu_ms":{"max":7.16900014877319,"median":6.52299976348877,"p95":6.7960000038147,"p99":6.82100009918213},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.689000010490417,"median":0.388000011444092,"p95":0.535000026226044,"p99":0.625999987125397},"resolution":"4K","session":2,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":13.794,"median":7.005,"p95":7.157,"p99":7.216},"frames":1144,"gpu_ms":{"max":7.00099992752075,"median":6.52899980545044,"p95":6.80299997329712,"p99":6.82100009918213},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.12899994850159,"median":0.405000001192093,"p95":0.555999994277954,"p99":0.649999976158142},"resolution":"4K","session":2,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 50 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 36 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 284 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.535,"median":2.202,"p95":2.433,"p99":2.479},"frames":3620,"gpu_ms":{"max":2.18799996376038,"median":1.75800001621246,"p95":1.96200001239777,"p99":1.97800004482269},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.694999992847443,"median":0.328000009059906,"p95":0.425000011920929,"p99":0.46900001168251},"resolution":"1080p","session":2,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":13.538,"median":6.762,"p95":6.916,"p99":7.076},"frames":1184,"gpu_ms":{"max":6.95699977874756,"median":6.40700006484985,"p95":6.57000017166138,"p99":6.61199998855591},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.760999977588654,"median":0.389999985694885,"p95":0.531000018119812,"p99":0.648000001907349},"resolution":"4K","session":2,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 24 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 291 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.228,"median":2.845,"p95":2.923,"p99":2.965},"frames":2893,"gpu_ms":{"max":2.55900001525879,"median":2.38100004196167,"p95":2.40899991989136,"p99":2.41599988937378},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.02400004863739,"median":0.35699999332428,"p95":0.441000014543533,"p99":0.535000026226044},"resolution":"1080p","session":2,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.456,"median":2.845,"p95":2.911,"p99":2.965},"frames":2891,"gpu_ms":{"max":2.58999991416931,"median":2.38199996948242,"p95":2.41000008583069,"p99":2.41899991035461},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.12699997425079,"median":0.361000001430511,"p95":0.503000020980835,"p99":0.620000004768372},"resolution":"1080p","session":2,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":16.941,"median":8.464,"p95":8.611,"p99":8.775},"frames":944,"gpu_ms":{"max":8.6560001373291,"median":8.05599975585938,"p95":8.22900009155273,"p99":8.25699996948242},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.0440000295639,"median":0.398000001907349,"p95":0.569000005722046,"p99":0.709999978542328},"resolution":"4K","session":2,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":16.676,"median":8.484,"p95":8.623,"p99":8.717},"frames":942,"gpu_ms":{"max":8.6879997253418,"median":8.07499980926514,"p95":8.24699974060059,"p99":8.26799964904785},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.779999971389771,"median":0.384999990463257,"p95":0.523000001907349,"p99":0.609000027179718},"resolution":"4K","session":2,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 46 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 293 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.826,"median":2.444,"p95":2.65,"p99":2.709},"frames":3266,"gpu_ms":{"max":2.23600006103516,"median":1.95799994468689,"p95":2.15199995040894,"p99":2.16199994087219},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.644999980926514,"median":0.349999994039536,"p95":0.479000002145767,"p99":0.569000005722046},"resolution":"1080p","session":2,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.754,"median":7.415,"p95":7.562,"p99":7.624},"frames":1078,"gpu_ms":{"max":7.28399991989136,"median":7.03000020980835,"p95":7.19000005722046,"p99":7.21400022506714},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.08800005912781,"median":0.381999999284744,"p95":0.513999998569489,"p99":0.61599999666214},"resolution":"4K","session":2,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 22 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 288 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.348,"median":2.959,"p95":3.046,"p99":3.267},"frames":2774,"gpu_ms":{"max":2.80100011825562,"median":2.49300003051758,"p95":2.67199993133545,"p99":2.71099996566772},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.40499997138977,"median":0.448000013828278,"p95":0.582000017166138,"p99":0.722000002861023},"resolution":"1080p","session":2,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.655,"median":2.875,"p95":3.018,"p99":3.055},"frames":2827,"gpu_ms":{"max":2.73000001907349,"median":2.40599989891052,"p95":2.56699991226196,"p99":2.67600011825562},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.919000029563904,"median":0.435000002384186,"p95":0.533999979496002,"p99":0.603999972343445},"resolution":"1080p","session":2,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":16.141,"median":7.858,"p95":8.153,"p99":8.222},"frames":1014,"gpu_ms":{"max":7.88500022888184,"median":7.44199991226196,"p95":7.68200016021729,"p99":7.73600006103516},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.916000008583069,"median":0.46900001168251,"p95":0.681999981403351,"p99":0.792999982833862},"resolution":"4K","session":2,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":15.675,"median":7.839,"p95":7.989,"p99":8.061},"frames":1018,"gpu_ms":{"max":7.71600008010864,"median":7.42799997329712,"p95":7.5149998664856,"p99":7.62799978256226},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.59800004959106,"median":0.46900001168251,"p95":0.718999981880188,"p99":0.977999985218048},"resolution":"4K","session":2,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 42 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 36 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 277 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.774,"median":2.836,"p95":2.905,"p99":3.148},"frames":2903,"gpu_ms":{"max":2.59500002861023,"median":2.35199999809265,"p95":2.53200006484985,"p99":2.54699993133545},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.5,"median":0.449999988079071,"p95":0.591000020503998,"p99":0.779999971389771},"resolution":"1080p","session":2,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":15.319,"median":7.395,"p95":7.578,"p99":7.795},"frames":1079,"gpu_ms":{"max":7.4520001411438,"median":6.99900007247925,"p95":7.11299991607666,"p99":7.31400012969971},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.29200005531311,"median":0.532999992370605,"p95":0.800000011920929,"p99":0.949000000953674},"resolution":"4K","session":2,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 30 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 283 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.36,"median":2.834,"p95":2.929,"p99":2.997},"frames":2906,"gpu_ms":{"max":2.75999999046326,"median":2.34800004959106,"p95":2.5220000743866,"p99":2.53500008583069},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.23699998855591,"median":0.435000002384186,"p95":0.568000018596649,"p99":0.768999993801117},"resolution":"1080p","session":3,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":15.38,"median":7.399,"p95":7.601,"p99":7.765},"frames":1078,"gpu_ms":{"max":7.44799995422363,"median":7.0019998550415,"p95":7.16200017929077,"p99":7.29099988937378},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.08500003814697,"median":0.476999998092651,"p95":0.671999990940094,"p99":0.815999984741211},"resolution":"4K","session":3,"tier":"max","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 26 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 288 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.869,"median":2.891,"p95":3.056,"p99":3.13},"frames":2793,"gpu_ms":{"max":2.74900007247925,"median":2.41599988937378,"p95":2.67499995231628,"p99":2.71799993515015},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.57599997520447,"median":0.435000002384186,"p95":0.554000020027161,"p99":0.662999987602234},"resolution":"1080p","session":3,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.703,"median":2.901,"p95":3.048,"p99":3.105},"frames":2805,"gpu_ms":{"max":2.72900009155273,"median":2.43099999427795,"p95":2.58800005912781,"p99":2.7039999961853},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.0789999961853,"median":0.428999990224838,"p95":0.552999973297119,"p99":0.662000000476837},"resolution":"1080p","session":3,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":16.091,"median":7.861,"p95":8.016,"p99":8.208},"frames":1016,"gpu_ms":{"max":7.77500009536743,"median":7.44199991226196,"p95":7.59100008010864,"p99":7.73400020599365},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.24800002574921,"median":0.46900001168251,"p95":0.666999995708466,"p99":0.769999980926514},"resolution":"4K","session":3,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"max","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":15.671,"median":7.856,"p95":8.002,"p99":8.106},"frames":1016,"gpu_ms":{"max":7.78499984741211,"median":7.44099998474121,"p95":7.51800012588501,"p99":7.64300012588501},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.09399998188019,"median":0.488000005483627,"p95":0.691999971866608,"p99":0.814000010490417},"resolution":"4K","session":3,"tier":"max","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 44 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 42 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 36 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 313 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.792,"median":2.433,"p95":2.653,"p99":2.699},"frames":3276,"gpu_ms":{"max":2.23499989509583,"median":1.94900000095367,"p95":2.1489999294281,"p99":2.17300009727478},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.656000018119812,"median":0.340000003576279,"p95":0.432000011205673,"p99":0.48199999332428},"resolution":"1080p","session":3,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.559,"median":7.409,"p95":7.556,"p99":7.596},"frames":1079,"gpu_ms":{"max":7.52899980545044,"median":7.02600002288818,"p95":7.17899990081787,"p99":7.20900011062622},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.33200001716614,"median":0.41499999165535,"p95":0.572000026702881,"p99":0.708999991416931},"resolution":"4K","session":3,"tier":"high","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 28 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 301 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":5.245,"median":2.837,"p95":2.923,"p99":2.964},"frames":2903,"gpu_ms":{"max":2.50600004196167,"median":2.37700009346008,"p95":2.40400004386902,"p99":2.41100001335144},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.930000007152557,"median":0.356000006198883,"p95":0.451999992132187,"p99":0.570999979972839},"resolution":"1080p","session":3,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":5.354,"median":2.836,"p95":2.918,"p99":2.965},"frames":2904,"gpu_ms":{"max":2.5699999332428,"median":2.37400007247925,"p95":2.40000009536743,"p99":2.40899991989136},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.24899995326996,"median":0.360000014305115,"p95":0.490000009536743,"p99":0.598999977111816},"resolution":"1080p","session":3,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":16.763,"median":8.457,"p95":8.609,"p99":8.699},"frames":945,"gpu_ms":{"max":8.54899978637695,"median":8.04699993133545,"p95":8.23099994659424,"p99":8.25100040435791},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.901000022888184,"median":0.38400000333786,"p95":0.550000011920929,"p99":0.65200001001358},"resolution":"4K","session":3,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"high","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":16.639,"median":8.475,"p95":8.623,"p99":8.77},"frames":943,"gpu_ms":{"max":8.70300006866455,"median":8.06400012969971,"p95":8.24400043487549,"p99":8.28299999237061},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.763000011444092,"median":0.382999986410141,"p95":0.529999971389771,"p99":0.596000015735626},"resolution":"4K","session":3,"tier":"high","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 52 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 36 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 52 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 283 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.52,"median":2.225,"p95":2.461,"p99":2.525},"frames":3572,"gpu_ms":{"max":2.0090000629425,"median":1.77100002765656,"p95":1.97399997711182,"p99":1.99199998378754},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.893999993801117,"median":0.333999991416931,"p95":0.465000003576279,"p99":0.538999974727631},"resolution":"1080p","session":3,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":13.819,"median":6.772,"p95":6.938,"p99":6.998},"frames":1183,"gpu_ms":{"max":6.76800012588501,"median":6.30200004577637,"p95":6.58699989318848,"p99":6.62099981307983},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.870999991893768,"median":0.391999989748001,"p95":0.517000019550323,"p99":0.592999994754791},"resolution":"4K","session":3,"tier":"low","wake":false,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 22 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 280 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":4.685,"median":2.292,"p95":2.527,"p99":2.59},"frames":3462,"gpu_ms":{"max":2.07800006866455,"median":1.84300005435944,"p95":2.04500007629395,"p99":2.05900001525879},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.689000010490417,"median":0.333000004291534,"p95":0.446000009775162,"p99":0.493999987840652},"resolution":"1080p","session":3,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":4.595,"median":2.275,"p95":2.516,"p99":2.581},"frames":3484,"gpu_ms":{"max":2.11999988555908,"median":1.83599996566772,"p95":2.03699994087219,"p99":2.04999995231628},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.670000016689301,"median":0.337999999523163,"p95":0.456999987363815,"p99":0.515999972820282},"resolution":"1080p","session":3,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"flying","frame_ms":{"max":14.139,"median":7.009,"p95":7.166,"p99":7.208},"frames":1143,"gpu_ms":{"max":7.0,"median":6.5310001373291,"p95":6.80200004577637,"p99":6.83599996566772},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":1.36099994182587,"median":0.381000012159348,"p95":0.522000014781952,"p99":0.617999970912933},"resolution":"4K","session":3,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+WAKE1079 {"actual_quality":"low","adapter":"NVIDIA GeForce RTX 5080","case":"held","frame_ms":{"max":14.004,"median":7.007,"p95":7.168,"p99":7.265},"frames":1143,"gpu_ms":{"max":7.16499996185303,"median":6.54400014877319,"p95":6.80999994277954,"p99":6.85099983215332},"living_sha256":"8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db","render_cpu_ms":{"max":0.772000014781952,"median":0.368000000715256,"p95":0.537999987602234,"p99":0.617999970912933},"resolution":"4K","session":3,"tier":"low","wake":true,"wake_sha256":"a0a6164e75db79f7e4d30166606a923e74aa9f072c0e7a65d4daaa7e53bc9e17"}
+[attach] battle x05 V1b_r_23: skipped 0; rcs hp 44 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 50 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 38 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle x011 I11_37: skipped 0; rcs hp 0 ray 36 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7ef848527bc2467ab0fdd2a2432bd186\godot-profile-5c59c6b93fbf4e8c9c3c58391920b4a9
+GPU: released solo claim d3b3c3b3-1e18-4d35-ab1d-8a8ce9c192a8

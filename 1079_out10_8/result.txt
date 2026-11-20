@@ -1,0 +1,22 @@
+start run 10 attempt 8 Fri 11/20/2026  0:43:54.59 
+run folder C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run8 
+out folder C:\Users\rcbai\Downloads\voidsworn_test\opus1079\out10_8 
+commit e74bb4e84294a227bde1139a7837fe1637065d8d 
+godot tree b0c982a9f605075a84d6399610b60e0326418d50 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1079\profile_8\appdata 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+copied ships, gen and import cache from build\godot  0:45:32.74 
+import ok  0:55:53.99 
+clip frames ok (c170 and c120)  0:59:03.43 
+stills start  0:59:03.43 
+stills ok  1:01:30.81 
+storm fixture timing ok  1:15:41.97 
+scene 207 gate ok  1:21:29.45 
+real options unchanged 
+all done 
