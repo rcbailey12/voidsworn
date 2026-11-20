@@ -173,6 +173,22 @@ function Get-RelayReceipts($mirror) {
   $script:relayReceipts = $set
   return $set
 }
+# helper_clone.ps1's own small files at the top of a helper folder (lease, attempt ID, commit, ship copy record): they
+# describe the folder and hold no results, so they never keep it (issue 1180, PR 1275).
+$helperBookkeeping = @('.voidsworn-run-active', 'attempt.txt', 'repo_commit.txt', 'ships_copied.txt')
+function Remove-HelperFolder($dir, $lease) {
+  # Everything but the lease goes while the janitor still holds it. Then the lease file and the empty folder go without
+  # recursion: if a new run took the lease or wrote anything in that moment, the delete fails and the folder is kept.
+  $leasePath = Join-Path $dir.FullName '.voidsworn-run-active'
+  foreach ($item in @($dir.EnumerateFileSystemInfos())) {
+    if ($item.FullName -eq $leasePath) { continue }
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    if ($item -is [IO.DirectoryInfo]) { Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction Stop }
+    else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
+  }
+  if ($lease) { $lease.Dispose(); [IO.File]::Delete($leasePath) }
+  [IO.Directory]::Delete($dir.FullName, $false)
+}
 function Test-RelayedResults($dir, $mirror) {
   # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
   # and (2) everything else in it is a checkout Git shows as rebuildable with all history pushed. Anything else keeps the
@@ -186,6 +202,7 @@ function Test-RelayedResults($dir, $mirror) {
     foreach ($item in $dir.EnumerateFileSystemInfos()) {
       if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @($item.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
       elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
+      elseif ($helperBookkeeping -contains $item.Name) { continue }
       else { $other += $item }
     }
     while ($pending.Count) {
@@ -222,8 +239,14 @@ function Assert-HelperScratchInactive($dir) {
   if ($lease) { $lease.Dispose() }
 }
 function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner, [switch]$legacy, [switch]$helper, $mirror) {
-  $size = 'size unavailable'; $issueLock = $null
+  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false
   try {
+    if ($helper) {
+      # Taken first and held through the decision and the deletion, so helper_clone cannot start a run here meanwhile
+      # (Artoo, PR 1275). A held lease keeps the folder once its size is logged.
+      try { $helperLease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
+      catch { $leaseBusy = $true }
+    }
     $busy = ''
     if ($issue -and $activeLegacy -contains $issue) { $busy = "issue #$issue has an active older runner" }
     elseif ($issue) {
@@ -241,6 +264,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($listed) { throw $listed }
     foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
     foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
+    if ($leaseBusy) { throw 'a helper run holds this folder''s lease' }
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
@@ -280,14 +304,18 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       if ($stats.Unreadable.Count) {
         Remove-CleanupReadable $dir $stats.Unreadable
         $action = "removed all but $($stats.Unreadable.Count) folders another account owns:"
-      } else { Remove-CleanupDirectory $dir; $action = 'removed' }
+      } elseif ($helper) { Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed' }
+      else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
     Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
   }
-  finally { if ($issueLock) { $issueLock.Dispose() } }
+  finally {
+    if ($issueLock) { $issueLock.Dispose() }
+    if ($helperLease) { $helperLease.Dispose() }
+  }
 }
 
 $trigger = $args[0]

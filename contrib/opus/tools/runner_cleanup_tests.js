@@ -367,7 +367,9 @@ try {
     for (const [file, text] of Object.entries(files)) write(path.join(dir, file), text);
     return dir;
   };
-  const helperRelayed = helperFolder('opus905', { 'out/result.txt': 'opus905 result relayed' });
+  // helper_clone's own top-level files (lease, attempt, commit, copy record) never keep a folder (PR 1275).
+  const helperRelayed = helperFolder('opus905', { 'out/result.txt': 'opus905 result relayed', '.voidsworn-run-active': '',
+    'attempt.txt': `${'9'.repeat(32)}\n`, 'repo_commit.txt': `${'a'.repeat(40)}\n`, 'ships_copied.txt': '' });
   relay(path.join(helperRelayed, 'out', 'result.txt'));
   makeCopy('repo', 2, helperRelayed);
   dateTree(helperRelayed, 30);
@@ -381,6 +383,11 @@ try {
   relay(path.join(helperSibling, 'out', 'result.txt'));
   dateTree(helperSibling, 30);
   const helperNoOut = scratch(pc, 'opus904', 30);
+  // A relayed helper whose lease a helper_clone run holds: the janitor cannot take it, so the folder stays (Artoo, PR 1275).
+  const helperLeased = helperFolder('opus910', { 'out/result.txt': 'opus910 result relayed', '.voidsworn-run-active': '' });
+  relay(path.join(helperLeased, 'out', 'result.txt'));
+  makeCopy('repo', 2, helperLeased);
+  dateTree(helperLeased, 30);
   // A relayed helper whose clone holds an older ship file that differs from the newer shared copy: no archive on this path,
   // so the folder is kept (Artoo on PR 1266).
   const helperShip = helperFolder('opus908', { 'out/result.txt': 'opus908 result relayed' });
@@ -469,17 +476,18 @@ try {
   function runJanitor(trigger = '', heldPath = lockPath, extra = {}) {
     const command = `$lock = [IO.File]::Open($env:JANITOR_PROOF_LOCK, 'OpenOrCreate', 'ReadWrite', 'None'); ` +
       `if ($env:JANITOR_PROOF_ACTIVE) { $active = [IO.File]::Open($env:JANITOR_PROOF_ACTIVE, 'Open', 'Read', 'None') }; ` +
-      `try { & $env:JANITOR_PROOF_SCRIPT ${trigger}; exit $LASTEXITCODE } finally { $lock.Dispose(); if ($active) { $active.Dispose() } }`;
+      `$helper = [IO.File]::Open($env:JANITOR_PROOF_HELPER, 'OpenOrCreate', 'ReadWrite', 'None'); ` +
+      `try { & $env:JANITOR_PROOF_SCRIPT ${trigger}; exit $LASTEXITCODE } finally { $lock.Dispose(); $helper.Dispose(); if ($active) { $active.Dispose() } }`;
     return execute(windows ? 'powershell.exe' : 'pwsh',
       ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command], undefined,
       { JANITOR_PROOF_SCRIPT: janitor, JANITOR_PROOF_LOCK: heldPath, PC_RUN_SCRATCH: '', PC_TEST_GH_DB: '',
-        JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(),
+        JANITOR_PROOF_ACTIVE: activeMarker, JANITOR_PROOF_HELPER: path.join(helperLeased, '.voidsworn-run-active'), PC_TEST_JANITOR_NOW: fixtureNow.toISOString(),
         PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"\nfixture.exe ${legacyNear}-other`, ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, ...recover];
-  const preserve = [boardKept, worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -534,6 +542,7 @@ try {
   assert.match(decision(dry, helperSibling, 'would keep'), /1 files outside out are not in a rebuildable checkout/);
   assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
+  assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
   assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
   assert.match(dry, /Board keep list: 1 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);

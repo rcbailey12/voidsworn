@@ -323,7 +323,17 @@ verifies and the zip entries match before it removes the copy. An unreadable che
 keeps the copy. Salvage folders are kept. Why: old job copies can be large and still hold work worth saving. Set: Ryan,
 Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
 
-Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+Helper PC jobs get their checkout from `tools\pc\helper_clone.bat <job folder> <branch> [ships] [job steps]`: one `git clone --local`
+of the shared `repo-mirror.git` per helper folder (objects shared, no new download), reused on later runs without ever
+resetting local work, and ship files copied and checked by get_ship_files.bat, never hardlinked, because tools rewrite
+them in place. A helper .bat never clones from GitHub itself (issue 1180, Board Nov 20). The helper runs its job steps
+through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease until they end, so no second run can
+switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
+and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
+Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
+removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
 token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
 a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
@@ -335,7 +345,10 @@ older, are removed as links and never followed, and the log names each link's ta
 names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
 only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
-all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. A ship file with no twin in the shared build
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
+own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
+other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and is archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
