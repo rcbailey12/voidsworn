@@ -18,6 +18,11 @@ the commit; every picture is stamped "built from <commit>". The pack is not used
 5. Commit all of it to contrib/opus/reviews/council_1120/pack/ on branch claude/project-thread-8hcjwy, stills as JPG at 720 px
    tall or less, clips as short MP4s, each named with its stage and commit. Muse and Fable both read it there.
 
+Ship revisions in the build: B20_11 (Chorus C13 round G), I8_37 (Glasswright CD5) and V14_23 (Sunward S9) match publish
+receipts. B19_11, B21_11 and H4_11 are a PC snapshot with no publish receipt, and B19_11 and B21_11 are mid Chorus rollout:
+label them "PC snapshot, not an approved revision" in the pack, and no seat treats them as finished art (Artoo, PR 1343).
+The Board checks the packaged files against the manifest at the final build pin before the pack goes out.
+
 Sound is not reviewed. Clips go to Fable and Muse with the audio stripped.
 
 ## Text
