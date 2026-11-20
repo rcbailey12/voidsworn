@@ -18,6 +18,10 @@ for (const [name, text] of [['janitor_salvage.ps1', salvage], ['work_issue.ps1',
     `${name}: every redirected-stdin start goes through Start-Utf8InputProcess`);
 }
 assert.match(salvage, /\$child = Start-Utf8InputProcess \$start/);
+for (const [name, text] of [['janitor_salvage.ps1', salvage], ['work_issue.ps1', work]]) {
+  assert.doesNotMatch(text, /StandardInput\.Write(?:Line)?\(/, `${name}: stdin text goes through Write-Utf8Input, not the console-encoded writer`);
+  assert.match(text, /^function Write-Utf8Input\(/m, `${name} defines Write-Utf8Input`);
+}
 assert.match(work, /\$process = Start-Utf8InputProcess \$start/);
 
 const windows = process.platform === 'win32';
@@ -56,5 +60,23 @@ try {
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /salvage ok/, r.stdout + r.stderr);
   assert.equal(git('rev-parse', 'refs/salvage/fixture'), head, 'git took the stdin command without a byte order mark');
+  // Artoo on PR 1345: a BOM-free legacy page (437) must not change non-ASCII text. git hashes exactly the bytes it gets.
+  const text = 'Glasswright caf\u00e9 \u00fc\u00df \u00e5 salvage';
+  const blob = Buffer.from(text + '\n', 'utf8');
+  const expected = require('node:crypto').createHash('sha1')
+    .update(Buffer.concat([Buffer.from('blob ' + blob.length + '\0'), blob])).digest('hex');
+  const legacy = [
+    '. $env:FIX_COMMON cleanup-library',
+    '. $env:FIX_SALVAGE',
+    "try { [Console]::InputEncoding = [Text.Encoding]::GetEncoding(437) } catch { Write-Host 'console encoding fixed by host' }",
+    '$text = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:FIX_TEXT))',
+    "$out = @(Salvage-Git @('-C',$env:FIX_REPO,'hash-object','--stdin') @($text))",
+    "Write-Host ('hash=' + $out[0])"
+  ].join('\n');
+  const l = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', legacy],
+    { encoding: 'utf8', env: { ...process.env, FIX_REPO: repo, FIX_TEXT: Buffer.from(text, 'utf8').toString('base64'),
+      FIX_COMMON: path.join(pc, 'runner_common.ps1'), FIX_SALVAGE: path.join(pc, 'janitor_salvage.ps1') }, timeout: 60000 });
+  assert.equal(l.status, 0, l.stdout + l.stderr);
+  assert.match(l.stdout, new RegExp('hash=' + expected), 'non-ASCII stdin reaches git as UTF-8 under code page 437: ' + l.stdout + l.stderr);
 } finally { fs.rmSync(dir, { recursive: true, force: true }); }
-console.log('PASS salvage stdin: git accepts the janitor\'s piped commands under a BOM console encoding');
+console.log('PASS salvage stdin: git gets BOM-free UTF-8 under a BOM page (65001) and a legacy page (437), non-ASCII included');
