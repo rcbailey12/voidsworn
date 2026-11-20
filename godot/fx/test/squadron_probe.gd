@@ -297,6 +297,21 @@ func _add_trial_entries() -> void:
 		var code := path.get_base_dir().get_file()   # export/<code>/manifest_entry.json; the entry's own glb name wins
 		for fname in entry.get("files", {}):
 			if str(fname).ends_with(".glb"): code = str(fname).get_basename()
+		# provenance (Artoo, PR 1382): the installed glb is this entry's (sha256 from the export), and the scene the loader
+		# opens was imported from it (not older than the glb), so a same-code scene from an earlier round cannot pass
+		var glb := "res://assets/ships/%s/%s.glb" % [code, code]
+		var scn: String = WING.ship_cache_dir.path_join(code + ".scn")
+		var want_sha := str(entry.get("files", {}).get(code + ".glb", {}).get("sha256", ""))
+		var got_sha := FileAccess.get_sha256(glb)
+		if want_sha == "" or got_sha != want_sha:
+			push_error("SQUADRON_ENTRIES: %s sha256 %s, the entry says %s" % [glb, got_sha, want_sha])
+			PG.note("trial glb " + code)
+			continue
+		if not FileAccess.file_exists(scn) or FileAccess.get_modified_time(scn) < FileAccess.get_modified_time(glb):
+			push_error("SQUADRON_ENTRIES: %s is missing or older than %s" % [scn, glb])
+			PG.note("trial scene " + code)
+			continue
+		print("SQUADRON_ENTRIES verified %s glb sha256 %s, scene %s imported after it" % [code, got_sha, scn])
 		manifest["ships"][code] = entry
 		print("SQUADRON_ENTRIES added %s (%s|%s)" % [code, entry.get("faction", ""), entry.get("wing_role", "")])
 	var out_path := "user://squadron_probe_manifest.json"
