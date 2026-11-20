@@ -32,12 +32,16 @@ var screen_shift := 0.0
 
 
 # Issue 1264: the far plane follows the zoom and pan, so the backdrop system is never cut off. The worst case from the
-# board centre is a giant planet's ring: world.gd DIST 3300 + 2.3 ring radii of 3300 * sin(0.18) = 4659 units (moons
+# board centre is a giant planet's ring at the largest framing a stop can give (issue 1272: a boss stop scales the
+# planet's angle by up to PLANET_FRAME_MAX): world.gd DIST 3300 + 2.3 ring radii of 3300 * sin(0.18 * 1.5) = 5325 units (moons
 # reach 1.15 * 3300 * (1 + sin(0.04)) = 3947, mountains about 2620). A camera r units out, looking at t (inside bounds),
 # is at most r + |t| from the board origin, and the board centre is at most |bounds| from the origin; depth never
 # exceeds straight-line distance. godot/world/test/backdrop_clip_check.gd builds ringed giants and holds this to the
 # real meshes. Shadows (directional_shadow_max_distance 600) and volumetric fog (its own length) do not key off far.
-const BACKDROP_REACH := 4700.0
+const BACKDROP_REACH := 5400.0
+# The largest planet framing scale any stop may use (world_sky.gd STOP_MOOD "frame" and STOP_FRAMES "scale", issue 1272).
+# backdrop_clip_check fails if a stop table ever asks for more, and builds every ringed planet at this scale.
+const PLANET_FRAME_MAX := 1.5
 const FAR_MARGIN := 100.0
 # Issue 1264: ROCK_SHADER fades a rock before this live near plane cuts it (global shader uniform, project.godot).
 const NEAR_GLOBAL := &"cam_near"

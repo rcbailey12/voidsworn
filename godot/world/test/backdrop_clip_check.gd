@@ -1,7 +1,8 @@
 extends SceneTree
 # Issue 1264: the backdrop planet, its rings and its moons are never cut by the battle camera's far plane, and a near
 # rock fades out before the live near plane can slice it open.
-# 1. Builds the system (world.gd system) for both ringed giant planets over several seeds and yaws, with the board
+# 1. Builds the system (world.gd system) for every ringed planet in every palette table, at frame scale 1 and at
+#    camera_rig.gd PLANET_FRAME_MAX (issue 1272 boss framing), over several seeds and yaws, with the board
 #    centre off the origin, and puts the camera rig at its widest zoom (r 900), panned to every corner of its bounds,
 #    orbiting all the way round and over its full tilt. Every vertex of the planet, ring, atmosphere and moon meshes
 #    must sit nearer than the rig's far plane in view depth.
@@ -73,31 +74,44 @@ func _run() -> void:
 	rig.bounds = Vector2(320, 260)
 	root.add_child(rig)
 	rig.current = true
+	# Every ringed planet in every palette table (PLANETS, PLANETS_ALT and any later one), giants and the rest.
 	var ringed: Array = []
-	for i in SKY.PLANETS.size():
-		var P: Dictionary = SKY.PLANETS[i]
-		if int(P["kind"]) <= 1 and bool(P.get("rings", false)):
-			ringed.append(P)
-	_check(ringed.size() >= 1, "no ringed giant planet in world_sky.gd PLANETS")
+	var consts: Dictionary = (load("res://world/world_sky.gd") as Script).get_script_constant_map()
+	for key in consts:
+		if not String(key).begins_with("PLANETS") or not (consts[key] is Array):
+			continue
+		for P in consts[key]:
+			if P is Dictionary and bool(P.get("rings", false)):
+				ringed.append(P)
+	_check(ringed.size() >= 2, "fewer than two ringed planets found in world_sky.gd's palette tables")
+	# Issue 1272 stop framing: no stop may frame the planet larger than the rig's far plane was sized for.
+	var biggest := 1.0
+	for row in (consts.get("STOP_FRAMES", []) as Array):
+		biggest = maxf(biggest, float(row.get("scale", 1.0)))
+	var mood: Dictionary = consts.get("STOP_MOOD", {})
+	for k in mood:
+		biggest = maxf(biggest, float(mood[k].get("frame", 1.0)))
+	_check(biggest <= RIG.PLANET_FRAME_MAX, "a stop frames the planet at %.2f, past camera_rig.gd PLANET_FRAME_MAX %.2f" % [biggest, RIG.PLANET_FRAME_MAX])
 	var cases := 0
 	var worst := 0.0
 	for P in ringed:
-		for seed in [3, 41, 777, 4103]:
-			for yaw in [0.0, 1.3, 2.9, 4.4]:
-				var world: Node3D = WORLD.new()
-				world._baker = StubBaker.new()
-				world.add_child(world._baker)
-				root.add_child(world)
-				world.setting = {"planet": P, "seed": seed, "planet_i": 0}
-				world._yaw = yaw
-				world._center = Vector3(40, 0, -30)
-				var first := world.get_child_count()
-				world.system(true)
-				var pts := _points(world, first)
-				_check(pts.size() > 1000, "seed %d yaw %.1f: the system built no meshes" % [seed, yaw])
-				worst = maxf(worst, _far_case(rig, pts, "seed %d yaw %.1f" % [seed, yaw]))
-				cases += 1
-				world.free()
+		for frame in [1.0, RIG.PLANET_FRAME_MAX]:
+			for seed in [3, 41, 777, 4103]:
+				for yaw in [0.0, 1.3, 2.9, 4.4]:
+					var world: Node3D = WORLD.new()
+					world._baker = StubBaker.new()
+					world.add_child(world._baker)
+					root.add_child(world)
+					world.setting = {"planet": P, "seed": seed, "planet_i": 0, "frame_scale": frame}
+					world._yaw = yaw
+					world._center = Vector3(40, 0, -30)
+					var first := world.get_child_count()
+					world.system(true)
+					var pts := _points(world, first)
+					_check(pts.size() > 1000, "seed %d yaw %.1f: the system built no meshes" % [seed, yaw])
+					worst = maxf(worst, _far_case(rig, pts, "kind %d frame %.1f seed %d yaw %.1f" % [int(P["kind"]), frame, seed, yaw]))
+					cases += 1
+					world.free()
 	print("far plane: %d ringed systems, deepest backdrop point at %.0f%% of the far plane" % [cases, worst * 100.0])
 	_check(worst > 0.5, "the far check saw no backdrop (deepest %.2f of far)" % worst)
 
