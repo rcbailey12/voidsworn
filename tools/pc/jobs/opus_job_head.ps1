@@ -148,12 +148,12 @@ switch ($Action) {
       else { $matched[$code] = $true }
       $lines += "$code $stamp $res"
     }
-    if (-not $matched.Count) { throw "no ship in $manPath has a copied glb that matches its cache" }
     foreach ($need in @($C -split '[\s,]+' | Where-Object { $_ })) {
       if (-not $matched.ContainsKey($need)) { $bad += "$need is needed by this job but is not a copied ship matching its cache" }
     }
     [IO.File]::WriteAllLines($B, [string[]]($lines | Sort-Object))
     if ($bad.Count) { $bad | ForEach-Object { Write-Output "ship mismatch: $_" }; throw "$($bad.Count) ship problem(s); was a ship published during the copy?" }
+    if (-not $matched.Count) { throw "no ship in $manPath has a copied glb that matches its cache" }
     Write-Output "ships match their cache: $($matched.Count) hull(s), $noGlb older entr(ies) with no ship folder listed unchecked; identity in $B"
   }
   'hashes' {
