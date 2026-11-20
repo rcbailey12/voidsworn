@@ -1733,36 +1733,36 @@
    "turrets": 4,
    "files": {
     "V1b_r_23.glb": {
-     "bytes": 13271080,
-     "sha256": "e5686f47f2e6c45235f2eb4ca5c7fc3c7d7a17855304a92ecfb708ae6587615a"
+     "bytes": 13087572,
+     "sha256": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498"
     },
     "V1b_r_23_base.jpg": {
-     "bytes": 1653241,
-     "sha256": "243df4319f41a5d277e07ba80e1edb840f567b21397f2ccaf305cfc8dd0e6519"
+     "bytes": 1658015,
+     "sha256": "69221e4e74f39451f605197e413eae26d0516852d8e2f2d709198e8e8d679a49"
     },
     "V1b_r_23_glow_emission.jpg": {
-     "bytes": 938731,
-     "sha256": "be0907037ed4baa9635f833ff60408b0f3e723fb372d61c8931205b8be3a9354"
+     "bytes": 552507,
+     "sha256": "6906e4e202754c49c128632af31901255fa36ba4acdbf04cec5e21624ec35e95"
     },
-    "V1b_r_23_normal.jpg": {
-     "bytes": 527520,
-     "sha256": "c7e868ae1687f9eea466984abbf1a8f6cbd88f645733ab3765de8b61b7aff420"
+    "V1b_r_23_normal.png": {
+     "bytes": 4219518,
+     "sha256": "cf5fddad94f3da021445dbac0cca13e8e2cf0a33cbe80606a639ce7677f2fa97"
     },
-    "V1b_r_23_orm.jpg": {
-     "bytes": 2008858,
-     "sha256": "f3596754c4dcf51be0fa2111f5bb53fe03d2d14c775b4f622952361cfe1a241c"
+    "V1b_r_23_orm.png": {
+     "bytes": 8302541,
+     "sha256": "32234bab62ad1156f83e6bec1e697de6364b3ad1713b35baf01e4d21248182f6"
     },
     "V1b_r_23_parts_base.jpg": {
-     "bytes": 1145097,
-     "sha256": "a0b1ed987072c5b7f0790028e25604bc5c86cc6a16629bac6997aac96d160bfa"
+     "bytes": 1167893,
+     "sha256": "256b077ff3832cff7098ebf707873710f5ec9ee5dd8d5d9f8126092b70dfbbce"
     },
-    "V1b_r_23_parts_normal.jpg": {
-     "bytes": 292006,
-     "sha256": "75b6607f79bede829adbf09e9e48b280dc23884ea103a56b619cb85a0981188f"
+    "V1b_r_23_parts_normal.png": {
+     "bytes": 2962016,
+     "sha256": "cb1cff4ee8367f45a5c5fb217c780a0739485c123393680008edc34501f6f8ce"
     },
-    "V1b_r_23_parts_orm.jpg": {
-     "bytes": 1705233,
-     "sha256": "939d8b070a8a96c5050b82716290d94b9045f47b777871756189503306a80e5f"
+    "V1b_r_23_parts_orm.png": {
+     "bytes": 6797784,
+     "sha256": "7879c84506302cf58a1e7e2276fd4ea1ae1a187fcef1d3685829702f0cd5ac83"
     }
    },
    "pc_path": "godot/assets/ships/V1b_r_23/"

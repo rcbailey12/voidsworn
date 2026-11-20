@@ -335,6 +335,8 @@ def build(K):
     # and profiles, and the ember in the fin slats (glow='slats': three to five glowing fins at least 0.26 apart, was 0.17, with
     # the dark iron core between them, the fins reaching 60 percent as far out), never a whole lit tower, so the stripes read
     # from the battle camera's 34 degrees and from above (about half the old towers' lit area at both cameras)
+    # R347 (Nov 20, PR 1164): the shared glow='slats' now lights the core the full height between dark iron ribs 0.15 apart;
+    # S8 takes it unchanged (painted run 1158_shipjob2 at 291dfcac). The notes below still describe the Nov 19 fins.
     SPIRE_SCALE = 0.7
     SPIRES = [(-3.75, 1.6, 0.7, 0), (-4.6, 2.0, 0.72, 3), (-5.45, 2.35, 0.72, 1), (-6.3, 2.6, 0.74, 2), (-7.15, 2.35, 0.72, 1),
               (-8.0, 2.0, 0.72, 3), (-8.85, 1.55, 0.62, 0)]
