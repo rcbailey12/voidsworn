@@ -921,7 +921,9 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var capital: bool = s.death_tier == "capital" or int(s.get_meta("death_cut_count", 1)) >= 2
 	# 1. uneven pieces, in order along x
 	var sizes: Array = []
-	if capital:
+	# issue 1077 (prototype): Ryan on pass 5, one crack: a strained death breaks once, so a capital splits in two like a cruiser
+	var story: bool = fx != null and "death_story" in fx and fx.death_story
+	if capital and not story:
 		sizes = [0.50 + r.randf_range(-0.02, 0.02), 0.30 + r.randf_range(-0.02, 0.02)]
 		sizes.append(1.0 - float(sizes[0]) - float(sizes[1]))
 		for i in range(sizes.size() - 1, 0, -1):
@@ -936,6 +938,12 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var authored: Array = seam_data if seam_data is Array else []
 	var transverse: Array = authored.filter(func(b): return not b.has("span"))
 	transverse.sort_custom(func(a, b): return a["at"].x < b["at"].x)
+	if story and transverse.size() > 1:
+		# one crack: the authored joint nearest the core (the core goes off on it)
+		var keep = transverse[0]
+		for t in transverse:
+			if absf(float(t["at"].x) - h.core.x) < absf(float(keep["at"].x) - h.core.x): keep = t
+		transverse = [keep]
 	if not transverse.is_empty():
 		sizes.clear()
 		var prev := x0
@@ -2401,6 +2409,7 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 		m = (fx.dstate["tear_strain_mat"] as ShaderMaterial).duplicate()
 		_strain_uniforms(m, strain, T)
 		m.set_shader_parameter("fx_hair", strain["hair"])
+		m.set_shader_parameter("fx_jag", strain["jag"])
 	m.set_shader_parameter("open_a", Vector2(T + tl.tear_open, T + tl.tear_full))
 	m.set_shader_parameter("cut_at", at)
 	m.set_shader_parameter("cut_axis", axis)
@@ -2462,6 +2471,8 @@ static func _break_lines(job: Dictionary) -> Array:
 const STRAIN_AMP := 0.010      # of the length: the bulge at full strain (0.0045 did not read in the PC clip at 1236bbc3)
 const STRAIN_BAND := 0.05      # of the length: half the width of the buckled band each side of a line
 const STRAIN_RIPPLE := 0.06    # of the length: the ripple's wavelength
+const STRAIN_JAG := 0.03       # of the length: how far the tear wanders off its straight cut (Ryan on pass 4B)
+const STRAIN_PLATE := 0.045    # of the length: the plate size it steps across
 const STRAIN_GROANS := {"capital": [0.28, 0.68, 1.02, 1.38, 1.72], "cruiser": [0.30, 0.62, 0.92, 1.20]}
 # After the split: the main pieces part by about STORY_TRAVEL of the length and slow (STORY_DAMP a second), the thrown
 # fragments slow faster, and the plate cloud is smaller and settles; a warm light sits in each gap for a few seconds so the
@@ -2513,6 +2524,7 @@ static func _strain_begin(fx, s, T: float, tl: DeathTimeline, seeds: PackedVecto
 	var full: float = maxf(tl.cut - 0.3, 0.5)
 	var strain := {"at": at, "n": nn, "lines": use.slice(0, 3), "k": Vector3(L * STRAIN_AMP, TAU / maxf(L * STRAIN_RIPPLE, 0.001), 0.0),
 		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.005, 0.005), TAU / maxf(L * 0.03, 0.001), 3.0),
+		"jag": Vector2(L * STRAIN_JAG, L * STRAIN_PLATE),
 		"groans": STRAIN_GROANS.get(s.death_tier, STRAIN_GROANS["cruiser"])}
 	s.set_meta("death_strain", strain)
 	# the power-down materials built on the kill frame so far; the rest pick it up as they are built (_power_surface)
@@ -2561,7 +2573,7 @@ static func _groan(fx, s, i: int) -> void:
 		for k in 5:
 			var d: Vector3 = (nw + fx.rdir() * 0.6).normalized()
 			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), Color(1.0, 0.66, 0.32), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
-		fx.spr(p + nw * L * 0.01, fx.now, 1.1, Color(0.50, 0.47, 0.45), 0.7, L * 0.010, L * 0.05, 20, inherited + nw * L * 0.06, 1.0)
+		# (Ryan on pass 4B, "way too much smoke": the groans keep their sparks, the breath of gas is gone)
 	if i % 2 == 1:
 		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9, s.id)
 	if s.death_tier == "capital":
@@ -2656,7 +2668,9 @@ static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, fram
 	if not p.is_finite(): return
 	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
-	_smoke_clump(fx, src, p, n, px * 0.9, 0.70, frame, 0.06, 2, 3)
+	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke": a strained death's blasts keep one smaller puff
+	if fx.death_story: _smoke_clump(fx, src, p, n, px * 0.6, 0.55, frame, 0.06, 1, 1)
+	else: _smoke_clump(fx, src, p, n, px * 0.9, 0.70, frame, 0.06, 2, 3)
 	fx.light(p + n * 0.6, fx.now, 0.40 if soft else 0.25, 5.0, tint, 0)
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
@@ -2723,12 +2737,18 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	# light first, then matter: the body is born as the core's full heat ends, so its smoke never covers the flash
 	var away_l: Vector3 = (s.get_meta("death_grow", [Vector3.UP])[0] as Vector3)
 	var away_w: Vector3 = (s.xf().basis * away_l).normalized() if away_l.length() > 0.01 else Vector3.UP
-	_smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
+	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke". The strained wreck stays where it broke, so the core's
+	# body and the gas over it sat on the wreck: no body puff and no gas veil
+	var story: bool = fx.death_story
+	# pass 5 (Ryan: no haze at the split): no body puff either; the chain blasts' small puffs are the smoke
+	if not story: _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
 	if fx.quality != "low":
-		var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
-		(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
-		gas.set_meta("spawn_frame", frame)
-		fx.record_spawn(s, p, false, frame)
+		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
+		if not story:
+			var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
+			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
+			gas.set_meta("spawn_frame", frame)
+			fx.record_spawn(s, p, false, frame)
 		var gm: Array = s.get_meta("death_grow", [])
 		var axis_w: Vector3 = (s.xf().basis * (gm[3] as Vector3)).normalized() if gm.size() >= 4 else s.xf().basis.x
 		var away: Vector3 = (s.xf().basis * (gm[0] as Vector3)).normalized() if gm.size() >= 4 else Vector3.FORWARD
@@ -3269,7 +3289,8 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	for mat in mats: wreck["heat_births"][mat] = fx.now
 	wreck["cut_events"].append({"section": index, "t": fx.now})
 	if wreck.get("organic", false): return
-	if fx.quality != "low":
+	# issue 1077 (prototype): Ryan on pass 5, no haze at the split: a strained big hull's pieces part without the cool puff
+	if fx.quality != "low" and not (big and fx.death_story):
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
