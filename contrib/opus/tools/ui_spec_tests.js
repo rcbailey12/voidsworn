@@ -132,7 +132,12 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/font = GS\.body\(\)/.test(cui) && /font_goth = GS\.display\(k\)/.test(cui) && /font_caps = GS\.caps\(k\)/.test(cui), 'campaign fonts come from glass_shell.gd and the tracked faces follow k');
   check(!/modulate\.a = 0\.5/.test(cb) && /tagl\("Locked", BONE3\)/.test(cui), 'a disabled choice dims its words and says LOCKED, not a 50% fade (MN12, ui_style.md 3)');
   check(/draw_style_box\(ring/.test(cb) && /b\.ring = GS\.focus_ring\(k\)/.test(cui), 'campaign choices draw the shared focus ring when focused');
-  check((cui.match(/\bfin\(/g) || []).length >= 14 && !/abtn\([^\n]*, true, false, acts\)/.test(cui), 'every dialog finishes on the one lime slab (fin), none on a second filled button (R148)');
+  const modal = cui.slice(cui.indexOf('func _modal('), cui.indexOf('func _salvage_choices('));
+  const branches = modal.split(/^\t\t(?="|_:)/m);
+  const finishes = ['lineagePick', 'lineageRespec', 'intro', 'abandon', 'sell', 'event_result', 'victory', 'prize', 'retreat'];
+  check(finishes.every(name => branches.some(branch => branch.startsWith(`"${name}"`) && /\bfin\(/.test(branch))) &&
+    branches.every(branch => (branch.match(/\bfin\(/g) || []).length <= 1) && !/abtn\([^\n]*, true, false, acts\)/.test(cui),
+  'dialogs with a finishing action use one shared fin control, and choice dialogs need no extra button (R148)');
   check(/"fleet": body = _fleet/.test(cui) && /Rect2\(sheet_x, height - 80, sheet_w, 56\)/.test(fleet) && /GS\.sheet_jump_boxes/.test(fleet) && /"shipyard": b = fin\("Leave shipyard"/.test(cui), 'FL5 Done and the shipyard finishing action stay fixed bottom right');
   check(/func _well_text\(/.test(cui) && /_well_text\(v\)/.test(cui), 'dialog words are gathered onto wells (every line on a backing, ui_style.md 3)');
 

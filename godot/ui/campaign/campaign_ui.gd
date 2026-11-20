@@ -63,6 +63,8 @@ var extra_title_buttons: Array = []   # [label, Callable] added under the title 
 var hide_on_battle := false           # the game shell shows its own battle scene on the battle page
 var _acts: Array = []                 # the buttons the current screen allows
 var _modal_acts: Array = []
+var _modal_scroll: ScrollContainer
+var _modal_kind := ""
 var _dirty := false
 var _yard_bar: Button = null     # the shipyard's repair bar of the last render (the teaching card keeps off it)
 var _fs_name := ""
@@ -1223,6 +1225,8 @@ func _route_row(r: Dictionary) -> Control:
 		tv.add_child(danger)
 	else:
 		var note = ("Nemesis meeting. " if r.get("nemesis", false) else "") + (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")   # issue 1175
+		if r.get("nemesis", false) and r["kind"] in ["shipyard", "drydock", "field", "event"]:
+			note = "Nemesis fight, then use the stop."
 		if r["fight"] and r["reward"] != "": note += " Pays " + str(r["reward"])
 		tv.add_child(_sheet_words(note, 18, GS.TEXT2))
 	var row_height = 132 if on else (54 if _routes.size() >= 4 else 62)
@@ -1445,7 +1449,7 @@ func _map_key() -> Control:
 	for icon_kind in GS.STOP_ICONS:
 		var icon_row = row0(8); icon_row.add_child(GS.stop_key(icon_kind, k)); icon_row.add_child(tl(GS.STOP_ICONS[icon_kind], 17, 26, GS.TEXT))
 		body.add_child(icon_row)
-	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "a free hull patch", "event": "anything can happen", "boss": "ends the sector"}
+	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": View.KIND_NOTE["drydock"], "field": View.KIND_NOTE["field"], "event": "anything can happen", "boss": "ends the sector"}
 	var st: Array = []
 	for kk in C.NODE_INFO.keys(): st.append("[b]" + esc(C.NODE_INFO[kk]["n"]) + "[/b] " + esc(LEG.get(kk, "")))
 	body.add_child(_over_text(". ".join(PackedStringArray(st)) + ".", 17))
@@ -2169,10 +2173,15 @@ func _capstone_mastery(id) -> Control:
 # ---------------- dialogs ----------------
 func _modal(md: Dictionary) -> void:
 	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
+	var scroll := 0
+	if md["kind"] == "promotions" and _modal_kind == "promotions" and is_instance_valid(_modal_scroll):
+		scroll = _modal_scroll.scroll_vertical
+	_modal_kind = md["kind"]
 	var dim = ColorRect.new(); dim.color = GS.SHADE; dim.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(dim)
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(cc)
 	var box = shell_panel(20)   # a dialog: one matte panel (chamfers, scanline, bevel, brackets); its words sit on wells (_well_text)
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_modal_scroll = sc
 	var v = vbox(8); v.custom_minimum_size.x = px(700); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); box.add_child(sc); cc.add_child(box)
 	var h2 = func(t: String): v.add_child(lbl(t.to_upper(), 27, BONE, font_goth))
 	var p = func(t: String, col: Color = BONE): v.add_child(lbl(t, 17, col))
@@ -2213,12 +2222,14 @@ func _modal(md: Dictionary) -> void:
 		"sell":
 			h2.call("Decommission the " + str(d["ship"]["name"]) + "?"); p.call("Its captain retires and its refits return to the hold. You receive " + C.numstr(d["value"]) + " credits.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Decommission", "sellConfirm", d["ship"]["uid"], acts)]))
-		"drydock":
-			h2.call("Drydock"); p.call("Repair teams restore %s of each ship's missing hull for free." % d["rate"])
-			if d["lines"].size() > 0:
-				for l in d["lines"]: p.call("• " + l)
-			else: p.call("The fleet was already in good order.", BONE2)
-			v.add_child(foot([abtn("Manage fleet", "fleetFromModal", "", false, false, acts), fin("Continue", "closeModal", "", acts)]))
+		"repair_stop":
+			var drydock: bool = d["kind"] == "drydock"
+			h2.call("Drydock" if drydock else "Field repairs")
+			for i in range(d["options"].size()):
+				var opt: Dictionary = d["options"][i]
+				var detail := "%s of each ship's %s hull. +%s hull across the fleet" % [opt["rate"], "missing" if drydock else "maximum", C.numstr(opt["hp"])]
+				if opt["credits"] > 0: detail += " and +" + C.numstr(opt["credits"]) + " credits"
+				add(v, choice("Repairs and credits" if i else "Take the full service", detail + ".", "repairStop", "stipend" if i else "service", acts))
 		"event":
 			var ev = d["ev"]; h2.call(ev["t"]); p.call(ev["b"])
 			for i in range(ev["o"].size()):
@@ -2230,31 +2241,31 @@ func _modal(md: Dictionary) -> void:
 			for l in d["lines"]: p.call(l)
 			v.add_child(foot([fin("Continue", "storyCore" if R.get("reward") != null and R["reward"].get("kind") == "story" else "closeModal", "", acts)]))
 		"victory":
-			var sm = d["summary"]; var cfg = sm["cfg"]
-			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory")
+			var sm: Dictionary = d.get("summary", {})
+			h2.call("Flagship destroyed" if d["kind"] == "boss" else "Victory")
 			if str(d.get("beat3Debrief", "")) != "": p.call(d["beat3Debrief"], VERD)
-			v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["credits"]), VERD) + c(" credits.", VERD), 17))
-			if sm["lost"].size() > 0:
+			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["credits"]), VERD) + c(" credits.", VERD), 17))
+			if not sm.get("lost", []).is_empty():
 				var ls = []
 				for l in sm["lost"]: ls.append("the " + str(l["ship"]) + " and " + str(l["cap"]))
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
-			if d["extra"] != "": p.call(d["extra"], VERD)
-			if (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.", BONE3)
+			if d.get("extra", "") != "": p.call(d["extra"], VERD)
+			for line in d.get("weaknessConfirmed", []): p.call(line, VERD)
+			if not d["wrecks"].is_empty(): _salvage_choices(v, d["wrecks"], acts)
+			if not sm.is_empty() and (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.", BONE3)
 			var tstats: Dictionary = sm.get("treeStats", {}) if sm.get("treeStats") is Dictionary else {}
 			if not tstats.is_empty():
 				var tks = tstats.keys(); tks.sort(); var tls = []
 				for key in tks: tls.append(_tree_name(str(key)) + " x" + C.numstr(tstats[key]))
 				p.call("Lineage in action: " + ", ".join(PackedStringArray(tls)) + ".", VERD)
-			if d["flagMoved"] != null: p.call("The admiral transfers the flag to the " + str(d["flagMoved"]["name"]) + ". Its aspect goes with it.", VERD)
-			for x in sm["xp"]: v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
-			var rw = d["rw"]
-			var nx: Button = null
-			if _find(acts, "prizeStep", "").size() > 0: nx = fin("Decide on the prize ship" + ("s" if R["reward"]["prizes"].size() > 1 else ""), "prizeStep", "", acts)
-			elif _find(acts, "salvageStep", "").size() > 0: nx = fin("Strip the wrecks", "salvageStep", "", acts)
-			elif rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): nx = fin(str(C.PATRONS[rw["p"]]["short"]) + " offers a protocol", "rewardNext", "", acts)
-			elif rw.get("k") == "mod": nx = fin("Choose a refit", "rewardNext", "", acts)
-			else: nx = fin("Continue", "rewardNext", "", acts)
-			v.add_child(foot([nx]))
+			if d.get("flagName", "") != "": p.call("The admiral transfers the flag to the " + str(d["flagName"]) + ". Its aspect goes with it.", VERD)
+			for x in sm.get("xp", []): v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
+			if d["wrecks"].is_empty():
+				var rw = d["rw"]
+				var next := "Continue"
+				if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): next = str(C.PATRONS[rw["p"]]["short"]) + " offers a protocol"
+				elif rw.get("k") == "mod": next = "Choose a refit"
+				v.add_child(foot([fin(next, "rewardNext", "", acts)]))
 		"prize":
 			var rows = d["rows"]; var n = rows.size()
 			h2.call("Prize ship" + ("s" if n > 1 else ""))
@@ -2284,18 +2295,6 @@ func _modal(md: Dictionary) -> void:
 			if cred > 0: parts.append("+" + C.numstr(cred) + " credits")
 			p.call("You get: " + (", ".join(PackedStringArray(parts)) if parts.size() > 0 else "Nothing") + ".", BONE2)
 			v.add_child(foot([fin("Confirm", "prizeConfirm", "", acts)]))
-		"salvage":
-			h2.call("Strip the wrecks"); p.call("Your crews have time to work one wreck before the fleet moves on.", BONE2); p.call(str(C.REWARD_DEF["salvage"]), BONE3)
-			var ws = d["wrecks"]
-			for i in range(ws.size()):
-				var w = ws[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
-				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-				pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
-				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
-				if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
-				add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
-				if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
-				pv.add_child(g); v.add_child(pp)
 		"mod":
 			h2.call("Recovered refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
 			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
@@ -2328,6 +2327,19 @@ func _modal(md: Dictionary) -> void:
 			var s = d["ship"]; h2.call("Promotion")
 			v.add_child(rich(esc(s["cap"]["name"]) + " of the [i]" + esc(s["name"]) + "[/i] is now " + esc(C.rankName(s["cap"])) + ". Choose one perk.", 17)); p.call(str(C.REWARD_DEF["promotion"]), BONE3)
 			for pk in s["cap"]["offer"]: add(v, choice(C.PERKS[pk]["n"], C.PERKS[pk]["d"], "takePerk", s["uid"] + ":" + pk, acts))
+		"promotions":
+			h2.call("Promotions"); p.call("Choose a perk for each captain.", BONE2)
+			p.call(str(C.REWARD_DEF["promotion"]), BONE3)
+			for s in d["ships"]:
+				var pp := panel(IRON3, IRON2, 10); var pv := vbox(6); pp.add_child(pv)
+				pv.add_child(rich("[b]" + esc(s["cap"]["name"]) + "[/b]  " + c(esc(C.rankName(s["cap"])), VERD) + "  " + esc(s["name"]), 18))
+				var options := hbox(8)
+				for perk in s["cap"]["offer"]:
+					var button = choice(C.PERKS[perk]["n"], C.PERKS[perk]["d"], "takePerk", s["uid"] + ":" + perk, acts)
+					if button == null: continue
+					button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+					options.add_child(button)
+				pv.add_child(options); v.add_child(pp)
 		"retreat":
 			h2.call("Retreat?"); p.call("The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.")
 			v.add_child(foot([abtn("Stay and fight", "c3retreatNo", "", false, false, acts), fin("Jump out", "c3retreatYes", "", acts)]))
@@ -2338,6 +2350,20 @@ func _modal(md: Dictionary) -> void:
 	var vh = get_viewport().get_visible_rect().size.y
 	sc.custom_minimum_size = Vector2(px(700), min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
 	v.minimum_size_changed.connect(func(): sc.custom_minimum_size.y = min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
+	if scroll > 0: sc.set_deferred("scroll_vertical", scroll)
+
+func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
+	v.add_child(lbl("Salvage one wreck", 20, BONE))
+	v.add_child(lbl(str(C.REWARD_DEF["salvage"]), 17, BONE3))
+	for i in range(wrecks.size()):
+		var w = wrecks[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
+		var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
+		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
+		var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
+		if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
+		add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
+		if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
+		pv.add_child(g); v.add_child(pp)
 
 # Every line of a dialog sits on a backing (ui_style.md 3): runs of plain words (labels, rich text, the title) are gathered
 # into one well each, in place; choices, rows of buttons and blocks that already are wells stay as they are.

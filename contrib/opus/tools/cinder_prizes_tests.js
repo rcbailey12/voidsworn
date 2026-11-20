@@ -130,14 +130,14 @@ check('from run 3 a kept Hegemony or Eclipse prize joins with its links ripped o
   r.cpCap = 10; r.fleet = [];
   r.map = T.genSector(1); r.pos = r.map.cols[0][0].id; r.curNode = r.pos; // a real map, so the confirm chain can walk on to the map screen
   const prize = { tpl: 'h_interdictor', name: 'HNS Kept', cp: 2, hpf: .6, wk: ['battery'], ab: null, regen: 0, sh: 12 };
-  r.reward = { prizes: [prize], prizeSel: ['add'] };
+  r.reward = { kind: 'elite', stage: 'prize', prizes: [prize], prizeSel: ['add'], wrecks: [] };
   let rows = T.prizePlan(r.reward);
   if (!rows[0].room || rows[0].cinder || rows[0].rip !== true) return false;
   T.ACT.prizeConfirm();
   const kept = r.fleet.find(x => x.tpl === 'h_interdictor');
   if (!kept || kept.ripped !== true || kept.name !== 'HNS Kept') return false;
   const prize2 = { tpl: 'c_raider', name: 'RVD Plain', cp: 1, hpf: .7, wk: ['autocannon'], ab: null, regen: 0, sh: 8 };
-  r.reward = { prizes: [prize2], prizeSel: ['add'] };
+  r.reward = { kind: 'elite', stage: 'prize', prizes: [prize2], prizeSel: ['add'], wrecks: [] };
   rows = T.prizePlan(r.reward);
   if (rows[0].cinder || rows[0].rip !== false) return false; // only Hegemony and Eclipse prizes rip
   T.ACT.prizeConfirm();

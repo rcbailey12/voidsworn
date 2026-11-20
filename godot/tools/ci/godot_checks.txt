@@ -36,6 +36,7 @@ headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, a
 headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
 headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
 headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires a user folder inside the checkout
+headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victory and promotion cards on 30 seeds and check repair choices
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
 headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
@@ -116,6 +117,7 @@ gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for iss
 gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
 gpu|campaign/test/nem_col4_shots.gd|-|{out}|issue 1175: the orders rail with a column 4 shipyard holding the Nemesis meeting and the flagship stop with its objective and board; needs a window, draws no ship
 gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
+gpu|campaign/test/post_win_shots.gd|compat|{out}|issue 1177: victory with salvage, promotions, drydock and field repairs cards, no ship models needed
 gpu|campaign/test/map_approach_shots.gd|-|{out} --no-tips|sector approach at a matched jump, region fleets, far stops, Map key, spacing and uncapped frame times (issues 420 and 438)
 gpu|campaign/test/map_region_shots.gd|-|{out} --no-tips|all five generated regions, three matched sectors, Map key, four-route fleet fit and uncapped frame times (issue 465)
 gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: needs a window
