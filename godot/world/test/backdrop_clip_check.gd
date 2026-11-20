@@ -107,6 +107,12 @@ func _run() -> void:
 	_check(fades == 2, "both rock shaders must fade from the live near plane (found %d of 2)" % fades)
 	_check(src.count("global uniform float cam_near;") == 2, "both rock shaders must read the cam_near global")
 	_check(ProjectSettings.has_setting("shader_globals/cam_near"), "project.godot must declare the cam_near shader global")
+	# Artoo on PR 1306: the fade must measure from the rig's published camera, never the pass's own VIEW_MATRIX, so a
+	# shadow pass (seen from the light) fades a rock the same way the view does.
+	_check(src.count("vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;") == 2, "both rock fades must measure from the cam_eye global")
+	_check(src.count("float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;") == 2, "both rock fades must take depth along cam_fwd")
+	_check(src.count("(VIEW_MATRIX * vec4(MODEL_MATRIX[3].xyz") == 0, "the rock fade must not use the pass's VIEW_MATRIX")
+	_check(ProjectSettings.has_setting("shader_globals/cam_eye") and ProjectSettings.has_setting("shader_globals/cam_fwd"), "project.godot must declare cam_eye and cam_fwd")
 	for radius in [26.0, 45.0, 100.0, 170.0]:
 		rig.r = radius
 		rig.snap()
@@ -116,6 +122,10 @@ func _run() -> void:
 		var zero_at := rig.near + 1.5
 		_check(zero_at > rig.near, "r %.0f: the rock fade ends at %.1f, not before the near plane %.1f" % [radius, zero_at, rig.near])
 		_check(is_equal_approx(live, rig.near), "r %.0f: cam_near %.2f does not follow the rig's near %.2f" % [radius, live, rig.near])
+		# The published forward is the rig's own view axis, so depth along it equals the view's depth.
+		var fwd: Vector3 = (rig.t - rig.global_position).normalized() if rig.is_inside_tree() else Vector3.ZERO
+		if rig.is_inside_tree():
+			_check(fwd.dot(-rig.global_transform.basis.z) > 0.9999, "r %.0f: cam_fwd is not the rig's view axis" % radius)
 		print("r %.0f: near %.1f, rock gone by depth %.1f" % [radius, rig.near, zero_at])
 	rig.free()
 	print("backdrop_clip_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)

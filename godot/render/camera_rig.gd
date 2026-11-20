@@ -41,12 +41,21 @@ const BACKDROP_REACH := 4700.0
 const FAR_MARGIN := 100.0
 # Issue 1264: ROCK_SHADER fades a rock before this live near plane cuts it (global shader uniform, project.godot).
 const NEAR_GLOBAL := &"cam_near"
+# Artoo on PR 1306: the fade also needs this camera's eye and forward, so a shadow pass (drawn from the light) fades a
+# rock against the same camera the near plane belongs to. cam_eye.w is 1 while a rig is current, 0 otherwise.
+const EYE_GLOBAL := &"cam_eye"
+const FWD_GLOBAL := &"cam_fwd"
 
 
 func _ready() -> void:
 	fov = 45.0
 	near = 0.5
 	_apply()
+
+
+func _exit_tree() -> void:
+	if current:
+		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4.ZERO)
 
 
 static func far_for(radius: float, target: Vector3, board_bounds: Vector2) -> float:
@@ -220,6 +229,9 @@ func _apply() -> void:
 	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
 	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))
 	look_at_from_position(p, tg, up)
+	if current:
+		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4(p.x, p.y, p.z, 1.0))
+		RenderingServer.global_shader_parameter_set(FWD_GLOBAL, (tg - p).normalized())
 	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
 	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
