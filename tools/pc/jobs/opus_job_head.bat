@@ -14,9 +14,10 @@ rem                                   PC_KEEP_GODOT_PROFILE cleared, issue 1228)
 rem                                   board_look.cfg. Sets OJ_OUT (the attempt folder), OJ_ST (its status.txt), JW, JW_GODOT.
 rem   checkout <name> <40-hex sha>    a fresh checkout of that exact commit in OJ_OUT\<name> from the shared mirror; HEAD
 rem                                   must equal the pin. Sets OJ_REPO.
-rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO with
-rem                                   /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews, robocopy
-rem                                   8 or more fails, then fails if any tracked file in OJ_REPO differs from the pin.
+rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO: gen whole with
+rem                                   /E /XC /XN /XO (gen\manifest.json must arrive), assets\ships with /E /XC /XN /XO /XF
+rem                                   manifest.json README.md a4_props.gd *.uid /XD test previews; robocopy 8 or more fails,
+rem                                   then fails if any tracked file in OJ_REPO differs from the pin.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
 rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
@@ -100,8 +101,12 @@ if defined JW_STOP (>> "%OJ_ST%" echo skipped ships: an earlier step failed & ex
 if not defined LB_SHIPS set "LB_SHIPS=%OJ_VT%\build\godot"
 if not exist "%LB_SHIPS%\gen" (call "%JW%" fail "no built ships at %LB_SHIPS%\gen" & exit /b 1)
 >> "%OJ_ST%" echo ships from %LB_SHIPS% into %OJ_REPO%
-robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_gen.txt" 2>&1
+rem gen is untracked and copied whole (as get_ship_files.bat does): its manifest.json is what the game reads to find
+rem the built hulls. The /XF list is for assets\ships only, where manifest.json is the tracked checksum list (RUN1262C
+rem dropped gen\manifest.json and every hull drew as a placeholder).
+robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_gen.txt" 2>&1
 if errorlevel 8 (call "%JW%" fail "ships copy gen, see %OJ_REPO%_ships_gen.txt" & exit /b 1)
+if not exist "%OJ_REPO%\godot\gen\manifest.json" (call "%JW%" fail "no gen\manifest.json after the ships copy; every hull would draw as a placeholder" & exit /b 1)
 if exist "%LB_SHIPS%\assets\ships" robocopy "%LB_SHIPS%\assets\ships" "%OJ_REPO%\godot\assets\ships" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_assets.txt" 2>&1
 if errorlevel 8 (call "%JW%" fail "ships copy assets, see %OJ_REPO%_ships_assets.txt" & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" tracked "%OJ_REPO%" >> "%OJ_ST%" 2>&1

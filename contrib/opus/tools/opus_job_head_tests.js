@@ -32,7 +32,12 @@ assert(init.includes('set "JW=%~dp0..\\job_wrap.bat"'), 'steps run through the j
 const ships = headCode.slice(headCode.indexOf(':oj_ships'), headCode.indexOf(':oj_tail'));
 const flags = '/E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews';
 assert.equal((ships.match(/robocopy /g) || []).length, 2, 'two copies: gen and assets\\ships');
-for (const line of ships.split('\n').filter(l => l.includes('robocopy '))) assert(line.includes(flags), 'safe ships copy flags: ' + line);
+const copies = ships.split('\n').filter(l => l.includes('robocopy '));
+const genCopy = copies.find(l => l.includes('"%LB_SHIPS%\\gen"'));
+const shipCopy = copies.find(l => l.includes('"%LB_SHIPS%\\assets\\ships"'));
+assert(genCopy && genCopy.includes('/E /XC /XN /XO ') && !genCopy.includes('/XF'), 'gen is copied whole, never without its manifest.json: ' + genCopy);
+assert(shipCopy && shipCopy.includes(flags), 'assets\\ships copy uses the safe flags: ' + shipCopy);
+assert(/if not exist "%OJ_REPO%\\godot\\gen\\manifest\.json" \(call "%JW%" fail/.test(ships), 'a missing gen manifest fails the job');
 assert.equal((ships.match(/if errorlevel 8 \(call "%JW%" fail/g) || []).length, 2, 'robocopy 8 or more fails the job');
 assert(ships.indexOf('tracked "%OJ_REPO%"') > ships.lastIndexOf('robocopy '), 'the tracked check runs after the copies');
 assert(/:oj_checkout[\s\S]*checkout "%OJ_OUT%" "%~2" "%~3"[\s\S]*set "OJ_REPO=%OJ_OUT%\\%~2"/.test(headCode), 'checkout goes into the attempt folder');
