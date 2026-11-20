@@ -1,0 +1,61 @@
+start Thu 11/19/2026 20:32:49.16 
+commit=ab73470a058da6e3d2c734c05a70b20aaf0d1fea 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\opus1234\profile\Roaming 
+checked copies in C:\Users\rcbai\Downloads\voidsworn_test\opus1234\checked\2026203250_12198 
+chorus_C11 (B21_11) start 20:33:01.17 
+chorus_C11 3_trace_hull start 20:33:01.18 
+chorus_C11 3_trace_hull exit 0 at 20:34:21.20 
+chorus_C11 4_parts_kit start 20:34:21.20 
+chorus_C11 4_parts_kit exit 0 at 20:35:06.49 
+chorus_C11 5_paint_bake start 20:35:06.50 
+chorus_C11 5_paint_bake exit 0 at 21:01:08.84 
+chorus_C11 6_lod start 21:01:08.85 
+chorus_C11 6_lod exit 0 at 21:02:15.78 
+chorus_C11 7_export start 21:02:15.78 
+chorus_C11 7_export exit 0 at 21:04:12.92 
+[identity] B21_11 matches the staged install: 8 files, glb 29d40b47be87bb86d57fcdfd9b8598d6769dc9b4c131114d11cee047699e16be
+chorus_C11 staged as B21_11 
+chorus_C12 (B19_11) start 21:04:13.85 
+chorus_C12 3_trace_hull start 21:04:13.86 
+chorus_C12 3_trace_hull exit 0 at 21:05:34.46 
+chorus_C12 4_parts_kit start 21:05:34.46 
+chorus_C12 4_parts_kit exit 0 at 21:06:14.58 
+chorus_C12 5_paint_bake start 21:06:14.58 
+chorus_C12 5_paint_bake exit 0 at 21:09:47.77 
+chorus_C12 6_lod start 21:09:47.77 
+chorus_C12 6_lod exit 0 at 21:10:52.58 
+chorus_C12 7_export start 21:10:52.58 
+chorus_C12 7_export exit 0 at 21:12:17.23 
+[identity] B19_11 matches the staged install: 8 files, glb 6ecf8039886b5918f77ae3d156a9b7c2488a3b7309eabba6eb77711b0601c2c8
+chorus_C12 staged as B19_11 
+chorus_C13 (B20_11) start 21:12:17.93 
+chorus_C13 3_trace_hull start 21:12:17.93 
+chorus_C13 3_trace_hull exit 0 at 21:19:44.61 
+chorus_C13 4_parts_kit start 21:19:44.61 
+chorus_C13 4_parts_kit exit 0 at 21:20:45.44 
+chorus_C13 5_paint_bake start 21:20:45.44 
+chorus_C13 5_paint_bake exit 0 at 21:30:56.97 
+chorus_C13 6_lod start 21:30:56.97 
+chorus_C13 6_lod exit 0 at 21:32:28.19 
+chorus_C13 7_export start 21:32:28.19 
+chorus_C13 7_export exit 0 at 21:35:00.41 
+[identity] B20_11 matches the staged install: 8 files, glb 34f00dbcaff3be4ddb80460e311940631e10f32582a23fdffd2a038fe8c6d303
+chorus_C13 staged as B20_11 
+staging import exit 0 
+B21_11 gpu readback exit 0 
+B21_11 authored interiors exit 0 
+B21_11 death seam exit 0 
+B21_11 shots exit 0 
+B19_11 gpu readback exit 0 
+B19_11 authored interiors exit 0 
+B19_11 death seam exit 0 
+B19_11 shots exit 0 
+B20_11 gpu readback exit 0 
+B20_11 authored interiors exit 0 
+B20_11 death seam exit 0 
+B20_11 shots exit 0 
+chorus_C11 publish B21_11 exit 0 
+chorus_C12 publish B19_11 exit 0 
+chorus_C13 publish B20_11 exit 0 
+published into build\godot: B21_11 B19_11 B20_11 
+all done PASS Thu 11/19/2026 21:43:02.42 
