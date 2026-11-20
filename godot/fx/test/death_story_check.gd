@@ -14,6 +14,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same choice as death_seam_check.gd, which also guards the fixture's freshness).
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://fx/test/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
@@ -139,6 +140,7 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	check(fx.death_story == story, "the switch reads %s" % story)
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	check(ROOT.world_sized(s), "the hull is analysed at world size, as the game does (L %.2f)" % s.hull.L)
 	var t_wait := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t_wait < 120000:
 		fx.step(1.0 / 60.0)

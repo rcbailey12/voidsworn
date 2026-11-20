@@ -9,6 +9,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same fixture death_seam_check.gd uses and keeps fresh). Times are printed, not checked: CI machines vary.
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://fx/test/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
@@ -35,20 +36,10 @@ func _load_ship(world: Node3D) -> Node3D:
 	var state := GLTFState.new()
 	if bytes.is_empty() or doc.append_from_buffer(bytes, path.get_base_dir(), state) != OK: return null
 	var ship: Node3D = doc.generate_scene(state)
-	var length := 26.0
-	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
-		var ex = nd.get_meta("extras", {})
-		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
-	var box := AABB()
-	var first := true
-	for mi in ship.find_children("*", "MeshInstance3D", true, false):
-		var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
-		box = bb if first else box.merge(bb)
-		first = false
-	ship.scale = Vector3.ONE * (length / maxf(box.size.x, 0.0001))
+	# Issues 1309 and 1355: rooted the way the game roots it (fx/test/world_root.gd), at world size
+	var holder := ROOT.hold(world, ship)
 	print("COLD_KILL ship ", path)
-	return ship
+	return holder
 
 
 func _fx(world: Node3D) -> Node:
@@ -92,6 +83,7 @@ func _run() -> void:
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	check(ROOT.world_sized(s), "the hull is analysed at world size, as the game does (L %.2f)" % s.hull.L)
 	check(s.hull.authored, "A16's seams reach the hull reader")
 	DEATH.precompute(fx, s, "blast", true)
 	var job: Dictionary = s.get_meta("cut_job")
