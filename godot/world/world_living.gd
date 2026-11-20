@@ -67,7 +67,18 @@ var _gas_lattice: ImageTexture3D
 var _gas_lattice_origin: Vector3
 const GAS_HEIGHT := 1.75
 const GAS_CLOUD_SCALE := 3.0
-const GAS_CLOUD_MARGIN := 48.0
+# Issue 1263: the cloud footprint (_mask) must reach zero smoothly inside its texture, or the cloud ends in a straight
+# line. The round field (channel r, a Gaussian per hex) eases to zero between GAS_FIELD_FADE and GAS_FIELD_REACH; the
+# edge feather (channel g) is zero past GAS_FEATHER_END hex radii (scaled), which is GAS_FEATHER_REACH units at a hex
+# corner direction. GAS_SHADER samples r up to GAS_WARP units off on each axis (its `wv`), so the field reach must cover
+# the feather reach plus that warp on a diagonal, and the texture margin adds one texel for linear filtering.
+const GAS_FIELD_SIG2 := 84.0 * GAS_CLOUD_SCALE * GAS_CLOUD_SCALE
+const GAS_FIELD_FADE := 14.0 * GAS_CLOUD_SCALE   # the old hard reach: inside it the field is unchanged
+const GAS_FIELD_REACH := 56.0
+const GAS_FEATHER_END := 1.6
+const GAS_FEATHER_REACH := GAS_FEATHER_END * 8.660254 * GAS_CLOUD_SCALE / 0.8660254   # 48 units
+const GAS_WARP := 4.5                            # GAS_SHADER: wv = (noise - 0.5) * 9.0
+const GAS_CLOUD_MARGIN := GAS_FIELD_REACH + 2.0
 const FOG_SHADER := """
 shader_type fog;
 uniform sampler3D noise_tex : filter_linear, repeat_enable;
@@ -577,7 +588,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var volume := FogVolume.new()
 	volume.name = "StormFog368" if storm else "NebulaFog368"
 	volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
-	volume.size = Vector3(hi.x - lo.x + GAS_CLOUD_MARGIN * 2.0, 38.5, hi.z - lo.z + GAS_CLOUD_MARGIN * 2.0)
+	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
@@ -629,7 +640,7 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 		f[j * 2 + 1] = 2.0
 	for p in ps:
 		var c := Vector2((p as Vector3).x, (p as Vector3).z)
-		var reach := 14.0 * GAS_CLOUD_SCALE if expanded else 14.0
+		var reach := GAS_FIELD_REACH if expanded else 14.0
 		var x0 := int((c.x - reach - lo.x) / STEP)
 		var z0 := int((c.y - reach - lo.y) / STEP)
 		for zi in range(maxi(z0, 0), mini(z0 + int(reach * 2.0 / STEP) + 2, h)):
@@ -637,7 +648,12 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 			for xi in range(maxi(x0, 0), mini(x0 + int(reach * 2.0 / STEP) + 2, w)):
 				var dx := absf(lo.x + xi * STEP - c.x)
 				var j := (zi * w + xi) * 2
-				f[j] += exp(-(dx * dx + dz * dz) / (84.0 * GAS_CLOUD_SCALE * GAS_CLOUD_SCALE if expanded else SIG2))
+				var q := dx * dx + dz * dz
+				if expanded:
+					# Issue 1263: a round window, so the field reaches zero smoothly instead of at a square's side.
+					f[j] += exp(-q / GAS_FIELD_SIG2) * (1.0 - smoothstep(GAS_FIELD_FADE, GAS_FIELD_REACH, sqrt(q)))
+				else:
+					f[j] += exp(-q / SIG2)
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
 				if expanded: d /= GAS_CLOUD_SCALE
 				if d < f[j + 1]:
@@ -662,7 +678,7 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 			var j := (zi * w + xi) * 2 + 1
 			if gas_route != "today":
 				# The marked hex samples a larger cloud. Feather past the union, including its outside.
-				f[j] = 1.0 - smoothstep(0.65, 1.6, f[j])
+				f[j] = 1.0 - smoothstep(0.65, GAS_FEATHER_END, f[j])
 				continue
 			if f[j] >= 1.0:
 				f[j] = 0.0
