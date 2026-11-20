@@ -8,9 +8,9 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
 | spearhead | the blade's point and its forward armour (factions.md: a black iron blade) | hull | the forged point: one long leaf taper to a point at mid height, diamond in section | 1 | bow/top, bow/side, bow/below | the upper and lower facets meeting at the knuckle, a crowned deck, a chamfered deck edge, the centre ridge | picture |
-| tube_cowls | carries the torpedo tubes: raised armoured houses on the deck, either side of the centreline | tier | two tube cowls on the deck at about 22 percent, their mouths forward, tapering aft into the deck | 1 | bow/top, bow/side | a forward face, a roof sloping back into the deck, the tube openings in it | picture |
-| tubes | the Cinder torpedo salvo (torp F, 1 shot): the destroyer's reason to exist (designs.md: the torpedo bow) | launcher | twin torpedo tubes in raised deck cowls, one each side of the centreline | 2 | bow/top, bow/side | a tube house standing on the deck, a square riveted surround, a heavy forged collar with a rolled lip, a deep dark bore, the next torpedo's nose inside (R221) | picture |
-| magazine_vents | the torpedo magazine sheds its reload heat (designs.md: ember heat-vent slits; data.js ability reload) | vent | three louvres on each upper facet over the magazine (the round 2 beauty's ember slits on the magazine section) | 6 | bow/top, bow/side, mid/top | a forged frame, slanted slats over an ember-lit recess | picture |
+| tube_cowls | carries the torpedo tubes: raised armoured houses on the deck, either side of the centreline | tier | two rounded teardrop cowls on the deck at about 22 percent, a broad riveted mouth ring forward, sweeping back and down into the deck | 1 | bow/top, bow/side | a forward face, a roof sloping back into the deck, the tube openings in it | picture |
+| tubes | the Cinder torpedo salvo (torp F, 1 shot): the destroyer's reason to exist (designs.md: the torpedo bow) | launcher | twin torpedo tubes in rounded teardrop deck cowls, one each side of the centreline | 2 | bow/top, bow/side | a tube house standing on the deck, a square riveted surround, a heavy forged collar with a rolled lip, a deep dark bore, the next torpedo's nose inside (R221) | picture |
+| magazine_vents | the torpedo magazine sheds its reload heat (designs.md: ember heat-vent slits; data.js ability reload) | vent | one long slit panel on each upper facet over the magazine: four long ember slits running fore and aft (the round 2 beauty's ember slits on the magazine section) | 2 | bow/top, bow/side, mid/top | a forged frame, slanted slats over an ember-lit recess | picture |
 | blade | carries everything: the magazine, the crew deck, the reactor and the drives | hull | the faceted hull: a crowned deck, upper facets out to the knuckle, the vertical broadside band, lower facets, a flat worked belly | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | angled facets and chamfers (never a flat wall, R244), the knuckle line, a deck-edge chamfer, a chine | picture |
 | deck_plates | deck armour over the magazine and the crew deck | plate | ordered rows of forged plates over the deck | 1 | bow/top, mid/top, stern/top | slabs with bevels, reinforcing steps and rivet lines | picture |
 | flank_plates | side armour: the facets and the broadside band | plate | ordered rows of forged plates over the facets and the band | 1 | bow/side, mid/side, stern/side | slabs with bevels, reinforcing steps and rivet lines | picture |
@@ -54,7 +54,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 73; parts whose inventory id names no line with a job: 0.
+Built kit parts: 69; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, voidsworn_S11_model.json)
 
@@ -65,9 +65,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | spearhead | the forged point: one long leaf taper to a point at mid height, diamon | 1 / 1 | Y | Y | Y |
-| tube_cowls | two tube cowls on the deck at about 22 percent, their mouths forward,  | 1 / 1 | Y | Y | Y |
-| tubes | twin torpedo tubes in raised deck cowls, one each side of the centreli | 1 / 2 | n | Y | Y | both tubes are built, as ONE launcher part with two bores (T1): data.js gives the Harrow one torp slot of 1 shot, and weapon_match fails a pair of mounts on a 1-shot slot (SPLIT), so the two tubes are one mount that fires every volley
-| magazine_vents | three louvres on each upper facet over the magazine | 6 / 6 | Y | Y | Y |
+| tube_cowls | two rounded teardrop cowls on the deck at about 22 percent, a broad ri | 1 / 1 | Y | Y | Y |
+| tubes | twin torpedo tubes in rounded teardrop deck cowls, one each side of th | 1 / 2 | n | Y | Y | both tubes are built, as ONE launcher part with two bores (T1): data.js gives the Harrow one torp slot of 1 shot, and weapon_match fails a pair of mounts on a 1-shot slot (SPLIT), so the two tubes are one mount that fires every volley
+| magazine_vents | one long slit panel on each upper facet over the magazine: four long e | 2 / 2 | Y | Y | Y |
 | blade | the faceted hull: a crowned deck, upper facets out to the knuckle, the | 1 / 1 | Y | Y | Y |
 | deck_plates | ordered rows of forged plates over the deck | 2 / 1 | Y | Y | Y |
 | trunk | a banded armoured ridge along the centreline from the spine block's fa | 1 / 1 | Y | Y | Y |
@@ -78,9 +78,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | spearhead | the forged point: one long leaf taper to a point at mid height, diamon | 1 / 1 | Y | Y | Y |
-| tube_cowls | two tube cowls on the deck at about 22 percent, their mouths forward,  | 1 / 1 | Y | Y | Y |
-| tubes | twin torpedo tubes in raised deck cowls, one each side of the centreli | 1 / 2 | n | Y | Y | both tubes are built, as ONE launcher part with two bores (T1): data.js gives the Harrow one torp slot of 1 shot, and weapon_match fails a pair of mounts on a 1-shot slot (SPLIT), so the two tubes are one mount that fires every volley
-| magazine_vents | three louvres on each upper facet over the magazine | 6 / 6 | Y | Y | Y |
+| tube_cowls | two rounded teardrop cowls on the deck at about 22 percent, a broad ri | 1 / 1 | Y | Y | Y |
+| tubes | twin torpedo tubes in rounded teardrop deck cowls, one each side of th | 1 / 2 | n | Y | Y | both tubes are built, as ONE launcher part with two bores (T1): data.js gives the Harrow one torp slot of 1 shot, and weapon_match fails a pair of mounts on a 1-shot slot (SPLIT), so the two tubes are one mount that fires every volley
+| magazine_vents | one long slit panel on each upper facet over the magazine: four long e | 2 / 2 | Y | Y | Y |
 | blade | the faceted hull: a crowned deck, upper facets out to the knuckle, the | 1 / 1 | Y | Y | Y |
 | flank_plates | ordered rows of forged plates over the facets and the band | 6 / 1 | Y | Y | Y |
 | gun_deck | the broadside band with its upper and lower lips, both flanks | 1 / 1 | Y | Y | Y |
@@ -100,7 +100,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| magazine_vents | three louvres on each upper facet over the magazine | 6 / 6 | Y | Y | Y |
+| magazine_vents | one long slit panel on each upper facet over the magazine: four long e | 2 / 2 | Y | Y | Y |
 | blade | the faceted hull: a crowned deck, upper facets out to the knuckle, the | 1 / 1 | Y | Y | Y |
 | deck_plates | ordered rows of forged plates over the deck | 2 / 1 | Y | Y | Y |
 | trunk | a banded armoured ridge along the centreline from the spine block's fa | 1 / 1 | Y | Y | Y |
@@ -192,6 +192,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 4.47 | 6.64 | 5.20 | 13.02 |
-| build | 4.29 | 4.69 | 4.88 | 8.64 |
+| build | 4.29 | 4.69 | 4.88 | 8.74 |
 
 Lines not present, shaped and detailed without a reason: 0.

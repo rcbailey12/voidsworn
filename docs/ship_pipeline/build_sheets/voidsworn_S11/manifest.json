@@ -18,29 +18,7 @@
   {
    "id": "M1p",
    "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "magazine_vents"
-   ]
-  },
-  {
-   "id": "M2p",
-   "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "magazine_vents"
-   ]
-  },
-  {
-   "id": "M3p",
-   "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
+   "what": "heat-vent slit panel 0.7 x 0.3, four long lit slits",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -51,29 +29,7 @@
   {
    "id": "M1s",
    "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "magazine_vents"
-   ]
-  },
-  {
-   "id": "M2s",
-   "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "magazine_vents"
-   ]
-  },
-  {
-   "id": "M3s",
-   "kind": "vent",
-   "what": "heat-vent louvre 0.26 x 0.12",
+   "what": "heat-vent slit panel 0.7 x 0.3, four long lit slits",
    "count": 1,
    "route": "kit",
    "source": "picture",

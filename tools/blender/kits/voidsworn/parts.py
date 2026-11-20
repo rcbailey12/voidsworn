@@ -382,7 +382,7 @@ WEAPONS['torp'] = dict(
             'ember fuse band. Fixed forward: the destroyer turns to aim the salvo. The pair is the one salvo slot.'))
 
 
-def torpedo_tube(r, depth, s=1.0):
+def torpedo_tube(r, depth, s=1.0, cowl=False):
     """the Cinder torpedo tube (data.js torp, issue 1414, the Harrow destroyer): local +X the aim (the mouth at x 0), +Z up. An
     armoured sponson block running back from the mouth (role mount: it sits into the cheek plates), a square riveted surround
     on its face, a forged collar with a rolled lip, a deep dark bore with loading rings, and the next torpedo's nose deep in
@@ -390,6 +390,8 @@ def torpedo_tube(r, depth, s=1.0):
     p = Part('bow_launcher')   # weapon_match's kind for a torp mount (bow_launcher or rack)
     R = r
     hw = R * 1.55
+    if cowl:
+        return _torpedo_cowl(p, R, depth, s)
     # the sponson: an armoured block behind the mouth, its sides sloping in toward the back (it sinks into the cheek)
     p.add('housing', 'mount', 'siron', block(-depth, -0.02 * s, hw, hw * 0.92, hw * 0.3, taper=1.0, ztaper=1.0))
     p.add('housingback', 'mount', 'siron2', block(-depth - 0.06 * s, -depth + 0.02 * s, hw * 0.86, hw * 0.8, hw * 0.25))
@@ -422,10 +424,55 @@ def torpedo_tube(r, depth, s=1.0):
     return p
 
 
-def torpedo_pair(r, depth, gap, s=1.0):
+def _torpedo_cowl(p, R, depth, s):
+    """the Cinder tube in a raised deck cowl (issue 1414, Ryan Nov 20: "the tube cowls need work, it's just a block"): a round
+    teardrop fairing that sweeps back and down into the deck, a broad flanged mouth ring with a ring of rivets, the forged
+    collar and the dark bore with the next torpedo's nose inside. Local +X the aim, the mouth at x 0, +Z up."""
+    Rh = R * 1.55
+    n = 24
+    rings = []
+    for f in (0.0, 0.12, 0.3, 0.5, 0.68, 0.84, 0.95, 1.0):
+        x = -0.012 * s - depth * f
+        rad = Rh * (1.0 - 0.5 * max(0.0, (f - 0.25) / 0.75) ** 1.4)
+        zc = -Rh * 0.9 * max(0.0, (f - 0.2) / 0.8) ** 1.6
+        rings.append((x, [(rad * math.cos(2 * math.pi * i / n + math.pi / n), zc + rad * 0.92 * math.sin(2 * math.pi * i / n + math.pi / n)) for i in range(n)]))
+    p.add('housing', 'mount', 'siron', _xsec(rings, cap1=False))
+    tail = rings[-1]
+    c = (tail[0], 0.0, sum(z for _, z in tail[1]) / n)
+    V, F = [], []
+    V.extend((tail[0], y, z) for (y, z) in tail[1]); V.append(c)
+    for i in range(n):
+        F.append((n, (i + 1) % n, i))
+    p.add('housingback', 'mount', 'siron2', (V, F))
+    # the mouth: a broad flanged ring proud of the fairing's face, a ring of rivets on it
+    p.add('surround', 'mount', 'siron2', revolve([(-0.04 * s, Rh * 1.06), (0.018 * s, Rh * 1.06), (0.018 * s, R * 0.9), (-0.04 * s, R * 0.9)], n,
+                                                  closed=True, phase=math.pi / n))
+    rm = (Rh * 1.06 + R * 0.9) / 2
+    p.add('surroundstud', 'mount', 'sworn', _join([_stud((0.018 * s, rm * math.cos(2 * math.pi * i / 16), rm * math.sin(2 * math.pi * i / 16)), (1, 0, 0), 0.06 * R)
+                                                   for i in range(16)]))
+    reach = R * 0.4
+    p.add('collar', 'body', 'siron2', revolve([(0.0, R * 1.18), (reach * 0.7, R * 1.18), (reach, R * 1.06), (reach, R * 0.95), (reach * 0.6, R * 0.86),
+                                               (0.0, R * 0.86)], 20, closed=True, phase=math.pi / 20))
+    p.add('collarband', 'body', 'sworn', ring_band(reach * 0.35, R * 1.18, reach * 0.25, R * 0.05, 20))
+    p.add('collarstud', 'body', 'sworn', _x_studs(reach * 0.55, R * 1.14, 10, 0.045 * R, phase=math.pi / 10))
+    bd = depth * 0.45
+    p.add('collarsleeve', 'mount', 'siron2', revolve([(0.0, R * 0.95), (0.0, R * 0.86), (-bd, R * 0.86), (-bd, R * 0.95)], 20, closed=True, phase=math.pi / 20))
+    for i, f in enumerate((0.3, 0.65)):
+        p.add('loadring%d' % i, 'mount', 'sworn', revolve([(-bd * f - R * 0.08, R * 0.86), (-bd * f - R * 0.08, R * 0.74), (-bd * f + R * 0.08, R * 0.74),
+                                                         (-bd * f + R * 0.08, R * 0.86)], 20, closed=True))
+    p.add('bore', 'mount', 'dark', revolve([(-bd, R * 0.86), (-bd, 0.001)], 20))
+    nx = -bd * 0.5
+    p.add('noseshell', 'mount', 'siron', revolve([(nx - R * 0.9, R * 0.66), (nx - R * 0.2, R * 0.66), (nx + R * 0.15, R * 0.48), (nx + R * 0.32, R * 0.2),
+                                                 (nx + R * 0.36, 0.001)], 16, cap0=True))
+    p.add('fuse', 'mount', 'embar', ring_band(nx - R * 0.35, R * 0.66, R * 0.12, R * 0.02, 16))
+    p.fit = dict(exits=[dict(pos=P((reach, 0, 0)), axis=D((1, 0, 0)), radius=R * 0.86)], reach=reach, radius=Rh * 1.06)
+    return p
+
+
+def torpedo_pair(r, depth, gap, s=1.0, cowl=False):
     """twin Cinder tubes as ONE launcher (the Harrow's salvo slot, issue 1414): two tube houses `gap` apart across the bow, the
     spearhead between them; one salvo fires out of either bore in turn, so the one mount fires every volley (weapon_match SPLIT)"""
-    one = torpedo_tube(r, depth, s)
+    one = torpedo_tube(r, depth, s, cowl=cowl)
     p = Part('bow_launcher')
     for sg, tag in ((1, 'p'), (-1, 's')):
         M = Matrix.Translation((0, sg * gap / 2, 0))

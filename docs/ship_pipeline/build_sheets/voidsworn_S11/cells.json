@@ -30,8 +30,8 @@
   {
    "cell": "bow/top",
    "id": "magazine_vents",
-   "built": 6,
-   "listed": 6,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -102,8 +102,8 @@
   {
    "cell": "bow/side",
    "id": "magazine_vents",
-   "built": 6,
-   "listed": 6,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -192,8 +192,8 @@
   {
    "cell": "mid/top",
    "id": "magazine_vents",
-   "built": 6,
-   "listed": 6,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -627,7 +627,7 @@
    "env_LB": 4.29,
    "env_LH": 4.69,
    "hull_LB": 4.88,
-   "hull_LH": 8.64
+   "hull_LH": 8.74
   }
  }
 }

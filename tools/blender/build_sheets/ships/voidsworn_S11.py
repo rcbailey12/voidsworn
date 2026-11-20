@@ -154,7 +154,7 @@ def torpedo_tubes(K, inv='tubes'):
     from mathutils import Vector
     HP = _k.HP
     p = Vector((TUBE_X, 0.0, TUBE_Z))
-    part = HP.torpedo_pair(TUBE_R, 0.55, 2 * TUBE_Y, s=0.6)
+    part = HP.torpedo_pair(TUBE_R, 0.95, 2 * TUBE_Y, s=0.6, cowl=True)
     part = K.emit('T1', part, HP.frame(p, (1, 0, 0), (0, 0, 1)), inv)
     for ob in K.coll.objects:
         if ob.get('grp') == 'T1' and ob.get('role') != 'mount':
@@ -216,10 +216,10 @@ def build(K):
     # ---------------- the magazine section: ember heat-vent slits on the upper facets (the reload read) ----------------
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
-        for i, x in enumerate((1.7, 1.4, 1.1)):
-            p, n = facet_pt(x, side, 0.35)
-            K._surface_part('M%d%s' % (i + 1, sn), HP.vent(0.26, 0.12, 4, depth=0.035, fr=0.02), tuple(p + n * 0.012), tuple(n), (0, 0, 1), 'magazine_vents',
-                            'heat-vent louvre 0.26 x 0.12', 'vent', 'picture', 'the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits)', aperture=0.4)
+        for i, x in enumerate((1.25,)):
+            p, n = facet_pt(x, side, 0.4)
+            K._surface_part('M%d%s' % (i + 1, sn), HP.vent(0.7, 0.3, 4, depth=0.04, fr=0.022), tuple(p + n * 0.03), tuple(n), (0, 0, 1), 'magazine_vents',
+                            'heat-vent slit panel 0.7 x 0.3, four long lit slits', 'vent', 'picture', 'the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits)', aperture=0.4)
 
     # ---------------- the broadside band: plated and louvred (no ports: the Harrow has no broadside slot) ----------------
     for side, nm in ((1, 'port'), (-1, 'starboard')):
@@ -356,7 +356,7 @@ def build(K):
 
     def small_hatch(w):
         return HP.hatch(w / 0.5, w / 0.5).transform(Matrix.Scale(0.5, 4))
-    for i, (x, y) in enumerate(((1.7, 0.24), (1.7, -0.24), (-0.3, 0.22), (-0.3, -0.22))):
+    for i, (x, y) in enumerate(((0.95, 0.22), (0.95, -0.22), (-0.3, 0.22), (-0.3, -0.22))):
         K._surface_part('H%d' % (i + 1), small_hatch(0.13), (x, y, deck_z(x, y) + 0.02), (0, 0, 1), (1, 0, 0), 'hatches', 'round hatch 0.13', 'hatch', 'designed',
                         'deck hatch over the crew deck', aperture=0.6)
     for i, (x, y) in enumerate(((1.0, 0.22), (1.0, -0.22))):
@@ -492,11 +492,11 @@ def build(K):
     K.change('Four radiator spires, not the round 2 pictures\' five, at 0.66, 0.85, 0.76 and 0.58 over the spine block (tallest second from the front)',
              'designs.md\'s table (4 spires) outranks the picture; the final spire table (Board, Nov 19 15:30 UTC, after R331) gives the Harrow tallest 0.85; Ryan took round 2 with 4 small spires (R369)')
     K.change('The spires\' fins stand apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower', 'R331: the ember shows in the slats (the shared radiator glow=\'slats\', as S8, S9 and S10)')
-    K.change('The twin torpedo tubes sit in raised armoured cowls on the deck either side of the centreline (station 22 percent, 0.36 off the centreline), each a forged tube house with a riveted surround, a heavy collar, a deep bore and the next torpedo\'s nose seated inside; the bow is one long leaf taper with no step',
+    K.change('The twin torpedo tubes sit in raised armoured cowls on the deck either side of the centreline (station 22 percent, 0.36 off the centreline), each a rounded teardrop fairing sweeping back into the deck, a broad riveted mouth ring, a forged collar, a deep bore and the next torpedo\'s nose seated inside; the bow is one long leaf taper with no step',
              'the round 2 pictures Ryan took (R369) draw the tubes in deck cowls on a smooth taper; designs.md\'s cheek-plate tubes at station 10 percent would sit where the point is too narrow for two bores, and the cowls keep the firing lanes clear over the falling bow (R241)')
     K.change('The widest hull (2.1) sits over the magazine section at 40 to 50 percent, then about 1.7 over the stern third',
              'the round 2 top view measures its widest at 46 percent; designs.md calls this the widened magazine section (20 to 45 percent); its line "widest at about 70 percent" is the family default the picture overrides')
-    K.change('The magazine\'s ember heat-vent slits are three louvres on each upper facet between the tube cowls and the turret pair, as the round 2 pictures draw them', 'designs.md: the reload read; R221: they vent the magazine below')
+    K.change('The magazine\'s ember heat-vent slits are one long panel of four lit slits on each upper facet between the tube cowls and the turret pair, as the round 2 pictures draw them', 'designs.md: the reload read; R221: they vent the magazine below')
     K.change('One sear turret pair (two single-emitter tubs at the deck edges, station 46 percent)', 'designs.md\'s table and data.js harrow carry one turret slot (2 shots: one a mount)')
     K.change('The broadside band is plated and louvred, with no ports', 'designs.md: no broadside slot in data, so no ports (R241: no decorative guns)')
     K.change('Two ember bells 0.8 across at plus and minus 0.55 on riveted drums; no flame plumes', 'designs.md\'s table; the game draws the plume (round 2 pictures draw none at rest)')

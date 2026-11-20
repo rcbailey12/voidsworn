@@ -40,12 +40,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
 | T1 | twin Cinder torpedo tubes in deck cowls (one launcher, fixed forward) | 2 tubes | 22.4 | 0.00 | 0.47 | forward | F torp | picture | the destroyer's salvo (torp F, 1 shot: it leaves either tube in turn); the ship turns to aim it |
-| M1p | heat-vent louvre 0.26 x 0.12 | 1 | 32.1 | 0.67 | 0.23 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| M2p | heat-vent louvre 0.26 x 0.12 | 1 | 35.3 | 0.71 | 0.25 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| M3p | heat-vent louvre 0.26 x 0.12 | 1 | 38.5 | 0.74 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| M1s | heat-vent louvre 0.26 x 0.12 | 1 | 32.1 | -0.67 | 0.23 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| M2s | heat-vent louvre 0.26 x 0.12 | 1 | 35.3 | -0.71 | 0.25 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| M3s | heat-vent louvre 0.26 x 0.12 | 1 | 38.5 | -0.74 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
+| M1p | heat-vent slit panel 0.7 x 0.3, four long lit slits | 1 | 36.9 | 0.76 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
+| M1s | heat-vent slit panel 0.7 x 0.3, four long lit slits | 1 | 36.9 | -0.76 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
 | U1p | band louvre 0.2 x 0.08 | 1 | 29.0 | 0.93 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U2p | band louvre 0.2 x 0.08 | 1 | 38.5 | 1.05 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U3p | band louvre 0.2 x 0.08 | 1 | 52.2 | 1.07 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
@@ -87,8 +83,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L4s | running light | 1 | 54.3 | -0.66 | 0.30 | - | - | designed | frost-white running point on the deck edge |
 | L5s | running light | 1 | 66.9 | -0.59 | 0.30 | - | - | designed | frost-white running point on the deck edge |
 | L6s | running light | 1 | 82.7 | -0.58 | 0.29 | - | - | designed | frost-white running point on the deck edge |
-| H1 | round hatch 0.13 | 1 | 32.1 | 0.24 | 0.36 | - | - | designed | deck hatch over the crew deck |
-| H2 | round hatch 0.13 | 1 | 32.1 | -0.24 | 0.36 | - | - | designed | deck hatch over the crew deck |
+| H1 | round hatch 0.13 | 1 | 40.1 | 0.22 | 0.40 | - | - | designed | deck hatch over the crew deck |
+| H2 | round hatch 0.13 | 1 | 40.1 | -0.22 | 0.40 | - | - | designed | deck hatch over the crew deck |
 | H3 | round hatch 0.13 | 1 | 53.2 | 0.22 | 0.41 | - | - | designed | deck hatch over the crew deck |
 | H4 | round hatch 0.13 | 1 | 53.2 | -0.22 | 0.41 | - | - | designed | deck hatch over the crew deck |
 | H5 | round hatch 0.14 | 1 | 39.5 | 0.22 | -0.53 | - | - | designed | belly hatch on the armour step: torpedo stores come aboard here |
@@ -182,7 +178,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 266 objects, 54 parts, 464 close pairs, 315 rays, 2 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 43 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 50 parts, 413 close pairs, 307 rays, 2 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 39 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -192,9 +188,9 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 - **Four radiator spires, not the round 2 pictures' five, at 0.66, 0.85, 0.76 and 0.58 over the spine block (tallest second from the front).** designs.md's table (4 spires) outranks the picture; the final spire table (Board, Nov 19 15:30 UTC, after R331) gives the Harrow tallest 0.85; Ryan took round 2 with 4 small spires (R369).
 - **The spires' fins stand apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower.** R331: the ember shows in the slats (the shared radiator glow='slats', as S8, S9 and S10).
-- **The twin torpedo tubes sit in raised armoured cowls on the deck either side of the centreline (station 22 percent, 0.36 off the centreline), each a forged tube house with a riveted surround, a heavy collar, a deep bore and the next torpedo's nose seated inside; the bow is one long leaf taper with no step.** the round 2 pictures Ryan took (R369) draw the tubes in deck cowls on a smooth taper; designs.md's cheek-plate tubes at station 10 percent would sit where the point is too narrow for two bores, and the cowls keep the firing lanes clear over the falling bow (R241).
+- **The twin torpedo tubes sit in raised armoured cowls on the deck either side of the centreline (station 22 percent, 0.36 off the centreline), each a rounded teardrop fairing sweeping back into the deck, a broad riveted mouth ring, a forged collar, a deep bore and the next torpedo's nose seated inside; the bow is one long leaf taper with no step.** the round 2 pictures Ryan took (R369) draw the tubes in deck cowls on a smooth taper; designs.md's cheek-plate tubes at station 10 percent would sit where the point is too narrow for two bores, and the cowls keep the firing lanes clear over the falling bow (R241).
 - **The widest hull (2.1) sits over the magazine section at 40 to 50 percent, then about 1.7 over the stern third.** the round 2 top view measures its widest at 46 percent; designs.md calls this the widened magazine section (20 to 45 percent); its line "widest at about 70 percent" is the family default the picture overrides.
-- **The magazine's ember heat-vent slits are three louvres on each upper facet between the tube cowls and the turret pair, as the round 2 pictures draw them.** designs.md: the reload read; R221: they vent the magazine below.
+- **The magazine's ember heat-vent slits are one long panel of four lit slits on each upper facet between the tube cowls and the turret pair, as the round 2 pictures draw them.** designs.md: the reload read; R221: they vent the magazine below.
 - **One sear turret pair (two single-emitter tubs at the deck edges, station 46 percent).** designs.md's table and data.js harrow carry one turret slot (2 shots: one a mount).
 - **The broadside band is plated and louvred, with no ports.** designs.md: no broadside slot in data, so no ports (R241: no decorative guns).
 - **Two ember bells 0.8 across at plus and minus 0.55 on riveted drums; no flame plumes.** designs.md's table; the game draws the plume (round 2 pictures draw none at rest).
