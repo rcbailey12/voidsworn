@@ -70,10 +70,12 @@ check('Chain Lightning on a broken pool cuts the next recharge, once', () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const u = P()[0]; u.shp = 0; u.regen = 9; u.chainCut = 1 / 3; T.syncShields(u);
   T.startSideTurn('player'); const first = u.shp; T.startSideTurn('player');
   return first === 6 && u.shp === 15 && u.chainCut === 0; });
-check('a Hegemony ion hit stops the pool recharging for one turn start', () => {
+check('a Hegemony ion hit reports the lock and stops the pool recharging for one turn start', () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const t = P()[0], h = E()[0]; const w = h.weapons.find(x => x.ion && x.k !== 'flak');
-  T.applyHit(h, w, t, 4, 0); const p1 = t.shp; T.startSideTurn('player'); const locked = t.shp === p1; T.startSideTurn('player');
-  return !!w && locked && t.shp === Math.min(t.shMax, p1 + t.regen); });
+  const ionHit = T.applyHit(h, w, t, 4, 0);
+  const plainHit = T.applyHit(h, { ...w, ion: false }, t, 4, 0);
+  const p1 = t.shp; T.startSideTurn('player'); const locked = t.shp === p1; T.startSideTurn('player');
+  return ionHit.regenLock === true && !('regenLock' in plainHit) && locked && t.shp === Math.min(t.shMax, p1 + t.regen); });
 check('an ion lock still re-derives the catches when routing clears at turn start (pool 20, routed starboard)', () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const u = P()[0]; u.shp = 20; u.route = [0, 1, 0, 0]; T.syncShields(u);
   const routed = u.sh.slice(); u.regenLock = 1; T.startSideTurn('player');

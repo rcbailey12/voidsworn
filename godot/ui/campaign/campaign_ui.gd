@@ -371,6 +371,7 @@ func render() -> void:
 	for ch in modal_box.get_children(): ch.queue_free()
 	var pg = C.page; _acts = pg["acts"]
 	if pg["kind"] != "admiral": desk_opts_open = false; _drawer_shown = false
+	if pg["kind"] != "aspect": aspect_pick = ""; podium = null
 	var battle = pg["kind"] == "battle"
 	root.visible = not (battle and hide_on_battle and (C.modal_d == null or C.modal_d["kind"] == "retreat"))   # rewards after a fight show over the battle scene
 	bg.color = INK
@@ -385,15 +386,15 @@ func render() -> void:
 	match pg["kind"]:
 		"title": body = _title()
 		"admiral": body = _desk()
-		"aspect": body = _wrap_page(_aspect())
+		"aspect": body = _podium()
 		"map": body = _map()
 		"fleet": body = _fleet(pg["data"])
 		"shipyard": body = _wrap_page(_shipyard())
 		"battle":   # the test battle's panel; a dialog over the battle (the rewards) shows over the scene alone, as in the game shell
 			body = _battle_stub(pg["data"]) if (C.modal_d == null or C.modal_d["kind"] == "retreat") else Control.new()
-		"legacy": body = _wrap_page(_legacy())
-		"lineage": body = _wrap_page(_lineage(pg["data"]["id"]))
-		"help": body = _wrap_page(_help(), 820)
+		"legacy": body = _kit_page(_legacy(), 1440, [kbtn("Back", "title", "", "back")])
+		"lineage": body = _kit_page(_lineage(pg["data"]["id"]), 1440, [kbtn("Back", "progTab", "mastery", "back"), kbtn("Reset line: " + C.numstr(C.lineageRespecCost(pg["data"]["id"])) + " renown", "offerRespec", pg["data"]["id"], "quiet")])
+		"help": body = _kit_page(_help(), 1120, [kbtn("Back", "title", "", "back")])
 		"end": body = _end(pg["data"])
 		_: body = lbl("")
 	page_box.add_child(body)
@@ -452,6 +453,70 @@ func _first_button(n: Node) -> Control:
 		var r = _first_button(ch)
 		if r != null: return r
 	return null
+# ---------------- the start pages on the orders kit (issue 1217 phase 5): Progression, Lineage, How to play ----------------
+# The desk's frame: the ledger veil, one centred column that scrolls, and a fixed bar below it that never moves (Back on the
+# left, the page's other quiet actions beside it). Card rows become kit grids (Kit.card_grid): one width, one height per
+# row, actions pinned to the card's foot.
+var _kit_scroll: ScrollContainer = null
+func _kit_page(inner: Control, maxw: float, left_btns: Array) -> Control:
+	var vs = get_viewport().get_visible_rect().size
+	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.theme = Kit.theme(k)
+	var veil = TextureRect.new(); veil.texture = GS.ledger_veil(); veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; veil.stretch_mode = TextureRect.STRETCH_SCALE; veil.mouse_filter = Control.MOUSE_FILTER_IGNORE; host.add_child(veil)
+	var cw = minf(vs.x - px(DESK_PAD) * 2, float(px(maxw)))
+	var left = (vs.x - cw) * 0.5
+	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.anchor_right = 1.0; sc.anchor_bottom = 1.0; sc.offset_top = px(28); sc.offset_bottom = -px(96)
+	host.add_child(sc); _kit_scroll = sc
+	var row = HBoxContainer.new(); row.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(row)
+	var lm = Control.new(); lm.custom_minimum_size.x = left; row.add_child(lm)
+	inner.custom_minimum_size.x = cw; row.add_child(inner)
+	_regrid(inner, cw)
+	var bar = Kit.action_bar(k, left_btns)
+	bar.anchor_top = 1.0; bar.anchor_bottom = 1.0; bar.anchor_right = 1.0
+	bar.offset_left = left; bar.offset_right = -left; bar.offset_top = -px(80); bar.offset_bottom = -px(24)
+	host.add_child(bar)
+	return host
+# Turns the page's card flows into kit grids. A flow of cards becomes a Kit.card_grid; a flow of columns (Lineage's trunk
+# and branches) becomes equal columns whose cards take the column's width. width is the room the node has.
+func _regrid(node: Node, width: float) -> void:
+	for ch in node.get_children():
+		if ch is HFlowContainer and ch.get_child_count() > 0:
+			var kids = ch.get_children()
+			var idx = ch.get_index(); var parent = ch.get_parent()
+			if kids.all(func(x): return x is PanelContainer):
+				for x in kids:
+					ch.remove_child(x); _pin_foot(x)
+				var g = Kit.card_grid(kids, width, k)
+				parent.remove_child(ch); ch.queue_free(); parent.add_child(g); parent.move_child(g, idx)
+				continue
+			if kids.all(func(x): return x is VBoxContainer):
+				var gp = float(px(16)); var n = kids.size()
+				var cols = n if (width - gp * (n - 1)) / float(n) >= px(240) else maxi(1, int(floor((width + gp) / (px(300) + gp))))
+				var g2 = GridContainer.new(); g2.columns = cols
+				g2.add_theme_constant_override("h_separation", int(gp)); g2.add_theme_constant_override("v_separation", int(gp))
+				var cw2 = floorf((width - gp * (cols - 1)) / float(cols))
+				for x in kids:
+					ch.remove_child(x); (x as Control).custom_minimum_size.x = cw2; g2.add_child(x)
+					for c2 in x.get_children():
+						if c2 is PanelContainer:
+							(c2 as Control).custom_minimum_size.x = cw2; _pin_foot(c2)
+						elif c2 is Label: (c2 as Label).custom_minimum_size.x = minf((c2 as Label).custom_minimum_size.x, cw2)
+				parent.remove_child(ch); ch.queue_free(); parent.add_child(g2); parent.move_child(g2, idx)
+				continue
+		if ch is PanelContainer: _regrid(ch, width - px(36))
+		elif ch is Container: _regrid(ch, width)
+# A card's last action sits at its foot, so a row of cards lines its buttons up.
+func _pin_foot(cardp: Node) -> void:
+	if cardp.get_child_count() == 0: return
+	var body = cardp.get_child(0)
+	if not (body is VBoxContainer) or body.get_child_count() < 2: return
+	var last = body.get_child(body.get_child_count() - 1)
+	if last is Button or last is HBoxContainer:
+		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		body.add_child(gap); body.move_child(gap, body.get_child_count() - 2)
+		body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 	var sc = ScrollContainer.new(); sc.set_anchors_preset(Control.PRESET_FULL_RECT); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var hb = HBoxContainer.new(); hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -808,26 +873,103 @@ func _run_options() -> Control:
 	return v
 
 # ---------------- aspect ----------------
-func _aspect() -> Control:
-	var v = vbox(10); var d = C.page["data"]; var f = d["flag"]
-	v.add_child(gothic("Choose your flagship's aspect"))
-	v.add_child(rich(c("The ", BONE2) + "[b]" + esc(f["name"]) + "[/b]" + c(" (" + esc(C.HULLS[f["tpl"]]["n"]) + ") carries your flag. Pick one aspect for it; it lasts the whole run, and passes to your next-largest ship if the flagship falls.", BONE2), 18))
-	var cards = flow()
+# ---------------- the flagship podium (issue 1217 phase 4; Ryan: its own screen with a big live 3D ship) ----------------
+# Left: the flagship, big, turning slowly (still under Reduce motion), with its name plate. Right: the aspect offers as
+# cards you pick, then what rides along (a patron's gift, Heat, the cores in range). The bar: Back (the rules action
+# backToSetup, both twins) and one ember Launch that takes the picked aspect.
+const Podium = preload("res://ui/campaign/flagship_podium.gd")
+var aspect_pick := ""               # the aspect card picked on this page; Launch takes it
+var _aspect_cards: Array = []       # [card, id] of the last render (front_end_test)
+var podium: Control = null
+func _podium() -> Control:
+	var vs = get_viewport().get_visible_rect().size
+	var d = C.page["data"]; var f = d["flag"]; var R = C.RUN
+	if not (d["opts"] as Array).has(aspect_pick): aspect_pick = ""
+	var fac = str(R["fac"]); var accent = Kit.faction_accent(fac)
+	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.theme = Kit.theme(k)
+	var veil = TextureRect.new(); veil.texture = GS.ledger_veil(); veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; veil.stretch_mode = TextureRect.STRETCH_SCALE; veil.mouse_filter = Control.MOUSE_FILTER_IGNORE; host.add_child(veil)
+	var cw = minf(vs.x - px(DESK_PAD) * 2, float(px(1640)))
+	var left = (vs.x - cw) * 0.5
+	var col_w = clampf(cw * 0.36, float(px(420)), float(px(620)))
+	var stage_w = cw - col_w - px(40)
+	# the stage: the ship over a soft glow in its engine colour, and its name plate
+	var stage = Control.new(); stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.offset_left = left; stage.offset_top = px(28); stage.anchor_bottom = 1.0; stage.offset_bottom = -px(96); stage.offset_right = left + stage_w
+	host.add_child(stage)
+	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
+	podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
+	podium.setup(C, f, accent, _reduce_motion())
+	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
+	plate.add_child(Kit.section("Your flagship", k))
+	plate.add_child(Kit.heading(str(f["name"]), 44, k))
+	var rb = ColorRect.new(); rb.color = accent; rb.custom_minimum_size = Vector2(px(72), maxi(2, px(3))); rb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; rb.mouse_filter = Control.MOUSE_FILTER_IGNORE; plate.add_child(rb)
+	plate.add_child(Kit.label(str(C.HULLS[f["tpl"]]["n"]) + ", " + str(C.FACTIONS[fac]["n"]), 18, k, GS.TEXT2, null, false))
+	# the column: the aspects, then what rides along
+	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.offset_left = left + stage_w + px(40); sc.offset_right = sc.offset_left + col_w; sc.offset_top = px(28); sc.anchor_bottom = 1.0; sc.offset_bottom = -px(96)
+	host.add_child(sc)
+	var v = VBoxContainer.new(); v.custom_minimum_size.x = col_w - px(4); v.add_theme_constant_override("separation", px(12)); sc.add_child(v)
+	v.add_child(Kit.heading("Choose its aspect", 36, k))
+	v.add_child(Kit.label("One aspect for the whole " + C.runWord() + ". If the flagship falls, it passes to your next-largest ship.", 18, k, GS.TEXT2, null, true, (col_w - px(4)) / k))
+	_aspect_cards = []
 	for kk in d["opts"]:
-		var cv = card(false, 320); cv[1].add_child(lbl(C.ASPECTS[kk]["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(C.ASPECTS[kk]["d"], 18, BONE2))
-		add(cv[1], abtn("Take this aspect", "pickAspect", kk, true)); cards.add_child(cv[0])
-	v.add_child(cards)
-	var R = C.RUN
+		var ac = _aspect_card(str(kk), col_w - px(4), accent); v.add_child(ac); _aspect_cards.append([ac, str(kk)])
 	if C.jt(R.get("giftBoon")):
-		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", BONE2), 17))
+		var gb = R["giftBoon"]
+		v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: ", BONE2) + "[b]" + esc(C.BOONS[gb]["n"]) + "[/b]", 17))
 	if R.get("heat") is Array and R["heat"].size() > 0:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
-		v.add_child(lbl("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, BLOOD))
+		v.add_child(Kit.label("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, k, BLOOD, null, true, (col_w - px(4)) / k))
 	var ps = []
-	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b] (" + esc(str(C.PATRONS[p]["theme"]).to_lower()) + ")")
-	v.add_child(rich(c("Cores in range of this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 18))
-	return v
+	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b]")
+	var pl = rich(c("Cores in range: ", BONE3) + ", ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 17)
+	var pt = []
+	for p in R["patrons"]: pt.append(str(C.PATRONS[p]["n"]) + ": " + str(C.PATRONS[p]["theme"]).to_lower())
+	pl.tooltip_text = "\n".join(PackedStringArray(pt)); pl.mouse_filter = Control.MOUSE_FILTER_PASS; v.add_child(pl)
+	# the bar
+	var back = kbtn("Back", "backToSetup", "", "back")
+	var go: Button
+	if aspect_pick != "": go = kbtn("Launch with " + str(C.ASPECTS[aspect_pick]["n"]), "pickAspect", aspect_pick, "primary")
+	else:
+		go = Kit.button("Pick an aspect to launch", k, "primary", Callable()); go.disabled = true
+	go.name = "LaunchButton"
+	var bar = Kit.action_bar(k, [back], go)
+	bar.anchor_top = 1.0; bar.anchor_bottom = 1.0; bar.anchor_right = 1.0
+	bar.offset_left = left; bar.offset_right = -left; bar.offset_top = -px(80); bar.offset_bottom = -px(24)
+	host.add_child(bar)
+	return host
+func _aspect_card(id: String, w: float, accent: Color) -> Control:
+	var picked = aspect_pick == id
+	var cv = Kit.card(k, w / k, picked, accent if picked else Color(0, 0, 0, 0)); var body: VBoxContainer = cv[1]
+	cv[0].custom_minimum_size.x = w
+	var inner = floorf(w - px(14) * 2 - px(3) - px(4))
+	var top = HBoxContainer.new(); top.add_theme_constant_override("separation", px(10)); body.add_child(top)
+	var nm = Kit.label(str(C.ASPECTS[id]["n"]), 22, k, GS.TEXT, Kit.medium_font(), true, (inner - px(110)) / k); nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL; top.add_child(nm)
+	if picked: top.add_child(Kit.label("PICKED", 17, k, accent, Kit.medium_font(), false))
+	var dl = Kit.label(str(C.ASPECTS[id]["d"]), 18, k, GS.TEXT2, null, true, inner / k); dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body.add_child(dl)
+	# the whole card is the button: a click, or Enter on its focus, picks it
+	var hit = Button.new(); hit.flat = true; hit.set_anchors_preset(Control.PRESET_FULL_RECT); hit.focus_mode = Control.FOCUS_ALL
+	hit.add_theme_stylebox_override("focus", GS.focus_ring(k)); hit.tooltip_text = "Pick " + str(C.ASPECTS[id]["n"])
+	for st in ["normal", "hover", "pressed", "disabled"]: hit.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	Kit.wire_sound(hit, "tab")
+	hit.pressed.connect(func(): aspect_pick = id; _dirty = true)
+	cv[0].add_child(hit)
+	cv[0].name = "Aspect_" + id
+	return cv[0]
+var _glow_cache := {}
+func _podium_glow(col: Color) -> Texture2D:
+	var key = col.to_html()
+	if _glow_cache.has(key): return _glow_cache[key]
+	var g = Gradient.new(); g.set_color(0, Color(col, 0.20)); g.set_color(1, Color(col, 0.0))
+	var t = GradientTexture2D.new(); t.gradient = g; t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.55); t.fill_to = Vector2(0.5, 0.0); t.width = 256; t.height = 256
+	_glow_cache[key] = t
+	return t
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
 # The first spec (archived) is docs/archive/briefs/campaign_map_briefing.md; the live look is contrib/opus/briefs/campaign_rail_orders_sheet.md; the first picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.
@@ -1555,14 +1697,23 @@ func _battle_stub(d: Dictionary) -> Control:
 
 # ---------------- progression and help ----------------
 func _legacy() -> Control:
-	var v = vbox(10); var M = C.META; var st = M["stats"]
-	v.add_child(gothic("Progression"))
-	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), BONE) + c(".", BONE2), 17))
+	var v = vbox(12); var M = C.META; var st = M["stats"]
+	# the heading beside the four numbers that carry between runs
+	var head = hbox(32); v.add_child(head)
+	var hcol = vbox(6); hcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL; head.add_child(hcol)
+	hcol.add_child(Kit.heading("Progression", 44, k))
+	var rb = ColorRect.new(); rb.color = GS.MAP_EMBER; rb.custom_minimum_size = Vector2(px(72), maxi(2, px(3))); rb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; rb.mouse_filter = Control.MOUSE_FILTER_IGNORE; hcol.add_child(rb)
+	for r in [["Runs launched", C.numstr(st["runs"]), BONE], ["Deepest sector", C.numstr(C.z0(st.get("best"))), BONE], ["Runs won", C.numstr(st["wins"]), BONE], ["Renown", C.numstr(C.z0(M.get("renown"))), GS.MAP_EMBER]]:
+		head.add_child(_readout(r[0], r[1], r[2], true))
 	var tabs = hbox(6)
-	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
+	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]:
+		if _find(_acts, "progTab", t[0]).is_empty(): continue
+		var tt = t[0]
+		var tb = Kit.tab_button(t[1], k, C.prog_tab == tt, GS.MAP_EMBER, func(): _campaign_action("progTab", tt))
+		tb.set_meta("act", "progTab"); tb.set_meta("arg", tt); tabs.add_child(tb)
 	var stc = _story()
 	if stc != null:   # story layer: the Career screen (records, medals, titles, history)
-		var cb = Button.new(); cb.text = "Career"; cb.focus_mode = Control.FOCUS_ALL; cb.pressed.connect(func(): stc.open_career()); tabs.add_child(cb)
+		tabs.add_child(Kit.tab_button("Career", k, false, GS.MAP_EMBER, func(): stc.open_career()))
 	v.add_child(tabs)
 	match C.prog_tab:
 		"variants":
@@ -1572,7 +1723,7 @@ func _legacy() -> Control:
 				for vid in C.HULL_VARIANTS.keys():
 					if C.HULLS[C.HULL_VARIANTS[vid]["base"]].get("fac") == f: vs.append(vid)
 				if vs.is_empty(): continue
-				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi))
+				v.add_child(Kit.section(str(C.FACTIONS[f]["n"]), k))
 				var cards = flow()
 				for vid in vs:
 					var hv = C.HULL_VARIANTS[vid]; var own = C.jt(M["variants"].get(vid)); var t = C.HULLS[vid]
@@ -1604,10 +1755,10 @@ func _legacy() -> Control:
 			var cv_m = card(false, 300); cv_m[1].add_child(lbl("Capstone mastery", 19, BONE, font_semi)); cv_m[1].add_child(lbl("Choose a Command evolution at level 8 (230 XP), then keep deepening it at 320, 440 and 600 XP.", 18, BONE2)); mc.add_child(cv_m[0])
 			v.add_child(mc)
 			for f in C.favFirst():
-				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi)); var ac = flow()
+				v.add_child(Kit.section(str(C.FACTIONS[f]["n"]), k)); var ac = flow()
 				for id in C.ADMIRALS.keys():
 					if C.or_(C.ADMIRALS[id].get("fac"), "voidsworn") != f: continue
-					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 17, BONE2)); cv2[1].add_child(_mastery_bar(id))
+					var cv2 = card(false, 260); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 17, BONE2)); cv2[1].add_child(_mastery_bar(id))
 					if C.LINEAGE_TREES.has(id): add(cv2[1], abtn("View lineage tree", "lineage", id))
 					ac.add_child(cv2[0])
 				v.add_child(ac)
@@ -1627,7 +1778,7 @@ func _legacy() -> Control:
 			var hc = flow()
 			for kk in C.HEAT.keys():
 				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.HEAT[kk]["n"]) + "[/b] " + c("+" + C.numstr(C.HEAT[kk]["w"]), BONE3), 19)); cv[1].add_child(lbl(C.HEAT[kk]["d"], 18, BONE2)); hc.add_child(cv[0])
-			v.add_child(hc); v.add_child(lbl("Best Heat won", 20, BONE, font_semi))
+			v.add_child(hc); v.add_child(Kit.section("Best Heat won", k))
 			var bc = flow()
 			for f in C.RUN_FACTIONS:
 				var hb = float(C.z0(M["heatBest"].get(f))); var won = C.or_(st.get("wonFacs"), []).has(f)
@@ -1641,8 +1792,7 @@ func _legacy() -> Control:
 				for f in fallen:
 					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + " of the " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
 				v.add_child(fc2)
-	add(v, abtn("Back to title", "title", "", true))
-	return v
+	return v   # Back sits in the page's fixed bar (_kit_page)
 const HELP := [
 	["", "Embers of the Hollow Sun is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start."],
 	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first loss, Heat lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
@@ -1658,13 +1808,27 @@ const HELP := [
 	["Cores, protocols and your flagship", "Each run, four of the six cores are in range. Battles on the map carry a core’s signal: win there and that core offers three protocols, and you take one. Protocols change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold protocols from two cores and a duo protocol can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector’s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones."],
 	["Between battles", "Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship’s Mark. Captains earn experience and pick a perk at each promotion. Salvage gives fleet-wide bonuses that last for the run."],
 	["Keys", "Tab next ship, Q/E turn, 1 to 6 arm a weapon, B brace, A toggle arcs, Esc or right-click to cancel, Enter end turn. On campaign screens: Tab and the arrow keys move between buttons, Enter presses, Esc closes a dialog, 1 to 9 pick a dialog's choices."]]
+# How to play: an index of the sections on the left (a link scrolls to its section), the text in one readable column.
 func _help() -> Control:
-	var v = vbox(10); v.add_child(gothic("How to play"))
+	var outer = hbox(40)
+	var idx = vbox(4); idx.custom_minimum_size.x = px(240); idx.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; outer.add_child(idx)
+	var v = vbox(10); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; outer.add_child(v)
+	v.add_child(Kit.heading("How to play", 44, k))
+	var rb = ColorRect.new(); rb.color = GS.MAP_EMBER; rb.custom_minimum_size = Vector2(px(72), maxi(2, px(3))); rb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; rb.mouse_filter = Control.MOUSE_FILTER_IGNORE; v.add_child(rb)
+	idx.add_child(Kit.section("Sections", k))
+	var first = Kit.link("The run", k, Callable(), 18); first.alignment = HORIZONTAL_ALIGNMENT_LEFT; idx.add_child(first)
+	var text_w = (minf(get_viewport().get_visible_rect().size.x - px(DESK_PAD) * 2, float(px(1120))) - px(280)) / k
+	var anchors = []
 	for h in HELP:
-		if h[0] != "": v.add_child(lbl(h[0], 20, BONE, font_semi))
-		v.add_child(lbl(h[1], 17, BONE2))
-	add(v, abtn("Back", "title", "", true))
-	return v
+		if h[0] != "":
+			var sh = Kit.section(str(h[0]), k); v.add_child(sh)
+			var lk = Kit.link(str(h[0]), k, Callable(), 18); lk.alignment = HORIZONTAL_ALIGNMENT_LEFT; idx.add_child(lk); anchors.append([lk, sh])
+		var l = Kit.label(str(h[1]), 18, k, GS.TEXT2, null, true, minf(text_w, 820.0)); l.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.add_child(l)
+	first.pressed.connect(func(): if _kit_scroll != null: _kit_scroll.scroll_vertical = 0)
+	for a in anchors:
+		var target: Control = a[1]
+		(a[0] as Button).pressed.connect(func(): if _kit_scroll != null: _kit_scroll.scroll_vertical = int(target.position.y + v.position.y))
+	return outer
 
 # ---------------- run end ----------------
 # Debrief presentation reads the paid receipt. Local selections never write the profile.
@@ -1952,7 +2116,8 @@ func _lineage_node(n) -> Control:
 	return cv[0]
 func _lineage(id) -> Control:
 	var v = vbox(12); var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var nodes = C.lineageNodes(id); var level = C.masteryLevel(id)
-	v.add_child(lbl(C.ADMIRALS[id]["n"], 30, BONE, font_goth))
+	v.add_child(Kit.section("Lineage", k))
+	v.add_child(Kit.heading(str(C.ADMIRALS[id]["n"]), 44, k))
 	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
 	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, BONE2))
@@ -1979,8 +2144,7 @@ func _lineage(id) -> Control:
 		if n["branch"] == "cap": capnodes.add_child(_lineage_node(n))
 	capv.add_child(capnodes); capv.add_child(_capstone_mastery(id)); v.add_child(cap)
 	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 18, BONE3))
-	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
-	return v
+	return v   # Back (to Admiral mastery) and Reset line sit in the page's fixed bar (_kit_page)
 func _capstone_effect(i: int) -> String:
 	var value = C.CAPSTONE_MASTERY_PERKS[i].get("d")
 	var effect := value.strip_edges() as String if value is String else ""
