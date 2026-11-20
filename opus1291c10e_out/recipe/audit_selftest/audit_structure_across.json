@@ -1,0 +1,23 @@
+{
+ "problems": [
+  "part B1p floats 0.62 game units off the hull"
+ ],
+ "parts": 126,
+ "crossing_break_lines": [],
+ "structure_across_seams": [
+  "B1p"
+ ],
+ "guns_with_normals": 6,
+ "guns_into_ship": 0,
+ "guns": 6,
+ "break_lines": {
+  "t_lines": [
+   -0.22477944797105065,
+   -0.05619486199276266,
+   0.25287687896743194
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "FAIL"
+}

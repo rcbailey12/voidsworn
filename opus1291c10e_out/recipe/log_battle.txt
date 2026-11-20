@@ -1,0 +1,1 @@
+[battle] C10 {"game": {"bow": 62.8, "midship": 53.4, "stern": 18.9, "whole": 48.8}, "studio": {"bow": 72.2, "midship": 70.6, "stern": 28.3, "whole": 62.0}}

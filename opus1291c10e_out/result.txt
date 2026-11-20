@@ -1,0 +1,29 @@
+start chorus_C10 B16_23 board/pin-1291-c10e Fri 11/20/2026 16:37:28.47 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   05ef902a0..f4867b996  opus/issue-1414      -> opus/issue-1414
+ + 717d898a0...dd230af28 refs/pull/1418/merge -> refs/pull/1418/merge  (forced update)
+   05ef902a0..f4867b996  refs/pull/1420/head  -> refs/pull/1420/head
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10e\repo
+commit=8c8fc1813bce5d319456307f198a1ed63a14da99
+import exit 0 
+3_trace_hull start 16:42:50.64 
+3_trace_hull exit 0 at 16:44:30.81 
+4_parts_kit start 16:44:30.81 
+4_parts_kit exit 0 at 16:46:17.70 
+5_paint_bake start 16:46:17.70 
+5_paint_bake exit 0 at 16:50:33.61 
+6_lod start 16:50:33.61 
+6_lod exit 0 at 16:51:44.31 
+7_export start 16:51:44.32 
+7_export exit 0 at 16:55:25.03 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10e\repo\godot\assets\ships\B16_23\B16_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 16:56:04.90 
+all done 

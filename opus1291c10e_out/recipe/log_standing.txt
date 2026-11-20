@@ -1,0 +1,7 @@
+  outline C10: bow 35.2, midship 53.5, stern 26.5, whole 40.6 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 72.4, midship 38.0, stern 35.3
+  REPORT bow overlap 35.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 53.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 26.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 40.6 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar

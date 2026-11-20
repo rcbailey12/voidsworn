@@ -1,0 +1,19 @@
+[armadillo] 14 bands, 73 runs, 1 steps clamped
+ok   the outside is one ship length long (1.000000)
+ok   the class length is the sheet's (28.0 = LENGTH 28.0)
+ok   3 transverse seams at the sheet's stations
+ok   0 longitudinal seams at the sheet's heights and spans
+ok   8 muzzles are the kit's own, each in the data.js slot of its weapon and arc
+ok   every data.js slot (4) has muzzles of its own
+ok   4 turret pivots kept, each with its turning meshes and a data.js slot
+ok   3 engine exits and bell radii are the sheet's
+ok   35 inside objects are visible role interior
+ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers
+[armadillo] 14 bands, 73 runs, 1 steps clamped
+ok   a ship whose weapon list lacks a sheet weapon (bioplasma F) was refused: M1: weapon 'bioplasma' arc 'F' names 0 slots of the data.js list [('tendril', 'T'), ('spores', 'T')]
+[armadillo] 14 bands, 73 runs, 1 steps clamped
+ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-6.9 to -5.9) runs across the transverse seam B-3: one compartment each
+[armadillo] 14 bands, 73 runs, 1 steps clamped
+ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)
+PASS the build sheet contract keeps the sheet's data
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)

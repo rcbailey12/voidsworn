@@ -1,0 +1,2 @@
+recipe\export\B16_23\B16_23.glb 16.4 MB
+recipe\export\B16_23\_gltf_source\B16_23.bin 16.3 MB

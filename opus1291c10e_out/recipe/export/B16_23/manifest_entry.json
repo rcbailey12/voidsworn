@@ -1,0 +1,50 @@
+{
+ "name": "The Ninefold Maw, the Chorus flagship (The Chorus)",
+ "faction": "chorus",
+ "cls": "Bio-titan",
+ "band": "XL",
+ "game_ship": "b_boss",
+ "length_world": 28.0,
+ "hardpoints": {
+  "gun": 8,
+  "engine": 3,
+  "bay": 6,
+  "breach": 9,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 9,
+ "turrets": 4,
+ "files": {
+  "B16_23.glb": {
+   "bytes": 17182188,
+   "sha256": "c1cfc7c799487487680ee471da89483e91d1c71219647bf7a1a71932a196d803"
+  },
+  "B16_23_base.jpg": {
+   "bytes": 963195,
+   "sha256": "51b6b789cf632ac062d423538b63ade51f57baa4a6bd27ac71025a7e617750e4"
+  },
+  "B16_23_normal.png": {
+   "bytes": 5984025,
+   "sha256": "da8f0bacd144f5cfb81e1c9396c91bfeb210a7f81ef3d2ff2d1b0c1c9fb8452d"
+  },
+  "B16_23_orm.png": {
+   "bytes": 5025569,
+   "sha256": "1a7f274284ba8b68a14e50df6bfd80925361d4f133bf774814053ca94805d8ed"
+  },
+  "B16_23_parts_base.jpg": {
+   "bytes": 962647,
+   "sha256": "ebf4b1637ba0f8f031d38a2d25de77226e4a323451a43f1989bece74a2c8be08"
+  },
+  "B16_23_parts_normal.png": {
+   "bytes": 5511393,
+   "sha256": "57f9460bf9a9ccdbde3219a539d545fe11d28305148d2d4370e505c39cd55960"
+  },
+  "B16_23_parts_orm.png": {
+   "bytes": 5167378,
+   "sha256": "e676e984655430889ba831b4aae9e53758ebc0a0c75692f766fd8b9e89cfd49f"
+  }
+ },
+ "pc_path": "godot/assets/ships/B16_23/"
+}

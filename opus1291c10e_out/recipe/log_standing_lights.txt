@@ -1,0 +1,1 @@
+PASS lights: no window or trim lights are declared (the paint has no light map yet)

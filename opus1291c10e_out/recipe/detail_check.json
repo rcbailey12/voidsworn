@@ -1,0 +1,16 @@
+{
+ "measured": {
+  "normal": 5.6016645431518555,
+  "albedo": 0.07547993957996368,
+  "rough": 0.20259594917297363,
+  "texels": 384372,
+  "from_uvs": true
+ },
+ "floors": {
+  "normal": 3.5,
+  "albedo": 0.04,
+  "rough": 0.08
+ },
+ "gated": true,
+ "low": []
+}
