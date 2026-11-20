@@ -16,12 +16,18 @@ import os
 import sys
 
 FLOORS = dict(normal=3.5, albedo=0.04, rough=0.08)   # Nov 20: the R341 C13 flesh measured 1.1, 0.066, 0.023; round 10 6.6, 0.063, 0.185
+# Every atlas is measured at this size, whatever the bake's own (a box downsample), so the numbers and the floors mean the
+# same detail at any bake resolution. Nov 20: the same round 10 paint measured 0.063 albedo contrast at the cloud's 1024
+# bake and 0.021 at the PC's 4096, because a few texels of a 4096 atlas are a quarter of the skin a 1024 one covers.
+REF = 1024
 
 
 def _load(path, mode):
     from PIL import Image
     import numpy as np
     im = Image.open(path).convert(mode)
+    if im.size != (REF, REF):
+        im = im.resize((REF, REF), Image.BOX)
     return np.asarray(im).astype(np.float32) / 255.0
 
 
