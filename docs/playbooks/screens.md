@@ -172,7 +172,8 @@ change (Oct 29 ruling). Three factions show their own money on the shipyard, the
 - Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (25, 45, 70, 85, 100, about 25% of
   the price and still under the 35% decommission value), at most 100 a battle (issue 1290).
 - Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value. A regrown ship
-  decommissions for 0 until it has fought a battle, so regrow-then-sell is not free money (issue 1290).
+  decommissions for 0 until it has fought a battle (issue 1290), and after that for at most what its regrow cost, so regrow,
+  fight once, sell is not free money either (issue 1384).
 
 Check: godot --headless --path godot --script res://campaign/test/late_run_shots.gd builds all four pages; with a display
 and an output folder it saves L1178, B1178, E1178 and C1178.

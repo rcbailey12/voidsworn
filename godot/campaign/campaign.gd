@@ -211,7 +211,8 @@ func cinderOpen() -> bool:
 func capturedHullPrice(t: Dictionary) -> float:
 	var base = float(t["cost0"]) if t.get("cost0") != null else (float(t["val"]) if t.get("val") != null else float(t["cost"]))   # issue 1354: val is the price before the shop discount
 	var ladder = (TB.FAC_PRICE["voidsworn"].get(t.get("cls")) if jt(TB.FAC_PRICE.get("voidsworn")) else null)
-	return jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * priceMult())
+	var disc = float(TB.SHOP_DISCOUNT["voidsworn"])   # issue 1384: the Crusade's own hulls carry the shop discount, so a captured hull does too
+	return jsround(jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * disc / 5.0) * 5.0 * priceMult())
 # R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock (legacyHullOn, so
 # the playtest switch keeps working), so a captured battleship waits for u_battleship like the Cathedral.
 func cinderPool() -> Array:
@@ -757,7 +758,11 @@ func shipValue(tpl) -> float:
 	return 40.0 * float(or_(H.get("cp") if H != null else null, 1))
 func prizeScrap(tpl) -> float: return jsround(shipValue(tpl) * 0.35)
 # issue 1290: what decommissioning pays; a ship regrown from an Eclipse core pays nothing until it has fought (core.js sellValue)
-func sellValue(s) -> float: return 0.0 if s != null and s.get("regrown") else prizeScrap(s["tpl"])
+# issue 1384: after it has fought, a regrown ship pays at most what its regrow cost (corePaid), so regrow, fight, sell never profits
+func sellValue(s) -> float:
+	if s != null and s.get("regrown"): return 0.0
+	if s != null and s.get("corePaid") != null: return minf(float(s["corePaid"]), prizeScrap(s["tpl"]))
+	return prizeScrap(s["tpl"])
 func ensureFlagship() -> Variant:
 	if RUN == null or RUN.get("fleet") == null or RUN["fleet"].size() == 0: return null
 	if flagshipOf() == null:
@@ -2022,7 +2027,7 @@ func ACT_restoreCore(a: String) -> void:
 	if i < 0 or i >= cs.size() or not HULLS.has(cs[i]): return
 	var tpl = cs[i]; var c = coreCost(tpl)
 	if float(RUN["credits"]) < c or fleetCP() + float(or_(HULLS[tpl].get("cp"), 1)) > float(RUN["cpCap"]): return
-	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); s["regrown"] = true; RUN["fleet"].append(s)
+	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); s["regrown"] = true; s["corePaid"] = c; RUN["fleet"].append(s)
 	tel("shop", {"k": "core", "id": tpl, "cost": c}); toast(ship_with_article(s["name"], true) + " wakes from its core."); shipyardScreen(yard_node)
 func shipyardScreen(n) -> void:
 	yard_node = n
@@ -2117,6 +2122,7 @@ func ACT_sellConfirm(uid: String) -> void:
 	if i < 0: return
 	var s = RUN["fleet"][i]
 	RUN["inventory"].append_array(s["mods"]); hullPay(-sellValue(s)); RUN["fleet"].remove_at(i)
+	changeFleet(func(): ensureFlagship())   # issue 1384: selling the flagship hands the Aspect on at once (campaign_run.js sellConfirm)
 	close_modal(); shipyardScreen(yard_node)
 func _repair_stop_options(kind: String) -> Array:
 	var drydock := kind == "drydock"
@@ -3043,6 +3049,12 @@ func applyOutcome(r) -> Array:
 			out.append("Fleet damage " + ("+10%" if jt(r.get("dmgPctUp")) else "-10%") + " for the next battle only.")
 	if jt(r.get("core")):
 		var p = TB.BEAT3_REWARDS.core.get(RUN["fac"])
+		if p != null and RUN.get("eatenCore") != null and RUN["eatenCore"] == p:   # issue 1384: an eaten core offers nothing, so another patron speaks (campaign_run.js Beat 3)
+			var alt = null
+			for q in or_(RUN.get("patrons"), []):
+				if q != p:
+					alt = q; break
+			if alt != null: p = alt
 		if p != null:
 			RUN["reward"] = {"kind": "story", "rw": {"k": "boon", "p": p}, "stage": "pick", "relics": [], "wrecks": [], "prizes": [], "boonOffer": null, "modOffer": null}
 			out.append("1 free protocol offer from " + str(PATRONS[p]["short"]) + ". Choose 1 protocol or decline for " + numstr(boonDeclineCred()) + " credits.")
@@ -3395,6 +3407,10 @@ func ACT_rewardNext() -> void:
 func ACT_takeMod(m: String) -> void:
 	RUN["inventory"].append(m); tel("reward_pick", {"k": "mod", "id": m}); toast(modName(m) + " stowed in the hold."); close_modal(); relicStep()
 func boonStep(p, minR) -> void:
+	if RUN != null and RUN.get("eatenCore") != null and RUN["eatenCore"] == p:   # issue 1384: campaign_run.js boonStep remaps an eaten core
+		for q in or_(RUN.get("patrons"), []):
+			if q != p:
+				p = q; break
 	if not PATRONS.has(p):
 		relicStep(); return
 	var offer = RUN["reward"]["boonOffer"] if (RUN.get("reward") != null and RUN["reward"].get("boonOffer") != null) else rollBoonOffer(p, minR)
