@@ -168,7 +168,9 @@ body and the wreck.
   with a rainbow fringe, the only coloured flash in the game. Whole panes and rings shear off and tumble, glinting. No fire
   and no smoke: glittering dust. The light inside the shards fades slowly.
 - **Eclipse.** It peels. Shade plates lift away band by band, a beat apart, during the tell. The trapped core gutters
-  green-white, the scene around it dims for an instant, then one small hard flash and it is out. No fire. The plates drift.
+  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white,
+  which is only the Doom gun's core, R263), the scene around it dims for an instant, then one small hard flash and it is
+  out. No fire. The plates drift.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.
   A pale bloom, never a hard white. The pieces twitch for about a second. The glow in the sacs fades last.
@@ -177,8 +179,20 @@ body and the wreck.
   with no metal beats (no vent, chain blasts, fireball or secondaries). The kill slow-motion beat lands 0.1 s after the
   burst. Check: godot/audio/test/faction_death_check.gd.
 
-Faction deaths need the new hulls' authored break lines, so they are built on the two fleets of the finished battle first.
-Until a faction's hulls are rebuilt it uses the shared cruiser, capital and frigate deaths above.
+Faction deaths (R367, Ryan, Nov 20 2026, "Full faction deaths"; issue 1399): every metal faction gets its own colours and break
+as written above, replacing the shared orange fire; Glasswrights and Eclipse first, then Sunward Crusade, Hegemony and the
+Hullbreakers. A faction's death lives in faction_looks.json ("death": style, fire, fire_mid, prism, smoke, spark, light,
+rim), the same file its ships, engines, shields and damage read, and applies to every hull of that faction, old and new,
+player and enemy, on top of the shared timing and the one-crack strained death above. A faction without a "death" entry
+keeps the shared orange fire. Built (issue 1399, round 1):
+- Glasswrights (shatter): the death's fire pictures keep their baked shape and take white light with a rainbow edge; no
+  smoke is drawn; the fracture plan gives more, smaller fragments (bite 7 or 9, four chips per break); glittering dust
+  drifts from the core; torn faces, plate rims and scorch glow its stored light.
+- Eclipse (peel): the fire takes its violet-white, sparks its white-gold; shade plates lift off the hull band by band from
+  the stern during the tell (two, four or six bands by class); the scene dims for an instant at its core flash; torn faces
+  glow violet; smoke is kept at a sixth.
+Not built yet: the Glasswrights' white fracture lines across the optics in the tell, whole rings shearing off, and the
+Nemesis's plates drifting back together. Check: godot/fx/test/faction_death_style_check.gd.
 
 ## The hits, upgraded
 
