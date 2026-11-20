@@ -21,7 +21,7 @@ of this is the playable exe (that is a separate snapshot).
 | Vigil | Cruiser | `V16_37` | New-format build on main | Accepted: Ryan, Nov 20 (PR 1166) | [vigil_beauty.webp](../../contrib/muse/design/class_family_sunward_2026_11/vigil_beauty.webp) | R331 | voidsworn_S10 |  |  |
 | Bastion | Battleship | `V17_37` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
 | Hearth | Carrier | `V18_51` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
-| Daybreak (flagship) | Dreadnought | `V1b_r_23` | New-format build on main | Not recorded | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S8/beauty_vs_blockout.jpg) | R254 | voidsworn_S8 |  |  |
+| Daybreak (flagship) | Dreadnought | `V1b_r_23` | New-format build on main | Accepted: Ryan, Nov 20 (R360, brighter ember before and after, PR 1331) | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S8/beauty_vs_blockout.jpg) | R254 | voidsworn_S8 |  |  |
 
 ## Hegemony Navy (`hegemony`)
 
@@ -30,18 +30,18 @@ of this is the playable exe (that is a separate snapshot).
 | Picket | Frigate | `H7_23` | Old hull, no pick yet |  | none | R369 |  | #1146 | First concepts sent back Nov 20: the three escorts read as one wedge. Redo with its own outline, then build 1412. |
 | Cordon | Destroyer | `H8_23` | Old hull, no pick yet |  | none | R369 |  | #1146 | Sent back with Picket. Build 1412 waits. |
 | Vanguard | Cruiser | `H9_23` | Old hull, no pick yet |  | none | R369 |  | #1146 | Sent back with Picket. Build 1412 waits. |
-| Dominion | Battleship | `H10_23` | New-format build on main | Not recorded | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg) | R256 | hegemony_H10 |  |  |
-| Iron Mandate (flagship) | Super-dreadnought | `H4_11` | New-format build on main | Not recorded | [IM5.jpg](../../contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg) | R256 | hegemony_IM5 |  |  |
+| Dominion | Battleship | `H10_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg) | R256 | hegemony_H10 |  |  |
+| Iron Mandate (flagship) | Super-dreadnought | `H4_11` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [IM5.jpg](../../contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg) | R256 | hegemony_IM5 |  |  |
 
 ## Ashfall Hullbreakers (`corsair`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Raider, the Sniffer | Frigate | `C13s_23` | New-format build on main | Not recorded | [corsair_A18_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A18_beauty.jpg) |  | corsair_A18 |  |  |
-| Gutship, the Mauler | Destroyer | `C14s_23` | New-format build on main | Not recorded | [corsair_A19_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A19_beauty.jpg) |  | corsair_A19 |  |  |
-| Wrecker, the Pack Hunter | Cruiser | `C15s_23` | New-format build on main | Not recorded | [corsair_A17_beauty.jpg](../../contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg) | R201 | C15s_23, corsair_A17 |  |  |
-| Hulk-carrier, the Den | Carrier | `C16s_23` | New-format build on main | Not recorded | [corsair_A20_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg) |  | corsair_A20 |  |  |
-| Warlord's Pyre-Barge (flagship) | Battle-barge | `C19_51` | New-format build on main | Not recorded | [corsair_A16_beauty.jpg](../../contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg) | R201 | corsair_A16 |  |  |
+| Raider, the Sniffer | Frigate | `C13s_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [corsair_A18_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A18_beauty.jpg) |  | corsair_A18 |  |  |
+| Gutship, the Mauler | Destroyer | `C14s_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [corsair_A19_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A19_beauty.jpg) |  | corsair_A19 |  |  |
+| Wrecker, the Pack Hunter | Cruiser | `C15s_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [corsair_A17_beauty.jpg](../../contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg) | R201 | C15s_23, corsair_A17 |  |  |
+| Hulk-carrier, the Den | Carrier | `C16s_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [corsair_A20_beauty.jpg](../../contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg) |  | corsair_A20 |  |  |
+| Warlord's Pyre-Barge (flagship) | Battle-barge | `C19_51` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [corsair_A16_beauty.jpg](../../contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg) | R201 | corsair_A16 |  |  |
 
 ## The Chorus (`chorus`)
 
@@ -61,16 +61,16 @@ of this is the playable exe (that is a separate snapshot).
 | Lancet | Destroyer | `I11_37` | Build sheet made, old hull in game |  | [destroyer_lancet_s1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp) | R369 | ithar_GL1 | #1415 | Ryan's Nov 16 pick Step 1. |
 | Prism | Cruiser | `I15_11` | Build sheet made, old hull in game |  | [cruiser_prism_s3.webp](../../contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp) | R369 | ithar_GP1 | #1415 | Ryan's Nov 16 pick Step 3, twin pane hulls. |
 | Aperture | Carrier | `I16_11` | Build sheet made, old hull in game |  | [carrier_aperture_v1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp) | R369 | ithar_GA1 | #1415 | Ryan's Nov 16 pick V1. |
-| The Unfinished (flagship, CD5) | Ark | `I8_37` | New-format build on main | Not recorded | [concept.jpg](../../docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg) | R298 | ithar_CD5 |  |  |
+| The Unfinished (flagship, CD5) | Ark | `I8_37` | New-format build on main | Pending: Warming round, champagne ribbons (issue 1282). Accepted before that: Ryan, Nov 20 (R348, put it in, then warm it up). | [concept.jpg](../../docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg) | R298 | ithar_CD5 |  |  |
 
 ## Eclipse (`deathless`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Mote | Frigate | `D9_23` | New-format build on main | Not recorded | [deathless_E13_mote.jpg](../../contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote.jpg) |  | deathless_E13 |  |  |
-| Flare | Destroyer | `D20_23` | New-format build on main | Not recorded | [deathless_E14_flare.jpg](../../contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg) |  | deathless_E14 |  |  |
-| Zenith | Cruiser | `D21_23` | New-format build on main | Not recorded | [deathless_E12_beauty.jpg](../../contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg) | R206 | deathless_E12 |  |  |
-| The Unsetting (flagship) | Tomb-ark | `D22_23` | New-format build on main | Not recorded | [deathless_E11_beauty.jpg](../../contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg) | R206 | deathless_E11 |  |  |
+| Mote | Frigate | `D9_23` | New-format build on main | Pending: All-violet repaint (R372, issue 1422). | [deathless_E13_mote.jpg](../../contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote.jpg) |  | deathless_E13 | #1422 |  |
+| Flare | Destroyer | `D20_23` | New-format build on main | Pending: All-violet repaint (R372, issue 1422). | [deathless_E14_flare.jpg](../../contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg) |  | deathless_E14 | #1422 |  |
+| Zenith | Cruiser | `D21_23` | New-format build on main | Pending: All-violet repaint (R372, issue 1422). | [deathless_E12_beauty.jpg](../../contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg) | R206 | deathless_E12 | #1422 |  |
+| The Unsetting (flagship) | Tomb-ark | `D22_23` | New-format build on main | Pending: All-violet repaint (R372, issue 1422). | [deathless_E11_beauty.jpg](../../contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg) | R206 | deathless_E11 | #1422 |  |
 
 ## Strike craft (old shared hulls)
 

@@ -973,13 +973,15 @@ def thruster(r=0.3, nozzles=3):
 
 
 # ------------------------------------------------------------------------------------------------ sacs, blades, scutes
-def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False, window='round'):
+def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False, window='slit'):
     """a sac grown out of the hull (local +Z out of the hull): root, a socket of wrinkled tissue (mount); sac, the bulge (mount:
     it grows into the hull); crease, creases across it; vein, veins over it; glow, windows where the bile shows through.
     kind 'brood' adds the birth slit (slit: its length as a share of the sac) between two lip rolls (lip): a launch opening for
     the spore swarms. Fit: the slit's aperture along +Z. armour (R341): no creases or veins (the armour caps lie over the sac's
     shoulders, plates.dome_caps) and the bile windows gathered at the open crown. window 'slit' (issue 1291): the bile shows
-    only in narrow slits, never a round lit window (a flat lime disc in game), and the veins are dark blood vessels."""
+    only in narrow slits, never a round lit window (a flat lime disc in game), and the veins are dark blood vessels. It is
+    the default for every Chorus sac (Ryan, Nov 20, on C10's pods: "what are the random yellow circles on the pods? Looks odd");
+    window 'round' (the old lit windows and glowing veins) is kept only for a sheet that asks for it."""
     p = Part(kind)
     h = h or r * 1.1
     if armour:
