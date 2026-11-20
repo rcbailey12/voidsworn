@@ -1,0 +1,7 @@
+Issue 1262 RUN1262F: median of per-session medians, ms (frame / GPU), 3 sessions each, interleaved, GPU solo, fitted shields
+NEW = PR head 0172d99f, OLD = main 56881a5e; both arms on the same ship identity (new/old_ships_identity.txt, 41 lines)
+case | main frame | main gpu | new frame | new gpu
+gate:max:2:base (4K) | 6.135 | 5.754 | 5.292 | 4.911
+dense:max:2:native_lod (4K) | 5.154 | 4.700 | 3.859 | 3.383
+gate:max:1:base (1080p) | 3.226 | 2.732 | 3.031 | 2.520
+dense:max:1:native_lod (1080p) | 2.067 | 1.608 | 1.638 | 1.274
