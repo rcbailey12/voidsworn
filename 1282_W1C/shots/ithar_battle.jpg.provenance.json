@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T04:54:31Z",
+	"image_sha256": "2b06ca5ea3821ffe88fae9491eb3ba1b83686e76a3aae65a9d795dd6599bd050",
+	"inputs": [],
+	"picture_name": "ithar_battle.jpg",
+	"schema": 1,
+	"source_commit": "6442c652c3e29697e5e52da4674667a820cfabe4",
+	"source_diff_sha256": "2da3cf144de07dc27a04c8742b6ad76d3864af7ac3ab1fad2560310af5ef41a5",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "6442c652c3e29697e5e52da4674667a820cfabe4",
+			"source_diff_sha256": "2da3cf144de07dc27a04c8742b6ad76d3864af7ac3ab1fad2560310af5ef41a5",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "3ff6fb494be8cbde9bd7a12422a5b0728dd202379c2fbc7650dee69d450ed2e4",
+	"strip_sha256": [
+		"fe4b3f86ac1496388888866c463272d29e14174d41bcbe36da3a2577c0a7117d"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

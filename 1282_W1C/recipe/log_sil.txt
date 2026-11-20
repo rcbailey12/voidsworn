@@ -1,0 +1,1 @@
+[score] CD5 {'overlap': 33.0, 'concept_covered': 43.0, 'cell_outside': 41.2, 'triangles': 452994}

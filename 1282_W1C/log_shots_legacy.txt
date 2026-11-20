@@ -1,0 +1,20 @@
+GPU: waiting for shared claim, weight 1 (opus1282w1)
+GPU: acquired shared claim 0122a223-d8f7-4b84-8289-f003e362e920
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-534d41f5a4f24fbfbd432d944f493927\godot-profile-4b1fb2741b0649c1804e4671603af80d
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1282w1\out\shots_legacy facs ["ithar"] sets ["battle", "cams"]
+ERROR: placeholder hull: I11_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:141)
+       [1] _spawn (res://assets/ships/test/a4_shots.gd:155)
+       [2] _battle_line (res://assets/ships/test/a4_shots.gd:209)
+       [3] _run (res://assets/ships/test/a4_shots.gd:178)
+       [4] _ready (res://assets/ships/test/a4_shots.gd:67)
+placeholder hull: I11_37
+placeholder hull: 1 hull(s) had no built file; no picture written
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-534d41f5a4f24fbfbd432d944f493927\godot-profile-4b1fb2741b0649c1804e4671603af80d
+GPU: released shared claim 0122a223-d8f7-4b84-8289-f003e362e920

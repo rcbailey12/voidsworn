@@ -1,0 +1,9 @@
+waiting for chain_1119m all done Thu 11/19/2026 20:58:36.24 
+HELPERS_CHAIN_1119W stopped by the Board before it ran anything (11/19 21:00:31); replaced by HELPERS_CHAIN_1119Y.bat (runs OPUS1282_W1B_RUN.bat; W1 left unrun)
+waiting for chain_1119m all done (HELPERS_CHAIN_1119Y) Thu 11/19/2026 21:00:31.82 
+HELPERS_CHAIN_1119Y stopped by the Board before it ran anything (11/19 21:06:31); replaced by HELPERS_CHAIN_1119Z.bat (runs OPUS1282_W1C_RUN.bat; W1 and W1B left unrun)
+waiting for chain_1119m all done (HELPERS_CHAIN_1119Z) Thu 11/19/2026 21:06:31.51 
+chain start Thu 11/19/2026 22:39:37.14 
+1282 CD5 W1C start 22:39:37.14 
+1282 CD5 W1C exit 1 at 22:54:39.14 
+all done Thu 11/19/2026 22:54:39.14 

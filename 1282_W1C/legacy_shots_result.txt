@@ -1,0 +1,8 @@
+legacy start Thu 11/19/2026 22:54:33.26 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+legacy shots exit 1 
+FAILED: legacy shots 
+all done Thu 11/19/2026 22:54:39.13 
