@@ -263,6 +263,8 @@ function Test-SharedBuildCopy($repo, $path, $allowSuperseded = $false) {
   }
   if ($copyTime -ge $buildTime) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
   Log "superseded by the shared build: $path ($detail)"
+  # Times only nominate a candidate (Artoo, PR 1260): the caller archives these bytes and reads them back before removal.
+  $script:cleanupSuperseded += ,$path
   return $true
 }
 function Get-RepoCleanupStatus($repo) {
@@ -321,7 +323,9 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $for
   $flags = @(Read-CleanupGit @('-C',$repo,'ls-files','-v'))
   if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
   $status = @(Get-RepoCleanupStatus $repo)
+  $script:cleanupSuperseded = @()
   $caches = @(Reuse-Caches $repo $status $allowWork $forRemoval)
+  $superseded = @($script:cleanupSuperseded)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
   $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
@@ -334,7 +338,7 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $for
     if (-not $allowWork) { throw "local history not in fetched mirror: $id" }
     $line
   }
-  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed }
+  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded }
 }
 function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
   return (Get-RepoCleanupState $repo $mirror $sparse).Caches
@@ -519,6 +523,17 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       if (Test-Path -LiteralPath $backup) { throw "salvage destination already exists: $backup" }
       $reason = 'after checked salvage of local work'
       if (-not $dryRun) { Save-CheckoutSalvage $candidate $mirror $state $backup }
+    }
+    if ($state.Superseded.Count) {
+      # A same-name newer build file does not prove these bytes were replaced: archive them and read them back first.
+      if (-not $salvageRoot) { throw 'superseded ship or gen files need a checked archive' }
+      $archive = Join-Path $salvageRoot "$salvageName`_superseded"
+      if (Test-Path -LiteralPath $archive) { throw "archive destination already exists: $archive" }
+      $archiveBytes = 0L
+      foreach ($path in $state.Superseded) { $archiveBytes += (Get-Item -LiteralPath (Join-Path $candidate $path) -Force).Length }
+      $archived = "after checked archive of $($state.Superseded.Count) superseded ship or gen files, $archiveBytes bytes"
+      $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
+      if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
     if ($dryRun) { Log "kept checkout would remove ($reason): $candidate ($size)"; return }
     $current = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force) -Checkout

@@ -406,6 +406,10 @@ try {
     assert(dry.split(/\r?\n/).some(line => line.startsWith(`superseded by the shared build: ${file} (copy `) && /bytes; build .* bytes\)$/.test(line)),
       `superseded call for ${dir} must log both times and sizes`);
   }
+  // Artoo, PR 1260: an older ignored GLB with unique bytes and a newer, different same-name build file is only nominated;
+  // it is archived and read back before its checkout goes.
+  assert.match(decision(dry, shipSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files, \d+ bytes/);
+  assert.match(decision(dry, genSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
   assert.match(decision(dry, shipNewer, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /copy is not older than the shared build, kept: godot\/assets\/ships\/T2_11\/T2_11\.glb \(copy /);
   assert.match(decision(dry, shipMissing, 'retained'), /shared ship copy could not be verified/);
@@ -434,6 +438,12 @@ try {
     assert(!fs.existsSync(dir), `janitor left ${dir}`);
   }
   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
+  for (const [dir, file] of [[shipSuperseded, 'godot/assets/ships/T1_11/T1_11.glb'], [genSuperseded, 'godot/gen/manifest.json']]) {
+    const archive = path.join(salvageRoot, `board_b_${path.basename(dir)}_superseded`);
+    assert.equal(read(path.join(archive, file)), `${path.basename(dir).slice('repo-kept-'.length)} copy bake`, `archive keeps the unique bytes of ${file}`);
+    assert.match(read(path.join(archive, 'superseded_manifest.txt')), new RegExp(`^[0-9a-f]{64}  \\d+  ${file.replace(/[.]/g, '\\.')}\n$`));
+    assert.match(live, new RegExp(`superseded archive verified: ${archive.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} \\(1 files, \\d+ bytes\\)`));
+  }
   decision(live, failedSalvage, 'untracked path cannot be verified');
   assert(fs.existsSync(failedSalvage));
   const historyBackup = path.join(salvageRoot, 'board_b_repo-kept-local-history', 'salvage.bundle');

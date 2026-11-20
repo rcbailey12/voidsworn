@@ -133,3 +133,40 @@ function Save-CheckoutSalvage($repo, $mirror, $state, $dest) {
     } catch { Log "salvage scratch kept: $staging ($($_.Exception.Message))" }
   }
 }
+
+# Issue 1180 run 7 (Artoo, PR 1260): ship and gen files the shared build looks to have superseded are copied out and read
+# back by size and SHA-256 before their checkout can go. The archive is moved into place only when every file checks out.
+function Save-SupersededArchive($repo, $paths, $dest) {
+  $root = Split-Path -Parent $dest
+  $dir = [IO.Directory]::CreateDirectory($root)
+  Assert-PlainDirectory $dir
+  $staging = Join-Path $root ".checking-$([guid]::NewGuid().ToString('N'))"
+  $null = [IO.Directory]::CreateDirectory($staging)
+  try {
+    $manifest = @(); $bytes = 0L
+    foreach ($path in $paths) {
+      $source = Get-Item -LiteralPath (Join-Path $repo $path) -Force
+      if ($source -isnot [IO.FileInfo] -or ($source.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "archive source changed: $path" }
+      $copy = Join-Path $staging $path
+      $null = [IO.Directory]::CreateDirectory((Split-Path -Parent $copy))
+      [IO.File]::Copy($source.FullName, $copy, $false)
+      $want = (Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash
+      $read = Get-Item -LiteralPath $copy -Force
+      if ($read.Length -ne $source.Length -or (Get-FileHash -LiteralPath $copy -Algorithm SHA256).Hash -ne $want) {
+        throw "archive read-back failed: $path"
+      }
+      $manifest += "$($want.ToLower())  $($source.Length)  $path"
+      $bytes += $source.Length
+    }
+    Put (Join-Path $staging 'superseded_manifest.txt') (($manifest -join "`n") + "`n")
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    # Directory.Move fails if an archive already exists. Never overwrite one.
+    [IO.Directory]::Move($staging, $dest)
+    Log "superseded archive verified: $dest ($($paths.Count) files, $bytes bytes)"
+  } finally {
+    if (Test-Path -LiteralPath $staging) {
+      try { Remove-CleanupDirectory (Get-Item -LiteralPath $staging -Force) }
+      catch { Log "archive scratch kept: $staging ($($_.Exception.Message))" }
+    }
+  }
+}
