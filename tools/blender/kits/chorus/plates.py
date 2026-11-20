@@ -512,18 +512,28 @@ def _skirt(section, pts_xt, w, h, rng, creases=True):
     return V, F
 
 
-def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
-              close_gaps=True):
+# issue 1291 (Ryan, Nov 20 4:18 PM CT: "run it down low too. we should cover the chorus ships in armor almost everywhere"):
+# the armadillo bands wrap the body down to the keel by default; KEEL is how close to the keel line a band end may come
+WRAP = -1.5
+KEEL = -math.pi / 2 + 0.02
+
+
+def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
+              close_gaps=True, fill=True):
     """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
-    wrapping the body (the default lo=-1.2 runs each band from belly edge to belly edge), bands of grown chitin
+    wrapping the body (lo=-1.2 runs each band from belly edge to belly edge; the default wraps to the keel), bands of grown chitin
     running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
     round a fitting and both broken ends thin into the flesh; hide rolls and creases gather along the shell's lower edges.
     close_gaps (issue 1291): when a long step would outrun a short band and leave a bare strip across the back, the next band
     starts under this one's lip instead (no extra draw from rng, so only those steps change). False keeps the old steps: C13
     as accepted and published (round G, PR 1308) has one such step and keeps it until Ryan asks for a rebuild.
+    lo=None (the default, Ryan Nov 20: "cover the chorus ships in armor almost everywhere") is WRAP: each band runs down both
+    flanks to the keel, where the two ends meet; a band never crosses the keel. fill (default on): where a fitting cuts a band,
+    a half band still grows ahead of it or behind it, so the shell hugs the fittings instead of leaving a band-long gap.
     Returns the shell object and the skirt object."""
     register(kit_module)
     rng = random.Random(seed)
+    lo = WRAP if lo is None else lo
     blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18, 3 * thick))
     mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
     skirt = ([], [])
@@ -533,26 +543,48 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, th
         # round D: uneven bands, wider and narrower, their lower edges ragged
         L_ = band * lap * rng.uniform(0.75, 1.25)
         lo_ = lo + rng.uniform(-0.16, 0.16); hi_ = math.pi - lo + rng.uniform(-0.16, 0.16)
-        n = 80; free = []
+        lo_ = max(lo_, KEEL); hi_ = min(hi_, math.pi - KEEL)   # the two ends meet at the keel, never cross it
+        n = 80
+        cols = []
         for j in range(n + 1):
             th = lo_ + (hi_ - lo_) * j / n
             side = 1 if th < math.pi / 2 else -1
             thp = th if side > 0 else math.pi - th
-            free.append(not any(blocked(x - f * L_, thp, side) for f in (0.0, 0.3, 0.6, 0.9)))
-        runs = []; j = 0
-        while j <= n:
-            if free[j]:
-                k = j
-                while k + 1 <= n and free[k + 1]:
-                    k += 1
-                a_ = lo_ + (hi_ - lo_) * j / n; b_ = lo_ + (hi_ - lo_) * k / n
-                if b_ - a_ > 0.22:
-                    runs.append((a_, b_))
-                j = k + 1
-            else:
-                j += 1
-        for a_, b_ in runs:
-            vv, ff, gg, rr = _band(K.hpt, x, L_, a_, b_, thick * rng.uniform(0.9, 1.1), rng)
+            cols.append((thp, side))
+
+        def runs_of(ok):
+            out = []; j = 0
+            while j <= n:
+                if ok[j]:
+                    k = j
+                    while k + 1 <= n and ok[k + 1]:
+                        k += 1
+                    a_ = lo_ + (hi_ - lo_) * j / n; b_ = lo_ + (hi_ - lo_) * k / n
+                    if b_ - a_ > 0.22:
+                        out.append((a_, b_, j, k))
+                    j = k + 1
+                else:
+                    j += 1
+            return out
+
+        def clear(fs):
+            return [not any(blocked(x - f * L_, thp, side) for f in fs) for (thp, side) in cols]
+        full = clear((0.0, 0.3, 0.6, 0.9))
+        pieces = [(x, L_, a_, b_) for (a_, b_, _, _) in runs_of(full)]
+        if fill:
+            # Ryan (Nov 20, "cover the chorus ships in armor almost everywhere"): where a fitting cuts a band, a half band still
+            # grows on the clear side of it (its front half ahead of the fitting, or its back half behind it), so a big
+            # fitting leaves a hole the size of itself, not a whole band's length either side
+            covered = list(full)
+            for fs, root in (((0.0, 0.15, 0.3, 0.42), x), ((0.55, 0.7, 0.85, 0.97), x - 0.55 * L_)):
+                ok = clear(fs)
+                ok = [o and not c for o, c in zip(ok, covered)]
+                for (a_, b_, j0, k0) in runs_of(ok):
+                    pieces.append((root, L_ * 0.45, a_, b_))
+                    for q in range(j0, k0 + 1):
+                        covered[q] = True
+        for xr, Lr, a_, b_ in pieces:
+            vv, ff, gg, rr = _band(K.hpt, xr, Lr, a_, b_, thick * rng.uniform(0.9, 1.1), rng)
             _append(mesh, vv, ff)
             attrs['scute_tone'].extend([rng.uniform(0.2, 0.8)] * len(vv))
             attrs['scute_progress'].extend(gg)
@@ -560,7 +592,7 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, th
             runs_n += 1
             # the hide gathered at the band's ends (its lower edge on each flank, or where it breaks round a fitting)
             for tt in (a_, b_):
-                pts = [(x - L_ * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
+                pts = [(xr - Lr * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
                 _append(skirt, *_skirt(K.hpt, pts, 0.14, 0.014, rng))
         step = band * rng.uniform(0.65, 1.35)
         if close_gaps and step > L_:
