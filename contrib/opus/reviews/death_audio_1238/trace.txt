@@ -1,0 +1,39 @@
+== chorus Cruiser: rupture/split at 1.40 s, kill beat core at 1.50 s, slow motion yes
+     0.00 s  death_powerdown  chorus     puff, torpSac
+     0.00 s  death_bed        -          ambient
+     0.26 s  death_vent       chorus     puff, hitWet
+     1.09 s  death_crack      chorus     grappleWet, gunGlob, hitWet
+     1.40 s  boom_l           chorus     torpSac, gunGlob, boomLow, hitWet
+     1.70 s  bass_drop        -          bassDrop
+     1.75 s  death_tail       chorus     puff, hitWet, boomLow
+     2.11 s  wreck            chorus     torpSac, hitWet
+== chorus Bio-titan: rupture/split at 2.01 s, kill beat core at 2.12 s, slow motion yes
+     0.00 s  death_powerdown  chorus     puff, torpSac
+     0.00 s  death_bed        -          ambient
+     0.25 s  death_vent       chorus     puff, hitWet
+     1.70 s  death_crack      chorus     grappleWet, gunGlob, hitWet
+     2.01 s  boom_l           chorus     torpSac, gunGlob, boomLow, hitWet
+     2.31 s  bass_drop        -          bassDrop
+     2.36 s  death_tail       chorus     puff, hitWet, boomLow
+     2.72 s  wreck            chorus     torpSac, hitWet
+== chorus Frigate: rupture/split at 0.36 s, kill beat core at -1.00 s, slow motion no
+     0.36 s  boom_s           chorus     gunGlob, hitWet, boomLow
+     0.46 s  chunk_cool       chorus     hitWet, puff
+== ithar Cruiser: rupture/split at 1.39 s, kill beat core at 1.69 s, slow motion yes
+     0.00 s  death_powerdown  ithar      shieldShimmer, choirBell
+     0.00 s  death_bed        -          ambient
+     0.25 s  death_vent       ithar      whoosh, starShimmer
+     0.42 s  death_crack      ithar      crackGlass, hitGlass, choirBell
+     1.39 s  boom_l           ithar      shieldShatter, crackGlass, boomLow, starShimmer
+     1.74 s  death_tail       ithar      starShimmer, choirBell, boomLow
+     1.87 s  bass_drop        -          bassDrop
+     2.10 s  wreck            ithar      crackGlass, hitGlass
+== voidsworn Cruiser: rupture/split at 1.39 s, kill beat core at 1.69 s, slow motion yes
+     0.00 s  death_powerdown  voidsworn  ionCharge, whoosh
+     0.00 s  death_bed        -          ambient
+     0.25 s  death_vent       voidsworn  whoosh
+     0.42 s  death_crack      voidsworn  scrape, hullHitBig, crackSettle
+     1.39 s  boom_l           voidsworn  boomBig, debris
+     1.75 s  death_tail       voidsworn  scrape, debris, boomLow
+     1.88 s  bass_drop        -          bassDrop
+     2.10 s  wreck            voidsworn  scrape, wreckSettle

@@ -1,0 +1,54 @@
+{
+  "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
+  "source_dirty": true,
+  "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "beauty_vs_blockout.jpg",
+  "date": "2026-11-19T23:53:51Z",
+  "sources": [
+    {
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
+      "source_dirty": true,
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
+      "source_dirty": true,
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
+      "stage": "sheet built",
+      "date": "2026-11-19T23:53:34Z",
+      "image_sha256": "27b0e00a8c0f2ba92d8a246cd3c8107a3003bbb1cdd9a09ca10c3278d7e358d2",
+      "sources": [
+        {
+          "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
+          "source_dirty": true,
+          "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "c29f608893328e05376a65f727f5b2faa3ee339729753720f47053b680f40af1"
+  ],
+  "stamp_template_sha256": "ec8ab429f9fa0563e5ce04a6aa1fc39c5e2089a743bff2558283c212e10a4071",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAA5UlEQVR4nO3UMU7EQBBFQY/tU624/6kwTUJAuCs9GS2qiv9InbxZj8fHxitm5mtmm23f11rrmf11zcwcx9r39XnNeew33Mn9zr8+4P2stY4nKvq9P8+f/Wzbebzwlvfim7yVkv43OUFGTpCRE2TkBBk5QUZOkJETZOQEGTlBRk6QkRNk5AQZOUFGTpCRE2TkBBk5QUZOkJETZOQEGTlBRk6QkRNk5AQZOUFGTpCRE2TkBBk5QUZOkJETZOQEGTlBRk6QkRNk5AQZOUFGTpCRE2TkBBk5QUZOkJETZOQEGTlBRk6Q+QaQ+BUwo6ZSjQAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "f88664fd52dff5ce227d941ee48e402049504fc92ecfecc1c73de05b2cb2dfc8"
+}

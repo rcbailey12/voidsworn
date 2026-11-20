@@ -23,26 +23,35 @@ if not "%STACK_NOTE%"=="" echo Stage 7: %STACK_NOTE%: an unbaked test export
 if not exist "%JOB%\%CELL%.blend" (echo Stage 7 FAILED: no baked ship at %JOB%\%CELL%.blend. Run stage 5 first. & goto bad)
 if not exist "%EX%" mkdir "%EX%"
 echo RUNNING > "%EX%\export_status.txt"
-"%BPY%" "%RC%\standing.py" all --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_all.txt" 2>&1
+set "TMO_STEP=recipe 7 check ship records"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\standing.py" all --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_all.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_standing_all.txt" & echo Stage 7 FAILED: a standing ship check did not pass. See %JOB%\log_standing_all.txt & goto bad)
 type "%JOB%\log_standing_all.txt"
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
+setlocal
+set "PC_GPU_MODE=none"
+set "TMO_STEP=recipe 7 game export"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_EXPORT_CAP% "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
+if errorlevel 1 (echo Stage 7 FAILED: the game export exited %ERRORLEVEL%. See %JOB%\log_export.txt & goto bad)
+endlocal
 findstr /c:"[export7]" "%JOB%\log_export.txt"
 findstr /b /c:"WRITTEN" "%EX%\export_status.txt" > nul
 if errorlevel 1 (echo Stage 7 FAILED: the export was not written. See %JOB%\log_export.txt & goto bad)
 if not "%INSTALL_TO%"=="" goto install
-"%BPY%" "%RC%\check_export.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_check.txt" 2>&1
+set "TMO_STEP=recipe 7 validate export"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\check_export.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_check.txt" 2>&1
 set CHK=%errorlevel%
 type "%JOB%\log_export_check.txt"
 if not "%CHK%"=="0" (echo CHECK FAILED > "%EX%\export_status.txt" & echo Stage 7 FAILED: %EX% is not a game ship folder. Nothing was installed. & goto bad)
-"%BPY%" "%RC%\check_export_selftest.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_selftest.txt" 2>&1
+set "TMO_STEP=recipe 7 prove the export check"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\check_export_selftest.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_selftest.txt" 2>&1
 set SELF=%errorlevel%
 type "%JOB%\log_export_selftest.txt"
 if not "%SELF%"=="0" (echo SELFTEST FAILED > "%EX%\export_status.txt" & echo Stage 7 FAILED: the export check did not refuse a broken export. Nothing was installed. & goto bad)
 echo CHECKED >> "%EX%\export_status.txt"
 goto done
 :install
-"%BPY%" -B "%RC%\manifest_merge.py" --install "%EX%" "%INSTALL_TO%" "%CODE%" "%GD%" "%JOB%" "%R209_SHIP%" %UNB%
+rem The installer owns rollback. Its Godot commands return to it on timeout so it can restore the checked backup.
+"%BPY%" -B "%RC%\manifest_merge.py" --install "%EX%" "%INSTALL_TO%" "%CODE%" "%RC%\install_godot.bat" "%JOB%" "%R209_SHIP%" %UNB%
 if errorlevel 1 goto bad
 :done
 echo Stage 7 done: PASS. The game's ship folder is %EX%

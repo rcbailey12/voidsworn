@@ -6,8 +6,8 @@
 #                          hard point; the maps are outside the glb, by relative URI, as the A4 ships have them. Each turret
 #                          (issue 560) is its own child node turret_<n> at its ring centre (+Y the turning axis, -Z the rest aim),
 #                          with its turning mesh turret_<n>_turn and its muzzles (hp_w) under it; the ring stays in the ship mesh
-#   <CODE>_base.jpg, <CODE>_orm.jpg, <CODE>_normal.jpg          the hull atlas (albedo sRGB; R occlusion, G roughness, B metal; normal)
-#   <CODE>_parts_base.jpg, <CODE>_parts_orm.jpg, <CODE>_parts_normal.jpg  the sheet parts atlas
+#   <CODE>_base.jpg, <CODE>_orm.png, <CODE>_normal.png          the hull atlas (albedo sRGB; R occlusion, G roughness, B metal; normal)
+#   <CODE>_parts_base.jpg, <CODE>_parts_orm.png, <CODE>_parts_normal.png  the sheet parts atlas
 #   <CODE>_export.json     what was written: every hard point, the weapon slots, triangles, every file with its size and sha256
 # Hard points (frame: +X bow, +Y up, -Z port, as every game ship):
 #   hp_w<slot>_<weapon>_<arc>_<n>   one per weapon muzzle of every socket that has a "slot" in the ship json (the barrel tips and
@@ -41,6 +41,8 @@ import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
 MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
+if not UNBAKED:
+    from PIL import Image
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
 ARC_DEG = {'F': 30, 'T': 135, 'P': 60, 'S': 60}       # as tools/blender/a4/ships.py: half-angle of the firing arc from the rest direction
 MOUNT_SIZE = dict(casemate='M', drum_rack='M', turret='S', bow_battery='M')   # a socket's "mount" key overrides
@@ -337,7 +339,26 @@ def occlusion_group():
         ng.interface.new_socket('Occlusion', in_out='INPUT', socket_type='NodeSocketFloat')
     return ng
 
-maps = {}
+def resize_atlas(image, role):
+    image.scale(MAPS, MAPS)
+    # Scaling a packed Blender image does not mark it dirty. Set the pixels so
+    # the glTF exporter encodes the resized buffer from memory.
+    pixels = np.empty(MAPS * MAPS * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    if role == 'normal':
+        vectors = pixels.reshape(-1, 4)[:, :3]
+        vectors *= 2.0
+        vectors -= 1.0
+        lengths = np.linalg.norm(vectors, axis=1, keepdims=True)
+        valid = lengths[:, 0] > 1e-6
+        np.divide(vectors, lengths, out=vectors, where=valid[:, None])
+        vectors[~valid] = (0.0, 0.0, 1.0)
+        vectors += 1.0
+        vectors *= 0.5
+    image.pixels.foreach_set(pixels)
+    image.update()
+
+
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
@@ -354,9 +375,11 @@ else:
         role = {'base': bs.inputs['Base Color'].links[0].from_node.image, 'orm': sep.inputs[0].links[0].from_node.image}
         nm = next((n for n in nt.nodes if n.type == 'NORMAL_MAP'), None)
         if nm is not None: role['normal'] = nm.inputs['Color'].links[0].from_node.image
+        em = bs.inputs['Emission Color'].links      # issue 1183: a stack's hull emission atlas goes to the same map size
+        if em and em[0].from_node.type == 'TEX_IMAGE': role['emission'] = em[0].from_node.image
         for r, im in role.items():
-            if max(im.size) > MAPS: im.scale(MAPS, MAPS)
-            maps[f'{pre}_{r}'] = im.name
+            if max(im.size) > MAPS:
+                resize_atlas(im, r)
     glow = next((s.material for s in J.material_slots if s.material and s.material.name.startswith('p3_glow')), None)
     if glow: glow.name = CODE + '_glow'
 
@@ -456,9 +479,27 @@ tmp = os.path.join(OUT, '_gltf_source'); os.makedirs(tmp, exist_ok=True)      # 
 bpy.ops.object.select_all(action='DESELECT'); J.select_set(True)
 for c in J.children_recursive: c.select_set(True)      # turret meshes and turret muzzles sit one level down
 bpy.ops.export_scene.gltf(filepath=os.path.join(tmp, CODE + '.gltf'), export_format='GLTF_SEPARATE', use_selection=True, export_apply=True,
-                          export_yup=True, export_extras=True, export_image_format='NONE' if UNBAKED else 'JPEG', export_jpeg_quality=92, export_image_quality=92,
+                          export_yup=True, export_extras=True, export_image_format='NONE' if UNBAKED else 'AUTO', export_jpeg_quality=92, export_image_quality=92,
+                          export_image_add_webp=False, export_image_webp_fallback=False,
                           export_tangents=False, export_cameras=False, export_lights=False, export_animations=False)
+# AUTO lets Blender gather the packed channels without JPEG compression. The
+# ship material roles below decide which of the gathered images become JPEG.
 g = json.load(open(os.path.join(tmp, CODE + '.gltf')))
+# AUTO can emit EXT_texture_webp for source WebP images. The final maps here
+# use core glTF formats, so promote those image references to core sources.
+for tex in g.get('textures', []):
+    extensions = tex.get('extensions', {})
+    webp = extensions.pop('EXT_texture_webp', None)
+    if webp is not None:
+        tex['source'] = webp['source']
+        if not extensions:
+            del tex['extensions']
+for key in ('extensionsUsed', 'extensionsRequired'):
+    if 'EXT_texture_webp' in g.get(key, []):
+        g[key].remove('EXT_texture_webp')
+        if not g[key]:
+            del g[key]
+
 binname = g['buffers'][0]['uri']; blob = open(os.path.join(tmp, binname), 'rb').read()
 files = {}
 # the maps stay outside the glb, named by the format's rule from the job each one does in its material (not from whatever name
@@ -468,8 +509,12 @@ def use(mat, slot, tex):
     if tex is None: return
     i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
-    if role.get(i, nm) != nm: die(f'one image does two jobs ({role[i]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
-    role[i] = nm
+    if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
+    role[i] = (nm, slot)
+def stack_hull_emission(mat):
+    """issue 1183: a stack that bakes the hull's own glow (EMISSIVE_ATLAS, the Glasswright mosaic) writes <CODE>_emission"""
+    if mat.get('name') == CODE + '_hull' and mat.get('emissiveTexture'):
+        use(mat, 'emission', mat.get('emissiveTexture'))
 for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
     if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + destruction['interior_materials']: continue
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
@@ -487,15 +532,31 @@ for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruc
             die(f'{mat["name"]} must use the same ORM image for occlusion, roughness and metal')
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
+    stack_hull_emission(mat)
     if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
 for i, im in enumerate(g.get('images', [])):
     if i not in role: die(f'the exporter wrote an image no ship material uses: {im.get("uri")}')
-    new = role[i] + '.jpg'; shutil.copyfile(os.path.join(tmp, im['uri']), os.path.join(OUT, new)); im['uri'] = new; im['name'] = role[i]
+    image_name, slot = role[i]
+    lossless = slot in ('normal', 'orm')
+    new = image_name + ('.png' if lossless else '.jpg')
+    src, dst = os.path.join(tmp, im['uri']), os.path.join(OUT, new)
+    with Image.open(src) as image:
+        if image.format == ('PNG' if lossless else 'JPEG'):
+            shutil.copyfile(src, dst)
+        elif lossless:
+            image.save(dst, 'PNG')
+        else:
+            image.convert('RGB').save(dst, 'JPEG', quality=92)
+    im['uri'] = new
+    im['name'] = image_name
+    if 'mimeType' in im:
+        im['mimeType'] = 'image/png' if lossless else 'image/jpeg'
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
     if ship.get('bake') == 'stack':
         need.add(CODE + '_parts_normal')
-    if not need.issubset(set(role.values())): die(f'the map set is not the format\'s: wrote {sorted(role.values())}, need {sorted(need)}')
+    written = {name for name, _ in role.values()}
+    if not need.issubset(written): die(f'the map set is not the format\'s: wrote {sorted(written)}, need {sorted(need)}')
 del g['buffers'][0]['uri']; g['buffers'][0]['byteLength'] = len(blob)
 g.setdefault('asset', {}).setdefault('extras', {}).update(recipe='tools/recipe/7_export.bat', ship=ship['ship'], cell=ship.get('cell'), game_ship=GAME,
                                                          unbaked=UNBAKED, turrets_marked=TURRETS_MARKED)
@@ -503,10 +564,10 @@ js = json.dumps(g, separators=(',', ':')).encode('utf-8'); js += b' ' * (-len(js
 with open(os.path.join(OUT, CODE + '.glb'), 'wb') as f:      # glb: header, the JSON chunk, the binary chunk (images by URI)
     f.write(struct.pack('<4sII', b'glTF', 2, 12 + 8 + len(js) + 8 + len(blob)))
     f.write(struct.pack('<I4s', len(js), b'JSON')); f.write(js); f.write(struct.pack('<I4s', len(blob), b'BIN\0')); f.write(blob)
-for fn in sorted(os.listdir(OUT)):
+# A re-export may leave earlier maps in OUT. List only this GLB and its maps.
+for fn in sorted([CODE + '.glb', *(im['uri'] for im in g.get('images', []))]):
     p = os.path.join(OUT, fn)
-    if os.path.isfile(p) and fn.startswith(CODE) and not fn.endswith(('_export.json', '_check.json')):
-        files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
+    files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
 manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
                 game_ship=GAME,
                 length_world=LENGTH_WORLD, hardpoints={k: v for k, v in counts.items() if v},

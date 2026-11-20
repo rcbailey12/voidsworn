@@ -79,6 +79,12 @@ func _init() -> void:
 	run_121()
 	run_122()
 	var a := OS.get_cmdline_user_args()
+	# Issue 1217 phase 4: Back on the flagship page then Launch reuses the parked random state (twin of the JS k lines)
+	var roll = func(): return {"pat": C.RUN["patrons"], "relics": C.RUN["relics"], "foes": C.RUN["foes"], "map": C.RUN["map"], "offer": C.W["aspOffer"], "runs": C.META["stats"]["runs"]}
+	fresh(190); var k1 = JSM.canon(roll.call(), "", {}, true); rec("rr1", roll.call()); C.act("backToSetup")
+	rec("rr1b", {"run": C.RUN == null, "runs": C.META["stats"]["runs"], "parked": C.META.has("parkedRng")})
+	C.act("pickFaction", "corsair"); C.act("pickFaction", "voidsworn"); C.act("startRun"); rec("rr2", roll.call())
+	rec("rr3", {"same": k1 == JSM.canon(roll.call(), "", {}, true), "parked": C.META.has("parkedRng")})
 	var fo = FileAccess.open(a[0], FileAccess.WRITE); fo.store_string("\n".join(OUT) + "\n"); fo.close()
 	print(OUT.size(), " records")
 	quit()

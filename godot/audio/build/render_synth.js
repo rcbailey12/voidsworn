@@ -51,6 +51,9 @@ function wav(file, chans, SR) {
   const cuePath = path.join(repo, 'godot/audio/cues.json');
   const previous = fs.existsSync(cuePath) ? JSON.parse(fs.readFileSync(cuePath, 'utf8')) : {};
   for (const [name, cue] of Object.entries(previous)) if (!table[name]) table[name] = cue;
+  // Issue 1238: faction variants (Chorus, Glasswright death and heavy-hit sounds) are Godot-only too; keep them on the
+  // browser cues this refresh rebuilt (boom_l, boom_s, wreck, hit_heavy).
+  for (const [name, cue] of Object.entries(previous)) if (cue.variants && !table[name].variants) table[name].variants = cue.variants;
   for (const [name, cue] of Object.entries(table)) if (name.startsWith('gun_')) {
     // 20 ships, including twin barrels, plus the scheduler's maximum 60% jitter.
     cue.defer = Math.max(cue.defer, Math.round((cue.gap * 1.6 * 40 + 0.06) * 1000) / 1000);

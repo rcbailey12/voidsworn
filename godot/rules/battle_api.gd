@@ -47,6 +47,9 @@ static func settled_result(raw: String, battle: Dictionary) -> String:
 static func nem_entry(table: Dictionary, key, fac) -> Variant:
 	return RulesScript.nem_entry(table, key, fac)
 
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	return RulesScript.nem_entry_name(table, key, fac)
+
 func battle_result() -> String:
 	_mutex.lock()
 	var raw := str(R.B.get("over"))
@@ -239,6 +242,7 @@ func _i_view() -> Dictionary:
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
+			"regenLock": R.jt(u.get("regenLock")),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
@@ -455,6 +459,19 @@ func can_command() -> bool:
 	_enter()
 	var r = _i_can_command(); _leave(false); return r
 func _i_can_command() -> bool: return phase == "player" and R.canCommand("player")
+func command_info() -> Dictionary:
+	_enter()
+	var info := {}
+	if R != null and R.B != null:
+		var cmd = R.commandFor("player")
+		if cmd != null:
+			var fac = R.RUN.get("fac", "voidsworn") if R.RUN != null else "voidsworn"
+			var tier: int = int(R.cmdTier())
+			var next: int = int(R.cmdTier(1))
+			info = {"label": str(cmd["n"]), "power": tier + 1, "effect": R.cmdDesc(cmd, tier, fac),
+				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed"))}
+	_leave(false)
+	return info
 func command() -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h

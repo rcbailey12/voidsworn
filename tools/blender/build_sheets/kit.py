@@ -89,6 +89,7 @@ MATS = {
     'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
     'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
     'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
+    'veilroot': ((0.45, 0.68, 0.06), 1.0),  # the Chorus veils' glowing roots and ribs (R341 round 3)
     'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)
     'bilewet': ((0.10, 0.14, 0.025), 0.35),  # dim bile in veins and pores
     # Chorus insides (cutaway only): flesh, bone and organs (R98, R209)
@@ -915,11 +916,15 @@ class Kit:
         if inv:
             self.built.append(dict(id=fid, kind='patch', inv=[inv], shaped=True, detailed=lift > 0, subs=['slab', 'lift', 'rivet']))
 
-    def spinal(self, fid, root, length, r=0.55, slot='F', weapon='doom', src='picture', note='', inv=(), **kw):
-        """a fixed forward weapon along the ship's axis (the Eclipse corona arc projector): root on the hull face, +X"""
+    def spinal(self, fid, root, length, r=0.55, slot='F', weapon='doom', src='picture', note='', inv=(), aim=None, band=None, **kw):
+        """a fixed weapon, by default forward along the ship's axis (the Eclipse corona arc projector): root on the hull face, +X.
+        aim: another fixed direction for the organ (issue 1154: the Chorus spitter's dorsal spine glands face up, a weapon the
+        game fires all round, arc T); band: the elevations the fit check tries from its mouth. Both default to the old values."""
         p = Vector(root)
         part = HP.spinal(length, r, **kw)
-        part = self.emit(fid, part, HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        av = Vector(aim or (1.0, 0.0, 0.0)).normalized()
+        upv = Vector((0.0, 0.0, 1.0)) if abs(av.z) < 0.9 else Vector((-1.0, 0.0, 0.0))
+        part = self.emit(fid, part, HP.frame(p, av, upv), inv, keep=False)
         fd = part.fit
         for ob in self.coll.objects:
             if ob.get('grp') == fid and ob.get('role') != 'mount':
@@ -927,17 +932,18 @@ class Kit:
         # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
         # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
         mz = Vector(fd.get('lane_from', fd['muzzles'][0])[1]); hr = fd['radius']   # a kit may start the lane at the mouth (Chorus throats, issue 623)
-        lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
+        lu = upv.cross(av).normalized(); lw = av.cross(lu).normalized()
+        lane = dict(apex=tuple(mz), dir=tuple(av), u=tuple(lu), w=tuple(lw), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
-                                 rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
+                                 rest_yaw=0.0, reach=fd['reach'], band=tuple(band or (-10, 0, 10, 20)), muzzles=[tuple(m[1]) for m in fd['muzzles']],
                                  cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane],
                                  aim=tuple(fd['aim'][1]), bore=fd.get('bore', r)))   # aim, bore: what the recipe's hard points read (issue 618)
         wn_ = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
         what_ = ('%s, %s (fixed)' % (wn_.lower(), getattr(part, 'type', 'organ'))) if getattr(part, 'type', '') == 'throat' and wn_ else \
             'spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector')
-        self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
-                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
+        self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(round(math.degrees(math.atan2(av.y, av.x)), 1), round(math.degrees(math.asin(max(-1.0, min(1.0, av.z)))), 1)), slot=slot,
+                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0) if aim is None else tuple(av),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
     def core(self, fid, centre, r, src='picture', note='', inv=(), part=None):

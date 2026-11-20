@@ -155,6 +155,11 @@ const FONT_DIR := "res://ui/theme/fonts/"
 static var _fonts := {}
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_fonts.clear()
+
+
 static func px(v: float, k: float) -> int:
 	return UiScale.px(v, k)
 

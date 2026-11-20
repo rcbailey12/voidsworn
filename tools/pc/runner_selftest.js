@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
 // Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
 // findings 6 and 7), all in test mode through the same entry points.
@@ -320,7 +322,7 @@ function gitEnvironment(env) {
 // runner_stall_tests row still exercise the real timeout code.
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
-  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js']) {
+  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat']) {
     let body = read(path.join(here, file));
     if (file.endsWith('.bat')) {
       body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
@@ -905,14 +907,34 @@ async function testAssignedBranch() {
   pass('fixture push override still validates the issue against the actual Codex assignment');
 }
 async function testLaneOwnership() {
-  const profile = path.join(root, 'fixture profile');
+  const fixture = fs.mkdtempSync(path.join(root, 'lane-lock-'));
+  const profile = path.join(fixture, 'profile');
   const home = path.join(profile, 'Downloads', 'voidsworn_test', 'board_d');
   const out = path.join(home, 'issue-687');
-  const agentHold = path.join(root, 'agent hold');
-  const finishHold = path.join(root, 'finish hold');
-  const commonEnv = { CODEX_TEST_ROOT: home, USERPROFILE: profile };
+  const agentHold = path.join(fixture, 'agent hold');
+  const finishHold = path.join(fixture, 'finish hold');
+  const settings = path.join(fixture, 'runner_settings.txt');
+  write(settings, 'min_free_gb=60\n');
+  const commonEnv = { CODEX_TEST_ROOT: home, USERPROFILE: profile, PC_TEST_SETTINGS: settings, PC_TEST_SPACE_FREE_MB: '131072' };
   const waiting = job('codex', 'lane-lock', { ...commonEnv, STUB_AGENT_HOLD: agentHold, PC_TEST_GH_HOLD_FINISH: finishHold })
     .catch(error => ({ error }));
+  async function waitForReady(hold, label) {
+    const ready = hold + '.ready';
+    let watcher;
+    try {
+      await Promise.race([
+        new Promise((resolve, reject) => {
+          const check = () => { if (fs.existsSync(ready)) resolve(); };
+          watcher = fs.watch(fixture, check);
+          watcher.on('error', reject);
+          check();
+        }),
+        waiting.then(run => { throw run.error || new Error(label + '\n' + run.text + run.result); })
+      ]);
+    } finally {
+      watcher?.close();
+    }
+  }
   async function refuse(issue) {
     const db = path.join(home, 'contender-gh.json');
     const trace = path.join(home, 'contender-gh.jsonl');
@@ -928,7 +950,8 @@ async function testLaneOwnership() {
   }
   let winner;
   try {
-    assert(await waitFor(() => fs.existsSync(agentHold + '.ready'), 45000), 'mock agent never reached its checkout');
+    await waitForReady(agentHold, 'mock agent never reached its checkout');
+    assert(read(path.join(out, 'result.txt')).includes('has 128 GB free (min_free_gb floor 60)'), 'lane fixture must use fake space');
     const watched = [path.join(out, 'status.json'), path.join(out, 'result.txt'), path.join(home, 'repo', 'CODEX_TASK.md'),
       path.join(home, 'repo', '.git', 'HEAD'), path.join(home, 'repo', 'agent_started.txt')];
     const before = watched.map(read);
@@ -937,7 +960,7 @@ async function testLaneOwnership() {
     assert.deepEqual(watched.map(read), before, 'the live checkout, work and run records must be untouched');
     assert(!fs.existsSync(path.join(home, 'issue-688')), 'a different issue cannot create its output folder on this lane');
     write(agentHold + '.release', 'agent may finish');
-    assert(await waitFor(() => fs.existsSync(finishHold + '.ready'), 30000), 'runner never reached final reporting');
+    await waitForReady(finishHold, 'runner never reached final reporting');
     assert.equal(JSON.parse(read(path.join(out, 'status.json'))).status, 'unverified', 'local state was already finalized');
     await refuse(687);
     const refresh = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
@@ -1280,7 +1303,7 @@ async function testRunnerStartChecks() {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js'];
+  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
@@ -1306,11 +1329,13 @@ async function testRunnerStartChecks() {
 }
 (async () => { try {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools, deliveryTools]);
+  // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
+  await testLaneOwnership();
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testLaneOwnership, testDeliveryCleanup, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());
@@ -1340,4 +1365,10 @@ finally {
     Object.entries(totals).map(([step, t]) => step + ': ' + t.calls + ' calls, ' + t.seconds.toFixed(2) + ' s').join('\n') + '\n';
   write(path.join(root, 'timings.txt'), timingNote);
   console.log(timingNote.trim());
+  // Issue 1180 (Board, Nov 20): a passing run removes its evidence root (several GB of clones per standing-checks run
+  // filled TEMP). A failure keeps it for reading. rmSync removes junctions as links and never follows them.
+  if (process.exitCode !== 1 && process.env.RUNNER_SELFTEST_KEEP !== '1') {
+    try { fs.rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); console.log('Evidence removed after PASS: ' + root); }
+    catch (e) { console.log('Evidence kept (could not remove: ' + e.message + '): ' + root); }
+  } else console.log('Evidence kept: ' + root);
 } })();
