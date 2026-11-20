@@ -138,6 +138,9 @@ try {
   const linked = makeCopy('repo-kept-linked', 5);
   fs.symlinkSync(other, path.join(linked, 'external'), windows ? 'junction' : 'dir');
   const newest = makeCopy('repo-kept-newest', 28);
+  // The Board keep list also binds the runner's end-of-job cleanup, not only the janitor (Artoo on PR 1277).
+  const listedClean = makeCopy('repo-kept-listed', 2);
+  write(path.join(path.dirname(flag), 'janitor_keep.txt'), `# held by the Board\n${listedClean}\n`);
   const noncandidate = makeCopy('repo-clone-failed-older', 1);
   // Files created at the top of a kept checkout also change its directory timestamp.
   fs.utimesSync(newest, new Date(2030, 0, 1), new Date(2030, 0, 1));
@@ -159,12 +162,13 @@ try {
   assert.match(log, /repo-kept-staged.*working tree needs keeping/);
   assert.match(log, /repo-kept-invalid.*not a standalone checkout/);
   assert.match(log, /repo-kept-linked.*linked path/);
+  assert.match(log, /repo-kept-listed.*kept: on the Board keep list/);
   assert.equal(git(['-C', history, 'rev-parse', 'HEAD']), local);
   assert.equal(read(path.join(dirty, 'work.txt')), 'local work');
   assert.equal(read(path.join(staged, 'staged.txt')), 'staged work');
   assert.equal(read(path.join(invalid, 'proof.txt')), 'same name, no Git checkout');
   assert.equal(read(path.join(other, 'proof.txt')), 'unrelated scratch');
-  for (const dir of [repo, newest, noncandidate, linked]) assert(fs.existsSync(dir), dir);
+  for (const dir of [repo, newest, noncandidate, linked, listedClean]) assert(fs.existsSync(dir), dir);
   const firstFail = start('first-fail', '201');
   assert.match(finish(firstFail, { code: '6' }), /kept for a retry for one day/);
   keep(firstFail);

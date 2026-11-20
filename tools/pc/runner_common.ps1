@@ -631,7 +631,12 @@ function Read-BoardKeepList($file) {
 }
 function Get-BoardKeepReason($path) {
   # Whole-path match: the candidate is a listed path, holds one, or sits inside one. Never a partial name match.
-  if (-not $script:boardKeep) { return '' }
+  # Every removal path loads the list itself (the janitor and the runner's end-of-job cleanup alike; Artoo on PR 1277).
+  # A list that cannot be read throws, and the caller keeps the candidate.
+  if ($null -eq $script:boardKeep) {
+    $script:boardKeep = Read-BoardKeepList (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/janitor_keep.txt')
+  }
+  if (-not $script:boardKeep.Count) { return '' }
   $full = [IO.Path]::GetFullPath($path).TrimEnd('\', '/')
   foreach ($keep in $script:boardKeep) {
     if ($full -eq $keep -or $keep.StartsWith($full + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
