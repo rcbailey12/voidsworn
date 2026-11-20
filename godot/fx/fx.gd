@@ -364,7 +364,11 @@ func _process(delta: float) -> void:
 		step(delta)
 
 
+var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
+
+
 func step(delta: float) -> void:
+	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
 	var spd = 1.0
 	if now < _pause_until:
@@ -440,6 +444,27 @@ func later(t: float, f: Callable) -> void:
 func free_effect(ref: WeakRef) -> void:
 	var node = ref.get_ref()
 	if is_instance_valid(node): node.queue_free()
+
+
+# Issue 1237: one-shot pictures (death flipbooks, staged flashes and smoke, hull hit pictures) come from a reused pool
+# instead of a new node, quad and material each (fx_pool.gd Pictures). `make` builds the material only when the pool has
+# none free for `key`. Return it with free_picture, bound with the picture's pic_gen, never with free_effect.
+func picture(key: String, make: Callable, node_name: String) -> MeshInstance3D:
+	return pictures().take(self, key, make, node_name)
+
+
+func pictures() -> POOLS.Pictures:
+	if not dstate.has("pics"): dstate["pics"] = POOLS.Pictures.new()
+	return dstate["pics"]
+
+
+func free_picture(ref: WeakRef, gen: int) -> void:
+	var node = ref.get_ref()
+	if not is_instance_valid(node): return
+	if dstate.has("pics") and node.has_meta("pic_key"):
+		(dstate["pics"] as POOLS.Pictures).give(node, gen)
+	else:
+		node.queue_free()
 
 
 func _run_later() -> void:
@@ -946,6 +971,9 @@ func _update_lights() -> void:
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
 			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
+			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
+			# each one a pass over the fog froxels); the rest light hulls only.
+			l.light_volumetric_fog_energy = 1.0 if k < 2 else 0.0
 			l.visible = true
 		else:
 			l.visible = false

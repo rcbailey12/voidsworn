@@ -14,6 +14,17 @@ const HULL := preload("res://fx/fx_hull.gd")
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 const DEBRIS_CAP := 360
+# Issue 1237 (Neon F7.1): a debris plate flies as before for DEBRIS_FREE_S, then takes DEBRIS_SETTLE_DAMP and slows to a
+# stop, and Jolt puts it to sleep; anything still moving at DEBRIS_REST_S is stopped and put to sleep there. A sleeping
+# plate stays where it came to rest and costs Jolt nothing until a hull knocks it. Plates no longer test each other
+# (hull and wreck contacts only), and a wreck section leaves Jolt WRECK_PHYS_S after its release: it keeps its drift and turn
+# on the effect clock, the way the kinematic tiers already drift. Seconds are effect-clock seconds.
+const DEBRIS_FREE_S := 2.0
+const DEBRIS_SETTLE_DAMP := 1.4
+const DEBRIS_SETTLE_ADAMP := 1.2
+const DEBRIS_REST_S := 5.5
+const WRECK_PHYS_S := 4.0
+const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
 
@@ -271,21 +282,20 @@ static func route_material(fx, code: String, rel: String, production := false, s
 	return m
 
 
-static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false, staged := false, frame = null) -> Node3D:
-	var mi := MeshInstance3D.new()
-	mi.name = "fx_baked_" + kind
+# `pool_tag` keeps a caller that changes the material's shader (the weapon bursts) in a pool of its own (issue 1237).
+static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false, staged := false, frame = null, pool_tag := "") -> Node3D:
+	var b: String = "small" if band == "destroyer" else band
+	var key: String = ("fbs|" + b) if staged else ("fb|" + b + "|" + kind + "|" + pool_tag)
+	# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
+	# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
+	# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
+	var make := (func() -> ShaderMaterial: return route_material(fx, SH.DEATH_FLIPBOOK, "death/" + b + "/flash_", true, 0)) if staged \
+		else (func() -> ShaderMaterial: return flipbook_material(fx, kind, b))
+	var mi: MeshInstance3D = fx.picture(key, make, "fx_baked_" + kind)
 	mi.set_meta("fx_picture_kind", kind)
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE
-	mi.mesh = quad
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
-	var m := flipbook_material(fx, kind, "small" if band == "destroyer" else band)
+	var m := mi.material_override as ShaderMaterial
 	if staged:
-		# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
-		# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
-		# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
-		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + ("small" if band == "destroyer" else band) + "/flash_", true, 0)
 		m.set_shader_parameter("pic_spin", fx.rng.randf() * TAU)
 		m.set_shader_parameter("size_divisor", 0.80)
 		mi.extra_cull_margin = 100.0
@@ -306,15 +316,13 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	m.set_shader_parameter("tear_normal", up)
 	m.set_shader_parameter("velocity", velocity)
 	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
-	mi.material_override = m
-	fx.add_child(mi)
 	if root_on_surface and kind == "vent":
 		mi.global_position = p + n * size * VENT_ROOT_FRAC
 		mi.set_meta("gas_root", p)
 	else:
 		mi.global_position = p + (n * size * 0.42 if kind == "vent" else Vector3.ZERO)
 		mi.set_meta("gas_root", mi.global_position)
-	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	fx.later(fx.now + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	# Every picture the death spawns is entered in the stray puff guard. The root is the point the gas leaves, not the
 	# picture centre, so a floating picture cannot pass just because its frame happens to be near the hull.
 	if frame is Transform3D: mi.set_meta("spawn_frame", frame)
@@ -444,6 +452,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
 	var pool: Array = st["debris"]
+	var awake: Dictionary = st.get("debris_awake", {})
+	st["debris_awake"] = awake
 	var sc = 0 if size < 0.3 * fx.unit else (1 if size < 0.6 * fx.unit else 2)
 	for i in count:
 		var b: RigidBody3D
@@ -457,11 +467,13 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 			b.angular_damp = 0.0
 			b.linear_damp = 0.0
+			b.can_sleep = true
 			b.collision_layer = DEBRIS_LAYER
-			b.collision_mask = HULL_LAYER | DEBRIS_LAYER
+			b.collision_mask = HULL_LAYER   # issue 1237: plates never test each other (hulls and wreck sections still knock them)
 			b.physics_material_override = st["bounce"]
 			var vi: int = fx.rng.randi() % DEBRIS_VARIANTS
 			var cs = CollisionShape3D.new()
+			cs.name = "shape"
 			cs.shape = st["debris_shapes"][sc][vi]
 			b.add_child(cs)
 			var mi = MeshInstance3D.new()
@@ -469,11 +481,21 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			mi.mesh = st["debris_meshes"][sc][vi]
 			mi.material_override = st["debris_mat"]
 			b.add_child(mi)
+			b.set_meta("debris_sc", sc)
 			fx.phys_root.add_child(b)
 			pool.append(b)
 		else:
-			b = pool[int(st["debris_next"])]
-			st["debris_next"] = (int(st["debris_next"]) + 1) % DEBRIS_CAP
+			var slot := int(st["debris_next"])
+			b = pool[slot]
+			st["debris_next"] = (slot + 1) % DEBRIS_CAP
+			# Issue 1237 (Neon F7.1): a recycled plate takes this throw's size (it kept the last one's, so a frigate
+			# could throw a capital's plate).
+			if int(b.get_meta("debris_sc", -1)) != sc:
+				var vi: int = slot % DEBRIS_VARIANTS   # no random draw: the effect seed's sequence is unchanged
+				(b.get_node("shape") as CollisionShape3D).shape = st["debris_shapes"][sc][vi]
+				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
+				b.mass = 0.3 + 0.4 * sc
+				b.set_meta("debris_sc", sc)
 		var d: Vector3 = fx.rdir()
 		d.y = 0.0
 		d = d.normalized()
@@ -488,10 +510,53 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.remove_meta("leash_born")
 		b.sleeping = false
 		b.visible = true
+		awake[b] = fx.now
 		var mesh := b.get_node("mesh") as MeshInstance3D
 		# Headless uses the dummy server even though the configured method still says forward_plus.
 		if DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and mesh.material_override != null:
 			mesh.set_instance_shader_parameter("spawn_t", fx.now)
+
+
+# Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
+# thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
+# hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
+static func _settle_debris(fx) -> void:
+	var awake: Dictionary = fx.dstate.get("debris_awake", {})
+	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
+		fx.dstate["debris_scan"] = fx.now + 0.25
+		for b in fx.dstate.get("debris", []):
+			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
+				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+		fx.dstate["debris_awake"] = awake
+	if awake.is_empty(): return
+	var done: Array = []
+	for b in awake:
+		if not is_instance_valid(b):
+			done.append(b)
+			continue
+		var age: float = fx.now - float(awake[b])
+		if age < DEBRIS_FREE_S: continue
+		var rb := b as RigidBody3D
+		if rb.linear_damp < DEBRIS_SETTLE_DAMP:
+			rb.linear_damp = DEBRIS_SETTLE_DAMP
+			rb.angular_damp = DEBRIS_SETTLE_ADAMP
+		if age >= DEBRIS_REST_S:
+			rb.linear_velocity = Vector3.ZERO
+			rb.angular_velocity = Vector3.ZERO
+			rb.sleeping = true
+			done.append(b)
+		elif rb.sleeping:
+			done.append(b)
+	for b in done: awake.erase(b)
+
+
+# The plates Jolt is still moving (the frame-time check's count; 0 once every plate has come to rest).
+static func debris_awake(fx) -> int:
+	var n := 0
+	for b in fx.dstate.get("debris", []):
+		if is_instance_valid(b) and not (b as RigidBody3D).sleeping: n += 1
+	return n
 
 
 # A convex collider Jolt can always build (G2 bot runs: a 900-point hull failed and logged an error). The point cloud is
@@ -2101,6 +2166,15 @@ static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMateri
 # material for a frame or two, while the first band's 0.15 s fade has barely begun; _update_dying sets death_age on each
 # new material before it is drawn, so it starts at the same point of the fade it would have reached.
 const POWER_BUDGET := 4000   # microseconds a frame; a tuning value, the same as PREBUILD_BUDGET
+# Issue 1237 (Neon F7.3): POWER_BUDGET is one budget for the frame, shared by every dying ship (three capitals killed
+# together spent 4 ms each, 12 ms in one frame). A ship whose turn finds the frame's budget spent waits for the next step;
+# its live materials stay a frame longer, the same carry-on as before. Unchanged for a single death.
+static func _power_left(fx) -> int:
+	var frame: int = fx.step_count
+	if int(fx.dstate.get("power_frame", -1)) != frame:
+		fx.dstate["power_frame"] = frame
+		fx.dstate["power_spent"] = 0
+	return POWER_BUDGET - int(fx.dstate["power_spent"])
 
 static func _power_down(fx, s) -> void:
 	var mats: Array = []
@@ -2129,6 +2203,11 @@ static func _power_down_step(fx, s, budget: int) -> void:
 	if s.has_meta("death_hidden") or not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		s.remove_meta("death_power_queue")
 		return
+	if budget >= 0:
+		budget = mini(budget, _power_left(fx))
+		if budget <= 0:
+			fx.later(fx.now + 0.000001, func l_power_down_wait() -> void: _power_down_step(fx, s, POWER_BUDGET))
+			return
 	var t0 := Time.get_ticks_usec()
 	var queue: Array = s.get_meta("death_power_queue")
 	var mats: Array = s.get_meta("death_power", [])
@@ -2151,6 +2230,9 @@ static func _power_down_step(fx, s, budget: int) -> void:
 			queue.pop_front()
 		if budget >= 0 and Time.get_ticks_usec() - t0 > budget: break
 	s.set_meta("death_power_max_usec", maxi(int(s.get_meta("death_power_max_usec", 0)), Time.get_ticks_usec() - t0))
+	if budget >= 0:
+		_power_left(fx)
+		fx.dstate["power_spent"] = int(fx.dstate["power_spent"]) + Time.get_ticks_usec() - t0
 	fx.pend("power_down", t0)
 	if queue.is_empty():
 		s.remove_meta("death_power_queue")
@@ -2537,17 +2619,16 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 # One staged picture from the route B pictures (the rebake of issue 426), sized in pixels at the battle camera. `frame`
 # maps the source ship's own space to the world where the picture is born (a drifting wreck piece), for the stray guard.
 static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divisor: float, intensity: float, soft: bool, kind: String, frame = null, velocity := Vector3.ZERO, look := {}) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.name = "fx_beat_" + kind
+	# The seed is picked here, as route_material picks it (the same random draw), so the pool key names the textures.
+	var seed_i: int = int(look.get("seed", -1))
+	if seed_i < 0: seed_i = fx.rng.randi_range(0, 2)
+	var mi: MeshInstance3D = fx.picture("pic|" + rel + "|" + str(seed_i),
+		func() -> ShaderMaterial: return route_material(fx, SH.DEATH_FLIPBOOK, rel, true, seed_i), "fx_beat_" + kind)
 	mi.set_meta("fx_picture_kind", kind)
 	mi.set_meta("gas_root", p)
 	if frame is Transform3D: mi.set_meta("spawn_frame", frame)
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE
-	mi.mesh = quad
 	mi.extra_cull_margin = 100.0
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat := route_material(fx, SH.DEATH_FLIPBOOK, rel, true, int(look.get("seed", -1)))
+	var mat := mi.material_override as ShaderMaterial
 	mat.set_shader_parameter("pic_spin", float(look.get("spin", 0.0)))
 	mat.set_shader_parameter("pic_shape", look.get("shape", Vector2.ONE))
 	mat.set_shader_parameter("smoke_tone", float(look.get("tone", 1.0)))
@@ -2559,11 +2640,9 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 	mat.set_shader_parameter("intensity", intensity)
 	mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 	mat.set_shader_parameter("velocity", velocity)
-	mi.material_override = mat
-	fx.add_child(mi)
 	mi.global_position = p
 	fx.record_spawn(src, p, false, frame)
-	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	fx.later(fx.now + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	return mi
 
 
@@ -3179,6 +3258,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		node.freeze = false
 		node.linear_velocity = vel * fx.anim_speed()
 		node.angular_velocity = ang * fx.anim_speed()
+		fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
 	elif node.has_meta("story_damp"):
 		var dmp: float = node.get_meta("story_damp")
 		wreck["fires"].append({"node": node, "vel": vel, "ang": ang, "damp": dmp, "adamp": dmp * 0.5})
@@ -3193,6 +3273,26 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
 		fx.stk(p, fx.now, 0.65, Color(1.0, 0.62, 0.30), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
+
+
+# Issue 1237 (Neon F7.1): WRECK_PHYS_S after its release a wreck section leaves Jolt (it never slept: no damping) and
+# drifts on with the velocity and turn it had, on the effect clock, as the kinematic tiers do. A strained wreck's pieces
+# keep their damping. It no longer bounces off a hull it drifts into after that.
+static func _wreck_leave_physics(fx, wreck: Dictionary, node: Node3D) -> void:
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is RigidBody3D): return
+	var rb := node as RigidBody3D
+	if rb.process_mode == Node.PROCESS_MODE_DISABLED: return
+	var spd: float = maxf(fx.anim_speed(), 0.01)
+	var entry := {"node": rb, "vel": rb.linear_velocity / spd, "ang": rb.angular_velocity / spd}
+	if rb.linear_damp > 0.0:
+		entry["damp"] = rb.linear_damp
+		entry["adamp"] = rb.angular_damp
+	rb.linear_velocity = Vector3.ZERO
+	rb.angular_velocity = Vector3.ZERO
+	rb.freeze = true
+	rb.disable_mode = CollisionObject3D.DISABLE_MODE_REMOVE
+	rb.process_mode = Node.PROCESS_MODE_DISABLED
+	wreck["fires"].append(entry)
 
 
 # Bounded samples from the actual cut, biased to its visible lip. No geometry work
@@ -3277,6 +3377,7 @@ static func update(fx, dt: float) -> void:
 	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
 	_leash_mark(fx)
 	for ship in fx.ships.values(): _update_dying(fx, ship)
+	_settle_debris(fx)
 	for w in fx.dstate["wrecks"]:
 		var speed: float = maxf(fx.anim_speed(), 0.01)
 		var prev: float = float(w.get("speed", 1.0))

@@ -117,6 +117,12 @@ and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_int
 in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths (Nov 20
 2026); it stays off by default until its clip is approved. Check: fx/test/death_story_check.gd (quality low and high).
 
+Many deaths at once (issue 1237, Neon's destruction audit F7): thrown plates fly two seconds as before, then slow and come
+to rest by five and a half, where they stay until the plate ring reuses them; wreck sections keep drifting and turning,
+but on the effect clock after four seconds instead of in Jolt. Death pictures are reused from a pool, the power-down
+budget is one per frame for every dying ship, and only the two strongest event lights light the fog. Done when three
+capitals at once keep p99 inside the 12.5 ms gate on the PC; check: fx/test/multi_death_check.gd (headless counts).
+
 ### Frigate, escort, destroyer
 
 Fast, because they die often and must not clutter the board:
