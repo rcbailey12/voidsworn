@@ -43,12 +43,20 @@ if errorlevel 1 (
   call "%JW%" fail "private TEMP setup"
   goto finish
 )
+set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%LB_HOME%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
 rem The redirection holds the marker open until the tools finish (every step below, through job_wrap end).
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
-exit /b %ERRORLEVEL%
+set "RUN_EL=%ERRORLEVEL%"
+rem (1180) The scratch goes on PASS; on FAILED the newest one per bench home stays a day (scratch_done.ps1 beside job_wrap).
+set "RUN_SCRATCH=%TEMP%"
+set "TEMP=%BASE_TEMP%"
+set "TMP=%BASE_TEMP%"
+set "TMPDIR=%BASE_TEMP%"
+if exist "%~dp0..\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "look_bench %LB_HOME%" >> "%ST%" 2>&1
+exit /b %RUN_EL%
 
 :run_tools
 

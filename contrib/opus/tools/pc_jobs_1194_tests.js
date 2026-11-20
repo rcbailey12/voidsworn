@@ -36,6 +36,10 @@ const initOrder = ['set "PC_GPU_ISSUE=%~3"', 'lane_tools_refresh.ps1" -Build too
 initOrder.reduce((at, needle) => { const i = wrap.indexOf(needle, at); assert(i > at, 'init order: ' + needle); return i; }, 0);
 assert(wrap.includes('move /y "%JW_OUT%\\done.txt" "%JW_OUT%\\done_previous.txt"'), 'an older done.txt is kept, not deleted');
 assert(!/^\s*(del|erase|rd|rmdir)\b/im.test(wrap), 'job_wrap deletes nothing');
+// Issue 1180: end starts the janitor's after-job cleanup detached (the janitor rate-limits it and skips during GPU work).
+assert(/:jw_end[\s\S]*?call :jw_janitor[\s\S]*?done FAILED/.test(wrap), 'end starts the after-job cleanup before the done lines');
+assert(/:jw_janitor\r?\nif "%JW_NO_JANITOR%"=="1" exit \/b 0\r?\nif not exist "%JW_TOOLS%\\janitor\.ps1" exit \/b 0/.test(wrap), 'the after-job cleanup can be turned off and needs the installed janitor');
+assert(/Start-Process -WindowStyle Hidden[^\n]*janitor|Start-Process -WindowStyle Hidden[^\n]*--after-job/.test(wrap) && wrap.includes('--after-job'), 'the janitor runs detached with --after-job');
 pass('job_wrap: GPU label, watchdog steps, optional and continue steps, outputs, done lines and exit codes');
 
 const ported = {
@@ -75,7 +79,8 @@ pass('the five job bats and run_smoke run through job_wrap: preflight first, no 
   const marker = lines.indexOf('call :run_tools 9>"%TEMP%\\.voidsworn-run-active"');
   const tools = lines.indexOf('\n:run_tools');
   assert(init > 0 && marker > init, 'look bench: the preflight runs before the marker is taken');
-  assert(/^exit \/b %ERRORLEVEL%$/m.test(lines.slice(marker).split('\n')[1]), 'look bench: the exit code of the marked block is the job exit code');
+  assert(/^set "RUN_EL=%ERRORLEVEL%"\r?$/m.test(lines.slice(marker).split('\n')[1]) &&
+    /\nexit \/b %RUN_EL%\r?\n/.test(lines.slice(marker, tools)), 'look bench: the exit code of the marked block is the job exit code');
   assert(tools > marker, 'look bench: the marked block follows the marker call');
   const top = lines.slice(0, tools);
   assert(!/call "%JW%" run|\bgit\b|call :bench/.test(top), 'look bench: no step runs outside the marked block');
