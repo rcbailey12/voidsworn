@@ -74,6 +74,9 @@ varying vec2 vp;
 varying float style;
 varying float band;
 varying vec2 wpos;
+// Ryan (Nov 20, issue 1359 thread, picked "Only with Z"): the reach hatching covered the whole board and read as random
+// far-off grid lines. hatch_hidden 1 (the normal view) draws none; Z and the other looks keep it board-wide.
+uniform float hatch_hidden = 0.0;
 void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; band = INSTANCE_CUSTOM.g; wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz; }
 void fragment() {
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
@@ -115,6 +118,7 @@ void fragment() {
 		// alphas are blended in linear light, so a small number already reads clearly on the dark board (0.03 shows
 		// about as bright as 0.2 would in screen colour)
 		float h = l * (band > 2.5 ? 0.034 : (band > 1.5 ? 0.028 : 0.022));
+		h *= 1.0 - hatch_hidden;
 		float A = h + a * (1.0 - h);
 		c = (vec3(0.941, 0.918, 0.871) * h + c * a * (1.0 - h)) / max(A, 0.0001);
 		a = A;
@@ -441,7 +445,12 @@ func set_danger(d: Dictionary) -> void:
 	refresh()
 
 
+var _hover_raw := ""   # the hex under the cursor even off the board's cells (a set-piece hole), for the 1359 rims
+
+
 func set_hover(q: int, r: int) -> void:
+	_hover_raw = key(q, r)
+	_show_hover_edge(_hover_raw)
 	var k := key(q, r) if index.has(key(q, r)) else ""
 	if k != hover_key:
 		hover_key = k
@@ -497,15 +506,21 @@ var _gas_edge_gain := 0.0
 var hazard_edges: MeshInstance3D
 var _hazard_edge_gain := 0.0
 const HAZARD_EDGE := ["neb", "storm"]
-# Issue 1359 (Neon backdrop audit H4): at c170, passable debris (cover) and impassable rock, hulk and station hexes
-# looked alike without Z. The normal view adds the same faint edge language as the hazards: a warm rim round solid
-# ground (the colour of the planet and station exclusion rims) and, by the look's cover_edge, a softer tan one round
-# debris. The look's solid_edge and cover_edge say how strong; Z's gas_edge already draws both, so Z sets them to 0.
+# Issue 1359 (Neon backdrop audit H4; Ryan picked B on Nov 20 11:30 CT, "only show up when you hover over it in
+# cinematic mode and then when you have the full grid ... it shows by default"): an amber rim round solid ground (rock,
+# hulk, station and the map's set-piece holes; the colour of the planet and station exclusion rims) and a softer tan
+# one round debris cover. Z draws every patch (solid_edge, cover_edge); the normal view draws only the patch under the
+# cursor (edge_hover, at hover_solid and hover_cover). Z's gas edges leave rock and debris to these two.
 const SOLID_EDGE_C := Color(0.95, 0.56, 0.24, 0.8)
 var solid_edges: MeshInstance3D
 var cover_edges: MeshInstance3D
 var _solid_edge_gain := 0.0
 var _cover_edge_gain := 0.0
+var hover_edges: Node3D            # one child mesh per solid or debris patch, named by kind
+var _hover_patch := {}             # "q,r" -> that hex's patch mesh under hover_edges
+var _edge_hover := false
+var _hover_gain := {"solid": 0.0, "cover": 0.0}
+var _hover_shown: MeshInstance3D = null
 
 
 func _well_info() -> void:
@@ -578,7 +593,9 @@ func _terrain_edges() -> void:
 	var n := 0
 	var ng := 0
 	for g in groups:
-		if g == "neb" or g == "storm" or g == "debris" or g == "rock":
+		if g == "debris" or g == "rock":
+			continue   # issue 1359: solid_edges and cover_edges draw these, in Z and on hover
+		if g == "neb" or g == "storm":
 			ng += _edge_into(sg, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
 		else:
 			n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
@@ -602,16 +619,62 @@ func _terrain_edges() -> void:
 		for hole in meta.get("holes", []):
 			if str(hole.get("kind", "")) == "deadstar": continue
 			for cell in hole.get("cells", []): solid[key(int(cell[0]), int(cell[1]))] = true
-	solid_edges = _edge_mesh("SolidEdges", em, solid, SOLID_EDGE_C)
-	cover_edges = _edge_mesh("CoverEdges", em, groups.get("debris", {}), EDGE_C["debris"])
+	var cover: Dictionary = groups.get("debris", {})
+	solid_edges = _edge_mesh(self, "SolidEdges", em, solid, SOLID_EDGE_C)
+	cover_edges = _edge_mesh(self, "CoverEdges", em, cover, EDGE_C["debris"])
+	hover_edges = Node3D.new()
+	hover_edges.name = "HoverEdges"
+	add_child(hover_edges)
+	_hover_patch = {}
+	_hover_shown = null
+	for kind in ["solid", "cover"]:
+		var keys: Dictionary = solid if kind == "solid" else cover
+		for patch in _patches_of(keys):
+			var mi := _edge_mesh(hover_edges, kind, em, patch, SOLID_EDGE_C if kind == "solid" else EDGE_C["debris"])
+			mi.visible = false
+			for k in patch: _hover_patch[k] = mi
 
 
-func _edge_mesh(nm: String, em: ShaderMaterial, keys: Dictionary, col: Color) -> MeshInstance3D:
+# connected groups of hex keys (six neighbours)
+func _patches_of(keys: Dictionary) -> Array:
+	var out: Array = []
+	var seen := {}
+	for k0 in keys:
+		if seen.has(k0): continue
+		var patch := {}
+		var todo: Array = [k0]
+		seen[k0] = true
+		while not todo.is_empty():
+			var k: String = str(todo.pop_back())
+			patch[k] = true
+			var qr: PackedStringArray = k.split(",")
+			for d in [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]:
+				var nk := key(int(qr[0]) + int(d[0]), int(qr[1]) + int(d[1]))
+				if keys.has(nk) and not seen.has(nk):
+					seen[nk] = true
+					todo.append(nk)
+		out.append(patch)
+	return out
+
+
+# issue 1359: the normal view shows the rim of the solid or debris patch under the cursor only
+func _show_hover_edge(raw: String) -> void:
+	var mi: MeshInstance3D = _hover_patch.get(raw) if _edge_hover else null
+	if mi == _hover_shown: return
+	if is_instance_valid(_hover_shown): _hover_shown.visible = false
+	_hover_shown = mi
+	if mi != null:
+		(mi.material_override as ShaderMaterial).set_shader_parameter("gain", float(_hover_gain.get(str(mi.get_meta("edge_kind")), 0.0)))
+		mi.visible = fills == null or fills.visible
+
+
+func _edge_mesh(parent: Node, nm: String, em: ShaderMaterial, keys: Dictionary, col: Color) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = nm
+	mi.set_meta("edge_kind", nm)
 	mi.material_override = em.duplicate()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(mi)
+	parent.add_child(mi)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	mi.mesh = st.commit() if _edge_into(st, keys, col, 0.32, 2.2, -0.36) > 0 else null
@@ -679,13 +742,20 @@ func _edge_gains(sp: Dictionary) -> void:
 		(hazard_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _hazard_edge_gain)
 		hazard_edges.visible = _hazard_edge_gain > 0.0
 	if solid_edges != null:
-		_solid_edge_gain = float(sp.get("solid_edge", 0.0))
+		_solid_edge_gain = float(sp.get("solid_edge", sp.get("gas_edge", sp["terrain_edge"])))
 		(solid_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _solid_edge_gain)
 		solid_edges.visible = _solid_edge_gain > 0.0
 	if cover_edges != null:
-		_cover_edge_gain = float(sp.get("cover_edge", 0.0))
+		_cover_edge_gain = float(sp.get("cover_edge", sp.get("gas_edge", sp["terrain_edge"])))
 		(cover_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _cover_edge_gain)
 		cover_edges.visible = _cover_edge_gain > 0.0
+	if fills != null and fills.material_override is ShaderMaterial:
+		(fills.material_override as ShaderMaterial).set_shader_parameter("hatch_hidden", 1.0 if bool(sp.get("hatch_hidden", false)) else 0.0)
+	_edge_hover = bool(sp.get("edge_hover", false))
+	_hover_gain = {"solid": float(sp.get("hover_solid", 0.0)), "cover": float(sp.get("hover_cover", 0.0))}
+	if is_instance_valid(_hover_shown): _hover_shown.visible = false
+	_hover_shown = null
+	_show_hover_edge(_hover_raw)
 
 
 func _look_ui(toast: bool) -> void:
@@ -749,6 +819,8 @@ func _process(dt: float) -> void:
 			solid_edges.visible = fills.visible and _solid_edge_gain > 0.0
 		if cover_edges != null:
 			cover_edges.visible = fills.visible and _cover_edge_gain > 0.0
+		if is_instance_valid(_hover_shown):
+			_hover_shown.visible = fills.visible
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 
@@ -1014,7 +1086,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 
 
 func _rebuild_edges() -> void:
-	for n in [edges, gas_edges, hazard_edges, solid_edges, cover_edges]:
+	for n in [edges, gas_edges, hazard_edges, solid_edges, cover_edges, hover_edges]:
 		if is_instance_valid(n):
 			remove_child(n)
 			n.queue_free()

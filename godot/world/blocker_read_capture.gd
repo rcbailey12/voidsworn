@@ -1,14 +1,8 @@
 extends "res://world/world_shots.gd"
 # Issue 1359: can a player tell passable debris (cover) from impassable rock, hulk and station hexes at the normal
-# battle camera (cine, r 170) without Z? Same battle, same camera, one frame per edge option, then Z for reference.
+# battle camera (cine, r 170) without Z? Same battle, same camera: no hover, hover on solid, hover on debris, then Z.
 # Presentation only: ships are moved for the picture, no rule state changes.
 #   godot --path godot --resolution 1280x720 res://world/blocker_read_capture.tscn -- --out DIR --only boneyard
-const OPTIONS := [
-	["0_today", 0.0, 0.0],
-	["A_solid_rim", 0.35, 0.0],
-	["B_solid_and_cover", 0.35, 0.18],
-	["C_solid_strong", 0.6, 0.0],
-]
 const SOLID := ["rock", "hulk", "station"]
 
 
@@ -65,20 +59,58 @@ func _looks(b, name: String, home: Dictionary) -> void:
 		PG.codes.clear()
 	print("[1359] %s: focus debris %s with %d solid hexes near; classes %s" % [name, focus, best, ", ".join(classes.keys())])
 	BL.set_look("cine", false)
-	for opt in OPTIONS + [["Z_tactical", 0.0, 0.0]]:
-		BL.tactical = opt[0] == "Z_tactical"
+	if OS.get_environment("VS_1359_PROBE") == "1":
 		b.board.apply_look(false)
-		if not BL.tactical:
-			for pair in [[b.board.solid_edges, opt[1]], [b.board.cover_edges, opt[2]]]:
-				if pair[0] == null: continue
-				(pair[0].material_override as ShaderMaterial).set_shader_parameter("gain", pair[1])
-			b.board._solid_edge_gain = opt[1]
-			b.board._cover_edge_gain = opt[2]
+		cam.a = home["a"]; cam.b = home["b"]; cam.r = 170.0; cam.t = fc
+		cam.snap()
+		await _probe(Rect2i(900, 150, 380, 220))
+		return
+	# Ryan's pick (Nov 20): B, shown in the normal view only on hover, always with Z
+	var near_solid := ""
+	var nd := 99
+	for k in solid:
+		var sq: PackedStringArray = str(k).split(",")
+		var d: int = b.board._hdist(int(sq[0]), int(sq[1]), int(fq[0]), int(fq[1]))
+		if d < nd:
+			nd = d
+			near_solid = k
+	for shot in [["1_cine_no_hover", "", false], ["2_cine_hover_solid", near_solid, false], ["3_cine_hover_debris", focus, false], ["4_Z_grid", "", true]]:
+		BL.tactical = shot[2]
+		b.board.apply_look(false)
+		var hq: PackedStringArray = (str(shot[1]) if shot[1] != "" else "200,200").split(",")
+		b.hover = Vector2i(int(hq[0]), int(hq[1]))
+		b.board.set_hover(int(hq[0]), int(hq[1]))
 		cam.a = home["a"]
 		cam.b = home["b"]
 		cam.r = 170.0
 		cam.t = fc
 		cam.snap()
 		await _settle()
-		await _snap("%s_1359_%s_c170" % [name, opt[0]])
+		b.board.set_hover(int(hq[0]), int(hq[1]))
+		await _snap("%s_1359_%s_c170" % [name, shot[0]])
 	BL.tactical = false
+
+
+# VS_1359_PROBE=1: which node draws the far lattice (Ryan, Nov 20: "random grid lines ... in the distance")? Hide each
+# visible GeometryInstance3D in turn and print the ones whose hiding changes the lattice box the most.
+func _probe(box: Rect2i) -> void:
+	await _settle()
+	await RenderingServer.frame_post_draw
+	var base := get_viewport().get_texture().get_image().get_region(box)
+	var rows: Array = []
+	for node in get_tree().root.find_children("*", "GeometryInstance3D", true, false):
+		if not (node as Node3D).is_visible_in_tree(): continue
+		node.visible = false
+		for k in 3: await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var img := get_viewport().get_texture().get_image().get_region(box)
+		node.visible = true
+		var diff := 0.0
+		for y in range(0, box.size.y, 4):
+			for x in range(0, box.size.x, 4):
+				var a := base.get_pixel(x, y)
+				var c := img.get_pixel(x, y)
+				diff += absf(a.r - c.r) + absf(a.g - c.g) + absf(a.b - c.b)
+		if diff > 1.0: rows.append([diff, str(node.get_path()), node.get_class()])
+	rows.sort_custom(func(x, y): return x[0] > y[0])
+	for r in rows.slice(0, 15): print("[1359 probe] %.1f %s %s" % r)

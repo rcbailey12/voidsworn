@@ -6,7 +6,7 @@ extends SceneTree
 #     edges, no debris or rock edges, nebula and storm colours only), at the faint gain, and the Z-only gas edges stay off;
 #   Z (tactical): the hazard outline is off and the gas edges (every natural terrain hex edge) are as before, at 0.9;
 #   a rebuild of the edges (a new wreck, PR 1246's _rebuild_edges) keeps both rules.
-# Issue 1359: cine also draws an amber rim round solid hexes (rock, hulk) and a fainter tan one round debris; Z hides both.
+# Issue 1359: an amber rim round solid hexes (rock, hulk) and a tan one round debris: cine on hover only, Z always.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BOARD := preload("res://render/board.gd")
@@ -65,7 +65,7 @@ func _gain(mi: MeshInstance3D) -> float:
 	return float((mi.material_override as ShaderMaterial).get_shader_parameter("gain"))
 
 
-func _expect(board, label: String, neb: Array, storm: Array, natural: int, solid_outer: int, cover_outer: int) -> void:
+func _expect(board, label: String, neb: Array, storm: Array, natural: int, solid_outer: int, cover_outer: int, hovers: Array) -> void:
 	BL.set_look("cine", false)
 	BL.tactical = false
 	board.apply_look(false)
@@ -84,14 +84,29 @@ func _expect(board, label: String, neb: Array, storm: Array, natural: int, solid
 		_check(ok, "%s: the hazard outline carries a colour that is not nebula or storm (%s)" % [label, c])
 	_check(hz.visible and is_equal_approx(_gain(hz), 0.25), "%s: cine hazard outline visible %s at gain %.2f, want visible at 0.25" % [label, hz.visible, _gain(hz)])
 	_check(not board.gas_edges.visible, "%s: cine shows the Z-only gas edges" % label)
-	# Issue 1359: solid ground (rock, hulk, station) and debris cover get their own faint edges in cine
-	_check(board.solid_edges.visible and is_equal_approx(_gain(board.solid_edges), 0.35), "%s: cine solid rim visible %s at gain %.2f, want 0.35" % [label, board.solid_edges.visible, _gain(board.solid_edges)])
+	# Issue 1359 (Ryan, Nov 20): cine draws the amber solid rim and the tan debris rim only for the patch under the
+	# cursor; Z draws every patch
+	_check(not board.solid_edges.visible and not board.cover_edges.visible, "%s: cine shows every solid or debris rim without a hover" % label)
 	_check(_verts(board.solid_edges).size() == solid_outer * VERTS_PER_EDGE, "%s: solid rim has %d vertices, want %d" % [label, _verts(board.solid_edges).size(), solid_outer * VERTS_PER_EDGE])
-	_check(board.cover_edges.visible and is_equal_approx(_gain(board.cover_edges), 0.18), "%s: cine debris rim visible %s at gain %.2f, want 0.18" % [label, board.cover_edges.visible, _gain(board.cover_edges)])
 	_check(_verts(board.cover_edges).size() == cover_outer * VERTS_PER_EDGE, "%s: debris rim has %d vertices, want %d" % [label, _verts(board.cover_edges).size(), cover_outer * VERTS_PER_EDGE])
+	for probe in hovers:
+		board.set_hover(int(probe[0].split(",")[0]), int(probe[0].split(",")[1]))
+		var shown: Array = []
+		for mi in board.hover_edges.get_children():
+			if mi.visible: shown.append(mi)
+		_check(shown.size() == probe[1], "%s: hovering %s shows %d patch rims, want %d" % [label, probe[0], shown.size(), probe[1]])
+		if shown.size() == 1:
+			_check(_verts(shown[0]).size() == int(probe[2]) * VERTS_PER_EDGE, "%s: hovering %s shows a rim of %d edges, want %d" % [label, probe[0], _verts(shown[0]).size() / VERTS_PER_EDGE, probe[2]])
+			_check(_gain(shown[0]) > 0.0, "%s: hovered rim at gain 0" % label)
+	board.set_hover(100, 100)
+	for mi in board.hover_edges.get_children():
+		_check(not mi.visible, "%s: a patch rim stays after the cursor leaves" % label)
+	board.set_hover(int(hovers[0][0].split(",")[0]), int(hovers[0][0].split(",")[1]))
 	BL.tactical = true
 	board.apply_look(false)
-	_check(not board.solid_edges.visible and not board.cover_edges.visible, "%s: Z shows the solid or debris rim on top of its own gas edges" % label)
+	_check(board.solid_edges.visible and board.cover_edges.visible, "%s: Z hides the solid or debris rim" % label)
+	for mi in board.hover_edges.get_children():
+		_check(not mi.visible, "%s: Z shows a hover rim on top of the full rims" % label)
 	_check(not hz.visible, "%s: Z shows the hazard outline on top of its own gas edges" % label)
 	_check(board.gas_edges.visible and is_equal_approx(_gain(board.gas_edges), 0.9), "%s: Z gas edges changed (gain %.2f)" % [label, _gain(board.gas_edges)])
 	_check(_verts(board.gas_edges).size() == natural * VERTS_PER_EDGE, "%s: Z gas edges have %d vertices, want %d" % [label, _verts(board.gas_edges).size(), natural * VERTS_PER_EDGE])
@@ -122,12 +137,14 @@ func _run() -> void:
 	var board: Node3D = BOARD.new()
 	root.add_child(board)
 	board.build(rules)
-	var natural := _outer(neb) + _outer(storm) + _outer(debris) + _outer(rock) + _outer(hulk)
+	var natural := _outer(neb) + _outer(storm)   # issue 1359: Z's rock and debris edges moved to their own meshes
+	# hex, how many patch rims it lights, how many edges that rim has (open space and nebula light none)
+	var hovers := [["4,3", 1, _outer(rock)], ["-3,2", 1, _outer(debris)], ["-6,-2", 1, _outer(hulk)], ["0,0", 0, 0], ["-2,-4", 0, 0]]
 	var solid_outer := _outer(rock) + _outer(hulk)
 	var cover_outer := _outer(debris)
-	_expect(board, "built", neb, storm, natural, solid_outer, cover_outer)
+	_expect(board, "built", neb, storm, natural, solid_outer, cover_outer, hovers)
 	board._rebuild_edges()
-	_expect(board, "rebuilt", neb, storm, natural, solid_outer, cover_outer)
+	_expect(board, "rebuilt", neb, storm, natural, solid_outer, cover_outer, hovers)
 	board.free()
 	print("hazard_edge_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)
