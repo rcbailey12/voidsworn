@@ -19,6 +19,7 @@ const WS := preload("res://world/world_shaders.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
 const WAKE := preload("res://world/nebula_wake.gd")
+const LS := preload("res://render/line_style.gd")   # issue 1374: the one line style (storm bolt colours)
 const LOOK := preload("res://render/look.gd")
 const STORM_TICK_LIFE := 0.45
 
@@ -274,6 +275,7 @@ shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 instance uniform float flash = 0.0;
 instance uniform float branch_flash = 0.0;
+""" + LS.GLSL + """
 varying vec4 vc;
 void vertex() { vc = COLOR; }
 void fragment() {
@@ -283,8 +285,9 @@ void fragment() {
 	// Keep the halo blue-led before the existing weapon bloom integrates it.
 	if (vc.g > 0.5 && !FRONT_FACING) { discard; }
 	float pulse = mix(flash, branch_flash, vc.r);
-	vec3 halo = mix(vec3(0.005, 0.8, 2.0), vec3(0.40, 0.72, 1.10), vc.b);
-	vec3 radiance = mix(halo, vec3(2.2, 2.1, 2.4), vc.g);
+	// Issue 1374 (R362): the colours come from the one line style's role table (render/line_style.gd bolt_*)
+	vec3 halo = mix(LS_BOLT_SKIRT, LS_BOLT_CORONA, vc.b);
+	vec3 radiance = mix(halo, LS_BOLT_CORE, vc.g);
 	// The cyan-white corona peaks outside the cyan skirt, never on the hot tube.
 	// Stacking it on the core at the center turned the bloom pale white.
 	float weight = vc.a;

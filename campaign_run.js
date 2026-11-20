@@ -176,7 +176,9 @@ ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.ui
 // R78 Q9: the price of a captured hull at the Cinder Line yards. It is sold off the Crusade's own ladder (the base
 // cost before the owner's faction pricing, times the Crusade class price), then the yard price multiplier applies,
 // so a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it.
-function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.val!=null?t.val:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
+// issue 1384: the Crusade's own hulls carry the 5% shop discount (issue 1354), so a captured hull does too, or a Warden-sized
+// prize costs more than the Warden it stands in for
+function capturedHullPrice(t){ return Math.round(Math.round(Math.round((t.cost0!=null?t.cost0:t.val!=null?t.val:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*SHOP_DISCOUNT.voidsworn/5)*5*priceMult()); }
 // R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock, so a captured
 // battleship waits for u_battleship like the Cathedral, and likewise a carrier for u_carrier, a dreadnought for u_dread.
 function cinderPool(){ return CINDER_PRIZES.filter(h=>{ const cl=HULLS[h].cls; return cl==='Carrier'?!!META.unlocked.u_carrier:cl==='Battleship'?!!META.unlocked.u_battleship:cl==='Dreadnought'?!!META.unlocked.u_dread:true; }); }
@@ -213,8 +215,11 @@ ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) ret
 // issue 1178: Eclipse core recovery (1086 E-B). A win recovers the core of the most valuable ship you lost (one a battle); at a
 // shipyard the core and 20% of the hull's value regrow it at Mk I with no refits and full hull.
 function coreCost(tpl){ return Math.round(shipValue(tpl)*LATE_SHOP.core*priceMult()); }
+// issue 1384: after a battle a regrown ship loses its sell-for-0 mark but keeps the cap. A ship regrown in a save from before
+// issue 1384 has no corePaid, so it takes today's regrow price as its cap before the mark is cleared.
+function settleRegrown(){ RUN.fleet.forEach(sh=>{ if(sh.regrown&&sh.corePaid==null) sh.corePaid=coreCost(sh.tpl); delete sh.regrown; }); }
 ACT.restoreCore=i=>{ const cs=RUN.cores||[], tpl=cs[+i]; if(!tpl||!HULLS[tpl]) return; const c=coreCost(tpl); if(RUN.credits<c||fleetCP()+(HULLS[tpl].cp||1)>RUN.cpCap) return;
-  RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); s.regrown=true; RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
+  RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); s.regrown=true; s.corePaid=c; RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
 let yardNode=null;
 function shipyardScreen(n){
   yardNode=n; const st=shipyardStock(n), pm=priceMult();
@@ -259,7 +264,7 @@ ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+d
 ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
 ACT.sellShip=uid=>{ if(RUN.fleet.length<=1) return; const s=RUN.fleet.find(x=>x.uid===uid);
   modal(`<h2>Decommission the ${esc(s.name)}?</h2><p class="muted">Its captain retires and its refits return to the hold. You receive ${sellValue(s)} ${hullWord()}.${s.regrown?' A regrown ship has nothing to strip until it has fought.':''}</p><div class="row"><button class="primary danger" data-act="sellConfirm" data-arg="${uid}">Decommission</button><button data-act="closeModal">Keep it</button></div>`); };
-ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); hullPay(-sellValue(s)); RUN.fleet.splice(i,1); closeModal(); shipyardScreen(yardNode); };
+ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); hullPay(-sellValue(s)); RUN.fleet.splice(i,1); changeFleet(ensureFlagship); closeModal(); shipyardScreen(yardNode); }; // issue 1384: selling the flagship hands the Aspect on at once
 
 // ---------- repair stops ----------
 function repairStopOptions(kind){
@@ -657,7 +662,7 @@ function factionWinEcon(credits,summary){
 function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
-  RUN.fleet.forEach(sh=>{ delete sh.regrown; }); // issue 1290: a regrown ship that has fought decommissions like any other
+  settleRegrown(); // issue 1290: a regrown ship that has fought decommissions like any other (capped since issue 1384)
   const kindMult=cfg.kind==='boss'?3:cfg.kind==='elite'?1.6:1;
   const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay
