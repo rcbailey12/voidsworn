@@ -49,6 +49,19 @@ put(path.join(build, 'tools/pc/tmo.bat'), [
   'if errorlevel 1 exit /b 55',
   'if "%FIXTURE_FAILURE%"=="smoke" exit /b 53',
   'if "%FIXTURE_FAILURE%"=="promotion" move "%~dp2." "%~dp2..\\unavailable-candidate" >nul',
+  // Issue 1365: the smoke's report is the ninth argument after the program; write the one this case needs.
+  'shift & shift & shift & shift & shift & shift & shift & shift & shift',
+  'if "%FIXTURE_FAILURE%"=="parse" echo SCRIPT ERROR: Parse Error: Expected end of statement',
+  'if "%FIXTURE_FAILURE%"=="no-report" exit /b 0',
+  // copy keeps the old write time, like a report some earlier run left behind
+  'if "%FIXTURE_FAILURE%"=="stale-report" copy /y "%FIXTURE_STALE%" "%~1" >nul & exit /b 0',
+  'set "FIXTURE_RUNS={},{}"',
+  'if "%FIXTURE_FAILURE%"=="one-run" set "FIXTURE_RUNS={}"',
+  'set "FIXTURE_ERRORS=0"',
+  'if "%FIXTURE_FAILURE%"=="errors" set "FIXTURE_ERRORS=1"',
+  'set "FIXTURE_SOFTLOCKS=0"',
+  'if "%FIXTURE_FAILURE%"=="softlocks" set "FIXTURE_SOFTLOCKS=1"',
+  '>"%~1" echo {"runs":[%FIXTURE_RUNS%],"errors":%FIXTURE_ERRORS%,"softlocks":%FIXTURE_SOFTLOCKS%}',
   'exit /b 0',
   ':check',
   'set /p "CHECK_CANDIDATE="<"%~1"',
@@ -58,10 +71,18 @@ put(path.join(build, 'tools/pc/tmo.bat'), [
   'exit /b 0',
 ].join('\r\n') + '\r\n');
 
-for (const failure of ['export', 'package', 'smoke', 'promotion', '']) {
+const smokeReport = path.join(root, 'shots/g2_export_smoke.json');
+const staleReport = path.join(root, 'stale smoke.json');
+put(staleReport, '{"runs":[{},{}],"errors":0,"softlocks":0}');
+fs.utimesSync(staleReport, new Date('2026-11-19T00:00:00Z'), new Date('2026-11-19T00:00:00Z'));
+// Report-level failures: the smoke exits 0, so only the report and output checks can stop the promotion (issue 1365).
+const reportFailures = ['no-report', 'stale-report', 'one-run', 'errors', 'softlocks', 'parse'];
+for (const failure of ['export', 'package', 'smoke', ...reportFailures, 'promotion', '']) {
+  // A good report from an earlier run is on disk before every case; it must never count for this one.
+  put(smokeReport, '{"runs":[{},{}],"errors":0,"softlocks":0}');
   const r = spawnSync('cmd.exe', ['/d', '/s', '/c', `call "${job}"`], {
     cwd: build, windowsVerbatimArguments: true, windowsHide: true, timeout: 15000, encoding: 'utf8',
-    env: { ...process.env, APPDATA: app, FIXTURE_FAILURE: failure },
+    env: { ...process.env, APPDATA: app, FIXTURE_FAILURE: failure, FIXTURE_STALE: staleReport },
   });
   const text = read(log);
   assert.equal(r.status, failure ? 1 : 0, `${failure}: ${text}\n${r.stderr}`);
@@ -70,8 +91,13 @@ for (const failure of ['export', 'package', 'smoke', 'promotion', '']) {
   assert.equal(text.includes('fixture package check'), failure !== 'export');
   assert.equal(text.includes('fixture smoke check'), !['export', 'package'].includes(failure), text);
   assert.equal(/^OK:/m.test(text), !failure);
+  if (reportFailures.includes(failure)) assert.match(text, /^FAIL: (?:the smoke|smoke)/m, `${failure}: ${text}`);
+  if (failure === 'no-report') assert.ok(!fs.existsSync(smokeReport), 'the old report was cleared before the smoke');
+  if (failure === 'stale-report') assert.match(text, /older than this run/, text);
+  if (failure === 'parse') assert.match(text, /has a script error: SCRIPT ERROR: Parse Error/, text);
+  if (!failure) assert.match(text, /smoke report checked: 2 runs, 0 errors, 0 softlocks/);
 }
-console.log('PASS: export, check and promotion failures keep the live build; two passing checks promote all companions together');
+console.log('PASS: export, check, smoke report (missing, stale, short, errors, softlocks, parse error) and promotion failures keep the live build; a clean run promotes all companions together');
 
 // Try the real Play launcher with a harmless executable in the promoted folder.
 const play = path.join(build, 'tools/pc/play_godot.bat');

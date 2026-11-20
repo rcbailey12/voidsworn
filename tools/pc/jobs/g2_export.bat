@@ -44,8 +44,29 @@ for %%F in (Voidsworn.exe Voidsworn.console.exe Voidsworn.pck) do if not exist "
 rem what is in the package: no test folders, the real campaign UI, fx, story and music player
 call "%TMO%" 300 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
-rem a quick headless smoke of the exported build: 2 bot battles
-call "%TMO%" 900 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
+rem a quick headless smoke of the exported build: 2 bot battles. Its exit code alone is not proof (issue 1365, Nov 20:
+rem a parse error ran no battle, exited 0, and the previous run's report was still on disk), so the report must be new
+rem and show 2 runs with no errors or softlocks, and the smoke output must hold no script or parse error.
+set "SMOKE_REPORT=%ROOT%..\shots\g2_export_smoke.json"
+set "SMOKE_OUT=%ROOT%..\shots\g2_export_smoke_output.txt"
+if exist "%SMOKE_REPORT%" del /f /q "%SMOKE_REPORT%" >> "%LOG%" 2>&1
+if exist "%SMOKE_REPORT%" (echo FAIL: could not clear the old smoke report >> "%LOG%" & goto failed)
+set "SMOKE_START="
+for /f %%T in ('powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"') do set "SMOKE_START=%%T"
+if not defined SMOKE_START goto failed
+call "%TMO%" 900 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%SMOKE_REPORT%" > "%SMOKE_OUT%" 2>&1
+set "SMOKE_RC=%ERRORLEVEL%"
+type "%SMOKE_OUT%" >> "%LOG%"
+if not "%SMOKE_RC%"=="0" goto failed
+powershell -NoProfile -Command ^
+  "$r = $env:SMOKE_REPORT; $f = Get-Item -LiteralPath $r -ErrorAction SilentlyContinue;" ^
+  "if (-not $f) { Write-Output 'FAIL: the smoke wrote no report'; exit 1 };" ^
+  "if ($f.LastWriteTimeUtc.Ticks -lt [long]$env:SMOKE_START) { Write-Output 'FAIL: the smoke report is older than this run'; exit 1 };" ^
+  "try { $j = Get-Content -LiteralPath $r -Raw | ConvertFrom-Json } catch { Write-Output 'FAIL: the smoke report is not JSON'; exit 1 };" ^
+  "$runs = @($j.runs).Count; if ($runs -ne 2 -or $j.errors -ne 0 -or $j.softlocks -ne 0) { Write-Output ('FAIL: smoke report has {0} runs, {1} errors, {2} softlocks (want 2, 0, 0)' -f $runs, $j.errors, $j.softlocks); exit 1 };" ^
+  "$bad = @(Select-String -LiteralPath $env:SMOKE_OUT -Pattern 'SCRIPT ERROR','Parse Error' -SimpleMatch);" ^
+  "if ($bad.Count) { Write-Output ('FAIL: smoke output has a script error: ' + $bad[0].Line.Trim()); exit 1 };" ^
+  "Write-Output 'smoke report checked: 2 runs, 0 errors, 0 softlocks, no script errors'" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
 rem Keep the old folder intact. Roll it back if the second same-volume move fails.
 powershell -NoProfile -Command ^
