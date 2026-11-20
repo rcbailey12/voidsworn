@@ -1,0 +1,9 @@
+waiting for OPUS1316_DRIVE1 exit in opus1316_drive1b_wait.txt Fri 11/20/2026  9:41:49.11 
+mirror refresh 10:31:49.21 
+mirror fetch exit 0
+eb34c75d7252b21ff106926be9c95fc9bb09de82 reachable in the mirror
+OPUS1272_TIMING2 start Fri 11/20/2026 10:31:50.40 
+first attempt exit 0 in out_2 10:42:11.61 
+OPUS1272_TIMING2 exit 0 at 10:42:11.62 
+after-job janitor ran, output in janitor_after_1272b.txt 10:42:16.47 
+all done Fri 11/20/2026 10:42:16.53 

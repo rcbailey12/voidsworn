@@ -1,0 +1,68 @@
+GPU: waiting for solo claim, weight 1 (1272)
+GPU: acquired solo claim 6357c62c-9363-49d0-ac36-25101eb18ef8
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2764cd66755b4849a7094a15acc8d152\godot-profile-b488bb849a9b4f3d8f02e34f1570b220
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 320 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.121, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 2dcb23a40f83f8649be886e4da9535cefce03ede697f19e453e97bddf60b2b17 4096x2048 in 6267 ms (worker)
+[world] baked 6d75c0dd586581e3c4b9d23a2ddedcfd9e0c4a86b09cb9bbacb24121bb57cf26 4096x2048 in 8689 ms (worker)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 9100 ms (worker)
+[world] baked ee8c80d2b7ac05c000087680d3be7e2381bc5dbfbf47a3f304867c41f74974ca 4096x2048 in 1689 ms (worker)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 1661 ms (worker)
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] flare on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs missing on H7_23; using the surface ray
+STOP_TIMING prime plain load_ms 22972 worst_frame_ms 14.3
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; flare hp 0 ray 1 centre 0 skip 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 H10_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 1789 29705.2 ms
+[fx] late shader: mat STREAK frame 1789 29789.3 ms
+[fx] late shader: mat RING frame 1789 29842.3 ms
+[fx] late shader: mat RIBBON frame 1789 29880.4 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1789 29933.2 ms
+[fx] late shader: mat NULL_SLUG frame 1789 29973.6 ms
+[fx] late shader: mat SHARD frame 1789 30004.2 ms
+[fx] late shader: hit fragments frame 1789 30122.0 ms
+[fx] late shader: mat DISTORT frame 1789 30238.7 ms
+[fx] late shader: death debris body frame 1789 30269.1 ms
+[fx] late shader: mat TEAR frame 1789 30367.7 ms
+[fx] late shader: death strain tear frame 1789 30396.5 ms
+[sfx] 71 cues, 67 clip sets, loaded in 301 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.152, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 1791 32335.1 ms
+[fx] late shader: mat SHIELD frame 1791 32412.4 ms
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[fx] late shader: mat CRAFT_TRAIL frame 1791 34718.0 ms
+[attach] flare on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on V14_23: placed on the plating (a surface sample; not a hard point type)
+STOP_TIMING plain no-stop load_ms 10664 worst_frame_ms 13.9 mood none
+[attach] battle x06 V15_37: skipped 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; flare hp 0 ray 1 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2764cd66755b4849a7094a15acc8d152\godot-profile-b488bb849a9b4f3d8f02e34f1570b220
+GPU: released solo claim 6357c62c-9363-49d0-ac36-25101eb18ef8
