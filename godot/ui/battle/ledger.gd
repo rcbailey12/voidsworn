@@ -469,7 +469,6 @@ static func keyword_tip(line: String) -> String:
 	var keywords := {
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
-		"Torpedoes inbound": "Torpedoes inbound: move 3 or more hexes away from the marked hex to dodge.",
 		"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
 		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
 	for kw in keywords:
@@ -485,7 +484,7 @@ func _status(x: float, y: float, w: float, foot: float) -> void:
 		return
 	var def := keyword_tip(fl)
 	if fl != "":
-		var id := "focus" if "focusing" in fl else ("torpedo" if "Torpedoes" in fl else ("brace" if "Braced" in fl else "battery"))
+		var id := "focus" if "focusing" in fl else ("brace" if "Braced" in fl else "battery")
 		_glyph(id, Vector2(x, y), 20, TEXT2)
 		x += px(28)
 		w -= px(28)

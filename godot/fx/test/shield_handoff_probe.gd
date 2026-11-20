@@ -56,7 +56,7 @@ func _run() -> void:
 	Engine.max_fps = 0
 	AudioServer.set_bus_mute(0, true)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-	new_api = load("res://fx/fx_weapons.gd").get_script_constant_map().has("TORP_WARHEAD_GAP")
+	new_api = load("res://fx/fx_weapons.gd").get_script_constant_map().has("BREAK_HULL_BEAT")
 	bench = Bench.new()
 	root.add_child(bench)
 	bench.out = out
@@ -129,19 +129,25 @@ func _hstory(sid: String, story: String, radius: float, dir: String) -> void:
 	var break_at := -1.0
 	var lp := Vector3.INF
 	if story == "torpedo":
-		var T = fx.ship("T")
-		fx.torp_lane("L1239", "A", T.to_world(T.hull.c), 1)
-		fx.torp_launch("L1239")
-		for i in 40:
-			await bench._step()
 		var hits := [{"shield": 8, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
 			{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
 		var ts: float = fx.now
 		var r: Dictionary
-		if new_api:
-			r = fx.torp_strike("L1239", "T", hits[0], hits.slice(1), 0)
-		else:
+		if fx.has_method("torp_lane"):
+			# a build from before R364 (the old arm): the parked lane and next-turn strike, one warhead
+			var T = fx.ship("T")
+			fx.torp_lane("L1239", "A", T.to_world(T.hull.c), 1)
+			fx.torp_launch("L1239")
+			for i in 40:
+				await bench._step()
+			ts = fx.now
 			r = fx.torp_strike("L1239", "T", hits[0])
+		else:
+			# R364: three torpedoes fire as one volley in the same activation, the first breaking the shield
+			var opts := {"weapon_id": "torp", "shots": [true, true, true], "quad": 3, "hits": hits}
+			if new_api:
+				opts["break_k"] = 0
+			r = fx.volley("A", "torp", "T", opts)
 		var imp: Array = r.get("impacts", [])
 		if imp.is_empty():
 			_fail("the torpedo had no impact")

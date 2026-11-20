@@ -229,6 +229,28 @@ function Switch-LivePointer([string]$Pointer, [string]$Version) {
   return $previous
 }
 
+function Lock-WorkhorseSlots([string]$WorkRoot) {
+  # Issue 1186: a Workhorse run holds its arm's slot lock until its whole process tree exits. Take every supported arm's
+  # slot lock, live and dry run, with OpenOrCreate, so an arm whose slot does not exist yet cannot start mid-refresh
+  # (Artoo on PR 1334). Returns the open handles; on a busy slot it closes what it took and refuses.
+  $held = @()
+  try {
+    foreach ($base in @($WorkRoot, (Join-Path $WorkRoot 'dryrun_slots'))) {
+      foreach ($arm in @('deepseek','deepseekpro','kimi','kimicode','sonnet','opus','openai')) {
+        $slot = Join-Path $base "slot_$arm"
+        $null = [IO.Directory]::CreateDirectory($slot)
+        $path = Join-Path $slot 'repo.checkout.lock'
+        try { $held += [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None') }
+        catch [IO.IOException] { throw "refused: Workhorse slot lock is busy: $path" }
+      }
+    }
+    return $held
+  } catch {
+    foreach ($h in $held) { $h.Dispose() }
+    throw
+  }
+}
+
 function Copy-Tools([string]$From, [string]$To, [string]$Step) {
   & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /IS /IT /R:1 /W:1 /XJ /NFL /NDL /NJH /NJS /NP | Out-Null
   if ($LASTEXITCODE -lt 0 -or $LASTEXITCODE -ge 8) { throw "$Step failed (robocopy exit $LASTEXITCODE)" }
@@ -245,6 +267,7 @@ try {
     try { $checkoutLock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
     catch [IO.IOException] { throw 'refused: Codex checkout lock is busy or unavailable' }
   }
+  if ($seat -eq 'work217') { $checkoutLock = @(Lock-WorkhorseSlots (Join-Path $root 'work217')) }
   # Serialize the shared fetch, snapshot, log and backup allocation across lanes. Keep the lock file.
   $lockPath = Join-Path $root 'lane_tools_refresh.lock'
   $lockDeadline = [DateTime]::UtcNow.AddMinutes(2)
@@ -372,5 +395,5 @@ try {
   exit 1
 } finally {
   if ($lock) { $lock.Dispose() }
-  if ($checkoutLock) { $checkoutLock.Dispose() }
+  foreach ($held in @($checkoutLock)) { if ($held) { $held.Dispose() } }
 }

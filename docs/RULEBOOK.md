@@ -306,6 +306,20 @@ copy and its size. Why: repeated full copies filled C:, and deleting a supposedl
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
+Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, reused under the same checks as the Codex lanes.
+The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inherited by the whole work_issue.bat process
+tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
+Codex lane lock works the same way (Artoo on PR 1250). A work217 tools refresh takes every supported arm's slot lock,
+live and dry run, creating any that do not exist yet, so a fresh arm cannot start mid-refresh (Artoo on PR 1334). Logs and results stay in each run's own `out/` folder. The old
+`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
+`docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
+fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
+a profile change sets the previous checkout aside beside the slot. A left-out file that is on disk while Git marks it
+skip-worktree counts as possible hidden work and keeps the checkout. The janitor prunes older `repo-kept-*` copies beside
+each slot like a board lane's, and accepts a runner-managed sparse copy under the same checks. Why: a fresh Workhorse
+checkout per run and picture folders in code jobs drove up disk use (issue 1186).
+
+
 Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
@@ -785,8 +799,12 @@ Board. Id: screens-11.
 Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
 program-01.
 
-9.11 **Torpedoes show their hit chance and a visible flight with a clear hit or miss.** Why: his playtest call (R76). Set:
-Ryan, Nov 2. Id: R76b.
+9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
+show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
+defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
+and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
+the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
+Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
 
 9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
@@ -868,6 +886,11 @@ progression is ready to test.** Why: he tests the whole game, not the unlock pat
 11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
 Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
 20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
+
+11.7 **On a first run, Battle 2 opens on Battle 1's open strip** (open space, strip arena, line deployment, edge feature);
+its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 2 was a big difficulty jump before the first
+shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
+Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
 
 ## 12. Automatic checks
 

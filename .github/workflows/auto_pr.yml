@@ -3,6 +3,7 @@
 # used to copy main's last commit as the title, which mislabelled PRs #203 and #204). work/issue-<n>[-arm]
 # is the workhorse branch pattern (#217).
 # Codex on Ryan's PC (codex/issue-<n>), Muse (muse/issue-<n>) and Claude worker threads (opus/issue-<n>, issue 359) only need to push; this opens the PR into main.
+# Neon (neon/issue-<n>, R363) the same.
 # The same push starts checks.yml by itself, once (issue 359). This file no longer starts the checks: doing both ran them
 # twice on every push. The Board reviews and merges.
 name: auto-pr
@@ -14,6 +15,7 @@ on:
                          # muse/glasswright-family sat with no PR); a scratch branch named muse/wip-<anything> opts out
       - 'work/issue-*'
       - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
+      - 'neon/issue-*'   # Neon (Google AI Pro, GitHub account rcbailey12fortnite-stack, Nov 20 2026, R363): outside reviews into contrib/neon/
       # A run the PC runner marks partial (the agent stopped at the time cap or exited with an error, issue 377) pushes to
       # <branch>-partial and must open no pull request. A '!' pattern after the patterns above takes those branches back out.
       - '!codex/issue-*-partial'

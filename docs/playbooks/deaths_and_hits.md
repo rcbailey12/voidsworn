@@ -225,6 +225,11 @@ the break nearest the beam lies on the beam's point, square-ish to the beam (wit
 no teeth, and a smaller bite. On a two-piece hull the cut is kept between 0.3 and 0.7 of the length so neither half is a
 sliver; with no recent hit on record it falls 0.12 of the length off the middle (an even split reads as sliced). Small
 hulls and the Chorus keep their own cuts. Lifting either limit is a look call, not a rule.
+On an authored hull the break stays on its joints (RULEBOOK 5.17): the beam picks the authored joint nearest it (with the
+strained death's one crack, that joint instead of the one nearest the core), the tear there follows the seam's own plane and
+path with the lance's fine teeth, and the pieces keep the joints' sizes (issue 1385). Only a big metal hull throws the bite
+and the chips; an authored small hull or Chorus hull carves neither, so its wreck has no hole where they were (issue 1385).
+Check: fx/test/death_authored_check.gd.
 
 Sizes follow the gun as well as the target: a hit's flash is its row's size times the firing hull's band (small 0.85,
 cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Issue 538 pushes the thrown

@@ -1679,23 +1679,6 @@ func command(id: String, _cmd := "") -> void:
 		(ships[id] as SHIP).pulse(self, 1.6)
 
 
-# Travelling torpedoes (B3): a lane during the player's turn, the torpedo parked in it, the strike next turn.
-func torp_lane(lane_id: String, attacker_id: String, to_point: Vector3, turns := 1) -> void:
-	WEAP.torp_lane(self, lane_id, attacker_id, to_point, turns)
-
-
-func torp_launch(lane_id: String) -> void:
-	WEAP.torp_launch(self, lane_id)
-
-
-func torp_strike(lane_id: String, target_id: String, hit := {}, more := [], break_k := -1) -> Dictionary:
-	return WEAP.torp_strike(self, lane_id, target_id, hit, more, break_k)
-
-
-func torp_lane_clear(lane_id: String) -> void:
-	WEAP.torp_lane_clear(self, lane_id, true)
-
-
 func launch(carrier_id: String, squadron_id := "") -> void:
 	WEAP.launch(self, carrier_id, squadron_id)
 
@@ -1769,7 +1752,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0),
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
 	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
 	# Warm it too, or the first hurt sail compiles its pipeline in a fight.

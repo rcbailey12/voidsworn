@@ -50,9 +50,10 @@ const REACH_C := Board.REACH_FILL
 const EMBER_3D := ShipView.EMBER   # the ring under the ship that is up (issue 271: ember, lime retired R191)
 const REACH_RING := Board.REACH_RING
 const REACH_HOT := Board.REACH_HOT
-const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
-const TARGET_PLAN := Color(1.0, 0.62, 0.22, 0.9)
-const TARGET_ON := Color(1.0, 0.85, 0.75, 1.0)
+# issue 1374 (R362): every ring and line colour comes from the one line style's role table (render/line_style.gd)
+const TARGET_RING: Color = Board.LS.ROLE["target"]
+const TARGET_PLAN: Color = Board.LS.ROLE["target_plan"]
+const TARGET_ON: Color = Board.LS.ROLE["target_on"]
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
@@ -410,11 +411,7 @@ func _build_arrow() -> void:
 	path_dots.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_dots)
 	path_line = MeshInstance3D.new()
-	var lm := ShaderMaterial.new()
-	var line_shader := Shader.new()
-	line_shader.code = Board.OUTLINE_SHADER
-	lm.shader = line_shader
-	path_line.material_override = lm
+	path_line.material_override = Board.LS.material()   # issue 1374: the shared line style
 	path_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_line)
 
@@ -883,17 +880,6 @@ func _sync(v: Dictionary) -> void:
 	V = v
 	_index_view()
 	_music_feed()
-	if gfx == null or not gfx.has_method("torp_lane"):
-		var live := {}
-		for tp in V.get("torps", []):
-			live[str(tp["id"])] = true
-			if not torp_marks.has(str(tp["id"])):
-				var by: Dictionary = VU.get(tp.get("by"), {})
-				var a: Vector3 = board.hex_world(int(tp["from"]["q"]), int(tp["from"]["r"]), 1.5) if tp.get("from") != null else Vector3.ZERO
-				_torp_marker(str(tp["id"]), a, board.hex_world(int(tp["aim"]["q"]), int(tp["aim"]["r"]), 1.5), str(by.get("fac", "hegemony")))
-		for k in torp_marks.keys():
-			if not live.has(k):
-				_torp_clear(k)
 	for u in V["units"]:
 		if not views.has(u["id"]):
 			_make_view(u)
@@ -1316,27 +1302,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					_flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
-		"torpedo":
-			# A salvo launches into its lane and waits for the firing side's next turn, as the rules require.
-			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5)
-			var fac := str(VU.get(e["unit"], {}).get("fac", "hegemony"))
-			sfx.torp(fac, _pos(e["unit"]))
-			if gfx != null and gfx.has_method("torp_lane"):
-				gfx.torp_lane(str(e["id"]), str(e["unit"]), aim, 1)
-				gfx.torp_launch(str(e["id"]))
-			else:
-				_torp_marker(str(e["id"]), _pos(e["unit"]), aim, fac)
-			_float(e["unit"], "Torpedoes away", Color("#ffb23e"), -24)
-			await wait(700.0)
-		"torpedo_miss":
-			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5) if e.get("aim") != null else Vector3.ZERO
-			if gfx != null and gfx.dstate.get("lanes", {}).has(str(e["id"])):
-				aim = gfx.dstate["lanes"][str(e["id"])]["to"]
-			if gfx != null and gfx.has_method("torp_lane_clear"):
-				gfx.torp_lane_clear(str(e["id"]))
-			_torp_clear(str(e["id"]))
-			await get_tree().create_timer(1.0).timeout
-			_float_at(aim, "TORPEDO MISS", Color("#ffc781"))
 		"risen":
 			_reassemble(e, batch_view)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
@@ -2008,47 +1973,19 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
-	var torp_result_scheduled := false
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
-	# issue 1211: what each landing hit does: its number (torpedoes keep their one result line), and the shield break with
+	# issue 1211: what each landing hit does: its number, and the shield break with
 	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
-	var land := {"t_id": str(t_id), "numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
+	var land := {"t_id": str(t_id), "numbers": true, "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
 		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
 		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
 	for g in grp:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
 	_aim_on(a_id, t_id, land)
-	if e.has("torpedo") and e.get("from") != null:
-		from = board.hex_world(int(e["from"]["q"]), int(e["from"]["r"]), 1.5)
-		_torp_clear(str(e["torpedo"]))
-	if e.has("torpedo") and gfx != null and gfx.has_method("torp_strike"):
-		# issue 1239 (F2.4): every warhead of the salvo, not only the first (a shield that soaked warhead 1 hid the hull
-		# damage of the rest)
-		var th: Array = []
-		for h in hits:
-			th.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
-		var hit0: Dictionary = th[0] if not th.is_empty() else {}
-		var r: Dictionary = gfx.torp_strike(str(e["torpedo"]), str(t_id), hit0, th.slice(1),
-			int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1)
-		land["pts"] = r.get("hit_pts", [])
-		var imp: Array = r.get("impacts", [])
-		var result_at := float(imp[-1]) if not imp.is_empty() else 1.0
-		var result_pos: Vector3 = r.get("at", to)
-		_at_fx(result_at, func() -> void: _torpedo_result(hits, result_pos))
-		torp_result_scheduled = true
-		for k in hits.size():
-			var at: float = float(imp[mini(k, imp.size() - 1)]) if not imp.is_empty() else 0.8
-			var h: Dictionary = hits[k]
-			var kk := k
-			_at_fx(at, func() -> void:
-				_land_hit(t_id, h, kk, land)
-				sfx.boom(0.8, _pos(t_id)))
-		# Every side sees the flight and its result before the next action, regardless of round budget.
-		total = maxf(float(r.get("done", 1.2)), result_at + 0.35) / maxf(sp, 0.01)
-	elif gfx != null and gfx.has_method("volley"):
+	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
@@ -2125,8 +2062,6 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		await get_tree().create_timer(total * sp * 0.45).timeout
 	else:
 		await get_tree().create_timer(total * sp).timeout
-	if e.has("torpedo") and not torp_result_scheduled:
-		_torpedo_result(hits, to)
 	# the log line and the floating numbers (battle.js fireWeapon)
 	var sh_sum := 0.0
 	var hull_sum := 0.0
@@ -2141,8 +2076,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		parts.append("%d shot down by point defense" % int(e["pd"]))
 	if hits.is_empty():
 		parts.append("all shots miss")
-		if not e.has("torpedo"):
-			_float(t_id, "Miss", Color("#9a9384"))
+		_float(t_id, "Miss", Color("#9a9384"))
 	else:
 		if sh_sum > 0:
 			parts.append("%d to %s shields" % [int(sh_sum), QUAD_NAME[int(e["quad"])]])
@@ -2291,41 +2225,6 @@ func _aim_off(land: Dictionary) -> void:
 		views[t_id].set_selected(str(t_id) == sel and api != null and api.phase == "player", EMBER_3D)
 
 
-var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are not in the build)
-
-
-func _torp_marker(id: String, a: Vector3, aim: Vector3, fac: String) -> void:
-	var col: Color = FLOOK.weapon(fac)
-	var root := Node3D.new()
-	add_child(root)
-	var dir := (aim - a)
-	var park := a + dir * 0.75
-	var dot := Sprite3D.new()
-	dot.texture = Fx.glow_tex()
-	dot.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dot.modulate = Color(col.r * 3, col.g * 3, col.b * 3)
-	dot.pixel_size = 4.0 / 64.0
-	dot.position = park
-	root.add_child(dot)
-	var ring := MeshInstance3D.new()
-	var tm := TorusMesh.new()
-	tm.inner_radius = 5.0
-	tm.outer_radius = 5.6
-	ring.mesh = tm
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(col.r, col.g, col.b, 0.8)
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	ring.material_override = m
-	ring.position = Vector3(aim.x, 0.2, aim.z)
-	root.add_child(ring)
-	torp_marks[id] = root
-
-
-func _torp_clear(id: String) -> void:
-	if torp_marks.has(id):
-		(torp_marks[id] as Node).queue_free()
-		torp_marks.erase(id)
 
 
 func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
@@ -2888,12 +2787,12 @@ func _overlay() -> void:
 	if ability_mode:
 		for h in _ability_hexes():
 			fills[board.key(h["q"], h["r"])] = Color(0.92, 0.92, 1.0, 0.26)
-			rings[board.key(h["q"], h["r"])] = Color(1.0, 1.0, 1.0, 0.85)
+			rings[board.key(h["q"], h["r"])] = Board.LS.ROLE["ability"]
 	if mode == "board" and not u.is_empty():
 		for b in _ui(sel).get("board", []):
 			var tu: Dictionary = VU.get(b["target"], {})
 			if not tu.is_empty():
-				rings[board.key(tu["q"], tu["r"])] = Color(1, 0.75, 0.3, 1)
+				rings[board.key(tu["q"], tu["r"])] = Board.LS.ROLE["board"]
 	# the rehearsed position (a planned move, or the attack-move's stopping hex): the ghost, its path, arcs from there,
 	# and orange rings on enemies its guns would reach from there
 	var pst = plan if plan != null else (atk["st"] if atk != null else null)
@@ -2958,10 +2857,10 @@ func _path_dots(u: Dictionary, st) -> void:
 	for i in samples.size() - 1:
 		var a: Vector3 = samples[i]
 		var b: Vector3 = samples[i + 1]
-		var side := (b - a).cross(Vector3.UP).normalized() * 0.65
-		for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
-			line.set_color(Color(0.45, 0.78, 1.0, v[1]))
-			line.add_vertex(v[0])
+		# issue 1374: a centred line in the shared style, half on each side of the path
+		var side := (b - a).cross(Vector3.UP).normalized()
+		Board.LS.strip_into(line, a, b, side, side, "path", Color(0, 0, 0, -1), true)
+		Board.LS.strip_into(line, a, b, -side, -side, "path", Color(0, 0, 0, -1), true)
 	path_line.mesh = line.commit()
 	path_line.visible = true
 
@@ -4015,9 +3914,6 @@ func _attack_tip(t_id: String) -> String:
 			sh += float(tg.get("shield", 0))
 			n += 1
 			right = "[b][color=#ffb23e]%d%%[/color][/b] [color=#7c8674]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
-			if vw["kind"] == "torp":
-				right = "%d%% hit; about %d shield, %d hull" % [int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))]
-				right += "\n[color=#a7b09d]%s[/color]" % _torpedo_why()
 		elif float(_z0(vw.get("off"))) > 0:
 			right = "[color=#ff8a72]offline[/color]"
 		elif float(_z0(vw.get("cd"))) > 0:
@@ -4551,23 +4447,15 @@ func _card_info() -> Dictionary:
 		var volley := _volley_preview(id, set, target)
 		var sh := 0.0
 		var hl := 0.0
-		var torp_rows := PackedStringArray()
-		var torp_why := ""
 		for i in set:
 			var tg: Dictionary = volley[i]
 			sh += float(tg.get("shield", 0))
 			hl += float(tg.get("hull", 0))
-			if u["weapons"][i]["kind"] == "torp":
-				torp_rows.append("%s: %d%% hit, about %d shield / %d hull." % [str(u["weapons"][i]["name"]), int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))])
-				torp_why = _torpedo_why()
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
 			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
-			if not torp_rows.is_empty():
-				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
-				say = " ".join(torp_rows)
 			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
@@ -4782,10 +4670,6 @@ func _panel_info() -> Dictionary:
 	var Bs0 = api.R.B
 	if Bs0.get("aiFocus") is Dictionary and Bs0["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
 		fl.append("[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
-	for ts in (Bs0["torps"] if Bs0.get("torps") is Array else []):
-		if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-			fl.append("[color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
-			break
 	info["flags"] = " ".join(fl)
 	_panel_sheet(u, ru, info)
 	if u["side"] == "player" and not u["dead"]:
@@ -4927,9 +4811,6 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			else:
 				var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
 				tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
-		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
-			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-				tr.append("[color=#ff8a72]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
 		if ru.get("ab") == "launch" or (ru.get("fx") is Dictionary and _jt(ru["fx"].get("hive"))):
 			var WS = TBL.get("WING_STANCES", {}).get(str(ru.get("stance", "strike")) if _jt(ru.get("stance")) else "strike", {})
 			tr.append("Wing stance: %s. %s%s" % [str(WS.get("n", "")), str(WS.get("d", "")), ((" One free change this round." if R.canStance(ru) else " Changed this round.") if ru["side"] == "player" else "")])
@@ -5138,15 +5019,6 @@ func _float_at(pos: Vector3, text: String, col: Color, dy := 0.0) -> void:
 	floats.append({"lbl": lbl, "pos": pos, "t": 0.0, "dy": dy * hud.k})
 
 
-func _torpedo_result(hits: Array, at: Vector3) -> void:
-	var shield := 0.0
-	var hull := 0.0
-	for h in hits:
-		shield += float(h["shield"])
-		hull += float(h["hull"])
-	_float_at(at, "TORPEDO MISS" if hits.is_empty() else "TORPEDO HIT: %d shield / %d hull" % [int(shield), int(hull)], Color("#ffc781"), -24)
-
-
 # Presentation queries after _api_join. Each gun tooltip estimates that gun alone.
 func _volley_preview(id: String, guns: Array, tid: String, st = null) -> Dictionary:
 	if guns.is_empty(): return {}
@@ -5300,13 +5172,11 @@ func _target_info() -> Dictionary:
 	var best_index := -1
 	var gun := ""
 	var kind := ""
-	var delayed := false
 	for i in set:
 		var p: Dictionary = volley[i]
 		es += float(p.get("shield", 0))
 		eh += float(p.get("hull", 0))
 		var weapon: Dictionary = VU[sel]["weapons"][i]
-		delayed = delayed or (weapon["kind"] == "torp" and not bool(VU[sel]["squadron"]))
 		if int(p.get("hit", 0)) > best:
 			best = int(p.get("hit", 0))
 			best_index = int(i)
@@ -5322,16 +5192,11 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
-		if delayed: line += " Includes torpedo impacts estimated at current defenses."
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
-
-
-func _torpedo_why() -> String:
-	return "More evasion means a lower hit chance; point defense can stop shots. Estimate for next turn; moving 3 hexes from aim dodges."
 
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
@@ -5377,7 +5242,7 @@ func _tip_completed(e: Dictionary) -> void:
 	if _side(id) != "player" or _is_wing(id): return
 	if kind == "move" or (kind == "order" and e.get("order") == "brace"):
 		_tip_retire("select", kind)
-	if kind in ["fire", "torpedo"]:
+	if kind == "fire":
 		tip_shot = true
 		_tip_retire("target", "shot_resolved")
 	if kind in ["ram", "board"]: _tip_retire("close", kind)

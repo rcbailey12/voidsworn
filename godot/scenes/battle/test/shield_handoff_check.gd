@@ -166,7 +166,36 @@ func _case(shape: String) -> void:
 	await _frames(3)
 
 
-# F2.4: a torpedo salvo of three warheads lands three impacts, TORP_WARHEAD_GAP apart, the shield soaking the first.
+# F2.4 (R364: torpedoes fire as a normal volley in the same activation): a three-torpedo salvo lands three impacts in
+# order, the shield soaking the first and the hull taking the next two, each torpedo ending at its own shot's point and time.
+const TORP_HITS := [{"shield": 6, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
+	{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
+
+
+# Every projectile the volley launched, in launch order, grouped by the shot that fired it (per projectiles a shot).
+func _salvo_check(tag: String, fx, before: int, per: int, r: Dictionary, ts: float, exact: bool) -> void:
+	var projs: Array = (fx.dstate.get("proj", []) as Array).slice(before)
+	var pts: Array = r.get("points", [])
+	var imp: Array = r.get("impacts", [])
+	var hp: Array = r.get("hit_pts", [])
+	_check(pts.size() == 3 and imp.size() == 3 and hp.size() == 3, "F2.4 %s: three shots, three impacts, three hit points (%s, %s, %s)" % [tag, str(pts), str(imp), str(hp)])
+	_check(projs.size() == 3 * per, "F2.4 %s: %d projectiles for three shots (got %d)" % [tag, 3 * per, projs.size()])
+	if pts.size() != 3 or imp.size() != 3 or hp.size() != 3 or projs.size() != 3 * per:
+		return
+	_check((hp[0] as Vector3).is_finite(), "F2.4 %s: the first torpedo lands on the shield (%s)" % [tag, str(hp[0])])
+	_check(not (hp[1] as Vector3).is_finite() and not (hp[2] as Vector3).is_finite(), "F2.4 %s: the next two land on the hull (%s)" % [tag, str(hp)])
+	_check(float(imp[0]) < float(imp[1]) and float(imp[1]) < float(imp[2]), "F2.4 %s: shield first, hull second, in order (%s)" % [tag, str(imp)])
+	_check(not (pts[1] as Vector3).is_equal_approx(pts[0]) and not (pts[2] as Vector3).is_equal_approx(pts[1]),
+		"F2.4 %s: the warheads land on different points" % tag)
+	for i in projs.size():
+		var w: int = i / per
+		var pr: Dictionary = projs[i]
+		var end_t: float = ts + float(imp[w])
+		var near: bool = (pr["c"] as Vector3).is_equal_approx(pts[w]) if exact else (pr["c"] as Vector3).distance_to(pts[w]) <= 0.75 * float(pr["k"]) + 1e-3
+		var on_time: bool = absf(float(pr["t1"]) - end_t) < 1e-4 if exact else (float(pr["t1"]) <= end_t + 1e-4 and float(pr["t1"]) >= end_t - 0.15)
+		_check(near and on_time, "F2.4 %s: projectile %d ends at shot %d's point and time (%s at %.3f; shot %s at %.3f)" % [tag, i, w, str(pr["c"]), float(pr["t1"]), str(pts[w]), end_t])
+
+
 func _torps() -> void:
 	var b = await _battle("fitted")
 	if b == null:
@@ -177,34 +206,14 @@ func _torps() -> void:
 	if fx == null:
 		b.free()
 		return
-	var T = fx.ship(t)
-	fx.torp_lane("L1239", a, T.to_world(T.hull.c), 1)
-	fx.torp_launch("L1239")
 	await _frames(20)
-	var hits := [{"shield": 6, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
-		{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
+	var before: int = (fx.dstate.get("proj", []) as Array).size()
 	var ts: float = fx.now
-	var r: Dictionary = fx.torp_strike("L1239", t, hits[0], hits.slice(1), 0)
-	# Artoo (PR 1329): each visible torpedo flies to its own warhead's landing point and lands at its time
-	var projs: Array = fx.dstate.get("lanes", {}).get("L1239", {}).get("projectiles", [])
-	var pts_w: Array = r.get("points", [])
-	_check(not projs.is_empty() and pts_w.size() == 3, "F2.4: the lane has torpedoes and three landing points (%d, %s)" % [projs.size(), str(pts_w)])
-	for i in projs.size():
-		var w := mini(i, pts_w.size() - 1)
-		if w < 0:
-			break
-		var pr: Dictionary = projs[i]
-		_check((pr["c"] as Vector3).is_equal_approx(pts_w[w]) and absf(float(pr["t1"]) - (ts + float((r["impacts"] as Array)[w]))) < 1e-4,
-			"F2.4: torpedo %d ends at warhead %d's point and time (%s at %.3f; warhead %s at %.3f)" % [i, w, str(pr["c"]), float(pr["t1"]), str(pts_w[w]), ts + float((r["impacts"] as Array)[w])])
-	var imp: Array = r.get("impacts", [])
-	_check(imp.size() == 3, "F2.4: three warheads give three impacts (got %s)" % str(imp))
-	if imp.size() == 3:
-		_check(absf(float(imp[1]) - float(imp[0]) - WEAP.TORP_WARHEAD_GAP) < 1e-4 and absf(float(imp[2]) - float(imp[1]) - WEAP.TORP_WARHEAD_GAP) < 1e-4,
-			"F2.4: the warheads land a beat apart (%s)" % str(imp))
-	var pts: Array = r.get("hit_pts", [])
-	_check(pts.size() == 3 and (pts[0] as Vector3).is_finite(), "F2.4: the first warhead's shield point comes back (%s)" % str(pts))
-	var one: Dictionary = fx.torp_strike("L1239", t, hits[0])
-	_check((one.get("impacts", []) as Array).size() <= 1, "F2.4: a single warhead still gives one impact")
+	var r: Dictionary = fx.volley(a, "torp", t, {"weapon_id": "torp", "shots": [true, true, true], "hits": TORP_HITS, "quad": 0, "break_k": 0})
+	if r.has("skipped"):
+		_check(false, "F2.4: the battle torpedo volley found no launcher (%s)" % str(r))
+	else:
+		_salvo_check("torpedoes", fx, before, 1, r, ts, true)
 	b.free()
 	await _frames(3)
 
@@ -221,9 +230,9 @@ func _run() -> void:
 	quit(0 if failures == 0 else 1)
 
 
-# Artoo (PR 1329): the battle case above launches one visible torpedo (the s1 shooter is Hegemony), so it cannot catch
-# every torpedo flying to warhead 1 again. A Hullbreaker rocket salvo shows four: torpedo i must end at warhead i's point
-# and time (the fourth at the last of three warheads). Box ships on the effects library alone, as fx_smoke.
+# Artoo (PR 1329): the battle case above launches one visible torpedo a shot (the s1 shooter is Hegemony). A Hullbreaker
+# rocket salvo shows four a shot: all four must end beside their own shot's point (0.6 x size jitter) and land by its
+# impact time, so every rocket flying to the first shot again fails here. Box ships on the effects library alone, as fx_smoke.
 func _box(name: String, pos: Vector3, L: float) -> Node3D:
 	var r := Node3D.new()
 	r.name = name
@@ -257,27 +266,13 @@ func _rockets() -> void:
 	fx.add_ship("hegemony_1", t, {"faction": "hegemony", "cls": "Cruiser", "size": 1.2})
 	for i in 30:
 		fx.step(1.0 / 60.0)
-	var T = fx.ship("hegemony_1")
-	fx.torp_lane("R1239", "corsair_0", T.to_world(T.hull.c), 1)
-	fx.torp_launch("R1239")
-	for i in 90:
-		fx.step(1.0 / 60.0)
-	var hits := [{"shield": 6, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
-		{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
+	var before: int = (fx.dstate.get("proj", []) as Array).size()
 	var ts: float = fx.now
-	var r: Dictionary = fx.torp_strike("R1239", "hegemony_1", hits[0], hits.slice(1), 0)
-	var projs: Array = fx.dstate.get("lanes", {}).get("R1239", {}).get("projectiles", [])
-	var pts: Array = r.get("points", [])
-	var imp: Array = r.get("impacts", [])
-	_check(projs.size() >= 2, "F2.4 rockets: a Hullbreaker salvo shows at least two torpedoes (got %d)" % projs.size())
-	_check(pts.size() == 3 and imp.size() == 3, "F2.4 rockets: three landing records (%s, %s)" % [str(pts), str(imp)])
-	if projs.size() >= 2 and pts.size() == 3 and imp.size() == 3:
-		_check(not (pts[1] as Vector3).is_equal_approx(pts[0]), "F2.4 rockets: warheads 1 and 2 land on different points")
-		for i in projs.size():
-			var w := mini(i, 2)
-			var pr: Dictionary = projs[i]
-			_check((pr["c"] as Vector3).is_equal_approx(pts[w]) and absf(float(pr["t1"]) - (ts + float(imp[w]))) < 1e-4,
-				"F2.4 rockets: torpedo %d ends at warhead %d's point and time (%s at %.3f; warhead %s at %.3f)" % [i, w, str(pr["c"]), float(pr["t1"]), str(pts[w]), ts + float(imp[w])])
+	var r: Dictionary = fx.volley("corsair_0", "torp", "hegemony_1", {"weapon_id": "torp", "shots": [true, true, true], "hits": TORP_HITS, "quad": 0, "break_k": 0})
+	if r.has("skipped"):
+		_check(false, "F2.4 rockets: the box Hullbreaker found no launcher (%s)" % str(r))
+	else:
+		_salvo_check("rockets", fx, before, 4, r, ts, false)
 	for i in 60:
 		fx.step(1.0 / 60.0)
 	world.free()

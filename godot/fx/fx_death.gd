@@ -939,11 +939,18 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var authored: Array = seam_data if seam_data is Array else []
 	var transverse: Array = authored.filter(func(b): return not b.has("span"))
 	transverse.sort_custom(func(a, b): return a["at"].x < b["at"].x)
+	# Issue 461 (carried from 484): a lance kill cuts clean on the beam's own line (deaths_and_hits.md, "What killed it":
+	# the tear is the cut, two clean halves). The beam's point and direction (hull space) are set by _lance_recut on the
+	# death frame; the break nearest the beam lies on it, square-ish to the beam, with no kink and almost no teeth.
+	var lance = s.get_meta("lance_line", [])
+	var lance_on: bool = lance is Array and lance.size() >= 2
 	if story and transverse.size() > 1:
-		# one crack: the authored joint nearest the core (the core goes off on it)
+		# one crack: the authored joint nearest the core (the core goes off on it); on a lance kill, the joint nearest the
+		# beam (issue 1385: the recut then picks the crack, rather than being thrown away)
+		var near_x: float = (lance[0] as Vector3).x if lance_on else h.core.x
 		var keep = transverse[0]
 		for t in transverse:
-			if absf(float(t["at"].x) - h.core.x) < absf(float(keep["at"].x) - h.core.x): keep = t
+			if absf(float(t["at"].x) - near_x) < absf(float(keep["at"].x) - near_x): keep = t
 		transverse = [keep]
 	if not transverse.is_empty():
 		sizes.clear()
@@ -958,15 +965,20 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 6.0:
 		var lz: float = ((last[0] as Vector3) - h.c).z
 		if absf(lz) > W * 0.05: zs = signf(lz)
-	# Issue 461 (carried from 484): a lance kill cuts clean on the beam's own line (deaths_and_hits.md, "What killed it":
-	# the tear is the cut, two clean halves). The beam's point and direction (hull space) are set by _lance_recut on the
-	# death frame; the break nearest the beam lies on it, square-ish to the beam, with no kink and almost no teeth.
-	var lance = s.get_meta("lance_line", [])
-	var lance_on: bool = lance is Array and lance.size() >= 2
 	var lance_b := -1
 	if lance_on:
 		var lx: float = ((lance[0] as Vector3).x - x0) / L
-		if sizes.size() == 2:
+		if not transverse.is_empty():
+			# issue 1385 (Neon, PR 1383 F5): an authored hull breaks only on its joints (RULEBOOK 5.17: a machine never
+			# crosses a seam), so the beam picks the joint nearest it and the tear there runs clean: the seam's own plane
+			# and path, with the lance's fine teeth. The pieces keep the joints' sizes.
+			var bd := INF
+			for i in transverse.size():
+				var tx: float = (float(transverse[i]["at"].x) - x0) / L
+				if absf(tx - lx) < bd:
+					bd = absf(tx - lx)
+					lance_b = i
+		elif sizes.size() == 2:
 			var lu := clampf(lx, 0.3, 0.7)
 			sizes = [lu, 1.0 - lu]
 			lance_b = 0
@@ -1020,7 +1032,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			breaks[-1]["at"] = transverse[i]["at"]
 			breaks[-1]["n"] = transverse[i]["n"]
 			breaks[-1]["k"] = k * 0.25
-			breaks[-1]["waves"] = _waves(r, L, L * 0.012, 3)
+			breaks[-1]["waves"] = _waves(r, L, L * (0.004 if i == lance_b else 0.012), 3)
 			if transverse[i].has("path"):
 				# issue 600 (R226): the tear follows the seam's authored plan path (it kinks round the machines), torn by the
 				# waves; the path is the kink, so no extra V
@@ -1108,8 +1120,16 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
 			if b.has("path"): p.x = _break_x(b, p.z)
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
+	var n_frag: int = nsub + chip_seeds.size()
+	if not s.death_big or s.faction == "chorus":
+		# issue 1385 (Neon, PR 1383 F2, F3): only a big metal hull throws the bite and the chips (_make_frags and
+		# _throw_frags at its core flash). An authored small hull (its pop) or an authored Chorus hull (its rupture) never
+		# throws them, so carving them left a hole in the wreck: their hull stays on the main pieces instead.
+		bite = {}
+		chips = {}
+		n_frag = 0
 	var plan := {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
-		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
+		"n_frag": n_frag, "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
 	# 6. issue 600 (R226, RULEBOOK 5.17): the machines ride whole, each with the main piece its box centre lies in. Their boxes
 	# come from the export (fx_hull machines); bins along the length keep the lookup short.
 	var mlist: Array = h.get("machines") if h.get("machines") is Array else []
@@ -3333,7 +3353,13 @@ static func _wreck_leave_physics(fx, wreck: Dictionary, node: Node3D) -> void:
 	if rb.process_mode == Node.PROCESS_MODE_DISABLED: return
 	var spd: float = maxf(fx.anim_speed(), 0.01)
 	var entry := {"node": rb, "vel": rb.linear_velocity / spd, "ang": rb.angular_velocity / spd}
-	if rb.linear_damp > 0.0:
+	# issue 1385 (Neon, PR 1383 F4): a strained piece's damping lives in its story_damp meta (Jolt damping is 0 on it,
+	# see _break_up_inner), so it keeps slowing on the effect clock instead of drifting and turning forever
+	if rb.has_meta("story_damp"):
+		var dmp: float = rb.get_meta("story_damp")
+		entry["damp"] = dmp
+		entry["adamp"] = dmp * 0.5
+	elif rb.linear_damp > 0.0:
 		entry["damp"] = rb.linear_damp
 		entry["adamp"] = rb.angular_damp
 	rb.linear_velocity = Vector3.ZERO
