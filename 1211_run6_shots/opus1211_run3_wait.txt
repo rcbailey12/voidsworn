@@ -1,0 +1,10 @@
+waiting for all done in opus1237_wait.txt Thu 11/19/2026 18:34:40.25 
+OPUS1211_RUN3_WAIT stopped by the Board before it ran anything (Nov 19 19:08 CST); replaced by OPUS1211_RUN4_WAIT.bat (calls shots1211_run4.bat, same trigger, same log)
+waiting for all done in opus1237_wait.txt (run 4 waiter) Thu 11/19/2026 19:02:09.58 
+OPUS1211_RUN4_WAIT stopped by the Board before it ran anything (11/19 22:29:35); replaced by OPUS1211_RUN6_WAIT.bat (calls shots1211_run6.bat, same trigger, same log). shots1211_run4.bat left unrun.
+waiting for all done in opus1237_wait.txt (run 6 waiter) Thu 11/19/2026 22:29:35.42 
+OPUS1211_RUN6_WAIT stopped by the Board before it ran anything (11/20 03:22:42); replaced by OPUS1211_RUN6_WAIT_B.bat (after 1262 RUN1262D, same log)
+waiting for all done in opus1262_run1d_wait.txt (run 6 waiter B) Fri 11/20/2026  3:22:42.47 
+shots1211_run6 start Fri 11/20/2026  4:46:42.14 
+shots1211_run6 exit 0 at  5:04:17.80 
+all done  5:04:17.80 

@@ -1,0 +1,29 @@
+shots1211 run6 start Fri 11/20/2026  4:46:42.57 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+HIT_CAPTURE_DONE case nebula_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: after nebula_1920x1080_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 2160 stills 7 of 7 frames 0
+own settings untouched: after nebula_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case clear_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: after clear_1920x1080_gun_shield 
+HIT_CAPTURE_DONE case clear_gun_shield height 2160 stills 7 of 7 frames 0
+own settings untouched: after clear_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 720 stills 7 of 7 frames 0
+own settings untouched: after nebula_1280x720clip_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: before nebula_1920x1080_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 2160 stills 7 of 7 frames 0
+own settings untouched: before nebula_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case clear_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: before clear_1920x1080_gun_shield 
+HIT_CAPTURE_DONE case clear_gun_shield height 2160 stills 7 of 7 frames 0
+own settings untouched: before clear_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 720 stills 7 of 7 frames 0
+own settings untouched: before nebula_1280x720clip_gun_shield 
+shots1211 done Fri 11/20/2026  5:04:17.75 
