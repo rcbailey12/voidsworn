@@ -755,6 +755,8 @@ func shipValue(tpl) -> float:
 	if H != null and (H.get("cost") is int or H.get("cost") is float): return float(H["cost"])
 	return 40.0 * float(or_(H.get("cp") if H != null else null, 1))
 func prizeScrap(tpl) -> float: return jsround(shipValue(tpl) * 0.35)
+# issue 1290: what decommissioning pays; a ship regrown from an Eclipse core pays nothing until it has fought (core.js sellValue)
+func sellValue(s) -> float: return 0.0 if s != null and s.get("regrown") else prizeScrap(s["tpl"])
 func ensureFlagship() -> Variant:
 	if RUN == null or RUN.get("fleet") == null or RUN["fleet"].size() == 0: return null
 	if flagshipOf() == null:
@@ -1985,7 +1987,7 @@ func shipyardStock(n: Dictionary) -> Dictionary:
 func lateStock(n: Dictionary) -> Dictionary:
 	var pool = []
 	for r in RELICS.keys():
-		if not RUN["relics"].has(r) and relicUseful(r): pool.append(r)
+		if not RUN["relics"].has(r) and relicUseful(r) and not TB["LATE_SHOP"]["skip"].has(r): pool.append(r)
 	pool.sort()
 	var k = (int(z0(n.get("col"))) * 7 + int(RUN["stats"]["battles"]) * 3) % pool.size() if pool.size() > 0 else 0
 	return {"relics": [pool[k], pool[(k + 1) % pool.size()]] if pool.size() > 1 else pool.duplicate(), "bought": [], "cp": false}
@@ -2018,7 +2020,7 @@ func ACT_restoreCore(a: String) -> void:
 	if i < 0 or i >= cs.size() or not HULLS.has(cs[i]): return
 	var tpl = cs[i]; var c = coreCost(tpl)
 	if float(RUN["credits"]) < c or fleetCP() + float(or_(HULLS[tpl].get("cp"), 1)) > float(RUN["cpCap"]): return
-	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); RUN["fleet"].append(s)
+	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); s["regrown"] = true; RUN["fleet"].append(s)
 	tel("shop", {"k": "core", "id": tpl, "cost": c}); toast(ship_with_article(s["name"], true) + " wakes from its core."); shipyardScreen(yard_node)
 func shipyardScreen(n) -> void:
 	yard_node = n
@@ -2104,7 +2106,7 @@ func ACT_sellShip(uid: String) -> void:
 	if RUN["fleet"].size() <= 1: return
 	var s = _ship(uid)
 	var acts = []; A(acts, "sellConfirm", uid); A(acts, "closeModal")
-	show_modal("sell", {"ship": s, "value": prizeScrap(s["tpl"])}, acts)
+	show_modal("sell", {"ship": s, "value": sellValue(s), "word": hullWord()}, acts)
 func ACT_sellConfirm(uid: String) -> void:
 	var i = -1
 	for k in range(RUN["fleet"].size()):
@@ -2112,7 +2114,7 @@ func ACT_sellConfirm(uid: String) -> void:
 			i = k; break
 	if i < 0: return
 	var s = RUN["fleet"][i]
-	RUN["inventory"].append_array(s["mods"]); RUN["credits"] = float(RUN["credits"]) + prizeScrap(s["tpl"]); RUN["fleet"].remove_at(i)
+	RUN["inventory"].append_array(s["mods"]); hullPay(-sellValue(s)); RUN["fleet"].remove_at(i)
 	close_modal(); shipyardScreen(yard_node)
 func _repair_stop_options(kind: String) -> Array:
 	var drydock := kind == "drydock"
@@ -3196,6 +3198,7 @@ func factionWinEcon(credits: float, summary: Dictionary) -> Dictionary:
 func rewardFlow(summary: Dictionary) -> void:
 	var cfg = summary["cfg"]; var s = float(RUN["sector"]); var rf = runFx()
 	RUN["stats"]["battles"] = float(RUN["stats"]["battles"]) + 1
+	for sh in RUN["fleet"]: sh.erase("regrown")   # issue 1290: a regrown ship that has fought decommissions like any other
 	if cfg["kind"] == "elite": RUN["stats"]["elites"] = float(RUN["stats"]["elites"]) + 1
 	if cfg["kind"] == "boss": RUN["stats"]["bosses"] = float(RUN["stats"]["bosses"]) + 1
 	var kindMult = 3.0 if cfg["kind"] == "boss" else (1.6 if cfg["kind"] == "elite" else 1.0)
