@@ -330,7 +330,8 @@ them in place. A helper .bat never clones from GitHub itself (issue 1180, Board 
 through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease until they end, so no second run can
 switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
 and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
-Board relays a PASS, `helper_clone.bat <job folder> release` checks that every out file is on a board/pc-out branch, then
+Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
 removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
 FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`

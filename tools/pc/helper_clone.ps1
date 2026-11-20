@@ -15,7 +15,8 @@
 #     hardlinked, because stage 7 and other tools rewrite those files in place. ships_copied.txt records what was copied.
 #   - Runs the job steps (cmd /c "<steps>" steps) inside the lease and exits with their exit code.
 # Release mode (the Board runs it after relaying the results; R326, a job's own leftovers):
-#   - Only when the latest attempt (attempt.txt) ended with exit 0 (out\attempt_result.txt), out\result.txt says PASS
+#   - Only when the latest attempt (attempt.txt) ran its job steps and they exited 0 (out\attempt_result.txt reads
+#     "<id> steps exit 0"; a setup-only call never qualifies), out\result.txt says PASS
 #     and no FAILED, and every file in the out folders is committed on a
 #     board/pc-out-* relay branch in the mirror. Then removes the ship and gen copies this folder made (only files whose
 #     bytes still match ships_copied.txt; any other file is listed and kept) and repo\godot\.godot (the import cache).
@@ -141,13 +142,14 @@ function Copy-Ships {
 function Assert-Relayed {
   $outDirs = @(Get-ChildItem -LiteralPath $job -Directory -Force | Where-Object { $_.Name -like 'out*' })
   # Bound to the latest attempt (Artoo on PR 1275): attempt.txt names it, and out\attempt_result.txt must carry that ID
-  # with exit 0. A retry that failed early has a new ID without a matching exit 0, so an older PASS never counts.
+  # with "steps exit 0", written by this script after that attempt's own steps. A retry that failed early, or a
+  # setup-only call (no steps), has a new ID without it, so an older PASS never counts.
   $attemptFile = Join-Path $job 'attempt.txt'
   $attempt = if (Test-Path -LiteralPath $attemptFile) { [IO.File]::ReadAllText($attemptFile).Trim() } else { '' }
   if ($attempt -notmatch '\A[0-9a-f]{32}\z') { throw 'no attempt.txt from helper_clone; nothing removed' }
   $attemptResult = Join-Path (Join-Path $job 'out') 'attempt_result.txt'
   $last = if (Test-Path -LiteralPath $attemptResult) { [IO.File]::ReadAllText($attemptResult).Trim() } else { '' }
-  if ($last -cne "$attempt exit 0") { throw "the latest attempt $attempt did not end with exit 0 (out\attempt_result.txt: '$last'); nothing removed" }
+  if ($last -cne "$attempt steps exit 0") { throw "the latest attempt $attempt did not pass its job steps (out\attempt_result.txt: '$last'); nothing removed" }
   $result = Join-Path (Join-Path $job 'out') 'result.txt'
   if (-not (Test-Path -LiteralPath $result)) { throw 'no out\result.txt; nothing removed' }
   $text = [IO.File]::ReadAllLines($result)
@@ -195,7 +197,7 @@ $null = [IO.Directory]::CreateDirectory($job)
 Assert-NotLinked $job
 try { $lease = [IO.File]::Open((Join-Path $job '.voidsworn-run-active'), 'OpenOrCreate', 'ReadWrite', 'None') }
 catch [IO.IOException] { throw "another run is using $job right now; nothing changed" }
-$attempt = $null; $code = 1
+$attempt = $null; $code = 1; $stepsRan = $false
 try {
   if ($release) {
     if (-not (Test-Path -LiteralPath (Join-Path $repo '.git'))) { throw "no clone in $job; nothing to release" }
@@ -236,12 +238,14 @@ try {
   if ($Steps) {
     Write-Output "job steps: $Steps (the lease is held until they end)"
     if ($unix) { & sh $Steps steps } else { & cmd.exe /d /c "`"$Steps`" steps" }
-    $code = $LASTEXITCODE
+    $code = $LASTEXITCODE; $stepsRan = $true
     Write-Output "job steps exit $code"
     exit $code
   }
   $code = 0
 } finally {
-  if ($attempt) { [IO.File]::WriteAllText((Join-Path (Join-Path $job 'out') 'attempt_result.txt'), "$attempt exit $code`n") }
+  # "steps exit N" only when this attempt ran its job steps; a setup-only call or an early stop is never releasable.
+  $line = if ($stepsRan) { "$attempt steps exit $code" } elseif ($code -eq 0) { "$attempt setup only" } else { "$attempt stopped exit $code" }
+  if ($attempt) { [IO.File]::WriteAllText((Join-Path (Join-Path $job 'out') 'attempt_result.txt'), "$line`n") }
   $lease.Dispose()
 }
