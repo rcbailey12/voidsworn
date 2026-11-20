@@ -1,0 +1,32 @@
+start voidsworn_S9 V14_23 opus/issue-1156 Thu 11/19/2026 18:03:46.70 
+inputs STAGES=4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_180346_0976039 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]        board/pc-out-1119zh  -> board/pc-out-1119zh
+   815d05c6..9c54899f  main                 -> main
+   8605a168..82b74108  opus/issue-1078      -> opus/issue-1078
+   0611b8b0..5fe73fd2  opus/issue-1234      -> opus/issue-1234
+   8605a168..82b74108  refs/pull/1170/head  -> refs/pull/1170/head
+ + a3a6a424...804b0da8 refs/pull/1170/merge -> refs/pull/1170/merge  (forced update)
+   0611b8b0..5fe73fd2  refs/pull/1242/head  -> refs/pull/1242/head
+ + e5912df5...f2baee96 refs/pull/1242/merge -> refs/pull/1242/merge  (forced update)
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=9a4770a328b94028b655a9754de41e58044dd86e
+import exit 0 
+4_parts_kit start 18:04:38.12 
+4_parts_kit exit 0 at 18:05:58.95 
+5_paint_bake start 18:05:58.96 
+5_paint_bake exit 0 at 18:13:31.18 
+6_lod start 18:13:31.19 
+6_lod exit 0 at 18:14:29.29 
+7_export start 18:14:29.29 
+7_export exit 0 at 18:15:29.70 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1156\repo\godot\assets\ships\V14_23\V14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: death_seam Thu 11/19/2026 18:15:55.89 
+all done 

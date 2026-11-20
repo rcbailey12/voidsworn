@@ -1,0 +1,71 @@
+start chorus_C14 B22_11 opus/issue-1155 Thu 11/19/2026 17:37:56.70 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE=codex/issue-1058 PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_173755_9586108 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]           (none)               -> refs/pull/1083/merge
+ - [deleted]           (none)               -> refs/pull/1136/merge
+ - [deleted]           (none)               -> refs/pull/1140/merge
+ - [deleted]           (none)               -> refs/pull/1142/merge
+ - [deleted]           (none)               -> refs/pull/1216/merge
+ - [deleted]           (none)               -> refs/pull/1241/merge
+   8f254028..78b941e2  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]        board/pc-out-1119k   -> board/pc-out-1119k
+ * [new branch]        board/pc-out-1119zb  -> board/pc-out-1119zb
+ * [new branch]        codex/issue-1228     -> codex/issue-1228
+   afc0051a..efc81e62  main                 -> main
+   bf319ab6..9a4770a3  opus/issue-1156      -> opus/issue-1156
+   57f94a74..3834f610  opus/issue-1157      -> opus/issue-1157
+   41d21480..7ceb304e  opus/issue-1160      -> opus/issue-1160
+   e045cecf..05dc7804  opus/issue-1183      -> opus/issue-1183
+   a5bfd612..3bd9748d  opus/issue-1232      -> opus/issue-1232
+   8e309907..15abb1fb  opus/issue-1234      -> opus/issue-1234
+   8ae26fa4..a48723aa  opus/issue-1235      -> opus/issue-1235
+   1b66b2e6..00f5e275  opus/issue-1238      -> opus/issue-1238
+ * [new branch]        opus/issue-1247      -> opus/issue-1247
+   bf319ab6..9a4770a3  refs/pull/1164/head  -> refs/pull/1164/head
+ + 0147616c...72fcf5a5 refs/pull/1164/merge -> refs/pull/1164/merge  (forced update)
+   57f94a74..3834f610  refs/pull/1166/head  -> refs/pull/1166/head
+ + 8ead51ff...30b014d8 refs/pull/1166/merge -> refs/pull/1166/merge  (forced update)
+   e045cecf..05dc7804  refs/pull/1184/head  -> refs/pull/1184/head
+ + b68756ef...e2983a83 refs/pull/1184/merge -> refs/pull/1184/merge  (forced update)
+   41d21480..7ceb304e  refs/pull/1202/head  -> refs/pull/1202/head
+ * [new ref]           refs/pull/1202/merge -> refs/pull/1202/merge
+   a5bfd612..3bd9748d  refs/pull/1240/head  -> refs/pull/1240/head
+ + 51fc775b...7bfd5dd7 refs/pull/1240/merge -> refs/pull/1240/merge  (forced update)
+   8e309907..15abb1fb  refs/pull/1242/head  -> refs/pull/1242/head
+ + 97a0c3ce...a7349cce refs/pull/1242/merge -> refs/pull/1242/merge  (forced update)
+   1b66b2e6..00f5e275  refs/pull/1243/head  -> refs/pull/1243/head
+ + fccaa987...d0af8f16 refs/pull/1243/merge -> refs/pull/1243/merge  (forced update)
+   8ae26fa4..a48723aa  refs/pull/1245/head  -> refs/pull/1245/head
+ + 66740ef8...de6e994e refs/pull/1245/merge -> refs/pull/1245/merge  (forced update)
+ * [new ref]           refs/pull/1248/head  -> refs/pull/1248/head
+ * [new ref]           refs/pull/1249/head  -> refs/pull/1249/head
+ * [new ref]           refs/pull/1249/merge -> refs/pull/1249/merge
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+merged codex/issue-1058: the pictures of this run are a PREVIEW of that paint stack 
+commit=9befcee8079906eb86f1a3d640d75447eda5e0cb
+import exit 0 
+1_concept_in start 17:39:04.19 
+1_concept_in exit 0 at 17:39:08.67 
+2_shape_ref start 17:39:08.67 
+2_shape_ref exit 0 at 17:39:10.16 
+3_trace_hull start 17:39:10.16 
+3_trace_hull exit 0 at 17:40:54.21 
+4_parts_kit start 17:40:54.22 
+4_parts_kit exit 0 at 17:41:59.19 
+5_paint_bake start 17:41:59.19 
+5_paint_bake exit 0 at 17:48:20.60 
+6_lod start 17:48:20.61 
+6_lod exit 0 at 17:59:03.59 
+7_export start 17:59:03.59 
+7_export exit 0 at 18:01:11.52 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1155\repo\godot\assets\ships\B22_11\B22_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 18:03:07.48 
+all done 
