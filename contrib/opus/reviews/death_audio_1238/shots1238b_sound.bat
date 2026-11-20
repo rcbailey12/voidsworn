@@ -1,5 +1,5 @@
 @echo off
-rem Issue 1238 run 2: re-shoot the clips WITH SOUND, after (origin/main, PR 1243 merged) and before (main 41858aba, just
+rem Issue 1238 run 2: re-shoot the clips WITH SOUND, after (1dcd6cf2, the PR 1243 merge, pinned) and before (main 41858aba, just
 rem before that merge, 1dcd6cf2^1), so Ryan gets an audible before/after. Run 1's AVIs were digital silence: the bench's
 rem death cues played in a world with no listener; fixed on branch opus/issue-1238-sound (bench/look_bench.gd), whose
 rem bench script and rows are used for both runs.
@@ -63,7 +63,7 @@ for %%F in (look_bench.gd look_bench.tscn look_moments_1238_clip.json) do (
   )
 )
 git -C "%R%" rev-parse origin/%BR% > "%RUN%\bench_commit.txt"
-call :one after origin/main
+call :one after 1dcd6cf227896d9745622dec6960893ac2795fee
 call :one before 41858aba3bda701f33890185c84aea9d9276fbb7
 if defined BAD goto fail
 echo ALL PASS: both clips have sound >> "%ST%"
