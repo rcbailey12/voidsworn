@@ -1,0 +1,4 @@
+@echo off
+rem Board: frozen pin board/pin-1415b = 3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01 (ship_job builds the branch tip, issue 1389).
+set "SHIP=ithar_GA1" & set "CODE=I16_11" & set "BRANCH=board/pin-1415b" & set "JOB_DIR=opus1415_GA1"
+call "%USERPROFILE%\Downloads\voidsworn_test\ship_job\ship_job.bat"
