@@ -442,8 +442,9 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.in_campaign = true
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
-		# R78 Q18: only the fifth run's final boss gets dawn. Keep this visual flag out of the rules and saves.
-		b.args["finale"] = int(campaign.C.META.get("stats", {}).get("runs", 0)) == 5
+		# Issue 1271 (replaces R78 Q18's "fifth run only"): from the fifth run on, the final boss gets dawn.
+		# Keep this visual flag out of the rules and saves.
+		b.args["finale"] = finale_for_runs(int(campaign.C.META.get("stats", {}).get("runs", 0)))
 	b.args["quality"] = str(settings["quality"])
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
@@ -580,3 +581,9 @@ func _bot_campaign(seed: int) -> Dictionary:
 	if not out.has("errors"):
 		out["errors"] = []
 	return out
+
+
+# Issue 1271: META stats runs counts the run in progress (campaign.gd newRun adds one at the start, Back from the
+# flagship page takes it away), so 5 is the fifth run, as under R78 Q18. Dawn now plays on every run from there.
+static func finale_for_runs(runs: int) -> bool:
+	return runs >= 5

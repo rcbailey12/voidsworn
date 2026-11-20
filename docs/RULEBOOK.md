@@ -333,7 +333,7 @@ and the folder's own last copy (`ships_copied.txt`), so local work is never over
 Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
 exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
 removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
-FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. A helper proof job's head (opus_job_head.bat, issue 1303) removes, at its tail and only after a PASS, the pinned checkouts its own checkout step listed in that attempt folder whose HEAD is still the pin and whose files hold no work beyond the import cache, ship copies still matching their source, byte copies of tracked files and the .import/.uid sidecars of those (rebuildable from the mirror; about 16 GB each); a failed job keeps them, and its out folders, logs and ship records always stay. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
 token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
 a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
@@ -421,7 +421,11 @@ refresh: a backup goes only when every file in it is kept in a newer copy or a s
 was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
 their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
 (exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
-declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. The
+declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. Helper
+(Opus) proof bats start from `tools/pc/jobs/opus_job_template.bat` and call `opus_job_head.bat` from tools_live: exact
+commit pins in a fresh checkout per attempt, the safe ships copy with a tracked-file check, the throwaway profile and
+Ryan's options hashed before and after; the Board checks only that a bat calls the head (docs/playbooks/pc.md, issue
+1303, Board Nov 20: seven bats sent back on Nov 19 and 20 for the same four mistakes). The
 watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
 read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
 failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
