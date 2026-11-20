@@ -13,3 +13,5 @@
 - `S10_r4_guns_proposal.jpg`, `S10_r4_guns_sized.jpg`: round 4 (Ryan, Nov 20: the open tubes "look more like torpedo tubes";
   he picked S8's gun mounts "sized appropriately for the ship size"). Cloud Godot previews: the proposal at S8 size, then the
   mounts scaled 14.5 / 27. The kit broadside's variant=1 (the tube port) is removed.
+- `S10_r5_guns_bigger.jpg`: Ryan, Nov 20: "maybe sliiiiiightly bigger for vigil but nothing dramatic". The S8 mounts go from
+  14.5 / 27 to 1.2 times that. Cloud Godot preview, before and after.

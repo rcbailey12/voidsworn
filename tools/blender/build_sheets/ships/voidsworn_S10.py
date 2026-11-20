@@ -55,7 +55,7 @@ BWF = 0.58         # the belly's half-width share of hw
 SHELL = 0.16       # hull thickness (the solidify shell)
 GUN_X = (1.74, 0.435, -0.87, -2.175)   # the four battery ports a side, stations 38 / 47 / 56 / 65 percent (battery: 4 shots)
 BALL_Z = 0.0       # the broadside deck line
-GUN_S = round(LENGTH / 27.0, 3)   # S8's heavy broadside mount scaled to this hull (Ryan, Nov 20: "size it appropriately for the ship size"): 14.5 / 27
+GUN_S = round(1.2 * LENGTH / 27.0, 3)   # S8's heavy broadside mount scaled to this hull (Ryan, Nov 20: "size it appropriately for the ship size"): 14.5 / 27, then "sliiiiiightly bigger" (x1.2)
 PL = dict(size=(0.3, 0.56), thick=(0.02, 0.045))
 TIP = 7.25
 
@@ -509,7 +509,7 @@ def build(K):
              'factions.md "How it breaks" (lengthwise between deck rows, the spire line as one piece); the build contract keeps every long seam inside one transverse compartment, and the spire line overlaps the gun deck stations on this hull')
     K.change('B-3 peels the belly plating below the gun deck, the liner is relieved along that seam and at both joints, frames between the breaks stop above it, and the keel deck and ballast tanks are gone',
              'the first peel sat on the sloped lower hull and tore through the liner and the rooms behind it, so the death check found 411 inside faces on the outer hull; the S8 liner relief and a clear belly bring that to 0')
-    K.change('The battery ports are S8\'s heavy broadside mount (forged surround, ball mantlet, a real barrel) scaled to the hull, 14.5 / 27',
+    K.change('The battery ports are S8\'s heavy broadside mount (forged surround, ball mantlet, a real barrel) scaled to the hull (14.5 / 27, then 1.2 times on Ryan\'s "slightly bigger")',
              'Ryan, Nov 20 2026: the concept\'s open tube ports read as torpedo tubes in game; he picked S8\'s gun mounts "sized appropriately for the ship size", which also ties the Vigil to S8\'s family')
     K.open_item('The belly is designed here; the concept shows no underside')
     K.open_item('Frost-white markings and the half-sun crest are paint (the Sunward stack), not modelled')
