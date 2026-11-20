@@ -528,7 +528,7 @@ func _torus(r0: float, r1: float) -> TorusMesh:
 # white: lime drawn as lime comes out a pale yellow, and no longer matches the lime of the marker and the button. This
 # finds the colour to draw so that the screen shows the colour asked for, as near as the tone map can reach, and never
 # brighter than 1.0 in any channel (so a route cannot bloom). One search per colour, then cached.
-static var _shown_cache := {}
+static var _shown_cache := {}   # not GPU: colour values
 static func _lin(v: float) -> float: return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
 static func _srgb(v: float) -> float:
 	v = clampf(v, 0.0, 1.0)
@@ -568,7 +568,7 @@ func for_screen(want: Color) -> Color:
 	return Color(out, want.a)
 # A pale line: the sage at a share of its strength as the eye reads it on the dark chart. The line blends in linear light,
 # where an alpha of 0.2 shows as about half strength (the first PC capture did), so the alpha is found from the tone map.
-static var _pale_cache := {}
+static var _pale_cache := {}   # not GPU: alpha values
 func pale(share: float) -> Color:
 	var base = for_screen(Color(GS.BONE, 1.0))
 	if _pale_cache.has(share): return Color(base, _pale_cache[share])

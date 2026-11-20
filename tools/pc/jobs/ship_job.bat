@@ -41,11 +41,13 @@ if defined MISSING (
 set "J=%V%\%JOB_DIR%"
 if not exist "%J%" mkdir "%J%"
 rem 1. run from this job's own copy
+rem Nov 19 chain 1119B: a wrapper's inputs, STAGES above all, stayed set in the calling chain and the next ship ran
+rem with them; 1157 and 1183 started at stage 4 with no stage 1 to 3 outputs. The launcher clears them in the caller on exit.
 if /i not "%~f0"=="%J%\ship_job_running.bat" (
   copy /y "%~f0" "%J%\ship_job_running.bat" > nul || exit /b 1
   call "%J%\ship_job_running.bat"
-  if errorlevel 1 exit /b 1
-  exit /b 0
+  if errorlevel 1 endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 1
+  endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 0
 )
 if not defined STAGES set "STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export"
 if not defined SETS set "SETS=battle,close"
@@ -67,10 +69,22 @@ if exist "%O%" (
 mkdir "%O%" || exit /b 1
 set "RES=%O%\result.txt"
 for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"`) do set "START_TICKS=%%T"
+set FAILED=
+rem The installed copy runs on its own. Keep its inherited tool scratch under a named, owned TEMP directory.
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%O%\scratch_path.txt" 2>> "%RES%"
+if errorlevel 1 set "FAILED=private TEMP setup"
+if defined FAILED goto collect
+set /p TEMP=<"%O%\scratch_path.txt"
+set "TMP=%TEMP%"
+set "TMPDIR=%TEMP%"
+rem The redirection holds the marker open until the tools finish.
+call :run_tools 9>"%TEMP%\.voidsworn-run-active"
+exit /b %ERRORLEVEL%
+
+:run_tools
 echo start %SHIP% %CODE% %BRANCH% %DATE% %TIME% > "%RES%"
 echo inputs STAGES=%STAGES% SETS=%SETS% FACS=%FACS% PAINT_BASE=%PAINT_BASE% PC_GPU_WAIT_SECONDS=%PC_GPU_WAIT_SECONDS% >> "%RES%"
 if exist "%J%\out_before_%STAMP%" echo the earlier run's out folder is now out_before_%STAMP% >> "%RES%"
-set FAILED=
 set "GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe"
 set "RECIPE=%V%\recipe\%SHIP%"
 

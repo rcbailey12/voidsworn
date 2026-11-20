@@ -14,6 +14,7 @@ rem For a CPU-only Blender command set PC_GPU_MODE=none. Godot still classifies 
 rem Timing scripts take solo once per command and wait for all slots. The step ceiling applies to its claim.
 rem PC_GPU_SOLO_MAX_S can set an earlier limit measured from claim acquisition.
 rem For other GPU executables set PC_GPU_MODE=shared, or solo for timing. Waiting does not spend the command's limit.
+rem Godot and Voidsworn get a fresh profile in job scratch. PC_REAL_PROFILE=1 keeps the caller's profile.
 setlocal EnableExtensions DisableDelayedExpansion
 set "TMO_ARGS=%*"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run_timeout.ps1"
