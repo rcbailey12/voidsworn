@@ -1,5 +1,5 @@
 @echo off
-title Opus 1279 run 3: Jolt job overflow on capital arrival, before and after - GPU job
+title Opus 1279 run 3B: Jolt job overflow on capital arrival, before and after - GPU job
 rem Issue 1279: on 1232 RUN4, plain main's "before s2 arrival" logged "Jolt Physics job system exceeded the maximum number
 rem of jobs" and run_timeout stopped Godot. This runs the same arrival bench (contrib/opus/cold_kill_1232/capture1232.gd:
 rem warm-up at load with only the shooter, then A16 arrives and is killed 6 frames later) five times on current main
@@ -15,7 +15,7 @@ rem Run 2 (Board, Nov 20): every Godot start goes through the installed watchdog
 rem closed if it or run_timeout.ps1 is missing; path and SHA256 in result.txt); the ships copy leaves out manifest.json,
 rem README.md, a4_props.gd, *.uid, test and previews, and the run stops if any tracked .gd in the clone then differs.
 rem Run 1's bat (Artoo on PR 1302) had duplicate :one_commit and :realcheck labels; this file has one of each.
-rem Run 3 (replaces run 2): the same job pinned to the fix merged with main after PR 1255 (issue 1237), against that main.
+rem Run 3B (replaces runs 2 and 3; gen copied whole with its manifest.json, Board): run 3 was the same job pinned to the fix merged with main after PR 1255 (issue 1237), against that main.
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=ef0c138dd22ecbe10f48433ebe07f92907bb8aab
@@ -107,10 +107,13 @@ robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /XF manifest
 set E=%ERRORLEVEL%
 echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy ships failed" & exit /b 1)
-if exist "%V%\build\godot\gen" robocopy "%V%\build\godot\gen" "%C%\godot\gen" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NP > "%OK%\log_copy_gen.txt" 2>&1
+rem gen is copied whole: gen\manifest.json is how the game finds the built hulls (Board, 1262 RUN1C)
+if not exist "%V%\build\godot\gen\manifest.json" (set "FAILMSG=no build\godot\gen\manifest.json on the PC" & exit /b 1)
+robocopy "%V%\build\godot\gen" "%C%\godot\gen" /E /NFL /NDL /NJH /NP > "%OK%\log_copy_gen.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy gen robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy gen failed" & exit /b 1)
+if not exist "%C%\godot\gen\manifest.json" (set "FAILMSG=gen\manifest.json missing after the copy" & exit /b 1)
 rem a stale copied script must never run (Board, Nov 20): stop if any tracked .gd now differs from the commit
 git -C "%C%" status --porcelain --untracked-files=no -- "*.gd" > "%OK%\tracked_gd_changes.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=git status of the clone failed after the ships copy" & exit /b 1)
