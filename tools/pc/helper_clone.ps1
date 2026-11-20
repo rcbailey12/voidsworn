@@ -195,7 +195,7 @@ function Release-Copies {
 $null = [IO.Directory]::CreateDirectory($job)
 Assert-NotLinked $job
 try { $lease = [IO.File]::Open((Join-Path $job '.voidsworn-run-active'), 'OpenOrCreate', 'ReadWrite', 'None') }
-catch [IO.IOException] { throw "another run is using $job right now; nothing changed" }
+catch [IO.IOException] { Write-Output "STOP: another run is using $job right now; nothing changed"; exit 1 }
 $attempt = $null; $code = 1; $stepsRan = $false
 try {
   if ($release) {
@@ -242,6 +242,11 @@ try {
     exit $code
   }
   $code = 0
+} catch {
+  # One plain line the caller's log (and the Board) can read; PowerShell's own error view wraps and truncates it.
+  Write-Output "STOP: $($_.Exception.Message)"
+  $code = 1
+  exit 1
 } finally {
   # "steps exit N" only when this attempt ran its job steps; a setup-only call or an early stop is never releasable.
   $line = if ($stepsRan) { "$attempt steps exit $code" } elseif ($code -eq 0) { "$attempt setup only" } else { "$attempt stopped exit $code" }
