@@ -173,6 +173,13 @@ if defined FAILED goto finish
 rem 7. the in-game picture, from the published copy
 set "FACS="
 for /f "delims=_" %%F in ("%SHIP%") do set "FACS=%%F"
+rem build\godot has no tools folder beside it, so the stamp tool is tools_live's own copy, run by the Blender python
+set "PICTURE_STAMP_TOOL=%V%\tools_live\%TLV%\picture_provenance.py"
+set "PICTURE_PYTHON=%BPY%"
+rem build\ is not a git checkout; the picture names the commit the ship was built at, from the job's own clone
+set "PICTURE_SOURCE_REPO=%J%\repo"
+if not exist "%PICTURE_STAMP_TOOL%" set "FAILED=no %PICTURE_STAMP_TOOL% (the ship is published, read back and sealed; only the picture could not run)"
+if defined FAILED goto finish
 set "TMO_STEP=publish shots %CODE%"
 call "%TMO%" 600 "%GD%" --path "%GAME%" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%P%\shots" --facs %FACS% --sets battle,close --codes %CODE% > "%P%\log_shots.txt" 2>&1
 set EL=%ERRORLEVEL%
