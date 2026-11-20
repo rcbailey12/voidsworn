@@ -1523,8 +1523,8 @@ const LINEAGE_TREES={
           ],
           [
             {
-              "n": "Torpedoes Run First",
-              "d": "torpedoes fired during the salvo round strike at once instead of travelling."
+              "n": "Torpedoes Run True",
+              "d": "torpedoes fired during the salvo round gain +10 to hit."
             },
             {
               "n": "Rear Arc Reckoning",
@@ -1581,7 +1581,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "The Named Prey Falls",
-        "d": "when the salvo is declared, choose one enemy; every torpedo in the fleet may retarget to it, and it takes +25% damage from all hits this round."
+        "d": "when the salvo is declared, choose one enemy; it takes +25% damage from all hits this round."
       }
     ]
   },
@@ -3354,7 +3354,7 @@ Object.assign(BOONS,{
   h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
   a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
   r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'90% of':m>=1.5?'70% of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:m>=2?.9:(m>=1.5?.7:.5)})},
-  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo finds no target, enemy ships within 1 hex of its aim hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo salvo misses, it bursts: its target and enemy ships within 1 hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
   L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
   L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill the pool at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
   L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Launch ships field two more wings and carry 99 spares.',fx:()=>({hangar:2,endless:1})},

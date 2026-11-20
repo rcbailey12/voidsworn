@@ -107,7 +107,6 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 {round, side, phase, over, arena, terrain: {"q,r": "rock"|"hulk"|"station"|"planet"|"neb"|"debris"|"storm"},
  cut: ["q,r", ...] (hexes cut away from the board), map: {map, shape, station?, planet?, wrecks?, deadstar?, holes?},
  obj: {type, score, escore, ...}, focus: id of the enemy fleet's current focus target or null,
- torps: [{id, side, by, target, aim: {q, r}, from: {q, r}, round}] (torpedo salvos in flight: they land on `aim` at the start of `side`'s next turn),
  zones: {"q,r": "exit" | "texit" | "guard"} (objective hexes: breakthrough exits, the transports' escape row, the station's guard ring),
  hexes: [{q, r}, ...] (every playable hex of the board; the same read-only array every call, fixed at setup),
  units: [{id, side, tpl, name, cls, fac, size, squadron, q, r, facing, hp, maxHp, sh: [prow, starboard, rear, port] (each side's catch: pool x coverage, routing boost applied), shMax,
@@ -170,8 +169,6 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through, a Nemesis withdrawing). |
 | `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
 | `float` | `unit, text, color, dy` | A floating callout over a ship, word for word and in the game's colour ("\u221212 hull", "Shields down", "Critical", "Braced", ability names, boon names). `dy` is the game's vertical offset in pixels (negative is higher; null means 0). |
-| `torpedo` | `unit, target, id, aim, name` | A torpedo salvo launches (no shots are rolled yet); draw its lane to `aim`. |
-| `torpedo_miss` | `id, aim` | A salvo runs wide at impact. A salvo that hits plays as a `fire` event with `torpedo` and `from` fields, at the start of the firing side's next turn. |
 | `risen` | `unit, q, r` | A Deathless wreck reassembles (the endless legion). |
 | `stance` | `unit, stance` | A carrier's wing stance changed. |
 | `nem_signature` | `kind` | Your Nemesis's faction behaviour fired (R42, for his battle voice): `challenge`, `duel`, `line` (at setup), `flee_battle` (he withdraws; his ships then leave as `fled`), `reinforce` (the round 3 reinforcements are his). `B.nemSigs` keeps them with the round, `B.nemFound` the weaknesses found in this battle (with a log line each). |
