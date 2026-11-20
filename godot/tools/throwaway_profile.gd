@@ -22,10 +22,12 @@ static func in_watchdog_profile(udir: String, appdata: String) -> bool:
 
 # "" when this process may write user://, otherwise the reason it may not. Only Windows has a player profile to protect.
 static func refusal(script_name: String) -> String:
-	if OS.get_name() != "Windows":
-		return ""
-	var udir := ProjectSettings.globalize_path("user://")
-	if in_watchdog_profile(udir, OS.get_environment("APPDATA")):
+	return refusal_for(OS.get_name(), ProjectSettings.globalize_path("user://"), OS.get_environment("APPDATA"), script_name)
+
+
+# the same decision from given values, so the check can try both Windows cases on any machine (Artoo on PR 1370)
+static func refusal_for(os_name: String, udir: String, appdata: String, script_name: String) -> String:
+	if os_name != "Windows" or in_watchdog_profile(udir, appdata):
 		return ""
 	return "user:// (%s) is not inside the watchdog's throwaway profile (APPDATA %s); start %s through tools/pc/tmo.bat without PC_REAL_PROFILE=1" \
-			% [norm(udir), OS.get_environment("APPDATA"), script_name]
+			% [norm(udir), appdata, script_name]
