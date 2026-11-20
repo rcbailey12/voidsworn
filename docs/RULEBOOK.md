@@ -338,7 +338,7 @@ in the repo mirror (a loose blob is not a receipt), and everything else in it is
 all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
 no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
-(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
+(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).
