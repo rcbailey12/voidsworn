@@ -144,8 +144,14 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       foreach ($run in $records) {
         if ($run.Issue -ne $issue) { throw 'runner status records disagree on the owning issue' }
         $record = $run.State.scratch
-        if ($token -and $record.token -and $token -cne $record.token) { throw 'ownership token differs from runner status' }
-        if ($record.created -and [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
+        # A record is proof only with the identity the runner writes (token and creation time) and a folder that still
+        # carries that token: an old record must never authorize a new folder that later took its path (Artoo, PR 1252).
+        if ($record.token -isnot [string] -or -not $record.token -or $record.created -isnot [string] -or -not $record.created) {
+          throw 'runner status record lacks token or creation time'
+        }
+        if (-not $token) { throw 'runner status record names a folder without its ownership token' }
+        if ($token -cne $record.token) { throw 'ownership token differs from runner status' }
+        if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
             [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
       }
       Assert-HelperScratchInactive $dir

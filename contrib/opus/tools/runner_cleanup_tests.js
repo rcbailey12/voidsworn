@@ -272,13 +272,28 @@ try {
       status: 'failed', scratch: { path: dir, ...extra }
     }));
   }
-  const recordedOnly = scratch(temp, 'voidsworn-parity-recorded', 4);
+  // The runner records the token and the folder's creation time in .NET ticks (runner_common.ps1 'scratch').
+  const createdTicks = dir => String(fs.statSync(dir, { bigint: true }).birthtimeNs / 100n + 621355968000000000n);
+  function recordOwned(issue, dir, token, extra = {}) {
+    markOwned(dir, 4, token);
+    recordScratch(issue, dir, { token, created: createdTicks(dir), ...extra });
+  }
+  const recordedFull = scratch(temp, 'voidsworn-parity-recorded', 4);
+  recordOwned(305, recordedFull, 'a'.repeat(32));
   const recordedActive = scratch(temp, 'recorded-active-output', 4);
-  recordScratch(305, recordedOnly);
-  recordScratch(302, recordedActive);
+  recordOwned(302, recordedActive, 'b'.repeat(32));
+  // Path-only record (Artoo, PR 1252): no token or creation time, so it proves nothing.
+  const pathOnly = scratch(temp, 'recorded-path-only', 4);
+  recordScratch(312, pathOnly);
+  // A finished record that outlived its folder: a new folder at the same path has no token, or a different birth.
+  const survivorBare = scratch(temp, 'recorded-survivor-bare', 4);
+  recordScratch(313, survivorBare, { token: 'c'.repeat(32), created: '638000000000000000' });
+  const survivorCopied = scratch(temp, 'recorded-survivor-copied', 4);
+  markOwned(survivorCopied, 4, 'd'.repeat(32));
+  recordScratch(314, survivorCopied, { token: 'd'.repeat(32), created: String(BigInt(createdTicks(survivorCopied)) - 36000000000n) });
   const replaced = scratch(temp, 'stage7-checked-replaced', 4);
   markOwned(replaced, 4);
-  recordScratch(311, replaced, { token: 'e'.repeat(32) });
+  recordScratch(311, replaced, { token: 'e'.repeat(32), created: createdTicks(replaced) });
   const recent = scratch(temp, 'issue-306-recent', 2);
   markOwned(recent, 2);
   const opus = scratch(pc, 'opus901out1', 73);
@@ -333,9 +348,9 @@ try {
         JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(), ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, golden, parityLog, oldOwned, oldRetry, tokenOnly, recordedOnly, opus, oldStage7, workClean, ...recover];
-  const preserve = [edited, laneNewest, wrongGen, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive,
-    ...lookalikes, replaced, freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
+  const remove = [caches, golden, parityLog, oldOwned, oldRetry, tokenOnly, recordedFull, opus, oldStage7, workClean, ...recover];
+  const preserve = [edited, laneNewest, wrongGen, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+    ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
     assert(row?.includes(word) && /\d+ bytes/.test(row), `missing ${word} and size for ${dir}: ${row || report}`);
@@ -363,6 +378,9 @@ try {
   }
   assert.match(decision(dry, recordedActive, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, replaced, 'would keep'), /ownership token differs from runner status/);
+  assert.match(decision(dry, pathOnly, 'would keep'), /runner status record lacks token or creation time/);
+  assert.match(decision(dry, survivorBare, 'would keep'), /runner status record names a folder without its ownership token/);
+  if (windows) assert.match(decision(dry, survivorCopied, 'would keep'), /recorded directory was replaced/);
   assert.match(decision(dry, invalidOwner, 'would keep'), /ownership token file changed/);
   for (const dir of recover) decision(dry, dir, 'would remove (after checked salvage');
   decision(dry, failedSalvage, 'would remove (after checked salvage');

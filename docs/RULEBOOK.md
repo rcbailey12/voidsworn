@@ -320,7 +320,8 @@ Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
 
 Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
-token or a runner's `status.json` names its exact path. Name matches alone are report-only, including `voidsworn-parity-*`
+token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
+a folder that no longer matches it, is report-only). Name matches alone are report-only, including `voidsworn-parity-*`
 and `stage7-checked-*`. The janitor checks `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time
 to relay their results. A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
