@@ -98,52 +98,53 @@
    "damage_preview": "previews/B19_11_damage.jpg"
   },
   "B20_11": {
-   "name": "Chorus spitter",
+   "name": "The spitter, the Chorus destroyer (The Chorus)",
    "faction": "chorus",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "b_spitter",
    "length_world": 9.5,
    "hardpoints": {
-    "gun": 2,
-    "engine": 2,
-    "breach": 6,
-    "core": 1
+    "gun": 3,
+    "engine": 3,
+    "breach": 3,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 3,
+   "turrets": 0,
    "files": {
     "B20_11.glb": {
-     "bytes": 11961596,
-     "sha256": "deffb21eb6e557861cdf64befe1beb50ae6f982f269f4355a2cc879ed103dd0c"
+     "bytes": 11961592,
+     "sha256": "ba51126ac613b58ee027218e6e8c36fd86a39798ab875c1eae16ae2d73fb71fc"
     },
     "B20_11_base.jpg": {
-     "bytes": 845489,
-     "sha256": "53bd49a02d9ffeb39afa3af2a2d8f4d6f9050f14b5ac87b8a7e2c3f5b96fa524"
+     "bytes": 845467,
+     "sha256": "7b899afc275ec57fee5590d9f441d97ce1aa1fc3f51ec6490a9764bbf07ad440"
     },
     "B20_11_normal.png": {
-     "bytes": 6628475,
-     "sha256": "0faf0d32c5aeb5dc6072a62aecf780ae72c797b25a604f452b940bd1979d39d2"
+     "bytes": 6628474,
+     "sha256": "1f05e437c5a368c30632d6445b6bd417ad7b201fa7bb02b6cdbda3412aad0ab5"
     },
     "B20_11_orm.png": {
-     "bytes": 4864222,
-     "sha256": "3c6a8cb206f06e70491916be3ed592bc6780656eb412a9a529da4300a7f2b844"
+     "bytes": 4864219,
+     "sha256": "d58c6fc27fa4d498ed8c290d0ad007267818fa339571f8d95e6bb2368279d6bc"
     },
     "B20_11_parts_base.jpg": {
-     "bytes": 1038557,
-     "sha256": "147e73bb1fcf4c5fdfb114c5fac82d07f530a0bb1b2eccd08138c8f50b53c492"
+     "bytes": 1038529,
+     "sha256": "0d084534ed531505f5db77a17052d8609b43a973ba7269800ca58d28a8b32854"
     },
     "B20_11_parts_normal.png": {
-     "bytes": 6253650,
-     "sha256": "f4403e3041286f90666c458b074221b918f4448a98847cc0c92cdba36d1e0a57"
+     "bytes": 6253635,
+     "sha256": "3b42922c78708538bf27b1647914c1b66350b2d42772ec9bfec475e71de7def9"
     },
     "B20_11_parts_orm.png": {
-     "bytes": 5544775,
-     "sha256": "24e1d8b3307121eaa09f87649d89105b3885c98eb53897551441b07ae6602b69"
+     "bytes": 5544785,
+     "sha256": "689f8702ef3743218662a6aa707d3a50d57982c49eff41b78ce735238523ca9a"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\",
-   "preview": "previews/B20_11.jpg",
-   "damage_preview": "previews/B20_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\"
   },
   "B21_11": {
    "name": "Chorus bladeback",
