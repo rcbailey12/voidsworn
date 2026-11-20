@@ -47,7 +47,7 @@ class Bench extends "res://bench/look_bench.gd":
 		return view
 
 const API := preload("res://rules/battle_api.gd")
-const REV := "r3"
+const REV := "r4"
 const CELL := Vector2i(384, 216)
 # camera 170 is a 1 to 1 pixel crop (the battle camera at true size); closer cameras are a wider crop scaled down
 const CROP := {170: Vector2i(384, 216), 60: Vector2i(1152, 648), 26: Vector2i(1920, 1080)}

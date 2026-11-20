@@ -32,14 +32,26 @@ if errorlevel 1 (
 )
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
-rem the installed runner tools (build_b, the main chain's copy; build\tools is an old copy) and this job's GPU claim name
-set "TMO=%VT%\build_b\tools\pc\tmo.bat"
-set "PC_GPU_ISSUE=1078"
-if not exist "%TMO%" (
-  echo FAILED: no %TMO% >> "%ST%"
+rem the canonical watchdog: tools_live\<current.txt>\pc\tmo.bat (issue 1194, Board Nov 20), never build_b's or the clone's copy;
+rem a missing pointer or watchdog fails the job before any step (fail closed). Its path and sha256 go in result.txt.
+set "TLV="
+if exist "%VT%\tools_live\current.txt" set /p TLV=<"%VT%\tools_live\current.txt"
+set "TMO="
+if defined TLV if exist "%VT%\tools_live\%TLV%\pc\run_timeout.ps1" if exist "%VT%\tools_live\%TLV%\pc\tmo.bat" set "TMO=%VT%\tools_live\%TLV%\pc\tmo.bat"
+if not defined TMO (
+  echo FAILED: no usable watchdog in %VT%\tools_live ^(current.txt names "%TLV%"^), nothing was started >> "%ST%"
   set "JOBFAIL=1"
   goto finish
 )
+set "TMO_HASH="
+for /f "delims=" %%H in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 -LiteralPath $env:TMO).Hash"') do set "TMO_HASH=%%H"
+if not defined TMO_HASH (
+  echo FAILED: could not hash the watchdog %TMO%, nothing was started >> "%ST%"
+  set "JOBFAIL=1"
+  goto finish
+)
+echo watchdog %TMO% sha256 %TMO_HASH% >> "%ST%"
+set "PC_GPU_ISSUE=1078"
 
 set "R=%HOME1078%\repo"
 if not exist "%R%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%R%" > "%HOME1078%\git.txt" 2>&1
@@ -70,7 +82,7 @@ copy /y "%PBEFORE%" "%RES%\real_profile_before.txt" > nul 2>&1
 rem the installed hulls, copied fresh every attempt into this job's own clone (robocopy replaces every file whose size or time differs, so a reused
 rem clone never keeps an old hull; the probe records each drawn ship's scene sha256 in its json), and the import cache
 if exist "%S1078_SHIPS%\gen" robocopy "%S1078_SHIPS%\gen" "%R%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_gen.txt" 2>&1
-if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_ships.txt" 2>&1
+if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /XF a4_props.gd /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_ships.txt" 2>&1
 if not exist "%R%\godot\.godot" if exist "%S1078_SHIPS%\.godot" robocopy "%S1078_SHIPS%\.godot" "%R%\godot\.godot" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_cache.txt" 2>&1
 set "PICTURE_STAMP_TOOL=%R%\tools\picture_provenance.py"
 set "PICTURE_SOURCE_REPO=%R%"
@@ -356,5 +368,5 @@ if errorlevel 1 (
   exit /b 1
 )
 echo checked out %SC_REF% safely, saved changes in %SC_DIR% >> "%ST%"
-if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%SC_DIR%\copy_ships.txt" 2>&1
+if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /XF a4_props.gd /NFL /NDL /NJH /NJS /R:1 /W:1 > "%SC_DIR%\copy_ships.txt" 2>&1
 exit /b 0
