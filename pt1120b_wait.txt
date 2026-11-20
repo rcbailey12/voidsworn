@@ -1,0 +1,9 @@
+PT1120B waiter start Fri 11/20/2026 11:01:15.81 
+mirror refresh 11:01:15.82 
+mirror fetch exit 0
+42da627c453bf5fcf9d78c7f2ebca9f528c828b8 reachable in the mirror
+PT1120B build start Fri 11/20/2026 11:01:17.06 
+PT1120B build exit 1 at 11:06:25.51 
+after-job janitor ran, output in janitor_after_pt1120b.txt 11:06:26.01 
+PT1120B waiter exit at 11:06:26.01 
+all done Fri 11/20/2026 11:06:26.01 

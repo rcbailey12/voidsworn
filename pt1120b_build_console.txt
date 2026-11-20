@@ -1,0 +1,38 @@
+[Fri 11/20/2026 11:01:17.08] start, main 42da627c453bf5fcf9d78c7f2ebca9f528c828b8 
+manifest check before sync exit 0 
+MANIFEST OK: 294 files match main's ship manifest (size and sha256)
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)
+manifest check on the packaged ship files exit 0 
+MANIFEST OK: 294 files match main's ship manifest (size and sha256)
+manifest.json on the PC is identical to main's
+[Fri 11/20/2026 11:01:32.23] prepare exit 0 
+{"commit_date":"2026-11-20T17:00:05Z","commit":"42da627c453bf5fcf9d78c7f2ebca9f528c828b8"}
+ 
+[Fri 11/20/2026 11:01:32.24] synced, export start 
+[Fri 11/20/2026 11:06:22.07] export exit code 0 
+ Volume in drive C has no label.
+ Volume Serial Number is 866D-799D
+
+ Directory of C:\Users\rcbai\Downloads\voidsworn_test\build\export
+
+11/20/2026  11:06 AM    <DIR>          .
+11/20/2026  11:06 AM    <DIR>          ..
+11/20/2026  11:05 AM           188,928 Voidsworn.console.exe
+11/20/2026  11:05 AM       109,268,480 Voidsworn.exe
+11/20/2026  11:06 AM     6,084,381,564 Voidsworn.pck
+               3 File(s)  6,193,838,972 bytes
+               2 Dir(s)  193,534,328,832 bytes free
+title 3840x2160 exit 126 
+FAIL: missing picture or provenance sidecar for C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_42da627_1120council\title_3840x2160.png 
+title 1920x1080 exit 126 
+FAIL: missing picture or provenance sidecar for C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_42da627_1120council\title_1920x1080.png 
+credits 1920x1080 exit 126 
+FAIL: missing picture or provenance sidecar for C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_42da627_1120council\title_credits_1920x1080.png 
+battle 3840x2160 exit 126 
+FAIL: missing picture or provenance sidecar for C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_42da627_1120council\battle_3840x2160\01_1_battle_start.png 
+FAIL: battle 3840x2160 did not finish its UI capture 
+battle 1920x1080 exit 126 
+FAIL: missing picture or provenance sidecar for C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_42da627_1120council\battle_1920x1080\01_1_battle_start.png 
+FAIL: battle 1920x1080 did not finish its UI capture 
+[Fri 11/20/2026 11:06:25.49] capture exit 1 
+[Fri 11/20/2026 11:06:25.49] build bat done, exit 1 

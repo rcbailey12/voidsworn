@@ -1,0 +1,5 @@
+Exe locations on the PC (exes not relayed):
+- build\export\Voidsworn.exe  = 42da627c candidate, promoted 11:05:49 by g2_export. BROKEN: world_rocks.gd:46 parse error, battle.gd fails to compile. Do not play.
+- build\export-previous-30d72f0a-9746-4d7f-bf52-efbdc80d66e3\Voidsworn.exe = the Nov 17 build (main 7ef495e), moved aside intact by g2_export's promotion.
+- build\export-candidate-184336c5-32ac-423f-a390-335d4729dc51\ = the unpromoted 3c615257 candidate from PT1120 (failed bot smoke).
+- sync_old\g2_pt_3c61525_1120council\export_previous\ = the export\previous folder from before (Nov 17 19:00 build).
