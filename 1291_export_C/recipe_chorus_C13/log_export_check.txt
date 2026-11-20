@@ -1,0 +1,8 @@
+[check] authored interiors: 49100 triangles, 9 surfaces; authored seams: 2
+[check] 225236 triangles (132252 on part surfaces), box x -0.493 to 0.507, y -0.190 to 0.208, z -0.222 to 0.203
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] slot 0 bioplasma T: 2 hard points
+[check] slot 1 bioplasma F: 1 hard points
+[check] hard points: {"board": 2, "breach": 3, "core": 1, "engine": 3, "rcs": 4, "gun": 3}
+PASS B20_11 game export: every required point is there and every hard point passes the mesh checks

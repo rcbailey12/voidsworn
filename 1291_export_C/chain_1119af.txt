@@ -1,0 +1,7 @@
+waiting for chain_1119ae all done Fri 11/20/2026  0:42:12.71 
+        1 dir(s) moved.
+renamed opus1291\out to out_B 
+chain start Fri 11/20/2026  0:52:13.17 
+1291 Chorus export C start  0:52:13.18 
+1291 Chorus export C exit 0 at  1:27:00.34 
+all done Fri 11/20/2026  1:27:00.34 
