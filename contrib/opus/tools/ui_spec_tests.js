@@ -258,7 +258,9 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/Brand\.keel_faces\(\)/.test(led) && /GS\.sheet_name\(\).*GS\.sheet_body\(\).*GS\.sheet_medium\(\).*GS\.num\(\)/.test(brand), 'KEEL uses the brand faces (Big Shoulders, Barlow, Azeret Mono)');
   check(/func _action_box\(/.test(led) && /px\(56\)/.test(led) && /maxf\(2\.0, px\(2\)\)/.test(led), 'the one box is the 56 px square ember action, a 2 px outline');
   check(/func _paint_veil\(/.test(led) && /func dark_at\(/.test(led) && /KEEL_VEIL := 0\.94/.test(brand), 'the shelf sits on a smooth veil, and the check reads its strength');
-  check(/HOVER_RING := Color\(1\.0, 0\.541, 0\.227/.test(board) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
+  // issue 1374 (R362): board colours come from the one line style's role table (godot/render/line_style.gd)
+  const lineStyle = read('godot/render/line_style.gd');
+  check(/HOVER_RING: Color = LS\.ROLE\["hover"\]/.test(board) && /"hover": Color\(1\.0, 0\.541, 0\.227/.test(lineStyle) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg + lineStyle), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
   check(!/#c8f53a|#4fc4ff/.test(bg), 'battle.gd writes no lime and no old shield cyan');
   check(/"say": say/.test(bg) && /"nem": bool\(tu\.get\("nemesis", false\)\)/.test(bg), 'the activation card carries one short sentence and the target says when it is the Nemesis');
   check(/\["Top-down view \(T\)", "top"\]/.test(bg) && /\["Controls", "keys"\]/.test(bg) && /"grid":/.test(bg), 'view keys live under Menu and Controls');
