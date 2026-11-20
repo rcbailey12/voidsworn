@@ -77,10 +77,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
    lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
    in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
-   glowing, and optics are small glints, never domes (round 5 outside read, Nov 19); the stern stones glow violet with a small
-   drive glow and no white halo (issue 1282). Judge each round at camera 170 beside the concept first. Never see-through: every
-   intact-hull surface has transmission 0 and the interior shows only in the break-up. No wear. The bake marks it authored_look
-   so the game keeps its values (R329).
+   glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
+   concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
+   No wear. The bake marks it authored_look so the game keeps its values (R329).
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
    ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the

@@ -1,0 +1,111 @@
+{
+  "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+  "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "CD5_I8_37_warm_game_before_after.jpg",
+  "date": "2026-11-20T06:42:00Z",
+  "sources": [
+    {
+      "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+      "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+      "source_dirty": true,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+      "source_diff_sha256": "211bae0c9901e6eb35db9d7e9263c16c540118a33c811c2fbc1e6faeaa3d76da",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "I8_37_q.jpg",
+      "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+      "source_dirty": true,
+      "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+      "stage": "installed in game",
+      "date": "2026-11-20T02:32:00Z",
+      "image_sha256": "7bd2f415e8f18c05ebbb9f6b8522ec499b5a7971728ef8b04b97bb8ea8989f52",
+      "sources": [
+        {
+          "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+          "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "I8_37_cam170.jpg",
+      "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+      "source_dirty": true,
+      "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+      "stage": "installed in game",
+      "date": "2026-11-20T02:31:59Z",
+      "image_sha256": "d5a0d42904c657f9eec90d4dd561cbceb98a1de5d55aef4154b04d6b7e348f95",
+      "sources": [
+        {
+          "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+          "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "I8_37_q.jpg",
+      "source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+      "source_dirty": true,
+      "source_diff_sha256": "211bae0c9901e6eb35db9d7e9263c16c540118a33c811c2fbc1e6faeaa3d76da",
+      "stage": "installed in game",
+      "date": "2026-11-20T06:36:49Z",
+      "image_sha256": "6bb1ce74c9553b9a5d197fb3edffccceec1db6dd57b9e9581b8b423adc540ba6",
+      "sources": [
+        {
+          "source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+          "source_diff_sha256": "211bae0c9901e6eb35db9d7e9263c16c540118a33c811c2fbc1e6faeaa3d76da",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "I8_37_cam170.jpg",
+      "source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+      "source_dirty": true,
+      "source_diff_sha256": "211bae0c9901e6eb35db9d7e9263c16c540118a33c811c2fbc1e6faeaa3d76da",
+      "stage": "installed in game",
+      "date": "2026-11-20T06:36:49Z",
+      "image_sha256": "3503b334a1ae7d69ac28675981127c76cad118fb79eb19fa2868dcdeb9909196",
+      "sources": [
+        {
+          "source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+          "source_diff_sha256": "211bae0c9901e6eb35db9d7e9263c16c540118a33c811c2fbc1e6faeaa3d76da",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "51b77a9a2c8b6fd204da9a63389e0823f523ba192426dc01c5eebb8921443cec"
+  ],
+  "stamp_template_sha256": "acf4fd8a6f5ddea2a39902cdd71953e1a002d7f2400ffee857a3c8cf364cb1c1",
+  "covered_pixels": [
+    "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"
+  ],
+  "image_sha256": "189c8d6844450b25fa9a6ae71038fe89cae7056365d5a436e8e85a1675627909"
+}
