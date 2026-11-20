@@ -1,0 +1,37 @@
+start Fri 11/20/2026  8:44:09.95 attempt 1 
+drive bytes free 239010754560 
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1077\out_seamfix_1\checkout_28145 
+commit=686ee5d658c48740e80c400e66c27a14c05c9c40 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo\godot\assets\ships\C19_51\C19_51.glb:
+6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0
+CertUtil: -hashfile command completed successfully.
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1077\profile_5\appdata 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+death seam exit 0 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\scratch_seamfix_1\V1b_r_23.glb:
+90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\scratch_seamfix_1\V14_23.glb:
+6fcf53844e1076d4038876f4b8f94e7c9853489fa7a3a7dd7ed57bdf1dd03da4
+CertUtil: -hashfile command completed successfully.
+seam V1b_r_23 strain exit 0 
+DEATH_SEAM inside_triangles=16270 inside_outside_hull=0 fragment_inside_triangles=4742 pieces=10 main=2 (outside the whole ship before the break, a sheet matter: 0)
+seam V1b_r_23 off exit 0 
+DEATH_SEAM inside_triangles=17764 inside_outside_hull=0 fragment_inside_triangles=6500 pieces=19 main=5 (outside the whole ship before the break, a sheet matter: 0)
+seam V14_23 strain exit 0 
+DEATH_SEAM inside_triangles=14001 inside_outside_hull=0 fragment_inside_triangles=1458 pieces=10 main=2 (outside the whole ship before the break, a sheet matter: 0)
+seam V14_23 off exit 0 
+DEATH_SEAM inside_triangles=14824 inside_outside_hull=0 fragment_inside_triangles=4376 pieces=19 main=5 (outside the whole ship before the break, a sheet matter: 0)
+real options unchanged 
+PASSED 
+all done Fri 11/20/2026  8:46:40.27 

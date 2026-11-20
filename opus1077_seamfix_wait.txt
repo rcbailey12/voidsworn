@@ -1,0 +1,8 @@
+seam fix waiter start Fri 11/20/2026  8:44:08.11 
+mirror fetch exit 0
+686ee5d658c48740e80c400e66c27a14c05c9c40 reachable in the mirror
+OPUS1077_SEAMFIX start through wait1077\q_opus1077_seamfix.bat  8:44:09.86 
+run folder out_seamfix_1
+result: PASSED 
+OPUS1077_SEAMFIX waiter end at  8:47:10.94 
+all done  8:47:11.01 
