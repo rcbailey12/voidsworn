@@ -1,0 +1,7 @@
+chain BO start Fri 11/20/2026 16:21:47.94 
+mirror fetch exit 0
+05ef902a0e497c0530d41dde581f75db349be5ca reachable in the mirror
+1414B S11 start 16:21:48.99 
+1414B S11 exit 1 at 16:27:28.03 
+after-job janitor ran, output in janitor_after_1119bo.txt 16:27:28.63 
+all done Fri 11/20/2026 16:27:28.63 

@@ -1,0 +1,44 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 4:27:27 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1414b\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir          4	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\
+	    New File  		     943	audit.json100%  
+	    New File  		     956	log_audit.txt100%  
+	    New File  		     815	log_build.txt100%  
+	    New File  		    1350	log_sheet_contract.txt100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\build\
+	    New File  		     985	S11_build.json100%  
+	    New File  		    1938	sheet_contract_selftest.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :     6.8 k     6.8 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :             1746750 Bytes/sec.
+   Speed :              99.949 MegaBytes/min.
+   Ended : Friday, November 20, 2026 4:27:27 PM
+
