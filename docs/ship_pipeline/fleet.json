@@ -1,0 +1,54 @@
+{
+  "note": "The fleet list (issue 1421): one row per ship slot the game draws (the keys of AI_HULLS in godot/render/hull_table.gd). Hand-kept here: Ryan's approved concept (a repo path), the ruling that approved it, the open job, and a short note. Everything else (hull code, build sheet, whether the new build is installed) is read from the repo by contrib/opus/tools/fleet_list.js, which writes docs/ship_pipeline/FLEET.md. A brief's 'Approved pick' line is copied from this file. A row with no concept and no installed new build must name a job or say why it stays ('keep'). 'picked': true marks a pick whose picture is not on main yet. 'accepted' names where Ryan said yes to the ship in the game; 'pending' says what approved change the installed files still lack. A new-format manifest entry alone proves neither (issue 1410 owns the runtime proof). Rows in 'other' carry a 'key' so --pick finds them.",
+  "slots": {
+    "voidsworn|Frigate": {"ship": "Warden", "concept": "docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg", "ruling": "R331", "accepted": "Ryan, Nov 20 (round 3, PR 1164; brighter ember R360)"},
+    "voidsworn|Destroyer": {"ship": "Harrow", "concept": null, "picked": true, "ruling": "R369", "job": 1414, "note": "Round 2 picked Nov 20 (four small spires at 0.85). Its picture is on PR 1163 until that merges; set the path here when it does."},
+    "voidsworn|Cruiser": {"ship": "Vigil", "concept": "contrib/muse/design/class_family_sunward_2026_11/vigil_beauty.webp", "ruling": "R331", "accepted": "Ryan, Nov 20 (PR 1166)"},
+    "voidsworn|Battleship": {"ship": "Bastion", "concept": null, "job": 1145, "note": "Never drawn. Concept is issue 1145 run 3."},
+    "voidsworn|Carrier": {"ship": "Hearth", "concept": null, "job": 1145, "note": "Never drawn. Concept is issue 1145 run 3."},
+    "voidsworn|Dreadnought": {"ship": "Daybreak (flagship)", "concept": "docs/ship_pipeline/build_sheets/voidsworn_S8/beauty_vs_blockout.jpg", "ruling": "R254"},
+
+    "hegemony|Frigate": {"ship": "Picket", "concept": null, "ruling": "R369", "job": 1146, "note": "First concepts sent back Nov 20: the three escorts read as one wedge. Redo with its own outline, then build 1412."},
+    "hegemony|Destroyer": {"ship": "Cordon", "concept": null, "ruling": "R369", "job": 1146, "note": "Sent back with Picket. Build 1412 waits."},
+    "hegemony|Cruiser": {"ship": "Vanguard", "concept": null, "ruling": "R369", "job": 1146, "note": "Sent back with Picket. Build 1412 waits."},
+    "hegemony|Battleship": {"ship": "Dominion", "concept": "docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg", "ruling": "R256"},
+    "hegemony|Super-dreadnought": {"ship": "Iron Mandate (flagship)", "concept": "contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg", "ruling": "R256"},
+
+    "corsair|Frigate": {"ship": "Raider, the Sniffer", "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A18_beauty.jpg"},
+    "corsair|Destroyer": {"ship": "Gutship, the Mauler", "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A19_beauty.jpg"},
+    "corsair|Cruiser": {"ship": "Wrecker, the Pack Hunter", "concept": "contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg", "ruling": "R201"},
+    "corsair|Carrier": {"ship": "Hulk-carrier, the Den", "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg"},
+    "corsair|Battle-barge": {"ship": "Warlord's Pyre-Barge (flagship)", "concept": "contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg", "ruling": "R201"},
+
+    "chorus|Frigate": {"ship": "Drone-spawn", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg", "job": 1291, "pending": "Round G skin run (PR 1342).", "note": "Skin is the round G Chorus look (issue 1291), not the concept's colours."},
+    "chorus|Destroyer": {"ship": "Spitter", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg", "accepted": "Ryan, Nov 20 (round G, PR 1308)", "pending": "Tail band fix, run H (PR 1411)."},
+    "chorus|Cruiser": {"ship": "Bladeback", "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg", "ruling": "R204", "job": 1291, "pending": "Round G armour: the installed files still carry the old armour (PR 1347)."},
+    "chorus|Carrier": {"ship": "Brood-sac", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg", "job": 1155, "note": "Built on PR 1172 (draft); waits for its round G re-dress."},
+    "chorus|Bio-titan": {"ship": "The Ninefold Maw (flagship)", "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg", "ruling": "R204", "job": 1291, "note": "Round G run is PR 1351."},
+
+    "ithar|Frigate": {"ship": "Sliver", "concept": "contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp", "ruling": "R369", "job": 1415, "note": "Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337)."},
+    "ithar|Destroyer": {"ship": "Lancet", "concept": "contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp", "ruling": "R369", "job": 1415, "note": "Ryan's Nov 16 pick Step 1."},
+    "ithar|Cruiser": {"ship": "Prism", "concept": "contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp", "ruling": "R369", "job": 1415, "note": "Ryan's Nov 16 pick Step 3, twin pane hulls."},
+    "ithar|Carrier": {"ship": "Aperture", "concept": "contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp", "ruling": "R369", "job": 1415, "note": "Ryan's Nov 16 pick V1."},
+    "ithar|Ark": {"ship": "The Unfinished (flagship, CD5)", "concept": "docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg", "ruling": "R298"},
+
+    "deathless|Frigate": {"ship": "Mote", "concept": "contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote.jpg"},
+    "deathless|Destroyer": {"ship": "Flare", "concept": "contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg"},
+    "deathless|Cruiser": {"ship": "Zenith", "concept": "contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg", "ruling": "R206"},
+    "deathless|Tomb-ark": {"ship": "The Unsetting (flagship)", "concept": "contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg", "ruling": "R206"},
+
+    "craft|fighter": {"ship": "Fighter wing (shared old craft)", "concept": null, "job": 1373, "note": "Each faction's own craft replaces it; see 'other' below."},
+    "craft|bomber": {"ship": "Bomber wing (shared old craft)", "concept": null, "job": 1373, "note": "Each faction's own craft replaces it; see 'other' below."},
+    "craft|spore": {"ship": "Chorus spore wing", "concept": null, "job": 1373, "note": "Rebuilt on the round G shell in job 1373."},
+
+    "obj|station": {"ship": "Defence station (small teaching station)", "concept": null, "keep": "Stays as it is by design."},
+    "obj|transport": {"ship": "Convoy transport", "concept": "contrib/muse/design/class_family_hegemony_2026_11/convoy_beauty.webp", "ruling": "R369", "job": 1413},
+    "obj|beacon": {"ship": "Relay beacon", "concept": "contrib/muse/design/class_family_hegemony_2026_11/relay_beauty.webp", "ruling": "R369", "job": 1413}
+  },
+  "other": [
+    {"key": "ithar|fighter", "ship": "Glasswright fighter (Starling Shard)", "concept": "contrib/muse/design/glasswright_family_2026_11/img/fighter_starling_v2d.webp", "ruling": "R370", "job": 1373, "note": "Ryan's Nov 16 pick V2d, confirmed Nov 20 over GF1."},
+    {"key": "ithar|bomber", "ship": "Glasswright bomber (Heliograph Prism)", "concept": "contrib/muse/design/glasswright_family_2026_11/img/bomber_heliograph_w4b.webp", "ruling": "R370", "job": 1373, "note": "Ryan's Nov 16 pick W4b, confirmed Nov 20 over GB1."},
+    {"key": "deathless|variants", "ship": "Eclipse variants: Mote sentinel, Archive guard flare, Turreted zenith", "concept": null, "job": 1419, "note": "Parts built (issue 812) but not installed; each still draws its base ship."},
+    {"key": "deathless|Battleship", "ship": "Eclipse battleship (Totality)", "concept": null, "ruling": "R373", "job": 1423, "note": "Ryan, Nov 20: yes, after the current ship replacements land. Not in the game data yet, no picture."}
+  ]
+}
