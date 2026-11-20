@@ -1,0 +1,14 @@
+chain BK waiting for 1373 corsair_KF1_R3 exit in chain_1119bj.txt Fri 11/20/2026 13:56:17.94 
+mirror fetch exit 0
+69955313248b27c4ff009be36b83b45acac1ef57 reachable in the mirror
+c662a33382eda151e8d6cb342bcd38a8260249bf reachable in the mirror
+86e44eb2089a130e0c014c2d0cea7d196e1e215b reachable in the mirror
+1b8edf10f55183947e0cf5f2fa3685201662521d reachable in the mirror
+1291 C13_H start 15:01:23.14 
+1291 C13_H exit 0 at 15:17:05.91 
+1291 C12_C start 15:17:05.91 
+1291 C12_C exit 0 at 15:33:54.10 
+1291 C11_C start 15:33:54.10 
+1291 C11_C exit 0 at 15:47:57.88 
+1291 C10_C start 15:47:57.88 
+1291 C10_C exit 0 at 16:04:29.38 

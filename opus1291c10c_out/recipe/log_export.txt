@@ -1,0 +1,23 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+16:00:34 | INFO: Starting glTF 2.0 export
+16:00:34 | INFO: Extracting primitive: B16_23
+16:00:35 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:00:38 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+16:00:41 | INFO: Primitives created: 16
+16:00:41 | INFO: Extracting primitive: turret_0_turn
+16:00:41 | INFO: Primitives created: 3
+16:00:41 | INFO: Extracting primitive: turret_1_turn
+16:00:41 | INFO: Primitives created: 3
+16:00:41 | INFO: Extracting primitive: turret_2_turn
+16:00:41 | INFO: Primitives created: 3
+16:00:41 | INFO: Extracting primitive: turret_3_turn
+16:00:41 | INFO: Primitives created: 2
+16:00:41 | INFO: Finished glTF 2.0 export in 7.323255777359009 s
+
+[export7] B16_23 triangles 427873 hard points {"gun": 8, "engine": 3, "bay": 6, "breach": 9, "core": 1, "rcs": 4, "board": 2} turrets 4 (13623 triangles) files ['B16_23.glb', 'B16_23_base.jpg', 'B16_23_normal.png', 'B16_23_orm.png', 'B16_23_parts_base.jpg', 'B16_23_parts_normal.png', 'B16_23_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C10\export\B16_23
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C10\C10.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-1f1b72650414400e8d47512139334961

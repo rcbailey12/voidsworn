@@ -1,0 +1,128 @@
+{
+ "cell": "C10",
+ "route": "build sheet chorus_C10 + the chorus paint stack (kits/chorus/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 106.9,
+ "geometry_seconds": 11.6,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 26,
+  "part_objects": 94,
+  "glow_objects": 32,
+  "interior_objects": 35,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 10.5,
+  "bake_H_albedo_s": 8.9,
+  "bake_H_orm_s": 7.5,
+  "bake_H_normal_s": 12.9,
+  "zones_H": [
+   "carapace",
+   "chitin",
+   "flesh",
+   "flesh2",
+   "pore",
+   "tissue"
+  ],
+  "bake_P_masks_s": 9.5,
+  "bake_P_albedo_s": 8.8,
+  "bake_P_orm_s": 7.2,
+  "bake_P_normal_s": 14.6,
+  "zones_P": [
+   "chitin",
+   "flesh",
+   "flesh2",
+   "maw",
+   "pore",
+   "tissue"
+  ],
+  "glow_materials": [
+   "chorus_light_bile",
+   "chorus_light_bilewet",
+   "chorus_light_membrane",
+   "chorus_light_veilroot"
+  ],
+  "inside_materials": [
+   "chorus_inside_bonefr",
+   "chorus_inside_brood",
+   "chorus_inside_engroom",
+   "chorus_inside_ganglion",
+   "chorus_inside_gland",
+   "chorus_inside_gut",
+   "chorus_inside_organ",
+   "chorus_inside_septum",
+   "chorus_inside_vat"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.4098,
+    "area": 1.06929,
+    "texels_per_unit2": 6429542.9
+   },
+   "parts": {
+    "uv_share": 0.3968,
+    "area": 0.56871,
+    "texels_per_unit2": 11705446.9
+   }
+  },
+  "stack_seconds": 92.5
+ },
+ "density": {
+  "paint_flags": [],
+  "mesh_flags": [
+   "spinal: edges_per_unit2 24719.0 is 0.55 of the hull's 45116.7"
+  ],
+  "hull": {
+   "area": 1.06929,
+   "triangles": 176725,
+   "tris_per_unit2": 165272.6,
+   "edges_per_unit2": 45116.7,
+   "texels_per_unit2": 6429542.9,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 50.0,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "chorus_C10",
+  "game_ship": "b_boss",
+  "variant": "",
+  "model_length": 28.47235,
+  "scale": 0.03512178874547666,
+  "length_world": 28.0,
+  "t_lines": [
+   -0.22478,
+   -0.05619,
+   0.25288
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 8,
+  "guns": 6,
+  "engines": 3,
+  "bays": 6,
+  "points": 16,
+  "turrets": [
+   "G1_turret",
+   "G2_turret",
+   "G3_turret",
+   "T1_turret"
+  ],
+  "interior_objects": 35,
+  "slots": [
+   "0 bioplasma F",
+   "1 bioplasma F",
+   "2 tendril T",
+   "3 spores T"
+  ]
+ },
+ "triangles": 427596,
+ "objects": 152,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}
