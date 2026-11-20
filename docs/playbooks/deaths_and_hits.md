@@ -113,7 +113,15 @@ Prototype, not installed (issue 1077, off by default until Ryan picks it): `rend
 (fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
 each line bulges and ripples, hairline cracks light, and the hull groans between the chain blasts (sparks, a breath of
 gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
-and a warm light sits in each gap. Chorus ruptures and burnt-out hulks are unchanged. Check: fx/test/death_story_check.gd.
+and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_interior`), since the grouped wreck keeps them
+in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths (Nov 20
+2026); it stays off by default until its clip is approved. Check: fx/test/death_story_check.gd (quality low and high).
+
+Many deaths at once (issue 1237, Neon's destruction audit F7): thrown plates fly two seconds as before, then slow and come
+to rest by five and a half, where they stay until the plate ring reuses them; wreck sections keep drifting and turning,
+but on the effect clock after four seconds instead of in Jolt. Death pictures are reused from a pool, the power-down
+budget is one per frame for every dying ship, and only the two strongest event lights light the fog. Done when three
+capitals at once keep p99 inside the 12.5 ms gate on the PC; check: fx/test/multi_death_check.gd (headless counts).
 
 ### Frigate, escort, destroyer
 
@@ -160,6 +168,10 @@ body and the wreck.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.
   A pale bloom, never a hard white. The pieces twitch for about a second. The glow in the sacs fades last.
+  Timing today (issue 1238): a Chorus hull holds for its class's tell before it ruptures (frigate and destroyer 0.35 s,
+  cruiser 1.38 s, capital and Bio-Titan 2.0 s, the same as the shared rows), bleeding spores faster as it nears the burst,
+  with no metal beats (no vent, chain blasts, fireball or secondaries). The kill slow-motion beat lands 0.1 s after the
+  burst. Check: godot/audio/test/faction_death_check.gd.
 
 Faction deaths need the new hulls' authored break lines, so they are built on the two fleets of the finished battle first.
 Until a faction's hulls are rebuilt it uses the shared cruiser, capital and frigate deaths above.

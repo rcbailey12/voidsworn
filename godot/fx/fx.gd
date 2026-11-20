@@ -158,8 +158,13 @@ var hull_arrays := {}
 var _damage_templates := {}
 var _power_templates := {}
 var _dark_interiors := {}
+var _wreck_interiors := {}
+const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
 var _piece_builds: Array = []
+var _shield_jobs := {}
+const LOAD_PIECE_BUDGET := 16000  # microseconds per frame while the cover is up
+const LOAD_CUT_LIMIT := 8
 
 
 static func register_globals() -> void:
@@ -188,6 +193,9 @@ func release() -> void:
 	_end_dim()
 	for tid in _death_cut_tasks.keys():
 		join_death_cut(tid)
+	for job in _shield_jobs.values():
+		WorkerThreadPool.wait_for_task_completion(job["task"])
+	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
@@ -201,7 +209,11 @@ func release() -> void:
 	hull_arrays.clear()
 	_damage_templates.clear()
 	_power_templates.clear()
+	shield_poses.clear()
+	hull_shared.clear()
+	shield_keys.clear()
 	_dark_interiors.clear()
+	_wreck_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
 	_core_at.clear()
@@ -352,7 +364,11 @@ func _process(delta: float) -> void:
 		step(delta)
 
 
+var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
+
+
 func step(delta: float) -> void:
+	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
 	var spd = 1.0
 	if now < _pause_until:
@@ -428,6 +444,27 @@ func later(t: float, f: Callable) -> void:
 func free_effect(ref: WeakRef) -> void:
 	var node = ref.get_ref()
 	if is_instance_valid(node): node.queue_free()
+
+
+# Issue 1237: one-shot pictures (death flipbooks, staged flashes and smoke, hull hit pictures) come from a reused pool
+# instead of a new node, quad and material each (fx_pool.gd Pictures). `make` builds the material only when the pool has
+# none free for `key`. Return it with free_picture, bound with the picture's pic_gen, never with free_effect.
+func picture(key: String, make: Callable, node_name: String) -> MeshInstance3D:
+	return pictures().take(self, key, make, node_name)
+
+
+func pictures() -> POOLS.Pictures:
+	if not dstate.has("pics"): dstate["pics"] = POOLS.Pictures.new()
+	return dstate["pics"]
+
+
+func free_picture(ref: WeakRef, gen: int) -> void:
+	var node = ref.get_ref()
+	if not is_instance_valid(node): return
+	if dstate.has("pics") and node.has_meta("pic_key"):
+		(dstate["pics"] as POOLS.Pictures).give(node, gen)
+	else:
+		node.queue_free()
 
 
 func _run_later() -> void:
@@ -934,6 +971,9 @@ func _update_lights() -> void:
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
 			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
+			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
+			# each one a pass over the fog froxels); the rest light hulls only.
+			l.light_volumetric_fog_energy = 1.0 if k < 2 else 0.0
 			l.visible = true
 		else:
 			l.visible = false
@@ -1165,14 +1205,58 @@ func dark_interior(source: Material) -> Material:
 	return _dark_interiors[source]
 
 
+# Issue 1077 (prototype): a strained wreck's insides, powered down and sooted (the dark copy, its colour a third as bright
+# and fully rough), so torn decks read as burnt metal in the gap, not as flat grey panels. One copy per source material.
+func wreck_interior(source: Material) -> Material:
+	if source == null: return source
+	if not _wreck_interiors.has(source):
+		var dark: Material = (dark_interior(source) as Material).duplicate()
+		if dark is BaseMaterial3D:
+			var b := dark as BaseMaterial3D
+			b.albedo_color = Color(b.albedo_color.r * WRECK_SOOT, b.albedo_color.g * WRECK_SOOT, b.albedo_color.b * WRECK_SOOT, b.albedo_color.a)
+			b.roughness = 1.0
+			b.metallic_specular = 0.2
+		_wreck_interiors[source] = dark
+	return _wreck_interiors[source]
+
+
 func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
 	_piece_builds.append([ship, job])
+
+
+func queue_shield_skin(ship: SHIP, key: String, box: AABB, faces: PackedVector3Array, bob: Vector3) -> void:
+	# Only the triangle field runs on the worker. Normal generation, uploads
+	# and the posed hit collider stay on the main thread under the cover.
+	if not _shield_jobs.has(key):
+		var result := []
+		var task := WorkerThreadPool.add_task(func() -> void:
+			result.append(SHIP.bake_shield_geometry(box, faces)))
+		_shield_jobs[key] = {"task": task, "result": result, "ships": []}
+	_shield_jobs[key]["ships"].append([ship, bob])
+
+
+func _finish_shield_skins() -> void:
+	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
+	for key in _shield_jobs.keys():
+		var job: Dictionary = _shield_jobs[key]
+		var task: int = job["task"]
+		if not WorkerThreadPool.is_task_completed(task):
+			continue
+		WorkerThreadPool.wait_for_task_completion(task)
+		_shield_jobs.erase(key)
+		var arrays := SHIP.finish_shield_geometry(job["result"][0])
+		if not arrays.is_empty():
+			SHIP.save_shield_skin(key, arrays)
+			for entry in job["ships"]:
+				entry[0].install_shield_skin(arrays, entry[1], self, key)
+		if Time.get_ticks_usec() >= deadline:
+			return
 
 
 func _build_death_pieces() -> void:
 	if _piece_builds.is_empty():
 		return
-	var deadline := Time.get_ticks_usec() + DEATH.PREBUILD_BUDGET
+	var deadline := Time.get_ticks_usec() + (LOAD_PIECE_BUDGET if defer_initial_cuts else DEATH.PREBUILD_BUDGET)
 	while not _piece_builds.is_empty():
 		var entry: Array = _piece_builds[0]
 		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
@@ -1186,8 +1270,10 @@ func prepare_battle_hulls() -> void:
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
+	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
+		FRAGMENTS.warm_source(ship)
 		if ship.weight <= 0:
 			continue
 		for mesh in ship.meshes:
@@ -1205,26 +1291,36 @@ func prepare_battle_hulls() -> void:
 				if not inside or original.resource_name.ends_with("_inside_skin"):
 					ship.damage_surface(self, mi, si, source)
 		pending.append(ship)
-		await get_tree().process_frame
+		if Time.get_ticks_usec() >= deadline:
+			await get_tree().process_frame
+			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
 	# together while the loading cover is up.
+	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
 	while not pending.is_empty() or not active.is_empty():
-		while active.size() < 3 and not pending.is_empty():
+		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
 			DEATH.precompute(self, ship, "blast", true)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
 				active.remove_at(i)
+		_finish_shield_skins()
 		await get_tree().process_frame
-	while not _piece_builds.is_empty():
+	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
+		_finish_shield_skins()
 		await get_tree().process_frame
 	defer_initial_cuts = false
 
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
 var _death_cut_tasks := {}
+# Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
+var shield_poses := {}
+# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
+var hull_shared := {}
+var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
 func submit_death_cut(work: Callable) -> int:
@@ -1264,16 +1360,60 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
+	var t_col := Time.get_ticks_usec()
 	DEATH.add_collider(self, s)
+	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
-	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
-	var n = ships.size()
-	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
+	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
+	# counts the cuts still waiting to start, not every ship in the battle (a reinforcement in a 20 ship battle waited
+	# 5.4 s before its cut began, and the cut itself takes seconds), so a late arrival is ready for its death sooner.
+	var n := _arrival_cuts
+	_arrival_cuts += 1
+	later(now + 0.1 + 0.25 * n, func l_cut_first() -> void:
+		_arrival_cuts = maxi(_arrival_cuts - 1, 0)
 		if ships.get(id) == s and not s.dead and not s.gone:
 			var t_c := Time.get_ticks_usec()
 			DEATH.precompute(self, s)
 			pend("cut_first", t_c))
+	if warmed and DisplayServer.get_name() != "headless":
+		warm_arrival.call_deferred(s)
+
+
+# Issue 1232: a ship that arrives after the battle's warm-up (a reinforcement) draws its hull once with the death
+# overlays and its cuttable surface, so its first death never builds them in the kill frame. A hull already warmed this
+# battle costs nothing. Drawn a thousandth of its size in front of the camera for two frames: never seen.
+var warmed := false
+var _warm_seen := {}
+var _arrival_cuts := 0
+
+
+func warm_arrival(s: SHIP) -> void:
+	if s == null or s.gone or s.dead:
+		return
+	var fresh := false
+	for m in s.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
+		var mi := m as MeshInstance3D
+		if mi != null and mi.mesh != null and not _warm_seen.has(mi.mesh.get_instance_id()):
+			fresh = true
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if not fresh or cam == null:
+		return
+	var tmp := Node3D.new()
+	tmp.name = "fx_warm_arrival"
+	add_child(tmp)
+	tmp.global_transform = Transform3D(cam.global_basis, cam.global_transform * Vector3(0, 0, -30.0 * unit))
+	tmp.scale = Vector3.ONE * 0.001
+	var paused := HULL.late_watch
+	HULL.pause_late_watch()
+	var t0 := Time.get_ticks_usec()
+	_warm_hull_meshes(tmp, s, _warm_seen.duplicate(), 0)
+	pend("warm_arrival", t0)
+	for i in 2:
+		await RenderingServer.frame_post_draw
+	tmp.queue_free()
+	if paused: HULL.start_late_watch()
 
 
 # Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
@@ -1390,7 +1530,8 @@ func death(id: String, cause := "blast") -> float:
 	var r: float = DEATH.death(self, s, cause)
 	pend("death", t0)
 	_core_at.erase(id)
-	# A burnt-out hulk or Chorus rupture has no staged core.
+	# A burnt-out hulk or a small hull has no staged core; a big Chorus rupture has one (issue 1238: its kill beat comes
+	# just after the skin bursts, with no fireball).
 	if s.death_big and s.has_meta("death_timeline"):
 		var tl = s.get_meta("death_timeline")
 		_core_at[id] = float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)
@@ -1402,6 +1543,15 @@ func death(id: String, cause := "blast") -> float:
 func clear_wreck(id: String) -> void:
 	DEATH.clear_wreck(self, id)
 	_core_at.erase(id)
+
+
+# issue 1236: the rules made this ship's hex a wreck that blocks; its death pieces stay inside that hex
+func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
+	DEATH.anchor_wreck(self, id, centre, radius)
+
+
+func wreck_pieces(id: String) -> int:
+	return DEATH.wreck_pieces(self, id)
 
 
 func jump_out(id: String) -> void:
@@ -1526,6 +1676,24 @@ func _warm_hull_adapters() -> void:
 	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
 
 
+func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
+	var pool: FRAGMENTS.Pool = pools["plate"]
+	var finish := {}
+	for ship: SHIP in ships.values():
+		for row in ship.hull.bvh_ranges:
+			var paint: BaseMaterial3D = row["paint"]
+			if paint != null and paint.albedo_texture != null:
+				var maps := FRAGMENTS.finish_maps(paint)
+				finish = {"maps": maps, "uv": Vector2(0.5, 0.5), "finish": Vector4(1, 0, 0, float(maps[1] != null)),
+					"normal_scale": paint.normal_scale if paint.normal_enabled else 0.0}
+				break
+		if not finish.is_empty():
+			break
+	pool.bind_finish(finish, t, t + 0.5)
+	hit_fragment(at, t, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, color, FRAGMENTS.PLATE, false, finish)
+	pool.flush(t)
+
+
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
@@ -1546,7 +1714,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
-	hit_fragment(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, c, FRAGMENTS.PLATE, false)
+	_warm_fragment_finish(at, T, c)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()
@@ -1565,7 +1733,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	sail_src.albedo_color = Color(1, 1, 1, 0.55)
 	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
 	if not compat:
-		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
+		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
 		for kind in ["flash", "vent", "cool"]:
 			var baked := DEATH.flipbook_material(self, kind, band)
@@ -1622,14 +1790,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	harr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
 	harr[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
 	# A cap has position/normal/colour only, unlike the textured hull. Warm its
-	# opaque pass and CHUNK overlay in that exact format before the first death.
+	# opaque pass in that exact format before the first death.
 	var cap_arr: Array = harr.duplicate()
 	var cap_mesh := ArrayMesh.new()
 	cap_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, cap_arr)
 	var cap_mi := MeshInstance3D.new()
 	cap_mi.mesh = cap_mesh
 	cap_mi.material_override = mat(DEATH.SLAG, 0)
-	cap_mi.material_overlay = mat(SH.CHUNK, 1)
 	tmp.add_child(cap_mi)
 	var c4 = PackedFloat32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 	for ci in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
@@ -1644,56 +1811,14 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		hmi.rotation.y = 0.0 if sd == Vector3.BACK else PI
 		hmi.scale = Vector3.ONE * unit * 2.0
 		tmp.add_child(hmi)
-	# overlays (death pieces and cracks) over a plain lit material, and a debris body
-	var base = StandardMaterial3D.new()
-	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]:
-		var mi = MeshInstance3D.new()
-		mi.mesh = box
-		mi.material_override = base
-		mi.material_overlay = ov
-		tmp.add_child(mi)
-	# every hull as it is drawn, with the death overlays on top: the overlay pipelines are per vertex format, so warming
-	# them on a box (above) does not cover the hulls, and the first break-up would compile them
+	# every hull as it is drawn, with the death tear overlay on top: the overlay pipelines are per vertex format, so warming
+	# it on a box (above) does not cover the hulls, and the first death would compile them. Issue 1232 (Neon's death audit
+	# F8.1): this drew three overlays no game path uses (CHUNK, CRACKS, HULLIN, now deleted with VOL) and not the tear the
+	# tell puts on every dying hull.
 	var seen := {}
 	var hk := 0
 	for sid in ships:
-		var sh: SHIP = ships[sid]
-		for m in sh.meshes:
-			var smi := m as MeshInstance3D
-			if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
-				continue
-			seen[smi.mesh.get_instance_id()] = true
-			var overlays := [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]
-			if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
-			for ov in overlays:
-				var wm := MeshInstance3D.new()
-				wm.mesh = smi.mesh
-				for si in smi.mesh.get_surface_count():
-					var am: Material = smi.get_active_material(si)
-					if am != null:
-						wm.set_surface_override_material(si, am)
-				wm.material_overlay = ov
-				var ext: float = maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
-				wm.scale = Vector3.ONE * (0.6 * unit / ext)
-				wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
-				tmp.add_child(wm)
-				hk += 1
-			# Warm the actual cuttable PBR surface in this hull's vertex format too.
-			var dm := MeshInstance3D.new()
-			var pm := MeshInstance3D.new()
-			dm.mesh = smi.mesh
-			pm.mesh = smi.mesh
-			for si in smi.mesh.get_surface_count():
-				var source := smi.get_active_material(si)
-				dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
-				pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
-			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
-			dm.scale = Vector3.ONE * (0.6 * unit / dext)
-			dm.position = Vector3(0, -2, 1) * unit
-			pm.scale = dm.scale
-			pm.position = dm.position + Vector3.RIGHT * unit
-			tmp.add_child(dm)
-			tmp.add_child(pm)
+		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -1725,5 +1850,50 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw
+	warmed = true
 	tmp.queue_free()
 	HULL.start_late_watch()
+
+
+# Every hull as it is drawn, with the death overlays on top, and its cuttable PBR surface (from warmup, shared with the
+# arrival warm-up, issue 1232). Returns the next free slot in the warm grid.
+func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
+	for m in sh.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
+		var smi := m as MeshInstance3D
+		if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
+			continue
+		seen[smi.mesh.get_instance_id()] = true
+		_warm_seen[smi.mesh.get_instance_id()] = true
+		var overlays := [dstate["tear_mat"] if dstate.has("tear_mat") else mat(SH.TEAR, 1)]
+		if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+		for ov in overlays:
+			var wm := MeshInstance3D.new()
+			wm.mesh = smi.mesh
+			for si in smi.mesh.get_surface_count():
+				var am: Material = smi.get_active_material(si)
+				if am != null:
+					wm.set_surface_override_material(si, am)
+			wm.material_overlay = ov
+			var ext: float = maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+			wm.scale = Vector3.ONE * (0.6 * unit / ext)
+			wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
+			tmp.add_child(wm)
+			hk += 1
+		# Warm the actual cuttable PBR surface in this hull's vertex format too.
+		var dm := MeshInstance3D.new()
+		var pm := MeshInstance3D.new()
+		dm.mesh = smi.mesh
+		pm.mesh = smi.mesh
+		for si in smi.mesh.get_surface_count():
+			var source := smi.get_active_material(si)
+			dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
+			pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
+		var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+		dm.scale = Vector3.ONE * (0.6 * unit / dext)
+		dm.position = Vector3(0, -2, 1) * unit
+		pm.scale = dm.scale
+		pm.position = dm.position + Vector3.RIGHT * unit
+		tmp.add_child(dm)
+		tmp.add_child(pm)
+	return hk

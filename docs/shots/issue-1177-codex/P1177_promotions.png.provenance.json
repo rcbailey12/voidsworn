@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAAAeZJREFUeJzt1sEJwCAAwMDan+D+6+oUIoS7CfLMmGvuDwCArP91AAAAdxk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxB20YwHhAdNgmAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-19T23:59:08Z",
+	"image_sha256": "8404a3e92779b6c217bbfc89199179b43a8ee6ce099333072f23cb5e38fc04a3",
+	"inputs": [],
+	"picture_name": "P1177_promotions.png",
+	"schema": 1,
+	"source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+	"source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+			"source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		636,
+		720
+	],
+	"stamp_template_sha256": "a8dadf1422421b2ca0b8485e7db2b2351316e831b22ba1a8ddaa388d4f6521c8",
+	"strip_sha256": [
+		"a8dadf1422421b2ca0b8485e7db2b2351316e831b22ba1a8ddaa388d4f6521c8"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

@@ -14,6 +14,17 @@ const HULL := preload("res://fx/fx_hull.gd")
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 const DEBRIS_CAP := 360
+# Issue 1237 (Neon F7.1): a debris plate flies as before for DEBRIS_FREE_S, then takes DEBRIS_SETTLE_DAMP and slows to a
+# stop, and Jolt puts it to sleep; anything still moving at DEBRIS_REST_S is stopped and put to sleep there. A sleeping
+# plate stays where it came to rest and costs Jolt nothing until a hull knocks it. Plates no longer test each other
+# (hull and wreck contacts only), and a wreck section leaves Jolt WRECK_PHYS_S after its release: it keeps its drift and turn
+# on the effect clock, the way the kinematic tiers already drift. Seconds are effect-clock seconds.
+const DEBRIS_FREE_S := 2.0
+const DEBRIS_SETTLE_DAMP := 1.4
+const DEBRIS_SETTLE_ADAMP := 1.2
+const DEBRIS_REST_S := 5.5
+const WRECK_PHYS_S := 4.0
+const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
 
@@ -38,7 +49,7 @@ class DeathTimeline:
 	var sec_from := 0.0       # the secondaries' window, after the break
 	var sec_to := 0.0
 	var cool := 14.0          # how long the torn faces take to go dark
-	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast") -> void:
+	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast", organic := false) -> void:
 		tier = tier_name
 		cuts = cut_count if big else 1
 		if not big:
@@ -79,6 +90,15 @@ class DeathTimeline:
 			beats.append({"name": "core_flash", "at": cut + core_delay})
 			beats.append({"name": "secondaries", "at": cut + sec_from})
 		beats.append({"name": "drift_and_cool", "at": cut + (sec_from if big else 0.3)})
+		if big and organic:
+			# Issue 1238 (F5.1): a big Chorus hull keeps its class's length of death (cruiser 1.38 s, capital 2.0 s to the
+			# rupture) but none of the metal beats: no vent, no chain blasts along a tear, no core fireball, no secondaries.
+			# The slow-motion beat lands just after the skin bursts.
+			chain = []
+			secondaries = 0
+			core_delay = 0.1
+			beats = [{"name": "power_loss", "at": 0.0}, {"name": "rupture", "at": cut}, {"name": "core_flash", "at": cut + core_delay},
+				{"name": "drift_and_cool", "at": cut + 0.6}]
 
 const ATLAS_DIR := "res://fx/atlases/death/"
 # One pixel at the staging camera (r 170, vertical FOV 45, 1080 lines). The floor holds distant events readable;
@@ -207,6 +227,7 @@ static func setup_physics(fx) -> void:
 	st["debris"] = []
 	st["debris_next"] = 0
 	st["wrecks"] = []
+	st["anchors"] = {}
 	st["physics_on"] = fx.quality != "low"
 
 
@@ -261,21 +282,20 @@ static func route_material(fx, code: String, rel: String, production := false, s
 	return m
 
 
-static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false, staged := false, frame = null) -> Node3D:
-	var mi := MeshInstance3D.new()
-	mi.name = "fx_baked_" + kind
+# `pool_tag` keeps a caller that changes the material's shader (the weapon bursts) in a pool of its own (issue 1237).
+static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false, staged := false, frame = null, pool_tag := "") -> Node3D:
+	var b: String = "small" if band == "destroyer" else band
+	var key: String = ("fbs|" + b) if staged else ("fb|" + b + "|" + kind + "|" + pool_tag)
+	# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
+	# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
+	# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
+	var make := (func() -> ShaderMaterial: return route_material(fx, SH.DEATH_FLIPBOOK, "death/" + b + "/flash_", true, 0)) if staged \
+		else (func() -> ShaderMaterial: return flipbook_material(fx, kind, b))
+	var mi: MeshInstance3D = fx.picture(key, make, "fx_baked_" + kind)
 	mi.set_meta("fx_picture_kind", kind)
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE
-	mi.mesh = quad
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
-	var m := flipbook_material(fx, kind, "small" if band == "destroyer" else band)
+	var m := mi.material_override as ShaderMaterial
 	if staged:
-		# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
-		# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
-		# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
-		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + ("small" if band == "destroyer" else band) + "/flash_", true, 0)
 		m.set_shader_parameter("pic_spin", fx.rng.randf() * TAU)
 		m.set_shader_parameter("size_divisor", 0.80)
 		mi.extra_cull_margin = 100.0
@@ -296,15 +316,13 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	m.set_shader_parameter("tear_normal", up)
 	m.set_shader_parameter("velocity", velocity)
 	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
-	mi.material_override = m
-	fx.add_child(mi)
 	if root_on_surface and kind == "vent":
 		mi.global_position = p + n * size * VENT_ROOT_FRAC
 		mi.set_meta("gas_root", p)
 	else:
 		mi.global_position = p + (n * size * 0.42 if kind == "vent" else Vector3.ZERO)
 		mi.set_meta("gas_root", mi.global_position)
-	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	fx.later(fx.now + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	# Every picture the death spawns is entered in the stray puff guard. The root is the point the gas leaves, not the
 	# picture centre, so a floating picture cannot pass just because its frame happens to be near the hull.
 	if frame is Transform3D: mi.set_meta("spawn_frame", frame)
@@ -423,17 +441,19 @@ static func _fold(v: Vector3, crease: float, bend: float) -> Vector3:
 
 # `damp` (issue 1077's prototype): the plates slow and settle instead of drifting off for good; 0, the default, is today's
 # constant drift. A pooled plate takes the damping of the death that last threw it.
-static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0) -> void:
+static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
 	var t0 := Time.get_ticks_usec()
-	_spawn_debris_inner(fx, pos, vel, count, size, damp)
+	_spawn_debris_inner(fx, pos, vel, count, size, damp, leash)
 	fx.pend("debris", t0)
 
 
-static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0) -> void:
+static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
 	var st: Dictionary = fx.dstate
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
 	var pool: Array = st["debris"]
+	var awake: Dictionary = st.get("debris_awake", {})
+	st["debris_awake"] = awake
 	var sc = 0 if size < 0.3 * fx.unit else (1 if size < 0.6 * fx.unit else 2)
 	for i in count:
 		var b: RigidBody3D
@@ -447,11 +467,13 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 			b.angular_damp = 0.0
 			b.linear_damp = 0.0
+			b.can_sleep = true
 			b.collision_layer = DEBRIS_LAYER
-			b.collision_mask = HULL_LAYER | DEBRIS_LAYER
+			b.collision_mask = HULL_LAYER   # issue 1237: plates never test each other (hulls and wreck sections still knock them)
 			b.physics_material_override = st["bounce"]
 			var vi: int = fx.rng.randi() % DEBRIS_VARIANTS
 			var cs = CollisionShape3D.new()
+			cs.name = "shape"
 			cs.shape = st["debris_shapes"][sc][vi]
 			b.add_child(cs)
 			var mi = MeshInstance3D.new()
@@ -459,11 +481,21 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			mi.mesh = st["debris_meshes"][sc][vi]
 			mi.material_override = st["debris_mat"]
 			b.add_child(mi)
+			b.set_meta("debris_sc", sc)
 			fx.phys_root.add_child(b)
 			pool.append(b)
 		else:
-			b = pool[int(st["debris_next"])]
-			st["debris_next"] = (int(st["debris_next"]) + 1) % DEBRIS_CAP
+			var slot := int(st["debris_next"])
+			b = pool[slot]
+			st["debris_next"] = (slot + 1) % DEBRIS_CAP
+			# Issue 1237 (Neon F7.1): a recycled plate takes this throw's size (it kept the last one's, so a frigate
+			# could throw a capital's plate).
+			if int(b.get_meta("debris_sc", -1)) != sc:
+				var vi: int = slot % DEBRIS_VARIANTS   # no random draw: the effect seed's sequence is unchanged
+				(b.get_node("shape") as CollisionShape3D).shape = st["debris_shapes"][sc][vi]
+				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
+				b.mass = 0.3 + 0.4 * sc
+				b.set_meta("debris_sc", sc)
 		var d: Vector3 = fx.rdir()
 		d.y = 0.0
 		d = d.normalized()
@@ -473,12 +505,58 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6))
 		b.linear_damp = damp
 		b.angular_damp = damp * 0.5
+		# issue 1236: a plate from a wreck that blocks its hex is kept in that hex (_leash); a reused plate forgets its old one
+		b.set_meta("leash_id", leash)
+		b.remove_meta("leash_born")
 		b.sleeping = false
 		b.visible = true
+		awake[b] = fx.now
 		var mesh := b.get_node("mesh") as MeshInstance3D
 		# Headless uses the dummy server even though the configured method still says forward_plus.
 		if DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and mesh.material_override != null:
 			mesh.set_instance_shader_parameter("spawn_t", fx.now)
+
+
+# Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
+# thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
+# hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
+static func _settle_debris(fx) -> void:
+	var awake: Dictionary = fx.dstate.get("debris_awake", {})
+	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
+		fx.dstate["debris_scan"] = fx.now + 0.25
+		for b in fx.dstate.get("debris", []):
+			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
+				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+		fx.dstate["debris_awake"] = awake
+	if awake.is_empty(): return
+	var done: Array = []
+	for b in awake:
+		if not is_instance_valid(b):
+			done.append(b)
+			continue
+		var age: float = fx.now - float(awake[b])
+		if age < DEBRIS_FREE_S: continue
+		var rb := b as RigidBody3D
+		if rb.linear_damp < DEBRIS_SETTLE_DAMP:
+			rb.linear_damp = DEBRIS_SETTLE_DAMP
+			rb.angular_damp = DEBRIS_SETTLE_ADAMP
+		if age >= DEBRIS_REST_S:
+			rb.linear_velocity = Vector3.ZERO
+			rb.angular_velocity = Vector3.ZERO
+			rb.sleeping = true
+			done.append(b)
+		elif rb.sleeping:
+			done.append(b)
+	for b in done: awake.erase(b)
+
+
+# The plates Jolt is still moving (the frame-time check's count; 0 once every plate has come to rest).
+static func debris_awake(fx) -> int:
+	var n := 0
+	for b in fx.dstate.get("debris", []):
+		if is_instance_valid(b) and not (b as RigidBody3D).sleeping: n += 1
+	return n
 
 
 # A convex collider Jolt can always build (G2 bot runs: a 900-point hull failed and logged an error). The point cloud is
@@ -1110,6 +1188,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		# Seams and damage entries live in the analysis pose; ShipView may since have bobbed or banked the mesh.
 		inv = s.hull_motion().affine_inverse() * inv
 	for m in s.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -1223,7 +1302,9 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 	var si := 0
 	for sd in pc["surfs"]:
 		if bool(sd.get("interior", false)):
-			am.surface_set_material(si, sd["mat"])
+			# issue 1077 (prototype): the grouped wreck keeps its torn insides in view up close, and the live inside paint read
+			# as flat grey slabs there (pass 3, c26), so a strained wreck's insides are powered down and sooted
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"]) if fx != null and fx.death_story else sd["mat"])
 			si += 1
 			continue
 		var length := float(pc.get("section_scale", 1.0))
@@ -1431,6 +1512,8 @@ static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array
 	return vp[a] != vp[b] or vp[b] != vp[c]
 
 
+static var cut_serial := false   # issue 1232: the one-thread cut, for fx/test/cold_kill_check.gd to compare against
+
 static func _cut(job: Dictionary) -> Array:
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
@@ -1440,152 +1523,193 @@ static func _cut(job: Dictionary) -> Array:
 	if not plan.is_empty():
 		n_main = int(plan["n_main"])
 		ns = n_main + int(plan["n_frag"])
+	var pieces: Array = _blank_pieces(job, plan, ns, n_main)
+	# Issue 1232: each surface is cut on its own worker, then merged in surface order, so the pieces match a one-thread
+	# cut. A16's headless cut was 2.8 s, about 1 s of it one plating surface cut after all the others; on the PC it was
+	# 5.4 s, longer than a capital's 2.67 s death, so a kill before the cut was ready lost its pieces.
+	var surfs: Array = job["surfs"]
+	if plan.is_empty() or surfs.size() < 2 or cut_serial:
+		for sd in surfs:
+			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
+	else:
+		# leave two cores to the game (render and main threads, other pool work): Board on PR 1240
+		var lanes := clampi(OS.get_processor_count() - 2, 1, surfs.size())
+		var parts: Array = []
+		for i in surfs.size():
+			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
+		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
+			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), lanes, true, "death cut surfaces")
+		WorkerThreadPool.wait_for_group_task_completion(gid)
+		for part in parts:
+			var own: Array = part["pieces"]
+			for c in ns:
+				var src: Dictionary = own[c]
+				if (src["surfs"] as Array).is_empty(): continue
+				var pc: Dictionary = pieces[c]
+				(pc["surfs"] as Array).append_array(src["surfs"])
+				pc["n"] = int(pc["n"]) + int(src["n"])
+				var pts: PackedVector3Array = pc["pts"]
+				pts.append_array(src["pts"])
+				pc["pts"] = pts
+	# each piece seals its own boundary loops (no shared state), so the pieces seal side by side too
+	if pieces.size() < 2 or cut_serial:
+		for pc in pieces:
+			_seal_piece(pc)
+	else:
+		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), clampi(OS.get_processor_count() - 2, 1, pieces.size()), true, "death cut seals")
+		WorkerThreadPool.wait_for_group_task_completion(sid)
+	return pieces
+
+
+static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: int) -> Array:
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
 			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
-	for sd in job["surfs"]:
-		var arr: Array = sd["arrays"]
-		var xf: Transform3D = sd["xf"]
-		var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-		var vl = xf * v
-		# a mirrored hull (negative determinant) turns its triangles inside out: flip the winding back
-		var flip = xf.basis.determinant() < 0.0
-		var idx = PackedInt32Array()
-		if arr[Mesh.ARRAY_INDEX] != null and (arr[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 0:
-			idx = arr[Mesh.ARRAY_INDEX]
-		else:
-			idx.resize(v.size())
-			for i in v.size():
-				idx[i] = i
-		# issue 600: where each triangle goes. A turret's turning mesh rides whole with the piece under its pivot; an
-		# authored hull's triangles that cross a tear are split along it first (_refine), so no deck, bulkhead or plate is
-		# left whole across a break; a machine's triangles go with its own piece (_piece_at).
-		var tri_piece := PackedInt32Array()
-		var nv: int = v.size()
-		if not plan.is_empty():
-			if sd.has("anchor"):
-				tri_piece.resize(idx.size() / 3)
-				tri_piece.fill(_piece_at(plan, sd["anchor"]))
-			elif bool(job.get("authored", false)):
-				var inside := bool(sd.get("interior", false))
-				# the plating and the insides follow the tear; a machine's box holds only on the parts surfaces
-				var sp: Dictionary = plan
-				if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
-					sp = plan.duplicate()
-					sp.erase("mach")
-				var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
-				vl = rf["vl"]
-				arr = rf["arr"]
-				idx = rf["idx"]
-				tri_piece = rf["piece"]
-				nv = vl.size()
-		var buckets: Array = []
-		for c in ns:
-			buckets.append(PackedInt32Array())
-		for t in range(0, idx.size() - 2, 3):
-			var a = idx[t]
-			var b = idx[t + 1]
-			var cc = idx[t + 2]
-			var q = (vl[a] + vl[b] + vl[cc]) / 3.0
-			var best = 0
-			var bd = 1e18
-			var bd2 = 1e18
-			if not tri_piece.is_empty():
-				best = tri_piece[t / 3]
-			elif not plan.is_empty():
-				best = _piece_at(plan, q)
-			else:
-				# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
-				var qw: Vector3 = q
-				if not warp.is_empty(): qw = q + Vector3(1.0, 0.4, 0.6) * _wave_sum(warp, q)
-				for c in ns:
-					var dd = qw.distance_squared_to(seeds[c])
-					if dd < bd:
-						bd2 = bd
-						bd = dd
-						best = c
-					elif dd < bd2:
-						bd2 = dd
-			buckets[best].append(a)
-			buckets[best].append(cc if flip else b)
-			buckets[best].append(b if flip else cc)
-			var pc: Dictionary = pieces[best]
-			if plan.is_empty() and (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
-				var edge: PackedVector3Array = pc["edge"]
-				edge.append(q)
-				pc["edge"] = edge
-		for c in ns:
-			var tri: PackedInt32Array = buckets[c]
-			if tri.is_empty():
-				continue
-			var remap = PackedInt32Array()
-			remap.resize(nv)
-			remap.fill(-1)
-			var order = PackedInt32Array()
-			var nidx = PackedInt32Array()
-			nidx.resize(tri.size())
-			for i in tri.size():
-				var o = tri[i]
-				var m = remap[o]
-				if m < 0:
-					m = order.size()
-					remap[o] = m
-					order.append(o)
-				nidx[i] = m
-			var na = []
-			na.resize(Mesh.ARRAY_MAX)
-			var pv = PackedVector3Array()
-			pv.resize(order.size())
-			for i in order.size():
-				pv[i] = vl[order[i]]
-			na[Mesh.ARRAY_VERTEX] = pv
-			if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == nv:
-				var src: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
-				var dn = PackedVector3Array()
-				dn.resize(order.size())
-				for i in order.size():
-					dn[i] = (xf.basis * src[order[i]]).normalized()
-				na[Mesh.ARRAY_NORMAL] = dn
-			if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == nv * 4:
-				var src4: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
-				var dt = PackedFloat32Array()
-				dt.resize(order.size() * 4)
-				for i in order.size():
-					var o4 = order[i] * 4
-					var tv = (xf.basis * Vector3(src4[o4], src4[o4 + 1], src4[o4 + 2])).normalized()
-					dt[i * 4] = tv.x
-					dt[i * 4 + 1] = tv.y
-					dt[i * 4 + 2] = tv.z
-					dt[i * 4 + 3] = src4[o4 + 3]
-				na[Mesh.ARRAY_TANGENT] = dt
-			for key in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
-				if arr[key] != null and (arr[key] as PackedVector2Array).size() == nv:
-					var s2: PackedVector2Array = arr[key]
-					var d2 = PackedVector2Array()
-					d2.resize(order.size())
-					for i in order.size():
-						d2[i] = s2[order[i]]
-					na[key] = d2
-			if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == nv:
-				var sc: PackedColorArray = arr[Mesh.ARRAY_COLOR]
-				var dc = PackedColorArray()
-				dc.resize(order.size())
-				for i in order.size():
-					dc[i] = sc[order[i]]
-				na[Mesh.ARRAY_COLOR] = dc
-			na[Mesh.ARRAY_INDEX] = nidx
-			var pc: Dictionary = pieces[c]
-			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0)), "tur": int(sd.get("tur", -1)), "skin": bool(sd.get("skin", false))})
-			pc["n"] = int(pc["n"]) + order.size()
-			var step = maxi(1, order.size() / 120)
-			var points: PackedVector3Array = pc["pts"]
-			for i in range(0, order.size(), step):
-				points.append(pv[i])
-			pc["pts"] = points
-	for pc in pieces:
-		_seal_piece(pc)
 	return pieces
+
+
+# One surface of the hull, cut into the given pieces (issue 1232: on its own worker when the cut has a plan).
+static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array) -> void:
+	var arr: Array = sd["arrays"]
+	var xf: Transform3D = sd["xf"]
+	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var vl = xf * v
+	# a mirrored hull (negative determinant) turns its triangles inside out: flip the winding back
+	var flip = xf.basis.determinant() < 0.0
+	var idx = PackedInt32Array()
+	if arr[Mesh.ARRAY_INDEX] != null and (arr[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 0:
+		idx = arr[Mesh.ARRAY_INDEX]
+	else:
+		idx.resize(v.size())
+		for i in v.size():
+			idx[i] = i
+	# issue 600: where each triangle goes. A turret's turning mesh rides whole with the piece under its pivot; an
+	# authored hull's triangles that cross a tear are split along it first (_refine), so no deck, bulkhead or plate is
+	# left whole across a break; a machine's triangles go with its own piece (_piece_at).
+	var tri_piece := PackedInt32Array()
+	var nv: int = v.size()
+	if not plan.is_empty():
+		if sd.has("anchor"):
+			tri_piece.resize(idx.size() / 3)
+			tri_piece.fill(_piece_at(plan, sd["anchor"]))
+		elif bool(job.get("authored", false)):
+			var inside := bool(sd.get("interior", false))
+			# the plating and the insides follow the tear; a machine's box holds only on the parts surfaces
+			var sp: Dictionary = plan
+			if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
+				sp = plan.duplicate()
+				sp.erase("mach")
+			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
+			vl = rf["vl"]
+			arr = rf["arr"]
+			idx = rf["idx"]
+			tri_piece = rf["piece"]
+			nv = vl.size()
+	var buckets: Array = []
+	for c in ns:
+		buckets.append(PackedInt32Array())
+	for t in range(0, idx.size() - 2, 3):
+		var a = idx[t]
+		var b = idx[t + 1]
+		var cc = idx[t + 2]
+		var q = (vl[a] + vl[b] + vl[cc]) / 3.0
+		var best = 0
+		var bd = 1e18
+		var bd2 = 1e18
+		if not tri_piece.is_empty():
+			best = tri_piece[t / 3]
+		elif not plan.is_empty():
+			best = _piece_at(plan, q)
+		else:
+			# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
+			var qw: Vector3 = q
+			if not warp.is_empty(): qw = q + Vector3(1.0, 0.4, 0.6) * _wave_sum(warp, q)
+			for c in ns:
+				var dd = qw.distance_squared_to(seeds[c])
+				if dd < bd:
+					bd2 = bd
+					bd = dd
+					best = c
+				elif dd < bd2:
+					bd2 = dd
+		buckets[best].append(a)
+		buckets[best].append(cc if flip else b)
+		buckets[best].append(b if flip else cc)
+		var pc: Dictionary = pieces[best]
+		if plan.is_empty() and (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
+			var edge: PackedVector3Array = pc["edge"]
+			edge.append(q)
+			pc["edge"] = edge
+	for c in ns:
+		var tri: PackedInt32Array = buckets[c]
+		if tri.is_empty():
+			continue
+		var remap = PackedInt32Array()
+		remap.resize(nv)
+		remap.fill(-1)
+		var order = PackedInt32Array()
+		var nidx = PackedInt32Array()
+		nidx.resize(tri.size())
+		for i in tri.size():
+			var o = tri[i]
+			var m = remap[o]
+			if m < 0:
+				m = order.size()
+				remap[o] = m
+				order.append(o)
+			nidx[i] = m
+		var na = []
+		na.resize(Mesh.ARRAY_MAX)
+		var pv = PackedVector3Array()
+		pv.resize(order.size())
+		for i in order.size():
+			pv[i] = vl[order[i]]
+		na[Mesh.ARRAY_VERTEX] = pv
+		if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == nv:
+			var src: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+			var dn = PackedVector3Array()
+			dn.resize(order.size())
+			for i in order.size():
+				dn[i] = (xf.basis * src[order[i]]).normalized()
+			na[Mesh.ARRAY_NORMAL] = dn
+		if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == nv * 4:
+			var src4: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
+			var dt = PackedFloat32Array()
+			dt.resize(order.size() * 4)
+			for i in order.size():
+				var o4 = order[i] * 4
+				var tv = (xf.basis * Vector3(src4[o4], src4[o4 + 1], src4[o4 + 2])).normalized()
+				dt[i * 4] = tv.x
+				dt[i * 4 + 1] = tv.y
+				dt[i * 4 + 2] = tv.z
+				dt[i * 4 + 3] = src4[o4 + 3]
+			na[Mesh.ARRAY_TANGENT] = dt
+		for key in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
+			if arr[key] != null and (arr[key] as PackedVector2Array).size() == nv:
+				var s2: PackedVector2Array = arr[key]
+				var d2 = PackedVector2Array()
+				d2.resize(order.size())
+				for i in order.size():
+					d2[i] = s2[order[i]]
+				na[key] = d2
+		if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == nv:
+			var sc: PackedColorArray = arr[Mesh.ARRAY_COLOR]
+			var dc = PackedColorArray()
+			dc.resize(order.size())
+			for i in order.size():
+				dc[i] = sc[order[i]]
+			na[Mesh.ARRAY_COLOR] = dc
+		na[Mesh.ARRAY_INDEX] = nidx
+		var pc: Dictionary = pieces[c]
+		pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0)), "tur": int(sd.get("tur", -1)), "skin": bool(sd.get("skin", false))})
+		pc["n"] = int(pc["n"]) + order.size()
+		var step = maxi(1, order.size() / 120)
+		var points: PackedVector3Array = pc["pts"]
+		for i in range(0, order.size(), step):
+			points.append(pv[i])
+		pc["pts"] = points
+
 
 
 # Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
@@ -1897,6 +2021,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if s.dead or s.gone: return 0.0
 	s.dead = true
 	var T: float = fx.now
+	s.set_meta("death_wall_usec", Time.get_ticks_usec())   # issue 1232: the break's wait for a late cut is in real time
 	s.remove_collider()
 	if s.squadron:
 		return _wing_death(fx, s)
@@ -1914,13 +2039,21 @@ static func _death_inner(fx, s, cause: String) -> float:
 		# The skin ruptures under pressure and spills real hull fragments and spores.
 		s.set_meta("death_organic", true)
 		s.set_meta("death_hulk", false)
-		s.set_meta("death_split", T + 0.35)
 		s.set_meta("death_spore_next", T)
 		if "_vel" in s.root: s.set_meta("death_velocity", s.root.get("_vel"))
 		if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 			precompute(fx, s, "rupture")
-		fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
-		return 0.95
+		if not s.death_big:
+			s.set_meta("death_split", T + 0.35)
+			fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
+			return 0.95
+		# Issue 1238 (F5.1): a Chorus cruiser, capital or Bio-Titan swells and bleeds spores for its class's length before
+		# the skin gives, so it no longer pops like a drone; its timeline also gives it the kill slow-motion beat (fx.death).
+		var otl := DeathTimeline.new(true, 1, s.death_tier, "rupture", true)
+		s.set_meta("death_timeline", otl)
+		s.set_meta("death_split", T + otl.cut)
+		fx.later(T + otl.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + otl.cut + 2.5))
+		return otl.end
 	# Explicit burn-outs retain their cold hulk. Ordinary kills always break up.
 	var hulk := cause == "dark" or cause == "hulk"
 	s.set_meta("death_hulk", hulk)
@@ -2033,6 +2166,15 @@ static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMateri
 # material for a frame or two, while the first band's 0.15 s fade has barely begun; _update_dying sets death_age on each
 # new material before it is drawn, so it starts at the same point of the fade it would have reached.
 const POWER_BUDGET := 4000   # microseconds a frame; a tuning value, the same as PREBUILD_BUDGET
+# Issue 1237 (Neon F7.3): POWER_BUDGET is one budget for the frame, shared by every dying ship (three capitals killed
+# together spent 4 ms each, 12 ms in one frame). A ship whose turn finds the frame's budget spent waits for the next step;
+# its live materials stay a frame longer, the same carry-on as before. Unchanged for a single death.
+static func _power_left(fx) -> int:
+	var frame: int = fx.step_count
+	if int(fx.dstate.get("power_frame", -1)) != frame:
+		fx.dstate["power_frame"] = frame
+		fx.dstate["power_spent"] = 0
+	return POWER_BUDGET - int(fx.dstate["power_spent"])
 
 static func _power_down(fx, s) -> void:
 	var mats: Array = []
@@ -2040,6 +2182,7 @@ static func _power_down(fx, s) -> void:
 	var queue: Array = []
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
 	for mesh in s.meshes:
+		if not is_instance_valid(mesh): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi := mesh as MeshInstance3D
 		if not is_instance_valid(mi) or mi.mesh == null: continue
 		var pose: Transform3D = inv * mi.global_transform
@@ -2060,6 +2203,11 @@ static func _power_down_step(fx, s, budget: int) -> void:
 	if s.has_meta("death_hidden") or not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		s.remove_meta("death_power_queue")
 		return
+	if budget >= 0:
+		budget = mini(budget, _power_left(fx))
+		if budget <= 0:
+			fx.later(fx.now + 0.000001, func l_power_down_wait() -> void: _power_down_step(fx, s, POWER_BUDGET))
+			return
 	var t0 := Time.get_ticks_usec()
 	var queue: Array = s.get_meta("death_power_queue")
 	var mats: Array = s.get_meta("death_power", [])
@@ -2082,6 +2230,9 @@ static func _power_down_step(fx, s, budget: int) -> void:
 			queue.pop_front()
 		if budget >= 0 and Time.get_ticks_usec() - t0 > budget: break
 	s.set_meta("death_power_max_usec", maxi(int(s.get_meta("death_power_max_usec", 0)), Time.get_ticks_usec() - t0))
+	if budget >= 0:
+		_power_left(fx)
+		fx.dstate["power_spent"] = int(fx.dstate["power_spent"]) + Time.get_ticks_usec() - t0
 	fx.pend("power_down", t0)
 	if queue.is_empty():
 		s.remove_meta("death_power_queue")
@@ -2161,11 +2312,17 @@ static func _update_dying(fx, s) -> void:
 		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age if s.death_big else 1.0)
 	if bool(s.get_meta("death_organic", false)):
 		if fx.now >= float(s.get_meta("death_spore_next", INF)):
-			s.set_meta("death_spore_next", fx.now + 0.06)
+			# Issue 1238: a big Chorus hull bleeds spores faster as it nears the rupture (0.06 s apart down to 0.03 s).
+			var gap := 0.06
+			if s.death_big and s.has_meta("death_timeline"):
+				var otl: DeathTimeline = s.get_meta("death_timeline")
+				gap = lerpf(0.06, 0.03, clampf(age / maxf(otl.cut, 0.01), 0.0, 1.0))
+			s.set_meta("death_spore_next", fx.now + gap)
 			var point: Dictionary = s.hull.random_sample(-1, 2.0)
 			fx.spr(s.to_world(point.p), fx.now, 2.5, s.fac.damage_glow * Color(0.4, 0.5, 0.3), 0.35,
 				s.hull.L * 0.015, s.hull.L * 0.13, 20, s.dir_world(point.n) * s.hull.L * 0.1, 0.65)
-		return
+		if not s.death_big:
+			return
 	if bool(s.get_meta("death_hulk", false)): return
 	var velocity: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.65, age * 0.38, age * 0.54))
@@ -2184,33 +2341,26 @@ static func _update_dying(fx, s) -> void:
 
 
 # An unfinished worker never blocks the death frame, even past its nominal split time.
-# Use a previous cut immediately, or wait through the death's deadline and then use the existing no-pieces pop.
+# Use a previous cut immediately. With none, the hull holds its tell until its own cut is done: issue 1232, a capital
+# killed before its first cut was ready (A16's cut ran 5.4 s on the PC against a 2.67 s death) popped with no pieces.
+# The wait is capped: a cut still running cold_cut_wall seconds of real time after the death ends in the no-pieces pop, so
+# the kill camera and the turn (both wait for the core flash) never hold longer than that (Board on PR 1240: well under the
+# first 12 s). A capital's death is 2.67 s, so a late cut adds at most about 2.3 s. Checked in fx/test/cold_kill_check.gd.
+static var cold_cut_wall := 5.0   # a tuning value; fx/test/kill_slowmo_check.gd lowers it to test the pop
+
 static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		fx.resolve_death_core(s, false)
 		return
-	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and fx.now < deadline:
-		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
-			fx.later(minf(fx.now + 0.05, deadline), func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
+		var waited := float(Time.get_ticks_usec() - int(s.get_meta("death_wall_usec", Time.get_ticks_usec()))) / 1e6
+		if fx.now < deadline or waited < cold_cut_wall:
+			if fx.now >= deadline and not s.has_meta("death_cut_wait"):
+				s.set_meta("death_cut_wait", fx.now)
+				fx.notes.append("cut wait %s" % str(s.id))
+			fx.later(minf(fx.now + 0.05, deadline) if fx.now < deadline else fx.now + 0.05, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	_break_up(fx, s, cause, tint)
-
-
-# One thermal tear in ship coordinates, on the same bisector as the prepared halves.
-static func _cracks(fx, s, t0: float, dur: float, tint: Color, at: Vector3, axis: Vector3) -> void:
-	var m: ShaderMaterial = fx.mat(SH.CRACKS, 1)
-	m.set_shader_parameter("t0", t0)
-	m.set_shader_parameter("dur", maxf(dur, 0.3))
-	m.set_shader_parameter("cut_at", at)
-	m.set_shader_parameter("cut_axis", axis)
-	m.set_shader_parameter("width", maxf(s.hull.L * 0.009, 0.01))
-	m.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
 
 
 # ---------------------------------------------------------------- issue 462: the tell, chain blasts, the aftermath
@@ -2307,7 +2457,7 @@ static func _break_lines(job: Dictionary) -> Array:
 # narrow band round each line bulges and ripples (in the power-down material and the tear overlay, the same function),
 # hairline cracks light along the lines, and between the chain blasts the hull groans: a spit of sparks, a breath of
 # gas and now and then one small plate from a point on a line, with a jolt to the shudder. Then the existing split.
-const STRAIN_AMP := 0.0045     # of the length: the bulge at full strain
+const STRAIN_AMP := 0.010      # of the length: the bulge at full strain (0.0045 did not read in the PC clip at 1236bbc3)
 const STRAIN_BAND := 0.05      # of the length: half the width of the buckled band each side of a line
 const STRAIN_RIPPLE := 0.06    # of the length: the ripple's wavelength
 const STRAIN_GROANS := {"capital": [0.28, 0.68, 1.02, 1.38, 1.72], "cruiser": [0.30, 0.62, 0.92, 1.20]}
@@ -2360,7 +2510,7 @@ static func _strain_begin(fx, s, T: float, tl: DeathTimeline, seeds: PackedVecto
 			nn.append(Vector4(1.0, 0.0, 0.0, 1.0))
 	var full: float = maxf(tl.cut - 0.3, 0.5)
 	var strain := {"at": at, "n": nn, "lines": use.slice(0, 3), "k": Vector3(L * STRAIN_AMP, TAU / maxf(L * STRAIN_RIPPLE, 0.001), 0.0),
-		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.0025, 0.005), TAU / maxf(L * 0.03, 0.001), 1.6),
+		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.005, 0.005), TAU / maxf(L * 0.03, 0.001), 3.0),
 		"groans": STRAIN_GROANS.get(s.death_tier, STRAIN_GROANS["cruiser"])}
 	s.set_meta("death_strain", strain)
 	# the power-down materials built on the kill frame so far; the rest pick it up as they are built (_power_surface)
@@ -2411,7 +2561,7 @@ static func _groan(fx, s, i: int) -> void:
 			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), Color(1.0, 0.66, 0.32), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
 		fx.spr(p + nw * L * 0.01, fx.now, 1.1, Color(0.50, 0.47, 0.45), 0.7, L * 0.010, L * 0.05, 20, inherited + nw * L * 0.06, 1.0)
 	if i % 2 == 1:
-		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
+		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9, s.id)
 	if s.death_tier == "capital":
 		s.set_meta("death_jolt", fx.now)
 
@@ -2469,17 +2619,16 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 # One staged picture from the route B pictures (the rebake of issue 426), sized in pixels at the battle camera. `frame`
 # maps the source ship's own space to the world where the picture is born (a drifting wreck piece), for the stray guard.
 static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divisor: float, intensity: float, soft: bool, kind: String, frame = null, velocity := Vector3.ZERO, look := {}) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.name = "fx_beat_" + kind
+	# The seed is picked here, as route_material picks it (the same random draw), so the pool key names the textures.
+	var seed_i: int = int(look.get("seed", -1))
+	if seed_i < 0: seed_i = fx.rng.randi_range(0, 2)
+	var mi: MeshInstance3D = fx.picture("pic|" + rel + "|" + str(seed_i),
+		func() -> ShaderMaterial: return route_material(fx, SH.DEATH_FLIPBOOK, rel, true, seed_i), "fx_beat_" + kind)
 	mi.set_meta("fx_picture_kind", kind)
 	mi.set_meta("gas_root", p)
 	if frame is Transform3D: mi.set_meta("spawn_frame", frame)
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE
-	mi.mesh = quad
 	mi.extra_cull_margin = 100.0
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat := route_material(fx, SH.DEATH_FLIPBOOK, rel, true, int(look.get("seed", -1)))
+	var mat := mi.material_override as ShaderMaterial
 	mat.set_shader_parameter("pic_spin", float(look.get("spin", 0.0)))
 	mat.set_shader_parameter("pic_shape", look.get("shape", Vector2.ONE))
 	mat.set_shader_parameter("smoke_tone", float(look.get("tone", 1.0)))
@@ -2491,11 +2640,9 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 	mat.set_shader_parameter("intensity", intensity)
 	mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 	mat.set_shader_parameter("velocity", velocity)
-	mi.material_override = mat
-	fx.add_child(mi)
 	mi.global_position = p
 	fx.record_spawn(src, p, false, frame)
-	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	fx.later(fx.now + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	return mi
 
 
@@ -2702,6 +2849,7 @@ static func _hulk(fx, s) -> void:
 	fx.phys_root.add_child(node)
 	node.global_transform = s.xf()
 	for source in s.meshes:
+		if not is_instance_valid(source): continue   # a ship part freed under a live ship (1204 bot runs)
 		var original := source as MeshInstance3D
 		if not is_instance_valid(original) or original.mesh == null: continue
 		var copy := MeshInstance3D.new()
@@ -2785,9 +2933,9 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	if organic:
 		_organic_spill(fx, center, h.L, tint)
 	elif story:
-		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP)
+		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP, s.id)
 	else:
-		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025)
+		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025, 0.0, s.id)
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
@@ -2824,11 +2972,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			rb.mass = maxf(float(pc["n"]) / 400.0, 5.0)
 			rb.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 			rb.angular_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
-			rb.linear_damp = STORY_DAMP if story else 0.0
-			rb.angular_damp = STORY_DAMP * 0.5 if story else 0.0
+			# no engine damping: under Jolt it did not slow the pieces (PC clip at 1236bbc3: the strained pieces kept their
+			# speed and drifted 1.9 L apart), so update() slows a strained piece itself, as it does the kinematic tiers
+			rb.linear_damp = 0.0
+			rb.angular_damp = 0.0
 			rb.freeze = s.death_big and not organic
 			rb.collision_layer = DEBRIS_LAYER
-			rb.collision_mask = HULL_LAYER | DEBRIS_LAYER
+			# a strained wreck's slow pieces part along their break lines; touching neighbours shoved them a further 0.13 L apart
+			rb.collision_mask = HULL_LAYER if story else HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
 			var pts: PackedVector3Array = pc["hull"] if pc.has("hull") else PackedVector3Array()
 			if not pc.has("hull"):
@@ -2927,6 +3078,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	if organic:
+		# Issue 1238: a big Chorus rupture is its kill beat. No fireball: the beat (and the death sound's low end) lands
+		# just after the skin bursts.
+		if s.death_big and s.has_meta("death_timeline"):
+			fx.later(T + (s.get_meta("death_timeline") as DeathTimeline).core_delay, func l_rupture_beat() -> void:
+				fx.resolve_death_core(s, fx.ships.get(s.id) == s))
 		return
 	if s.death_big and s.has_meta("death_timeline") and not wreck["nodes"].is_empty():
 		# Beat 2: the core flash comes 0.28 s after the halves part, at the lip of the torn face; then beat 3.
@@ -2962,7 +3118,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		# Restored by the Board (Muse opus_check_701 condition 1): a hull with no pre-cut pieces at the kill frame (a class
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
-		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
+		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0, s.id)
 		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
@@ -3033,12 +3189,12 @@ static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: We
 	var p: Vector3 = frame * (bc + out_l * float(bite["ry"]) * 1.2)
 	var big := tl.tier == "capital"
 	if fx.death_story:
-		spawn_debris(fx, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP)
-		spawn_debris(fx, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP)
+		spawn_debris(fx, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP, s.id)
+		spawn_debris(fx, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP, s.id)
 		return
 	# Issue 484 profiling: each plate is a physics body; keep the cloud lean (it adds to the plates at the break)
-	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012)
-	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03)
+	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012, 0.0, s.id)
+	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03, 0.0, s.id)
 
 
 # A fast radial spill of luminous spores and darker membrane clots, near the board.
@@ -3102,6 +3258,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		node.freeze = false
 		node.linear_velocity = vel * fx.anim_speed()
 		node.angular_velocity = ang * fx.anim_speed()
+		fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
 	elif node.has_meta("story_damp"):
 		var dmp: float = node.get_meta("story_damp")
 		wreck["fires"].append({"node": node, "vel": vel, "ang": ang, "damp": dmp, "adamp": dmp * 0.5})
@@ -3116,6 +3273,26 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
 		fx.stk(p, fx.now, 0.65, Color(1.0, 0.62, 0.30), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
+
+
+# Issue 1237 (Neon F7.1): WRECK_PHYS_S after its release a wreck section leaves Jolt (it never slept: no damping) and
+# drifts on with the velocity and turn it had, on the effect clock, as the kinematic tiers do. A strained wreck's pieces
+# keep their damping. It no longer bounces off a hull it drifts into after that.
+static func _wreck_leave_physics(fx, wreck: Dictionary, node: Node3D) -> void:
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is RigidBody3D): return
+	var rb := node as RigidBody3D
+	if rb.process_mode == Node.PROCESS_MODE_DISABLED: return
+	var spd: float = maxf(fx.anim_speed(), 0.01)
+	var entry := {"node": rb, "vel": rb.linear_velocity / spd, "ang": rb.angular_velocity / spd}
+	if rb.linear_damp > 0.0:
+		entry["damp"] = rb.linear_damp
+		entry["adamp"] = rb.angular_damp
+	rb.linear_velocity = Vector3.ZERO
+	rb.angular_velocity = Vector3.ZERO
+	rb.freeze = true
+	rb.disable_mode = CollisionObject3D.DISABLE_MODE_REMOVE
+	rb.process_mode = Node.PROCESS_MODE_DISABLED
+	wreck["fires"].append(entry)
 
 
 # Bounded samples from the actual cut, biased to its visible lip. No geometry work
@@ -3159,8 +3336,15 @@ static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int)
 
 static func _cap_wrecks(fx) -> void:
 	var ws: Array = fx.dstate["wrecks"]
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	while ws.size() > 24:
-		var w: Dictionary = ws.pop_front()
+		# issue 1236: the oldest wreck goes first, but a wreck that blocks its hex stays while any other can go
+		var at := 0
+		for i in ws.size():
+			if not anchors.has(ws[i]["id"]):
+				at = i
+				break
+		var w: Dictionary = ws.pop_at(at)
 		_free_wreck(w)
 
 
@@ -3176,6 +3360,7 @@ static func _free_wreck(w: Dictionary) -> void:
 
 
 static func clear_wreck(fx, id: String) -> void:
+	fx.dstate.get("anchors", {}).erase(id)
 	var ws: Array = fx.dstate["wrecks"]
 	var keep: Array = []
 	for w in ws:
@@ -3189,14 +3374,24 @@ static func clear_wreck(fx, id: String) -> void:
 static func update(fx, dt: float) -> void:
 	if not fx.dstate.has("wrecks"):
 		return
+	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
+	_leash_mark(fx)
 	for ship in fx.ships.values(): _update_dying(fx, ship)
+	_settle_debris(fx)
 	for w in fx.dstate["wrecks"]:
 		var speed: float = maxf(fx.anim_speed(), 0.01)
 		var prev: float = float(w.get("speed", 1.0))
 		for nd in w["nodes"]:
 			if is_instance_valid(nd) and nd is RigidBody3D:
-				(nd as RigidBody3D).linear_velocity *= speed / prev
-				(nd as RigidBody3D).angular_velocity *= speed / prev
+				var f := speed / prev
+				var fa := f
+				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
+					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+					var dmp: float = nd.get_meta("story_damp")
+					f *= exp(-dmp * dt)
+					fa *= exp(-dmp * 0.5 * dt)
+				(nd as RigidBody3D).linear_velocity *= f
+				(nd as RigidBody3D).angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.
@@ -3236,3 +3431,226 @@ static func update(fx, dt: float) -> void:
 					n.global_rotate(a.normalized(), a.length() * dt)
 		for l in w["lights"]:
 			l["base"] = 0.7 * gate
+	# issue 1236: a wreck that blocks its hex stays in it
+	_leash(fx, dt)
+
+
+# ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
+# The rules turn a dead cruiser or capital's hex into a wreck that blocks movement and fire (rules "wreck" event). The
+# battle anchors that death here, so its pieces, fragments and plates come to rest inside the hex instead of drifting
+# across the board. A piece's middle brakes from LEASH_SOFT of its rest limit and never drifts past it; a piece past it
+# (a long hull overhangs its hex) is drawn back in, and nothing is ever farther out than where it was born or the rest
+# radius. The rest radius (0.8 of the hex radius) is inside the hex's flat edges (0.87).
+# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex. A hull longer than the hex
+# (a cruiser is 23 units, a dreadnought 34, the hex 17 across) settles into tighter pieces: from LEASH_SHRINK_FROM
+# seconds after the break the wreck shrinks about the hex centre, pieces and the gaps between them alike, to the size at
+# which the pieces as they broke (each one's place plus its reach, from its real mesh) fit inside the rest radius; a
+# piece that drifted farther is drawn in until its whole footprint is inside, and from LEASH_SETTLED it is held there.
+# The break plays at full size.
+const LEASH_SOFT := 0.6        # share of the rest limit where a piece's brake starts
+const LEASH_BRAKE := 4.0       # per second, the brake at the rest limit (it ramps up from zero at LEASH_SOFT)
+const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes back in at this share of the gap
+const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the wreck starts to draw together
+const LEASH_SHRINK_RATE := 1.2 # per second: how fast the pieces close on the size that fits (most of it in about 2.5 s)
+const LEASH_SETTLED := 5.5     # seconds after the break: each main piece is held hard inside the rest radius
+
+
+# The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
+static func anchor_wreck(fx, id: String, centre: Vector3, radius: float) -> void:
+	if not fx.dstate.has("anchors"): fx.dstate["anchors"] = {}
+	fx.dstate["anchors"][id] = {"c": centre, "r": radius}
+
+
+# how many pieces of a ship's wreck are still on the board (the battle's fallback hull when a death left none)
+static func wreck_pieces(fx, id: String) -> int:
+	var n := 0
+	for w in fx.dstate.get("wrecks", []):
+		if w["id"] != id: continue
+		for nd in w["nodes"]:
+			if is_instance_valid(nd) and not nd.is_queued_for_deletion(): n += 1
+	return n
+
+
+# every piece of an anchored wreck: its main pieces, its fragments and the plates it threw
+static func leashed_nodes(fx, id: String, main_only := false) -> Array:
+	var out: Array = []
+	for w in fx.dstate.get("wrecks", []):
+		if w["id"] != id: continue
+		for nd in w["nodes"] + ([] if main_only else w.get("frags", [])):
+			if is_instance_valid(nd): out.append(nd)
+	if main_only: return out
+	for b in fx.dstate.get("debris", []):
+		if is_instance_valid(b) and b.visible and str(b.get_meta("leash_id", "")) == id: out.append(b)
+	return out
+
+
+static func _leash_mark(fx) -> void:
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
+	if anchors.is_empty(): return
+	for w in fx.dstate["wrecks"]:
+		var an = anchors.get(w["id"])
+		if an == null: continue
+		for nd in w["nodes"] + w.get("frags", []):
+			if is_instance_valid(nd): _born(nd, an)
+	for b in fx.dstate.get("debris", []):
+		if not is_instance_valid(b) or not b.visible: continue
+		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		if an != null: _born(b, an)
+
+
+static func _leash(fx, dt: float) -> void:
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
+	if anchors.is_empty() or dt <= 0.0: return
+	for w in fx.dstate["wrecks"]:
+		var an = anchors.get(w["id"])
+		if an == null: continue
+		var prev: float = w.get("leash_s", 1.0)
+		var sc := prev
+		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
+		if drawing:
+			# the size the wreck settles at: the pieces as they broke (each one's distance from the hex centre where it
+			# was made, plus its reach from its real mesh), scaled about the hex centre until the farthest point is a hair
+			# inside the rest radius. The layout keeps its shape, so the pieces fit without piling on each other.
+			if not w.has("leash_target"):
+				var far := 0.0
+				var measured := true
+				for nd in w["nodes"]:
+					if not is_instance_valid(nd): continue
+					if not nd.has_meta("leash_rad"):
+						_measure_reach(nd)
+						measured = false
+						break   # one piece's faces a frame, so a big wreck never costs one long frame
+					far = maxf(far, float(nd.get_meta("leash_off0", 0.0)) + leash_half(nd) / maxf(prev, 0.001))
+				if measured:
+					w["leash_target"] = minf(1.0, float(an["r"]) * 0.95 / maxf(far, 0.001))
+			if w.has("leash_target"):
+				sc = lerpf(prev, float(w["leash_target"]), 1.0 - exp(-LEASH_SHRINK_RATE * dt))
+				if absf(sc - float(w["leash_target"])) < 0.002: sc = float(w["leash_target"])
+		w["leash_s"] = sc
+		var pieces: Array = w["nodes"] + w.get("frags", [])
+		if sc != prev:
+			for nd in pieces:
+				if is_instance_valid(nd): _draw_in(nd, an, sc, prev)
+		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
+		for f in w["fires"]:
+			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
+				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
+		# once the wreck has drawn together, each piece is held hard at its rest limit (a physics piece jostled past it
+		# by its neighbours is put back), so the settled wreck sits inside the hex's edges
+		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
+		for nd in pieces:
+			if not is_instance_valid(nd): continue
+			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt, drawing)
+			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
+	for b in fx.dstate.get("debris", []):
+		if not is_instance_valid(b) or not b.visible: continue
+		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		if an == null: continue
+		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
+		_leash_clamp(b, an)
+
+
+# one step of the wreck drawing together: the piece's place about the hex centre and its meshes about its own origin,
+# both from scale prev to sc (the meshes keep their first local transforms, so steps never add up drift)
+static func _draw_in(nd: Node3D, an: Dictionary, sc: float, prev: float) -> void:
+	var c: Vector3 = an["c"]
+	var f := sc / maxf(prev, 0.001)
+	if nd.has_meta("leash_born"):
+		nd.set_meta("leash_born", maxf(float(an["r"]), float(nd.get_meta("leash_born")) * sc / maxf(prev, 0.001)))
+	var p := leash_centre(nd)
+	for ch in nd.get_children():
+		if not (ch is MeshInstance3D): continue
+		if not ch.has_meta("leash_t0"): ch.set_meta("leash_t0", (ch as Node3D).transform)
+		(ch as Node3D).transform = (ch.get_meta("leash_t0") as Transform3D).scaled(Vector3.ONE * sc)
+	# then the piece's middle (where it was before this step) moves in about the hex centre by the same step
+	var now := leash_centre(nd)
+	var want := Vector3(c.x + (p.x - c.x) * f, p.y, c.z + (p.z - c.z) * f)
+	nd.global_position += Vector3(want.x - now.x, 0.0, want.z - now.z)
+	# pieces drawn together must not shove each other apart again
+	if nd is RigidBody3D and sc < 0.999:
+		(nd as RigidBody3D).collision_mask = HULL_LAYER
+
+
+# where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a
+# lopsided chunk of hull can sit far from what the eye reads as the piece), else its origin
+static func leash_centre(nd: Node3D) -> Vector3:
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			return nd.global_transform * ((ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb().get_center())
+	return nd.global_position
+
+
+# how far the piece reaches from its middle as drawn now, as it turns about the vertical: the farthest point of its real
+# mesh from its box middle on the board plane (measured once, unscaled, and kept on the piece; the drift brake uses half the box's longest side until then)
+static func leash_half(nd: Node3D) -> float:
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			var mi := ch as MeshInstance3D
+			var k: float = mi.transform.basis.get_scale().x
+			if nd.has_meta("leash_rad"): return float(nd.get_meta("leash_rad")) * k
+			var sz: Vector3 = mi.mesh.get_aabb().size
+			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z)) * k
+	return 0.0
+
+
+# measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in
+static func _measure_reach(nd: Node3D) -> void:
+	if nd.has_meta("leash_rad"): return
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			var mi := ch as MeshInstance3D
+			var mid: Vector3 = mi.mesh.get_aabb().get_center()
+			var far := 0.0
+			# on the board plane: a big hull's pieces turn mostly about the vertical (issue 461), so their height does not
+			# reach across the hex
+			for v in mi.mesh.get_faces(): far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
+			nd.set_meta("leash_rad", sqrt(far))   # in the mesh's own units; leash_half scales it as drawn
+			return
+	nd.set_meta("leash_rad", 0.0)
+
+
+# how far from the hex centre a piece may ever be: where it was born when that is past the rest radius, else the radius
+static func _born(nd: Node3D, an: Dictionary) -> float:
+	if nd.has_meta("leash_born"): return float(nd.get_meta("leash_born"))
+	var off: Vector3 = leash_centre(nd) - (an["c"] as Vector3)
+	off.y = 0.0
+	var lim := maxf(float(an["r"]), off.length())
+	nd.set_meta("leash_born", lim)
+	nd.set_meta("leash_off0", off.length())
+	return lim
+
+
+# where a piece's middle rests: its whole footprint inside the rest radius (whole), or for the drift brake no nearer
+# the centre than half the radius, so a big piece still too large for it is not dragged onto its neighbours (drawing
+# the wreck together makes it fit)
+static func _rest_limit(nd: Node3D, an: Dictionary, whole := false) -> float:
+	var lim := float(an["r"]) - leash_half(nd)
+	return maxf(0.0, lim) if whole else maxf(float(an["r"]) * 0.5, lim)
+
+
+static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float, whole := false) -> Vector3:
+	var off: Vector3 = leash_centre(nd) - (an["c"] as Vector3)
+	off.y = 0.0
+	_born(nd, an)
+	var lim := _rest_limit(nd, an, whole)
+	var d := off.length()
+	var soft := lim * LEASH_SOFT
+	if d <= soft: return v
+	v *= exp(-LEASH_BRAKE * clampf((d - soft) / maxf(lim - soft, 0.001), 0.0, 1.0) * dt)
+	if d >= lim:
+		var n := off / d
+		var out := v.x * n.x + v.z * n.z
+		# no outward drift at the rest radius; past it, back in at LEASH_PULL of the gap a second
+		v -= n * (out + (d - lim) * LEASH_PULL)
+	return v
+
+
+static func _leash_clamp(nd: Node3D, an: Dictionary, hard := -1.0) -> void:
+	var c: Vector3 = an["c"]
+	var off: Vector3 = leash_centre(nd) - c
+	off.y = 0.0
+	var lim := _born(nd, an) if hard < 0.0 else hard
+	if off.length() > lim:
+		var back := off - off.normalized() * lim
+		nd.global_position -= back

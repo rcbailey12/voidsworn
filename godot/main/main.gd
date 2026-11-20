@@ -11,6 +11,7 @@ extends Node
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
 const Host := preload("res://main/campaign_host.gd")
+const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
@@ -33,14 +34,8 @@ func quit_clean(code := 0) -> void:
 		campaign.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	load("res://render/ship_view.gd").clear_static()
-	load("res://scenes/battle/fx_stub.gd").clear_static()
-	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
-		if ResourceLoader.exists(sp):
-			var sc = load(sp)
-			if sc != null and sc.has_method("clear_static"):
-				sc.clear_static()
+	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
+	load("res://render/static_caches.gd").clear_all()
 	get_tree().quit(code)
 
 
@@ -74,6 +69,7 @@ class ErrCount extends Logger:
 
 var errlog: ErrCount
 var music: Node              # godot/music/music_player.gd (the music helper's player), one for the whole game
+var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.gd with the ui_* cues only), OrdersKit.sound
 
 
 func _ready() -> void:
@@ -104,6 +100,13 @@ func _ready() -> void:
 		add_child(music)
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	if not args.has("bot-runs") and ResourceLoader.exists("res://audio/sfx.gd"):
+		ui_sound = load("res://audio/sfx.gd").new()
+		ui_sound.only = "ui_"
+		ui_sound.name = "UiSound"
+		add_child(ui_sound)
+		OrdersKit.sound = ui_sound
+		_settings_to_ui_sound()
 	if args.has("quit-after"):
 		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
 		var lim := float(args["quit-after"])
@@ -215,6 +218,13 @@ func _apply_settings() -> void:
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	_settings_to_ui_sound()
+
+
+func _settings_to_ui_sound() -> void:
+	if ui_sound != null and is_instance_valid(ui_sound):
+		ui_sound.set_on(bool(settings.get("sound", true)))
+		ui_sound.set_volume(float(settings.get("volume", 0.8)))
 
 
 func _settings_to_battle(b: Node) -> void:
@@ -276,6 +286,39 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
+# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
+# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
+# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
+static var _showcase_i := -1
+
+static func showcase_factions() -> Array:
+	var out: Array = []
+	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
+			continue
+		for id in m["ships"]:
+			var e = m["ships"][id]
+			var f := str(e.get("faction", "")) if e is Dictionary else ""
+			if f != "" and f != "voidsworn" and not out.has(f):
+				out.append(f)
+		if not out.is_empty():
+			break
+	out.sort()
+	return out if not out.is_empty() else ["hegemony", "corsair"]
+
+
+static func next_showcase_fac() -> String:
+	var facs := showcase_factions()
+	if _showcase_i < 0:
+		_showcase_i = randi() % facs.size()
+	else:
+		_showcase_i = (_showcase_i + 1) % facs.size()
+	return str(facs[_showcase_i])
+
+
 func _start_showcase() -> void:
 	if title == null or not is_instance_valid(title) or showcase != null:
 		return
@@ -283,7 +326,7 @@ func _start_showcase() -> void:
 	showcase.showcase = true
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
-	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
@@ -401,8 +444,9 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.in_campaign = true
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
-		# R78 Q18: only the fifth run's final boss gets dawn. Keep this visual flag out of the rules and saves.
-		b.args["finale"] = int(campaign.C.META.get("stats", {}).get("runs", 0)) == 5
+		# Issue 1271 (replaces R78 Q18's "fifth run only"): from the fifth run on, the final boss gets dawn.
+		# Keep this visual flag out of the rules and saves.
+		b.args["finale"] = finale_for_runs(int(campaign.C.META.get("stats", {}).get("runs", 0)))
 	b.args["quality"] = str(settings["quality"])
 	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake", false)))   # issue 1079 prototype, off by default
 	b.args["taa"] = bool(settings.get("taa", false))
@@ -540,3 +584,9 @@ func _bot_campaign(seed: int) -> Dictionary:
 	if not out.has("errors"):
 		out["errors"] = []
 	return out
+
+
+# Issue 1271: META stats runs counts the run in progress (campaign.gd newRun adds one at the start, Back from the
+# flagship page takes it away), so 5 is the fifth run, as under R78 Q18. Dawn now plays on every run from there.
+static func finale_for_runs(runs: int) -> bool:
+	return runs >= 5

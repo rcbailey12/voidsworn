@@ -73,6 +73,9 @@ func start(m: Node, o: Dictionary) -> void:
 		add_child(story)
 		story.attach(C, not bot)
 	if not bot: C.initFinishedRuns()
+	# issue 1217: the screens' playtest default (campaign_ui.gd bind, R1) must hold before the first page is built, or the
+	# first faction and admiral page offers Select only for each faction's free admiral until something re-renders it
+	if not bot and "playtest_default" in C: C.playtest_default = true
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	C.titleScreen()
 	if o.get("continue", false):

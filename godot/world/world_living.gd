@@ -20,6 +20,7 @@ const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
 const WAKE := preload("res://world/nebula_wake.gd")
+const LOOK := preload("res://render/look.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
@@ -521,7 +522,9 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	var high: bool = expanded and W.quality == "high"
+	# Issue 1262: Max uses the same bounded cards and baked lattice as High (1070's masking saved 2.2 ms on Max in its
+	# run 1); VS_1262_OLD=cards restores Max's unbounded cards for the before and after timing.
+	var high: bool = expanded and (W.quality == "high" or (W.quality == "max" and not LOOK.perf_old("cards")))
 	if high and _gas_lattice == null and ResourceLoader.exists(GAS_LATTICE_PATH):
 		var source = load(GAS_LATTICE_PATH)
 		_gas_lattice = source.texture()
@@ -944,7 +947,7 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
 
-static var _piece_radii := {}
+static var _piece_radii := {}   # not GPU: piece radii (numbers)
 
 static func _piece_radius(mesh: Mesh) -> float:
 	var id := mesh.get_instance_id()
@@ -1228,6 +1231,12 @@ void fragment() {
 const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
 const WRECK_DIR := "res://world/wreckage/"
 static var _wreck_mesh_cache: Array = []
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wreck_mesh_cache = []
+	_piece_radii.clear()   # keyed by those meshes' instance ids
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A

@@ -348,6 +348,13 @@ WEAPONS = {
         lore='Lore 2.11: Spark flak. Battle look: flak (a spread of airbursts).',
         design=('A squat forged drum turret, two short barrels in slotted cooling sleeves ending in squared muzzle brakes, an '
                 'ammunition drum on each cheek (the spark shells), elevating high (to 60) for craft. Twin: two barrels.')),
+    'autocannon': dict(
+        name='Sear repeater', rules='data.js autocannon: 3 shots, 5 damage, range 4 (k battery); FAC_WTRAIT las: +4 aim',
+        lore='Lore 2.5: unaugmented crews work their guns by hand; the frigate is built round its bow gun. Battle look: battery.',
+        design=('A compact forged casemate at the spearhead\'s root, fixed forward (arc F): a riveted footing, an armoured '
+                'housing with cheek plates and a sloped glacis, a round port collar with a ball mantlet, a rotary cluster of '
+                'three barrels round a spindle (a heat jacket over the roots, clamp bands, a muzzle ring), dark bores with an '
+                'ember lens. All three barrels fire each volley (issue 1156, the Warden).')),
 }
 
 
@@ -494,7 +501,73 @@ def _spark_flak(p, barrels, cal, blen, s, pitch, variant):
     return trunnion, muzzles, 0.08 * s + blen + trunnion.x, rr * 1.08, E
 
 
-GUN_BUILDERS = {'hbattery': _broadside, 'turret': _sear_turret, 'flak': _spark_flak}
+def _sear_repeater(p, barrels, cal, blen, s, pitch, variant):
+    """the Sear repeater (data.js autocannon, issue 1156, the Warden frigate's bow gun): a compact forged casemate at the
+    spearhead's root, fixed forward (arc F: the frigate turns to bring it to bear). Local +X the aim, +Z up, origin on the deck.
+    A riveted footing, an armoured housing whose front face slopes back over a round port collar, a ball mantlet in the port,
+    a rotary cluster of `barrels` barrels round a spindle (a heat jacket over their roots, clamp bands, a muzzle ring), each
+    barrel with a dark bore and an ember lens (las: the sear rounds leave the bore hot). Every barrel fires each volley."""
+    # the footing: a low riveted plinth sunk into the deck (the casemate's ground)
+    p.add('footing', 'mount', 'siron2', block(-0.72 * s, 0.42 * s, 0.44 * s, 0.07 * s, 0.025 * s, zo=0.0))
+    st = []
+    for i in range(6):
+        x = -0.66 * s + i * 0.2 * s
+        for sg in (1, -1):
+            st.append(_stud((x, sg * 0.44 * s, 0.035 * s), (0, sg, 0), 0.02 * s))
+    p.add('footingstud', 'mount', 'sworn', _join(st))
+    # the housing: an armoured block, its front end narrower and lower (the sloped glacis over the port), a stepped roof plate
+    p.add('housing', 'mount', 'siron', block(-0.64 * s, 0.32 * s, 0.38 * s, 0.25 * s, 0.09 * s, zo=0.3 * s, taper=0.74, ztaper=0.62))
+    p.add('housingband', 'mount', 'sworn', block(-0.4 * s, -0.34 * s, 0.395 * s, 0.24 * s, 0.085 * s, zo=0.3 * s))
+    p.add('roof', 'mount', 'siron2', block(-0.52 * s, 0.1 * s, 0.29 * s, 0.035 * s, 0.015 * s, zo=0.56 * s))
+    p.add('roofstep', 'mount', 'siron', block(-0.44 * s, -0.06 * s, 0.2 * s, 0.03 * s, 0.01 * s, zo=0.61 * s))
+    for sg in (1, -1):
+        # the cheek plates: a second forged layer on each flank of the housing, rivets along their top edge
+        p.add('cheek%d' % (sg > 0), 'mount', 'siron2', block(-0.58 * s, 0.16 * s, 0.025 * s, 0.17 * s, 0.01 * s, yo=sg * 0.385 * s, zo=0.27 * s))
+        rv = [_stud((-0.52 * s + k * 0.13 * s, sg * 0.412 * s, 0.4 * s), (0, sg, 0), 0.018 * s) for k in range(6)]
+        p.add('cheekstud%d' % (sg > 0), 'mount', 'sworn', _join(rv))
+    # the gunner's sight: a narrow ember slit high in the glacis, under a brow
+    p.add('sight', 'mount', 'glow', block(0.205 * s, 0.235 * s, 0.11 * s, 0.018 * s, 0, zo=0.47 * s))
+    p.add('sightbrow', 'mount', 'sworn', block(0.17 * s, 0.26 * s, 0.14 * s, 0.012 * s, 0, zo=0.5 * s))
+    # the port: a round forged collar standing out of the glacis, a rolled lip, a dark throat round the ball
+    zc = 0.27 * s
+    C = Matrix.Translation((0, 0, zc))
+    R = 0.19 * s
+    p.add('port', 'mount', 'siron2', moved(revolve([(0.16 * s, R), (0.36 * s, R), (0.4 * s, R * 1.1), (0.43 * s, R * 1.1), (0.43 * s, R * 0.8),
+                                                     (0.2 * s, R * 0.8)], 20, closed=True, phase=math.pi / 20), C))
+    p.add('portstud', 'mount', 'sworn', moved(_x_studs(0.3 * s, R, 10, 0.02 * s), C))
+    p.add('throat', 'mount', 'dark', moved(revolve([(0.22 * s, R * 0.8), (0.22 * s, 0.001)], 20), C))
+    trunnion = Vector((0.33 * s, 0, zc))
+    E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
+    mr = 0.14 * s
+    ball = [(mr * math.sin(-math.pi / 2 + math.pi * i / 10), max(0.001, mr * math.cos(-math.pi / 2 + math.pi * i / 10))) for i in range(11)]
+    p.add('mantlet', 'body', 'siron2', moved(revolve(ball, 18), E))
+    p.add('mantletcollar', 'body', 'sworn', moved(ring_band(mr * 0.6, mr * 0.82, mr * 0.3, mr * 0.12, 18), E))
+    # the rotary cluster: a spindle, a heat jacket over the barrel roots, clamp bands, barrels round the spindle, a muzzle ring
+    rc = cal * 1.7                      # the barrels' circle round the spindle
+    x0 = mr * 0.7; xe = x0 + blen
+    p.add('spindle', 'body', 'siron2', moved(revolve([(x0, cal * 0.8), (xe - cal * 0.6, cal * 0.8)], 10, cap1=True), E))
+    p.add('jacket', 'body', 'siron', moved(revolve([(x0, rc + cal * 1.35), (x0 + blen * 0.34, rc + cal * 1.35), (x0 + blen * 0.34 + cal, rc + cal * 0.9),
+                                                    (x0 + blen * 0.34 + cal, 0.001)], 16, cap0=True, phase=math.pi / 16), E))
+    for i, f in enumerate((0.08, 0.2)):
+        p.add('jacketfin%d' % i, 'body', 'sworn', moved(ring_band(x0 + blen * f, rc + cal * 1.35, cal * 0.7, cal * 0.25, 16), E))
+    for i, f in enumerate((0.58, 0.82)):
+        p.add('clamp%d' % i, 'body', 'siron2', moved(ring_band(x0 + blen * f, rc + cal * 0.95, cal * 1.1, cal * 0.3, 16), E))
+    p.add('muzzlering', 'body', 'sworn', moved(revolve([(xe - cal * 1.6, rc + cal * 1.15), (xe - cal * 0.3, rc + cal * 1.15), (xe - cal * 0.3, rc + cal * 0.7),
+                                                       (xe - cal * 1.6, rc + cal * 0.7)], 16, closed=True), E))
+    muzzles = []
+    for i in range(barrels):
+        a = math.pi / 2 + 2 * math.pi * i / barrels
+        T = E @ Matrix.Translation((0, rc * math.cos(a), rc * math.sin(a)))
+        p.add('b%d_barrel' % i, 'body', 'siron', moved(revolve([(x0 + blen * 0.3, cal), (xe - cal * 0.8, cal * 0.95)], 10, phase=math.pi / 10), T))
+        p.add('b%d_muzzle' % i, 'body', 'sworn', moved(revolve([(xe - cal * 0.8, cal * 0.95), (xe - cal * 0.4, cal * 1.25), (xe, cal * 1.3), (xe, cal * 0.6),
+                                                                (xe - cal * 1.6, cal * 0.6)], 10, phase=math.pi / 10), T))
+        p.add('b%d_bore' % i, 'body', 'dark', moved(revolve([(xe - cal * 1.6, 0.001), (xe - cal * 1.6, cal * 0.61)], 10), T))
+        p.add('b%d_lens' % i, 'body', 'embar', moved(revolve([(xe - cal * 1.5, cal * 0.5), (xe - cal * 1.45, 0.001)], 10, cap0=True), T))
+        muzzles.append(P(T @ Vector((xe, 0, 0))))
+    return trunnion, muzzles, xe + trunnion.x, 0.44 * s, E
+
+
+GUN_BUILDERS = {'hbattery': _broadside, 'turret': _sear_turret, 'flak': _spark_flak, 'autocannon': _sear_repeater}
 
 
 def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, variant=0, seg=14, weapon='turret'):
@@ -503,8 +576,8 @@ def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, vari
     casemate, whose pitch is its train out from the hull axis). Fixed pieces are 'mount'; a turret's turning pieces are 'turn'
     (R219); a casemate's ball and barrel stay 'body' (fixed on the ship node)."""
     fn = GUN_BUILDERS[weapon]
-    if weapon == 'hbattery':
-        assert mount == 'casemate', 'the heavy sear broadside sits in a casemate port'
+    if weapon in ('hbattery', 'autocannon'):
+        assert mount == 'casemate', 'the heavy sear broadside and the Sear repeater sit in casemates'
     else:
         assert mount == 'turret', 'the sear turret and the spark flak are turrets'
     p = Part('gun')
@@ -519,14 +592,30 @@ def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, vari
 
 
 # ---------------------------------------------------------------------------------------------------- the radiator spires
-def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None):
+def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None, glow='fins', scale=1.0):
     """a radiator spire, standing on the spine block: origin at the root's foot on the spine top, +X forward, +Z up. It sheds
     the reactor's heat (factions.md: the spires glow because they shed the reactor's heat), so it is all radiator: a tapering
     forged column whose two faces are a glowing heat core (the bar) behind a stack of horizontal iron heat fins standing out
     to each side (a heat sink, never a window or an organ pipe), iron posts fore and aft framing the core, a forged cap, gusset
     braces at the root. Never a steeple, a cross, a statue or a mast. profile 0 blade (the cap swept back), 1 stepped (a
     narrower upper tier on a shoulder), 2 twin (two columns sharing one fin stack), 3 raked (the leading edge raked back).
-    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side."""
+    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side.
+    glow: 'fins' (the first S8 build: fins packed 0.17 apart, so the glowing stack reads as one whole lit tower) or 'slats'
+    (R331, Nov 19 2026: the ember in the fin slats, the one Sunward spire treatment, R333; Ryan, Nov 20 on the Warden: "fix
+    ember glow", like the concept: the heat core glows ember the full height of the column and the fins are dark iron ribs
+    over it, 0.15 apart and reaching 45 percent as far out, so the glow shows in the slats between the ribs, never on fin
+    tips or as a whole lit tower; call it with glow='slats' and no other setting).
+    scale (issue 1156, the Warden frigate): build the spire at h / scale and shrink the whole part by scale, so a small hull's
+    spire keeps the flagship's proportions of root, fins and cap (their sizes below are flagship world sizes) instead of a tall
+    root under a few fins; h, L and spread stay world sizes."""
+    assert glow in ('fins', 'slats')
+    if scale != 1.0:
+        part = radiator(h / scale, L / scale, spread / scale, profile, fins, pitch, t, seed, lean, bars, glow=glow)
+        return part.transform(Matrix.Scale(scale, 4))
+    if glow == 'slats':
+        pitch = 0.15
+        spread *= 0.45
+    core_mat, fin_mat = ('embar', 'siron2') if glow == 'slats' else ('siron2', 'embar')
     p = Part('radiator')
     p.type = 'radiator'
     zr = 0.26
@@ -584,7 +673,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
                     F.append((a, b, b + 4, a + 4))
             F.append((3, 2, 1, 0)); o = (len(rs) - 1) * 4; F.append((o, o + 1, o + 2, o + 3))
             return V, F
-        p.add('bar%d' % ci, 'body', 'siron2', stack(secs_core))
+        p.add('bar%d' % ci, 'body', core_mat, stack(secs_core))
         p.add('column%d' % ci, 'body', 'siron', _join([stack(post_a), stack(post_b)]))
         xa, xb, th = edge(h, 0)
         zc = [cap_z(x, xa, xb) for x in (xa, xb)]
@@ -604,7 +693,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             xa2, xb2, th2 = span(zsh - 0.01)
             p.add('shoulder%d' % ci, 'body', 'siron2', block(xa2 - 0.03, xb2 + 0.03, th2 + 0.08, 0.05, 0.02, zo=zsh - 0.02))
     # the fin stack: horizontal iron fins across the column, reaching out each side, shorter toward the top
-    n = fins or max(5, int((h - zr - 0.3) / pitch))
+    n = fins or (max(3, int((h - zr - 0.3) / pitch) + 1) if glow == 'slats' else max(5, int((h - zr - 0.3) / pitch)))
     fv = []
     for i in range(n):
         z = zr + 0.2 + i * (h - zr - 0.42) / max(1, n - 1)
@@ -620,7 +709,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             V = [(xa + e, y0, z - 0.018), (xb - e, y0, z - 0.018), (xb - e, y1, z - 0.018), (xa + e, y1, z - 0.018),
                  (xa + e + 0.025, y0, z + 0.018), (xb - e - 0.025, y0, z + 0.018), (xb - e - 0.025, y1 - sg * 0.025, z + 0.018), (xa + e + 0.025, y1 - sg * 0.025, z + 0.018)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-    p.add('fin', 'body', 'embar', _join(fv))
+    p.add('fin', 'body', fin_mat, _join(fv))
     # gusset braces at the root, fore and aft on both faces (they carry the column's weight into the root socket)
     gz = []
     for sg in (1, -1):

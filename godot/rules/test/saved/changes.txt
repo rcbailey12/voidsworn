@@ -1,134 +1,22 @@
-Saved manifest before: 99dd946bde8d8f3a1413e99da67a5e2e2dcdac72cd03a546c752737a698232b6
-Saved manifest after: 62aa5c888df350fbddc86a71332b90fa6c3b95650e04b78d0516921766077f5e
+Saved manifest before: 747ffb51f69ff0139a18d75906c44ca4a6c867e340ca85e56f3a3c9fff47d2cc
+Saved manifest after: aeb99b05371a5fef003b2a5e379269428923307211f75305c8d95a54b0775cee
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s4
-  turn 202, round 4, after tick player; unit x016 (player harrow)
-  state.units[5].sh[2]: 4 -> 3
-  later changed records: 60; total records: 263 -> 263
-FAIL battle s7
-  turn 172, round 4, after tick player; unit x07 (player harrow)
-  state.units[2].sh[1]: 2 -> 1
-  later changed records: 268; total records: 432 -> 441
-FAIL battle s16
-  turn 217, round 7, after tick player; unit x06 (player reliquary)
-  state.units[1].sh[1]: 6 -> 5
-  later changed records: 22; total records: 242 -> 242
-FAIL battle s18
-  turn 64, round 3, after tick player; unit x05 (player penitent)
-  state.units[0].sh[3]: 13 -> 10
-  later changed records: 36; total records: 266 -> 266
-FAIL battle s23
-  turn 432, round 6, after tick player; unit x013 (player reliquary)
-  state.units[2].sh[2]: 15 -> 11
-  later changed records: 257; total records: 690 -> 690
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 3 -> 6
+  later changed records: 401; total records: 402 -> 344
 FAIL battle s24
-  turn 209, round 4, after tick player; unit x08 (player reliquary)
-  state.units[1].sh[0]: 10 -> 9
-  later changed records: 316; total records: 526 -> 526
-FAIL battle s25
-  turn 76, round 2, after tick player; unit x09 (player c_reaver)
-  state.units[3].sh[0]: 4 -> 3
-  later changed records: 52; total records: 321 -> 321
-FAIL battle s26
-  turn 48, round 2, after tick enemy; unit x011 (enemy h_dominion)
-  state.units[5].sh[0]: 37 -> 35
-  later changed records: 9; total records: 167 -> 167
-FAIL battle s29
-  turn 64, round 3, after tick player; unit x09 (player harrow)
-  state.units[3].sh[3]: 9 -> 7
-  later changed records: 115; total records: 180 -> 180
-FAIL battle s31
-  turn 72, round 4, after tick player; unit x06 (player penitent)
-  state.units[0].sh[1]: 12 -> 9
-  later changed records: 157; total records: 230 -> 230
-FAIL battle s41
-  turn 31, round 2, after tick player; unit x08 (player warden)
-  state.units[3].sh[1]: 7 -> 5
-  later changed records: 6; total records: 229 -> 229
-FAIL battle s46
-  turn 45, round 3, after tick player; unit x04 (player vs_penitent_l)
-  state.units[0].sh[3]: 12 -> 9
-  later changed records: 35; total records: 197 -> 197
-FAIL battle s52
-  turn 123, round 7, after tick enemy; unit x08 (enemy h_picket)
-  state.units[4].sh[2]: 7 -> 5
-  later changed records: 40; total records: 164 -> 164
-FAIL battle t_inheritedaim
-  turn 50, round 5, after tick player; unit x02 (player penitent)
-  state.units[0].sh[1]: 2 -> 1
-  later changed records: 3; total records: 82 -> 82
-FAIL battle t_preyname
-  turn 46, round 4, after tick player; unit x04 (player harrow)
-  state.units[1].sh[3]: 9 -> 7
-  later changed records: 21; total records: 68 -> 68
-FAIL battle t_hb_cutfeeds
-  turn 34, round 3, after tick player; unit x04 (player c_reaver)
-  state.units[0].sh[1]: 6 -> 5
-  later changed records: 4; total records: 117 -> 117
-FAIL battle t_hb_patchguns
-  turn 34, round 3, after tick player; unit x04 (player c_reaver)
-  state.units[0].sh[0]: 4 -> 3
-  later changed records: 9; total records: 121 -> 121
-FAIL battle t_hb_scrapfront
-  turn 102, round 7, after tick player; unit x03 (player c_hulk)
-  state.units[0].sh[1]: 4 -> 3
-  later changed records: 3; total records: 147 -> 147
-FAIL battle t_hb_weldedfight
-  turn 92, round 6, after tick player; unit x04 (player c_reaver)
-  state.units[1].sh[0]: 4 -> 3
-  later changed records: 14; total records: 126 -> 126
-FAIL battle t_hb_doublebolted
-  turn 76, round 5, after tick player; unit x04 (player c_reaver)
-  state.units[1].sh[2]: 3 -> 2
-  later changed records: 11; total records: 104 -> 104
-FAIL battle t_hb_weldedwhole
-  turn 40, round 4, after tick player; unit x03 (player c_reaver)
-  state.units[0].sh[0]: 4 -> 3
-  later changed records: 4; total records: 145 -> 145
-FAIL battle t_hb_firstscar
-  turn 32, round 3, after tick player; unit x05 (player c_marauder)
-  state.units[1].sh[0]: 5 -> 4
-  later changed records: 6; total records: 47 -> 47
-FAIL battle t_heg_secondvolley
-  turn 40, round 3, after tick player; unit x04 (player h_dominion)
-  state.units[0].sh[0]: 32 -> 31
-  later changed records: 34; total records: 133 -> 133
-FAIL battle t_heg_irontempo
-  turn 25, round 2, after tick enemy; unit x09 (enemy h_interdictor)
-  state.units[5].sh[0]: 5 -> 4
-  later changed records: 140; total records: 166 -> 166
-FAIL battle t_heg_filedtriplicate
-  turn 60, round 3, after death x010; unit x09 (enemy c_raider)
-  state.units[4].sh[3]: 2 -> 1
-  later changed records: 2; total records: 63 -> 63
-FAIL battle t_heg_filedbefore
-  turn 53, round 3, after tick enemy; unit x09 (enemy h_dominion)
-  state.units[4].sh[1]: 10 -> 8
-  later changed records: 9; total records: 112 -> 112
-FAIL battle t_heg_sevenbreach
-  turn 38, round 3, after tick player; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 32 -> 30
-  later changed records: 31; total records: 113 -> 113
-FAIL battle t_heg_overflow
-  turn 65, round 3, after tick player; unit x05 (player h_dominion)
-  state.units[0].sh[3]: 34 -> 27
-  later changed records: 29; total records: 112 -> 112
-FAIL battle t_heg_bell
-  turn 59, round 3, after tick player; unit x05 (player h_dominion)
-  state.units[0].sh[3]: 31 -> 24
-  later changed records: 46; total records: 105 -> 106
-FAIL battle t_heg_columnendures
-  turn 52, round 3, after tick player; unit x05 (player h_picket)
-  state.units[0].sh[0]: 6 -> 5
-  later changed records: 62; total records: 115 -> 115
-FAIL battle t_heg_standardcovers
-  turn 66, round 3, after tick player; unit x05 (player h_dominion)
-  state.units[0].sh[3]: 4 -> 3
-  later changed records: 86; total records: 153 -> 134
-FAIL battle t7a_rearreckoning
-  turn 66, round 5, after tick player; unit x04 (player harrow)
-  state.units[1].sh[3]: 9 -> 7
-  later changed records: 3; total records: 72 -> 72
-FAIL: saved Godot results; 284 battles checked, 32 changed, 0 other files changed, 32 failures; 16.595 s
+  turn 0, round 1, after tick player; unit x08 (player reliquary)
+  state.units[1].q: 1 -> -1
+  later changed records: 621; total records: 499 -> 622
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x09 (player reliquary)
+  state.units[2].q: 1 -> 0
+  later changed records: 357; total records: 218 -> 358
+FAIL battle s39
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 6 -> 10
+  later changed records: 390; total records: 385 -> 391
+FAIL: saved Godot results; 284 battles checked, 4 changed, 0 other files changed, 4 failures; 12.993 s

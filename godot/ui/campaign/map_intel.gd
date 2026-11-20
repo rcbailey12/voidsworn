@@ -48,6 +48,9 @@ func danger(n: Dictionary) -> Dictionary:
 	budget *= max(float(R["pwMin"]), min(float(R["pwMax"]), pow(max(0.5, P) / float(R["refP"][s]), float(R["pw"]))))
 	var why = []   # what moved the number, for the hover card: [label, factor]
 	if ai_level == "standard": budget *= float(R["std"]); why.append(["Standard AI", float(R["std"])])
+	if s == 3 and R.get("late") is Dictionary:   # issue 1178: Sector 3's extra fleet budget at this AI level (battle.js genEnemyFleet)
+		var lm = float(R["late"].get("veteran" if ai_level == "veteran" else "standard", 1.0))
+		if lm != 1.0: budget *= lm; why.append(["Sector 3 fleets", lm])
 	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Heat: Hunted", 1.15])
 	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)

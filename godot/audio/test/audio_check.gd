@@ -122,11 +122,34 @@ func _run() -> void:
 			var vc: Dictionary = c.variants[variant]
 			for f in vc.get("synth", []):
 				_ok(FileAccess.file_exists("res://audio/synth/" + f), name + " variant synth exists")
-			_ok(s._layers(name, c, variant).size() > s._layers(name, c).size(), name + " adds its variant")
+			if bool(vc.get("replace", false)):
+				# issue 1238: a replace variant is the faction's whole sound, none of the base cue's clips under it
+				var base_clips := {}
+				for l in c.layers:
+					if l.has("s"): base_clips[l.s] = true
+				var own: Array = s._layers(name, c, variant)
+				_ok(not own.is_empty(), name + " " + variant + " replace variant is playable")
+				var mixed := false
+				for l in vc.layers:
+					_ok(s.clips.has(l.s), name + " " + variant + " variant clip exists: " + l.s)
+				for st in own.map(func(x): return x.st):
+					for k in base_clips:
+						if not vc.layers.any(func(vl): return vl.s == k) and (s.clips.get(k, []) as Array).has(st):
+							mixed = true
+				_ok(not mixed, name + " " + variant + " plays no base-cue clip")
+			else:
+				_ok(s._layers(name, c, variant).size() > s._layers(name, c).size(), name + " adds its variant")
 		for l in c.layers:
 			if l.has("s"):
 				_ok(s.clips.has(l.s), name + " clip exists: " + l.s)
-	# issue 506: the weapon and the struck faction choose the hull-hit cue
+	# issue 1238 (F5.4): Chorus and Glasswright deaths have their own sound at every step, with no steel layer
+	var steel := ["scrape", "hullHitBig", "crackSettle", "wreckSettle", "heavyPlate", "debris", "boomBig", "ionCharge"]
+	for fac in ["chorus", "ithar"]:
+		for cue in ["death_powerdown", "death_vent", "death_run", "death_crack", "hulk_vent", "boom_l", "boom_s", "chunk_cool", "death_tail", "wreck", "hit_heavy"]:
+			var v: Dictionary = s.cues[cue].get("variants", {}).get(fac, {})
+			_ok(bool(v.get("replace", false)), cue + " has a " + fac + " sound of its own")
+			for l in v.get("layers", []):
+				_ok(not steel.has(l.s), cue + " " + fac + " has no steel layer: " + l.s)
 	_ok(s.impact_cue("las", "hegemony") == "hit_las", "a las hit plays hit_las, not hit")
 	_ok(s.impact_cue("lance", "hegemony") == "hit_las", "a lance hit plays hit_las")
 	_ok(s.impact_cue("plasma", "hegemony") == "hit_plasma", "a plasma hit plays hit_plasma")

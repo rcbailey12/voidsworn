@@ -20,9 +20,8 @@ if ($mode -eq 'run') {
     $start.Arguments = '/d /s /c ""' + $runner + '" ' + $n + ' locked"'
     $start.UseShellExecute = $false
     $start.EnvironmentVariables['CODEX_LOCKED_REPO'] = $args[2]
-    $child = [Diagnostics.Process]::Start($start)
-    try { $child.WaitForExit(); exit $child.ExitCode }
-    finally { $child.Dispose() }
+    . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
+    exit (Invoke-LockedRunner $start $n)
   } catch {
     if (-not $lock) { Write-Host "job refused: cannot take the Codex checkout lock (lane busy or lock unavailable); no agent started" }
     else { Write-Host "job stopped: could not run codex_issue.bat ($($_.Exception.Message))" }

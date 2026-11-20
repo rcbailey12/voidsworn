@@ -13,7 +13,9 @@ if not exist "%JOB%\glb" mkdir "%JOB%\glb"
 if not exist "%JOB%\godot\proj" mkdir "%JOB%\godot\proj"
 setlocal
 set "PC_GPU_MODE=none"
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%R%\export3.py" -- "%JOB%\glb\%CELL%.glb" > "%JOB%\log_lod.txt" 2>&1
+set "TMO_STEP=recipe 6 LOD export"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_LOD_CAP% "%B%" -b "%JOB%\%CELL%.blend" -P "%R%\export3.py" -- "%JOB%\glb\%CELL%.glb" > "%JOB%\log_lod.txt" 2>&1
+if errorlevel 1 (echo Stage 6 FAILED: the LOD export exited %ERRORLEVEL%. See %JOB%\log_lod.txt & goto bad)
 endlocal
 findstr /L /c:"[209] export" "%JOB%\log_lod.txt" > nul || (echo Stage 6 FAILED: the LOD export wrote nothing. See %JOB%\log_lod.txt & goto bad)
 copy /y "%R%\godot\project.godot" "%JOB%\godot\proj\" > nul
@@ -24,7 +26,8 @@ copy /y "%REPO%\godot\tools\picture_provenance.gd" "%JOB%\godot\proj\tools\" > n
 set "PICTURE_SOURCE_REPO=%REPO%"
 set "PICTURE_STAMP_TOOL=%REPO%\tools\picture_provenance.py"
 set "PICTURE_PYTHON=%BPY%"
-call "%REPO%\tools\pc\tmo.bat" 1800 "%GD%" --path "%JOB%\godot\proj" --resolution 1920x1080 --script res://bench209r3.gd -- "%JOB%\glb" "%JOB%\godot" %CELL% 2 length=%LEN% > "%JOB%\log_godot.txt" 2>&1
+set "TMO_STEP=recipe 6 LOD bench"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_LOD_CAP% "%GD%" --path "%JOB%\godot\proj" --resolution 1920x1080 --script res://bench209r3.gd -- "%JOB%\glb" "%JOB%\godot" %CELL% 2 length=%LEN% > "%JOB%\log_godot.txt" 2>&1
 if errorlevel 1 (echo Stage 6 FAILED: the preview or its picture stamps failed. See %JOB%\log_godot.txt & goto bad)
 findstr /L /c:"BENCH DONE" "%JOB%\log_godot.txt" > nul || (echo Stage 6 FAILED: the Godot bench did not finish. See %JOB%\log_godot.txt & goto bad)
 echo Stage 6 done: %JOB%\glb\%CELL%.glb and %JOB%\godot

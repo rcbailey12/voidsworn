@@ -78,7 +78,7 @@ const RIM_SOFT_LAYER := 1 << 14      # issue 601: the stack-painted surfaces (RI
 const RIM_SCRIPT := "res://render/look_rim.gd"
 # Bench probes only (contrib/opus/reviews/readability_362/): numbers laid over READ and RIM for one run, never saved. The game
 # never sets this.
-static var tune := {}
+static var tune := {}   # not GPU: look numbers read from json
 
 
 static func read_of(faction: String) -> Dictionary:
@@ -97,6 +97,13 @@ static func rim_of() -> Dictionary:
 	var r := RIM.duplicate()
 	r.merge(tune.get("rim", {}), true)
 	return r
+
+
+# Issue 1262: the cheaper 4K Max items (ssil, underlay, cards) can be switched back to the old way for the
+# before and after timing and pictures: VS_1262_OLD=all or a comma list. Capture only; never set in play.
+static func perf_old(item: String) -> bool:
+	var v := OS.get_environment("VS_1262_OLD")
+	return v != "" and (v == "all" or item in v.split(","))
 
 
 static func msaa_for_quality(quality: String) -> Viewport.MSAA:
@@ -139,7 +146,9 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		env.ssao_enabled = true
 		env.ssao_radius = 1.2
 		env.ssao_intensity = 1.6
-		env.ssil_enabled = true
+		# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
+		# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
+		env.ssil_enabled = perf_old("ssil")
 		env.ssr_enabled = false
 		env.sdfgi_enabled = false
 	if key != null:
@@ -209,6 +218,11 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 	var ex = m.get_meta("extras", {})
 	if ex is Dictionary and (ex as Dictionary).has("rim_soft"):
 		m.set_meta("look_rim_soft", true)
+	if ex is Dictionary and (ex as Dictionary).get("authored_look", 0) == 1:
+		m.rim_enabled = true
+		m.rim = float(ex.get("rim", 0.08))
+		m.rim_tint = float(ex.get("rim_tint", 0.15))
+		return m
 	var r := read_of(faction)
 	if r.is_empty():
 		var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])

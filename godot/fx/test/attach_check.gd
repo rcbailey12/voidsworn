@@ -26,6 +26,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")
 const TOL_FRAC := 0.012
 const DIRS := 16
 
@@ -490,8 +491,8 @@ func _real_hulls(only: Array) -> int:
 		if not built and not FileAccess.file_exists(glb):
 			continue
 		var fc: Array = by_code.get(code, ["hegemony", "Cruiser"])
-		var fac := str(fc[0]) if HT.FAC3D.has(str(fc[0])) else "hegemony"
-		var cls := str(fc[1]) if fc[0] in HT.FAC3D else "Cruiser"
+		var fac := str(fc[0]) if FLOOK.has(str(fc[0])) else "hegemony"
+		var cls := str(fc[1]) if FLOOK.has(str(fc[0])) else "Cruiser"
 		var root3: Node3D
 		x += 80.0
 		if built:

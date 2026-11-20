@@ -37,12 +37,8 @@ for (const file of changedGD) gd(file, [], 'parse_' + file, true);
 console.log('PASS: headless parse of all changed GDScript files');
 for (const f of ['core.js', 'battle.js', 'campaign_meta.js', 'campaign3d.js', 'main3d.js', 'ui3d.js', 'contrib/opus/tools/playlog_report.js', 'tools/test_onboarding.js']) run(process.execPath, ['--check', f], 'syntax_' + f);
 const cards = JSON.parse(fs.readFileSync(path.join(__dirname, 'onboarding_cards.json')));
-const ui = fs.readFileSync(path.join(root, 'ui3d.js'), 'utf8');
-assert.deepEqual(JSON.parse(/const TIPS=(\[[\s\S]*?\n\]);/.exec(ui)[1]), cards);
-// KEEL teaches the Godot HUD's bars. The browser card describes its board display.
-const godotBattleCards = cards.slice(0, 9).map(card => card[0] === 'move' ? [card[0], card[1],
-  'The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs.'] : card);
-for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', godotBattleCards], ['godot/ui/campaign/campaign_tips.gd', 'CARDS', cards.slice(9)]]) {
+// The manifest mirrors the shipped Godot cards. The frozen browser keeps its own screen copy.
+for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', cards.slice(0, 9)], ['godot/ui/campaign/campaign_tips.gd', 'CARDS', cards.slice(9)]]) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
   const block = new RegExp('const ' + name + ' := (\\[[\\s\\S]*?\\n\\])').exec(source)[1];
   assert.deepEqual(JSON.parse(block.replace(/,\s*\]/g, ']')), expected);

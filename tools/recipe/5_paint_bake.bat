@@ -18,14 +18,16 @@ if not "%STACK_NOTE%"=="" echo Stage 5: %STACK_NOTE%
 echo Stage 5: no paint stack for this ship yet ^(bake none^): the unpainted stage 4 build goes on.
 goto baked
 :bake
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 -P "%R%\%BAKE%" -- "%JOB%" "%B0%" none %CELL% 4096 64 > "%JOB%\log_bake.txt" 2>&1
+set "TMO_STEP=recipe 5 paint bake"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_BAKE_CAP% "%B%" -b --python-exit-code 1 -P "%R%\%BAKE%" -- "%JOB%" "%B0%" none %CELL% 4096 64 > "%JOB%\log_bake.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: the bake ^(%BAKE%^) exited code %ERRORLEVEL%. See %JOB%\log_bake.txt & goto bad)
 rem Issue 726: Cycles can fail shader compilation while Blender still exits zero and writes the completion marker.
 findstr /i /c:"out of SVM stack space" /c:"failed to compile" /c:"shader compilation failed" /c:"shader compilation error" /c:"shader compile error" /c:"error compiling" "%JOB%\log_bake.txt" > nul
 if not errorlevel 1 (echo Stage 5 FAILED: Cycles could not compile a bake shader. See %JOB%\log_bake.txt & goto bad)
 findstr /L /c:"[209] %CELL% {" "%JOB%\log_bake.txt" > nul || (echo Stage 5 FAILED: the bake ^(%BAKE%^) wrote nothing. See %JOB%\log_bake.txt & goto bad)
 rem issue 601: every surface seen from outside carries the stack: no inside room colour and no unpainted surface in six views
-if /i "%BAKE%"=="bake_sheet.py" call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%RC%\surface_check.py" -- "%JOB%\surface" > "%JOB%\log_surface.txt" 2>&1
+set "TMO_STEP=recipe 5 surface check"
+if /i "%BAKE%"=="bake_sheet.py" call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%RC%\surface_check.py" -- "%JOB%\surface" > "%JOB%\log_surface.txt" 2>&1
 if /i "%BAKE%"=="bake_sheet.py" if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: the surface check exited code %ERRORLEVEL%. See %JOB%\log_surface.txt & goto bad)
 if /i "%BAKE%"=="bake_sheet.py" (findstr /b /c:"PASS surface check" "%JOB%\log_surface.txt" || (findstr /c:"surface check" /c:"seen from outside" "%JOB%\log_surface.txt" & echo Stage 5 FAILED: surfaces seen from outside without the paint stack. See %JOB%\log_surface.txt & goto bad))
 if /i "%BAKE%"=="bake_sheet.py" if exist "%JOB%\density.json" "%BPY%" -c "import json,sys;d=json.load(open(sys.argv[1]))['summary'];print('Stage 5 R224 density (reported, not a pass bar): paint flags',len(d['paint_flags']),'mesh flags',len(d['mesh_flags']));[print('  ',f) for f in d['paint_flags']+d['mesh_flags']]" "%JOB%\density.json"
@@ -42,19 +44,23 @@ set PAINTVIEWS=
 if not "%SHEET%"=="" set PAINTVIEWS=--views=concept,hero,side,top,below,battle
 rem Issue 873: one log per render pass, and every pass is checked on its own exit code and on its own RENDER DONE line.
 rem A failed or silent second or third pass can no longer hide behind the first pass's line.
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% "%CAMARG%" %PAINTVIEWS% > "%JOB%\log_render.txt" 2>&1
+set "TMO_STEP=recipe 5 studio renders"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_RENDER_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% "%CAMARG%" %PAINTVIEWS% > "%JOB%\log_render.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: render pass 1 ^(default views^) exited code %ERRORLEVEL%. See %JOB%\log_render.txt & goto bad)
 findstr /L /c:"RENDER DONE" "%JOB%\log_render.txt" > nul || (echo Stage 5 FAILED: render pass 1 ^(default views^) wrote no RENDER DONE. See %JOB%\log_render.txt & goto bad)
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% --views=concept --light=concept "%CAMARG%" > "%JOB%\log_render_concept.txt" 2>&1
+set "TMO_STEP=recipe 5 concept render"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_RENDER_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% --views=concept --light=concept "%CAMARG%" > "%JOB%\log_render_concept.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: render pass 2 ^(concept light^) exited code %ERRORLEVEL%. See %JOB%\log_render_concept.txt & goto bad)
 findstr /L /c:"RENDER DONE" "%JOB%\log_render_concept.txt" > nul || (echo Stage 5 FAILED: render pass 2 ^(concept light^) wrote no RENDER DONE. See %JOB%\log_render_concept.txt & goto bad)
 rem Issue 363: the far side still, so paint is judged away from the concept camera too (R160 point (f)). The underside is a
 rem default view; the starboard side (the side the concept camera does not see) is on request only in render.py.
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% --views=side_s,hero_s > "%JOB%\log_render_far.txt" 2>&1
+set "TMO_STEP=recipe 5 far-side renders"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_RENDER_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% --views=side_s,hero_s > "%JOB%\log_render_far.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: render pass 3 ^(far side^) exited code %ERRORLEVEL%. See %JOB%\log_render_far.txt & goto bad)
 findstr /L /c:"RENDER DONE" "%JOB%\log_render_far.txt" > nul || (echo Stage 5 FAILED: render pass 3 ^(far side^) wrote no RENDER DONE. See %JOB%\log_render_far.txt & goto bad)
 if defined SHEET goto skip_close
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\close6.py" -- "%JOB%\close" %CELL% > "%JOB%\log_close.txt" 2>&1
+set "TMO_STEP=recipe 5 close-up renders"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_RENDER_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\close6.py" -- "%JOB%\close" %CELL% > "%JOB%\log_close.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: the close-ups exited code %ERRORLEVEL%. See %JOB%\log_close.txt & goto bad)
 goto close_done
 :skip_close

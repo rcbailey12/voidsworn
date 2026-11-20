@@ -94,7 +94,8 @@ func _initialize() -> void:
 	start_run("voidsworn", 2)
 	C.RUN["cpCap"] = 10.0; C.RUN["fleet"] = []
 	var keep = {"tpl": "h_interdictor", "name": "HNS Kept", "cp": 2, "hpf": 0.6, "wk": ["battery"], "ab": null, "regen": 0, "sh": 12}
-	C.RUN["reward"] = {"prizes": [keep], "prizeSel": ["add"]}
+	C.W["rw"] = {}
+	C.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [keep], "prizeSel": ["add"], "wrecks": []}
 	rows = C.prizePlan(C.RUN["reward"])
 	check(rows[0]["room"] and not rows[0]["cinder"] and rows[0]["rip"], "from run 3 the Add choice is offered again for a Hegemony prize")
 	C.ACT_prizeConfirm()
@@ -103,7 +104,7 @@ func _initialize() -> void:
 		if shp["tpl"] == "h_interdictor": kept = shp
 	check(kept != null and C.jt(kept.get("ripped")) and str(kept["name"]) == "HNS Kept", "the kept Hegemony prize joins with its links ripped out")
 	var keep2 = {"tpl": "c_raider", "name": "RVD Plain", "cp": 1, "hpf": 0.7, "wk": ["autocannon"], "ab": null, "regen": 0, "sh": 8}
-	C.RUN["reward"] = {"prizes": [keep2], "prizeSel": ["add"]}
+	C.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [keep2], "prizeSel": ["add"], "wrecks": []}
 	rows = C.prizePlan(C.RUN["reward"])
 	check(not rows[0]["cinder"] and not rows[0]["rip"], "only Hegemony and Eclipse prizes carry the rip")
 	C.ACT_prizeConfirm()

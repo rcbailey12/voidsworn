@@ -124,3 +124,17 @@ the Godot checks.
   headless Godot check.
 - Any new board object that has a size (a new terrain kind, a new station type, a new explosion) adds a row here and a
   check line in scale_check.gd in the same change.
+
+## 5. Hazard edges and the board floor (Ryan, Nov 20 2026)
+
+Ryan, Nov 20 01:11 UTC ("Picks ok", Board thread), on the backdrop audit check
+(/mnt/project-files/audits/neon_1119/backdrop_audit_check_1120.md):
+
+- **Clouds stay big; the hazard edge is drawn.** A nebula or ion storm cloud keeps spilling past its hexes (section 2,
+  R247), so the cloud itself does not mark where cover or shield drain stops. The normal battle view (cine) draws a faint
+  outline along the outer edge of each nebula and storm patch only (no inner hex lines, no debris or rock edges); Z keeps
+  the full tactical outlines. Why: the clouds reach about 2.4 hexes from a hazard hex centre, so players could not tell
+  where the rules edge was without Z. Job: issue 1267.
+- **No dark scrim under the board.** The cine look keeps underlay 0.0 (godot/world/board_look.gd); readability over
+  bright skies is solved by the hazard outline and the sky, not a mat under the hexes. Why: a scrim brings back the
+  board-game plate RULEBOOK 10.1 rules out (R70).

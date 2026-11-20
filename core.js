@@ -64,7 +64,11 @@ function migrateMeta(m){ { const d=defaultMeta(); for(const k in d) if(k!=='v'&&
   if(!m.wonFix41){ m.wonFix41=1; try{ let fac=null; const won=new Set((m.stats&&m.stats.wonFacs)||[]); for(const e of (m.tel||[])){ if(e.ev==='run_start'&&e.fac) fac=e.fac; else if(e.ev==='run_end'){ if(e.victory&&(e.fac||fac)) won.add(e.fac||fac); fac=null; } } if(m.stats) m.stats.wonFacs=[...won]; }catch(e){} }
   return m; }
 function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
-  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
+  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; }
+  r=normalizeRun(r);
+  if(r&&r.sector===3&&r.beat3DebriefSeen==null&&r.t0>0&&r.flags&&typeof STORY_BEAT3!=='undefined'&&STORY_BEAT3[r.fac]&&r.flags[STORY_BEAT3[r.fac].id]!=null&&
+      Array.isArray(META.tel)&&META.tel.some(e=>e&&e.ev==='battle_end'&&e.result==='win'&&e.sector===3&&e.t>=r.t0)) r.beat3DebriefSeen=true;
+  return r; }
 // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
 function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
   heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null,classTrack:{},boonRerolls:0,
@@ -93,8 +97,9 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
   if(!Number.isFinite(r.credits)){ rep.push('credits'); r.credits=0; } // B1 (B-5): a save whose credits went NaN from selling a captured flagship
+  if(r.fac==='chorus'&&!Number.isFinite(r.bio)){ r.bio=r.credits; r.credits=0; } // issue 1178: a Chorus run saved before biomass moves its purse to biomass, as a new run starts
   if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
-    if(!['prize','salvage','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
+    if(!['prize','salvage','victory','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
     R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];
     for(const w of R.wrecks){ if(w.yield.mod!=null&&!has(MODULES,w.yield.mod)) w.yield.mod=null; if(!has(HULLS,w.tpl)) w.yield.tow=false; }
     if(R.boonOffer!=null&&(!Array.isArray(R.boonOffer)||R.boonOffer.some(o=>!o||!has(BOONS,o.id)))) R.boonOffer=null;
@@ -225,8 +230,24 @@ function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eaten
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
 function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
+// issue 1178 (R335, the 1085 sim pick): the Chorus pay for hull work (repairs, new hulls, Marks) in biomass, earned flat per win
+// plus 2 per kill (at most 12 a battle); credits still buy refits, class refits, events and the late market. Every other faction: credits.
+function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
+function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
+function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
+function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
+const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salvage']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+// issue 1290: skip = relics the late market never offers: +25% battle credits, +30% XP and the Scrap rig (15 credits and 8% hull a
+// win, about 40 a battle at the measured 707 fleet hull) cannot earn back 120 in the 2 or 3 fights left after a Sector 3 yard
+// Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 100 a battle (issue 1290: about 25% of
+// a hull's price, up from 15 to 18%; still under the 35% decommission value, so losing a ship never profits)
+const CULLET={Frigate:25,Destroyer:45,Cruiser:70,Carrier:85,Battleship:100,cap:100};
 function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
+// issue 1290: what decommissioning pays. A ship regrown from an Eclipse core pays nothing until it has fought a battle (regrow is 20%
+// of value, scrap 35%, so regrow-then-sell was free money). Paid in the hull purse: biomass for the Chorus, credits for the rest.
+function sellValue(s){ return s&&s.regrown?0:prizeScrap(s.tpl); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
 function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
 function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;
@@ -475,6 +496,7 @@ function newRun(admiralId,fac,opt){
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null, eatenCore:null, eatCoreSeen:false};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+  if(fac==='chorus'){ RUN.bio=RUN.credits; RUN.credits=0; } // issue 1178: the Chorus start with their purse as biomass
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);

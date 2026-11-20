@@ -257,6 +257,14 @@ LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan 
 2.16 **Argon stays off.** Why: "My subscription ran out and it just wasn't that useful to justify the cost" (R216). Ends when
 Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
+2.17 **A fix lands in the shared kit, so it reaches everything of its kind at once.** Every fix or look change goes where all
+ships, screens or systems of that kind read it: a faction's skin in its kit stack (every ship of that faction rebakes from it),
+a parts option every hull of the family uses, pipeline fixes in shared helpers, AI rules in battle.js and rules.gd together,
+and every start screen's fonts, buttons, labels, rows, cards and sounds in godot/ui/theme/orders_kit.gd (9.15). Each pull
+request names who else picks the change up; the Board returns a one-off fix unless the pull request says why it is specific.
+Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
+apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
@@ -274,23 +282,90 @@ wrong: every new rule since went into both copies (round 2 review, Nov 17). Set:
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Nothing on Ryan's PC is deleted except a job's own leftovers.** A job may remove the temp copies and scratch folders it created, and old kept workspace copies that Git shows hold only rebuildable files, once its work is pushed. Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
+3.3 **Jobs and the janitor may remove only the leftovers covered here.** Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
 Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
-Set: Ryan, Nov 18 (R326); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
+Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
-`__pycache__` and `.pyc` caches, and ignored files under `godot/assets/ships/` whose size and SHA-256 match the same path
-in the shared build (issue 1107). It fetches and switches to the new branch with those files in place. A collision or an
+`__pycache__` and `.pyc` caches, regenerated `golden/*.jsonl`, `out/` and `parity_campaign_log.txt` under
+`godot/campaign/test/`, regenerated `golden/`, `out/` and `parity_log.txt` under `godot/rules/test/`, ignored Godot `.uid`
+files including script UIDs and those under `godot/audio/build/`, and
+ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
+the shared build by size and SHA-256 (issue 1107). For removal only, never for reuse, a differing ship or `godot/gen/` file
+is a candidate when the shared build holds the same file written strictly later; a copy file with no trusted time (before
+2000 or in the future) is kept, and each such call logs both times and sizes. Times only nominate: the janitor copies
+those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
+`salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
+any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
-copy and its size; older copies are removed only as the next paragraph allows. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
-Parity removes its own default temp folder when it finishes, pass or fail. After a checked push the runner removes
-the scratch folder it recorded for that run. It keeps the newest `repo-kept-*` copy in the board folder and removes
-older ones only when the same rebuildable-file and Git history checks pass. It logs each decision. A pause removes nothing (3.11).
+Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
+its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
+a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
+(default 150 GB), at most once an hour across all lanes for low space. The runner then checks its 60 GB floor.
+The janitor keeps the newest `repo-kept-*` copy in each of `board`, `board_b`, `board_c` and `board_d`. Older copies and
+finished `work217/issue-<N>-<arm>/<stamp>/repo` folders must be untouched for at least three hours and pass the same
+rebuildable-file, Git history and lock checks. Workhorse `out/` folders and runner settings and hashes stay in place.
+The checkout age uses the newest working file write time and skips `.git`. Git checks use `--no-optional-locks` with the
+filesystem monitor and diff index refresh disabled so inspecting a checkout leaves it unchanged. Why: an index write can
+make an old copy look fresh on the next scan or look like an edit during the current scan (issue 1180).
+If an otherwise eligible copy holds tracked edits, untracked files or local-only commits and has been untouched for at least
+one day, the janitor saves a binary patch against HEAD, a separate staged patch, a zip of untracked work and, when needed,
+a bundle of local-only commits under `voidsworn_test/salvage/<lane>_<name>/`. It checks that the patches apply, the bundle
+verifies and the zip entries match before it removes the copy. An unreadable checkout, unknown ignored file or failed check
+keeps the copy. Salvage folders are kept. Why: old job copies can be large and still hold work worth saving. Set: Ryan,
+Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
+
+Helper PC jobs get their checkout from `tools\pc\helper_clone.bat <job folder> <branch> [ships] [job steps]`: one `git clone --local`
+of the shared `repo-mirror.git` per helper folder (objects shared, no new download), reused on later runs without ever
+resetting local work, and ship files copied and checked by get_ship_files.bat, never hardlinked, because tools rewrite
+them in place. A helper .bat never clones from GitHub itself (issue 1180, Board Nov 20). The helper runs its job steps
+through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease until they end, so no second run can
+switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
+and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
+Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
+removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
+token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
+a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
+its whole name is one our tools generate (`voidsworn-run-[<issue>-]<32 hex>`, `voidsworn-parity-<6 characters>` from
+run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), its issue lock is free and no running
+process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
+older, are removed as links and never followed, and the log names each link's target; a folder another account owns
+(Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
+only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
+in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
+own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
+other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
+is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
+no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
+(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
+repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
+Jobs also stop refilling TEMP themselves (issue 1180, Board Nov 20). The runner self-test removes its evidence folder
+after a PASS (RUNNER_SELFTEST_KEEP=1 keeps it). The watchdog removes the Godot profile folder it made for one launch once
+every process of that launch has exited, links as links, never a job's own profile (PC_KEEP_GODOT_PROFILE=1 keeps it).
+Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
+a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
+janitor keeps for one day. When a job_wrap job ends, the janitor runs once more with `--after-job` in a
+hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
+janitor holds its lock, any `gpu_slot_N` or `gpu_solo` claim file is non-empty or the Board's pause is on, and stops
+between folders if a GPU claim starts, so a solo measurement is never timed alongside it. The watchdog and scratch_done.ps1 check the
+Board's pause right before each removal and keep the folder for a later pass. Why: these four leftovers
+refilled C: by about 120 GB a day between nightly runs (issue 1180 dry run 2).
+The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
+run before the first live run. A pause removes nothing (3.11).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
@@ -298,12 +373,31 @@ side, heavy bakes and Blender renders take more of it, and nothing is started th
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
 bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
-to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
-work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
-unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+to empty and blocks new GPU work while it measures. Slot files are replaced atomically. A slot or solo claim with damaged JSON
+is moved to a retained `gpu_slot_corrupt_*` file so admission can resume. Damaged capacity settings stop admission.
+Claims name the issue, job directory or script. The watchdog and its GPU child each have a recorded PID, start time and
+executable name. The child is recorded before it can start work. A failed kill logs the survivors and leaves an
+`orphaned_child` claim until those exact processes are gone. Claims from older ship checkouts stay held while their PID
+is alive. Admission checks a snapshot outside the shared lock at most once a second. If the lookup fails or the claim files
+change during the lookup, admission waits and checks again. Child registration waits for the lock before starting the child.
+Drain GPU jobs before updating all shared tools copies together, since older launchers cannot track the child.
+A partial write or a reused PID could block the queue, and losing
+the watchdog or failing to kill its child could free capacity while the child was still using it (Board, issue 1193).
+`gpu_go.txt` still wins: no new GPU work starts unless its first line is `GPU cleared` (optionally followed by `: reason`);
+the gaming pause in 3.11 is unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
 graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
 jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
 (R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
+
+Each wrapped step has a ceiling sized to its work. A solo claim follows that ceiling by default.
+`PC_GPU_SOLO_MAX_S` can set an earlier limit from acquisition. A job with several timed sessions claims the card once
+per session. The watchdog counts output, new files in the step's output folder, and CPU time across the process tree
+as progress. The idle limit is 300 seconds for Godot and 600 seconds for other tools. A step can raise it with
+`TMO_IDLE_S`. The Jolt job-system line stops the step immediately. A step may add a pattern through
+`TMO_FATAL_PATTERN`. A stop returns 124, retains the child logs, and records the step and reason in `timeouts.log`.
+GPU admission has a separate clock. It defaults to 1500 seconds in the agent runners, below their 30-minute stall
+limit, and 3600 seconds in the shared ship runner. Why: a Jolt stall in the issue 1078 probe held the GPU solo for
+almost an hour and queued work timed out behind it (Board, Nov 19, issue 1192).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
@@ -315,6 +409,28 @@ keep their explicit time limits. Why: hung Godot windows blocked the queue for a
 agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
 if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
 (G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
+
+PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
+
+PC jobs run one tools copy and report honestly (issue 1194, Board, Nov 20). `lane_tools_refresh.ps1 -Build tools_live`
+installs main's tools as a verified, never-edited version under `Downloads\voidsworn_test\tools_live\` with its own
+hashes, named by `tools_live\current.txt`; every `tmo.bat` outside it hands its step to that copy, so an old `build\tools`
+or branch checkout never runs its own watchdog or slot reader (self-tests set `TMO_OWN_COPY=1`). The main watcher refreshes
+tools_live and `build\tools` between jobs. Old lane backups and old tools_live versions rotate instead of stopping the
+refresh: a backup goes only when every file in it is kept in a newer copy or a saved main snapshot, a version only when it
+was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
+their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
+(exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
+declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. Helper
+(Opus) proof bats start from `tools/pc/jobs/opus_job_template.bat` and call `opus_job_head.bat` from tools_live: exact
+commit pins in a fresh checkout per attempt, the safe ships copy with a tracked-file check, the throwaway profile and
+Ryan's options hashed before and after; the Board checks only that a bat calls the head (docs/playbooks/pc.md, issue
+1303, Board Nov 20: seven bats sent back on Nov 19 and 20 for the same four mistakes). The
+watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
+read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
+failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
+the watcher filed every job as done, and a missing ffmpeg or Pillow showed only after an hour on the GPU (Neon's PC
+pipeline audit, checked by the Board, Nov 19).
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -682,6 +798,16 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
 large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
 
+9.15 **The start screens (title, Settings, Credits, faction and admiral, flagship aspect, Progression, Lineage, Help) build
+from one kit, godot/ui/theme/orders_kit.gd, on glass_shell's orders sheet.** One font set (Big Shoulders Display heads,
+Barlow words, Azeret Mono figures), one ember primary per screen with quiet secondaries, labels that wrap inside their
+container, rows with one control column, cards whose actions line up, the Back left and the primary right, and the ui_*
+sounds on hover, press, back and confirm. Esc goes Back on every start page. The player's UI scale is never capped: a layout
+fits 831 design pixels tall (Larger at any 16:9 window) instead. Why: the start flow mixed three font sets and every screen
+built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "the title screen is SUPER basic,
+faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
+1217). Detail: docs/playbooks/screens.md section 2.
+
 ## 10. The campaign map, space and the board
 
 10.1 **The battle board is a cinematic scene, not a board game**: no grey plate, living terrain, a faint grid only near the
@@ -735,6 +861,10 @@ of it.** Why: avoid a known film creature; the species is not made of glass (R66
 
 11.5 **The "Playtest: everything unlocked" switch stays on, with renown progression intact underneath, until Ryan says
 progression is ready to test.** Why: he tests the whole game, not the unlock path (R69). Set: Ryan (R69). Id: progression-01.
+
+11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
+Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
+20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
 
 ## 12. Automatic checks
 

@@ -21,6 +21,20 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $mode = $args[0]
+if ($mode -eq 'run') {
+  $issue = $args[1]; $arm = $args[2]; $runMode = $args[3]
+  if ($issue -notmatch '^[1-9][0-9]*$' -or $arm -notin @('deepseek','deepseekpro','kimi','kimicode','sonnet','opus','openai')) { exit 14 }
+  if ($runMode -ne 'dryrun') { $runMode = '' }
+  $runner = Join-Path $PSScriptRoot 'work_issue.bat'
+  $start = New-Object Diagnostics.ProcessStartInfo
+  $start.FileName = $env:COMSPEC
+  $start.Arguments = '/d /s /c ""' + $runner + '" ' + $issue + ' ' + $arm + ' "' + $runMode + '" locked"'
+  $start.UseShellExecute = $false
+  try {
+    . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
+    exit (Invoke-LockedRunner $start $issue)
+  } catch { Write-Host "job refused: could not hold the issue lock and run work_issue.bat ($($_.Exception.Message))"; exit 14 }
+}
 
 # Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
 # GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes

@@ -2,6 +2,7 @@ extends SceneTree
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
+const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SV := preload("res://render/ship_view.gd")
 
@@ -53,6 +54,11 @@ func _run() -> void:
 	var box := BoxMesh.new()
 	box.size = Vector3(12, 3, 4)
 	var first := _register(box, 0.0, 0.0)
+	var key: String = SHIP._shield_skin_arrays.keys()[0]
+	var baked := SHIP._bake_shield_skin(box.get_aabb(), box.get_faces())
+	SHIP._shield_skin_arrays.clear()
+	_check(var_to_bytes(SHIELD_CACHE.read_skin(key)) == var_to_bytes(baked),
+		"disk cache retains every fitted shield vertex attribute")
 	var turned := _register(box, TAU / 3.0, 0.0)
 	var bobbed := _register(box, TAU / 3.0, 0.25)
 	_check(SHIP._shield_skin_arrays.size() == 1, "facing and idle bob share a single cache entry")

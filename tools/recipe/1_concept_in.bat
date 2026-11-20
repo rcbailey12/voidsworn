@@ -9,10 +9,12 @@ call "%~dp0env.bat"
 if exist "%RC%\ships\%SHIP%.json" goto have
 if not exist "%REPO%\docs\ship_pipeline\concepts\%SHIP%.webp" (echo Stage 1 FAILED: no concept at docs\ship_pipeline\concepts\%SHIP%.webp and no ships\%SHIP%.json. Add one first. & goto bad)
 set /p FAC=Faction id (corsair, voidsworn, ithar, deathless, chorus, hegemony): 
-"%BPY%" "%RC%\ship.py" %SHIP% new %FAC%
+set "TMO_STEP=recipe 1 create ship settings"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\ship.py" %SHIP% new %FAC%
 if errorlevel 1 (echo Stage 1 FAILED: could not start ships\%SHIP%.json & goto bad)
 :have
-"%BPY%" "%RC%\ship.py" %SHIP% concept "%JOB%\concept.png"
+set "TMO_STEP=recipe 1 write concept"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\ship.py" %SHIP% concept "%JOB%\concept.png"
 if errorlevel 1 (echo Stage 1 FAILED: the concept PNG was not written. & goto bad)
 if not exist "%JOB%\concept.png" (echo Stage 1 FAILED: the concept PNG was not written. & goto bad)
 echo Stage 1 done: %JOB%

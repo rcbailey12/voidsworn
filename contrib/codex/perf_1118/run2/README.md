@@ -1,5 +1,7 @@
 # Issue 1070, run 2
 
+[Run 4 battle-load and fragment results](run4.md)
+
 The replay used the preserved Run 1 fleet. Both the installed ship manifest and the generated asset manifest matched Run 1. The saved Run 2 before timings use `b7e82cdd25744d9315daabc02fb1c84a81c5a433`. The resumed work uses the merged base `950e1a2f8435e4da702bcbe9104546a9ac2168ac` with the Run 1 assets.
 
 ## Code changes

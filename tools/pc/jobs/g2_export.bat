@@ -37,6 +37,7 @@ set "BACKUP_EXPORT=%ROOT%export-previous-%BUILD_ID%"
 mkdir "%CANDIDATE_EXPORT%" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
 echo exporting >> "%LOG%"
+set "PC_GODOT_EXPORT_TEMPLATES=%TPL%"
 call "%TMO%" 1800 "%G%" --headless --path "%PROJ%" --export-release "Windows Desktop" "%CANDIDATE_EXPORT%\Voidsworn.exe" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
 for %%F in (Voidsworn.exe Voidsworn.console.exe Voidsworn.pck) do if not exist "%CANDIDATE_EXPORT%\%%F" goto failed

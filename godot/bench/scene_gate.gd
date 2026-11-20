@@ -500,9 +500,10 @@ func _fire_at(fx, att: String, kind: String, tgt: String, weapon: String, t: flo
 		fx.volley(att, kind, tgt, {"weapon_id": weapon, "shots": shots, "hits": hits})
 
 
+# Static so other probes can count flashes the same way (issue 1078 shield_fail_probe.gd).
 # Per-frame screen luminance, downsampled: mean over the whole frame and the brightest 1/6-screen block (the WCAG
 # 10-degree field is about a quarter of the screen, so the block is the stricter read).
-func _luma(img: Image) -> Dictionary:
+static func _luma(img: Image) -> Dictionary:
 	if img == null or img.is_empty():
 		return {"mean": 0.0, "block": 0.0}
 	var im: Image = img.duplicate()
@@ -532,7 +533,7 @@ func _luma(img: Image) -> Dictionary:
 	return {"mean": sum / float(96 * 54), "block": mx}
 
 
-func _flash_stats(rows: Array) -> Dictionary:
+static func _flash_stats(rows: Array) -> Dictionary:
 	var mean_max := _rolling_max(rows, "mean")
 	var block_max := _rolling_max(rows, "block")
 	return {"mean_max": mean_max["max"], "block_max": block_max["max"], "mean_events": mean_max["events"], "block_events": block_max["events"]}
@@ -540,7 +541,7 @@ func _flash_stats(rows: Array) -> Dictionary:
 
 # Count WCAG flash pairs: a rise and the following fall (or the reverse) each of at least 0.10 relative luminance,
 # merged inside 0.33 s, with the darker of the pair under 0.80. Then the most in any rolling second.
-func _rolling_max(rows: Array, key: String) -> Dictionary:
+static func _rolling_max(rows: Array, key: String) -> Dictionary:
 	var ys: Array = []
 	for r in rows:
 		ys.append(float(r[key]))
