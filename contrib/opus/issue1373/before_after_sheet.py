@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 shots, out, rev = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
 ROWS = [('ithar_fighter', 'GF1 The Needle', 'Glasswright fighter'), ('ithar_bomber', 'GB1 Needle bomber', 'Glasswright bomber'),
-        ('chorus_spore', 'CS1BA2 spore, round G shell', 'Chorus spore'), ('hegemony_bomber', 'HB1 (HF1D family)', 'Navy bomber')]
+        ('chorus_spore', 'CS1BA2 spore, round G shell', 'Chorus spore'), ('hegemony_bomber', 'HB1 (HF1D family)', 'Navy bomber'),
+        ('corsair_fighter', 'KF1 (KB1CC family)', 'Hullbreaker fighter')]
 W, H = 1280, 720
 sheet = Image.new('RGB', (W, H), (11, 14, 20))
 d = ImageDraw.Draw(sheet)
