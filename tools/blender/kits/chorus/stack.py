@@ -25,7 +25,9 @@ ZONES = {
     'maw': ((.029, .019, .007), (.008, .005, .002), .19),
     'pore': ((.018, .013, .005), (.006, .004, .002), .31),
     'vein': ((.060, .040, .016), (.024, .016, .007), .23),
-    'amber': ((.29, .15, .025), (.15, .066, .011), .55),
+    # issue 1373: the spore's gill valleys read as flat yellow bars at the game's Chorus lift (look.gd READ 1.9); a muted
+    # blush a step above the chitin keeps R259's "matte, never a glow" (only the spore craft uses this zone)
+    'amber': ((.13, .072, .022), (.07, .036, .010), .5),
     # the armour shell: pale weathered horn on the keels and lips down to charred horn at the tucked roots (round 3)
     'carapace': ((.17, .122, .074), (.022, .014, .007), .55),
     'carapace_joint': ((.043, .030, .015), (.018, .010, .005), .22),

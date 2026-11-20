@@ -85,6 +85,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	if count <= 0:
 		return
 	var lead := _make_craft(fac, kind)
+	finish(lead, fac)
 	for i in count:
 		var n: Node3D = lead if i == 0 else lead.duplicate()
 		add_child(n)
@@ -103,6 +104,38 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	fit_formation()
 	_patrol_blend = patrol_target
 	step(0.0)
+
+
+# R362 (docs/playbooks/ships.md section 9): strike craft take the hull finish, the same LOOK.hull pass ShipView gives a
+# hull (faction brightness band, material rim, and the "look_hull" mark that puts them under the rim light). One material
+# copy per source material and faction, shared by every craft of that kind; duplicates of the lead keep the overrides.
+static var _finish_cache := {}   # not GPU: weak references to shared materials
+
+
+static func finish(root: Node, fac: String) -> void:
+	if root == null or not ResourceLoader.exists("res://render/look.gd"):
+		return
+	var LOOK = load("res://render/look.gd")
+	for n in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or String(mi.name).begins_with("fx_"):
+			continue
+		for i in mi.mesh.get_surface_count():
+			var src: Material = mi.get_active_material(i)
+			if src == null or src.has_meta("look_hull"):
+				continue
+			var k := "%d|%s" % [src.get_instance_id(), fac]
+			var done: Material = null
+			if _finish_cache.has(k):
+				done = _finish_cache[k].get_ref()
+			if done == null:
+				done = LOOK.hull(src, fac, true)
+				if done == src:
+					# The code-built fallback skin (a shader) has no brightness band; it still joins the rim light.
+					done = src.duplicate()
+					done.set_meta("look_hull", fac)
+				_finish_cache[k] = weakref(done)
+			mi.set_surface_override_material(i, done)
 
 
 static func _model_code(fac: String, kind: String) -> String:
