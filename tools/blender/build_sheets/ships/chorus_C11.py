@@ -87,7 +87,7 @@ def build(K):
     calm += [(4.55, -0.62, 0.5), (4.55, math.pi + 0.62, 0.5), (-3.95, 0.25, 0.5), (-3.95, math.pi - 0.25, 0.5)]
     calm += [(-5.25, t, 0.9) for t in (0.0, math.pi / 2, math.pi, -math.pi / 2)]
     K.wob_fn = body.field(623, 5.2, -5.0, swell=30, folds=36, wrinkles=180, sweeps=50, depth=0.27, height=(0.26, 0.6),
-                          size=(0.75, 1.5), keep=calm, shell=(5.65, -4.9, -1.2))   # the armadillo shell below: no creases under it
+                          size=(0.75, 1.5), keep=calm, shell=(5.65, -4.9, plates.WRAP))   # the armadillo shell below: no creases under it
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=180, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the short broad body', hull, 'dark olive flesh', note='blunt at the bow, widest at 40 percent, tapering hard aft')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
@@ -198,15 +198,13 @@ def build(K):
     K.hull_detail('blade_row_sockets', sockets, 'carapace_joint')
     K.mass('Dorsal spines', spine_row, 'pale bone', note='Uneven backswept blades with wet root sockets.')
     # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
-    # armadillo bands of grown chitin wrapping the body from belly edge to belly edge (section angle -1.2), broken round the
-    # face, the wound and blade row, the mane, the sacs, the siphons and the vents; flat caps over the sacs; small fused chitin
-    # clusters on the strip of belly the bands leave open
-    plates.armadillo(K, _k, 5.65, -4.9, seed=1349, lo=-1.2, band=0.68, lap=1.45, thick=0.11, keep=('face', 'wound', 'blade_row'),
-                     note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the face, the blade row, the mane, sacs, siphons and vents; hide rolled at the edges')
+    # armadillo bands of grown chitin wrapping the body down to the keel (plates.WRAP), broken round the
+    # face, the wound and blade row, the mane, the sacs, the siphons and the vents; flat caps over the sacs; the belly
+    # is banded too
+    plates.armadillo(K, _k, 5.65, -4.9, seed=1349, band=0.68, lap=1.45, thick=0.11, keep=('face', 'wound', 'blade_row'),
+                     note='armadillo bands of grown chitin wrapping the body down to the keel, lips aft; broken round the face, the blade row, the mane, sacs, siphons and vents; hide rolled at the edges')
     plates.dome_caps(K, _k, caps, seed=1350, flat=True,
                      note='flat grown chitin caps over the bile sacs, two rings of thin plates lying close, the bile window open at each crown (round G)')
-    plates.fused_patches(K, _k, [(3.8, -1.55, 0.55, 3), (1.8, -1.62, 0.6, 4), (-0.2, -1.55, 0.58, 3), (-2.2, -1.6, 0.5, 3)],
-                         seed=1351, thick=0.08)
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 7.25, -5.6, 'whole body')
@@ -265,7 +263,7 @@ def build(K):
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown '
-             'chitin from belly edge to belly edge, flat chitin caps over the sacs, fused chitin clusters on the belly; the R341 scute shell removed',
+             'chitin down to the keel, flat chitin caps over the sacs, the belly banded too (Ryan, Nov 20: armour almost everywhere); the R341 scute shell removed',
              'Ryan, Nov 20 (R349; C13 round G accepted in game, PR 1308): armour across the entire body, grown not tiled, "caps, but flatter"; '
              'issue 1291 brings C10 to C12 to the same kit calls')
     K.change('Amber in the maws; olive flesh, dark ochre chitin and pale bone', 'Ryan picked the concept amber on the run 6 sheet; the vents and sacs keep the Chorus bile colour.')
