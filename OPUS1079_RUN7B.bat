@@ -1,5 +1,5 @@
 @echo off
-rem Issue 1079 run 7 (Ryan, Nov 19: the wake should be even smoother, no stages): the wake is now one continuous strip
+rem Issue 1079 run 7B (run 7 with the canonical tools_live watchdog and a pinned commit; Ryan, Nov 19: the wake should be even smoother, no stages): the wake is now one continuous strip
 rem along each ship's path instead of separate points. Clip, stills, storm-fixture cost and scene 207 cost, all again.
 rem Opus worker; R334, the Board queues it. Writes only under Downloads\voidsworn_test\opus1079\. Never deletes anything.
 rem Every step logs to out7\result.txt.
@@ -33,6 +33,7 @@ if errorlevel 1 (set "FAILMSG=git clone failed; see out7\git_log.txt" & goto fai
 :cloned
 for /f %%H in ('git -C "%R%" log -1 --format^=%%H') do set "HASH=%%H"
 echo commit %HASH% >> "%RES%"
+if not "%HASH%"=="6188aa0354e0b5d65f2a14876e21cc14e7ac0b6b" (set "FAILMSG=branch head is %HASH%, not the commit this run was written for" & goto fail)
 rem Artoo on PR 1181 (issue 1228): every Godot start here runs in a throwaway profile, so no battle can rewrite Ryan's
 rem real options. His battle_opts.json and board_look.cfg are hashed before and after; a change fails the run.
 set "REALU=%APPDATA%\Godot\app_userdata\Voidsworn"
@@ -42,8 +43,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_o
 set "APPDATA=%PROF%\appdata"
 set "LOCALAPPDATA=%PROF%\appdata"
 echo throwaway profile %PROF%\appdata >> "%RES%"
-set "TMO=%VT%\build\tools\pc\tmo.bat"
-if not exist "%TMO%" set "TMO=%R%\tools\pc\tmo.bat"
+rem Artoo (1077, PR 1231): every Godot start goes through the canonical watchdog, tools_live's current version (named in
+rem tools_live\current.txt), never a build or clone copy. Its path and both hashes go in the receipt.
+set "TLV="
+if exist "%VT%\tools_live\current.txt" set /p TLV=<"%VT%\tools_live\current.txt"
+if not defined TLV (set "FAILMSG=tools_live\current.txt is missing or empty" & goto fail)
+set "TMO=%VT%\tools_live\%TLV%\pc\tmo.bat"
+if not exist "%TMO%" (set "FAILMSG=no watchdog at %TMO%" & goto fail)
+if not exist "%VT%\tools_live\%TLV%\pc\run_timeout.ps1" (set "FAILMSG=no run_timeout.ps1 beside %TMO%" & goto fail)
+echo watchdog %TMO% >> "%RES%"
+certutil -hashfile "%TMO%" SHA256 >> "%RES%" 2>&1
+certutil -hashfile "%VT%\tools_live\%TLV%\pc\run_timeout.ps1" SHA256 >> "%RES%" 2>&1
 robocopy "%B%\assets\ships" "%R%\godot\assets\ships" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NP /NDL /NFL /R:1 /W:1 > "%O%\copy_ships.txt" 2>&1
 if errorlevel 8 (set "FAILMSG=ship copy failed; see out7\copy_ships.txt" & goto fail)
 robocopy "%B%\gen" "%R%\godot\gen" /E /NP /NDL /NFL /R:1 /W:1 > "%O%\copy_gen.txt" 2>&1
