@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:08:20 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\export\V16_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\V16_37_20261120_110818\export\V16_37\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\export\V16_37\
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1456	manifest_entry.json100%  
+	    New File  		   9.9 m	V16_37.glb 10.0% 20.0% 30.1% 40.1% 50.2% 60.2% 70.2% 80.3% 90.3%100%  
+	    New File  		   1.5 m	V16_37_base.jpg 15%   31%   47%   63%   78%   94%  100%  
+	    New File  		    5494	V16_37_check.json100%  
+	    New File  		   16713	V16_37_export.json100%  
+	    New File  		  514774	V16_37_glow_emission.jpg 25%   50%   76%  100%  
+	    New File  		   4.1 m	V16_37_normal.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+	    New File  		   8.0 m	V16_37_orm.png 12.4% 24.9% 37.4% 49.9% 62.4% 74.9% 87.4% 99.9%100%  
+	    New File  		   1.0 m	V16_37_parts_base.jpg 24%   48%   73%   97%  100%  
+	    New File  		   2.9 m	V16_37_parts_normal.png 17%   34%   51%   68%   86%  100%  
+	    New File  		   6.0 m	V16_37_parts_orm.png  8.2% 16.5% 24.7% 33.0% 41.2% 49.5% 57.7% 66.0% 74.2% 82.5% 90.7% 99.0%100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\export\V16_37\_gltf_source\
+	    New File  		   1.7 m	S10_engine_emission.png 14%   28%   43%   57%   72%   86%  100%  
+	    New File  		   5.7 m	S10_hull_albedo.png  8.6% 17.3% 26.0% 34.7% 43.4% 52.1% 60.8% 69.5% 78.2% 86.9% 95.5%100%  
+	    New File  		   4.1 m	S10_hull_normal.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+	    New File  		   8.0 m	S10_hull_orm.png 12.4% 24.9% 37.4% 49.9% 62.4% 74.9% 87.4% 99.9%100%  
+	    New File  		   4.4 m	S10_parts_albedo.png 11%   22%   33%   45%   56%   67%   79%   90%  100%  
+	    New File  		   2.9 m	S10_parts_normal.png 17%   34%   51%   68%   86%  100%  
+	    New File  		   6.0 m	S10_parts_orm.png  8.2% 16.5% 24.7% 33.0% 41.2% 49.5% 57.7% 66.0% 74.2% 82.5% 90.7% 99.0%100%  
+	    New File  		   9.9 m	V16_37.bin 10.0% 20.1% 30.2% 40.3% 50.3% 60.4% 70.5% 80.6% 90.7%100%  
+	    New File  		   54490	V16_37.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   77.24 m   77.24 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1883573302 Bytes/sec.
+   Speed :           107778.928 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:08:20 AM
+

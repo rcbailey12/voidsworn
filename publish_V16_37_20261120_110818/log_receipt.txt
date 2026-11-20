@@ -1,0 +1,2 @@
+[publish] receipt ok: voidsworn_S10 V16_37 commit eef9fd8149d43ffadebebe62fa9b725d49415416, glb dd2b04cc555989ff3d90eb91b49af65850238082c2d922616bdd478b1a6b567d, 8 listed and 8 checked files
+SHIP=voidsworn_S10
