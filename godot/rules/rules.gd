@@ -2488,7 +2488,7 @@ func torpSalvoOf(u, w, t, opts, keep) -> Dictionary:   # R364: the damage multip
 			if not jt(x.get("isSq")) and (x.get("ab") == "launch" or jt(g(x.get("fx"), "hive"))) and hdist(x, t) <= 2: prot = true; break
 		if prot: S["oath"] = 1; treeFx(t, "oathWings", "the escort wall closes")   # Ashgrove capstone 2
 	return S
-# R364 torpedo impact, in the same shot: roll, point defence and wings, the flight, then the hits land. A miss with Spread Pattern bursts on the target.
+# R364 torpedo impact, in the same shot: roll, point defence and wings, the flight, then the hits land. A torpedo that reaches the target and misses bursts with Spread Pattern; one shot down does not.
 func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	var w = S["w"]; var gh = S["ghost"]
 	var real = null; var t = null
@@ -2516,10 +2516,10 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 		return false
 	if jt(t.get("dead")): return false
 	syncMarkShot(shooter, t); fstat(S["fac"], "torpLaunch")
-	var d0 = z0(gh.get("dealt"))
+	var d0 = z0(gh.get("dealt")); var reached = shots.size() - int(z0(res.get("pd")))   # torpedoes that got past point defence and the wings
 	var per = func(rear): return S["base"] + (S["rearAdd"] if rear else 0.0)
 	landVolley(gh, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": S.get("called"), "res": res, "torp": true, "per": per, "by": shooter})
-	if not jt(res.get("hits")) and jt(g(gh.get("fx"), "spread")) and not jt(t.get("dead")):
+	if not jt(res.get("hits")) and reached > 0 and jt(g(gh.get("fx"), "spread")) and not jt(t.get("dead")):
 		var near = []
 		for x in alive(t["side"]):
 			if not jt(x.get("isSq")) and hdist(x, t) <= 1: near.append(x)

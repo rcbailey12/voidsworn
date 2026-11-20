@@ -1117,7 +1117,7 @@ function torpSalvoOf(u,w,t,opts,keep){
   { const ts=treeSkill('twoSalvos'); if(ts&&u.side==='player'&&u.treeTorpCarry){ S.base*=1+u.treeTorpCarry; S.rearAdd*=1+u.treeTorpCarry; u.treeTorpCarry=0; treeFx(u,'twoSalvos','the first torpedo keeps the salvo bonus'); } } // Malek T3b
   { const ow=treeSkill('oathWings'); if(ow&&u.side==='enemy'&&t.side==='player'&&cmdActive('player','scramble')&&alive('player').some(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&hdist(x,t)<=2)){ S.oath=1; treeFx(t,'oathWings','the escort wall closes'); } } // Ashgrove capstone 2
   return S; }
-// R364 torpedo impact, in the same shot: roll, point defence and wings, the flight, then the hits land. A miss with Spread Pattern bursts on the target.
+// R364 torpedo impact, in the same shot: roll, point defence and wings, the flight, then the hits land. A torpedo that reaches the target and misses bursts with Spread Pattern; one shot down does not.
 async function torpImpact(S,live,keep,b0,wGun){ const w=S.w, g=S.ghost, real=B.units.find(x=>x.id===S.by)||null, t=B.units.find(x=>x.id===S.tid);
   if(!t||t.dead) return false;
   const quad=shieldQuad(t,g), shBefore=t.shp||0, res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
@@ -1130,9 +1130,9 @@ async function torpImpact(S,live,keep,b0,wGun){ const w=S.w, g=S.ghost, real=B.u
   if(!live()){ if(B===b0&&real){ wGun.fired=keep[0]; wGun.cdLeft=keep[1]; real.sureUsed=keep[2]; real.postFire=keep[3]; real.postMp=keep[4]; } return false; } // abandoned after a stall: the gun is not spent
   if(t.dead) return false;
   syncMarkShot(real||g,t); fstat(S.fac,'torpLaunch');
-  const d0=g.dealt||0;
+  const d0=g.dealt||0, reached=shots.length-(res.pd||0); // torpedoes that got past point defence and the wings
   await landVolley(g,w,t,{quad,shBefore,shots,called:S.called,res,torp:true,per:rear=>S.base+(rear?S.rearAdd:0),by:real||g});
-  if(!res.hits&&g.fx&&g.fx.spread&&!t.dead){ const near=alive(t.side).filter(x=>!x.isSq&&hdist(x,t)<=1); if(near.length){ log(`${w.n} from ${g.name} burst against ${t.name}, catching ${near.length} ship${near.length>1?'s':''}.`,S.side==='player'?'p':'e');
+  if(!res.hits&&reached>0&&g.fx&&g.fx.spread&&!t.dead){ const near=alive(t.side).filter(x=>!x.isSq&&hdist(x,t)<=1); if(near.length){ log(`${w.n} from ${g.name} burst against ${t.name}, catching ${near.length} ship${near.length>1?'s':''}.`,S.side==='player'?'p':'e');
     for(const x of near){ if(x.dead) continue; const r=applyHit(g,w,x,S.base*g.fx.spread,shieldQuad(x,g)); boonFx(x,'e_spread','\u2212'+r.hull,-20); if(x.hp<=0){ x.killCause='big'; await killUnit(x,real||g); } } } } // Spread Pattern
   { if(real&&!real.dead&&!res.hits) treeSecondKnife(real); } // Sable T2b: a torpedo that misses reloads one turn sooner than normal
   if(res.hits) fstat(S.fac,'torpHit'); if(real) real.dealt=(real.dealt||0)+(g.dealt||0)-d0;

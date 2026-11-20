@@ -18,7 +18,7 @@ function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fx
 async function animWeapon(){} var EXPL=null; async function animExplode(u){ if(EXPL) await EXPL(u); } function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, get RNG(){ return RNG_S; }, migrateRun, newShip, startBattle, HULLS, factionGate, canOrder,
   fireWeapon, killUnit, startSideTurn, turnStart, dmgMult, hitChance, syncOn, inSync, syncAnchor, prizePlan, salvageYield,
-  setExplode(f){ EXPL=f; }, SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire };
+  setExplode(f){ EXPL=f; }, setRnd(f){ const o=rnd; rnd=f; return o; }, SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire };
 `);
 const base = (o) => Object.assign({ fac: 'voidsworn', admiral: 'vex', credits: 500, cpCap: 30, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] }, fleet: [] }, o || {});
 // a battle with fixed fleets and no terrain; units are then placed by hand so distances are exact
@@ -99,6 +99,14 @@ check('torpedoes: a missed salvo with Spread Pattern bursts on its target', asyn
   u.fx = Object.assign({}, u.fx, { spread: 0.3 }); const hp0 = t.hp + (t.shp || 0), n0 = B.log.length;
   await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t);
   return logged(n0, /burst against/) && t.hp + (t.shp || 0) < hp0; });
+check('torpedoes: a salvo shot down in full does not burst with Spread Pattern (Artoo, PR 1392)', async () => {
+  const B = battle('voidsworn', ['harrow'], 'chorus', ['b_brood', 'b_brood']); const u = P()[0], [t, d] = E(); put(u, 8, 10, 0); put(t, 12, 10, 3); put(d, 13, 10, 3); t.ev = 0;
+  const wings = B.units.filter(x => x.isSq && x.side === 'enemy'); if (!wings.length) throw new Error('no enemy wings');
+  const wi = u.weapons.findIndex(w => w.k === 'torp'), n = u.weapons[wi].shots; if (wings.length < n) throw new Error('need ' + n + ' wings, have ' + wings.length);
+  for (const x of wings) { x.dead = false; x.hp = Math.max(1, x.hp); put(x, 12, 9, 3); B.units.find(p => p.id === x.parent).stance = 'screen'; }
+  u.fx = Object.assign({}, u.fx, { spread: 0.3 }); const p0 = pool(t), q0 = pool(d), n0 = B.log.length;
+  const old = T.setRnd(() => 0); try { await T.fireWeapon(u, wi, t); } finally { T.setRnd(old); }
+  return !logged(n0, /burst against/) && logged(n0, /shot down/) && pool(t) === p0 && pool(d) === q0; });
 // ---- B-21 ----
 check('B-21 the point defense bolted onto escorts against carrier fleets is ready to fire and intercepts wings', async () => {
   T.RUN = T.migrateRun(base({ fleet: ['reliquary', 'reliquary', 'penitent'].map(t => T.newShip(t)) })); T.RUN.sector = 2; T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, shape: 'open', map: 'storm', obj: 'rout', seed: 7, dep: 'line' }); T.B.terrain = {};
