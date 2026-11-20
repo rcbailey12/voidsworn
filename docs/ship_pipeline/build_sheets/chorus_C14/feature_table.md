@@ -1,6 +1,6 @@
 # chorus_C14: The brood-sac (Chorus carrier), build sheet
 
-The Chorus (chorus) | class Carrier | version 6 (blockout v6, the armour shell with the sacs capped (R341, issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
+The Chorus (chorus) | class Carrier | version 7 (blockout v7, the sacs capped lighter (16 scutes a bulb; R341, issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
 
 **Length 16.5 world units** (data.js b_brood (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -103,7 +103,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Launch opening L5 | 11.7 to 35.5 | -5.59 to -2.33 | -1.83 to 2.26 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Teardrop sacs | 25.4 to 30.8 | 1.88 to 2.92 | -5.04 to -2.53 | flesh sacs | a fringe of teardrops under the belly |
 | Vents | 66.3 to 72.4 | -0.28 to 0.28 | 0.33 to 0.91 | flesh | four pulse vents at the stern, the membranes streaming aft |
-| Armour caps | 12.1 to 70.3 | -3.30 to 3.48 | -5.58 to -2.56 | brown keratin scutes | small scutes capping the sacs and knolls, lips down (R341) |
+| Armour caps | 12.0 to 70.3 | -3.29 to 3.47 | -5.58 to -2.55 | brown keratin scutes | small scutes capping the sacs and knolls, lips down (R341) |
 | Armour shell (port) | 12.8 to 72.3 | -0.03 to 5.14 | -3.77 to 3.96 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes |
 | Armour shell (starboard) | 12.8 to 72.4 | -5.02 to 0.03 | -3.65 to 3.89 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes |
 
