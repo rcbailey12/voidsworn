@@ -4,7 +4,7 @@
 # radius 0.29, +X the nose, +Y left, +Z up. The game scales it like the old casing (k x unit, rockets x 0.55).
 # Who fires what (data.js): Sunward torp (harrow), Hullbreaker torp and htorp (their rockets trait: four small rockets a volley).
 # The Glasswright star torpedo is a glowing effect and stays one (ships.md section 9). No other faction fires torpedoes.
-# Run: V/bin/python tools/blender/build_sheets/munitions/munitions.py [out dir] [export|review]   (bpy 4.5 wheel, cloud or PC)
+# Run: V/bin/python tools/blender/build_sheets/munitions/munitions.py [out dir] [export|flat|review]   (bpy 4.5 wheel, cloud or PC)
 # With no arguments it writes the picked bodies to godot/fx/munitions/<faction>_<look>.glb, which the game loads.
 import importlib.util
 import math
@@ -42,7 +42,7 @@ BASE_MATS = {
 }
 MATS = dict(BASE_MATS)
 MATS.update(VS.MATS)
-MATS['oath'] = ((0.62, 0.63, 0.62), 0)   # the frost-white oath band as paint (Sunward markings), not a light
+MATS['oath'] = ((0.42, 0.45, 0.47), 0)   # the frost-white oath band as paint (Sunward markings), not a light
 METAL = ('steel', 'iron', 'brass', 'sworn')
 
 
@@ -84,6 +84,18 @@ def sunward_torpedo(variant='A'):
             M = Matrix.Translation(Vector((-0.45, 0, 0)) + nv * (r * math.cos(math.pi / n) + 0.004)) @ Matrix(((1, 0, 0), (0, -nv.z, nv.y), (0, nv.y, nv.z))).to_4x4()
             for c in v.comps:
                 p.add('vent%d_%s' % (k, c['name']), 'body', c['mat'], ([M @ Vector(q) for q in c['verts']], c['faces']))
+        # more detail (Ryan, Nov 20: "are we going to paint it and add more detail after?"): a riveted worked-iron spine strap
+        # along the top and the belly flats, a louvre on the top flat forward of the drive, studs round the nose collar
+        ap = r * math.cos(math.pi / n)
+        for sgn in (1, -1):
+            p.add('spine%d' % (sgn > 0), 'body', 'sworn', block(xb0 + 0.04, xb1 - 0.03, 0.028, 0.009, 0.004, zo=sgn * (ap + 0.009)))
+            st = [VS._stud((x, 0, sgn * (ap + 0.018)), (0, 0, sgn), 0.012) for x in [xb0 + 0.10 + i * 0.16 for i in range(8)]]
+            p.add('spinestuds%d' % (sgn > 0), 'body', 'sworn', VS._join(st))
+        v = VS.vent(0.10, 0.20, slats=5, depth=0.02, fr=0.016)
+        Mt = Matrix.Translation((-0.62, 0.12, ap + 0.004))
+        for c in v.comps:
+            p.add('vent_top_%s' % c['name'], 'body', c['mat'], ([Mt @ Vector(q) for q in c['verts']], c['faces']))
+        p.add('nosestuds', 'body', 'sworn', VS._x_studs(xb1 + 0.035, r * 1.09, 12, 0.014, phase=0.1))
         d = VS.craft_drive(0.17, 0.32, cowl_r=0.25)
         _move(d, Matrix.Translation((X0 + 0.03, 0, 0)))
         p.extend(d, 'drive_')
@@ -151,6 +163,20 @@ def hullbreaker_rocket(variant='A'):
             p.add('strap%.2f' % x, 'body', 'iron', revolve([(x - 0.04, r * 1.0), (x - 0.04, r * 1.06), (x + 0.04, r * 1.06), (x + 0.04, r * 1.0)], seg, closed=True))
             p.add('strapb%.2f' % x, 'body', 'iron', moved(revolve([(x - 0.04, rb * 1.0), (x - 0.04, rb * 1.1), (x + 0.04, rb * 1.1), (x + 0.04, rb * 1.0)], 10, closed=True), B))
             p.add('web%.2f' % x, 'body', 'iron', block(x - 0.035, x + 0.035, (-yb - r) * 0.5 + 0.02, rb * 0.35, 0, yo=yb + rb * 0.5, zo=-0.015))
+        # more detail (Ryan, Nov 20): a weld bead where the salvaged nose meets the tube, a clamp band behind it, bolt heads on
+        # the straps, and a salvaged plate welded over the top of the main tube
+        p.add('weld', 'body', 'steel', revolve([(0.42, r * 0.98), (0.43, r * 1.035), (0.45, r * 1.035), (0.46, r * 0.95)], seg, closed=True))
+        p.add('clamp', 'body', 'iron', ring_band(0.30, r * 1.0, 0.05, 0.025, seg))
+        bl = []
+        for x in (0.18, -0.30):
+            for a in (0.6, 1.6, 2.6):
+                bl.append(HB.rod((x, r * 1.05 * math.cos(a), r * 1.05 * math.sin(a)), (x, r * 1.11 * math.cos(a), r * 1.11 * math.sin(a)), 0.018, 6))
+        p.add('strapbolts', 'body', 'steel', VS._join(bl))
+        bot = [(x, r * 1.005 * math.cos(a), r * 1.005 * math.sin(a)) for (x, a) in ((-0.48, 1.2), (-0.05, 1.2), (-0.05, 2.1), (-0.48, 2.1))]
+        (V_, F_), (RV, RF) = HB.plate_slab(bot, (0, math.cos(1.65), math.sin(1.65)), 0.016, rr=0.014)
+        p.add('patch', 'body', 'iron', (V_, F_))
+        if RV:
+            p.add('patchrivets', 'body', 'steel', (RV, RF))
         d = HBC.craft_drive(0.19, 0.36)
         _move(d, Matrix.Translation((X0 + 0.04, 0, 0)))
         p.extend(d, 'drive_')
@@ -208,22 +234,66 @@ def _mat(bpy, name):
     return m
 
 
+def _job(cname):
+    """the paint stack's job for a piece: the body is hull (one atlas), the drive and the fittings are parts"""
+    for pre, kind in (('drive_', 'engine'), ('boost_', 'engine'), ('vent', 'vent')):
+        if cname.startswith(pre):
+            return 'part', kind, pre.rstrip('_')
+    return 'hull', '', 'body'
+
+
 def to_blender(bpy, part, name, at=(0, 0, 0)):
-    """one object per material, parented to an empty named after the munition"""
+    """one object per (job, material), parented to an empty named after the munition; role, part_kind and grp as the build
+    sheets stamp them (tools/blender/build_sheets/kit.py), so the faction paint stack paints it as it paints a ship"""
     root = bpy.data.objects.new(name, None)
     bpy.context.scene.collection.objects.link(root)
     root.location = at
     by = {}
     for c in part.comps:
-        V, F = by.setdefault(c['mat'], ([], []))
+        role, kind, grp = _job(c['name'])
+        V, F = by.setdefault((role, kind, grp, c['mat']), ([], []))
         o = len(V); V.extend(tuple(v) for v in c['verts']); F.extend(tuple(i + o for i in f) for f in c['faces'])
-    for m, (V, F) in by.items():
-        me = bpy.data.meshes.new('%s_%s' % (name, m)); me.from_pydata(V, [], F); me.validate(); me.update()
+    for (role, kind, grp, m), (V, F) in by.items():
+        nm = '%s_%s_%s' % (name, grp, m)
+        me = bpy.data.meshes.new(nm); me.from_pydata(V, [], F); me.validate(); me.update()
         for poly in me.polygons:
             poly.use_smooth = False
-        ob = bpy.data.objects.new('%s_%s' % (name, m), me); ob.data.materials.append(_mat(bpy, m))
+        ob = bpy.data.objects.new(nm, me); ob.data.materials.append(_mat(bpy, m))
+        ob['role'] = role; ob['grp'] = grp
+        if kind:
+            ob['part_kind'] = kind
         bpy.context.scene.collection.objects.link(ob); ob.parent = root
     return root
+
+
+STACKS = {'voidsworn': 'voidsworn', 'corsair': 'hullbreakers'}
+KEEP = ('oath',)      # painted marks the stack has no zone for: kept as their own flat material (the frost-white oath band)
+
+
+def paint(bpy, root, fac, cell, out, res=512, samples=8):
+    """the faction's paint stack (tools/blender/kits/<kit>/stack.py through kits/shared/paint_stack.py), as a ship's stage 5:
+    masks from the munition's own geometry, the faction's procedural layers, trim sheet and decals, baked to small atlases"""
+    kitn = STACKS[fac]
+    sys.path.insert(0, os.path.join(REPO, 'tools', 'blender', 'r209'))
+    S = kit(kitn, 'stack.py')
+    size = L
+    if hasattr(S, 'CRAFT_SIZE'):
+        # the Hullbreaker stack's craft sizes (patches, rivets, scuffs): a munition is craft-sized on the board. The stack
+        # reads the length again from the scene during the bake, so the scene carries the craft length too.
+        size = min(L, S.CRAFT_SIZE['max_length'])
+    bpy.context.scene['r209_length_world'] = size
+    if hasattr(S, 'configure_size'):
+        S.configure_size(size)
+    S.RUNNING_LIGHTS = None   # a munition carries no running lights
+    os.makedirs(out, exist_ok=True)
+    import paint_stack as PS
+    kept = [o for o in root.children if o.data.materials and o.data.materials[0].name in KEEP]
+    for o in kept:
+        bpy.context.scene.collection.objects.unlink(o)
+    info = PS.run(S, out, cell, res, res, samples)
+    for o in kept:
+        bpy.context.scene.collection.objects.link(o)
+    return info
 
 
 def main():
@@ -249,11 +319,14 @@ def main():
             bpy.ops.wm.read_factory_settings(use_empty=True)
             v = PICK[code]
             root = to_blender(bpy, fn(v), code)
+            if mode != 'flat':
+                paint(bpy, root, fac, code, os.path.join(out, '_paint', code))
             bpy.ops.object.select_all(action='DESELECT')
             for o in [root] + list(root.children):
                 o.select_set(True)
             bpy.ops.export_scene.gltf(filepath=os.path.join(out, code + '.glb'), use_selection=True, export_format='GLB',
-                                      export_apply=True, export_yup=True, export_extras=True)
+                                      export_apply=True, export_yup=True, export_extras=True,
+                                      export_image_format='JPEG', export_jpeg_quality=88)
             print('[munitions] wrote', code, v)
 
 
