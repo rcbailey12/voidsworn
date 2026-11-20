@@ -2,7 +2,7 @@
 rem Issue 1291 run F: the Chorus spitter C13 (chorus_C13, game folder B20_11) through the shared ship job, a trial only.
 rem Round F (Ryan, Nov 20 07:00 CT: "armor more across the entire ship body, not just at the top"), through the shared ship
 rem job and repo mirror like E2 (RULEBOOK 3.3). ship_job.bat clones once from the shared repo-mirror.git into
-rem opus1291e\repo, builds stages 3 to 7 into that clone's own godot folder (never build\godot), runs the readback, the
+rem opus1291f\repo, builds stages 3 to 7 into that clone's own godot folder (never build\godot), runs the readback, the
 rem interiors and death seam checks, then the shots, and ends "done PASS" or "done FAILED: <step>" then "all done".
 rem The look: round E (satin veils) plus round F: bands wrapping the body belly edge to belly edge, chitin caps over the
 rem flank sacs, kit and sheet commit b0d395b3. The Board pins the branch head and holds opus/issue-1291 until this has run.
