@@ -237,11 +237,17 @@ function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
 function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
 const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
-const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
-// Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 60 a battle
-const CULLET={Frigate:15,Destroyer:30,Cruiser:45,Carrier:50,Battleship:60,cap:60};
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salvage']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+// issue 1290: skip = relics the late market never offers: +25% battle credits, +30% XP and the Scrap rig (15 credits and 8% hull a
+// win, about 40 a battle at the measured 707 fleet hull) cannot earn back 120 in the 2 or 3 fights left after a Sector 3 yard
+// Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 100 a battle (issue 1290: about 25% of
+// a hull's price, up from 15 to 18%; still under the 35% decommission value, so losing a ship never profits)
+const CULLET={Frigate:25,Destroyer:45,Cruiser:70,Carrier:85,Battleship:100,cap:100};
 function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
+// issue 1290: what decommissioning pays. A ship regrown from an Eclipse core pays nothing until it has fought a battle (regrow is 20%
+// of value, scrap 35%, so regrow-then-sell was free money). Paid in the hull purse: biomass for the Chorus, credits for the rest.
+function sellValue(s){ return s&&s.regrown?0:prizeScrap(s.tpl); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
 function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
 function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;

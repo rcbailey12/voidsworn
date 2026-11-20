@@ -1690,10 +1690,10 @@ func _shipyard() -> Control:
 		v.add_child(lm)
 	var cards = flow()
 	for s in R["fleet"]:
-		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.prizeScrap(s["tpl"])   # R1 (TXT-8): what the button pays; hulls without a shop price too
+		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
 		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc) + hw) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
 			abtn(("Mk " + C.roman(float(s["mk"]) + 1) + " for " + C.numstr(mc) + hw) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true),
-			abtn("Decommission (+" + C.numstr(sell) + ")", "sellShip", s["uid"], false, true)]
+			abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]
 		cards.add_child(_ship_card(s, false, ex))
 	v.add_child(cards)
 	v.add_child(sec_head("Hulls for sale"))
@@ -2289,7 +2289,7 @@ func _modal(md: Dictionary) -> void:
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Abandon and start over", "abandonRun", "", acts)]))
 		"sell":
-			h2.call("Decommission the " + str(d["ship"]["name"]) + "?"); p.call("Its captain retires and its refits return to the hold. You receive " + C.numstr(d["value"]) + " credits.", BONE2)
+			h2.call("Decommission the " + str(d["ship"]["name"]) + "?"); p.call("Its captain retires and its refits return to the hold. You receive " + C.numstr(d["value"]) + " " + str(d.get("word", "credits")) + "." + (" A regrown ship has nothing to strip until it has fought." if d["ship"].get("regrown") else ""), BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Decommission", "sellConfirm", d["ship"]["uid"], acts)]))
 		"repair_stop":
 			var drydock: bool = d["kind"] == "drydock"
