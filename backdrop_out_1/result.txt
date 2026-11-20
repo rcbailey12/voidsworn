@@ -1,0 +1,33 @@
+start Fri 11/20/2026  1:21:49.21 attempt 1 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opusbackdrop\out_1\backdrop_shots.gd:
+751b303698e8d504f77b46e5f9e7c3fdd5b528057ed39cee9884a576a4cc675c
+CertUtil: -hashfile command completed successfully.
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+before commit edea741dd74f6510767d228556c36ca48aa5a570  
+before import exit 0 
+before storm nebula exit 0 
+before dense nebula exit 0 
+before planet nebula exit 0 
+before rocks frontier exit 0 
+before edges nebula exit 0 
+before edges world exit 0 
+after_1269 commit 969b1c2c22d643e534c22e22673684185dcc3ee0  
+after_1269 import exit 0 
+after_1269 storm nebula exit 0 
+after_1263 commit 3d13f0f067e8a01455f02276d28e790318bfb508  
+after_1263 import exit 0 
+after_1263 dense nebula exit 0 
+after_1264 commit e338bd068e754f08644dcecdc0446d514595d14f  
+after_1264 import exit 0 
+after_1264 planet nebula exit 0 
+after_1264 rocks frontier exit 0 
+after_1267 commit ce6c4d5e3da505111e934bb5b9b5300c3f73d935  
+after_1267 import exit 0 
+after_1267 edges nebula exit 0 
+after_1267 edges world exit 0 
+sets finished 12 of 12 
+PASSED 
+all done Fri 11/20/2026  1:46:28.52 

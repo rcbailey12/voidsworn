@@ -1,0 +1,39 @@
+GPU: waiting for shared claim, weight 1 (1263)
+GPU: acquired shared claim ea15dfeb-4284-4581-aeb5-eab972749734
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-6b9285fcdcf14afbae94995ce6c3b378\godot-profile-01fcabfd806c497fb7efe5dabc6cdd11
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 331 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.137, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 51e61a5b21c483f03610950cab6f953de9528d907f5f3cd4c5e4e850ea953b8e 4096x2048 in 6119 ms (worker)
+[world] baked d495db19de5944391fdfd6a1c838009e69cfebbb10dde62c3dfb136e596f5523 4096x2048 in 8440 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 8857 ms (worker)
+[world] baked 84bf76ea14150cefaa82e20bf4cf4c5d7623e4a9b286bf99bfbd2785a001a4bb 4096x2048 in 2043 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2001 ms (worker)
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] flare on H10_23: placed on the plating (a surface sample; not a hard point type)
+backdrop shots: BD1267_edges_world_cine_c170_after.png
+backdrop shots: BD1267_edges_world_cine_c26_after.png
+backdrop shots: BD1267_edges_world_z_c170_after.png
+backdrop shots: BD1267_edges_world_z_c26_after.png
+backdrop shots: done edges
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 H10_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-6b9285fcdcf14afbae94995ce6c3b378\godot-profile-01fcabfd806c497fb7efe5dabc6cdd11
+GPU: released shared claim ea15dfeb-4284-4581-aeb5-eab972749734

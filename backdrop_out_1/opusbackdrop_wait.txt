@@ -1,0 +1,6 @@
+waiting for all done in opus1079_run10_wait.txt (backdrop waiter) Fri 11/20/2026  0:24:58.71 
+OPUS_BACKDROP_RUN1_WAIT stopped by the Board before it ran anything (11/20 00:55:49); replaced by OPUS_BACKDROP_RUN1_WAIT_B.bat (after the 1315 probe, same log)
+waiting for all done in opus1315_wait.txt (backdrop waiter B) Fri 11/20/2026  0:55:49.75 
+OPUS_BACKDROP_RUN1 start Fri 11/20/2026  1:21:49.18 
+OPUS_BACKDROP_RUN1 exit 0 at  1:46:28.52 
+all done  1:46:28.53 

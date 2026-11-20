@@ -1,0 +1,58 @@
+GPU: waiting for shared claim, weight 1 (1263)
+GPU: acquired shared claim 4ae2b875-b7e5-4d27-af77-f67eda410b92
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-14833fae27fb4cfb8a5895a0b18379f9\godot-profile-2b750df07f2448de9073fcf7346407fa
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 346 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.152, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 25ed5094133a50a51b861ab0dafdc8208d3987933fa00d25cfe8dd64d34f4e0b 4096x2048 in 8478 ms (worker)
+[world] baked c4de67ca78128e91014bdfbc615aac75e9eeb45a067ae1de743b49677fcba778 4096x2048 in 11081 ms (worker)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 11488 ms (worker)
+[world] baked e92b089b4758deb07cbd4b1fdfbb5d2ccc84954672e92703f1ef80876ce48001 1024x512 in 11876 ms (worker)
+[world] baked 780444a88968f3d80fcd861614eb4440213e77bc95613243ebb5829d1a341317 4096x2048 in 2201 ms (worker)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 2112 ms (worker)
+[world] baked f04bf75d195da0ca7f54da58f4bdba3597b63ba9a284ce9821826b13579279b2 1024x512 in 2096 ms (worker)
+backdrop shots: BD1264_rocks_r26_00_after.png
+backdrop shots: BD1264_rocks_r26_01_after.png
+backdrop shots: BD1264_rocks_r26_02_after.png
+backdrop shots: BD1264_rocks_r26_03_after.png
+backdrop shots: BD1264_rocks_r26_04_after.png
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+backdrop shots: BD1264_rocks_r26_05_after.png
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+backdrop shots: BD1264_rocks_r26_06_after.png
+[attach] hp_rcs missing on H7_23; using the surface ray
+backdrop shots: BD1264_rocks_r26_07_after.png
+backdrop shots: BD1264_rocks_r26_08_after.png
+backdrop shots: BD1264_rocks_r26_09_after.png
+backdrop shots: BD1264_rocks_r100_00_after.png
+backdrop shots: BD1264_rocks_r100_01_after.png
+backdrop shots: BD1264_rocks_r100_02_after.png
+backdrop shots: BD1264_rocks_r100_03_after.png
+backdrop shots: BD1264_rocks_r100_04_after.png
+backdrop shots: BD1264_rocks_r100_05_after.png
+backdrop shots: BD1264_rocks_r100_06_after.png
+backdrop shots: BD1264_rocks_r100_07_after.png
+[attach] hp_rcs missing on V14_23; using the surface ray
+backdrop shots: BD1264_rocks_r100_08_after.png
+backdrop shots: BD1264_rocks_r100_09_after.png
+backdrop shots: done rocks
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 H10_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-14833fae27fb4cfb8a5895a0b18379f9\godot-profile-2b750df07f2448de9073fcf7346407fa
+GPU: released shared claim 4ae2b875-b7e5-4d27-af77-f67eda410b92

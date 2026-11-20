@@ -1,0 +1,38 @@
+GPU: waiting for shared claim, weight 1 (1263)
+GPU: acquired shared claim e490a498-9384-409c-83bb-b404eb1ac484
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-47f03ea79a8945b79572de582e7190b9\godot-profile-535d244ad5c342cba2b21f6d900459e0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 340 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.940, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 1f6b5e8e7361e11e83c9dbb2f67df04255ce3c7d869cd47abbcf6daf3b1505ae 4096x2048 in 13587 ms (worker)
+[world] baked 64a1b8f83066035edc32ddea64e431a49c6c3802ab8d1afe7f91c677638c97c9 4096x2048 in 16022 ms (worker)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 16426 ms (worker)
+[world] baked e92b089b4758deb07cbd4b1fdfbb5d2ccc84954672e92703f1ef80876ce48001 1024x512 in 16856 ms (worker)
+[world] baked 09df0f1dc35c54792ee6791ab8f778c48c57609e6d406a33f213e215901a719f 1024x512 in 17286 ms (worker)
+[world] baked 62aa0bdfb02a1df3db7088812ce6ab62dad4fdc47d998db72eade76029f554c6 4096x2048 in 2573 ms (worker)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 2480 ms (worker)
+[world] baked f04bf75d195da0ca7f54da58f4bdba3597b63ba9a284ce9821826b13579279b2 1024x512 in 2271 ms (worker)
+[world] baked 7882d7fabcb3e61007a4dbd8928966e0789275ca23a5efb46ff46aa013c3bb3c 1024x512 in 2362 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+backdrop shots: BD1264_planet_r900_b136_after.png
+[attach] hp_rcs missing on H7_23; using the surface ray
+backdrop shots: BD1264_planet_r900_b115_after.png
+backdrop shots: BD1264_planet_r900_home_after.png
+backdrop shots: done planet
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-47f03ea79a8945b79572de582e7190b9\godot-profile-535d244ad5c342cba2b21f6d900459e0
+GPU: released shared claim e490a498-9384-409c-83bb-b404eb1ac484
