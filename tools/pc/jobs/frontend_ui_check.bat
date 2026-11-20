@@ -1,5 +1,6 @@
 @echo off
 rem Issue 1217 phase 5: the start screens check. Double-click it, or queue it.
+rem 0. import the project (headless), so a fresh clone has its textures.
 rem 1. front_end_test (headless): the kit, Settings, the desk, the flagship podium, Esc and Back on every start page.
 rem 2. front_end_shots at 1920x1080 and 3840x2160 with the live title battle: title, Settings, Credits, the faction and
 rem    admiral desk, the flagship podium, Progression, Lineage and How to play.
@@ -26,6 +27,9 @@ echo frontend_ui_check start %date% %time% commit !COMMIT! > "%ST%"
 rem the watchdog gives every Godot start a fresh profile and removes it after; PC_REAL_PROFILE=1 would turn that off
 set "PC_REAL_PROFILE="
 set "RESULT=PASS"
+rem a fresh clone has no imported textures (.godot): import once first, as g2_export does (issue 1369 PC run)
+call "%TMO%" 1800 "%G%" --headless --path "%ROOT%\godot" --import > "%OUT%\import.txt" 2>&1
+if errorlevel 1 (set "RESULT=FAIL" & echo import FAIL, see import.txt >> "%ST%") else (echo import PASS >> "%ST%")
 call "%TMO%" 600 "%G%" --headless --path "%ROOT%\godot" --script res://ui/test/front_end_test.gd > "%OUT%\front_end_test.txt" 2>&1
 set "EC=!ERRORLEVEL!"
 findstr /c:"Front end: PASS" "%OUT%\front_end_test.txt" > nul
