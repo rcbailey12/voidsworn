@@ -1,0 +1,56 @@
+GPU: waiting for shared claim, weight 1 (1371)
+GPU: acquired shared claim 7b9a9ff0-e42f-4950-8c48-0b7a611a6cf4
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-77848dadb24d40e0b96b1e2ffaf5168b\godot-profile-41db19bc14294526ac8bd48f9b52779d
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+WARNING: 'res://main/main.tscn': In external resource #0, invalid UID: 'uid://b787qdi4tc7i8' - using text path instead: 'res://main/main.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+WARNING: 'res://scenes/battle/battle.tscn': In external resource #0, invalid UID: 'uid://jccjx4ygpwge' - using text path instead: 'res://scenes/battle/battle.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[sfx] 71 cues, 67 clip sets, loaded in 156 ms
+[hud] rebuilt for 1920 x 1080 (scale 1.000)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.027, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[world] baked 9ebd43cf17d4e855e438c2d4018bcdccf129e9a60a3da33d085a6d9a14504442 4096x2048 in 10269 ms (worker)
+[world] baked 48dd3b30d03541cdaef4ba4495f5a3372b9e9e3203aceda7803e64c90703a8f8 4096x2048 in 12609 ms (worker)
+[world] baked db4069aa50072c830e980337ef9a1e7e6e5f328251649b3459e02515b1689037 1024x512 in 13021 ms (worker)
+[world] baked ae2cbffee702c3afe33ee88e45c40e83d64cbceb0d28b5e8d9f090d1269efcda 1024x512 in 13434 ms (worker)
+[world] baked 5b7cdd0f83753ef575e1587c7738cccb30dfdadf35f9866e652403b05c27c763 4096x2048 in 2076 ms (worker)
+[world] baked 78009d13766891a0b41e1c3e18b75a0dba1efa913a7362332ec97072345da8ea 1024x512 in 1859 ms (worker)
+[world] baked 177665f85a7b12300f65e63f0ebd44085033b04c9ecca5b7ac3b52337ed7957b 1024x512 in 1951 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[ui-check] PASS opening: hover facts match live card/panel queries (0 bearing weapons)
+[ui-check] PASS opening: checking tips leaves battle state and RNG unchanged
+[ui-check] PASS 1_battle_start at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/01_1_battle_start.png
+[ui-check] PASS 2_move_preview at 1920x1080 (UI scale 1.00): 4 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/02_2_move_preview.png
+[ui-check] PASS 3_enemy_clicked: Chorus spitter (out of reach)
+[ui-check] PASS 3_enemy_clicked at 1920x1080 (UI scale 1.00): 5 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/03_3_enemy_clicked.png
+[ui-check] PASS 4_tip_card_and_legend at 1920x1080 (UI scale 1.00): 5 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/04_4_tip_card_and_legend.png
+[ui-check] PASS enemy turn clears firing warning and hover tip
+[ui-check] PASS 6_enemy_turn at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/05_6_enemy_turn.png
+[ui-check] PASS 7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (Resume)
+[ui-check] PASS 7_menu_focus at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\chorus/06_7_menu_focus.png
+[ui-check] PASS 7_menu_focus: after a toggle the keyboard stays on its row (Firing arcs: off)
+[ui-check] PASS 7_menu_focus: Esc closes the menu and no button keeps the keyboard
+[ui-check] 13 checks, 0 failed
+[battle] report: {"errors":[],"pace":{"by_round":[3.4],"enemy_s_max":3.4,"enemy_s_mean":3.4,"movement":"cinematic","per_round_by_kind":{"move":3.33},"rounds":1},"pipeline_compiles_in_play":9,"result":"unfinished","round":1,"secs":35.417}
+[attach] battle x04 V16_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x07 B20_11: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x08 B19_11: skipped 0; rcs hp 14 ray 0 centre 0 skip 0
+[attach] battle x09 B19_11: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x010 B20_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x011 B20_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-77848dadb24d40e0b96b1e2ffaf5168b\godot-profile-41db19bc14294526ac8bd48f9b52779d
+GPU: released shared claim 7b9a9ff0-e42f-4950-8c48-0b7a611a6cf4

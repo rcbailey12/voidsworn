@@ -1,0 +1,8 @@
+waiting for OPUS1369 frontend exit in opus1369c_wait.txt Fri 11/20/2026 12:04:25.52 
+ithar start 12:25:25.15 
+ithar exit 0 at 12:26:03.96 
+chorus start 12:26:03.96 
+chorus exit 0 at 12:26:45.82 
+deathless start 12:26:45.82 
+deathless exit 0 at 12:27:23.54 
+OPUS1371 stills exit 0 at 12:27:23.54 

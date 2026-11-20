@@ -1,0 +1,62 @@
+GPU: waiting for shared claim, weight 1 (1371)
+GPU: acquired shared claim 2072c053-438f-4c76-a90f-8dff5a3ace9d
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-cae1cc7550f84e3392c950dc3a1b7bf4\godot-profile-83faf84194034a1ba9981375a74c586b
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+WARNING: 'res://main/main.tscn': In external resource #0, invalid UID: 'uid://b787qdi4tc7i8' - using text path instead: 'res://main/main.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+WARNING: 'res://scenes/battle/battle.tscn': In external resource #0, invalid UID: 'uid://jccjx4ygpwge' - using text path instead: 'res://scenes/battle/battle.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[sfx] 71 cues, 67 clip sets, loaded in 158 ms
+[hud] rebuilt for 1920 x 1080 (scale 1.000)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.716, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[world] baked e38278405c69e192a3f5f14283ce95295a6decdf7887a122072d69f3166f0ec0 4096x2048 in 8674 ms (worker)
+[world] baked 44a2cfed2e8bf595119d1df91692dd87ed9fb08a845d873de3e6441c0b1df241 4096x2048 in 11016 ms (worker)
+[world] baked 45f995d28b3d4979413047bef32569169b48cf205b871d5fa2de99d1b5a4ccd5 1024x512 in 11443 ms (worker)
+[world] baked 8aab0122a029d2f59aa45148b123577ad1423cf7d2c9b80d86c231d8ab8a2cba 1024x512 in 11870 ms (worker)
+[world] baked 64feadca6df662aa1e393deaca23ec36877930dca52a1dc6536029107f75b80a 4096x2048 in 1876 ms (worker)
+[world] baked f41ba4efee8703bf1e46094211b378c98934866e039c3e36c3617f193afff9a3 1024x512 in 1730 ms (worker)
+[world] baked 6078b773917640fb69f86dbda39b9633efef428a957c1ff6474d1b07bad9f46f 1024x512 in 1678 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[ui-check] PASS opening: hover facts match live card/panel queries (0 bearing weapons)
+[ui-check] PASS opening: checking tips leaves battle state and RNG unchanged
+[ui-check] PASS 1_battle_start at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/01_1_battle_start.png
+[ui-check] PASS 2_move_preview at 1920x1080 (UI scale 1.00): 4 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/02_2_move_preview.png
+[ui-check] PASS 3_enemy_clicked: Eclipse flare (out of reach)
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[ui-check] PASS 3_enemy_clicked at 1920x1080 (UI scale 1.00): 5 parts
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/03_3_enemy_clicked.png
+[ui-check] PASS 4_tip_card_and_legend at 1920x1080 (UI scale 1.00): 5 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/04_4_tip_card_and_legend.png
+[ui-check] PASS enemy turn clears firing warning and hover tip
+[ui-check] PASS 6_enemy_turn at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/05_6_enemy_turn.png
+[ui-check] PASS 7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (Resume)
+[ui-check] PASS 7_menu_focus at 1920x1080 (UI scale 1.00): 3 parts
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\shots\pt1120c_faction_stills\deathless/06_7_menu_focus.png
+[ui-check] PASS 7_menu_focus: after a toggle the keyboard stays on its row (Firing arcs: off)
+[ui-check] PASS 7_menu_focus: Esc closes the menu and no button keeps the keyboard
+[ui-check] 13 checks, 0 failed
+[battle] report: {"errors":[],"pace":{"by_round":[2.4],"enemy_s_max":2.43,"enemy_s_mean":2.43,"movement":"cinematic","per_round_by_kind":{"aiEnd":0.08,"move":2.32},"rounds":1},"pipeline_compiles_in_play":10,"result":"unfinished","round":1,"secs":31.584}
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x07 D20_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 D9_23: skipped 0; rcs hp 9 ray 1 centre 0 skip 0
+[attach] battle x09 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x010 D20_23: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[attach] battle x011 D20_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-cae1cc7550f84e3392c950dc3a1b7bf4\godot-profile-83faf84194034a1ba9981375a74c586b
+GPU: released shared claim 2072c053-438f-4c76-a90f-8dff5a3ace9d
