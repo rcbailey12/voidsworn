@@ -11,9 +11,14 @@
 #                                              is fetched only when the commit is missing, then `git clone --local` and a
 #                                              detached checkout; HEAD must equal the pin
 #   tracked <repo>                             fails when any tracked file differs from the pinned commit
+#   shipcheck <repo> <out file>                after the ships copy: every gen\manifest.json ship whose glb was copied
+#                                              must name a cached scene that exists and a source stamp ("src": time and
+#                                              size of the ship, damage and wreck glb, as build_assets.gd source_stamp)
+#                                              equal to the copied files. A publish between the two copies fails here.
+#                                              Writes the measured hull identity (code, stamp, scene) to <out file>
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
 # Deletes nothing. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'hashes')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -109,6 +114,38 @@ switch ($Action) {
     $changed = @(Run-Git -C $A status --porcelain --untracked-files=no | Where-Object { $_ })
     if ($changed.Count) { $changed | ForEach-Object { Write-Output "tracked change: $_" }; throw "$($changed.Count) tracked file(s) differ from the pin in $A" }
     Write-Output "tracked files match the pin: $A"
+  }
+  'shipcheck' {
+    $godot = Join-Path $A 'godot'
+    $manPath = Join-Path (Join-Path $godot 'gen') 'manifest.json'
+    if (-not (Test-Path -LiteralPath $manPath -PathType Leaf)) { throw "no $manPath" }
+    $man = [IO.File]::ReadAllText($manPath) | ConvertFrom-Json
+    if (-not $man.ships) { throw "$manPath lists no ships" }
+    $shipsDir = Join-Path (Join-Path $godot 'assets') 'ships'
+    $bad = @(); $lines = @()
+    foreach ($prop in $man.ships.PSObject.Properties) {
+      $code = $prop.Name; $e = $prop.Value
+      $dir = Join-Path $shipsDir $code
+      if (-not (Test-Path -LiteralPath (Join-Path $dir "$code.glb") -PathType Leaf)) { continue }
+      $stamp = ''
+      foreach ($suf in '', '_damage', '_wreck') {
+        $f = Join-Path $dir "$code$suf.glb"
+        if (Test-Path -LiteralPath $f -PathType Leaf) {
+          $i = Get-Item -LiteralPath $f
+          $stamp += '{0}:{1};' -f ([DateTimeOffset]$i.LastWriteTimeUtc).ToUnixTimeSeconds(), $i.Length
+        }
+      }
+      $res = [string]$e.res
+      $resFile = ''
+      if ($res.StartsWith('res://')) { $resFile = Join-Path $godot $res.Substring(6).Replace('/', $sep) }
+      if (-not $resFile -or -not (Test-Path -LiteralPath $resFile -PathType Leaf)) { $bad += "$code cached scene missing: $res" }
+      elseif ([string]$e.src -ne $stamp) { $bad += "$code cache was built from other files (stamp $($e.src), copied files $stamp)" }
+      $lines += "$code $stamp $res"
+    }
+    if (-not $lines.Count) { throw "no ship in $manPath has a copied glb under $shipsDir" }
+    [IO.File]::WriteAllLines($B, [string[]]$lines)
+    if ($bad.Count) { $bad | ForEach-Object { Write-Output "ship mismatch: $_" }; throw "$($bad.Count) ship(s) do not match their cache; was a ship published during the copy?" }
+    Write-Output "ships match their cache: $($lines.Count) hull(s), identity in $B"
   }
   'hashes' {
     if ($test) { $realu = $env:PC_TEST_REALU } else { $realu = Join-Path $env:APPDATA 'Godot\app_userdata\Voidsworn' }
