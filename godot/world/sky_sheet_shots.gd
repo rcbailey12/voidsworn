@@ -181,7 +181,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var img := root.get_texture().get_image()
 		var name := "%s_%s_c%d.png" % [region, tag, int(shot[0])]
-		img.save_png(out.path_join(name))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name))
 		print("sky sheet: ", name)
 	var info := {"region": b.world.setting.get("region", "?") if "setting" in b.world else "?", "neb_hexes": neb.size(),
 		"storm_hexes": storm.size(), "pair_distance": bd, "seed": sc["seed"], "tag": tag,
