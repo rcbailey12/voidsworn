@@ -293,3 +293,130 @@ done in the sky and a floor treatment is the only way.
 - Findings 1, 4, 5 and 12 are one theme: the ship art is not being shown. If only one thing is filed, file finding 1.
 - Before the ranked list, the pack needs the missing stills: one battle each as Glasswrights, Chorus, Eclipse and Hegemony
   at camera 170, and the front-end set. Without them the "six families" question stays open and Rey and I are both guessing.
+
+## Addendum: six families
+
+Added after the faction stills landed in pack/factions/ (18 pictures, build 25adec31, installed in game, the game's own
+battle camera). Short names: `chorus_05` is pack/factions/PT25adec3_chorus_05_6_enemy_turn.jpg, `deathless_05` and
+`ithar_05` likewise. I looked at all 18.
+
+**What the 18 pictures are.** Each set is the same six scripted moments of one Battle 1, played as Sunward against that
+faction. Frames 01 to 04 and 06 show only the Sunward fleet, the sky and the rocks. The enemy faction's ships appear in one
+frame per set, the enemy turn (`chorus_05`, `deathless_05`, `ithar_05`), small, in the lower right corner, partly under the
+Log panel and the HUD fade. So the evidence for each of these three factions is one picture of two or three hulls about 60
+to 90 px long. There is still no picture of any of them mid fight, as the player's fleet, or in a cut-in. Stage: Chorus is
+mid rebuild (R349, issue 1291; B19_11 and B21_11 are a PC snapshot, not an approved revision; B20_11 is C13 round G) and is
+not judged as finished. The pack does not name the Eclipse or Glasswright revisions on screen; I8_37 (Glasswright CD5) is a
+flagship and is not in the frame.
+
+### The answer
+
+**Four of six read as their own family at the battle camera. Glasswrights do not. Chorus is too early to call.** And the
+families are told apart by outline and overall tone only: no faction's accent light shows at this size.
+
+| Faction | Picture | Reads as its own family at the battle camera? |
+|---|---|---|
+| Eclipse | `deathless_05` | **Yes, the strongest in the game.** A black ring on a stalk with a violet engine point. Nothing else has that outline. No green corona line is visible at this size (factions.md says it "must read at camera 170"). |
+| Hullbreakers | `s121 t030`, `s121 t038` | **Yes.** Rust red and blunt. The only faction whose colour carries at distance. |
+| Hegemony | `stills/battle_05`, `s121 t012` | **Yes, by tone.** Pale wedges. No blue light line visible. Surface not judged (possible PC snapshot). |
+| Sunward | `stills/battle_01`, `s10 t011` | **Weakly.** A long dark dash. Told from the others because it is the darkest and longest, not by ember or spires. |
+| Chorus | `chorus_05` | **Partly; mid rebuild.** Lumpy tan-brown bodies, clearly not built ships, which is the idea. No bile glow visible. Tone sits close to the rocks (finding 18). |
+| Glasswrights | `ithar_05` | **No.** Pale slivers on a pale sky, all but invisible; no amber, violet or green panel colour shows (finding 16). |
+
+"Unlike the others": yes for outline, across all six. No two share a shape from above, which is what R183 asked for.
+"One family each": cannot be judged. One frame shows two or three hulls of a faction; none shows a whole fleet together.
+
+### Revisions to the findings above
+
+- **Finding 1 widens from Sunward to every faction.** factions.md asks for "one main colour, one accent light" at camera
+  170. Across the whole pack the only accents that show are Hullbreaker red and the Eclipse violet engine point. Sunward
+  ember, the Hegemony blue strip, the Eclipse green corona, Chorus bile and the Glasswright mosaic panels are all absent at
+  the battle camera (`s10 t011`, `s121 t012`, `deathless_05`, `chorus_05`, `ithar_05`). The shared ship-side fix in
+  finding 1 (a distance-scaled emissive floor on each faction's one accent) is the same fix for all six.
+- **Finding 2, the two rock looks.** All 18 faction stills and the Hegemony stills have the grey chiselled rocks; only the
+  two recorded runs have the tan clumps. So the look may follow the map or region rather than being a mistake. The finding
+  stands for the tan set: it is the one that is too light, cloned and close to a faction's colour (finding 18).
+- **Finding 3, the square lattice.** It is white in `ithar_03`, pink in `deathless_01` and `deathless_03`, and pink over
+  the nebula in `ithar_04`. Its colour changes from map to map with no meaning a player could learn.
+- **Finding 6, the legend.** The Nebula swatch is violet over a rose nebula in all three new sets too (`chorus_04`,
+  `deathless_04`, `ithar_04`).
+
+### New findings (numbered on from 15; where they rank is in each one)
+
+### 16. Glasswright ships vanish against their own sky
+
+Picture: `ithar_05`. Would rank second, after finding 1.
+
+The Glasswright slivers are pale silver-white, about 60 px, sitting on a pale blue-white cloud band. Hull and sky are nearly
+the same value; the violet brackets are what you find. One ship is under the Log panel. factions.md (R337) gives them
+"glowing amber, violet and green mosaic panels ... like stained glass": none of that colour reaches the camera, so the
+faction Ryan called "artistic ... beauty with function" is the least visible in the game. I do not judge the hull finish
+(revision not named; the kit is being warmed, issue 1282), only the read.
+
+How much: every Glasswright battle, from the first enemy turn.
+
+Fix (shared Glasswright kit and shared look, R333): the mosaic panels carry the distance-scaled emissive floor from finding
+1 so each sliver shows a point of amber, violet or green at camera 170; and a dark rim on pale hulls over pale sky (the
+reverse of the light rim dark hulls need). Proof: `ithar_05` retaken, each hull found without its bracket.
+
+### 17. The enemy fleet first appears under the Log panel
+
+Pictures: `chorus_05`, `deathless_05`, `ithar_05`, `stills/battle_05`. Would rank about sixth.
+
+In all four enemy-turn frames the camera puts the enemy fleet in the lower right corner, where the Log panel and the dark
+HUD fade sit. Two of three Chorus bodies, one Eclipse ship and one Glasswright are behind the panel; a ring shows through
+the HUD band. The middle of the screen holds rocks and sky. The first look a player gets at a new faction's ships is
+through a text box.
+
+How much: the first enemy turn of every battle, the exact moment the faction art should land.
+
+Fix (shared camera framing): the enemy-turn framing treats the HUD band and the Log panel as off limits and centres the
+acting ship in the clear area. The Log could also fold while the camera follows an enemy.
+
+### 18. Chorus hide is in the same colour family as the tan rocks (flag for the rebuild, not a verdict)
+
+Pictures: `chorus_05` against `s10 t029`, `s121 t036`. Stage: Chorus mid rebuild, not judged as finished. Rank low until
+the rebuild lands.
+
+In `chorus_05` the Chorus bodies are lumpy, tan-brown and unlit, among grey rocks, and read fine. The tan asteroid set in
+the runs is the same tone and also lumpy. On a map with the tan rocks a Chorus fleet would be brown lumps among brown
+lumps, with no bile glow at this size to mark them as alive. The ruled hide colour (olive-brown with dark red veins, R349)
+is not contested.
+
+How much: unknown until a Chorus fight on a tan-rock map is captured; likely strong there.
+
+Fix: no change to the Chorus colour. Add one line to the Chorus kit's done-when and one to issue 1361's: a Chorus hull and
+a blocker rock side by side at camera 170 must differ clearly in value, and the bile glow must show. The rocks give way,
+not the ships.
+
+### 19. The enemy marker disappears on the Eclipse sky
+
+Pictures: `deathless_05`, `deathless_01`. Would rank with finding 6, as its strongest case.
+
+The Eclipse map is violet on violet: violet sky, violet banded planet, violet enemy brackets, violet engine light, and a
+violet legend swatch. In `deathless_05` the brackets round the Eclipse ships can barely be seen. The black Eclipse hulls
+themselves read well here because the sky is lighter than they are, so the picture works by luck of this sky; the marker
+does not work at all.
+
+How much: every Eclipse battle on this sky.
+
+Fix: as finding 6, one enemy marker colour that no faction and no sky owns. This picture is the reason violet cannot be it.
+
+### 20. The Chorus sky fights the nebula, and has a hard-edged shape in it
+
+Pictures: `chorus_01`, `chorus_03`, `chorus_05`. Would rank with finding 15.
+
+The sky is a strong mustard yellow with a rose nebula on top: the loudest colour pair in the pack, and neither is the
+ships. On the right of `chorus_01` and in the middle of `chorus_05` a dark olive mass ends in a crisp curved edge against
+the yellow, like a dune or a cut-out, where everything else in the sky is soft. It reads as an error in the sky, not a
+cloud.
+
+How much: every battle on this sky; the edge is seen once and then always.
+
+Fix (sky shader, shared): soften that edge to match the rest of the sky, and bring the yellow down in strength behind the
+board, as in finding 15. Rose stays (R353); no scrim (R344).
+
+### Still missing from the pack
+
+One frame each of Glasswrights, Chorus and Eclipse mid fight at close range, one cut-in each, and one picture of each as
+the player's fleet. Until then the table above rests on one small picture per faction, and Rey can fairly say so.
