@@ -396,7 +396,7 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 
 # Two bounded GPU emitters. Each particle is born in world space, with zero drag,
 # zero acceleration and a cone centred on the sampled thermal-tear normal.
-static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3, sparks_only := false) -> void:
+static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3, sparks_only := false, src = null) -> void:
 	if fx.quality == "low" or DisplayServer.get_name() == "headless": return
 	for sparks in ([true] if sparks_only else [false, true]):
 		var emitter := GPUParticles3D.new()
@@ -414,9 +414,12 @@ static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vect
 		proc.set_shader_parameter("spread", 0.38 if sparks else 0.20)
 		proc.set_shader_parameter("speed", L * (0.6 if sparks else 0.25))
 		proc.set_shader_parameter("size", L * (0.003 if sparks else 0.009))
-		proc.set_shader_parameter("tint", Color(0.93, 0.63, 0.26, 0.9) if sparks else Color(0.53, 0.46, 0.64, 0.2))
+		var spk := dcol(src, "spark", Color(0.93, 0.63, 0.26))
+		proc.set_shader_parameter("tint", Color(spk.r, spk.g, spk.b, 0.9) if sparks else Color(0.53, 0.46, 0.64, 0.2 * clampf(dsmoke(src), 0.0, 1.0)))
 		emitter.process_material = proc
-		var mesh_key := "death_spark_mesh" if sparks else "death_cone_mesh"
+		# R367: a styled faction's sparks draw on a neutral quad, so its own colour is not warmed by today's albedo
+		var styled := not dstyle(src).is_empty()
+		var mesh_key: String = ("death_spark_mesh" if sparks else "death_cone_mesh") + ("_styled" if styled else "")
 		if not fx.dstate.has(mesh_key):
 			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
 			var mat := StandardMaterial3D.new()
@@ -435,7 +438,7 @@ static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vect
 				texture.fill_to = Vector2(0.5, 1.0)
 				fx.dstate["tear_falloff"] = texture
 			mat.albedo_texture = fx.dstate["tear_falloff"]
-			mat.albedo_color = Color(0.9, 0.75, 0.48) if sparks else Color(0.4, 0.34, 0.5, 0.3)
+			mat.albedo_color = Color(0.9, 0.9, 0.9) if styled and sparks else Color(0.45, 0.45, 0.45, 0.3) if styled else Color(0.9, 0.75, 0.48) if sparks else Color(0.4, 0.34, 0.5, 0.3)
 			mesh.material = mat
 			fx.dstate[mesh_key] = mesh
 		emitter.draw_pass_1 = fx.dstate[mesh_key]
@@ -2409,7 +2412,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 		# issue 484: no pale vent puff beside a big hull (the issue 462 report); its first chain blast follows at once
 		# and the tear's sparks stay.
 		var pose_b: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
-		tear_particles(fx, pose_b * (hit["p"] as Vector3), (pose_b.basis * (hit["n"] as Vector3)).normalized(), s.hull.L, s.get_meta("death_velocity", Vector3.ZERO), true)
+		tear_particles(fx, pose_b * (hit["p"] as Vector3), (pose_b.basis * (hit["n"] as Vector3)).normalized(), s.hull.L, s.get_meta("death_velocity", Vector3.ZERO), true, s)
 		return
 	var pose: Transform3D = _small_pose(s, s.get_meta("death_motion", Transform3D.IDENTITY))
 	var p: Vector3 = pose * (hit["p"] as Vector3)
@@ -2421,7 +2424,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	if fx.flash_at(p, fx.now, s.hull.L * 0.85, 44.0, 0.10):
 		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
 		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
-	tear_particles(fx, p, n, s.hull.L, inherited)
+	tear_particles(fx, p, n, s.hull.L, inherited, false, s)
 
 
 static func _update_dying(fx, s) -> void:
@@ -2545,6 +2548,12 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	elif cause == "melt":
 		m.set_shader_parameter("tip", Vector3(0.62, 0.85, 0.18))
 		m.set_shader_parameter("ember", Vector3(0.45, 0.62, 0.10))
+	elif not dstyle(s).is_empty():
+		# R367: the tear and its hairlines glow in the faction's death colour, white at the running tip
+		var rim := dcol(s, "rim", Color(1.0, 0.36, 0.07))
+		var tip := dcol(s, "fire", Color(1.0, 0.94, 0.82))
+		m.set_shader_parameter("ember", Vector3(rim.r, rim.g, rim.b))
+		m.set_shader_parameter("tip", Vector3(tip.r, tip.g, tip.b))
 	for mm in s.meshes:
 		if is_instance_valid(mm):
 			var mi := mm as MeshInstance3D

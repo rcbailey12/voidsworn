@@ -33,6 +33,9 @@ func _run() -> void:
 	# today's
 	check(today["styled"] == 0 and today["pics"] > 0, "corsair: its %d death pictures keep the baked orange (%d styled)" % [today["pics"], today["styled"]])
 	check(today["smoke"] > 0, "corsair: it still smokes (%d smoke pictures)" % today["smoke"])
+	check(today.get("ember") == null or (today["ember"] as Vector3).is_equal_approx(Vector3(1.0, 0.36, 0.07)), "corsair: its tear keeps today's ember (%s)" % str(today.get("ember")))
+	check(glass.get("ember") is Vector3 and (glass["ember"] as Vector3).z > 0.9, "ithar: its tear glows its stored light (%s)" % str(glass.get("ember")))
+	check(ecl.get("ember") is Vector3 and (ecl["ember"] as Vector3).z > 0.9, "deathless: its tear glows violet (%s)" % str(ecl.get("ember")))
 	check(today["heat"] == "today", "corsair: torn faces glow today's orange (%s)" % today["heat"])
 	# Glasswrights
 	check(glass["pics"] > 0 and glass["styled"] == glass["pics"] and glass["prism"], "ithar: all %d death pictures take its white fire with the rainbow edge (%d styled)" % [glass["pics"], glass["styled"]])
@@ -89,6 +92,12 @@ func _kill(fac: String) -> Dictionary:
 		fx.step(1.0 / 60.0)
 		await process_frame
 		if fx.get("_dim_t0") != null and float(fx.get("_dim_t0")) >= 0.0: res["dimmed"] = true
+		if res.get("ember") == null:
+			for mm in s.meshes:
+				if is_instance_valid(mm) and (mm as MeshInstance3D).material_overlay is ShaderMaterial:
+					var e = ((mm as MeshInstance3D).material_overlay as ShaderMaterial).get_shader_parameter("ember")
+					if e is Vector3: res["ember"] = e
+					break
 		if not split_seen:
 			res["plates_before_split"] = (fx.dstate.get("debris_awake", {}) as Dictionary).size()
 			split_seen = s.has_meta("death_hidden")
