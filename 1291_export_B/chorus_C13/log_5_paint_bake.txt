@@ -1,0 +1,8 @@
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+GPU: waiting for shared claim, weight 2 (1291)
+GPU: acquired shared claim 5b861427-8348-4566-a4c3-783e74da6c7f
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\C13.blend"
+detail check FAIL: a flat surface (albedo under the floor): normal relief 5.04 deg (floor 3.50), albedo contrast 0.021 (floor 0.040), roughness spread 0.185 (floor 0.080), 503495 texels
+GPU: released shared claim 5b861427-8348-4566-a4c3-783e74da6c7f
+Stage 5 FAILED: the surface-detail check failed: the flesh is flat. See C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\log_detail.txt 

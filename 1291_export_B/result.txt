@@ -1,0 +1,16 @@
+start Fri 11/20/2026  0:00:25.22 
+commit=943bfb94632b2ed3746878901c46174009a02a50 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\opus1291\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+checked copies in C:\Users\rcbai\Downloads\voidsworn_test\opus1291\checked\2026000025_22852 
+chorus_C13 (B20_11) start  0:06:27.18 
+chorus_C13 3_trace_hull start  0:06:27.19 
+chorus_C13 3_trace_hull exit 0 at  0:08:26.73 
+chorus_C13 4_parts_kit start  0:08:26.74 
+chorus_C13 4_parts_kit exit 0 at  0:10:47.92 
+chorus_C13 5_paint_bake start  0:10:47.93 
+chorus_C13 5_paint_bake exit 1 at  0:15:15.73 
+chorus_C13 6_lod SKIPPED: stage 5_paint_bake failed 
+chorus_C13 7_export SKIPPED: stage 5_paint_bake failed 
+chorus_C13 FAILED: stage 5_paint_bake 
+all done FAILED, build\godot changed only for: Fri 11/20/2026  0:15:15.75 
