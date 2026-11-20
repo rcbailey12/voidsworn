@@ -7,7 +7,7 @@ Budget (Ryan, Nov 20 16:59 UTC: about $33 left on the key): hard stop at $30 in 
 repo: the ranked list, the Godot dev legs, and godot/scenes/battle, godot/render, godot/main, godot/world plus the fx files the
 legs name (about 250k tokens). Expected $14 to $20 at the Nov 17 price at high effort.
 
-Input: ranked_list.md and the Godot dev legs, plus the Godot dev seat's questions for Astra.
+Input: draft_ranked_list.md (its "Engineering items for Astra" section first) and fable/legs/fable_godot_dev.md, plus the Godot dev seat's questions for Astra.
 
 Job: the deep engineering and Godot pass the council could only point at. For the top items with an engineering cause,
 find the cause in the code, confirm it with a run where possible, and give the smallest fix. Then a whole-codebase pass for
