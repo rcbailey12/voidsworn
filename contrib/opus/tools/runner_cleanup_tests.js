@@ -383,6 +383,12 @@ try {
   write(path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 'T6_11 newer shared bake, different');
   buildTimes.push([path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 10]);
   dateTree(helperShip, 30);
+  // A relayed helper whose clone has a live external worktree (it could hold staged-only work under the clone's .git).
+  const helperWorktree = helperFolder('opus909', { 'out/result.txt': 'opus909 result relayed' });
+  relay(path.join(helperWorktree, 'out', 'result.txt'));
+  const helperWorktreeRepo = makeCopy('repo', 2, helperWorktree);
+  git(['-C', helperWorktreeRepo, 'worktree', 'add', '-q', '--detach', path.join(root, 'opus909-external')]);
+  dateTree(helperWorktree, 30);
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
   const legacyIssue = scratch(temp, `voidsworn-run-320-${'b2'.repeat(16)}`, 30);
@@ -450,7 +456,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, oldStage7, workClean, ...recover];
-  const preserve = [worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperShip, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -499,6 +505,7 @@ try {
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
   assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
   assert(dry.includes(`helper file not on a relay branch: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
+  assert.match(decision(dry, helperWorktree, 'would keep'), /is not rebuildable: checkout may be shared with another worktree: /);
   assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files that differ from the shared build/);
   assert.match(decision(dry, helperLoose, 'would keep'), /results not all relayed: 1 of 1 out files are not on a relay branch/);
   assert.match(decision(dry, helperSibling, 'would keep'), /1 files outside out are not in a rebuildable checkout/);

@@ -188,7 +188,7 @@ function Test-RelayedResults($dir, $mirror) {
   foreach ($file in ($other | Select-Object -First 20)) { Log "helper file outside out and outside a checkout: $($file.FullName) ($($file.Length) bytes)" }
   if ($other.Count) { throw "$($other.Count) files outside out are not in a rebuildable checkout" }
   foreach ($checkout in $checkouts) {
-    try { $state = Get-RepoCleanupState $checkout.FullName $mirror '' $false $true }
+    try { Assert-NoGitLocalState $checkout.FullName; Assert-NoLiveWorktree $checkout.FullName; $state = Get-RepoCleanupState $checkout.FullName $mirror '' $false $true }
     catch { throw "checkout $($checkout.FullName) is not rebuildable: $($_.Exception.Message)" }
     # Superseded ship or gen files are only candidates; this path has no checked archive, so they keep the folder (Artoo).
     if ($state.Superseded.Count) { throw "checkout $($checkout.FullName) holds $($state.Superseded.Count) ship or gen files that differ from the shared build" }
