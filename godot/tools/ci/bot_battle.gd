@@ -166,8 +166,7 @@ func _run() -> void:
 	b.queue_free()
 	await process_frame
 	await process_frame
-	load("res://render/ship_view.gd").clear_static()
-	load("res://scenes/battle/fx_stub.gd").clear_static()
+	load("res://render/static_caches.gd").clear_all()   # issue 1204: the game's one list of GPU-holding statics
 	var bad: Array = []
 	if not (res in ["win", "loss"]): bad.append("the battle ended as \"%s\", not a win or a loss" % res)
 	for e in out.get("errors", []): bad.append("battle error: " + str(e))

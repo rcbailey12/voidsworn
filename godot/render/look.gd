@@ -78,7 +78,7 @@ const RIM_SOFT_LAYER := 1 << 14      # issue 601: the stack-painted surfaces (RI
 const RIM_SCRIPT := "res://render/look_rim.gd"
 # Bench probes only (contrib/opus/reviews/readability_362/): numbers laid over READ and RIM for one run, never saved. The game
 # never sets this.
-static var tune := {}
+static var tune := {}   # not GPU: look numbers read from json
 
 
 static func read_of(faction: String) -> Dictionary:

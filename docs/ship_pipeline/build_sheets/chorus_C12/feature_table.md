@@ -17,15 +17,15 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 |---|---|
 | model length | 6.497 |
 | length side | 6.511 |
-| length top | 6.506 |
-| length disagreement percent | 0.09 |
-| beam top | 3.111 |
-| beam bow | 3.122 |
+| length top | 6.511 |
+| length disagreement percent | 0.0 |
+| beam top | 3.189 |
+| beam bow | 3.2 |
 | beam disagreement percent | 0.17 |
-| height side | 2.95 |
-| height bow | 2.944 |
+| height side | 2.989 |
+| height bow | 2.983 |
 | height disagreement percent | 0.09 |
-| widest at station percent | 45.3 |
+| widest at station percent | 45.0 |
 | hull beam | 2.51 |
 | hull depth | 1.67 |
 | L to B hull | 2.59 |
@@ -99,14 +99,14 @@ Bulkhead and frame stations: F0 16.4%, F1 24.9%, F2 33.3%, F3 41.8%, F4 50.3%, F
 |---|---|---|---|---|
 | bile gland (gland) | 14.6 to 24.4 | -0.26 to 0.26 | -0.29 to 0.19 | the knoll's bile gland: the shot's magazine |
 | ganglion (ganglion) | 24.3 to 31.6 | -0.20 to 0.20 | 0.35 to 0.65 | the Node: the knot of nerve that steers the body |
-| bile store 1p (gland) | 23.0 to 29.8 | 0.55 to 0.89 | -0.31 to 0.01 | the bile store behind the dome |
-| bile store 1s (gland) | 23.0 to 29.8 | -0.89 to -0.55 | -0.31 to 0.01 | the bile store behind the dome |
-| bile store 2p (gland) | 35.3 to 42.1 | 0.50 to 0.84 | -0.31 to 0.01 | the bile store behind the dome |
-| bile store 2s (gland) | 35.3 to 42.1 | -0.84 to -0.50 | -0.31 to 0.01 | the bile store behind the dome |
-| bile store 3p (gland) | 60.3 to 67.0 | 0.45 to 0.79 | -0.31 to 0.01 | the bile store behind the dome |
-| bile store 3s (gland) | 60.3 to 67.0 | -0.79 to -0.45 | -0.31 to 0.01 | the bile store behind the dome |
+| bile store 1p (gland) | 23.3 to 29.5 | 0.42 to 0.70 | -0.30 to 0.00 | the bile store behind the dome |
+| bile store 1s (gland) | 23.3 to 29.5 | -0.70 to -0.42 | -0.30 to 0.00 | the bile store behind the dome |
+| bile store 2p (gland) | 35.6 to 41.8 | 0.36 to 0.64 | -0.30 to 0.00 | the bile store behind the dome |
+| bile store 2s (gland) | 35.6 to 41.8 | -0.64 to -0.36 | -0.30 to 0.00 | the bile store behind the dome |
+| bile store 3p (gland) | 60.6 to 66.7 | 0.30 to 0.58 | -0.30 to 0.00 | the bile store behind the dome |
+| bile store 3s (gland) | 60.6 to 66.7 | -0.58 to -0.30 | -0.30 to 0.00 | the bile store behind the dome |
 | heart vat (vat) | 36.1 to 49.0 | -0.34 to 0.34 | -0.30 to 0.30 | the heart vat: the core (hp_core), lit bile-green |
-| gut (gut) | 22.6 to 41.0 | -0.38 to 0.38 | -0.72 to -0.28 | the gut |
+| gut (gut) | 23.3 to 40.3 | -0.34 to 0.34 | -0.60 to -0.20 | the gut (kept well off the belly skin: death seam check, issue 1153 run 1) |
 | regrowth 1 (organ) | 37.8 to 45.8 | 0.12 to 0.52 | -0.66 to -0.34 | regrowth tissue over the reserve sac (regen 3) |
 | regrowth 2 (organ) | 51.7 to 59.7 | -0.52 to -0.12 | -0.66 to -0.34 | regrowth tissue over the reserve sac (regen 3) |
 | knot muscle (organ) | 46.9 to 59.8 | -0.30 to 0.30 | 0.36 to 0.68 | the knot's root muscle: it throws the tendrils |
@@ -143,7 +143,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 480 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 482 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

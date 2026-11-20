@@ -513,29 +513,12 @@ func _chronicle() -> void:
 				v.add_child(lbl("First ship lost: the " + str(last["first_lost"]) + ".", 17, BONE3))
 		if not rw.is_empty():
 			v.add_child(lbl("Title: " + str(rw.get("title", "")), 17, GILT))
-			var pt: Dictionary = A.get("paint", {})
-			var prow := HBoxContainer.new()
-			prow.add_theme_constant_override("separation", px(6))
-			for key in ["hull", "trim", "glow"]:
-				var sw := ColorRect.new()
-				sw.color = Color(str(pt.get(key, "#000000")))
-				sw.custom_minimum_size = Vector2(px(18), px(18))
-				prow.add_child(sw)
-			var on: bool = bool(_P().get("paint_on", {}).get(fac, false))
-			prow.add_child(lbl("Paint: " + str(pt.get("n", "")), 17, BONE2, null, false))
-			prow.add_child(_btn("Flying it" if on else "Not flying it", _toggle_paint.bind(fac, not on), on))
-			v.add_child(prow)
 			if str(rw.get("unlock", "")) != "":
 				v.add_child(lbl("Hull unlocked: " + str(A.get("unlock_name", rw["unlock"])), 17, BONE3))
 		h.add_child(v)
 		p.add_child(h)
 		g.add_child(p)
 	body.add_child(g)
-
-
-func _toggle_paint(fac: String, on: bool) -> void:
-	story.set_paint(fac, on)
-	render()
 
 
 func _close() -> void:

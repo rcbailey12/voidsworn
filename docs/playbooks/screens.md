@@ -46,6 +46,17 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   hover; they are never squeezed.
 - **Board colours follow**: no lime on the 3D board either (the ring under the ship that is up and the hovered hex are ember);
   the threat map and the reach hatching are bone (TEXT), because red is the Nemesis alarm's and purple is on Ryan's list.
+- **The start screens use the orders kit (godot/ui/theme/orders_kit.gd, issue 1217, RULEBOOK 9.15 and 2.17).** Title,
+  Settings, Credits, the faction and admiral desk, the flagship aspect, Progression, Lineage and Help take their fonts,
+  buttons (Kit.button: primary, quiet, back; Kit.link), labels (Kit.label, Kit.wrap_safe: a label never widens its
+  container; Kit.fit_words: a name in a narrow tile shrinks a step instead of breaking mid-word), side drawers (Kit.drawer), rows (Kit.row: one control column of one width), section heads, cards (Kit.card plus Kit.equal_heights) and the
+  action bar (Back left, primary right) from it, and every kit button plays the ui_* cues through main.gd's front-end sound
+  node (Kit.sound). A fix to any of these goes into the kit, never into one screen. Esc goes Back on every start page
+  (campaign_ui.gd ESC_BACK). The UI scale is never capped; each layout fits 831 design pixels tall. Progression, Lineage and How to play sit in the
+  desk's frame (campaign_ui.gd _kit_page: ledger veil, one centred column, a fixed bar with Back) and their card rows are
+  kit grids (Kit.card_grid: one width, one height per row, actions at the foot); tab strips use Kit.tab_button. Checked by
+  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group); contact sheets
+  by godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K.
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 

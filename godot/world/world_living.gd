@@ -19,6 +19,7 @@ const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
@@ -31,7 +32,6 @@ var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
 var _storm_patches: Array = []
-var _presented_ticks := {}
 var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
@@ -62,6 +62,9 @@ static func apply_fog(parent: Node, env: Environment, camera_radius: float, qual
 
 var fog_mats: Array[ShaderMaterial] = []
 var _fog_noise: ImageTexture3D = null
+const GAS_LATTICE_PATH := "res://world/gas_hash_lattice.res"
+var _gas_lattice: ImageTexture3D
+var _gas_lattice_origin: Vector3
 const GAS_HEIGHT := 1.75
 const GAS_CLOUD_SCALE := 3.0
 const GAS_CLOUD_MARGIN := 48.0
@@ -108,10 +111,49 @@ const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
 var faction_end_weight := clampf(float(OS.get_environment("VS_NEB_W")), 0.0, NEBULA_FACTION_END_WEIGHT) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
+const GAS_CARD_SUPPORT := """
+const float MIN_GAS_DENSITY = 0.002;
+// Leave room for rounding when an upper bound drops an empty fragment early.
+const float GAS_DENSITY_BOUND = MIN_GAS_DENSITY * 0.95;
+vec2 gas_band(float band) {
+	return band < 0.5 ? vec2(-4.0, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
+}
+float gas_layer(float band, float y) {
+	vec2 limits = gas_band(band);
+	return smoothstep(limits.x, limits.x + 1.5, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
+}
+vec2 gas_card_offset(inout vec2 vertex, vec4 card, vec4 centre, mat4 inv_view, float height_scale) {
+	float angle = card.y * 6.2831;
+	mat2 spin = mat2(vec2(cos(angle), sin(angle)), vec2(-sin(angle), cos(angle)));
+#ifdef HIGH_GAS_CARDS
+	// The radial falloff fits inside a disc. Bound that disc by its nonzero
+	// height band in the billboard plane before rasterizing the quad.
+	vec2 up = vec2(inv_view[0].y, inv_view[1].y);
+	float height_per_unit = length(up);
+	if (height_per_unit > 0.0001) {
+		up /= height_per_unit;
+		vec2 across = vec2(up.y, -up.x);
+		float centre_y = (inv_view * centre).y;
+		vec2 limits = (gas_band(floor(card.w)) * height_scale - centre_y) / (height_per_unit * card.x);
+		// Add a small margin for rounding at the height edges. The fragment
+		// shader still applies the original radial and height fades.
+		limits = clamp(limits + vec2(-0.0001, 0.0001), -0.5, 0.5);
+		vec2 offset = across * vertex.x + up * mix(limits.x, limits.y, vertex.y + 0.5);
+		// The soft intersection uses Godot's interpolated VERTEX.z. Keep its
+		// original quad coordinate even though POSITION draws a clipped quad.
+		vertex = transpose(spin) * offset;
+		return offset;
+	}
+#endif
+	return spin * vertex;
+}
+"""
+
 const GAS_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + "%NOISE%" + """
+%NOISE%
+%CARD_SUPPORT%
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
 // r: the round field, g: inward feather of the union boundary, zero outside.
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
@@ -133,8 +175,7 @@ varying vec3 vW;
 void vertex() {
 	vI = INSTANCE_CUSTOM; // x size, y spin, z density, floor(w) layer, fract(w) phase
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float a = vI.y * 6.2831;
-	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
+	vec2 q = gas_card_offset(VERTEX.xy, vI, c, INV_VIEW_MATRIX, height_scale);
 	vQ = VERTEX.xy * 2.0;
 	c.xy += q * vI.x;
 	vW = (INV_VIEW_MATRIX * c).xyz;
@@ -146,12 +187,19 @@ void fragment() {
 	if (r > 1.0) { discard; }
 	vec2 mask = foot_at(vW.xz);
 	if (mask.g <= 0.001) { discard; }
+	float band = floor(vI.w);
+	float layer = gas_layer(band, vW.y / height_scale);
+	float shape = 1.0 - smoothstep(0.4, 1.0, r);
+#ifdef HIGH_GAS_CARDS
+	if (shape * mask.g * layer * vI.z < GAS_DENSITY_BOUND) { discard; }
+#else
+	if (shape * mask.g * layer * vI.z <= 0.0) { discard; }
+#endif
 	float dz = texture(depth_tex, SCREEN_UV).r;
 	vec4 vv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dz, 1.0);
 	vec3 opaque_world = (INV_VIEW_MATRIX * vec4(vv.xyz / vv.w, 1.0)).xyz;
 	// All gas layers leave opaque hulls intact, even a veil in front of a ship.
 	if (dz > 0.000001 && opaque_world.y > -20.0) { discard; }
-	float band = floor(vI.w);
 	float phase = fract(vI.w);
 	// Layer rates and the base drift: contrib/opus/briefs/nebula_motion_spec.md (issue #230, NB8).
 	float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : 0.4));
@@ -160,20 +208,20 @@ void fragment() {
 	vec3 p = vW * 0.075 + drift;
 	float w = wfbm3(p * 0.55 + 4.0);
 	float n = wfbm3(p + vec3(w) * 0.9);
+	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
+	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
+#ifdef HIGH_GAS_CARDS
+	// The warped footprint can only lower mask.g, and contact can only soften it.
+	if (shape * mask.g * layer * field * vI.z < GAS_DENSITY_BOUND) { discard; }
+#endif
 	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
 	float fw = foot_at(vW.xz + wv).r;
-	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
 	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
 	float foot = smoothstep(bar, bar + 0.3, fw) * mask.g;
-	float lo = band < 0.5 ? -4.0 : (band < 1.5 ? 1.0 : (band < 2.5 ? 6.0 : 12.0));
-	float hi = band < 0.5 ? 2.0 : (band < 1.5 ? 8.0 : (band < 2.5 ? 14.0 : 18.0));
-	float layer = smoothstep(lo, lo + 1.5, vW.y / height_scale) * (1.0 - smoothstep(hi - 1.5, hi, vW.y / height_scale));
-	float shape = 1.0 - smoothstep(0.4, 1.0, r);
-	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
 	float d = shape * foot * layer * field * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
-	if (d <= 0.002) { discard; }
+	if (d <= MIN_GAS_DENSITY) { discard; }
 	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
 	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
@@ -340,11 +388,10 @@ void fragment() {
 
 func build(world) -> void:
 	W = world
-	# battle.gd _play_event("tick") calls _float("Ion storm") before gfx.tick.
-	# Consume those positioned presentation records, never the rules event queue.
 	var presenter: Node = W.get_parent()
-	if presenter != null and presenter.get("floats") is Array:
+	if presenter != null and presenter.has_signal("storm_drained"):
 		_tick_presenter = presenter
+		presenter.connect("storm_drained", _queue_storm_tick)
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
 	var pts: Dictionary = W._terr_pts
 	# Background specks originally drew after gas at priority 0. Put them behind it.
@@ -405,36 +452,12 @@ func _patches(ps: Array) -> Array:
 	return patches
 
 
-static func _gas_card_shader(storm: bool) -> String:
-	# Expanded cards cover much more than their thin height bands. Reject empty
-	# support before the expensive noise, using the accepted shader's own math.
-	# Hoist its declarations rather than keeping another table of layer sizes.
+static func _gas_card_shader(storm: bool, high: bool, cached_noise: bool) -> String:
 	var code: String = ION.CARDS if storm else GAS_SHADER
-	var declarations := ["float lo =", "float hi =", "float y =", "float layer =", "float shape ="]
-	if storm:
-		declarations.append("float foot =")
-	var support := PackedStringArray()
-	var body := PackedStringArray()
-	var in_fragment := false
-	for line in code.split("\n"):
-		if line == "void fragment() {":
-			in_fragment = true
-		var move := false
-		if in_fragment:
-			for declaration in declarations:
-				if line.strip_edges().begins_with(declaration):
-					move = true
-					break
-		if move:
-			support.append(line)
-		else:
-			body.append(line)
-	var anchor := "\tfloat band = floor(%s.w);" % ("cloud" if storm else "vI")
-	# Remaining field and contact factors are in [0, 1]. Zero support already
-	# produced zero density and was discarded; no visible samples are removed.
-	var bound := "shape * cloud.z" if storm else "shape * mask.g * layer * vI.z"
-	var early := "\n".join(support) + "\n\tif (" + bound + " <= 0.0) { discard; }"
-	return "\n".join(body).replace(anchor, anchor + "\n" + early).replace("%NOISE%", WS.NOISE)
+	var noise: String = WS.NOISE_LATTICE if cached_noise else WS.NOISE
+	if high:
+		noise = "#define HIGH_GAS_CARDS\n" + noise
+	return code.replace("%CARD_SUPPORT%", GAS_CARD_SUPPORT).replace("%NOISE%", noise)
 
 
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
@@ -488,8 +511,17 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = _gas_card_shader(storm)
+	var high: bool = expanded and W.quality == "high"
+	if high and _gas_lattice == null and ResourceLoader.exists(GAS_LATTICE_PATH):
+		var source = load(GAS_LATTICE_PATH)
+		_gas_lattice = source.texture()
+		_gas_lattice_origin = source.origin
+	var cached_noise := high and _gas_lattice != null
+	sh.code = _gas_card_shader(storm, high, cached_noise)
 	m.shader = sh
+	if cached_noise:
+		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
+		m.set_shader_parameter("gas_hash_origin", _gas_lattice_origin)
 	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN
@@ -502,7 +534,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	if storm:
 		# R282: the cloud carries broad cool charge, not the old warm contour veins.
 		storm_mats.append(m)
-		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0})
+		_storm_patches.append({"mat": m, "points": ps, "pending": [], "flares": []})
 		_set_flashes([])
 	else:
 		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
@@ -815,35 +847,50 @@ static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
 	return DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and is_instance_valid(mi) and mi.material_override != null
 
 
-# The positioned float is created on the actual storm tick, including shield-only
-# ticks. No inferred round timer, shield-hit guess, or duplicated damage rule.
-func _storm_tick_at(pos: Vector3) -> void:
+func _queue_storm_tick(pos: Vector3) -> void:
+	if not visible:
+		return
 	for patch in _storm_patches:
 		for p in patch.points:
 			if Vector2(pos.x - p.x, pos.z - p.z).length_squared() <= 100.0:
-				patch.tick = 1.0
-				break
+				patch.pending.append(pos)
+				return
 
 
-func _present_storm_ticks(dt: float) -> void:
-	if is_instance_valid(_tick_presenter):
-		var live := {}
-		for record in _tick_presenter.get("floats"):
-			var label = record.get("lbl")
-			if not is_instance_valid(label) or not label is Label:
-				continue
-			if not (label as Label).text.begins_with("Ion storm"):
-				continue
-			var id: int = label.get_instance_id()
-			live[id] = true
-			if not _presented_ticks.has(id):
-				_storm_tick_at(record["pos"])
-		_presented_ticks = live
+func _present_storm_ticks(reduced: bool) -> void:
 	for patch in _storm_patches:
-		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
-		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+		var pending: Array = patch.pending
+		var flares: Array = patch.flares
+		if pending.is_empty() and flares.is_empty():
+			continue
+		while not flares.is_empty() and clock - float(flares.front().start) >= STORM_TICK_LIFE:
+			flares.pop_front()
+		var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+		# An unusually large batch waits for free shader slots. Book each cue
+		# when it starts so the counter sees weapon and lightning overlap.
+		while not pending.is_empty() and flares.size() < ION.TICK_FLARE_SLOTS:
+			var pos: Vector3 = pending.pop_front()
+			var soft: bool = is_instance_valid(effects) and not effects.flash_at(pos, effects.now, 36.0, 0.0, STORM_TICK_LIFE)
+			flares.append({"pos": pos, "start": clock, "soft": soft})
+		var values := PackedVector4Array()
+		if not flares.is_empty():
+			values.resize(ION.TICK_FLARE_SLOTS)
+			for i in flares.size():
+				var flare: Dictionary = flares[i]
+				var soft: bool = reduced or flare.soft
+				var envelope := 0.9 if soft else 0.52
+				var age := (clock - float(flare.start)) / STORM_TICK_LIFE
+				var pos: Vector3 = flare.pos
+				values[i] = Vector4(pos.x, pos.y, pos.z, _flash(age * envelope, soft))
+		_set_storm_tick_uniforms(patch.mat, values, flares.size())
 		if patch.has("fog_mat"):
-			(patch.fog_mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+			_set_storm_tick_uniforms(patch.fog_mat, values, flares.size())
+
+
+func _set_storm_tick_uniforms(mat: ShaderMaterial, values: PackedVector4Array, count: int) -> void:
+	if count > 0:
+		mat.set_shader_parameter("tick_flares", values)
+	mat.set_shader_parameter("tick_flare_count", count)
 
 
 func _process(dt: float) -> void:
@@ -856,11 +903,11 @@ func _process(dt: float) -> void:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
-	_present_storm_ticks(dt)
+	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
+	_present_storm_ticks(reduced)
 	for burst in _storm_bursts:
 		if clock >= float(burst.next): _start_storm_burst(burst)
 	var fs: Array = []
-	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	for b in bolts:
 		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
 		var mi := b["mi"] as MeshInstance3D
@@ -877,7 +924,7 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
 
-static var _piece_radii := {}
+static var _piece_radii := {}   # not GPU: piece radii (numbers)
 
 static func _piece_radius(mesh: Mesh) -> float:
 	var id := mesh.get_instance_id()
@@ -1161,6 +1208,12 @@ void fragment() {
 const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
 const WRECK_DIR := "res://world/wreckage/"
 static var _wreck_mesh_cache: Array = []
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wreck_mesh_cache = []
+	_piece_radii.clear()   # keyed by those meshes' instance ids
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A

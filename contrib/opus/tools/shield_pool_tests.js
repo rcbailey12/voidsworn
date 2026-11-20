@@ -70,10 +70,17 @@ check('Chain Lightning on a broken pool cuts the next recharge, once', () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const u = P()[0]; u.shp = 0; u.regen = 9; u.chainCut = 1 / 3; T.syncShields(u);
   T.startSideTurn('player'); const first = u.shp; T.startSideTurn('player');
   return first === 6 && u.shp === 15 && u.chainCut === 0; });
-check('a Hegemony ion hit stops the pool recharging for one turn start', () => {
+check('a Hegemony ion hit reports the lock and stops the pool recharging for one turn start', () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const t = P()[0], h = E()[0]; const w = h.weapons.find(x => x.ion && x.k !== 'flak');
-  T.applyHit(h, w, t, 4, 0); const p1 = t.shp; T.startSideTurn('player'); const locked = t.shp === p1; T.startSideTurn('player');
-  return !!w && locked && t.shp === Math.min(t.shMax, p1 + t.regen); });
+  const ionHit = T.applyHit(h, w, t, 4, 0);
+  const plainHit = T.applyHit(h, { ...w, ion: false }, t, 4, 0);
+  const p1 = t.shp; T.startSideTurn('player'); const locked = t.shp === p1; T.startSideTurn('player');
+  return ionHit.regenLock === true && !('regenLock' in plainHit) && locked && t.shp === Math.min(t.shMax, p1 + t.regen); });
+check('an ion lock still re-derives the catches when routing clears at turn start (pool 20, routed starboard)', () => {
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const u = P()[0]; u.shp = 20; u.route = [0, 1, 0, 0]; T.syncShields(u);
+  const routed = u.sh.slice(); u.regenLock = 1; T.startSideTurn('player');
+  u.route = [0, 0, 0, 0]; const fresh = u.sh.slice(); T.syncShields(u);
+  return u.shp === 20 && routed[1] > fresh[1] && u.sh.every((v, i) => v === fresh[i]); });
 // ---- Godot twin fixtures (shield_pool_test.gd replays these sequences on rules.gd and compares every step) ----
 const SEQS = [
   { note: 'Sunward cruiser: three prow hits (the second and third routed at a loss), a rear hit, a turn start, then hits until the pool empties',
@@ -82,6 +89,9 @@ const SEQS = [
   { note: 'Hegemony ion on a Sunward cruiser: the pool regen is locked for one turn start',
     pfac: 'voidsworn', p: 'penitent', efac: 'hegemony', e: 'h_dominion',
     ops: [['hit', 7, 0, 2], ['hit', 3, 2, 2], ['turn', 'player'], ['turn', 'player']] },
+  { note: 'Hegemony ion on a routed side: the regen is locked, but the catches are re-derived as the route clears',
+    pfac: 'voidsworn', p: 'penitent', efac: 'hegemony', e: 'h_dominion',
+    ops: [['hit', 6, 1, 0], ['hit', 6, 1, 2], ['turn', 'player'], ['turn', 'player']] },
   { note: 'Glasswright sliver: a struck prism recharges twice, an untouched one snaps to full',
     pfac: 'ithar', p: 'i_wisp', efac: 'corsair', e: 'c_raider',
     ops: [['hit', 5, 0, 0], ['hit', 5, 0, 0], ['turn', 'player'], ['set', 3], ['turn', 'player']] }

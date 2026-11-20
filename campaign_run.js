@@ -75,12 +75,12 @@ function nemPanel(){ const N=nemActive(); if(!N||!N.persona) return ''; const F=
   const ck=nemClockGet(), dots='●'.repeat(Math.floor(ck))+(ck%1?'◐':'')+'○'.repeat(Math.max(0,NEM_CLOCK-Math.ceil(ck))), met=N.met>=RUN.sector;
   return `<h3>Nemesis</h3><div class="nemcard" data-portrait="${esc(N.portrait)}" data-scars="${esc((N.scarKinds||[]).join(','))}"><p style="margin:0 0 4px"><b class="blood">${esc(nemFull())}</b> <span class="dim">${esc(F?F.n:'')}${N.scars?`, scarred ${N.scars}x`:''}</span></p>
     <p style="margin:0;font-size:13.5px"><span class="gilt">${esc(P.n)}:</span> <span class="muted">${esc(P.d)}</span></p>
-    <p style="margin:2px 0 0;font-size:13.5px">Strengths: ${N.traits.map(t=>`<span class="blood" title="${esc(NEM_TRAITS[t].d)}">${esc(NEM_TRAITS[t].n)}</span>`).join(', ')}</p>
+    <p style="margin:2px 0 0;font-size:13.5px">Strengths: ${N.traits.filter(t=>nemEntry(NEM_TRAITS,t,N.fac)).map(t=>`<span class="blood" title="${esc(nemEntry(NEM_TRAITS,t,N.fac).d)}">${esc(nemEntry(NEM_TRAITS,t,N.fac).n)}</span>`).join(', ')}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay(NF.beh.d,N))}</p>${nemWarnLine(N)}
     ${NF.beh.feeds?`<p style="font-size:13px;margin:2px 0 0">Fed on your losses: <span class="blood">${N.fed||0} of 8</span>${N.fed?` (+${Math.round(Math.min(.32,.04*N.fed)*100)}% hull)`:''}</p>`:''}${(N.loot||N.held)?`<p style="font-size:13px;margin:2px 0 0">${nemPr(N).He} holds <span class="gilt">${[N.loot?N.loot+' of your credits':'',N.held?'the '+esc(N.held.name):''].filter(Boolean).join(' and ')}</span>: it all comes back when ${nemPr(N).he} dies.</p>`:''}
     <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${RUN.nemStrike?' <b class="blood">'+esc(nemStrikeLine(N))+'</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemMeetingLine(N))}</p>
-    <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(NEM_WEAK[w].d)}">${esc(NEM_WEAK[w].n)}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
+    <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(nemEntry(NEM_WEAK,w,N.fac)?.d??'')}">${esc(nemEntryName(NEM_WEAK,w,N.fac))}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
     ${N.adapt.length?`<div style="font-size:13.5px;margin-top:2px">Adapted: ${N.adapt.map(a=>`<span class="blood" title="${esc(nemAdaptDesc(a,N.fac))}">${esc(nemAdaptName(a,N.fac))}</span>`).join(', ')}</div>`:''}
     ${N.last_beat?`<div class="muted" style="font-size:13px;margin-top:2px">${nemPr(N).He} remembers losing to your ${esc(NEM_BEAT_WORD[N.last_beat]||N.last_beat)}.</div>`:''}
     ${D.back?`<div class="gilt" style="font-size:13px;margin-top:2px">${esc(D.back)}</div>`:''}${D.lessons.length?`<div style="font-size:13px;margin-top:2px">Lessons: ${D.lessons.map(t=>`<span class="muted">${esc(t)}</span>`).join('; ')}</div>`:''}</div>${nemPriorPanel(D)}`; }
@@ -96,7 +96,7 @@ ACT.enterNode=id=>{
   if(showBeat3()) return;
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
   tel('node',{type:n.type,col:n.col});
-  if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
+  if(n.type==='battle'||n.type==='elite'||n.type==='boss'||nemNodeIs(n)){ // issue 1175: an unmet Nemesis meets you at any column 4 stop
     let kind=n.type, fac=nodeFaction(n);
     if(nemNodeIs(n)){ const N=nemActive(); const fa=nemBeh().fleet; battleScreen(Object.assign({kind:'elite',fac:N.fac,col:n.col,node:id,nemesis:nemBattleCfg()},ARCHETYPES[fa]?{arch:fa}:{})); return; } // B4: the Nemesis fight (marked on the map beforehand)
     if(RUN.ambush && kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; toast('The Hegemony escort you robbed has found you.'); }
@@ -242,7 +242,7 @@ function needMet(nd){ if(!nd) return true; const kit=fleetKit();
 function needText(nd){ if(!nd) return ''; const p=[];
   if(nd.fac){ const fs=Array.isArray(nd.fac)?nd.fac:[nd.fac]; p.push(fs.map(f=>FACTIONS[f]?FACTIONS[f].n:f).join(' or ')); }
   if(nd.kind) p.push((KIND_WORD[nd.kind]||nd.kind)+' in the fleet'); if(nd.carrier) p.push('a carrier'); if(nd.shields) p.push('a shielded ship'); if(nd.relic) p.push(nd.relic===1?'a piece of salvage':relicName(nd.relic));
-  if(nd.mod) p.push('a refit in the hold'); if(nd.cred) p.push(nd.cred+' credits'); if(nd.vet) p.push('a '+RANKS[nd.vet]+' or better'); if(nd.flag) p.push('an earlier choice'); if(nd.intel) p.push(nd.intel+' Nemesis weakness'+(nd.intel>1?'es':'')+' known');
+  if(nd.mod) p.push('a refit in the hold'); if(nd.cred) p.push(nd.cred+' credits'); if(nd.vet){ const ranks=RUN.fac==='chorus'||RUN.fac==='deathless'?CAPTAINS[RUN.fac].ranks:RANKS; p.push('a '+ranks[nd.vet]+' or better'); } if(nd.flag) p.push('an earlier choice'); if(nd.intel) p.push(nd.intel+' Nemesis weakness'+(nd.intel>1?'es':'')+' known');
   return 'Needs '+p.join(', '); }
 // the next event at an event node: never one already seen this run (B4), never one barred for your faction; a quiet stretch once all are seen
 function nextEvent(){ RUN.seenEvents=RUN.seenEvents||[]; const fits=e=>!(e.not&&e.not.includes(RUN.fac))&&e.id!==EVENT_FALLBACK;
@@ -345,7 +345,7 @@ function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='challenge') return 'His flagship will challenge yours to single combat; screen your flagship.';
   return ''; }
 // is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
-function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return !!RUN.nemStrike||n.col>=(RUN.map.cols.length-3); }
+function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||n.type==='boss') return false; const c4=RUN.map.cols.length-3; if(n.type!=='battle'&&n.type!=='elite') return n.col===c4; return !!RUN.nemStrike||n.col>=c4; } // issue 1175: unmet, every column 4 stop is his, whatever its type
 // Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance. The meeting
 // is mandatory once a sector and belongs to the sector's assigned hunter; the run's one clock only brings it sooner.
 function nemNodeTag(n){ return nemNodeIs(n)?'Nemesis meeting':''; }
@@ -383,7 +383,7 @@ function nemOpenLine(N){ const P=nemPersonaVoice(N); if(!P) return null; if(N.gl
 function nemAdaptLine(N,a){ const V=N&&NEM_VOICE[N.fac], sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special, t=V&&V.adapt?V.adapt[sp&&sp.id===a?'special':a]:''; return t?`${nemFull(N)}: "${nemSay(t,N)}"`:''; }
 // R85 Q3, G2: a lost meeting records the lesson it taught on the commander met (N.lessons: {w, t, sector}), with the NEM_VOICE lesson
 // text for the weakness taught; when the file is already complete it teaches his faction's strike instead, once. No table: the weakness's own words.
-function nemLessonText(N,w){ const V=N&&NEM_VOICE[N.fac]; if(V&&V.lessons&&V.lessons[w]) return nemSay(V.lessons[w],N); return w!=='strike'&&NEM_WEAK[w]?`${NEM_WEAK[w].n}: ${NEM_WEAK[w].d}`:''; }
+function nemLessonText(N,w){ const V=N&&NEM_VOICE[N.fac]; if(V&&V.lessons&&V.lessons[w]) return nemSay(V.lessons[w],N); const entry=nemEntry(NEM_WEAK,w,N?.fac); return entry?`${entry.n}: ${entry.d}`:''; }
 // Job 7 step 7 (R85 Q3/Q5): a lesson is recorded on the commander who fought the meeting, with how it was learned so
 // the run debrief can say a lost meeting taught it. Lessons only ever come from a meeting that went against the player.
 function nemLessonAdd(N,w,taught){ N.lessons=Array.isArray(N.lessons)?N.lessons:[]; if(N.lessons.some(l=>l.w===w)) return ''; const t=nemLessonText(N,w); if(!t) return ''; N.lessons.push({w,t,sector:RUN.sector,taught:!!taught}); return t; }
@@ -391,7 +391,7 @@ function nemLessonAdd(N,w,taught){ N.lessons=Array.isArray(N.lessons)?N.lessons:
 function nemScar(cause){ const N=nemActive(), F=NEM_FAC[N.fac]; N.scars++; N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||[]; N.scarKinds.push(cause||'blast'); const tag=cause==='fled'?'fled':['melt','flay','tidal'].includes(cause)?'burn':'wound', byC=((F.scarBy||{})[tag]||[]).filter(x=>!N.epithets.includes(x)), left=byC.length?byC:F.scars.filter(x=>!N.epithets.includes(x)); if(left.length){ N.epithet=pick(left); N.epithets.push(N.epithet); } } // scarKinds: how each scar was made (fled, big, cut, flay, melt, dark, blast, tidal), for the portrait overlays
 // after his battle: returns plain lines for the reward summary. fled = he withdrew (Corsair, Ithar); flagDead = his flagship was destroyed
 function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return []; o=o||{}; const out=[], beh=nemBeh(), P=nemPr(N), say=t=>nemSay(t,N), speak=k=>{ const l=nemSpeak(N,k); if(l) out.push(l); }; N.met=RUN.sector; RUN.nemStrike=false; RUN.nemClock=0; let back=false; // #121: any meeting resets the run's clock and strike
-  if(result==='win'){ N.beaten++; N.gloat=null; if(o.beat){ N.last_beat=o.beat; nemBeatTeach(o.beat); } const w=nemReveal(); if(w) out.push(say(`His captured logs reveal a weakness: ${NEM_WEAK[w].n}.`));
+  if(result==='win'){ N.beaten++; N.gloat=null; if(o.beat){ N.last_beat=o.beat; nemBeatTeach(o.beat); } const w=nemReveal(); if(w) out.push(say(`His captured logs reveal a weakness: ${nemEntryName(NEM_WEAK,w,N.fac)}.`));
     if(o.fled){ if(beh.strike==='raid') N.riches++; if(beh.strike==='duel') N.honed=(N.honed||0)+1; nemScar('fled'); nemSignature('flee',N); nemEscape(N,'fled'); out.push(say(`${nemFull()} breaks off and runs before you can finish him.${beh.strike==='raid'?' He will come back richer.':beh.strike==='duel'?' He will be back with the same few ships, honed sharper.':' He will be back.'}`)); speak('flee'); }
     else if(flagDead&&RUN.sector>=3&&beh.revive&&!N.revived){ N.revived=true; back=true; nemScar(o.cause||'big'); nemSignature('revive',N); N.met=RUN.sector-1; out.push(say(`${nemFull()}'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.`)); speak('fall_final'); } // A1: the kill that triggers the revive
     else if(flagDead&&RUN.sector>=3){ N.dead=true; out.push(say(`${nemFull()} is dead. The feud is over.`)); if(!beh.revive) speak('fall'); } // A1: the Eclipse commander's second, permanent death says nothing (he does not rise again)
@@ -405,9 +405,9 @@ function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return [
     // R1 (FR-2, Ryan's Q5 ruling, Codex PR #1): a lost meeting still teaches: what the fight itself uncovered, else one new weakness, never more
     const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
     const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
-    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); for(const k of ws){ const t=nemLessonAdd(N,k,true); if(t) out.push(`Lesson: ${t}`); } }
+    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>nemEntryName(NEM_WEAK,k,N.fac)).join(', ')}.`); for(const k of ws){ const t=nemLessonAdd(N,k,true); if(t) out.push(`Lesson: ${t}`); } }
     else { out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); const t=nemLessonAdd(N,'strike',true); if(t) out.push(`Lesson: ${t}`); } }
-  if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
+  if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>nemEntryName(NEM_WEAK,k,N.fac)).join(', ')}.`); }
   if(beh.adaptFast){ N.adaptSector=0; const a=nemAdapt(false,N); if(a){ nemSignature('fast_adapt',N); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); const l=nemAdaptLine(N,a); if(l) out.push(l); } }
   return out; }
 // R42: when you beat him with something, his next adaptation counters it (so "it will not work twice" is true when he says it)
@@ -495,13 +495,13 @@ function applyOutcome(r){
     else { const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*.25); s.hp=Math.max(1,s.hp-dm); RUN.credits+=20; out.push(`Something was awake. The ${s.name} takes ${dm} hull damage covering the retreat. You salvage 20 credits.`); } return out; }
   if(r.cost){ RUN.credits-=r.cost; }
   if(r.cred){ RUN.credits+=r.cred; out.push(`+${r.cred} credits.`); }
-  if(r.xp){ RUN.fleet.forEach(s=>addXp(s,r.xp)); out.push(`Every captain gains ${r.xp} experience.`); }
+  if(r.xp){ RUN.fleet.forEach(s=>addXp(s,r.xp)); out.push((RUN.fac==='chorus'||RUN.fac==='deathless')?`+${r.xp} experience per ship.`:`Every captain gains ${r.xp} experience.`); }
   if(r.xpLow){ const s=[...RUN.fleet].sort((a,b)=>a.cap.xp-b.cap.xp)[0]; addXp(s,r.xpLow); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpLow} experience.`); }
   if(r.loseMod){ const withMod=RUN.fleet.filter(s=>s.mods.length); if(withMod.length){ const s=pick(withMod); let m; changeShip(s,sh=>{ m=sh.mods.splice(Math.floor(rnd()*sh.mods.length),1)[0]; }); out.push(`The ${s.name} gives up its ${modName(m)}.`); } else if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`You hand over the ${modName(m)} from the hold.`); } else out.push('You have no refits to give. The keeper smiles and gives anyway.'); }
   if(r.relic){ const rl=randomRelic(); if(rl){ RUN.relics.push(rl); changeFleet(()=>{}); out.push(`Salvage gained: ${relicName(rl)}. ${RELICS[rl].d}`); } else { RUN.credits+=80; out.push('No salvage left to find. +80 credits instead.'); } }
   if(r.dmgOne){ const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*r.dmgOne); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); }
   if(r.dmgAll){ RUN.fleet.forEach(s=>{ s.hp=Math.max(1,s.hp-Math.round(derive(s).maxHp*r.dmgAll)); }); out.push(`Every ship takes ${pct(r.dmgAll)} hull damage.`); }
-  if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to take her on. Your credits are returned.'); } }
+  if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to add this ship. Your credits are returned.'); } }
   let upgradedUid=null; // R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he just upgraded
   if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; upgradedUid=s.uid; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
   if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(r.healAll>=1?'Every ship is fully repaired.':`Every ship repairs ${pct(r.healAll)} of its hull.`); }
@@ -516,9 +516,9 @@ function applyOutcome(r){
   if(r.dmgBig){ const s=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(s){ const dm=Math.round(derive(s).maxHp*r.dmgBig); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); } }
   if(r.xpTop){ const s=[...RUN.fleet].sort((a,b)=>b.cap.xp-a.cap.xp)[0]; if(s){ addXp(s,r.xpTop); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpTop} experience.`); } }
   if(r.modId&&MODULES[r.modId]){ RUN.inventory.push(r.modId); out.push(`Found: ${modName(r.modId)}. It’s in the hold.`); }
-  if(r.shipRaw&&HULLS[r.shipRaw]){ if(fleetCP()+(HULLS[r.shipRaw].cp||1)<=RUN.cpCap){ const s=newShip(r.shipRaw,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=40; out.push('No command points to crew her. You sell the berth for 40 credits.'); } }
+  if(r.shipRaw&&HULLS[r.shipRaw]){ if(fleetCP()+(HULLS[r.shipRaw].cp||1)<=RUN.cpCap){ const s=newShip(r.shipRaw,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=40; out.push('No command points to add this ship. You sell the berth for 40 credits.'); } }
   if(r.wingPerk){ const c=[...RUN.fleet].filter(s=>HULLS[s.tpl].hangar).sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(c){ const got=wingPerkGrant(c); out.push(got?`The ${c.name}’s wings gain a veteran perk: ${WING_PERKS[got].n}.`:`The ${c.name}’s wings already hold every perk they can.`); } }
-  if(r.nemIntel){ const w=nemReveal(); out.push(w?`Nemesis weakness revealed: ${NEM_WEAK[w].n}. ${NEM_WEAK[w].d}`:'You learn nothing new about the enemy commander.'); }
+  if(r.nemIntel){ const w=nemReveal(), entry=w&&nemEntry(NEM_WEAK,w,nemActive()?.fac); out.push(entry?`Nemesis weakness revealed: ${entry.n}. ${entry.d}`:w?`Nemesis weakness revealed: ${w}.`:'You learn nothing new about the enemy commander.'); }
   if(r.nemClock){ const m=nemClockAdd(r.nemClock); if(m) out.push(m); }
   if(r.power||r.syncDown||r.dmgPctUp||r.dmgPctDown){
     const m=RUN.storyNext=RUN.storyNext||{};
@@ -553,7 +553,7 @@ function showCoreEat(){
 ACT.eatCore=p=>{ if(!eatCore(p)) return; try{ tel('core_eat',{p,sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
 ACT.refuseCoreEat=()=>{ if(!refuseCoreEat()) return; try{ tel('core_eat_refuse',{sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
 ACT.beat3=()=>{ if(showCoreEat()) return; if(!showBeat3()) closeModal(); };
-function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
+function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.sector===3&&!RUN.beat3DebriefSeen&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
 function applyBeat3Outcome(r){
   const out=applyOutcome({...r,cred:r.credits,healAll:r.repair,nemIntel:r.weak,nemClock:r.clock}).filter(l=>l!=='You move on.');
   if(r.dmgFlag){ const f=flagshipOf(); if(f){ const dmg=Math.round(derive(f).maxHp*r.dmgFlag); f.hp=Math.max(1,f.hp-dmg); out.push(`The ${f.name} takes ${dmg} hull damage.`); } }
@@ -602,10 +602,12 @@ function rewardFlow(summary){
   // B1 (reload during rewards): the node completes the moment the rewards are banked, and the picks still to make (with their offers fixed) ride in the save.
   // A reload then resumes the chain (resumeReward) instead of losing the boon, refit or relic, or replaying the node for double pay.
   const prizes=(summary.prizes||[]).filter(p=>p&&HULLS[p.tpl]);
-  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
+  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null};
+  const debrief=beat3Debrief(); if(debrief) RUN.beat3DebriefSeen=true;
+  completeNode();
   const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Strip the wrecks</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a protocol</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
-    ${beat3Debrief()?`<p class="gilt">${esc(beat3Debrief())}</p>`:''}
+    ${debrief?`<p class="gilt">${esc(debrief)}</p>`:''}
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}

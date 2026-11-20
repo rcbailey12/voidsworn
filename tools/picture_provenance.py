@@ -11,6 +11,7 @@ from functools import lru_cache
 import hashlib
 import io
 import json
+import os
 import shutil
 from pathlib import Path
 import re
@@ -64,13 +65,17 @@ def text_lines(record):
         if line not in lines:
             lines.append(line)
     lines.append(record['stage'] + ' | ' + record['date'])
+    if 'build_sha256' in record:
+        lines.extend((f"Commit {record['source_commit']}",
+                      f"Build SHA-256 {record['build_sha256']}",
+                      f"Manifest SHA-256 {record['manifest_sha256']}"))
     return lines
 
 
 def strip_for(record, size):
     # One bitmap alphabet for Python and Godot, independent of installed fonts.
     glyphs = json.loads((Path(__file__).with_name('picture_font.json')).read_text())
-    scale = 2 if size[0] >= 1000 else 1
+    scale = 2 if size[0] >= 1000 and 'build_sha256' not in record else 1
     width = size[0] // scale
     lines = []
     for text in text_lines(record):
@@ -103,6 +108,35 @@ def summary(record):
     return result
 
 
+def ffmpeg_executable():
+    command = os.environ.get('FFMPEG') or shutil.which('ffmpeg')
+    if command:
+        return command
+    import imageio_ffmpeg
+    return imageio_ffmpeg.get_ffmpeg_exe()
+
+
+def _verify_clip(path, record):
+    from PIL import ImageChops, ImageStat
+    template = strip_for(record, (1280, 720))
+    if digest(template.tobytes()) != record['stamp_template_sha256']:
+        raise ValueError('the clip stamp differs from its provenance: ' + str(path))
+    letters = template.convert('L').point(lambda p: 255 if p > 180 else 0)
+    crop = f'crop={template.width}:{template.height}:0:{720 - template.height}:exact=1'
+    duration = float(record['duration_s'])
+    if not 0 < duration < float('inf'):
+        raise ValueError('invalid review clip duration: ' + str(path))
+    ffmpeg = ffmpeg_executable()
+    for offset in (0, duration / 2):
+        pixels = subprocess.check_output([
+            ffmpeg, '-loglevel', 'error', '-nostdin', '-ss', str(offset), '-i', str(path),
+            '-vf', crop, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-threads', '1', '-'
+        ])
+        actual = Image.frombytes('RGB', template.size, pixels)
+        if max(ImageStat.Stat(ImageChops.difference(actual, template), letters).mean) > 45:
+            raise ValueError('provenance text is absent from the clip: ' + str(path))
+
+
 def verify(path):
     path = Path(path)
     record = json.loads(sidecar(path).read_text(encoding='utf-8'))
@@ -122,6 +156,15 @@ def verify(path):
                 raise ValueError('build revision has a working-tree state: ' + str(path))
     if not record['sources'] or record['image_sha256'] != digest(path.read_bytes()):
         raise ValueError('picture changed after stamping: ' + str(path))
+    is_clip = path.suffix.lower() == '.mp4'
+    if is_clip or 'build_sha256' in record:
+        if ('source_commit_date' not in record or any(
+                not re.fullmatch(r'[a-f0-9]{64}', record.get(key, ''))
+                for key in ('build_sha256', 'manifest_sha256'))):
+            raise ValueError('missing installed build provenance: ' + str(path))
+    if is_clip:
+        _verify_clip(path, record)
+        return record
     with Image.open(path) as image:
         box = record['stamp_box']
         frames = [f.copy() for f in ImageSequence.Iterator(image)]
@@ -369,6 +412,8 @@ def main():
     stamp.add_argument('--stage', required=True, choices=STAGES)
     stamp.add_argument('--repo', default=str(ROOT))
     stamp.add_argument('--new-render', action='store_true')
+    verify_media = sub.add_parser('verify')
+    verify_media.add_argument('paths', nargs='+')
     check = sub.add_parser('check-body')
     check.add_argument('body')
     check.add_argument('--repo', default=str(ROOT))
@@ -386,6 +431,9 @@ def main():
             return 0
         if args.command == 'stamp':
             stamp_file(args.path, args.stage, args.repo, args.new_render)
+        elif args.command == 'verify':
+            for path in args.paths:
+                verify(path)
         elif args.command == 'check-body':
             check_body(args.repo, Path(args.body).read_text(encoding='utf-8-sig'), args.staged)
         else:
