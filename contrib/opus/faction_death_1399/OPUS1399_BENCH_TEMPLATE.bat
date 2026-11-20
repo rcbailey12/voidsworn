@@ -33,6 +33,7 @@ if not exist "%C%\.git" (
   git clone -q https://github.com/rcbailey12/voidsworn.git "%C%" >> "%RES%" 2>&1
   if errorlevel 1 (set "FAILMSG=git clone into %C% failed" & goto fail)
 )
+git -C "%C%" config core.autocrlf false >> "%RES%" 2>&1
 git -C "%C%" fetch -q --depth 1 origin %EXPECT% >> "%RES%" 2>&1
 if errorlevel 1 (set "FAILMSG=git fetch of %EXPECT% failed" & goto fail)
 call :safe_checkout FETCH_HEAD
@@ -42,7 +43,7 @@ for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
 echo commit=%COMMIT% >> "%RES%"
 if not "%COMMIT%"=="%EXPECT%" (set "FAILMSG=checked out %COMMIT%, expected %EXPECT%" & goto fail)
 echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
-robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP /XF manifest.json README.md a4_props.gd *.uid > "%O%\log_copy_ships.txt" 2>&1
+robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP /XF manifest.json README.md a4_props.gd *.uid /XD test > "%O%\log_copy_ships.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy ships failed" & goto fail)
