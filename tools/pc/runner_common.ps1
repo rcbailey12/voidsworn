@@ -7,8 +7,11 @@
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
-# hashcheck <out> <tools dir> <hash file>: warn in result.txt when the running copies differ (warn, never stop).
-#   Test knob: PC_TEST_HASHES.
+# hashcheck <out> <tools dir> <hash file> [strict]: warn in result.txt when the running copies differ. With strict
+#   (issue 1194), a differing or missing watchdog, slot or step helper file (tmo.bat, run_timeout.ps1, gpu_slots.js,
+#   job_wrap.bat) stops the job with exit 14. Test knob: PC_TEST_HASHES.
+# preflight-tools <out> <list> (issue 1194): find each named tool (godot, blender, ffmpeg, node, pil) before a job clones
+#   or claims the GPU. Writes <out>\preflight.txt and <out>\tools.cmd (set JW_GODOT=... lines); exit 2 on a missing tool.
 # model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
 #   differs from the arm default, whatever the provider.
 # base <repo> <out> <issue body file>: parse the optional Base line, fetch and commit its merge before the agent.
@@ -236,22 +239,93 @@ function Warn-KeptRepos($repo) {
     } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
   }
 }
-function Test-SharedBuildCopy($repo, $path) {
+function Get-BuildShipLatest($build, $code) {
+  # Newest file time in the shared build's folder for one ship code, or $null when the build has no such ship.
+  if (-not $script:buildShipLatest) { $script:buildShipLatest = @{} }
+  if ($script:buildShipLatest.ContainsKey($code)) { return $script:buildShipLatest[$code] }
+  $latest = $null
+  $dir = Get-Item -LiteralPath (Join-Path $build "godot/assets/ships/$code") -Force -ErrorAction SilentlyContinue
+  if ($dir -is [IO.DirectoryInfo] -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    try {
+      foreach ($file in $dir.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) {
+        if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) { $latest = $null; break }
+        if (-not $latest -or $file.LastWriteTimeUtc -gt $latest) { $latest = $file.LastWriteTimeUtc }
+      }
+    } catch { $latest = $null }
+  }
+  $script:buildShipLatest[$code] = $latest
+  return $latest
+}
+function Test-SharedBuildCopy($repo, $path, $allowSuperseded = $false) {
   # Use the same default shared build as get_ship_files.bat.
   $build = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build'
   $local = Get-Item -LiteralPath (Join-Path $repo $path) -Force -ErrorAction SilentlyContinue
   $shared = Get-Item -LiteralPath (Join-Path $build $path) -Force -ErrorAction SilentlyContinue
+  if (-not $shared -and $allowSuperseded -and $path -match '\Agodot/assets/ships/([A-Za-z0-9_][A-Za-z0-9_-]*)/' -and
+      $local -is [IO.FileInfo] -and -not ($local.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    # Issue 1180 run 8 (Board, Nov 20): a ship file with no build twin (an old damage glb) is a candidate when the build
+    # holds the same ship code installed later. Like any superseded file it is archived and read back before removal.
+    $code = $Matches[1]
+    $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+    for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+    }
+    $installed = Get-BuildShipLatest $build $code
+    $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+    $copyTime = $local.LastWriteTimeUtc
+    $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; no build twin; ship $code installed $(if ($installed) { $installed.ToString('o') } else { 'never' })"
+    if (-not $installed) { return $false }
+    if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $installed -gt $ceiling) { Log "shared copy time not trusted, kept: $path ($detail)"; return $false }
+    if ($copyTime -ge $installed) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+    Log "superseded by the shared build: $path ($detail)"
+    $script:cleanupSuperseded += ,$path
+    return $true
+  }
+  if (-not $shared -and $allowSuperseded -and $path -match '\Agodot/gen/' -and
+      $local -is [IO.FileInfo] -and -not ($local.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    # Issue 1180 (Board, Nov 20, R8 dry run 2): a generated file with no build twin (an old gen/damage scene) is a
+    # candidate when the build's gen was regenerated later: gen/manifest.json is written on every regeneration, so a
+    # file the newer gen no longer has is superseded. Archived and read back before removal, like every superseded file.
+    $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+    for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+    }
+    $manifest = Get-Item -LiteralPath (Join-Path $build 'godot/gen/manifest.json') -Force -ErrorAction SilentlyContinue
+    if ($manifest -isnot [IO.FileInfo] -or ($manifest.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
+    $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+    $copyTime = $local.LastWriteTimeUtc; $genTime = $manifest.LastWriteTimeUtc
+    $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; no build twin; build gen regenerated $($genTime.ToString('o'))"
+    if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $genTime -lt $floor -or $genTime -gt $ceiling) { Log "shared copy time not trusted, kept: $path ($detail)"; return $false }
+    if ($copyTime -ge $genTime) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+    Log "superseded by the shared build: $path ($detail)"
+    $script:cleanupSuperseded += ,$path
+    return $true
+  }
   foreach ($file in @($local, $shared)) {
     if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
   }
-  if ($local.Length -ne $shared.Length) { return $false }
   # Git can list the contents of a junction as ignored files. Keep checkouts that contain a linked ship directory.
   $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
   for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
     if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
   }
-  return (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
-         (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash
+  if ($local.Length -eq $shared.Length -and (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
+      (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash) { return $true }
+  if (-not $allowSuperseded) { return $false }
+  # Removal only, never reuse (issue 1180 run 7, Board Nov 20): a differing copy is superseded when the shared build holds
+  # the same file written strictly later. Robocopy and checkout can reset times, so a missing (before 2000) or future time
+  # keeps the copy, and every call logs both times and sizes.
+  $copyTime = $local.LastWriteTimeUtc; $buildTime = $shared.LastWriteTimeUtc
+  $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+  $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; build $($buildTime.ToString('o')), $($shared.Length) bytes"
+  if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $buildTime -lt $floor -or $buildTime -gt $ceiling) {
+    Log "shared copy time not trusted, kept: $path ($detail)"; return $false
+  }
+  if ($copyTime -ge $buildTime) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+  Log "superseded by the shared build: $path ($detail)"
+  # Times only nominate a candidate (Artoo, PR 1260): the caller archives these bytes and reads them back before removal.
+  $script:cleanupSuperseded += ,$path
+  return $true
 }
 function Get-RepoCleanupStatus($repo) {
   $status = @(Read-CleanupGit @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
@@ -261,7 +335,7 @@ function Get-RepoCleanupStatus($repo) {
   }
   return $status
 }
-function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false) {
+function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false, $forRemoval = $false) {
   foreach ($line in $status) {
     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
@@ -283,7 +357,7 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
     }
     if ($line -match '^!! ("?)(godot/(?:gen|assets/ships)/[^"\\:\r\n]+)(?<!/)\1$') {
       $path = $Matches[2]
-      if (-not (Test-SharedBuildCopy $repo $path)) {
+      if (-not (Test-SharedBuildCopy $repo $path $forRemoval)) {
         $kind = if ($inGen) { 'generated' } else { 'ship' }
         throw "working tree needs keeping: $line (shared $kind copy could not be verified)"
       }
@@ -294,7 +368,7 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
     throw "working tree needs keeping: $line"
   }
 }
-function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false) {
+function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $forRemoval = $false) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
   if (-not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container)) { throw 'not a standalone checkout' }
   $top = @(Read-CleanupGit @('-C',$repo,'rev-parse','--show-toplevel'))
@@ -305,11 +379,15 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false) {
   if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
   if ($sparse -or ($oldSparse.Count -and $oldSparse[0] -eq 'true')) { throw 'sparse checkout needs keeping' }
   $shallow = @(Read-CleanupGit @('-C',$repo,'rev-parse','--is-shallow-repository'))
-  if ($gitExit -ne 0 -or $shallow[0] -ne 'false') { throw 'complete local history not verified' }
+  # Reuse needs full history. Removal only needs every local commit in the mirror, checked below, so a shallow helper
+  # clone qualifies (issue 1180 run 8).
+  if ($gitExit -ne 0 -or ($shallow[0] -ne 'false' -and -not ($forRemoval -and $shallow[0] -eq 'true'))) { throw 'complete local history not verified' }
   $flags = @(Read-CleanupGit @('-C',$repo,'ls-files','-v'))
   if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
   $status = @(Get-RepoCleanupStatus $repo)
-  $caches = @(Reuse-Caches $repo $status $allowWork)
+  $script:cleanupSuperseded = @()
+  $caches = @(Reuse-Caches $repo $status $allowWork $forRemoval)
+  $superseded = @($script:cleanupSuperseded)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
   $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
@@ -322,7 +400,7 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false) {
     if (-not $allowWork) { throw "local history not in fetched mirror: $id" }
     $line
   }
-  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed }
+  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded }
 }
 function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
   return (Get-RepoCleanupState $repo $mirror $sparse).Caches
@@ -451,26 +529,81 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable) {
   Assert-PlainDirectory $directory
-  $bytes = 0L; $latest = $directory.LastWriteTimeUtc
-  $worktreeLatest = [DateTime]::MinValue
+  $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
+  $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
   $gitPrefix = (Join-Path $directory.FullName '.git') + [IO.Path]::DirectorySeparatorChar
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push($directory)
   while ($pending.Count) {
-    foreach ($item in $pending.Pop().EnumerateFileSystemInfos()) {
-      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "linked path: $($item.FullName)" }
+    $next = $pending.Pop()
+    # A folder another account owns (Codex sandbox scratch) cannot be listed. With -AllowUnreadable it is noted and
+    # skipped, so the rest is still sized (Board, R8 dry run: 68 TEMP rows had no size at all).
+    try { $entries = @($next.EnumerateFileSystemInfos()) }
+    catch {
+      if (-not $allowUnreadable -or $next.FullName -eq $directory.FullName) { throw }
+      $unreadable += ,$next; continue
+    }
+    foreach ($item in $entries) {
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        # Links are listed, never followed or counted (legacy selftest fixtures hold junctions to shared ships).
+        if (-not $allowLinks) { throw "linked path: $($item.FullName)" }
+        $links += ,$item
+        continue
+      }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
       if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
       $bytes += $item.Length
+      if ($item.LastWriteTimeUtc -gt $fileLatest) { $fileLatest = $item.LastWriteTimeUtc }
       if ($checkout -and $item.LastWriteTimeUtc -gt $worktreeLatest -and
           -not $item.FullName.StartsWith($gitPrefix, [StringComparison]::OrdinalIgnoreCase)) {
         $worktreeLatest = $item.LastWriteTimeUtc
       }
     }
   }
-  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; WorktreeLatest = $worktreeLatest }
+  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
+    Links = $links; Unreadable = $unreadable }
+}
+function Get-LinkTarget($link) {
+  # Where a link points, for the log only: it is never followed.
+  try { $t = @((Get-Item -LiteralPath $link.FullName -Force -ErrorAction Stop).Target) | Where-Object { $_ } | Select-Object -First 1 }
+  catch { $t = $null }
+  if ($t) { return [string]$t }; return 'target unknown'
+}
+function Remove-CleanupReadable($dir, $unreadable) {
+  # Remove everything except folders another account owns and the folders that lead to them. Run only after links are
+  # gone and the ownership checks passed; an unreadable folder cannot be listed, so nothing in it is followed or removed.
+  $keep = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+  foreach ($u in $unreadable) {
+    for ($d = $u; $d -and $d.FullName.Length -ge $dir.FullName.Length; $d = $d.Parent) { $null = $keep.Add($d.FullName) }
+  }
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push($dir)
+  while ($pending.Count) {
+    $next = $pending.Pop()
+    if ($unreadable | Where-Object { $_.FullName -eq $next.FullName }) { continue }
+    foreach ($item in @($next.EnumerateFileSystemInfos())) {
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link appeared: $($item.FullName)" }
+      if ($keep.Contains($item.FullName)) { $pending.Push($item); continue }
+      if (Cleanup-Paused) { throw 'PC pause is active' }
+      if ($item -is [IO.DirectoryInfo]) {
+        Assert-NoLinkedChildren $item.FullName
+        Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction Stop
+      } else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
+    }
+  }
+}
+function Remove-CleanupLinks($links) {
+  # Remove each link itself, never its target. PowerShell 5.1's Remove-Item -Recurse can follow a junction.
+  foreach ($link in $links) {
+    $item = Get-Item -LiteralPath $link.FullName -Force -ErrorAction SilentlyContinue
+    if (-not $item) { continue }
+    if (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "link was replaced: $($link.FullName)" }
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    if ($item -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($item.FullName, $false) } else { [IO.File]::Delete($item.FullName) }
+    if (Test-Path -LiteralPath $item.FullName) { throw "link could not be removed: $($item.FullName)" }
+  }
 }
 function Open-CleanupLock($path, $existingOnly = $false) {
   $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
@@ -481,23 +614,71 @@ function Open-CleanupLock($path, $existingOnly = $false) {
   if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
+function Assert-NoGitLocalState($candidate) {
+  $gitDir = Join-Path $candidate '.git'
+  foreach ($state in @('index.lock','HEAD.lock','packed-refs.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules')) {
+    if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
+  }
+}
+function Assert-NoLiveWorktree($candidate) {
+  # Another live worktree can hold staged-only work under this .git; a prunable one (folder gone) shares nothing.
+  if (Test-Path -LiteralPath (Join-Path $candidate '.git/worktrees')) {
+    $lines = @(Read-CleanupGit @('-C',$candidate,'worktree','list','--porcelain'))
+    if ($gitExit -ne 0) { throw 'checkout may be shared with another worktree' }
+    # A worktree whose folder is gone is listed as prunable; it shares nothing (issue 1180 run 8). Count the live ones.
+    $live = @(); $current = $null
+    foreach ($line in ($lines + '')) {
+      if ($line -like 'worktree *') { $current = @{ Path = $line.Substring(9); Prunable = $false } }
+      elseif ($line -like 'prunable*' -and $current) { $current.Prunable = $true }
+      elseif (-not $line -and $current) { if (-not $current.Prunable) { $live += $current.Path }; $current = $null }
+    }
+    if ($live.Count -ne 1) { throw "checkout may be shared with another worktree: $(($live | Select-Object -Skip 1) -join ', ')" }
+  }
+}
+function Read-BoardKeepList($file) {
+  # The Board's keep list (issue 1180, Nov 20): voidsworn_test\janitor_keep.txt, one exact folder path per line, # for
+  # notes. A missing file is an empty list; a file that cannot be read stops the janitor rather than ignoring it.
+  $item = Get-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+  if (-not $item) { return ,@() }
+  if ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Board keep list is not a plain file: $file" }
+  $paths = @()
+  foreach ($line in [IO.File]::ReadAllLines($file)) {
+    $p = $line.Trim().TrimStart([char]0xFEFF)
+    if (-not $p -or $p.StartsWith('#')) { continue }
+    $paths += [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
+  }
+  return ,$paths
+}
+function Get-BoardKeepReason($path) {
+  # Whole-path match: the candidate is a listed path, holds one, or sits inside one. Never a partial name match.
+  # Every removal path loads the list itself (the janitor and the runner's end-of-job cleanup alike; Artoo on PR 1277).
+  # A list that cannot be read throws, and the caller keeps the candidate.
+  if ($null -eq $script:boardKeep) {
+    $script:boardKeep = Read-BoardKeepList (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/janitor_keep.txt')
+  }
+  if (-not $script:boardKeep.Count) { return '' }
+  $full = [IO.Path]::GetFullPath($path).TrimEnd('\', '/')
+  foreach ($keep in $script:boardKeep) {
+    if ($full -eq $keep -or $keep.StartsWith($full + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+        $full.StartsWith($keep + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+        [string]::Equals($full, $keep, [StringComparison]::OrdinalIgnoreCase)) { return 'kept: on the Board keep list' }
+  }
+  return ''
+}
 function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvageName, $keepReason = '') {
   $candidate = $copy.FullName
   $size = 'size unavailable'
   try {
     $stats = Measure-CleanupDirectory $copy -Checkout
     $size = "$($stats.Bytes) bytes"
+    $listed = Get-BoardKeepReason $candidate
+    if ($listed) { throw $listed }
     if ($keepReason) { throw $keepReason }
     if ($salvageRoot -and $stats.WorktreeLatest -gt $now.AddHours(-3)) { throw 'touched in the last 3 hours' }
-    $gitDir = Join-Path $candidate '.git'
-    foreach ($state in @('index.lock','HEAD.lock','packed-refs.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules')) {
-      if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
-    }
-    $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot)
-    if (Test-Path -LiteralPath (Join-Path $gitDir 'worktrees')) {
-      $worktrees = @(Read-CleanupGit @('-C',$candidate,'worktree','list','--porcelain') | Where-Object { $_ -like 'worktree *' })
-      if ($gitExit -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
-    }
+    Assert-NoGitLocalState $candidate
+    # Removal may accept ship and gen files the shared build has superseded; reuse never does.
+    $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot) $true
+    Assert-NoLiveWorktree $candidate
     if (Cleanup-Paused) { throw 'PC pause is active' }
     $reason = 'rebuildable'
     if ($salvageRoot -and ($state.Local.Count -or $state.Status.Count -ne $state.Caches.Count)) {
@@ -506,6 +687,17 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       if (Test-Path -LiteralPath $backup) { throw "salvage destination already exists: $backup" }
       $reason = 'after checked salvage of local work'
       if (-not $dryRun) { Save-CheckoutSalvage $candidate $mirror $state $backup }
+    }
+    if ($state.Superseded.Count) {
+      # A same-name newer build file does not prove these bytes were replaced: archive them and read them back first.
+      if (-not $salvageRoot) { throw 'superseded ship or gen files need a checked archive' }
+      $archive = Join-Path $salvageRoot "$salvageName`_superseded"
+      if (Test-Path -LiteralPath $archive) { throw "archive destination already exists: $archive" }
+      $archiveBytes = 0L
+      foreach ($path in $state.Superseded) { $archiveBytes += (Get-Item -LiteralPath (Join-Path $candidate $path) -Force).Length }
+      $archived = "after checked archive of $($state.Superseded.Count) superseded ship or gen files, $archiveBytes bytes before dedupe"
+      $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
+      if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
     if ($dryRun) { Log "kept checkout would remove ($reason): $candidate ($size)"; return }
     $current = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force) -Checkout
@@ -1166,6 +1358,15 @@ try {
     # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
     $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
     if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
+    # Issue 1194 (Artoo on PR 1254): strict fails closed. A missing or empty manifest, or one that leaves out a guarded
+    # file, stops the job as surely as a changed file.
+    $strict = $args[4] -eq 'strict'
+    function Stop-Strict($why) {
+      Log "STOPPED: $why"
+      if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' "STOPPED: $why" }
+      exit 14
+    }
+    if ($strict -and -not (Test-Path -LiteralPath $hashf)) { Stop-Strict "no hashes file at $hashf" }
     if (-not (Test-Path -LiteralPath $hashf)) {
       Log "WARNING: no Board hashes file at $hashf; the running runner copies are not checked"
       exit 0
@@ -1174,6 +1375,12 @@ try {
     foreach ($l in [IO.File]::ReadAllLines($hashf)) {
       $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
       if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
+    }
+    if ($strict) {
+      $required = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js')
+      if (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
+      $absent = @($required | Where-Object { -not $want.ContainsKey($_) })
+      if ($absent.Count) { Stop-Strict "the hashes file $hashf leaves out: $($absent -join ', ')" }
     }
     if ($want.Count -eq 0) { Log "WARNING: the Board hashes file $hashf has no entries; the running runner copies are not checked"; exit 0 }
     $bad = @()
@@ -1184,6 +1391,76 @@ try {
     }
     if ($bad.Count) { Log "WARNING: these runner files differ from the Board-copied hashes: $($bad -join ', ')" }
     else { Log "runner files match the Board hashes ($($want.Count) checked)" }
+    # Issue 1194: a job must not run a watchdog or slot reader other than the one the hashes name.
+    $guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')
+    $stop = @($bad | Where-Object { $guarded -contains ($_ -replace ' \(missing\)$', '') })
+    if ($args[4] -eq 'strict' -and $stop.Count) {
+      $why = "STOPPED: the watchdog or slot files differ from $($hashf): $($stop -join ', ')"
+      Log $why
+      if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' $why }
+      exit 14
+    }
+  }
+  elseif ($mode -eq 'preflight-tools') {
+    # Issue 1194: jobs found a missing ffmpeg or Pillow only after an hour on the GPU. Each tool: an explicit setting
+    # first, then the PC's usual place. Nothing is installed or changed.
+    $script:out = $args[1]
+    $vt = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
+    $null = [IO.Directory]::CreateDirectory($script:out)
+    $report = Join-Path $script:out 'preflight.txt'
+    $lines = @("tool preflight $([DateTime]::UtcNow.ToString('s'))Z")
+    $sets = @()
+    $missing = @()
+    function Find-Exe($candidates, $command) {
+      foreach ($c in $candidates) { if ($c -and (Test-Path -LiteralPath $c -PathType Leaf)) { return (Get-Item -LiteralPath $c).FullName } }
+      if ($command) {
+        $found = Get-Command -Name $command -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) { return $found.Source }
+      }
+      return ''
+    }
+    foreach ($tool in @(([string]$args[2]) -split '[\s,;]+' | Where-Object { $_ })) {
+      $name = $tool.ToLowerInvariant()
+      $path = ''
+      switch ($name) {
+        'godot' {
+          $listed = ''
+          $pathFile = Join-Path $vt 'godot_path.txt'
+          if (Test-Path -LiteralPath $pathFile) { $listed = ([IO.File]::ReadAllLines($pathFile) | Select-Object -First 1).Trim() }
+          $path = Find-Exe @($env:GODOT_EXE, $listed, (Join-Path $vt 'godot\Godot_v4.7.2-stable_win64_console.exe')) ''
+        }
+        'blender' { $path = Find-Exe @($env:BLENDER_EXE, (Join-Path $vt 'blender\blender-4.5.14-windows-x64\blender.exe')) '' }
+        'ffmpeg' { $path = Find-Exe @($env:FFMPEG_EXE, (Join-Path $vt 'ffmpeg\bin\ffmpeg.exe')) 'ffmpeg' }
+        'node' { $path = Find-Exe @($env:NODE_EXE, (Join-Path $vt 'node\node.exe')) 'node' }
+        'pil' {
+          # Python with Pillow: ComfyUI's portable Python has it on this PC.
+          $pythons = @($env:PIL_PYTHON, (Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'))
+          foreach ($py in $pythons) {
+            if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
+            $ea = $ErrorActionPreference
+            try {
+              $ErrorActionPreference = 'Continue'
+              $null = & $py -c 'import PIL' 2>&1
+              if ($LASTEXITCODE -eq 0) { $path = (Get-Item -LiteralPath $py).FullName; break }
+            } catch { } finally { $ErrorActionPreference = $ea }
+          }
+        }
+        default { $lines += "MISSING ${name}: unknown tool name (known: godot, blender, ffmpeg, node, pil)"; $missing += $name; continue }
+      }
+      if ($path) {
+        $lines += "found ${name}: $path"
+        $sets += ('set "JW_' + $name.ToUpperInvariant() + '=' + $path + '"')
+      } elseif ($name -ne $null -and $missing -notcontains $name) {
+        $lines += "MISSING ${name}: set " + @{ godot = 'GODOT_EXE'; blender = 'BLENDER_EXE'; ffmpeg = 'FFMPEG_EXE'; node = 'NODE_EXE'; pil = 'PIL_PYTHON' }[$name] + ' or install it'
+        $missing += $name
+      }
+    }
+    if ($missing.Count) { $lines += "STOPPED: missing tools: $($missing -join ', ')" } else { $lines += 'all tools found' }
+    [IO.File]::WriteAllText($report, (($lines -join "`r`n") + "`r`n"), $utf8)
+    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), ((@('@echo off') + $sets) -join "`r`n") + "`r`n", (New-Object Text.ASCIIEncoding))
+    foreach ($l in $lines) { Write-Host $l }
+    if ($missing.Count) { exit 2 }
+    exit 0
   }
   elseif ($mode -eq 'model') {
     # Issue 722 (audit 706 finding 6): stamp what will actually run. The bat passes the resolved id and the arm's

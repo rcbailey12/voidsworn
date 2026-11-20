@@ -74,23 +74,43 @@ rem The installed copy runs on its own. Keep its inherited tool scratch under a 
 powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%O%\scratch_path.txt" 2>> "%RES%"
 if errorlevel 1 set "FAILED=private TEMP setup"
 if defined FAILED goto collect
+set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%O%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
 rem The redirection holds the marker open until the tools finish.
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
-exit /b %ERRORLEVEL%
+set "RUN_EL=%ERRORLEVEL%"
+rem (1180) The scratch goes on PASS; on FAILED the newest one per job stays a day (tools_live scratch_done.ps1).
+set "RUN_SCRATCH=%TEMP%"
+set "TEMP=%BASE_TEMP%"
+set "TMP=%BASE_TEMP%"
+set "TMPDIR=%BASE_TEMP%"
+set "SD_TLV="
+if exist "%V%\tools_live\current.txt" set /p SD_TLV=<"%V%\tools_live\current.txt"
+if defined SD_TLV if exist "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "ship_job %J%" >> "%RES%" 2>&1
+exit /b %RUN_EL%
 
 :run_tools
 echo start %SHIP% %CODE% %BRANCH% %DATE% %TIME% > "%RES%"
 echo inputs STAGES=%STAGES% SETS=%SETS% FACS=%FACS% PAINT_BASE=%PAINT_BASE% PC_GPU_WAIT_SECONDS=%PC_GPU_WAIT_SECONDS% >> "%RES%"
 if exist "%J%\out_before_%STAMP%" echo the earlier run's out folder is now out_before_%STAMP% >> "%RES%"
 set "GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe"
+rem (1194) The installed main watchdog in tools_live, never the job clone's own copy. Once tools_live is installed, a
+rem blank pointer or a version without a watchdog fails the job before any step (fail closed, Artoo on PR 1254).
+set "TMO=%C%\tools\pc\tmo.bat"
+set "TLV="
+if exist "%V%\tools_live\current.txt" set /p TLV=<"%V%\tools_live\current.txt"
+set "TMO_OK="
+if defined TLV if exist "%V%\tools_live\%TLV%\pc\run_timeout.ps1" set "TMO_OK=1"
+if defined TMO_OK set "TMO=%V%\tools_live\%TLV%\pc\tmo.bat"
+echo watchdog %TMO% >> "%RES%"
 set "RECIPE=%V%\recipe\%SHIP%"
 
 rem Keep the newest two out_before folders out of the janitor list. Listing carries no permission to delete.
 powershell -NoProfile -Command "$ErrorActionPreference = 'Stop'; Get-ChildItem -LiteralPath $env:J -Directory -Filter 'out_before_*' | Sort-Object Name -Descending | Select-Object -Skip 2 -ExpandProperty FullName" > "%O%\out_before_for_janitor.txt" 2>> "%RES%"
 if errorlevel 1 set "FAILED=could not list old out folders for the janitor"
+if exist "%V%\tools_live\" if not defined TMO_OK set "FAILED=tools_live is installed but names no usable watchdog"
 if defined FAILED goto collect
 
 rem 2. Own clone and branch fetches. Use the same mirror lock as runner_common.ps1 around refresh and local Git reads.
@@ -125,8 +145,23 @@ if defined FAILED goto collect
 git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: could not save the clone's change list or patch, nothing was reset"
 if defined FAILED goto collect
+rem (1194, Artoo on PR 1254) a staged change is not in the patch above when the worktree matches HEAD, and the restores
+rem below would erase it: stop before any reset.
+git -C "%C%" diff --cached --quiet HEAD >> "%O%\log_clone_status.txt" 2>&1
+if errorlevel 1 set "FAILED=checkout: the clone has staged changes (git diff --cached); nothing was reset"
+if defined FAILED goto collect
+rem (1194) tools\pc\tmo.bat is restored only when it is byte for byte the hand-off copy the last run made (its hash is in
+rem .git\ship_job_tmo_handoff.txt); any other change to it is a hand edit and stops the job like one anywhere else.
+set "TMO_GEN="
+set "TMO_LEFT="
+set "TMO_REC="
+for /f %%H in ('git -C "%C%" hash-object -- tools/pc/tmo.bat 2^>nul') do set "TMO_LEFT=%%H"
+if exist "%C%\.git\ship_job_tmo_handoff.txt" set /p TMO_REC=<"%C%\.git\ship_job_tmo_handoff.txt"
+if defined TMO_LEFT if defined TMO_REC if /i "%TMO_LEFT%"=="%TMO_REC%" set "TMO_GEN=1"
+set "TMO_EXCL=:(exclude)godot/assets/ships"
+if defined TMO_GEN set "TMO_EXCL=:(exclude)tools/pc/tmo.bat"
 rem git filters the list itself (findstr $ needs a CR and git writes LF only; Fable on PR 1190)
-git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
+git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" "%TMO_EXCL%" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: git status of the clone failed, nothing was reset"
 if defined FAILED goto collect
 for %%Z in ("%O%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 set "FAILED=checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset"
@@ -140,6 +175,10 @@ rem files); they are saved in the patch above and restored from the clone's own 
 git -C "%C%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout: could not restore the godot *.import files in the clone"
 if defined FAILED goto collect
+rem (1194) the tools_live hand-off copy the last run made (below, checked above); restored like the install files
+if defined TMO_GEN git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1
+if errorlevel 1 set "FAILED=checkout: could not restore tools\pc\tmo.bat in the clone"
+if defined FAILED goto collect
 git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
 if defined FAILED goto collect
@@ -151,12 +190,22 @@ if defined FAILED goto collect
 echo merged %PAINT_BASE%: the pictures of this run are a PREVIEW of that paint stack >> "%RES%"
 :based
 git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
+rem (1194, Artoo on PR 1254) The recipe stages of a pinned commit run the clone's own tools\pc\tmo.bat. Copy the
+rem tools_live tmo.bat over it, so every nested Blender and Godot step hands off to the canonical watchdog too. The next
+rem run restores the file from the clone's commit before its checkout (above), only if its hash still matches the record.
+if defined TMO_OK copy /y "%TMO%" "%C%\tools\pc\tmo.bat" > nul
+if defined TMO_OK if errorlevel 1 set "FAILED=could not route the clone's tmo.bat to tools_live"
+if defined FAILED goto collect
+if defined TMO_OK git -C "%C%" hash-object -- tools/pc/tmo.bat > "%C%\.git\ship_job_tmo_handoff.txt" 2>> "%RES%"
+if defined TMO_OK if errorlevel 1 set "FAILED=could not record the hash of the clone's tmo.bat hand-off copy"
+if defined FAILED goto collect
+if defined TMO_OK echo the clone's tools\pc\tmo.bat hands off to %TMO% >> "%RES%"
 
 rem 3. import, then the stages, each in a fresh cmd so the variables the stages set end with them
 cd /d "%C%"
 set "TMO_STEP_OUT=%C%\godot\.godot"
 set "TMO_STEP=ship import"
-call "%C%\tools\pc\tmo.bat" %SHIP_IMPORT_CAP% "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%TMO%" %SHIP_IMPORT_CAP% "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo import exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=import"
@@ -183,17 +232,17 @@ rem 5. the three checks on the installed glb; every one must pass
 set CHECKFAIL=
 set "TMO_STEP_OUT=%O%"
 set "TMO_STEP=ship GPU readback"
-call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
+call "%TMO%" %SHIP_CHECK_CAP% "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo gpu readback exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% readback"
 set "TMO_STEP=ship authored interiors"
-call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
+call "%TMO%" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo authored interiors exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% interiors"
 set "TMO_STEP=ship death seam"
-call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
+call "%TMO%" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo death seam exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
@@ -202,7 +251,7 @@ set "TMO_STEP=ship shots"
 if defined FAILED goto collect
 
 rem 6. the shots, only now: everything above passed, so the installed glb is this run's and checked
-call "%C%\tools\pc\tmo.bat" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
+call "%TMO%" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo shots exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=shots"

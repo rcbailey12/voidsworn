@@ -179,10 +179,10 @@ func _run() -> void:
 	var ui := CampaignUI.new(); root.add_child(ui); ui.bind(c); ui.set_process(false)
 	var node: Dictionary = c.RUN.map.cols[0][0]
 	c.RUN.pos = node.id; node.type = "drydock"
-	c.drydockScreen(node); ui._teaching_screen()
+	c.repairStopScreen(node); ui._teaching_screen()
 	check(ui.teaching.current == "", "the Drydock modal does not show the shipyard card")
 	node.type = "field"
-	c.fieldRepairs(node); ui._teaching_screen()
+	c.repairStopScreen(node); ui._teaching_screen()
 	check(ui.teaching.current == "", "a Field Repair stop does not show the shipyard card")
 	node.type = "shipyard"
 	c.shipyardScreen(node); ui._teaching_screen()

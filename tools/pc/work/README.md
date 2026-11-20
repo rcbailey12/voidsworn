@@ -191,7 +191,11 @@ Here `%V%` is `%USERPROFILE%\Downloads\voidsworn_test` and `lane_tools_refresh.p
 outside the folder being refreshed. Use `build_b`, `build_c`, `build_d`, `build_e` or `work217` for the runner being called.
 The command checks that seat's issue status, fetches public `origin/main` through `lane_tools_source`, and keeps the previous
 tools in `runner_backups\<build>_<yyyyMMdd_HHmmss>\tools` when it installs a change. Matching tools use no backup slot.
-A fourth backup or a running job stops the refresh. The installed commit or failure is recorded in `lane_tools_refresh.txt`.
+A running job stops the refresh. Older backups rotate instead of stopping it (issue 1194): the newest three stay, and an
+older one is removed only when every file in it is kept in the live tools, a newer backup or a saved main snapshot.
+`-Build build` refreshes the main queue's `build\tools` (the watcher runs it between jobs), and `-Build tools_live`
+installs the canonical copy every `tmo.bat` hands its steps to (RULEBOOK 3.5). The installed commit or failure is recorded
+in `lane_tools_refresh.txt`.
 
 GPU claims (R276, issue 847): `tmo.bat` uses `gpu_slots.js` for Godot rendering, Blender and explicit
 `PC_GPU_MODE=shared|solo` launches. Two holders live in `voidsworn_test\gpu_slot_1` and `gpu_slot_2` (JSON: issue, PID,

@@ -1550,6 +1550,7 @@ func genEnemyFleet(fac, s, col, kind, arch, mod) -> Array:
 		list.append({"tpl": F["boss"]}); budget *= RAMP.boss[s]
 	if RUN != null and RUN.get("fleet") != null: budget *= max(RAMP.pwMin, min(RAMP.pwMax, JSM.pow(max(0.5, fleetPower()) / RAMP.refP[s], RAMP.pw)))
 	if AI_LEVEL == "standard": budget *= RAMP.std
+	if s == 3 and RAMP.get("late") is Dictionary: budget *= float(RAMP.late.get("veteran" if AI_LEVEL == "veteran" else "standard", 1.0))   # issue 1178: Sector 3 bites at each level
 	if AI_LEVEL == "veteran": budget *= RAMP.vet   # issue 1160: Veteran's fleet budget edge (shared table entry)
 	if heatOn("h_hunted"): budget *= 1.15
 	if mod == "bounty": budget *= 1.1

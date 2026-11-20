@@ -2,6 +2,7 @@ extends SceneTree
 # Issue 1217: pictures of the front-end screens through the real main scene. With --no-showcase no built ships are
 # needed (the cloud); without it the script waits for the title battle to fade in (the PC).
 # godot --path godot --resolution 1920x1080 --script res://ui/test/front_end_shots.gd -- <out dir> [tag] [--no-showcase]
+#   [--only=F5] [--expect=1920x1080]   (--expect: every frame must be that size before the shrink, or the run fails)
 # In the cloud run it under xvfb-run with --rendering-driver opengl3. Each picture is 1280x720 with its code name on it.
 
 const UiScale := preload("res://ui/ui_scale.gd")
@@ -63,7 +64,7 @@ func _shot(name: String, caption: String) -> void:
 	var img := root.get_viewport().get_texture().get_image()
 	# a 1080p or 4K slot only counts if the frame really is that size before the 720 high shrink (Artoo on PR 1233:
 	# a clamped window once gave two identical "sizes" on the combat capture, PR 1220)
-	var want := _asked_size()
+	var want := _expect
 	if want != Vector2i.ZERO and Vector2i(img.get_width(), img.get_height()) != want:
 		_failed += 1; printerr("[front-end-shots] FAIL ", name, " is ", img.get_width(), "x", img.get_height(), ", not the asked ", want.x, "x", want.y)
 	if img.get_height() > 720:
@@ -75,13 +76,9 @@ func _shot(name: String, caption: String) -> void:
 	cap.queue_free()
 
 
-# the --resolution the command line asked for, or zero when none was given
-func _asked_size() -> Vector2i:
-	var args := OS.get_cmdline_args()
-	var i := args.find("--resolution")
-	if i < 0 or i + 1 >= args.size(): return Vector2i.ZERO
-	var parts := str(args[i + 1]).split("x")
-	return Vector2i(int(parts[0]), int(parts[1])) if parts.size() == 2 else Vector2i.ZERO
+# the frame size --expect asked for, or zero. It is a user argument because Godot keeps --resolution to itself
+# (OS.get_cmdline_args() never lists it), which left the first version of this check silently passing.
+var _expect := Vector2i.ZERO
 
 
 func _scale(v: float) -> void:
@@ -95,6 +92,9 @@ var _only := ""
 func _run() -> void:
 	for a in OS.get_cmdline_user_args():
 		if str(a).begins_with("--only="): _only = str(a).substr(7)
+		if str(a).begins_with("--expect="):
+			var parts := str(a).substr(9).split("x")
+			if parts.size() == 2: _expect = Vector2i(int(parts[0]), int(parts[1]))
 	await _wait(1.5)
 	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
 	if not main.args.has("no-showcase"):
@@ -136,6 +136,19 @@ func _run() -> void:
 			host.ui.desk_opts_open = true; host.ui._dirty = true
 			await _wait(0.8)
 			await _shot("F3_run_options", "%s, UI scale Normal, Run options drawer" % res)
+			# issue 1261: open Run options from the keyboard (focus its button, Accept), then Tab three times: where is the focus?
+			host.ui.close_run_options(); await _wait(0.6)
+			var rob = host.ui.page_box.find_child("RunOptionsButton", true, false)
+			if rob != null: rob.grab_focus()
+			for act in ["ui_accept", "WAIT", "ui_focus_next", "ui_focus_next", "ui_focus_next"]:
+				if act == "WAIT": await _wait(0.6); continue
+				for down in [true, false]:
+					var e := InputEventAction.new(); e.action = act; e.pressed = down
+					root.push_input(e); await process_frame
+			await _wait(0.3)
+			var fo = root.gui_get_focus_owner()
+			var fo_t = "nothing" if fo == null else (("the " + str(fo.text) + " button") if fo is Button and str(fo.text) != "" else str(fo.name))
+			await _shot("F3_run_options_keys", "%s, Run options after 3 Tabs: keyboard focus on %s" % [res, fo_t])
 			host.ui.close_run_options()
 			await _wait(0.4)
 	main.settings["ui_scale"] = 1.3

@@ -152,7 +152,7 @@ func _repairs_and_joins(c: Campaign, ui: UI) -> void:
 	_check(lines.any(func(l): return l.begins_with("The Unbroken joins the fleet under ")), "an event ship joins with one article")
 	c.RUN["fleet"].pop_back()
 	c.FNAMES["deathless"] = names; c.MORE_SHIP_NAMES["deathless"] = more
-	c.RUN["reward"] = {"prizes": [{"tpl": "d_scythe", "name": "The Unbroken", "cp": 1, "hpf": 1}], "prizeSel": ["add"], "wrecks": [], "stage": "prize", "modOffer": null}
+	c.RUN["reward"] = {"kind": "elite", "prizes": [{"tpl": "d_scythe", "name": "The Unbroken", "cp": 1, "hpf": 1}], "prizeSel": ["add"], "wrecks": [], "stage": "prize", "modOffer": null}
 	c.W["rw"] = {"k": "mod"}
 	c.ACT_prizeConfirm()
 	_check("The Unbroken joins." in c.toasts, "a prize ship joins with one article")

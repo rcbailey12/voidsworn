@@ -18,7 +18,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -172,6 +172,9 @@ func _load_settings() -> void:
 		if o is Dictionary:
 			for k in o:
 				settings[k] = o[k]
+	# Issue 1079: the nebula wake went on by default (Ryan, Nov 20) under a new key, so the "nebula_wake": false that the
+	# off-by-default build saved with every settings file never keeps it off.
+	settings.erase("nebula_wake")
 
 
 func save_settings() -> void:
@@ -387,6 +390,11 @@ func quick_battle() -> void:
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
+	# Issue 1079: on by default (Ryan, Nov 20). A capture that needs the old look passes --nebula_wake false (Artoo, PR 1330).
+	var wake := bool(settings.get("nebula_wake_on", true))
+	if args.has("nebula_wake"):
+		wake = str(args["nebula_wake"]) == "true"
+	b.args["nebula_wake"] = str(wake)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
@@ -418,6 +426,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(run)
 	b.can_retreat = campaign != null and str(cfg.get("kind", "")) != "boss"
 	b.args["quality"] = str(settings["quality"])
+	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
@@ -442,9 +451,11 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.in_campaign = true
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
-		# R78 Q18: only the fifth run's final boss gets dawn. Keep this visual flag out of the rules and saves.
-		b.args["finale"] = int(campaign.C.META.get("stats", {}).get("runs", 0)) == 5
+		# Issue 1271 (replaces R78 Q18's "fifth run only"): from the fifth run on, the final boss gets dawn.
+		# Keep this visual flag out of the rules and saves.
+		b.args["finale"] = finale_for_runs(int(campaign.C.META.get("stats", {}).get("runs", 0)))
 	b.args["quality"] = str(settings["quality"])
+	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
@@ -580,3 +591,9 @@ func _bot_campaign(seed: int) -> Dictionary:
 	if not out.has("errors"):
 		out["errors"] = []
 	return out
+
+
+# Issue 1271: META stats runs counts the run in progress (campaign.gd newRun adds one at the start, Back from the
+# flagship page takes it away), so 5 is the fifth run, as under R78 Q18. Dawn now plays on every run from there.
+static func finale_for_runs(runs: int) -> bool:
+	return runs >= 5

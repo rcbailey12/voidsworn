@@ -13,6 +13,7 @@ extends SceneTree
 #     its own effect fire time on the effect clock and before the hit it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
 #     the heavy tail under it. Then an ion lance shield hit carrying the ion lock: the lock reaches the nameplate state
 #     when the hit lands and expires at the locked ship's side turn start.
+#  F. a critical the armour absorbs, then a normal hull hit: one hull label, never two "Critical" labels.
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -49,6 +50,10 @@ class Probe extends "res://scenes/battle/battle.gd":
 	func _float(id, text: String, col: Color, dy := 0.0) -> void:
 		said.append([text, float(gfx.now)])
 		super._float(id, text, col, dy)
+
+	func _float_tally(f, id, text: String, col: Color, dy: float):
+		said.append([text, float(gfx.now)])
+		return super._float_tally(f, id, text, col, dy)
 
 class RecSfx extends "res://audio/sfx.gd":
 	var fx_clock = null
@@ -206,9 +211,14 @@ func _run() -> void:
 		_check(float(b.breaks[0]) < at3 or is_equal_approx(at2, at3), "B: the break comes before the third hit (%.3f vs %.3f)" % [float(b.breaks[0]), at3])
 		var sd := -1.0
 		for x in b.said:
-			if str(x[0]) == "Shields down":
+			if str(x[0]).begins_with("Shields down") and sd < 0.0:
 				sd = float(x[1])
 		_check(absf(sd - at2) < 0.001, "B: \"Shields down\" shows on the breaking hit (at %.3f)" % sd)
+		var lone := 0
+		for x in b.said:
+			if str(x[0]) == "Shields down":
+				lone += 1
+		_check(lone == 0, "B: \"Shields down\" joins the shield count's label instead of a second label on top of it (%s)" % str(b.said))
 		_check(int(b.lands[0]["k"]) == 0 and int(b.lands[1]["k"]) == 1 and int(b.lands[2]["k"]) == 2, "B: hits land in order")
 		_check(float(b.disp[t]["sh"][0]) == 0.0, "B: the shield reads empty after the break")
 	# D: a lance at quarter speed; the cue recorder replaces the battle's sound player
@@ -335,6 +345,20 @@ func _run() -> void:
 	late_land.merge({"numbers": false, "left": 1}, true)
 	b._land_hit(t, {"target": t, "regenLock": true, "hull": 0, "shield": 1, "quad": 0}, 0, late_land)
 	_check(not b.disp[t]["regenLock"], "E: a late hit from before the expiry cannot restore the icon")
+	# F: Artoo (PR 1256): a critical the armour absorbs, then a normal hull hit; one hull label, never two "Critical"
+	r = await _fire(b, a, t, [true, true], [[0, 0, true], [0, 5]], [])
+	var crits: Array = []
+	for x in b.said:
+		if str(x[0]).begins_with("Critical"):
+			crits.append(str(x[0]))
+	_check(b.lands.size() == 2, "F: both hits land (got %d)" % b.lands.size())
+	_check(crits == ["Critical", "Critical", "Critical −5 hull"] or crits == ["Critical", "Critical −5 hull"],
+		"F: the absorbed critical and the next hull hit share one label, rewritten (got %s)" % str(crits))
+	var labels := 0
+	for f in b.floats:
+		if is_instance_valid(f["lbl"]) and str((f["lbl"] as Label).text).begins_with("Critical"):
+			labels += 1
+	_check(labels <= 1, "F: never two critical labels on screen (got %d)" % labels)
 	b.free()
 	if failures == 0:
 		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock; null lance, glass critical and ion lock combined)")

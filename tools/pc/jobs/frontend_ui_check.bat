@@ -36,7 +36,7 @@ if "!EC!"=="0" (echo front_end_test PASS >> "%ST%") else (set "RESULT=FAIL" & ec
 for %%S in (1920x1080 3840x2160) do (
   set "O=%OUT%\%%S"
   mkdir "!O!"
-  call "%TMO%" 1200 "%G%" --path "%ROOT%\godot" --rendering-method forward_plus --windowed --resolution %%S --script res://ui/test/front_end_shots.gd -- "!O!" "!COMMIT!" > "!O!\log.txt" 2>&1
+  call "%TMO%" 1200 "%G%" --path "%ROOT%\godot" --rendering-method forward_plus --windowed --resolution %%S --script res://ui/test/front_end_shots.gd -- "!O!" "!COMMIT!" --expect=%%S > "!O!\log.txt" 2>&1
   set "EC=!ERRORLEVEL!"
   if "!EC!"=="0" (
     call "%TMO%" 300 "%G%" --headless --path "%ROOT%\godot" --script res://tools/front_end_sheet.gd -- "!O!" "!O!\sheets" > "!O!\sheets_log.txt" 2>&1

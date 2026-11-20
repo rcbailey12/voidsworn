@@ -157,7 +157,7 @@ try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE
 // a little as numbers rise (thin) so total threat follows the old difficulty curve. Your fleet's power scales the budget both ways (refP), so a
 // strong fleet meets more and a battered one less (this replaces the old 'never outgrow the player' floor). ceil is a soft ceiling for
 // performance, not a design cap. AI difficulty: Standard meets 10% less, Veteran RAMP.vet more (issue 1160). Sims can override any field with RAMP='{...}'.
-let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9, vet:1.1}; // issue 1160 (Ryan via the Board, Nov 19): vet is Veteran's fleet budget edge, the shared difficulty lever (issue 1178 tunes it) // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
+let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9, vet:1.1, late:{standard:1.4,veteran:1.25}}; // issue 1178: late = Sector 3's extra fleet budget per AI level; // issue 1160 (Ryan via the Board, Nov 19): vet is Veteran's fleet budget edge, the shared difficulty lever (issue 1178 tunes it) // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
 try{ if(process_env('RAMP')) Object.assign(RAMP,JSON.parse(process_env('RAMP'))); }catch(e){ console.warn('RAMP override ignored (not valid JSON):',e.message); }
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
 function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
@@ -168,6 +168,7 @@ function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // B2: your fleet's power scales the budget both ways around the sector's reference fleet (was: a battered fleet met less, a strong one never more)
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ budget*=Math.max(RAMP.pwMin,Math.min(RAMP.pwMax,Math.pow(Math.max(.5,fleetPower())/RAMP.refP[s],RAMP.pw))); }
   if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='standard') budget*=RAMP.std;
+  if(s===3&&RAMP.late) budget*=RAMP.late[aiVet()?'veteran':'standard']||1; // issue 1178: Sector 3 bites at each level
   if(aiVet()) budget*=RAMP.vet; // the level as aiVet reads it: an unset level is Veteran, as in Godot (AI_LEVEL defaults to veteran there)
   if(heatOn('h_hunted')) budget*=1.15;
   if(mod==='bounty') budget*=1.1;

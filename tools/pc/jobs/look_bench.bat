@@ -15,8 +15,10 @@ rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
 rem   LB_QUIET     1: do not open the sheets folder at the end
+rem Issue 1194: every step runs through job_wrap.bat (the installed main watchdog in tools_live, a GPU label on each claim,
+rem PC_GPU_ISSUE, default look_bench). Godot and a Python with Pillow are checked before any clone; a failed step stops it.
+rem LB_HOME\done.txt says PASS or FAILED: <steps> and the exit code is 0 only on PASS.
 setlocal enabledelayedexpansion
-set "LB_EXIT=1"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"
@@ -30,21 +32,33 @@ if "%AFTER%"=="" set "AFTER=origin/main"
 if not exist "%LB_HOME%" mkdir "%LB_HOME%"
 set "ST=%LB_HOME%\status.txt"
 echo look bench start %date% %time% after=%AFTER% before=%BEFORE% > "%ST%"
+if not defined PC_GPU_ISSUE set "PC_GPU_ISSUE=look_bench"
+set "JW=%~dp0..\job_wrap.bat"
+call "%JW%" init "%LB_HOME%" "%PC_GPU_ISSUE%" "godot pil"
+if errorlevel 1 exit /b %ERRORLEVEL%
+set "G=%JW_GODOT%"
 powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%LB_HOME%\scratch_path.txt" 2>> "%ST%"
 if errorlevel 1 (
   echo FAILED: private TEMP setup >> "%ST%"
+  call "%JW%" fail "private TEMP setup"
   goto finish
 )
+set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%LB_HOME%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
-rem The redirection holds the marker open until the tools finish.
+rem The redirection holds the marker open until the tools finish (every step below, through job_wrap end).
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
-exit /b %ERRORLEVEL%
+set "RUN_EL=%ERRORLEVEL%"
+rem (1180) The scratch goes on PASS; on FAILED the newest one per bench home stays a day (scratch_done.ps1 beside job_wrap).
+set "RUN_SCRATCH=%TEMP%"
+set "TEMP=%BASE_TEMP%"
+set "TMP=%BASE_TEMP%"
+set "TMPDIR=%BASE_TEMP%"
+if exist "%~dp0..\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "look_bench %LB_HOME%" >> "%ST%" 2>&1
+exit /b %RUN_EL%
 
 :run_tools
-if exist "%VT%\godot_path.txt" set /p G=<"%VT%\godot_path.txt"
-if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 
 if /i not "%GOWAIT%"=="go" goto gook
 echo waiting for %VT%\look_bench\go.txt >> "%ST%"
@@ -78,21 +92,22 @@ powershell -NoProfile -Command ^
   "} finally { $lock.Dispose() }" > "%LB_HOME%\git_tool.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: shared mirror clone or fetch, see git_tool.txt >> "%ST%"
+  call "%JW%" fail "mirror clone or fetch"
   goto finish
 )
 call :checkout "%TOOL%" "%LB_TOOL_REF%" >> "%LB_HOME%\git_tool.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: cannot check out %LB_TOOL_REF%, see git_tool.txt >> "%ST%"
+  call "%JW%" fail "tool checkout"
   goto finish
 )
 if not exist "%TOOL%\godot\bench\look_bench.gd" (
   echo FAILED: no bench script at %LB_TOOL_REF% >> "%ST%"
   echo FAILED: no bench script at %LB_TOOL_REF%
+  call "%JW%" fail "no bench script"
   goto finish
 )
 if "%BEFORE%"=="" set /p BEFORE=<"%TOOL%\docs\shots\look_bench\BASELINE.txt"
-rem Use the installed watchdog, never the old checkout being measured.
-set "TMO=%~dp0..\tmo.bat"
 
 set "RUN_A="
 set "RUN_B="
@@ -107,22 +122,8 @@ set "RUN_B=%RUNDIR%"
 set "NAME_B=%RUNNAME%"
 
 :sheets
-rem ---- the sheet maker needs Python with Pillow: ComfyUI's portable Python has it
-set "PY="
-for %%P in ("%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe") do (
-  if exist "%%~P" "%%~P" -c "import PIL" > nul 2>&1 && set "PY=%%~P"
-)
-if "%PY%"=="" (
-  py -3 -c "import PIL" > nul 2>&1 && set "PY=py -3"
-)
-if "%PY%"=="" (
-  python -c "import PIL" > nul 2>&1 && set "PY=python"
-)
-if "%PY%"=="" (
-  echo NO PYTHON WITH PILLOW: the stills are in the runs folder, sheets not made >> "%ST%"
-  echo No Python with Pillow found: the stills are in %LB_HOME%\runs, the sheets were not made.
-  goto finish
-)
+rem ---- the sheet maker needs Python with Pillow: the preflight found one (JW_PIL) before anything ran
+set "PY=%JW_PIL%"
 if "%RUN_B%"=="" (
   set "S=%LB_HOME%\sheets\%NAME_A%"
   set "SARGS=--after "%RUN_A%" --out "!S!""
@@ -131,17 +132,17 @@ if "%RUN_B%"=="" (
   set "SARGS=--after "%RUN_A%" --before "%RUN_B%" --out "!S!" --label-after %NAME_A% --label-before %NAME_B%"
 )
 if not exist "%S%" mkdir "%S%"
-%PY% "%TOOL%\tools\pc\jobs\look_bench_sheets.py" %SARGS% > "%S%\sheets_log.txt" 2>&1
+set "JW_STEP=sheets" & call "%JW%" run 1800 "%PY%" "%TOOL%\tools\pc\jobs\look_bench_sheets.py" %SARGS% > "%S%\sheets_log.txt" 2>&1
 if errorlevel 1 goto finish
-set "LB_EXIT=0"
 echo sheets exit %ERRORLEVEL% %date% %time% %S% >> "%ST%"
 if exist "%S%\summary.txt" type "%S%\summary.txt"
 if not "%LB_QUIET%"=="1" start "" explorer "%S%"
 
 :finish
 echo look bench done %date% %time% >> "%ST%"
-echo done > "%LB_HOME%\done.txt"
-exit /b %LB_EXIT%
+rem done PASS or done FAILED: <steps>, then all done, in status.txt and done.txt; the exit code follows.
+call "%JW%" end
+exit /b %ERRORLEVEL%
 
 rem ---------------------------------------------------------------- one bench run: :bench REF [RUNNAME] [PRE_RUN]
 :bench
@@ -152,6 +153,7 @@ call :checkout "%R%" "%REF%" >> "%LB_HOME%\git_repo.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: cannot check out %REF% >> "%ST%"
   echo FAILED: cannot check out %REF%
+  call "%JW%" fail "checkout %REF%"
   exit /b 1
 )
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
@@ -178,10 +180,11 @@ copy /y "%TOOL%\godot\tools\picture_provenance.gd" "%R%\godot\tools\picture_prov
 set "PICTURE_STAMP_TOOL=%TOOL%\tools\picture_provenance.py"
 set "PICTURE_SOURCE_REPO=%R%"
 if not "%PRE%"=="" call "%PRE%" "%R%" > "%RUNDIR%\pre_run.txt" 2>&1
-call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%RUNDIR%\import.txt" 2>&1
+set "JW_STEP=import %SHA%" & call "%JW%" run 1800 "%G%" --headless --path "%R%\godot" --import > "%RUNDIR%\import.txt" 2>&1
+if errorlevel 1 exit /b 1
 echo imported %REF% %SHA% %date% %time% >> "%ST%"
 rem R276: tmo claims a shared slot for these stills; timing scripts claim solo automatically.
-call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% > "%RUNDIR%\bench_log.txt" 2>&1
+set "JW_STEP=bench %SHA%" & set "JW_EXPECT=%RUNDIR%" & call "%JW%" run 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% > "%RUNDIR%\bench_log.txt" 2>&1
 set "BX=%ERRORLEVEL%"
 if not "%BX%"=="0" exit /b 1
 echo bench exit %BX% %REF% %date% %time% >> "%ST%"
@@ -192,12 +195,14 @@ if not errorlevel 1 (
   echo placeholder hull: STOPPED, %REF% draws a block instead of a ship. Copy the built hulls in, see %RUNDIR%\PLACEHOLDER.txt >> "%ST%"
   echo placeholder hull
   echo STOPPED: %REF% would draw a block instead of a ship. See %RUNDIR%\PLACEHOLDER.txt
+  call "%JW%" fail "placeholder hull in %SHA%"
   exit /b 1
 )
 findstr /c:"LOOK_BENCH_DONE" "%RUNDIR%\bench_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: the bench did not finish for %REF%, see %RUNDIR%\bench_log.txt >> "%ST%"
   echo FAILED: the bench did not finish for %REF%
+  call "%JW%" fail "bench %SHA% did not finish"
   exit /b 1
 )
 echo %SHA% > "%RUNDIR%\DONE.txt"

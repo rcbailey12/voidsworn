@@ -99,6 +99,13 @@ static func rim_of() -> Dictionary:
 	return r
 
 
+# Issue 1262: the cheaper 4K Max items (ssil, underlay, cards) can be switched back to the old way for the
+# before and after timing and pictures: VS_1262_OLD=all or a comma list. Capture only; never set in play.
+static func perf_old(item: String) -> bool:
+	var v := OS.get_environment("VS_1262_OLD")
+	return v != "" and (v == "all" or item in v.split(","))
+
+
 static func msaa_for_quality(quality: String) -> Viewport.MSAA:
 	match quality:
 		"low": return Viewport.MSAA_DISABLED
@@ -139,7 +146,9 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		env.ssao_enabled = true
 		env.ssao_radius = 1.2
 		env.ssao_intensity = 1.6
-		env.ssil_enabled = true
+		# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
+		# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
+		env.ssil_enabled = perf_old("ssil")
 		env.ssr_enabled = false
 		env.sdfgi_enabled = false
 	if key != null:

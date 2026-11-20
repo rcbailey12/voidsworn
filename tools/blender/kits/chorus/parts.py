@@ -196,11 +196,12 @@ def welt(pts, normals, w, h, n=6):
 
 
 def pore(c, nrm, r, depth=None, n=7):
-    """a sense or acid pore on a surface: a raised rim ring round a sunk pit"""
+    """a sense or acid pore on a surface: a soft lip round a shallow sunk pit (issue 1291 round D: the old tall rim and deep
+    hole read as a dark rivet in game)"""
     c = Vector(c); nrm = Vector(nrm).normalized(); u = nrm.orthogonal().normalized(); w = nrm.cross(u)
-    d = depth or r * 0.9
+    d = depth or r * 0.4
     V = []
-    for rr, hh in ((r * 1.6, -0.01), (r * 1.15, r * 0.45), (r * 0.75, r * 0.2), (r * 0.5, -d)):
+    for rr, hh in ((r * 1.7, -0.01), (r * 1.2, r * 0.14), (r * 0.8, r * 0.04), (r * 0.5, -d)):
         for k in range(n):
             a = 2 * math.pi * k / n
             V.append(tuple(c + (u * math.cos(a) + w * math.sin(a)) * rr + nrm * hh))
@@ -557,7 +558,9 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         p.add('tooth%d' % k, 'body' if style == 'folded' else 'mount', 'chitin', tube([b0, b1, b2], [r * 0.07, r * 0.04, r * 0.005], n=5))
     # the bore and the gland: the gland sits deep in the throat; its light falls on the bore's wet wall, brightest at the
     # back and fading to dark tissue at the lip (the glow is down inside, never a disc at the mouth; R228 item 5 in spirit)
-    ga = gland_at; gr = 0.32 if style == 'knoll' else 0.62   # a knoll's bore reads dark bow-on: a small gland far down it
+    ga = gland_at; gr = 0.32 if style == 'knoll' else 0.45   # a knoll's bore reads dark bow-on: a small gland far down it
+    # issue 1291: a gland filling the bore read in game as a flat lit slab behind the teeth (C11's orange "PLA" sign); a
+    # smaller gland leaves a dark ring of bore wall round it, so the light reads as deep in the throat
     xg = L * ga
     p.add('bore', 'mount', 'maw', revolve([(xg + r * 0.05, r * 0.7), (xg - r * 0.3, r * 0.6), (0.0, r * 0.5)], seg, cap1=True))
     xl = L * 0.9; bands = (('gland', 0.0, 0.3), ('bilewet', 0.3, 0.62), ('tissue', 0.62, 1.0))
@@ -629,7 +632,7 @@ def knoll(rk, seed=0, armour=False):
     for k in range(0 if armour else 24):
         a = rp.uniform(0, 2 * math.pi); th = rp.uniform(0.3, 1.3)
         n_ = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
-        vv, ff = pore(Vector((n_.x * rk * 1.15, n_.y * rk * 1.05, n_.z * rk * 0.62)), n_, rk * rp.uniform(0.025, 0.05), n=6)
+        vv, ff = pore(Vector((n_.x * rk * 1.15, n_.y * rk * 1.05, n_.z * rk * 0.62)), n_, rk * rp.uniform(0.02, 0.035), n=10)
         o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
     if PV:
         p.add('pore', 'mount', 'pore', (PV, PF))
@@ -990,19 +993,20 @@ def thruster(r=0.3, nozzles=3):
 
 
 # ------------------------------------------------------------------------------------------------ sacs, blades, scutes
-def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False):
+def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False, window='round'):
     """a sac grown out of the hull (local +Z out of the hull): root, a socket of wrinkled tissue (mount); sac, the bulge (mount:
     it grows into the hull); crease, creases across it; vein, veins over it; glow, windows where the bile shows through.
     kind 'brood' adds the birth slit (slit: its length as a share of the sac) between two lip rolls (lip): a launch opening for
     the spore swarms. Fit: the slit's aperture along +Z. armour (R341): no creases or veins (the armour caps lie over the sac's
-    shoulders, plates.dome_caps) and the bile windows gathered at the open crown."""
+    shoulders, plates.dome_caps) and the bile windows gathered at the open crown. window 'slit' (issue 1291): the bile shows
+    only in narrow slits, never a round lit window (a flat lime disc in game), and the veins are dark blood vessels."""
     p = Part(kind)
     h = h or r * 1.1
     if armour:
         creases = veins = 0
     cz = h - r * 1.0
     # hang > 1: a pendulous lobe, swelling away from the body and narrowing to a soft neck where it grows out
-    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.06,
+    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.15 if window == 'slit' else 0.06,
                                          squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None))
     # the root: a broad swelling where the sac grows out of the body, so it reads as a bulge of the flank, not a ball stuck on
     p.add('rootf', 'mount', 'flesh', blob(r * (0.85 if hang > 1 else 1.1), r * (0.8 if hang > 1 else 1.05), r * (0.55 if hang > 1 else 0.3), centre=(0, 0, 0.0), nu=28, nv=10, seed=seed + 7, amp=0.08))
@@ -1029,7 +1033,8 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             th = th0 + 0.12 * math.sin(j * 0.7)
             u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
             pts.append(Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z)) + u * 0.01); nrm.append(u)
-        p.add('crease%d' % i, 'body', 'flesh2', welt(pts, nrm, r * 0.06, r * 0.035, n=4))
+        cw, ch = (r * 0.07, r * 0.014) if window == 'slit' else (r * 0.06, r * 0.035)   # issue 1291: a crease in the skin, not a pipe on it
+        p.add('crease%d' % i, 'body', 'flesh2', welt(pts, nrm, cw, ch, n=4))
         p.add('creasel%d' % i, 'body', 'maw', welt([q - nn * r * 0.005 for q, nn in zip(pts, nrm)], nrm, r * 0.02, r * 0.02, n=3))
     for i in range(veins):
         a0 = 2 * math.pi * i / veins + rnd.uniform(-0.3, 0.3)
@@ -1039,14 +1044,17 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             a = a0 + 0.25 * math.sin(j * 0.9 + i)
             u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
             pts.append(Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))); nrm.append(u)
-        p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
+        if window == 'slit':   # issue 1291: a dark blood vessel lying in the skin, low and thin (raised welts read as worms)
+            p.add('vein%d' % i, 'body', 'vein', welt(pts, nrm, r * 0.022, r * 0.01, n=4))
+        else:
+            p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
     for i in range(glow):
         a = 2 * math.pi * (i + 0.3) / max(1, glow); th = max(thb + 0.05, rnd.uniform(-0.2, 0.6))
         if armour:
             th = rnd.uniform(1.28, 1.42)   # inside the caps' open crown
         u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         c = Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))
-        gs = (r * 0.24, r * 0.035, r * 0.03) if armour else (r * 0.13, r * 0.09, r * 0.035)   # armoured: a narrow bile slit (round 3)
+        gs = (r * 0.2, r * 0.018, r * 0.02) if window == 'slit' else (r * 0.24, r * 0.035, r * 0.03) if armour else (r * 0.13, r * 0.09, r * 0.035)   # a narrow bile slit (round 3)
         p.add('glow%d' % i, 'body', 'bile', moved(blob(*gs, nu=10, nv=5, seed=i), frame(c, u.orthogonal(), u)))
     # pores over the sac's skin (it breathes the swarm's air), at the hull's grain
     npo = pores if pores is not None else int(18 * r * r * (1 if armour else 4))
@@ -1055,7 +1063,7 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
         a = rnd.uniform(0, 2 * math.pi); th = rnd.uniform(1.25, 1.45) if armour else rnd.uniform(thb + 0.05, 1.35)
         u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         c = Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))
-        vv, ff = pore(c, u, r * rnd.uniform(0.025, 0.045), n=6)
+        vv, ff = pore(c, u, r * rnd.uniform(0.018, 0.032), n=10)
         o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
     p.add('pore', 'body', 'pore', (V, F))
     if kind == 'brood':

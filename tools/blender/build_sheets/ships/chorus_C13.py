@@ -63,7 +63,7 @@ def dense(key, step=0.32):
     return out
 
 
-HULL = dense(KEY)
+HULL = dense(KEY, step=0.06)   # issue 1291: fine stations, so the folds grown into the skin hold their shape
 # the glands: (id, slot, mouth point, aim, opening radius, knoll radius, spines)
 GLAND_R = 0.25
 GLANDS = (
@@ -86,12 +86,19 @@ def build(K):
     import sys
     if _k._KITS not in sys.path:
         sys.path.append(_k._KITS)
-    from chorus import plates
+    from chorus import plates, body
     HP = _k.HP
     rnd = random.Random(1154)
     plates.register(_k)   # the armour shell's materials (R341)
 
-    hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
+    # issue 1291 (Ryan, Nov 20: a full body rebuild): lumpy fused swellings and deep folds grown into the skin itself (the
+    # concept's mass of flesh); calm round the glands' knolls, the spine bed and the siphons
+    calm = [(1.6, 1.45, 0.55), (-0.15, 1.8, 0.6), (-1.55, 1.75, 0.5), (3.55, -0.15, 0.5), (3.55, math.pi + 0.15, 0.5),
+            (-2.45, 0.35, 0.45), (-2.45, math.pi - 0.35, 0.45)]
+    calm += [(x, th if sd > 0 else math.pi - th, rr * 1.6) for sd in (1, -1) for (x, th, rr) in SACS[sd]]   # the sacs are their own bulges
+    K.wob_fn = body.field(1291, 4.3, -2.8, swell=26, folds=30, wrinkles=150, sweeps=44, depth=0.19, keep=calm,
+                          shell=(3.75, -2.35, -1.2))   # the armadillo shell below: no creases under it
+    hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=160, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the broad lumpy body', hull, 'dark olive flesh', note='a rounded nose bulb, broad in the middle, short at the tail')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
     K.mark('hide', 'plate', ['pad', 'pore'])
@@ -100,7 +107,6 @@ def build(K):
         return th if side > 0 else math.pi - th
 
     # ---------------- the spine glands (the two spine volleys) ----------------
-    gland_rings = []
     for fid, slot, mouth, aim, r, rk, ns in GLANDS:
         a = Vector(aim).normalized(); L_ = 0.95
         root = Vector(mouth) - a * L_
@@ -111,7 +117,6 @@ def build(K):
         K.mass('Spine gland %s' % fid, _bpy.data.objects['%s_mount_flesh' % fid], 'flesh knoll', note=what.split(':')[0])
         # R341 (Ryan, Nov 19: close the gaps round the open skin): a ring of scutes round the gland knoll's lower slopes, under
         # its spines; the vent and the spines stay open
-        gland_rings.append((('%s_mount_flesh' % fid,), tuple(root + a * (L_ * 0.98 - rk * 0.92)), tuple(a), rk * 1.1, 1.8, 1.28))
 
     # ---------------- the spine bed (regrowth of spent spines) ----------------
     pos, nrm = K.hpt(-1.55, math.pi / 2 + 0.18, out=-0.12)
@@ -120,26 +125,25 @@ def build(K):
     K.mass('Spine bed', _bpy.data.objects['SB1_mount_flesh'], 'flesh knoll', note='the knoll aft of the dorsal glands')
     # the lumps of the back and shoulders: knolls of grown flesh between the glands (the picture's lumpy mass)
     items = []
-    caps = []   # the domes the armour caps (R341, the Board: the knolls and the flank sacs wrapped, the glands open)
-    for k, (x, th, rr) in enumerate(((2.9, 1.1, 0.55), (0.9, 2.0, 0.7), (-0.9, 0.95, 0.75), (-0.75, 2.3, 0.62), (2.55, 2.15, 0.5), (-2.0, 1.5, 0.5),
-                                     (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38),
-                                     (0.1, 0.3, 0.62), (-0.4, 2.85, 0.6))):   # the mid-body's side blisters bulge out (the Board on v2)
-        pos, nrm = K.hpt(x, th, out=-rr * 0.5)
-        items.append((HP.knoll(rr, seed=70 + k, armour=True), HP.frame(pos, (1, 0, 0), nrm)))
-        caps.append((('knolls_',), tuple(pos), tuple(nrm), rr * 1.15, 1.25))
+    # issue 1291: the lumps now grow in the skin (body.field); a few low knolls of bare pored flesh stay on the shoulders, under
+    # the shell's lower edge, where the concept's flesh bulges between the plates
+    for k, (x, th, rr) in enumerate(((2.6, 0.25, 0.42), (0.6, 0.15, 0.5), (-1.0, 0.3, 0.45), (2.3, 2.95, 0.4), (0.1, 2.9, 0.5), (-1.3, 2.8, 0.42))):
+        pos, nrm = K.hpt(x, th, out=-rr * 0.45)
+        items.append((HP.knoll(rr, seed=70 + k, armour=False), HP.frame(pos, (1, 0, 0), nrm)))
     K.grown_hull('knolls', items, inv='knolls', kind='knoll')
     K.mass('Back and shoulder knolls', _bpy.data.objects['knolls_flesh'], 'flesh', note='lumps of grown flesh over the back and shoulders')
 
     # ---------------- the bile sacs (round, along the lower flanks) and the hanging sacs ----------------
+    caps = []   # round F (Ryan, Nov 20: armour across the entire body): the shell's caps over the flank sacs, their crowns open
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
         for i, (x, th, rr) in enumerate(SACS[side]):
             pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(rr, h=rr * 1.05, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, armour=True), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), rr * 1.12, 1.25, 0.45))
+            K.organ(fid, HP.sac(rr * 1.12, h=rr * 1.1, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, armour=True, window='slit'), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, %.1f across' % (2 * rr), note='a round bile sac bulging from the lower flank; it swells before a volley')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome')
-            caps.append(((fid + '_',), tuple(pos), tuple(nrm), rr, 1.2, 0.5))   # the crown's bile window open
     for a_, b_ in (('S1p', 'S2p'), ('S2p', 'S3p'), ('S3p', 'S4p'), ('S1s', 'S2s'), ('S2s', 'S3s'), ('S3s', 'S4s'), ('S2s', 'H2'), ('S2p', 'H1'), ('S3p', 'H3')):
         K.allow_touch(a_, b_, 'the bile sacs grow in a cluster along the flank, swelling into each other (the picture\'s merged sacs)')
     for i, (x, y, rr) in enumerate(HANGING):
@@ -148,7 +152,7 @@ def build(K):
         pos, nrm = K.hpt(x, th, out=-0.06)
         hang = (Vector(nrm) * 0.4 + Vector((0, 0, -1))).normalized()
         fid = 'H%d' % (i + 1)
-        K.organ(fid, HP.sac(rr, h=rr * 1.35, seed=80 + i, kind='sac', glow=1, rim=0.45, hang=1.3), pos, hang, fwd=(1, 0, 0), inv='hanging_sacs',
+        K.organ(fid, HP.sac(rr * 1.1, h=rr * 1.4, seed=80 + i, kind='sac', glow=1, rim=0.45, hang=1.35, creases=5, veins=5, window='slit'), pos, hang, fwd=(1, 0, 0), inv='hanging_sacs',
                 what='hanging sac, %.1f across' % (2 * rr), note='a bile sac hanging under the belly: the spitter\'s deep reserve')
         K.mass('Hanging sac %d' % (i + 1), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh sac')
 
@@ -173,9 +177,18 @@ def build(K):
     # v2 are gone: they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
-    plates.dome_caps(K, _k, caps + gland_rings, seed=1342)
-    plates.armour(K, _k, 4.45, -2.9, seed=1343, keep=('knolls',), rows=6, scute=0.6, thick=0.15, belly=-1.4,
-                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; glands, siphons and vents stand clear, the knolls and flank sacs capped in smaller scutes')
+    # issue 1291 (Ryan, Nov 20: "mix of b and c"): an armadillo shell of grown chitin bands over the back and upper flanks,
+    # broken round the glands, the spine bed and the siphons, the hide gathered at its edges; and chitin grown into the flesh in
+    # small fused clusters on the lower flanks, between the sacs
+    # round F (Ryan, Nov 20 07:00 CT: "armor more across the entire ship body, not just at the top"): the bands wrap from the
+    # top down both flanks to the edge of the belly (section angle -1.2, about 70 degrees below the beam), and the fused chitin
+    # clusters move from the lower flanks to the strip of belly the bands leave open
+    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075,
+                     note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
+    plates.dome_caps(K, _k, caps, seed=1345, flat=True,
+                     note='flat grown chitin caps over the flank sacs, two rings of thin plates lying close, the bile slits open at each crown (round G)')
+    plates.fused_patches(K, _k, [(3.0, -1.5, 0.36, 3), (1.6, -1.65, 0.42, 4), (0.2, -1.5, 0.4, 3), (-1.2, -1.62, 0.36, 3)],
+                         seed=1344)
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 4.75, -2.95, 'whole body')
@@ -198,7 +211,7 @@ def build(K):
     K.organ_room('heart_vat', 'vat', (0.7, 0.0, 0.05), (0.75, 0.6, 0.5), note='the heart vat: the core (hp_core), lit bile-green', seed=5)
     K.organ_room('bile_main', 'gland', (1.1, 0.0, -0.8), (1.1, 0.75, 0.35), note='the main bile store, fed by the flank sacs', seed=6)
     for i, (x, sg) in enumerate(((1.0, 1), (-0.75, 1), (0.7, -1), (-1.0, -1))):
-        K.organ_room('bile_store_%d' % i, 'gland', (x, sg * 1.0, -0.55), (0.42, 0.32, 0.3), note='the bile store behind a flank sac', seed=10 + i)
+        K.organ_room('bile_store_%d' % i, 'gland', (x, sg * 0.82, -0.45), (0.4, 0.28, 0.26), note='the bile store behind a flank sac', seed=10 + i)
     K.organ_room('gut', 'gut', (-0.6, 0.0, -0.3), (1.0, 0.7, 0.45), note='the gut', seed=20)
     K.organ_room('regrowth_p', 'organ', (-1.5, 0.75, 0.45), (0.42, 0.32, 0.26), note='regrowth tissue (regen 4)', seed=21)
     K.organ_room('regrowth_s', 'organ', (-1.5, -0.75, 0.45), (0.42, 0.32, 0.26), note='regrowth tissue', seed=22)
@@ -218,7 +231,7 @@ def build(K):
                                                           'then the body tears open along ragged lines (R186).'))
     K.point('core', 'hp_core', (0.7, 0.0, 0.05))
     # three breach anchors (Destroyer base 3; the Chorus extra is for the big ones only): prow, mid, engine, alternating sides
-    for i, (x, th, sec, side) in enumerate(((3.6, 0.2, 'prow', 1), (0.5, -0.1, 'mid', -1), (-2.0, 0.15, 'eng', 1))):
+    for i, (x, th, sec, side) in enumerate(((3.6, 0.2, 'prow', 1), (0.5, -0.1, 'mid', -1), (-2.72, 0.62, 'eng', 1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note='open hide between the sacs')
     for i, (x, th, side) in enumerate(((3.55, -0.15, 1), (3.55, -0.15, -1), (-2.45, 0.35, 1), (-2.45, 0.35, -1))):
@@ -247,4 +260,5 @@ def build(K):
              'minus the spine, maw, engines and weapons; the glands, sacs, siphons, vents and spine bed stand in open sockets')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril', 'the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job')
+    K.change('The four flank bile stores sit deeper (y 0.82, z -0.45, a little smaller)', 'the R341 export death seam check: on the armoured build 34 of their triangles stood outside their piece\'s plating after the break; the sacs above them are unchanged')
     K.open_item('The variant b_spitter_s (Spitter stinger: bioplasma T, tendril T) is not built here; it needs a named variant (ships.md, issue 812)')

@@ -47,6 +47,9 @@ var blocker_visuals: Node3D
 var blocker_highlights: Node3D
 var props: Node3D
 var rock_meshes: Array = []
+var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the rules laid down during this battle
+var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
+var built := 0               # how many times build() ran (a late wreck check knows its battle is gone)
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
@@ -250,6 +253,9 @@ func key(q, r) -> String:
 func build(rules) -> void:
 	api = rules
 	VW = api.view()
+	wrecks.clear()
+	wreck_hulls.clear()
+	built += 1
 	WI = api.world_info() if api.has_method("world_info") else {}
 	for c in get_children():
 		c.queue_free()
@@ -486,6 +492,11 @@ var _toast_t := 0.0
 var _edge_gain := 0.0
 var gas_edges: MeshInstance3D
 var _gas_edge_gain := 0.0
+# Issue 1267 (Ryan's pick 1, Nov 20): the normal (cine) view keeps its big soft clouds but adds a faint line on the
+# outer edge of nebula (cover) and ion storm (shield drain) patches, so where they stop reads without Z
+var hazard_edges: MeshInstance3D
+var _hazard_edge_gain := 0.0
+const HAZARD_EDGE := ["neb", "storm"]
 
 
 func _well_info() -> void:
@@ -564,6 +575,18 @@ func _terrain_edges() -> void:
 			n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
 	edges.mesh = st.commit() if n > 0 else null
 	gas_edges.mesh = sg.commit() if ng > 0 else null
+	hazard_edges = MeshInstance3D.new()
+	hazard_edges.name = "HazardEdges"
+	hazard_edges.material_override = em.duplicate()
+	hazard_edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(hazard_edges)
+	var sz := SurfaceTool.new()
+	sz.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var nz := 0
+	for g in HAZARD_EDGE:
+		if groups.has(g):
+			nz += _edge_into(sz, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+	hazard_edges.mesh = sz.commit() if nz > 0 else null
 
 
 # the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
@@ -606,6 +629,14 @@ func apply_look(toast := true) -> void:
 	var rm := rings.material_override as ShaderMaterial
 	rm.set_shader_parameter("mode", {"today": 0, "holo": 1, "ghost": 2, "tactical": 3}.get(g, 0))
 	rm.set_shader_parameter("well", Vector4(well_c.x, well_c.y, well_c.z, 9.0) if (sp["funnel"] and well_c != Vector3.INF) else Vector4.ZERO)
+	_edge_gains(sp)
+	refresh()
+	if is_inside_tree():
+		get_tree().call_group("vs_world", "set_look")
+	_look_ui(toast)
+
+
+func _edge_gains(sp: Dictionary) -> void:
 	if edges != null:
 		_edge_gain = float(sp["terrain_edge"])
 		(edges.material_override as ShaderMaterial).set_shader_parameter("gain", _edge_gain)
@@ -614,10 +645,10 @@ func apply_look(toast := true) -> void:
 		_gas_edge_gain = float(sp.get("gas_edge", sp["terrain_edge"]))
 		(gas_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _gas_edge_gain)
 		gas_edges.visible = _gas_edge_gain > 0.0
-	refresh()
-	if is_inside_tree():
-		get_tree().call_group("vs_world", "set_look")
-	_look_ui(toast)
+	if hazard_edges != null:
+		_hazard_edge_gain = float(sp.get("hazard_edge", 0.0))
+		(hazard_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _hazard_edge_gain)
+		hazard_edges.visible = _hazard_edge_gain > 0.0
 
 
 func _look_ui(toast: bool) -> void:
@@ -675,6 +706,8 @@ func _process(dt: float) -> void:
 			edges.visible = fills.visible and _edge_gain > 0.0
 		if gas_edges != null:
 			gas_edges.visible = fills.visible and _gas_edge_gain > 0.0
+		if hazard_edges != null:
+			hazard_edges.visible = fills.visible and _hazard_edge_gain > 0.0
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 
@@ -912,6 +945,40 @@ func _planet() -> void:
 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	shell.position = mi.position
 	props.add_child(shell)
+
+
+# issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks
+# a wreck the map started with: the hex joins the blocked terrain (its edge shows with the grid, Z, as every rock and
+# hulk hex does), with the same scatter of torn rock and plate, and the ship's own pieces settle inside it (fx_death
+# _leash). hull: also lay the map's burnt hulk there, for a death that left no pieces (or a battle without the effects).
+func add_wreck(id: String, q: int, r: int, hull := false) -> void:
+	var k := key(q, r)
+	if not index.has(k):
+		return
+	var T: Dictionary = VW.get("terrain", {}) if VW.get("terrain") is Dictionary else {}
+	VW["terrain"] = T
+	var fresh := not wrecks.has(id)
+	wrecks[id] = k
+	T[k] = "hulk"
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("wreck|%s|%s" % [id, k])
+	var c := hex_world(q, r)
+	if fresh:
+		_rocks(c, rng, 2, 1.5, 3.0)
+	if hull and not wreck_hulls.has(id):
+		wreck_hulls[id] = true
+		_hulk(c, rng)
+	if fresh:
+		_rebuild_edges()
+
+
+func _rebuild_edges() -> void:
+	for n in [edges, gas_edges, hazard_edges]:
+		if is_instance_valid(n):
+			remove_child(n)
+			n.queue_free()
+	_terrain_edges()
+	_edge_gains(BL.spec())
 
 
 func show_blockers(hexes: Array) -> void:

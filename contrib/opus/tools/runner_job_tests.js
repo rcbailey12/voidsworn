@@ -587,6 +587,8 @@ $ship = 'godot/assets/ships/B16_23/B16_23.glb'
 foreach ($case in @(
   @{ name = 'identical'; local = 'hull-A'; shared = 'hull-A' },
   @{ name = 'different'; local = 'hull-A'; shared = 'hull-B' },
+  # Issue 1180 run 7: a ship the shared build has superseded may be removed by the janitor, but never reused.
+  @{ name = 'superseded'; local = 'hull-A'; shared = 'hull-B'; older = $true },
   @{ name = 'missing'; local = 'hull-A' }
 )) {
   $lane = 'ship-' + $case.name
@@ -601,6 +603,7 @@ foreach ($case in @(
   $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $localShip), (Split-Path -Parent $sharedShip)
   Put $localShip $case.local
   Put $sharedShip $sharedBytes
+  if ($case.older) { (Get-Item -LiteralPath $localShip).LastWriteTimeUtc = [DateTime]::UtcNow.AddDays(-2) }
   Init "$lane/out" 'fixture/ship-reuse'
   $env:PC_TEST_SOURCE = $upstream
   $env:PC_TEST_MIRROR = Join-Path $root "$lane/mirror.git"

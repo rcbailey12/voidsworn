@@ -16,7 +16,7 @@ function check(name, fn) { try { const r = fn(); if (r === false) throw new Erro
 eval(src + `
 function log(){} function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
 var STALL=false; async function animNova(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function animBlink(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function fxBoard(){}
-global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, set SAVED_RUN(v){ SAVED_RUN=v; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship,
+global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, set SAVED_RUN(v){ SAVED_RUN=v; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship, rndSeed,
   RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, set STALL(v){ STALL=v; }, get B(){ return B; }, startBattle, useAbility, boardUnit, hdist, MOVE_BASE, MOVE_RULES, novaTargets, blinkHexes, systemDamage, captureChance, prizeScrap, salvageYield, PATRONS2: null, get modalOpen(){ return !!IDS.modal; } };
 `);
 const base = () => ({ fac: 'voidsworn', admiral: 'vex', credits: 50, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
@@ -94,11 +94,37 @@ function rewardSetup() {
     wrecks: [{ tpl: 'h_picket', name: 'Wreck', cls: 'Picket', fac: 'hegemony', cp: 1, cause: 'gun', wk: ['battery'] }] } };
 }
 function reload() { for (const k of ['_rw', '_rewardCfg', '_relicChoice', '_wrecks', '_boonOffer', '_modOffer']) delete window[k]; T.RUN = T.migrateRun(JSON.parse(JSON.stringify(T.SAVED_RUN))); T.resumeReward(); }
+check('1177 the browser resumes the service after a Nemesis win at all four kinds of stop', () => {
+  for (const kind of ['shipyard', 'drydock', 'field', 'event']) {
+    T.rndSeed(1177);
+    const { node, summary } = rewardSetup();
+    node.type = kind;
+    summary.cfg.nemesis = {};
+    T.rewardFlow(summary);
+    if (T.SAVED_RUN.curNode !== node.id || !T.SAVED_RUN.reward) throw new Error(kind + ' was not kept open during rewards');
+    reload();
+    T.ACT.takeSalvage('0:cred');
+    T.ACT.takeBoon('0');
+    T.ACT.takeRelic(T.RUN.reward.relics[0]);
+    const seen = T.RUN.seenEvents.length;
+    const atService = () => {
+      const stop = T.findNode(node.id);
+      if (stop.done || T.RUN.curNode !== node.id || T.RUN.reward) return false;
+      if (kind === 'shipyard') return !T.modalOpen && !!stop.stock;
+      if (kind === 'event') return T.modalOpen && /data-act="eventChoice"/.test(T.modalHtml);
+      return T.modalOpen && /data-act="repairStop" data-arg="service"/.test(T.modalHtml) && /data-act="repairStop" data-arg="stipend"/.test(T.modalHtml);
+    };
+    if (!atService()) throw new Error(kind + ' did not open after rewards');
+    T.ACT.continueRun();
+    if (!atService() || seen !== T.RUN.seenEvents.length) throw new Error(kind + ' changed on reload');
+  }
+  return true;
+});
 check('B-4 rewards survive a reload at every step: node done once, same offers, no double pay', () => {
   const { node, summary } = rewardSetup(); T.rewardFlow(summary);
   const s0 = T.SAVED_RUN; if (!s0.reward || s0.reward.stage !== 'salvage' || !T.findNode.call(null, node.id)) throw new Error('reward not saved at start');
   const banked = s0.credits; if (!(banked > 100)) throw new Error('credits not banked');
-  reload(); if (!/Strip the wrecks/.test(T.modalHtml)) throw new Error('salvage not resumed'); // lore r8: the wreck step is Strip
+  reload(); if (!/<h2>Victory<\/h2>[\s\S]*Salvage one wreck/.test(T.modalHtml)) throw new Error('salvage not resumed on the victory card');
   T.ACT.takeSalvage('0:cred'); const afterSalvage = T.SAVED_RUN.credits; if (T.SAVED_RUN.reward.stage !== 'pick') throw new Error('stage after salvage ' + T.SAVED_RUN.reward.stage);
   const offer = JSON.stringify(T.SAVED_RUN.reward.boonOffer); if (!offer || offer === 'null') throw new Error('boon offer not saved');
   reload(); if (JSON.stringify(T.SAVED_RUN.reward.boonOffer) !== offer) throw new Error('boon offer changed on reload');
@@ -167,9 +193,9 @@ check('Onboarding 5: a Threat tip points at the real Threat toggle (R and the to
   const t = tipText('threat'), u = UI(); return !!t && /Press R for the threat map/.test(t) && /if\(k==='r'\)\{ ACT\.threat\(\); return; \}/.test(u) && /<button data-act="threat" id="b_threat2"[^>]*>Threat<\/button>/.test(u) && /threat:\(B\.round\|\|1\)>=2/.test(u);
 });
 check('Onboarding 4: every reward screen carries its one-line definition', () => {
-  const { summary } = rewardSetup(); T.rewardFlow(summary); T.ACT.salvageStep(); const sal = T.modalHtml; T.ACT.takeSalvage('0:cred'); const boon = T.modalHtml; T.ACT.takeBoon('0'); const relic = T.modalHtml;
+  const { summary } = rewardSetup(); T.rewardFlow(summary); const sal = T.modalHtml; T.ACT.takeSalvage('0:cred'); const boon = T.modalHtml; T.ACT.takeBoon('0'); const relic = T.modalHtml;
   const cr = fs.readFileSync(path.join(ROOT, 'campaign_run.js'), 'utf8');
-  return /class="dim rdef"[^>]*>Strip:/.test(sal) && /A protocol is/.test(boon) && /Salvage is/.test(relic) && /<h2>Recovered refits<\/h2>\$\{rewardDef\('refit'\)\}/.test(cr) && /Choose one perk\.<\/p>\$\{rewardDef\('promotion'\)\}/.test(cr);
+  return /class="dim rdef"[^>]*>Strip a wreck for a refit/.test(sal) && /A protocol is/.test(boon) && /Salvage is/.test(relic) && /<h2>Recovered refits<\/h2>\$\{rewardDef\('refit'\)\}/.test(cr) && /Choose a perk for each captain\.<\/p>\$\{rewardDef\('promotion'\)\}/.test(cr);
 });
 // ---- Enemy markers: colour clear of every faction shield and the gold ring, plus a shape cue ----
 check('Markers: the enemy colour is far from all six shield colours, the gold ring and friend green, in normal and colour-blind vision', () => {
