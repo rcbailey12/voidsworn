@@ -97,7 +97,7 @@ def build(K):
             (-2.45, 0.35, 0.45), (-2.45, math.pi - 0.35, 0.45)]
     calm += [(x, th if sd > 0 else math.pi - th, rr * 1.6) for sd in (1, -1) for (x, th, rr) in SACS[sd]]   # the sacs are their own bulges
     K.wob_fn = body.field(1291, 4.3, -2.8, swell=26, folds=30, wrinkles=150, sweeps=44, depth=0.19, keep=calm,
-                          shell=(3.75, -2.35, -1.2))   # the armadillo shell below: no creases under it
+                          shell=(3.75, -2.35, plates.WRAP))   # the armadillo shell below: no creases under it
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=160, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the broad lumpy body', hull, 'dark olive flesh', note='a rounded nose bulb, broad in the middle, short at the tail')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
@@ -183,13 +183,12 @@ def build(K):
     # round F (Ryan, Nov 20 07:00 CT: "armor more across the entire ship body, not just at the top"): the bands wrap from the
     # top down both flanks to the edge of the belly (section angle -1.2, about 70 degrees below the beam), and the fused chitin
     # clusters move from the lower flanks to the strip of belly the bands leave open
-    # close_gaps=False: the published C13 keeps its accepted bands byte for byte (issue 1291 kit fix; armadillo_check.py)
-    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075, close_gaps=False,
-                     note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
+    # Ryan, Nov 20 4:18 PM CT ("cover the chorus ships in armor almost everywhere"): the bands now wrap to the keel (the kit
+    # default plates.WRAP), the belly clusters are gone, and C13 takes the kit's close_gaps like every other hull
+    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, band=0.46, lap=1.45, thick=0.075,
+                     note='armadillo bands of grown chitin wrapping the body down to the keel, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
     plates.dome_caps(K, _k, caps, seed=1345, flat=True,
                      note='flat grown chitin caps over the flank sacs, two rings of thin plates lying close, the bile slits open at each crown (round G)')
-    plates.fused_patches(K, _k, [(3.0, -1.5, 0.36, 3), (1.6, -1.65, 0.42, 4), (0.2, -1.5, 0.4, 3), (-1.2, -1.62, 0.36, 3)],
-                         seed=1344)
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 4.75, -2.95, 'whole body')

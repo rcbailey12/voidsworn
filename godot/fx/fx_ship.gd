@@ -59,6 +59,7 @@ var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
+var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is still playing (a death lets it finish)
 # Issue 1078: which shield failure look plays (2 clean collapse, the game's look since R340; 0 the old per-faction break
 # and 1 energy shear stay only for side-by-side checks) and the shear's quality (true: the cheaper crack network).
 # Read once per ship from the settings (see fail_look_setting).
@@ -890,9 +891,22 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
 	if _shield_mat == null:
 		return
+	# issue 1239 (F2.5): the shader has six ripple slots. Take a slot whose ripple has finished first, else the one that
+	# started earliest, so focused fire (a lance books three) never wipes a ripple that is still to play
+	var slot := -1
+	var oldest := INF
+	for i in 6:
+		var w: Vector4 = _hitw[i]
+		var h: Vector4 = _hits[i]
+		if w.y <= 0.0 or h.w + w.y < fx.now:
+			slot = i
+			break
+		if h.w < oldest:
+			oldest = h.w
+			slot = i
+	_hit_i = slot
 	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
 	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
-	_hit_i = (_hit_i + 1) % 6
 	_shield_mat.set_shader_parameter("hits", _hits)
 	_shield_mat.set_shader_parameter("hitw", _hitw)
 	_shield_until = maxf(_shield_until, T + life + 0.05)
@@ -921,20 +935,30 @@ static func fail_low_setting() -> bool:
 	return v == "low"
 
 
-func shield_break(fx, quad: int) -> void:
+# Issue 1239 (F2.1): where the shield gave way. hit_lp is the breaking hit's point on the shield in the shield's own
+# frame (relative to hull.shield_centre(), as shield_point gives it); the failure aims there. Without one (a break no
+# shot carries: an ion storm, a special, the benches) it aims at the middle of the struck quadrant, as before.
+func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		return hit_lp.normalized()
+	return hull.quad_dir(quad)
+
+
+func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
 	if _fail_look == 1:
-		_break_shear(fx, quad)
+		_break_shear(fx, quad, hit_lp)
 		return
 	if _fail_look == 2:
-		_break_collapse(fx, quad)
+		_break_collapse(fx, quad, hit_lp)
 		return
-	var qd: Vector3 = hull.quad_dir(quad)
+	var qd: Vector3 = _break_aim(quad, hit_lp)
 	var T: float = fx.now
 	_shield_mat.set_shader_parameter("brk_t", T)
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
 	var rad = hull.shield_radii()
 	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
 	var lp: Vector3 = contact["local"]
@@ -984,12 +1008,14 @@ func shield_break(fx, quad: int) -> void:
 const SHEAR_FRONT := 0.55   # seconds for the crack front to cross from the struck facing to the far side (shader too)
 
 
-func _break_shear(fx, quad: int) -> void:
-	var qd: Vector3 = hull.quad_dir(quad)
+func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
 	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
 	_shield_mat.set_shader_parameter("brk_t", T)
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
+	_brk_until = maxf(_brk_until, T + SHEAR_FRONT + 0.4)
 	var rad = hull.shield_radii()
 	var reach: float = rad.length() * 2.0
 	var contact := shield_point(to_world(hull.shield_centre() + qd * reach))
@@ -1030,19 +1056,41 @@ func _break_shear(fx, quad: int) -> void:
 # Issue 1078, collapse: the cleaner failure. The field flashes once, evenly, then one bright band closes over it from the
 # far side into the breach and the field pinches out there in a small knot and a flat ring of sparks. No crackle, no
 # scattered pops; the faction still shows in colour and in the band's pattern.
-const COLLAPSE_CLOSE := 0.7   # seconds until the band reaches the breach (shader too)
+# R358 (Ryan, Nov 20 2026, issue 1239 pace sheet): 75% slower than R340's first 0.70 s, so the band stays easy to see
+const COLLAPSE_CLOSE := 1.225   # seconds until the band reaches the breach (shader: brk_close)
+const COLLAPSE_TAIL := 0.25   # issue 1239: the knot's fade after the close (shader: exp(-kt * 5.0))
 
 
-func _break_collapse(fx, quad: int) -> void:
-	var qd: Vector3 = hull.quad_dir(quad)
+# Issue 1239 (Ryan, Nov 20: "close the shield collapse by like 50, 75 or 100% so it's slightly more visible"; he picked
+# 75% slower, R358): the close time, for dev comparisons only. rendering/effects/shield_collapse_close (or
+# VS_SHIELD_CLOSE), in seconds; the game look is COLLAPSE_CLOSE.
+static func collapse_close_setting() -> float:
+	var v := OS.get_environment("VS_SHIELD_CLOSE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_collapse_close", COLLAPSE_CLOSE))
+	var c := float(v)
+	return clampf(c, 0.3, 2.0) if c > 0.0 else COLLAPSE_CLOSE
+
+
+func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
 	var T: float = fx.now
+	var close := collapse_close_setting()
 	_shield_mat.set_shader_parameter("brk_t", T)
 	_shield_mat.set_shader_parameter("brk_dir", qd)
-	_shield_until = maxf(_shield_until, T + 1.45)
+	_shield_mat.set_shader_parameter("brk_close", close)
+	_shield_mat.set_shader_parameter("brk_win", maxf(1.6, close + 0.9))
+	_shield_until = maxf(_shield_until, T + maxf(1.45, close + 0.75))
+	_brk_until = maxf(_brk_until, T + close + COLLAPSE_TAIL)
 	var rad = hull.shield_radii()
 	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		# the knot and its sparks sit where the shot struck, not where the radial ray met the skin (a fitted skin is not
+		# convex, so the two can differ)
+		lp = hit_lp
+		wp = xf() * (hit_lp + hull.shield_centre())
 	var wn: Vector3 = contact["n"]
 	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
 	var sc: Color = fac["shield"]
@@ -1051,7 +1099,7 @@ func _break_collapse(fx, quad: int) -> void:
 	fx.light(wp + wn * 2.0, T, 0.4, 4.0, sc, 0)
 	fx.shake(T, 0.12, wp)
 	# the knot where the field closes, and its ring of sparks flat along the hull
-	var Tk: float = T + COLLAPSE_CLOSE
+	var Tk: float = T + close
 	# the Glasswrights' pale field needs a bigger knot to read against their pale hulls (matches the shader's band)
 	var gk: float = 1.5 if int(fac["shield_style"]) == 3 and not fx.reduce_flashing else 1.0
 	_shield_flash(fx, wp, Tk, sc.lerp(Color.WHITE, 0.5), 5.0 * k * gk, 7.0, 0.14)
