@@ -339,22 +339,39 @@ try {
   recordScratch(311, replaced, { token: 'e'.repeat(32), created: createdTicks(replaced) });
   const recent = scratch(temp, 'issue-306-recent', 2);
   markOwned(recent, 2);
-  // Issue 1180 run 8: a helper folder goes after a day only when every out file is a blob in the mirror (relayed on a
-  // board/pc-out branch). Unrelayed files are listed and keep the folder; no out folder keeps it too.
-  const relay = file => git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', file]);
+  // Issue 1180 run 8: a helper folder goes after a day only when every out file is a blob committed on a board/pc-out
+  // relay branch (a loose blob is not a receipt, Artoo on PR 1266) and everything else is a rebuildable checkout.
+  let relays = 0;
+  const relay = (...files) => {
+    const entries = files.map((file, i) =>
+      `100644 blob ${git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', file])}\tf${i}`).join('\n') + '\n';
+    const tree = git(['--git-dir', mirror, 'mktree'], entries);
+    const receipt = git(['--git-dir', mirror, 'hash-object', '-t', 'commit', '-w', '--stdin'],
+      `tree ${tree}\nauthor relay <relay@example.invalid> 0 +0000\ncommitter relay <relay@example.invalid> 0 +0000\n\nrelay\n`);
+    git(['--git-dir', mirror, 'update-ref', `refs/heads/board/pc-out-fixture${relays++}`, receipt]);
+  };
   const opus = scratch(pc, 'opus901out1', 73);
   relay(path.join(opus, 'nested', 'proof.txt'));
   dateTree(opus, 73);
   const recentOpus = scratch(pc, 'opus902', 71);
-  const helperRelayed = scratch(pc, 'opus905', 30);
-  write(path.join(helperRelayed, 'out', 'result.txt'), 'opus905 result relayed');
+  const helperFolder = (name, files) => {
+    const dir = path.join(pc, name);
+    for (const [file, text] of Object.entries(files)) write(path.join(dir, file), text);
+    return dir;
+  };
+  const helperRelayed = helperFolder('opus905', { 'out/result.txt': 'opus905 result relayed' });
   relay(path.join(helperRelayed, 'out', 'result.txt'));
+  makeCopy('repo', 2, helperRelayed);
   dateTree(helperRelayed, 30);
-  const helperUnrelayed = scratch(pc, 'opus903', 30);
-  write(path.join(helperUnrelayed, 'out', 'result.txt'), 'opus903 result relayed');
+  const helperUnrelayed = helperFolder('opus903', { 'out/result.txt': 'opus903 result relayed', 'out/shot.png': 'opus903 picture too big to relay' });
   relay(path.join(helperUnrelayed, 'out', 'result.txt'));
-  write(path.join(helperUnrelayed, 'out', 'shot.png'), 'opus903 picture too big to relay');
   dateTree(helperUnrelayed, 30);
+  const helperLoose = helperFolder('opus906', { 'out/result.txt': 'opus906 loose blob only' });
+  git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', path.join(helperLoose, 'out', 'result.txt')]);
+  dateTree(helperLoose, 30);
+  const helperSibling = helperFolder('opus907', { 'out/result.txt': 'opus907 result relayed', 'work.blend': 'opus907 working file' });
+  relay(path.join(helperSibling, 'out', 'result.txt'));
+  dateTree(helperSibling, 30);
   const helperNoOut = scratch(pc, 'opus904', 30);
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
@@ -423,7 +440,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, oldStage7, workClean, ...recover];
-  const preserve = [worktreeLive, helperUnrelayed, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [worktreeLive, helperUnrelayed, helperLoose, helperSibling, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -470,8 +487,11 @@ try {
   assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
-  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not in the mirror/);
-  assert(dry.includes(`helper file not in the mirror: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
+  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
+  assert(dry.includes(`helper file not on a relay branch: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
+  assert.match(decision(dry, helperLoose, 'would keep'), /results not all relayed: 1 of 1 out files are not on a relay branch/);
+  assert.match(decision(dry, helperSibling, 'would keep'), /1 files outside out are not in a rebuildable checkout/);
+  assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);

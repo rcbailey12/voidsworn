@@ -356,7 +356,9 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $for
   if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
   if ($sparse -or ($oldSparse.Count -and $oldSparse[0] -eq 'true')) { throw 'sparse checkout needs keeping' }
   $shallow = @(Read-CleanupGit @('-C',$repo,'rev-parse','--is-shallow-repository'))
-  if ($gitExit -ne 0 -or $shallow[0] -ne 'false') { throw 'complete local history not verified' }
+  # Reuse needs full history. Removal only needs every local commit in the mirror, checked below, so a shallow helper
+  # clone qualifies (issue 1180 run 8).
+  if ($gitExit -ne 0 -or ($shallow[0] -ne 'false' -and -not ($forRemoval -and $shallow[0] -eq 'true'))) { throw 'complete local history not verified' }
   $flags = @(Read-CleanupGit @('-C',$repo,'ls-files','-v'))
   if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
   $status = @(Get-RepoCleanupStatus $repo)

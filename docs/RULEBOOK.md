@@ -331,8 +331,9 @@ its whole name is one our tools generate (`voidsworn-run-[<issue>-]<32 hex>`, `v
 run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), its issue lock is free and no running
 process names it; links inside are removed as links, never followed. Other name matches are report-only, and agent-chosen
 names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
-only when no running process names it and every file in its out folders is a blob in the repo mirror (relayed on a
-board/pc-out branch); files the relay skipped are listed and keep the folder. A ship file with no twin in the shared build
+only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
+in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and is archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.

@@ -136,27 +136,61 @@ function Assert-NoProcessUses($dir) {
 # Issue 1180 run 8 (Board, Nov 20): names only our tools create. A runner GUID, run_parity.js mkdtemp (6 characters) and
 # manifest_merge.py mkdtemp (8 characters). Agent-chosen names never match; they go to Ryan as a one-off list.
 $legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
-function Test-RelayedResults($dir, $mirror) {
-  # Proof that a helper's results went back: every file in its out folders is a blob in the mirror (board/pc-out
-  # branches). The relay skips large files and binaries, so those keep the folder and are listed for the Board.
-  $outs = if ($dir.Name -match '^opus[1-9][0-9]*out') { @($dir) } else { @($dir.EnumerateDirectories('out*')) }
-  $files = @()
-  foreach ($out in $outs) {
-    if ($out.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "linked path: $($out.FullName)" }
-    $files += @($out.EnumerateFiles('*', [IO.SearchOption]::AllDirectories))
+function Get-RelayReceipts($mirror) {
+  # Objects reachable from the relay branches (board/pc-out-*): a committed receipt, not a loose blob (Artoo, PR 1266).
+  if ($script:relayReceipts) { return $script:relayReceipts }
+  $set = New-Object 'Collections.Generic.HashSet[string]'
+  $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname)','refs/heads/board/pc-out-*'))
+  if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  if ($refs.Count) {
+    foreach ($line in @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--objects','--glob=refs/heads/board/pc-out-*'))) {
+      $null = $set.Add(($line -split ' ', 2)[0])
+    }
+    if ($gitExit -ne 0) { throw 'relay branches could not be read' }
   }
-  if (-not $files.Count) { throw 'no out folder to prove the results were relayed' }
-  $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($files | ForEach-Object { $_.FullName }))
-  if ($hashes.Count -ne $files.Count) { throw 'result hashes could not be read' }
-  $checks = @(Salvage-Git @('--git-dir',$mirror,'cat-file','--batch-check') $hashes)
-  $missing = 0
-  for ($i = 0; $i -lt $files.Count; $i++) {
-    if ($checks[$i] -match ' missing$') {
-      $missing++
-      Log "helper file not in the mirror: $($files[$i].FullName) ($($files[$i].Length) bytes)"
+  $script:relayReceipts = $set
+  return $set
+}
+function Test-RelayedResults($dir, $mirror) {
+  # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
+  # and (2) everything else in it is a checkout Git shows as rebuildable with all history pushed. Anything else keeps the
+  # folder and is listed for the Board.
+  $receipts = Get-RelayReceipts $mirror
+  $whole = $dir.Name -match '^opus[1-9][0-9]*out'
+  $outFiles = @(); $other = @(); $checkouts = @()
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  if ($whole) { $outFiles = @($dir.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+  else {
+    foreach ($item in $dir.EnumerateFileSystemInfos()) {
+      if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @($item.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+      elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
+      else { $other += $item }
+    }
+    while ($pending.Count) {
+      $sub = $pending.Pop()
+      if (Test-Path -LiteralPath (Join-Path $sub.FullName '.git') -PathType Container) { $checkouts += $sub; continue }
+      foreach ($item in $sub.EnumerateFileSystemInfos()) {
+        if ($item -is [IO.DirectoryInfo]) { $pending.Push($item) } else { $other += $item }
+      }
     }
   }
-  if ($missing) { throw "results not all relayed: $missing of $($files.Count) out files are not in the mirror" }
+  if (-not $outFiles.Count) { throw 'no out folder to prove the results were relayed' }
+  $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName }))
+  if ($hashes.Count -ne $outFiles.Count) { throw 'result hashes could not be read' }
+  $missing = 0
+  for ($i = 0; $i -lt $outFiles.Count; $i++) {
+    if (-not $receipts.Contains($hashes[$i])) {
+      $missing++
+      Log "helper file not on a relay branch: $($outFiles[$i].FullName) ($($outFiles[$i].Length) bytes)"
+    }
+  }
+  if ($missing) { throw "results not all relayed: $missing of $($outFiles.Count) out files are not on a relay branch" }
+  foreach ($file in ($other | Select-Object -First 20)) { Log "helper file outside out and outside a checkout: $($file.FullName) ($($file.Length) bytes)" }
+  if ($other.Count) { throw "$($other.Count) files outside out are not in a rebuildable checkout" }
+  foreach ($checkout in $checkouts) {
+    try { $null = Get-RepoCleanupState $checkout.FullName $mirror '' $false $true }
+    catch { throw "checkout $($checkout.FullName) is not rebuildable: $($_.Exception.Message)" }
+  }
 }
 function Assert-HelperScratchInactive($dir) {
   try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
@@ -291,7 +325,7 @@ try {
   }
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
     if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
-    Clear-ScratchFolder $dir $Matches[1] 'helper folder with its results in the mirror' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
+    Clear-ScratchFolder $dir $Matches[1] 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }
