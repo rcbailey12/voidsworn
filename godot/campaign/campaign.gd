@@ -209,7 +209,7 @@ func cinderOpen() -> bool:
 # the price of a captured hull at the Cinder Line yards: the Crusade's own ladder (base cost before the owner's faction
 # pricing, times the Crusade class price), then the yard price multiplier, like any other hull for sale there.
 func capturedHullPrice(t: Dictionary) -> float:
-	var base = float(t["cost0"]) if t.get("cost0") != null else float(t["cost"])
+	var base = float(t["cost0"]) if t.get("cost0") != null else (float(t["val"]) if t.get("val") != null else float(t["cost"]))   # issue 1354: val is the price before the shop discount
 	var ladder = (TB.FAC_PRICE["voidsworn"].get(t.get("cls")) if jt(TB.FAC_PRICE.get("voidsworn")) else null)
 	return jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * priceMult())
 # R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock (legacyHullOn, so
@@ -752,6 +752,7 @@ func flagshipOf() -> Variant:
 	return null
 func shipValue(tpl) -> float:
 	var H = HULLS.get(tpl)
+	if H != null and (H.get("val") is int or H.get("val") is float): return float(H["val"])   # issue 1354: shop discounts do not lower prize, strip or scrap values
 	if H != null and (H.get("cost") is int or H.get("cost") is float): return float(H["cost"])
 	return 40.0 * float(or_(H.get("cp") if H != null else null, 1))
 func prizeScrap(tpl) -> float: return jsround(shipValue(tpl) * 0.35)

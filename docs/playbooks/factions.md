@@ -241,7 +241,9 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). Small fused chitin clusters sit on the strip of belly the bands
   leave open (kit `plates.fused_patches`). No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
-  Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). Surface detail must read at
+  Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
+  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every Chorus ship is gated
+  by the stage 5 detail check unless its recipe says "surface_detail": false. Surface detail must read at
   camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.

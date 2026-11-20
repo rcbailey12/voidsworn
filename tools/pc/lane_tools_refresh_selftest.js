@@ -90,4 +90,51 @@ assert.match(script, /Write-Step \$message[^\n]+\n  exit 1/);
   }
 }
 
+// Issue 1186 (Artoo on PR 1334): the refresh takes every arm's slot lock, even for a slot that does not exist yet, so a
+// first launch of a fresh arm during a paused refresh is refused before it starts.
+assert.match(script, /if \(\$seat -eq 'work217'\) \{ \$checkoutLock = @\(Lock-WorkhorseSlots /, 'the work217 refresh holds every slot lock');
+{
+  const os = require('node:os');
+  const { spawn, spawnSync } = require('node:child_process');
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
+  if (spawnSync(shell, ['-NoProfile', '-Command', 'exit 0']).error) {
+    if (process.env.CI) throw new Error(`${shell} is required in CI for the first-launch slot fixture`);
+    console.log(`SKIP first-launch slot fixture: no ${shell} here (CI runs it)`);
+  } else {
+    const fn = /^function Lock-WorkhorseSlots[\s\S]*?^\}$/m.exec(script);
+    assert.ok(fn, 'Lock-WorkhorseSlots is defined');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'slot-refresh-'));
+    const workRoot = path.join(dir, 'work217');
+    const ready = path.join(dir, 'ready'), release = path.join(dir, 'release'), done = path.join(dir, 'done');
+    const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+    const until = (test, ms) => { const end = Date.now() + ms; while (!test() && Date.now() < end) sleep(50); return test(); };
+    const launch = () => spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, 'work_issue.ps1'),
+      'run', '687', 'deepseek', 'dryrun', path.join(workRoot, 'slot_deepseek', 'repo')], { encoding: 'utf8', timeout: 60000 });
+    let refresh;
+    try {
+      assert.ok(!fs.existsSync(workRoot), 'the slot folder does not exist when the refresh starts');
+      refresh = spawn(shell, ['-NoProfile', '-Command', `${fn[0]}\n$h = @(Lock-WorkhorseSlots $env:FIX_ROOT)\n` +
+        `[IO.File]::WriteAllText($env:FIX_READY, [string]$h.Count)\n` +
+        `$end = [DateTime]::UtcNow.AddSeconds(60); while (-not (Test-Path -LiteralPath $env:FIX_RELEASE) -and [DateTime]::UtcNow -lt $end) { Start-Sleep -Milliseconds 50 }\n` +
+        `foreach ($x in $h) { $x.Dispose() }\n[IO.File]::WriteAllText($env:FIX_DONE, 'released')`], { env: { ...process.env, FIX_ROOT: workRoot, FIX_READY: ready, FIX_RELEASE: release, FIX_DONE: done }, stdio: 'ignore' });
+      assert.ok(until(() => fs.existsSync(ready), 30000), 'paused refresh never took the slot locks');
+      assert.equal(fs.readFileSync(ready, 'utf8'), '14', 'seven arms, live and dry run');
+      const first = launch();
+      assert.equal(first.status, 14, first.stdout + first.stderr);
+      assert.match(first.stdout, /workhorse slot busy/, 'a first launch during the refresh is refused');
+      fs.writeFileSync(release, 'go');
+      assert.ok(until(() => fs.existsSync(done), 30000), 'paused refresh did not release its locks');
+      if (process.platform !== 'win32') {
+        // Off Windows there is no cmd to start, so a free slot gets past the lock and stops at the batch launch.
+        const after = launch();
+        assert.doesNotMatch(after.stdout, /workhorse slot busy/, 'the slot is free once the refresh ends: ' + after.stdout);
+      }
+    } finally {
+      fs.writeFileSync(release, 'go');
+      if (refresh) refresh.kill();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  }
+}
+
 console.log('PASS: lane tools refresh keeps old tools, refuses busy lanes, rotates old copies safely and installs tools_live');

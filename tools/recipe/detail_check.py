@@ -128,7 +128,10 @@ def measure(job, cell, r=3):
 def main(job, cell, ship_json):
     try:
         with open(ship_json, encoding='utf-8') as f:
-            want = json.load(f).get('surface_detail')
+            ship = json.load(f)
+        # issue 1291: every Chorus ship is gated by default (the grown look is the family's skin since R349); another
+        # faction opts in, and a ship can opt out with "surface_detail": false
+        want = ship.get('surface_detail', True if ship.get('faction') == 'chorus' else None)
     except (OSError, ValueError):
         want = None
     floors = dict(FLOORS)
