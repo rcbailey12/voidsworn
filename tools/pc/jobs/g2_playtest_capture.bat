@@ -24,6 +24,8 @@ exit /b %ERRORLEVEL%
 
 :capture
 if "%~2"=="" exit /b 1
+rem The exported game has no script name for the GPU gate to label its claim (exit 126 without one; issue 1369).
+if not defined PC_GPU_ISSUE if not defined JOB_DIR set "PC_GPU_ISSUE=g2_playtest_capture"
 set "OUT=%~f2"
 set "RESULT=%OUT%\result.txt"
 set "GAME=%CD%\export\Voidsworn.console.exe"

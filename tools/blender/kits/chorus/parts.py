@@ -908,7 +908,10 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
                     a, b = j * q + k, j * q + k + 1
                     (FR if j == 0 else F).append((b, a, nb + a, nb + b) if j == 0 else (a, b, nb + b, nb + a))
             p.add('membrane%d' % i, 'body', 'membrane', _used(V, F))
-            p.add('membraner%d' % i, 'body', 'veilroot', _used(V, FR))
+            # issue 1291 (Ryan, Nov 20: "a yellow random strip near the tail"): the root rows of the veil sheet were one flat
+            # glowing lime band (a glTF glow is a single factor, it cannot fade along the veil), so they stay dark membrane
+            # now; the light at the root comes from the thin glowing ribs below and the bile deep in the vent
+            p.add('membraner%d' % i, 'body', 'membrane', _used(V, FR))
             # veins of light along the veil: lit from the root, fading into the dark membrane toward the torn end
             for q_, kk in enumerate((1, 3, 5)):
                 pts = [Vector(V[j * q + kk]) for j in range(m + 1)]
@@ -970,13 +973,15 @@ def thruster(r=0.3, nozzles=3):
 
 
 # ------------------------------------------------------------------------------------------------ sacs, blades, scutes
-def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False, window='round'):
+def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False, window='slit'):
     """a sac grown out of the hull (local +Z out of the hull): root, a socket of wrinkled tissue (mount); sac, the bulge (mount:
     it grows into the hull); crease, creases across it; vein, veins over it; glow, windows where the bile shows through.
     kind 'brood' adds the birth slit (slit: its length as a share of the sac) between two lip rolls (lip): a launch opening for
     the spore swarms. Fit: the slit's aperture along +Z. armour (R341): no creases or veins (the armour caps lie over the sac's
     shoulders, plates.dome_caps) and the bile windows gathered at the open crown. window 'slit' (issue 1291): the bile shows
-    only in narrow slits, never a round lit window (a flat lime disc in game), and the veins are dark blood vessels."""
+    only in narrow slits, never a round lit window (a flat lime disc in game), and the veins are dark blood vessels. It is
+    the default for every Chorus sac (Ryan, Nov 20, on C10's pods: "what are the random yellow circles on the pods? Looks odd");
+    window 'round' (the old lit windows and glowing veins) is kept only for a sheet that asks for it."""
     p = Part(kind)
     h = h or r * 1.1
     if armour:

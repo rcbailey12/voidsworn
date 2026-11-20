@@ -15,15 +15,10 @@ var _saved_settings = null   # the settings file's bytes at the start; the captu
 var _failed := 0             # pictures that did not save
 
 
-# On Windows the capture runs only inside the throwaway profile frontend_ui_check.bat makes (the player-path pattern,
-# PR 1188): the real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
+# On Windows the capture runs only inside the watchdog's throwaway profile (issue 1369; tools/throwaway_profile.gd): the
+# real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
 func _profile_error() -> String:
-	if OS.get_name() != "Windows": return ""   # the cloud and CI have no player profile
-	var profile := OS.get_environment("VS_SHOTS_PROFILE").replace("\\", "/").simplify_path().trim_suffix("/")
-	var actual := ProjectSettings.globalize_path("user://").replace("\\", "/").simplify_path().trim_suffix("/")
-	if profile == "" or not actual.to_lower().begins_with(profile.to_lower() + "/"):
-		return "user:// (%s) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat" % actual
-	return ""
+	return preload("res://tools/throwaway_profile.gd").refusal("front_end_shots.gd")
 
 
 func _initialize() -> void:
@@ -76,6 +71,19 @@ func _shot(name: String, caption: String) -> void:
 	cap.queue_free()
 
 
+# Issue 1369 PC run: main starts a fresh profile full screen (settings "fullscreen" defaults to true), so every frame
+# came out at the monitor size, 2560x1440, whatever --resolution asked. With --expect, put the window back to that size,
+# windowed, the way main's own capture jobs do (_capture_window); a size the window cannot take still fails each shot.
+func _hold_window() -> void:
+	if _expect == Vector2i.ZERO or DisplayServer.get_name() == "headless": return
+	for i in 3:   # main's start-up mode change can land a frame or two later; apply it until it holds
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(_expect)
+		await process_frame
+	await _wait(0.3)
+	print("[front-end-shots] window ", DisplayServer.window_get_size(), " viewport ", root.get_viewport().get_visible_rect().size)
+
+
 # the frame size --expect asked for, or zero. It is a user argument because Godot keeps --resolution to itself
 # (OS.get_cmdline_args() never lists it), which left the first version of this check silently passing.
 var _expect := Vector2i.ZERO
@@ -96,6 +104,7 @@ func _run() -> void:
 			var parts := str(a).substr(9).split("x")
 			if parts.size() == 2: _expect = Vector2i(int(parts[0]), int(parts[1]))
 	await _wait(1.5)
+	await _hold_window()
 	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
 	if not main.args.has("no-showcase"):
 		var t0 := Time.get_ticks_msec()

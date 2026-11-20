@@ -200,7 +200,7 @@ def build(K):
         _sys.path.append(_k._KITS)
     from chorus import plates
     plates.armadillo(K, _k, U(0.40), U(-0.40), seed=1373, lo=-1.2, band=U(0.065), lap=1.45, thick=U(0.0079),
-                     keep=('CS_spine', 'CS_fork'), scale=LENGTH / 9.5, res=0.3,
+                     keep=('CS_spine', 'CS_fork'), scale=LENGTH / 9.5, res=0.3, fill=False,   # fill off: the spore Ryan saw (PC build 9c0acd29)
                      note='armadillo bands of grown chitin wrapping the craft from belly edge to belly edge, lips aft; broken round the gill bladders and along the bone line (round G, C13)')
 
     # ---------------- colour zones ----------------

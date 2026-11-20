@@ -63,7 +63,7 @@ check('rule boons: Chain Lightning, Marked for Death, Slip the Net, Spread Patte
   await T.landVolley(u, w, t, { quad: 0, shBefore: 0, shots: [true], called: null, res: { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 } }); const h1 = T.hitChance(P()[1], P()[1].weapons[1], t); const mark = h1 - h0 === 10 || h1 === 95;
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion'], ['r_slip']); u = P()[0]; t = E()[0]; put(u, 8, 10, 0); put(t, 11, 10, 3); u.mp = 4; await T.fireWeapon(u, gun(u, t), t); const slip = u.postMp === 2 && T.computeReach(u).map.size > 0;
   battle('voidsworn', ['harrow'], 'hegemony', ['h_dominion', 'h_picket'], ['e_spread']); u = P()[0]; const [d, pk] = E(); put(u, 8, 10, 0); put(d, 12, 10, 3); put(pk, 13, 10, 3);
-  await T.fireWeapon(u, u.weapons.findIndex(x => x.k === 'torp'), d); put(d, 12, 14); const p0 = pk.hp + pk.sh.reduce((a, b) => a + b, 0); T.B.round++; await T.turnStart('player'); const spread = pk.hp + pk.sh.reduce((a, b) => a + b, 0) < p0;
+  d.ev = 1000; const p0 = pk.hp + pk.sh.reduce((a, b) => a + b, 0); await T.fireWeapon(u, u.weapons.findIndex(x => x.k === 'torp'), d); const spread = pk.hp + pk.sh.reduce((a, b) => a + b, 0) < p0; // R364: a missed torpedo bursts on its target and the ships beside it
   battle('voidsworn', ['reliquary', 'penitent'], 'hegemony', ['h_picket', 'h_picket', 'h_picket', 'h_picket'], ['h_brood']); const car = P()[0]; put(car, 8, 10); const n0 = T.B.units.filter(x => x.isSq && !x.dead).length; await T.killUnit(E()[0], P()[1]);
   const brood = T.B.units.filter(x => x.isSq && !x.dead).length === n0 + 1;
   if (!(chain && mark && slip && spread && brood)) throw new Error(JSON.stringify({ chain, mark, slip, spread, brood })); return true; });

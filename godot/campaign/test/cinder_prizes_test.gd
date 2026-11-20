@@ -43,9 +43,9 @@ func _initialize() -> void:
 
 	# Crusade prices: a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it
 	var warden = C.HULLS["warden"]; var mote = C.HULLS["d_scythe"]; var picket = C.HULLS["h_picket"]
-	check(C.capturedHullPrice(mote) == warden["val"], "the mote sells at the Crusade 1 CP frigate ladder price (issue 1354: the Crusade shop discount is not applied to captured hulls)")
+	check(C.capturedHullPrice(mote) == warden["cost"], "the mote costs what a Warden costs in the shop (issue 1384: the issue 1354 Crusade discount applies to captured hulls too)")
 	check(mote["cost"] > warden["cost"], "the table price really carries the Eclipse premium, so the check means something")
-	check(C.capturedHullPrice(picket) == picket["val"], "a captured picket sells at its baseline, Hegemony is the 1.0 ladder (before the issue 1354 Navy shop discount)")
+	check(C.capturedHullPrice(picket) == C.jsround(float(picket["val"]) * float(C.TB.SHOP_DISCOUNT["voidsworn"]) / 5.0) * 5.0, "a captured picket sells at the Hegemony 1.0 ladder price, then the Crusade shop discount (issue 1384)")
 
 	# buying: charged the captured price, links ripped out, normal hulls unaffected
 	C.RUN["credits"] = 1000.0

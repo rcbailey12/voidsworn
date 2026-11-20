@@ -276,7 +276,9 @@ def optical_gun(K, x, fid, weapon, colour):
     p = own_part()
     # Round 5 (outside read): no pastel domes, they are not in the concept. A small flat pearl seat sunk in the ribbons
     # and a small cut stone on it: a glint among the mosaic, not the first thing the eye goes to.
-    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.20), (0.42, 0.42, 0.20), 48, 16))
+    # Issue 1282 (Fable on PR 1184): the seat's top sits 0.08 under the pivot, clear of the barrel's lower edge (calibre 0.09),
+    # so the game's clearance test lets the optic train; at -0.20 its top met the barrel and all three stayed locked at rest.
+    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28), (0.42, 0.42, 0.20), 48, 16))
     gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02), (0, 0, 1), 0.26, 0.12, 10)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
     p.add('stored_light', 'turn', 'cd5_' + colour, ellipsoid((0, 0, -0.03), (0.20, 0.20, 0.05), 32, 12))
@@ -287,7 +289,7 @@ def optical_gun(K, x, fid, weapon, colour):
                 for i in range(-8, 9) for j in range(-8, 9))
     K.gun(fid, (x, 0, crest + 0.28), 0, cal=0.09, blen=0.26, slot='T', weapon=weapon,
           part=p, inv=['secondary_optics'], band=(0, 5, 10, 15, 20, 30),
-          note='Grown %s optic; inner lens rotates under unbroken clear skin, 360 degrees; %s slot.' % (colour, weapon))
+          note='%s cut-stone optic on a flush pearl seat; turns 360 degrees; %s slot.' % (colour.capitalize(), weapon))
     K.features[-1]['what'] = '%s grown optic / %s' % (colour, weapon)
     K.built[-1].update(detailed=True, subs=['grown root', 'lens', 'light reservoir', 'forward optical exit'])
     for o in K.coll.objects:
@@ -494,28 +496,31 @@ def build(K):
                                        (4, -1, 'prow'), (8, 1, 'prow'))):
         K.point('breach', 'hp_breach_%d' % i, skin(x, 0.25 if side > 0 else math.pi - 0.25),
                 side='port' if side > 0 else 'stbd', section=sec)
-    for i, (x, a) in enumerate(((-9, 0), (6, math.pi))):
+    # Issue 1282 (Fable on PR 1184): one RCS point per side at each end, so the game's braking, side and turning jets each
+    # find an authored point on their own side and end (two points left half the requests on the surface ray).
+    for i, (x, a) in enumerate(((-9, 0), (-9, math.pi), (6, 0), (6, math.pi))):
         K.point('rcs', 'hp_rcs_%d' % i, skin(x, a))
+    for i, (x, a) in enumerate(((-9, 0), (6, math.pi))):
         K.point('board', 'hp_board_%d' % i, skin(x, a))
-    K.colour('clear and milky blown glass, silver veins', 10.25, -13, 'continuous hull, underside and drawn forward lances')
-    K.colour('amber, violet, green inner panes', 10.0, -12.6, 'beneath the clear skin; emissive stored light')
-    K.colour('soft white bloom', -12.7, -13, 'three stern drive optics, no flame')
-    K.fix('Run 1 secondary roots read as tent peaks',
-          'Broad 0.24-high skin swells carry 1.20-wide round lens caps; their moving glass clears the highest local ridge and vein.')
+    K.colour('opaque champagne pearl ribbons, silver lines', 10.25, -13, 'ribbons over the core and the drawn forward lances')
+    K.colour('amber, violet, green stained-glass mosaic', 10.0, -12.6, 'the opaque core seen between the ribbons, lit from behind')
+    K.colour('violet cut stones', -12.7, -13, 'three stern drive optics, no flame')
+    K.fix('Run 1 secondary roots read as tent peaks; round 4 domes were not in the concept',
+          'Round 5: a small flat pearl seat and a cut stone set flush in the ribbons; the seat sits under the barrel so the optic trains (issue 1282).')
     K.fix('Run 1 stern drive optics read as small dots',
           'Doubled lens radius to 0.86, widened the grown stern and placed three complete drives 1.90 apart.')
     K.fix('Enlarged stern shoulders crossed the old B1 shatter path',
           'Moved B1 forward to x=-10.95 so all three drive optics remain whole, without an audit exemption.')
-    K.change('Three round secondary optics at x=-6, 0, +6 on the centreline, set into gentle glass swells',
+    K.change('Three small cut-stone optics at x=-6, 0, +6 on the centreline, set flush in the ribbons',
              'R298: even, balanced spacing and all-direction arcs; amber = pulsar T, violet = turret T, green = flak T. The stern cluster is propulsion.')
     K.change('Two separate long drawn-glass lances, one per forward pulsar slot',
              'Keep Ryan\'s loved long forward lances; the model uses the game\'s two F slots and visible optical exits.')
-    K.change('Six twisted poured-glass strands joined in one deep skin, with rolled edges and 216 narrow internal light slivers',
-             'Run 3: replace the swollen bulb and broad colour blobs with deep grooves and warmer stored light; retain the rounded middle and full glass insides.')
-    K.change('Breaks bracket the lens bays; O3 is an upper peel clear of both lances',
+    K.change('Twelve fine pearl ribbons over an opaque mosaic core, a slender spindle about 4 to 1 (round 5)',
+             'R337: restart from the approved concept; each ribbon a bundle of strands with silver lines; the mosaic glows from behind.')
+    K.change('Breaks bracket the lens bays; no upper peel (r5c: on the slim hull a peel opened the bow piece)',
              'Glasswrights shatter; each large optic remains a whole part. The forward lances cannot be cut by a new transverse seam.')
-    K.open_item('Schematic physical glass and colour-zone materials only. No Glasswright paint stack exists; no other faction stack applied.')
-    K.open_item('Sheet built, not installed in Godot. Board comparison and Ryan visual acceptance remain separate from technical checks.')
+    K.open_item('Paint: the shared Glasswright stack (tools/blender/kits/ithar/stack.py), baked with EMISSIVE_ATLAS for the mosaic glow.')
+    K.open_item('Built and checked in Windows job clones only (issue 1183 r5c, accepted Nov 20; issue 1282 W2). The shared game build keeps the old hull until issue 1311 publishes it.')
 
 
 def review(out):
@@ -684,7 +689,7 @@ def layout(src, dest):
     d = ImageDraw.Draw(im)
     d.text((24, 82), 'APPROVED CONCEPT / whole image', fill=ink, font=font)
     d.text((650, 82), 'BLENDER / same direction', fill=ink, font=font)
-    d.text((24, 575), 'R3: six braided glass strands, deep grooves, rolled edges and narrow warm light slivers under clear glass.', fill=ink, font=font)
+    d.text((24, 575), 'R5: fine champagne pearl ribbons with silver lines over a glowing amber, violet and green mosaic core.', fill=ink, font=font)
     d.text((24, 603), 'Changed: amber / violet / green optics at even 6-unit intervals on the centreline, grown into the skin.', fill=ink, font=small)
     save(im, 'compare.jpg')
     im = canvas('top / balanced secondary optics')
@@ -695,11 +700,11 @@ def layout(src, dest):
         d.line((px, 200, px, 505), fill='#8395a2', width=1)
         d.text((px - 65, 160), fid + ' / ' + col, fill=ink, font=font)
         d.text((px - 65, 520), wk + ' / 360 deg', fill=ink, font=small)
-    d.text((24, 575), 'Centreline x = -6, 0, +6. Same 6-unit spacing; round internal lenses turn inside continuous clear glass.', fill=ink, font=font)
+    d.text((24, 575), 'Centreline x = -6, 0, +6. Same 6-unit spacing; small cut-stone optics turn all round, set flush in the ribbons.', fill=ink, font=font)
     d.text((24, 603), 'Stern (left): three drive optics. Bow (right): L1 and L2, one per forward pulsar slot.', fill=ink, font=small)
     save(im, 'top.jpg')
-    for name, caption in (('side', 'side / rounded body and low lens swells'),
-                          ('camera170', 'camera 170 / true Ark size 41.6'), ('inside', 'inside / full-length glass construction')):
+    for name, caption in (('side', 'side / slender spindle, flush optics'),
+                          ('camera170', 'camera 170 / true Ark size 41.6'), ('inside', 'inside / decks, frames and light cores, one span per compartment')):
         im = canvas(caption)
         if name == 'camera170':
             im.paste(Image.open(src / 'camera170.png').crop((320, 252, 1600, 828)), (0, 76))
@@ -797,7 +802,7 @@ def layout(src, dest):
     for m in manifest['masses']:
         lines.append('| %s | %s |' % (m['name'], m['route']))
     lines += ['', '## INSIDE', '', 'Two shaped glass decks, 15 open annealed frames, three full-length braided light cores and three optical reservoirs.',
-              'Seven breach anchors (Ark base 8 minus Glasswright 1), one core, two RCS and two boarding origins.', '',
+              'Seven breach anchors (Ark base 8 minus Glasswright 1), one core, four RCS (one per side at each end) and two boarding origins.', '',
               '| Break line | Station % | What it opens |', '|---|---|---|']
     for r in fractures:
         if r.get('orient') == 'long':

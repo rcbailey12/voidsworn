@@ -56,7 +56,7 @@ async function botTurn(){ await swarmPhase('player');
       else await useAbility(u); }
     const foes=alive('enemy'); if(!foes.length) break;
     const {states}=computeReach(u); let best=null,bs=-1e9;
-    const PFb=pathField(foes.filter(f=>!f.isSq)); for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const hd=Math.min(...foes.map(f=>hdist(v,f))), nd=Math.max(hd,fieldDist(PFb,v,hd)); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
+    const PFb=pathField(foes.filter(f=>!f.isSq)); for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const hd=Math.min(...foes.map(f=>hdist(v,f))), nd=Math.max(hd,fieldDist(PFb,v,hd)); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
     if(best&&best.path.length) await moveUnit(u,best);
     for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }
   }
@@ -105,7 +105,7 @@ async function botUnit(u){
   if(!u.isSq) await tacticRam(u); if(B.over||u.dead) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
-  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length) await moveUnit(u,best);
   if(!u.isSq && await tacticBoard(u)){ u.activated=true; return; }
   for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }

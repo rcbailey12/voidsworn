@@ -530,10 +530,10 @@ func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable()) -> void
 
 
 # The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
-func death_bed(seconds: float, pos = null) -> void:
+func death_bed(seconds: float, pos = null, variant := "") -> void:
 	if legacy or seconds <= 0.0:
 		return
-	play("death_bed", {"pos": pos, "duration": seconds, "death": true})
+	play("death_bed", {"pos": pos, "duration": seconds, "death": true, "variant": variant})
 
 
 func death_tail(pos = null, variant := "") -> void:
