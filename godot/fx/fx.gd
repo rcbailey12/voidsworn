@@ -64,8 +64,8 @@ var flash_area_logging := false
 
 # --- settings (API.md 1, 8)
 var quality = "max"
-# Issue 1077 (prototype, off by default): a big hull strains along its break lines before it splits, and its wreck stays
-# grouped where it broke. rendering/effects/death_story="strain" or VS_DEATH_STORY=strain turns it on; nothing else does.
+# Issue 1077 (on since Ryan's yes on pass 6, Nov 20 2026): a big hull strains along one ragged crack before it splits, and
+# its wreck stays grouped where it broke. rendering/effects/death_story="off" or VS_DEATH_STORY=off turns it off.
 var death_story := false
 var reduce_flashing = false:
 	set(v):
@@ -262,7 +262,7 @@ func setup(opts := {}) -> void:
 	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var story := String(opts.get("death_story", OS.get_environment("VS_DEATH_STORY")))
 	if story.is_empty():
-		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "off"))
+		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "strain"))
 	death_story = story == "strain"
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""

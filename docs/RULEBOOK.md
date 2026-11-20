@@ -333,7 +333,7 @@ and the folder's own last copy (`ships_copied.txt`), so local work is never over
 Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
 exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
 removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
-FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. A helper proof job's head (opus_job_head.bat, issue 1303) removes, at its tail and only after a PASS, the pinned checkouts its own checkout step listed in that attempt folder whose HEAD is still the pin and whose files hold no work beyond the import cache, ship copies still matching their source, byte copies of tracked files and the .import/.uid sidecars of those (rebuildable from the mirror; about 16 GB each); a failed job keeps them, and its out folders, logs and ship records always stay. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
 token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
 a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
@@ -839,8 +839,11 @@ detail than the first pass.** Why: "T2 damaged" (R206); stations looked plain (R
 10.8 **A battle opens with both fleets in view; markers at the screen edge only where a ship can leave the view.** Set: Ryan
 (R62, R216).
 
-10.9 **Nebula colour is picked per region by eye on the sky sheet; no indigo to purple gradient; the faction tint share is a
-tuning value.** Why: Ryan listed indigo to purple gradients among the AI-made tells (R174). Set: Ryan (R82, R216).
+10.9 **The battle nebula is one rose colour (the hydrogen pink of real glowing gas) in every region and against every
+faction; no indigo to purple gradient.** It replaces R82's violet and the faction tint share (world_living.gd NEBULA_*).
+Why: "shouldn't we have nebulas be one color? ... I want it to be semi realistic", then "Yes agree on rose" on the NEB1268
+sheet (Nov 20 2026); rose reads apart from the teal ion storm; Ryan listed indigo to purple gradients among the AI-made
+tells (R174). Set: Ryan (R82, R216, R353).
 
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).

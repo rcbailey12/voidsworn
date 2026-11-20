@@ -23,6 +23,7 @@ const BAKER := preload("res://world/world_bake.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
+const LOOK := preload("res://render/look.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 const BACKDROP_ROCK_ANGLE := 0.05
 # R78 Q18 (the run 5 finale): the board brightens sector by sector as the new sun catches. Six sectors, one per stage of
@@ -33,6 +34,7 @@ const DAWN_COL := Color(1.0, 0.76, 0.46)
 var quality := "max"
 var notes: PackedStringArray = []
 var setting := {}
+var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
@@ -58,6 +60,7 @@ var _yaw := 0.0
 var _sky_tex: Texture2D = null
 var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
 var _under_mat: ShaderMaterial = null
+var _under_mi: MeshInstance3D = null
 var _terr_pts := {"neb": [], "storm": [], "debris": []}   # board positions of those hexes (the living look builds on them)
 var _rock_kind := "stone"
 var _fac := "voidsworn"
@@ -156,6 +159,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_disc_mats.clear()
 	_disc_light = null
 	quality = String(opts.get("quality", "max"))
+	nebula_wake = bool(opts.get("nebula_wake", false))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
 	var biome: Dictionary = opts.get("biome", {}) if opts.get("biome") is Dictionary else {}
@@ -262,6 +266,9 @@ func set_look() -> void:
 	var sp := BL.spec()
 	if _under_mat != null:
 		_under_mat.set_shader_parameter("vis", float(sp["underlay"]))
+		# Issue 1262: at zero the plane only wrote alpha 0, still running its planet and ring maths per pixel.
+		if _under_mi != null:
+			_under_mi.visible = float(sp["underlay"]) >= 0.001 or LOOK.perf_old("underlay")
 	for c in _old_clouds:
 		if is_instance_valid(c):
 			(c as Node3D).visible = bool(sp["old_clouds"])
@@ -1292,6 +1299,7 @@ func underlay() -> void:
 	# drawn after the lens (which copies the screen, render_priority -30) and before the board's own fills
 	m.render_priority = -20
 	_under_mat = m
+	_under_mi = mi
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# below the feet of the board's rocks and debris, above anything deep
