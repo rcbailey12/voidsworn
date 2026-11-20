@@ -531,7 +531,7 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       if (Test-Path -LiteralPath $archive) { throw "archive destination already exists: $archive" }
       $archiveBytes = 0L
       foreach ($path in $state.Superseded) { $archiveBytes += (Get-Item -LiteralPath (Join-Path $candidate $path) -Force).Length }
-      $archived = "after checked archive of $($state.Superseded.Count) superseded ship or gen files, $archiveBytes bytes"
+      $archived = "after checked archive of $($state.Superseded.Count) superseded ship or gen files, $archiveBytes bytes before dedupe"
       $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
       if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
