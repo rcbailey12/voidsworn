@@ -56,6 +56,7 @@ static func remember(key: String, img: Image) -> void:
 	_cache[key] = img
 
 static func clear_static() -> void:
+	_old_swept = false
 	_textures.clear()
 	_cache.clear()
 
@@ -261,6 +262,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if DirAccess.remove_absolute(m.path) == OK:
 				total -= int(m.size)
 				removed.append(m.key + ".png")
+	removed.append_array(_sweep_old_versions(folder))
 	var live := {}
 	for m in maps:
 		if FileAccess.file_exists(m.path) and used.has(m.key): live[m.key] = used[m.key]
@@ -268,6 +270,26 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 	if not removed.is_empty():
 		print("[world] bake cache %d -> %d MB (cap %d MB), removed %d files" % [before >> 20, total >> 20, cap >> 20, removed.size()])
 	return {"before": before, "after": total, "removed": removed}
+
+# Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions, next to a
+# v<N> folder, are removed once per run. Only <key>.png, *.tmp and used.json inside v1..v<N-1> go, then the empty folder.
+static var _old_swept := false
+
+static func _sweep_old_versions(folder: String) -> Array:
+	var removed: Array = []
+	var name := folder.get_file()
+	if _old_swept or not name.begins_with("v") or not name.substr(1).is_valid_int(): return removed
+	_old_swept = true
+	var parent := folder.get_base_dir()
+	for n in range(1, int(name.substr(1))):
+		var old := parent.path_join("v%d" % n)
+		if not DirAccess.dir_exists_absolute(old): continue
+		for f in DirAccess.get_files_at(old):
+			if f.ends_with(".png") or f.ends_with(".tmp") or f == USED_INDEX:
+				if DirAccess.remove_absolute(old.path_join(f)) == OK: removed.append("v%d/%s" % [n, f])
+		if DirAccess.get_files_at(old).is_empty() and DirAccess.get_directories_at(old).is_empty():
+			DirAccess.remove_absolute(old)
+	return removed
 
 # The two bake shaders use the GLSL subset of Godot's shader language. Reuse
 # their equations, with a storage buffer for uniforms and an image output.

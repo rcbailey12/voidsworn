@@ -24,8 +24,18 @@ func _blob(folder: String, name: String, bytes: int) -> void:
 
 func _init() -> void:
 	GUARD.arm(self, "bake_cache_cap_check")
-	var folder := OS.get_user_data_dir().path_join("bake_cap_check_%d" % OS.get_process_id())
+	var top := OS.get_user_data_dir().path_join("bake_cap_check_%d" % OS.get_process_id())
+	var folder := top.path_join("v3")
 	DirAccess.make_dir_recursive_absolute(folder)
+	# An older cache version beside it, never read again, plus a stranger file the sweep must leave.
+	var v2 := top.path_join("v2")
+	DirAccess.make_dir_recursive_absolute(v2)
+	_blob(v2, "aa.png", 10 * KB)
+	_blob(v2, "bb.png.tmp", 10 * KB)
+	var v1 := top.path_join("v1")
+	DirAccess.make_dir_recursive_absolute(v1)
+	_blob(v1, "cc.png", 10 * KB)
+	_blob(v1, "keep_me.txt", 1)
 	OS.set_environment("VS_WORLD_CACHE", folder)
 	var now := Time.get_unix_time_from_system()
 	# Ten maps, k0 used longest ago; the battle's map is older still but held.
@@ -56,6 +66,9 @@ func _init() -> void:
 	_expect(int(r.after) <= 550 * KB + size_loaded and int(r.before) > int(r.after), "folder ends under the cap (%d -> %d bytes)" % [r.before, r.after])
 	_expect(FileAccess.file_exists(folder.path_join("old.tmp")), "a .tmp younger than a day is kept")
 	_expect(FileAccess.file_exists(folder.path_join("used.json.junk")), "files that are not bakes are never touched")
+	_expect(not DirAccess.dir_exists_absolute(v2), "the old v2 cache is removed with its folder")
+	_expect(not FileAccess.file_exists(v1.path_join("cc.png")) and FileAccess.file_exists(v1.path_join("keep_me.txt")),
+		"an old version folder loses its bakes but keeps a file that is not a bake")
 	var used := BAKE._read_used(folder)
 	_expect(not used.has("k0") and used.has("k9"), "the index drops removed maps")
 
@@ -71,8 +84,10 @@ func _init() -> void:
 	r = BAKE.prune(folder, 1 << 40, {}, "", now + 2 * 86400)
 	_expect(not FileAccess.file_exists(folder.path_join("old.tmp")), "a .tmp older than a day is removed")
 
-	for name in DirAccess.get_files_at(folder): DirAccess.remove_absolute(folder.path_join(name))
-	DirAccess.remove_absolute(folder)
+	for dir in [folder, v1, v2]:
+		for name in DirAccess.get_files_at(dir): DirAccess.remove_absolute(dir.path_join(name))
+		DirAccess.remove_absolute(dir)
+	DirAccess.remove_absolute(top)
 	if failures == 0: print("PASS: bake cache cap (issue 1265)")
 	else: printerr("FAIL: %d bake cache cap checks" % failures)
 	quit(1 if failures else 0)
