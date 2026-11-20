@@ -360,7 +360,7 @@ func repairRunIds(r) -> Variant:
 		var R = r["reward"]
 		if not (R is Dictionary): r["reward"] = null
 		else:
-			if not (R.get("stage") in ["prize", "salvage", "pick", "relic", "promo"]): R["stage"] = "promo"
+			if not (R.get("stage") in ["prize", "salvage", "victory", "pick", "relic", "promo"]): R["stage"] = "promo"
 			var pz = []
 			if R.get("prizes") is Array:
 				for p in R["prizes"]:
@@ -1454,11 +1454,10 @@ func act(name: String, arg = "") -> void:
 		"buyMod": ACT_buyMod(a)
 		"repair": ACT_repair(a)
 		"repairAll": ACT_repairAll()
+		"repairStop": ACT_repairStop(a)
 		"upgradeMk": ACT_upgradeMk(a)
 		"sellShip": ACT_sellShip(a)
 		"sellConfirm": ACT_sellConfirm(a)
-		"fleetFromModal":
-			close_modal(); fleetScreen("map")
 		"eventChoice": ACT_eventChoice(a)
 		"battle": ACT_battle(a)
 		"c3continue": ACT_c3continue()
@@ -1470,7 +1469,6 @@ func act(name: String, arg = "") -> void:
 		"prizeStep": ACT_prizeStep()
 		"prizeSet": ACT_prizeSet(a)
 		"prizeConfirm": ACT_prizeConfirm()
-		"salvageStep": ACT_salvageStep()
 		"takeSalvage": ACT_takeSalvage(a)
 		"rewardNext": ACT_rewardNext()
 		"takeMod": ACT_takeMod(a)
@@ -1825,10 +1823,12 @@ func ACT_enterNode(id: String) -> void:
 	tel("node", {"type": n["type"], "col": n["col"]})
 	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: an unmet Nemesis meets you at any column 4 stop
 		_enter_battle_node(n)
-	elif n["type"] == "event": eventScreen(n)
+	else: _open_stop(n)
+
+func _open_stop(n: Dictionary) -> void:
+	if n["type"] == "event": eventScreen(n)
 	elif n["type"] == "shipyard": shipyardScreen(n)
-	elif n["type"] == "drydock": drydockScreen(n)
-	elif n["type"] == "field": fieldRepairs(n)
+	elif n["type"] in ["drydock", "field"]: repairStopScreen(n)
 
 func _enter_battle_node(n: Dictionary) -> void:
 	var kind = n["type"]; var fac = nodeFaction(n)
@@ -1851,6 +1851,10 @@ func _resume_node() -> bool:
 		_advance_sector()
 		return true
 	if RUN.get("curNode") != n["id"]: return false
+	if jt(n.get("nemCleared")):
+		if n["type"] != "event" or not jt(n.get("nemEvent")):
+			_open_stop(n)
+			return true
 	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
 		shipyardScreen(n)
 		return true
@@ -1858,8 +1862,11 @@ func _resume_node() -> bool:
 		_restore_legacy_story_modifier()
 		_enter_battle_node(n)
 		return true
+	if n["type"] in ["drydock", "field"]:
+		repairStopScreen(n)
+		return true
 	if n["type"] == "event" and not RUN["seenEvents"].is_empty():
-		var id = RUN["seenEvents"].back()
+		var id = n.get("nemEvent", RUN["seenEvents"].back())
 		for e in EVENTS:
 			if e["id"] != id: continue
 			var ev = _event_for_faction(e)
@@ -1870,6 +1877,9 @@ func _resume_node() -> bool:
 					battleScreen(_event_battle_cfg(n, r))
 					return true
 			show_event(ev)
+			return true
+		if jt(n.get("nemCleared")):
+			eventScreen(n)
 			return true
 	return false
 func _ship(uid) -> Variant:
@@ -1915,19 +1925,24 @@ func promoteModal(uid: String, after: Callable) -> void:
 	var s = _ship(uid)
 	if s == null or not jt(s["cap"].get("pending")):
 		after.call(); return
-	if not jt(s["cap"].get("offer")):
-		var pool = PERKS.keys().filter(func(p): return not s["cap"]["perks"].has(p) and (p != "wing" or HULLS[s["tpl"]].get("ab") == "launch"))
-		s["cap"]["offer"] = shuffle(pool).slice(0, 2)
+	_offer_perks(s)
 	promote_after = after
 	var acts = []
 	for p in s["cap"]["offer"]: A(acts, "takePerk", uid + ":" + p)
 	show_modal("promote", {"ship": s}, acts)
+func _offer_perks(s: Dictionary) -> void:
+	if not jt(s["cap"].get("offer")):
+		var pool = PERKS.keys().filter(func(p): return not s["cap"]["perks"].has(p) and (p != "wing" or HULLS[s["tpl"]].get("ab") == "launch"))
+		s["cap"]["offer"] = shuffle(pool).slice(0, 2)
 func _take_perk(sh, perk) -> void:
 	sh["cap"]["perks"].append(perk); sh["cap"]["pending"] = float(sh["cap"]["pending"]) - 1; sh["cap"]["offer"] = null
 func ACT_takePerk(arg: String) -> void:
 	var p = arg.split(":"); var s = _ship(p[0])
-	if s == null: return
+	if s == null or p.size() != 2 or not jt(s["cap"].get("pending")) or not or_(s["cap"].get("offer"), []).has(p[1]): return
 	changeShip(s, _take_perk.bind(p[1]))
+	if RUN.get("reward") != null and RUN["reward"]["stage"] == "promo":
+		promotionsStep()
+		return
 	close_modal()
 	if float(s["cap"]["pending"]) > 0: promoteModal(p[0], promote_after)
 	else: promote_after.call()
@@ -2042,20 +2057,44 @@ func ACT_sellConfirm(uid: String) -> void:
 	var s = RUN["fleet"][i]
 	RUN["inventory"].append_array(s["mods"]); RUN["credits"] = float(RUN["credits"]) + prizeScrap(s["tpl"]); RUN["fleet"].remove_at(i)
 	close_modal(); shipyardScreen(yard_node)
-func drydockScreen(_n) -> void:
-	var lines = []
-	for s in RUN["fleet"]:
-		var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var fix = ceil(miss * 0.6 * repairMult())
-		s["hp"] = float(s["hp"]) + fix
-		if fix != 0: lines.append(str(s["name"]) + ": +" + numstr(fix) + " hull")
+func _repair_stop_options(kind: String) -> Array:
+	var drydock := kind == "drydock"
+	var rate := (0.6 if drydock else 0.2) * repairMult()
+	var options := []
+	for cut in [false, true]:
+		var r: float = rate / 2 if cut else rate
+		var hp := 0.0
+		var gains := []
+		for s in RUN["fleet"]:
+			var mx := float(derive(s)["maxHp"])
+			var miss := maxf(0, mx - float(s["hp"]))
+			var gain := minf(miss, ceilf(miss * r) if drydock else jsround(mx * r))
+			gains.append(gain)
+			hp += gain
+		options.append({"rate": numstr(jsround(r * 10000) / 100.0) + "%", "hp": hp, "gains": gains, "credits": (35 if drydock else 15) if cut else 0})
+	return options
+
+func repairStopScreen(n: Dictionary) -> void:
+	mapScreen()
+	saveRun()
+	var acts := []
+	A(acts, "repairStop", "service"); A(acts, "repairStop", "stipend")
+	show_modal("repair_stop", {"kind": n["type"], "options": _repair_stop_options(n["type"])}, acts)
+
+func ACT_repairStop(choice: String) -> void:
+	if not (choice in ["service", "stipend"]) or modal_d == null or modal_d["kind"] != "repair_stop": return
+	var n = findNode(RUN.get("curNode"))
+	if n == null or jt(n.get("done")) or not (n["type"] in ["drydock", "field"]): return
+	var opt = _repair_stop_options(n["type"])[0 if choice == "service" else 1]
+	for i in range(RUN["fleet"].size()):
+		var s = RUN["fleet"][i]
+		s["hp"] = float(s["hp"]) + opt["gains"][i]
+	RUN["credits"] = float(RUN["credits"]) + opt["credits"]
+	if n["type"] == "field": tel("field_repairs", {})
 	completeNode(); mapScreen()
-	var acts = []; A(acts, "closeModal"); A(acts, "fleetFromModal")
-	show_modal("drydock", {"lines": lines, "rate": pct(0.6 * repairMult())}, acts)
-func fieldRepairs(_n) -> void:
-	for sh in RUN["fleet"]:
-		var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.2 * repairMult()))
-	tel("field_repairs", {})
-	completeNode(); mapScreen(); toast("Field repairs: crews patch damaged hulls for free.")
+	var result := "+" + numstr(opt["hp"]) + " hull across the fleet"
+	if opt["credits"] > 0: result += " and +" + numstr(opt["credits"]) + " credits"
+	toast(result + ".")
 func _ev_fits(e) -> bool: return not (jt(e.get("not")) and e["not"].has(RUN["fac"])) and e["id"] != EVENT_FALLBACK
 # B4: blue options. needMet says whether the fleet meets a requirement; needText says it in plain words (shown on the option either way)
 func needMet(nd) -> bool:
@@ -2118,8 +2157,12 @@ func _event_for_faction(ev: Dictionary) -> Dictionary:
 	var out = ev.duplicate(false)
 	if jt(ev.get("v")) and jt(ev["v"].get(RUN["fac"])): out.merge(ev["v"][RUN["fac"]], true)
 	return out
-func eventScreen(_n) -> void:
-	show_event(_event_for_faction(nextEvent()))
+func eventScreen(n) -> void:
+	var event := nextEvent()
+	if n != null and jt(n.get("nemCleared")):
+		n["nemEvent"] = event["id"]
+		saveRun()
+	show_event(_event_for_faction(event))
 func show_event(ev: Dictionary) -> void:
 	cur_event = ev
 	mapScreen()
@@ -2999,7 +3042,9 @@ func ACT_eventChoice(a: String) -> void:
 		_arc_choice(o, i); return
 	var r = o["r"]
 	if r is Dictionary and jt(r.get("fight")):
-		close_modal(); battleScreen(_event_battle_cfg(findNode(RUN["curNode"]), r)); return
+		var n = findNode(RUN["curNode"])
+		if n != null and jt(n.get("nemCleared")): saveRun()
+		close_modal(); battleScreen(_event_battle_cfg(n, r)); return
 	var lines = applyOutcome(r)
 	completeNode(); mapScreen()
 	var acts = []; A(acts, "closeModal")
@@ -3112,15 +3157,22 @@ func rewardFlow(summary: Dictionary) -> void:
 	W["wrecks"] = wr
 	var prizes = or_(summary.get("prizes"), []).filter(func(p): return p != null and HULLS.has(p.get("tpl")))
 	RUN["reward"] = {"kind": cfg["kind"], "node": cfg.get("node"), "rw": rw, "relics": W["relicChoice"], "wrecks": W["wrecks"], "prizes": prizes,
-		"stage": "prize" if prizes.size() > 0 else ("salvage" if W["wrecks"].size() > 0 else "pick"), "boonOffer": null, "modOffer": null}
+		"stage": "prize" if prizes.size() > 0 else ("salvage" if W["wrecks"].size() > 0 else "victory"), "boonOffer": null, "modOffer": null}
 	var debrief := beat3Debrief()
 	if debrief != "": RUN["beat3DebriefSeen"] = true
-	completeNode()
-	var acts = []
-	if RUN["reward"]["prizes"].size() > 0: A(acts, "prizeStep")
-	elif W["wrecks"].size() > 0: A(acts, "salvageStep")
-	else: A(acts, "rewardNext")
-	show_modal("victory", {"summary": summary, "credits": credits, "extra": extra, "flagMoved": flagMoved, "rw": rw, "beat3Debrief": debrief}, acts)
+	RUN["reward"]["victory"] = {"summary": {"kills": summary["kills"], "rounds": summary["rounds"], "lost": summary["lost"], "xp": summary["xp"],
+		"boonStats": summary.get("boonStats", {}), "treeStats": summary.get("treeStats", {})}, "credits": credits, "extra": extra,
+		"flagName": flagMoved["name"] if flagMoved != null else "", "beat3Debrief": debrief}
+	var confirmed: Array = summary.get("nem", []).filter(func(line): return line.begins_with("Weakness confirmed: "))
+	if summary.has("nemFound"): confirmed.append(summary["nemFound"])
+	if not confirmed.is_empty(): RUN["reward"]["victory"]["weaknessConfirmed"] = confirmed
+	# Bank the win before opening rewards, keeping a Nemesis-held service open until the fleet uses it.
+	if node != null and jt(cfg.get("nemesis")) and _is(node, ["shipyard", "drydock", "field", "event"]):
+		node["nemCleared"] = true
+		saveRun()
+	else: completeNode()
+	if prizes.size() > 0: ACT_prizeStep()
+	else: victoryCard()
 func salvageYield(w: Dictionary) -> Dictionary:
 	var pool = modulePool(); var wk = or_(w.get("wk"), [])
 	var cand = []
@@ -3168,13 +3220,11 @@ func prizePlan(R: Dictionary) -> Array:
 		rows.append({"p": p, "o": o, "room": room, "gate": gate, "cinder": cinder, "rip": rip, "k": k, "mine": jt(s_i) and s_i == k})
 	return rows
 func ACT_prizeStep() -> void:
-	close_modal()
 	var R = RUN.get("reward")
-	if R == null or or_(R.get("prizes"), []).size() == 0:
-		var ws = or_(R.get("wrecks") if R != null else W.get("wrecks"), [])
-		if R != null: R["stage"] = "salvage" if ws.size() > 0 else "pick"
-		if ws.size() > 0: ACT_salvageStep()
-		else: ACT_rewardNext()
+	if R == null: return
+	if or_(R.get("prizes"), []).is_empty():
+		R["stage"] = "victory" if or_(R.get("wrecks"), []).is_empty() else "salvage"
+		victoryCard()
 		return
 	var rows = prizePlan(R)
 	var acts = []
@@ -3192,8 +3242,7 @@ func ACT_prizeSet(a: String) -> void:
 	R["prizeSel"][i] = k; saveRun(); ACT_prizeStep()
 func ACT_prizeConfirm() -> void:
 	var R = RUN.get("reward")
-	if R == null or or_(R.get("prizes"), []).size() == 0:
-		ACT_prizeStep(); return
+	if R == null or R["stage"] != "prize" or or_(R.get("prizes"), []).is_empty(): return
 	var rows = prizePlan(R); var got = []
 	for r in rows:
 		var p = r["p"]; var o = r["o"]
@@ -3208,13 +3257,12 @@ func ACT_prizeConfirm() -> void:
 			RUN["credits"] = float(RUN["credits"]) + float(o["ransom"]); RUN["ransoms"] = float(z0(RUN.get("ransoms"))) + 1; got.append("the " + str(p["name"]) + " is ransomed (+" + numstr(o["ransom"]) + ")")
 		tel("prize_pick", {"k": r["k"], "tpl": p["tpl"], "def": not r["mine"]})
 	R["prizes"] = []; R["prizeSel"] = null
-	R["stage"] = "salvage" if not or_(R.get("wrecks"), []).is_empty() else "pick"
+	R["stage"] = "victory" if or_(R.get("wrecks"), []).is_empty() else "salvage"
 	saveRun()
 	var t = ", ".join(PackedStringArray(got))
 	if t != "": toast(t.substr(0, 1).to_upper() + t.substr(1) + ".")
-	ACT_prizeStep()
-func ACT_salvageStep() -> void:
-	close_modal()
+	victoryCard()
+func victoryCard() -> void:
 	var ws = or_(W.get("wrecks"), [])
 	var acts = []
 	for i in range(ws.size()):
@@ -3222,14 +3270,17 @@ func ACT_salvageStep() -> void:
 		if jt(y.get("mod")): A(acts, "takeSalvage", str(i) + ":mod")
 		A(acts, "takeSalvage", str(i) + ":cred")
 		if jt(y.get("tow")): A(acts, "takeSalvage", str(i) + ":tow")
-	show_modal("salvage", {"wrecks": ws}, acts)
+	if ws.is_empty(): A(acts, "rewardNext")
+	var stored = RUN["reward"].get("victory")
+	var data: Dictionary = stored.duplicate() if stored is Dictionary else {}
+	data.merge({"wrecks": ws, "rw": W["rw"], "kind": RUN["reward"]["kind"]}, true)
+	show_modal("victory", data, acts)
 func ACT_takeSalvage(a: String) -> void:
+	var R = RUN.get("reward")
+	if R == null or R["stage"] != "salvage": return
 	var p = a.split(":"); var i = int(p[0]); var k = p[1] if p.size() > 1 else ""
 	var ws = or_(W.get("wrecks"), []); var w = ws[i] if i >= 0 and i < ws.size() else null
-	if w == null:
-		close_modal()
-		if RUN.get("reward") != null: RUN["reward"]["stage"] = "pick"
-		ACT_rewardNext(); return
+	if w == null or not p[0].is_valid_int() or not (k in ["mod", "cred", "tow"]): return
 	var y = w["yield"]
 	if k == "mod" and jt(y.get("mod")):
 		RUN["inventory"].append(y["mod"]); toast(modName(y["mod"]) + " stripped from the " + str(w["name"]) + " and stowed in the hold.")
@@ -3242,10 +3293,12 @@ func ACT_takeSalvage(a: String) -> void:
 		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast(("" if str(w["name"]).begins_with("The ") else "The ") + str(w["name"]) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	tel("salvage_pick", {"k": k, "cause": w.get("cause")})
 	W["wrecks"] = []
-	if RUN.get("reward") != null:
-		RUN["reward"]["wrecks"] = []; RUN["reward"]["stage"] = "pick"
+	R["wrecks"] = []; R["stage"] = "pick"
 	saveRun(); close_modal(); ACT_rewardNext()
 func ACT_rewardNext() -> void:
+	if RUN.get("reward") != null and RUN["reward"]["stage"] == "victory":
+		RUN["reward"]["stage"] = "pick"
+		saveRun()
 	var rw = or_(W.get("rw"), {}); close_modal()
 	if rw.get("k") == "boon":
 		boonStep(rw.get("p"), z0(rw.get("min"))); return
@@ -3350,12 +3403,19 @@ func ACT_takeRelic(r: String) -> void:
 	if RUN.get("reward") != null: RUN["reward"]["relics"] = []
 	close_modal(); promotionsStep()
 func promotionsStep() -> void:
+	var ships := []
+	var acts := []
+	for s in RUN["fleet"]:
+		if float(z0(s["cap"].get("pending"))) <= 0: continue
+		_offer_perks(s)
+		ships.append(s)
+		for p in s["cap"]["offer"]: A(acts, "takePerk", s["uid"] + ":" + p)
+	if ships.is_empty():
+		afterBattle()
+		return
 	if RUN.get("reward") != null:
 		RUN["reward"]["stage"] = "promo"; RUN["reward"]["relics"] = []; saveRun()
-	for s in RUN["fleet"]:
-		if float(z0(s["cap"].get("pending"))) > 0:
-			promoteModal(s["uid"], Callable(self, "promotionsStep")); return
-	afterBattle()
+	show_modal("promotions", {"ships": ships}, acts)
 func resumeReward() -> bool:
 	var R = RUN.get("reward") if RUN != null else null
 	if R == null: return false
@@ -3367,8 +3427,9 @@ func resumeReward() -> bool:
 	if R["stage"] == "prize":
 		# Old saves kept the prize stage after paying and clearing the prize list.
 		ACT_prizeStep(); return true
-	if R["stage"] == "salvage" and W["wrecks"].size() > 0:
-		ACT_salvageStep(); return true
+	if R["stage"] in ["victory", "salvage"]:
+		if W["wrecks"].is_empty(): R["stage"] = "victory"
+		victoryCard(); return true
 	if R["stage"] == "pick":
 		ACT_rewardNext(); return true
 	if R["stage"] == "relic":
@@ -3377,6 +3438,11 @@ func resumeReward() -> bool:
 func afterBattle() -> void:
 	var cfg = W.get("rewardCfg") if W.get("rewardCfg") != null else {"kind": RUN["reward"].get("kind") if RUN.get("reward") != null else null}
 	RUN["reward"] = null
+	var stop = findNode(RUN.get("curNode")) if RUN.get("curNode") != null else null
+	if stop != null and jt(stop.get("nemCleared")) and not jt(stop.get("done")) and not jt(stop.get("nemEvent")):
+		_open_stop(stop)
+		if stop["type"] == "shipyard": saveRun()
+		return
 	if cfg.get("kind") == "boss":
 		completeNode(false)
 		_advance_sector()

@@ -267,7 +267,7 @@ func _prize_reload() -> void:
 	_check(_salvage_then_reward(d, legacy_credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
 
 func _salvage_then_reward(c, credits: float) -> bool:
-	if c.modal_d == null or c.modal_d["kind"] != "salvage" or c.RUN["credits"] != credits or c.RUN["ransoms"] != 1: return false
+	if c.modal_d == null or c.modal_d["kind"] != "victory" or c.RUN["credits"] != credits or c.RUN["ransoms"] != 1: return false
 	c.act("takeSalvage", "0:cred")
 	return c.modal_d != null and c.modal_d["kind"] in ["boon", "mod", "relic"] and c.RUN["credits"] > credits and c.RUN["ransoms"] == 1
 

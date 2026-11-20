@@ -120,12 +120,93 @@ function Open-JanitorLock($path, $wait) {
     }
   }
 }
+function Get-CommandLines {
+  # Every running process's command line, read once per janitor run. $null means the list could not be read: callers keep.
+  # Command lines stay internal: only a process ID and name ever reach the log, which may be relayed (Artoo, PR 1266).
+  if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) {
+    return ,@($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Name = 'fixture'; Line = $_ } })
+  }
+  try {
+    return ,@(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.CommandLine } |
+      ForEach-Object { [pscustomobject]@{ Id = $_.ProcessId; Name = $_.Name; Line = $_.CommandLine } })
+  }
+  catch { return $null }
+}
+function Assert-NoProcessUses($dir) {
+  if ($null -eq $script:commandLines) { throw 'running processes could not be checked' }
+  # The whole folder name only: opus121 must not match a command line that names opus1211 (R8 dry run).
+  $needle = [regex]::Escape($dir.FullName.TrimEnd('\','/')) + '(?=$|[\\/"''\s])'
+  foreach ($process in $script:commandLines) {
+    if ($process.Line -match $needle) { throw "a running process names this folder (process $($process.Id) $($process.Name))" }
+  }
+}
+# Issue 1180 run 8 (Board, Nov 20): names only our tools create. A runner GUID, run_parity.js mkdtemp (6 characters) and
+# manifest_merge.py mkdtemp (8 characters). Agent-chosen names never match; they go to Ryan as a one-off list.
+$legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
+function Get-RelayReceipts($mirror) {
+  # Objects reachable from the relay branches (board/pc-out-*): a committed receipt, not a loose blob (Artoo, PR 1266).
+  if ($script:relayReceipts) { return $script:relayReceipts }
+  $set = New-Object 'Collections.Generic.HashSet[string]'
+  $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname)','refs/heads/board/pc-out-*'))
+  if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  if ($refs.Count) {
+    foreach ($line in @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--objects','--glob=refs/heads/board/pc-out-*'))) {
+      $null = $set.Add(($line -split ' ', 2)[0])
+    }
+    if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  }
+  $script:relayReceipts = $set
+  return $set
+}
+function Test-RelayedResults($dir, $mirror) {
+  # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
+  # and (2) everything else in it is a checkout Git shows as rebuildable with all history pushed. Anything else keeps the
+  # folder and is listed for the Board.
+  $receipts = Get-RelayReceipts $mirror
+  $whole = $dir.Name -match '^opus[1-9][0-9]*out'
+  $outFiles = @(); $other = @(); $checkouts = @()
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  if ($whole) { $outFiles = @($dir.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+  else {
+    foreach ($item in $dir.EnumerateFileSystemInfos()) {
+      if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @($item.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+      elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
+      else { $other += $item }
+    }
+    while ($pending.Count) {
+      $sub = $pending.Pop()
+      if (Test-Path -LiteralPath (Join-Path $sub.FullName '.git') -PathType Container) { $checkouts += $sub; continue }
+      foreach ($item in $sub.EnumerateFileSystemInfos()) {
+        if ($item -is [IO.DirectoryInfo]) { $pending.Push($item) } else { $other += $item }
+      }
+    }
+  }
+  if (-not $outFiles.Count) { throw 'no out folder to prove the results were relayed' }
+  $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName }))
+  if ($hashes.Count -ne $outFiles.Count) { throw 'result hashes could not be read' }
+  $missing = 0
+  for ($i = 0; $i -lt $outFiles.Count; $i++) {
+    if (-not $receipts.Contains($hashes[$i])) {
+      $missing++
+      Log "helper file not on a relay branch: $($outFiles[$i].FullName) ($($outFiles[$i].Length) bytes)"
+    }
+  }
+  if ($missing) { throw "results not all relayed: $missing of $($outFiles.Count) out files are not on a relay branch" }
+  foreach ($file in ($other | Select-Object -First 20)) { Log "helper file outside out and outside a checkout: $($file.FullName) ($($file.Length) bytes)" }
+  if ($other.Count) { throw "$($other.Count) files outside out are not in a rebuildable checkout" }
+  foreach ($checkout in $checkouts) {
+    try { Assert-NoGitLocalState $checkout.FullName; Assert-NoLiveWorktree $checkout.FullName; $state = Get-RepoCleanupState $checkout.FullName $mirror '' $false $true }
+    catch { throw "checkout $($checkout.FullName) is not rebuildable: $($_.Exception.Message)" }
+    # Superseded ship or gen files are only candidates; this path has no checked archive, so they keep the folder (Artoo).
+    if ($state.Superseded.Count) { throw "checkout $($checkout.FullName) holds $($state.Superseded.Count) ship or gen files that differ from the shared build" }
+  }
+}
 function Assert-HelperScratchInactive($dir) {
   try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
   catch { throw 'helper scratch lock is held or could not be verified' }
   if ($lease) { $lease.Dispose() }
 }
-function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner) {
+function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner, [switch]$legacy, [switch]$helper, $mirror) {
   $size = 'size unavailable'; $issueLock = $null
   try {
     $busy = ''
@@ -134,11 +215,22 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       try { $issueLock = Open-CleanupLock (Issue-LockPath $issue $temp) $dryRun }
       catch { $busy = "issue #$issue lock is held or could not be verified" }
     }
-    $stats = Measure-CleanupDirectory $dir
+    # TEMP scratch (owned or legacy) may hold selftest junctions to shared ships: each is removed as a link, never
+    # followed, so its target does not matter (Board, R8 dry run). Helper folders still keep on any link.
+    $scratchKind = $legacy -or $tempScratch
+    $stats = Measure-CleanupDirectory $dir -AllowLinks:$scratchKind -AllowUnreadable:$scratchKind
     $size = "$($stats.Bytes) bytes"
+    if ($stats.Links.Count) { $size += ", $($stats.Links.Count) links not followed" }
+    if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns left in place" }
+    foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
+    foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
-    if ($tempScratch) {
+    if ($legacy -or $helper) { Assert-NoProcessUses $dir }
+    if ($helper) { Test-RelayedResults $dir $mirror }
+    if ($legacy) {
+      Assert-HelperScratchInactive $dir
+    } elseif ($tempScratch) {
       if (-not $hasOwner -and -not $records) { throw 'name match without owner record' }
       $token = if ($hasOwner) { Read-ScratchOwner $dir.FullName }
       foreach ($run in $records) {
@@ -161,7 +253,18 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($stats.Latest -gt $now.AddHours(-$hours)) { throw "touched in the last $hours hours" }
     if (Cleanup-Paused) { throw 'PC pause is active' }
     if ($dryRun) { $action = 'would remove' }
-    else { Remove-CleanupDirectory $dir; $action = 'removed' }
+    else {
+      if ($stats.Links.Count) {
+        Remove-CleanupLinks $stats.Links
+        # Removing a link updates its parent folder's time, so only files and new links count as a change (CI on 3483c7cf).
+        $after = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
+        if ($after.Links.Count -or $after.FileLatest -gt $now.AddHours(-$hours)) { throw 'folder changed while its links were removed' }
+      }
+      if ($stats.Unreadable.Count) {
+        Remove-CleanupReadable $dir $stats.Unreadable
+        $action = "removed all but $($stats.Unreadable.Count) folders another account owns:"
+      } else { Remove-CleanupDirectory $dir; $action = 'removed' }
+    }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
@@ -223,11 +326,17 @@ try {
   $recordedScratch = Get-RecordedTempScratch $runs $temp
   # Check old runners once, and take each current issue lock again immediately before making its decision.
   $activeLegacy = @(Get-ActiveLegacyIssues $runs)
+  $script:commandLines = Get-CommandLines
   Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
   foreach ($dir in (Get-Item -LiteralPath $temp -Force).EnumerateDirectories()) {
     $records = $recordedScratch[$dir.FullName]
     $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
       (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile))
+    if (-not $hasOwner -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $dir.Name -match $legacyScratch) {
+      # Older scratch from before ownership tokens: our exact tool names, a day untouched, no process naming it.
+      Clear-ScratchFolder $dir $Matches['issue'] 'scratch named by our tools' 24 $temp $now $dryRun $activeLegacy -Legacy
+      continue
+    }
     if (-not $records -and -not $hasOwner -and $dir.Name -notmatch '^(voidsworn|issue|tune2-|stage7-checked-)') { continue }
     $issue = if ($records) { $records[0].Issue } elseif ($hasOwner -and
         $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
@@ -235,7 +344,7 @@ try {
   }
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
     if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
-    Clear-ScratchFolder $dir $Matches[1] 'helper folder' 72 $temp $now $dryRun $activeLegacy
+    Clear-ScratchFolder $dir $Matches[1] 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }
