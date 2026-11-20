@@ -94,6 +94,8 @@ func start(m: Node, o: Dictionary) -> void:
 		ui = Fallback.new()
 	if "hide_on_battle" in ui:
 		ui.hide_on_battle = true
+	if "ai_level" in ui:
+		ui.ai_level = ai_level()   # issue 1336: the map's danger bands follow the setting
 	add_child(ui)
 	ui.bind(C)
 	C.changed.connect(_on_changed)
@@ -129,12 +131,20 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
+# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336
+func ai_level() -> String:
+	if main != null and "settings" in main:
+		return str(main.settings.get("ai", "veteran"))
+	return "veteran"
+
+
 # external battle mode: build the real battle (G1 rules through the API) and give the campaign its B
 func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	api_now = API.new()
 	var e: String = api_now.load_rules()
 	if e != "":
 		errors.append("rules: " + e)
+	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:

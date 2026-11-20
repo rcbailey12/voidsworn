@@ -188,6 +188,12 @@ func _clean_cfg(cfg: Dictionary) -> Dictionary:
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
+# The enemy AI level, "standard" or "veteran" (anything else is Veteran). Set it before new_battle: the enemy fleet is rolled
+# there at this level (battle.js genEnemyFleet reads AI_LEVEL), issue 1336.
+func set_ai_level(level: String) -> void:
+	_enter()
+	R.AI_LEVEL = level if level in ["standard", "veteran"] else "veteran"
+	_leave(false)
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_enter(); halted = ""
 	if R != null: R.not_ported = ""   # a new battle starts clean
