@@ -19,7 +19,9 @@ rem                                   /E (gen\manifest.json must arrive), assets
 rem                                   manifest.json README.md a4_props.gd *.uid /XD test previews; robocopy 8 or more fails,
 rem                                   then fails if any tracked file in OJ_REPO differs from the pin, or if any copied
 rem                                   ship's glb stamp differs from its gen cache (a publish during the copy); the
-rem                                   measured hulls are listed in <OJ_REPO>_ships_identity.txt.
+rem                                   measured hulls are listed in <OJ_REPO>_ships_identity.txt. Every checkout in a job
+rem                                   must list the same hulls as the first one. Optional OJ_NEED_HULLS: codes that
+rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
 rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
@@ -115,8 +117,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" tracked "%OJ_REPO%
 if errorlevel 1 (call "%JW%" fail "tracked files changed by the ships copy in %OJ_REPO%" & exit /b 1)
 rem The two copies are separate passes, so a ship published in between would pair a new glb with an old cache
 rem (Artoo, PR 1324). Every copied ship must match its cache stamp; the measured hulls go to <repo>_ships_identity.txt.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" >> "%OJ_ST%" 2>&1
+rem OJ_NEED_HULLS (optional, codes split by spaces) names the hulls the job's fixtures draw; each must be a matching ship.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "ships do not match their cache in %OJ_REPO%, see %OJ_ST%" & exit /b 1)
+rem Every checkout in one job must measure the same fleet: a publish between two checkouts (OLD and NEW arms) would
+rem give each a self-consistent but different set of hulls (Artoo, PR 1324). The first checkout's identity is the
+rem reference; any later one that differs fails the job.
+if not exist "%OJ_OUT%\ships_identity_first.txt" (copy /y "%OJ_REPO%_ships_identity.txt" "%OJ_OUT%\ships_identity_first.txt" > nul & exit /b 0)
+fc /b "%OJ_OUT%\ships_identity_first.txt" "%OJ_REPO%_ships_identity.txt" > nul 2>&1
+if errorlevel 1 (call "%JW%" fail "the hulls in %OJ_REPO% differ from the first checkout's (a ship was published between them), see %OJ_OUT%\ships_identity_first.txt" & exit /b 1)
+>> "%OJ_ST%" echo ships in %OJ_REPO% are the same fleet as the first checkout
 exit /b 0
 
 rem ------------------------------------------------------------------ tail
