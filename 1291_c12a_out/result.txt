@@ -21,3 +21,24 @@ From https://github.com/rcbailey12/voidsworn
  * [new ref]             refs/pull/1349/merge   -> refs/pull/1349/merge
 local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12a\repo
 commit=e912ab090ec7a4d59634c3cebcf5ff62336578d3
+import exit 0 
+3_trace_hull start  8:57:51.01 
+3_trace_hull exit 0 at  8:59:47.83 
+4_parts_kit start  8:59:47.84 
+4_parts_kit exit 0 at  9:00:46.84 
+5_paint_bake start  9:00:46.84 
+5_paint_bake exit 0 at  9:04:26.90 
+6_lod start  9:04:26.90 
+6_lod exit 0 at  9:05:27.80 
+7_export start  9:05:27.80 
+7_export exit 0 at  9:06:43.47 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12a\repo\godot\assets\ships\B19_11\B19_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026  9:07:16.54 
+all done 
+pin ok e912ab090ec7a4d59634c3cebcf5ff62336578d3 

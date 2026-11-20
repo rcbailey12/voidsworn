@@ -2951,3 +2951,1006 @@ Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 [  51% ] [90m[1mreimport[22m | sting_loss_0.ogg[39m[0m
 [  51% ] [90m[1mreimport[22m | sting_loss_0.ogg[39m[0m
 [  51% ] [90m[1mreimport[22m | shield_break_1.ogg[39m[0m
+[  51% ] [90m[1mreimport[22m | shield_break_1.ogg[39m[0m
+[  51% ] [90m[1mreimport[22m | shield_break_0.ogg[39m[0m
+[  51% ] [90m[1mreimport[22m | shield_break_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | shield_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | salvo_tail_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | puff_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | puff_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | puff_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | puff_0.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_2.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_1.ogg[39m[0m
+[  52% ] [90m[1mreimport[22m | pop_0.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | phase_1.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | phase_0.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | patter_shield_2.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | patter_shield_1.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | patter_shield_0.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | patter_hull_2.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | gunTracer_1.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | gunTracer_0.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | gunSpine_1.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | gunSpine_0.ogg[39m[0m
+[  53% ] [90m[1mreimport[22m | gunGlob_3.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunGlob_2.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunGlob_1.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunGlob_0.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunFlak_2.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunFlak_1.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | gunFlak_0.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | grappleWet_2.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | grappleWet_1.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | grappleWet_0.ogg[39m[0m
+[  54% ] [90m[1mreimport[22m | engineLoop_2.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | engineLoop_1.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | engineLoop_0.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHit_4.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHit_3.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHit_2.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHit_1.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHit_0.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHitBig_1.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHitBig_1.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hullHitBig_0.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hitWet_3.ogg[39m[0m
+[  55% ] [90m[1mreimport[22m | hitWet_2.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitWet_1.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitWet_0.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitGlass_3.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitGlass_2.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitGlass_1.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | hitGlass_0.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | heavyPlate_2.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | heavyPlate_1.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | heavyPlate_0.ogg[39m[0m
+[  56% ] [90m[1mreimport[22m | choirBell_2.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | choirBell_1.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | choirBell_0.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomSmall_3.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomSmall_2.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomSmall_1.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomSmall_0.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomLow_1.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomLow_0.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomCrunch_2.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomCrunch_1.ogg[39m[0m
+[  57% ] [90m[1mreimport[22m | boomCrunch_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | boomBig_2.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | boomBig_1.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | boomBig_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | bassDrop_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | arc_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | ambient_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | enemyTurn_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | debris_1.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | debris_0.ogg[39m[0m
+[  58% ] [90m[1mreimport[22m | deathRun_2.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | deathRun_1.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | deathRun_0.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | darkLance_2.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | darkLance_1.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | darkLance_0.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackSettle_2.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackSettle_1.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackSettle_0.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackGlass_2.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackGlass_1.ogg[39m[0m
+[  59% ] [90m[1mreimport[22m | crackGlass_0.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | cough_2.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | cough_1.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | cough_0.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | railHit_0.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | puff_2.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | puff_1.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | puff_0.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | plasmaShot_2.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | plasmaShot_1.ogg[39m[0m
+[  60% ] [90m[1mreimport[22m | plasmaShot_0.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | plasmaHit_3.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | plasmaHit_2.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | plasmaHit_1.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | plasmaHit_0.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterShield_2.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterShield_1.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterShield_0.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterHull_3.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterHull_2.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterHull_1.ogg[39m[0m
+[  61% ] [90m[1mreimport[22m | patterHull_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | shieldHit_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | shieldBig_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | shellBang_2.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | shellBang_1.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | shellBang_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | scrape_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | salvoBoom_3.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | salvoBoom_2.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | salvoBoom_1.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | salvoBoom_0.ogg[39m[0m
+[  62% ] [90m[1mreimport[22m | reward_0.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railStrike_3.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railStrike_2.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railStrike_1.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railStrike_0.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railHit_3.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railHit_2.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | railHit_1.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | laserLarge_1.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | laserLarge_0.ogg[39m[0m
+[  63% ] [90m[1mreimport[22m | lanceLR_2.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | lanceLR_1.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | lanceLR_0.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionZap_2.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionZap_1.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionZap_0.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionField_2.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionField_1.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionField_0.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | ionCharge_0.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | impactChord_0.ogg[39m[0m
+[  64% ] [90m[1mreimport[22m | hullTick_3.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | hullTick_2.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | hullTick_1.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | hullTick_0.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | hullHit_5.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | hullHit_5.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | needleTick_2.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | needleTick_1.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | needleTick_0.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | needleTick_0.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | launch_0.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | lasSear_2.ogg[39m[0m
+[  65% ] [90m[1mreimport[22m | lasSear_1.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | lasSear_0.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_4.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_4.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_3.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_3.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_2.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_2.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_1.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserSmall_0.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserLR_2.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserLR_1.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserLR_0.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserLarge_4.ogg[39m[0m
+[  66% ] [90m[1mreimport[22m | laserLarge_3.ogg[39m[0m
+[  67% ] [90m[1mreimport[22m | laserLarge_2.ogg[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_eye_patch.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_eye.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_cyber_patch.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_cyber.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_burn_patch.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3_burn.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_3.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_2_eye_patch.webp[39m[0m
+[  67% ] [90m[1mreimport[22m | nem_corsair_2_eye.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_burn.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_burn_patch.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_cyber.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_cyber_patch.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_eye.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_4_eye_patch.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_5.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_5_burn.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_corsair_5_burn_patch.webp[39m[0m
+[  68% ] [90m[1mreimport[22m | nem_chorus_5_carapace.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_5_carapace_patch.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_6.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_6_burn.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_6_burn_patch.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_6_carapace.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_chorus_6_carapace_patch.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_corsair_1.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_corsair_1_burn.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_corsair_1_burn_patch.webp[39m[0m
+[  69% ] [90m[1mreimport[22m | nem_corsair_1_cyber.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_1_cyber_patch.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_1_eye.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_1_eye.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_1_eye_patch.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2_burn.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2_burn_patch.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2_cyber.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_corsair_2_cyber_patch.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_deathless_2_machine_patch.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_deathless_3.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_deathless_3_burn.webp[39m[0m
+[  70% ] [90m[1mreimport[22m | nem_deathless_3_burn.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_3_burn_patch.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_3_machine.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_3_machine_patch.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_4.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_4_burn.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_4_burn_patch.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_4_machine.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_4_machine_patch.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_5.webp[39m[0m
+[  71% ] [90m[1mreimport[22m | nem_deathless_5_burn.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_5_burn_patch.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_5_machine.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_5_machine_patch.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_6.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_6_burn.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_deathless_6_burn_patch.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_corsair_5_cyber.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_corsair_5_cyber_patch.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_corsair_5_eye.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_corsair_5_eye_patch.webp[39m[0m
+[  72% ] [90m[1mreimport[22m | nem_corsair_6.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_burn.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_burn_patch.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_cyber.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_cyber_patch.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_eye.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_corsair_6_eye_patch.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_deathless_1.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_deathless_1_burn.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_deathless_1_burn_patch.webp[39m[0m
+[  73% ] [90m[1mreimport[22m | nem_deathless_1_machine.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | nem_deathless_1_machine_patch.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | nem_deathless_2.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | nem_deathless_2_burn.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | nem_deathless_2_burn_patch.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | nem_deathless_2_machine.webp[39m[0m
+[  74% ] [90m[1mreimport[22m | razormaw.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | reyes.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | sable.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | sekhmar.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | thale.svg[39m[0m
+[  74% ] [90m[1mreimport[22m | thorne.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | vaelen.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | vesh.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | vex.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | voice.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | vorn.svg[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_1.webp[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_1_burn.webp[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_1_burn_patch.webp[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_1_carapace.webp[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_1_carapace_patch.webp[39m[0m
+[  75% ] [90m[1mreimport[22m | nem_chorus_2.webp[39m[0m
+[  76% ] [90m[1mreimport[22m | nem_chorus_2_burn.webp[39m[0m
+[  76% ] [90m[1mreimport[22m | nem_chorus_2_burn_patch.webp[39m[0m
+[  76% ] [90m[1mreimport[22m | aelith.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | anuket.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | ashgrove.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | faction_chorus.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | faction_corsair.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | faction_deathless.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | faction_hegemony.svg[39m[0m
+[  76% ] [90m[1mreimport[22m | faction_ithar.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | faction_voidsworn.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | grax.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | kassar.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | khepra.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | malek.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | maren.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | matriarch.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | mending.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | mirelle.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | mott.svg[39m[0m
+[  77% ] [90m[1mreimport[22m | nekhet.svg[39m[0m
+[  78% ] [90m[1mreimport[22m | S2_23.png[39m[0m
+[  78% ] [90m[1mreimport[22m | S2_23.png[39m[0m
+[  78% ] [90m[1mreimport[22m | S1_51.png[39m[0m
+[  78% ] [90m[1mreimport[22m | S1_51.png[39m[0m
+[  78% ] [90m[1mreimport[22m | O3_11.png[39m[0m
+[  78% ] [90m[1mreimport[22m | O3_11.png[39m[0m
+[  78% ] [90m[1mreimport[22m | O2_37.png[39m[0m
+[  78% ] [90m[1mreimport[22m | O2_37.png[39m[0m
+[  78% ] [90m[1mreimport[22m | O1_37.png[39m[0m
+[  78% ] [90m[1mreimport[22m | I16_11.png[39m[0m
+[  78% ] [90m[1mreimport[22m | I15_11.png[39m[0m
+[  78% ] [90m[1mreimport[22m | I14_23.png[39m[0m
+[  78% ] [90m[1mreimport[22m | I11_37.png[39m[0m
+[  78% ] [90m[1mreimport[22m | I8_37.png[39m[0m
+[  79% ] [90m[1mreimport[22m | H10_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | H9_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | H8_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | H7_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | H4_11.png[39m[0m
+[  79% ] [90m[1mreimport[22m | D22_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | D21_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | D20_23.png[39m[0m
+[  79% ] [90m[1mreimport[22m | nem_chorus_5_burn_patch.webp[39m[0m
+[  79% ] [90m[1mreimport[22m | nem_chorus_2_carapace.webp[39m[0m
+[  79% ] [90m[1mreimport[22m | nem_chorus_2_carapace_patch.webp[39m[0m
+[  79% ] [90m[1mreimport[22m | nem_chorus_2_carapace_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_burn.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_burn.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_burn_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_burn_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_carapace.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_carapace.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_carapace_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_3_carapace_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_burn.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_burn.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_burn_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_burn_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_carapace.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_carapace.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_carapace_patch.webp[39m[0m
+[  80% ] [90m[1mreimport[22m | nem_chorus_4_carapace_patch.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_chorus_5.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_chorus_5.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_chorus_5_burn.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_chorus_5_burn.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | V18_51.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V18_51.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V17_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V17_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V16_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V16_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V15_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V15_37.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V14_23.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V14_23.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V1b_r_23.png[39m[0m
+[  81% ] [90m[1mreimport[22m | V1b_r_23.png[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_voidsworn_5_burn_patch.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_voidsworn_5_burn_patch.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_voidsworn_5_eye.webp[39m[0m
+[  81% ] [90m[1mreimport[22m | nem_voidsworn_5_eye_patch.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | nem_voidsworn_6.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | nem_voidsworn_6_burn.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | nem_voidsworn_6_burn_patch.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | nem_voidsworn_6_eye.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | nem_voidsworn_6_eye_patch.webp[39m[0m
+[  82% ] [90m[1mreimport[22m | scar_burn.png[39m[0m
+[  82% ] [90m[1mreimport[22m | scar_carapace.png[39m[0m
+[  82% ] [90m[1mreimport[22m | scar_cyber.png[39m[0m
+[  82% ] [90m[1mreimport[22m | scar_eye.png[39m[0m
+[  82% ] [90m[1mreimport[22m | scar_machine.png[39m[0m
+[  83% ] [90m[1mreimport[22m | scar_porcelain.png[39m[0m
+[  83% ] [90m[1mreimport[22m | frame_chorus.png[39m[0m
+[  83% ] [90m[1mreimport[22m | frame_corsair.png[39m[0m
+[  83% ] [90m[1mreimport[22m | frame_deathless.png[39m[0m
+[  83% ] [90m[1mreimport[22m | frame_hegemony.png[39m[0m
+[  83% ] [90m[1mreimport[22m | frame_ithar.png[39m[0m
+[  83% ] [90m[1mreimport[22m | nem_voidsworn_1_eye.webp[39m[0m
+[  83% ] [90m[1mreimport[22m | nem_voidsworn_1_eye_patch.webp[39m[0m
+[  83% ] [90m[1mreimport[22m | nem_voidsworn_2.webp[39m[0m
+[  83% ] [90m[1mreimport[22m | nem_voidsworn_2_burn.webp[39m[0m
+[  83% ] [90m[1mreimport[22m | nem_voidsworn_2_burn_patch.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_2_eye.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_2_eye_patch.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_3.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_3_burn.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_3_burn_patch.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_3_eye.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_3_eye_patch.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_4.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_4_burn.webp[39m[0m
+[  84% ] [90m[1mreimport[22m | nem_voidsworn_4_burn_patch.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nem_voidsworn_4_eye.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nem_voidsworn_4_eye_patch.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nem_voidsworn_5.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nem_voidsworn_5_burn.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_voidsworn.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_ithar.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_hegemony.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_deathless.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_deathless.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_corsair.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_corsair.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_chorus.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | nemesis_chorus.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | ithar_portraits.webp[39m[0m
+[  85% ] [90m[1mreimport[22m | ithar_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | hegemony_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | hegemony_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | deathless_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | deathless_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | crests_all.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | crests_all.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | corsair_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | corsair_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | chorus_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | chorus_portraits.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vex.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vex.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vesh.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vesh.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vaelen.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | vaelen.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | thorne.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | thorne.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | sable.webp[39m[0m
+[  86% ] [90m[1mreimport[22m | sable.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | nekhet.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | mott.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | frame_voidsworn.png[39m[0m
+[  87% ] [90m[1mreimport[22m | frame_voidsworn.png[39m[0m
+[  87% ] [90m[1mreimport[22m | aelith.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | grax.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | kassar.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | kassar.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | matriarch.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | matriarch.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | mending.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | mending.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | mirelle.webp[39m[0m
+[  87% ] [90m[1mreimport[22m | D9_23.png[39m[0m
+[  87% ] [90m[1mreimport[22m | C19_51.png[39m[0m
+[  88% ] [90m[1mreimport[22m | C16s_23.png[39m[0m
+[  88% ] [90m[1mreimport[22m | C15s_23.png[39m[0m
+[  88% ] [90m[1mreimport[22m | C14s_23.png[39m[0m
+[  88% ] [90m[1mreimport[22m | C13s_23.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B23_51.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B22_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B22_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B21_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B20_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B19_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B19_11.png[39m[0m
+[  88% ] [90m[1mreimport[22m | B16_23.png[39m[0m
+[  88% ] [90m[1mreimport[22m | voidsworn_portraits.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_3_cyber.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_3_cyber.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_3_cyber_patch.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_3_eye.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_3_eye_patch.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4_burn.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4_burn_patch.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4_cyber.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4_cyber_patch.webp[39m[0m
+[  89% ] [90m[1mreimport[22m | nem_hegemony_4_eye.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_4_eye_patch.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_burn.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_burn_patch.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_cyber.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_cyber_patch.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_eye.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_5_eye_patch.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_hegemony_6.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_deathless_6_machine.webp[39m[0m
+[  90% ] [90m[1mreimport[22m | nem_deathless_6_machine_patch.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_burn.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_burn_patch.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_cyber.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_cyber_patch.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_eye.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_eye.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_1_eye_patch.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_2.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_2_burn.webp[39m[0m
+[  91% ] [90m[1mreimport[22m | nem_hegemony_2_burn_patch.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_2_cyber.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_2_cyber_patch.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_2_eye.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_2_eye_patch.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_3.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_3_burn.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_hegemony_3_burn_patch.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_ithar_3_porcelain_patch.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_ithar_4.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_ithar_4_burn.webp[39m[0m
+[  92% ] [90m[1mreimport[22m | nem_ithar_4_burn_patch.webp[39m[0m
+[  93% ] [90m[1mreimport[22m | nem_ithar_4_porcelain.webp[39m[0m
+[  93% ] [90m[1mreimport[22m | nem_ithar_4_porcelain_patch.webp[39m[0m
+[  93% ] [90m[1mreimport[22m | nem_ithar_5.webp[39m[0m
+[  93% ] [90m[1mreimport[22m | shard_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | shard_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | shard_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | scan_07_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | scan_07.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | scan_06_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | scan_06.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_05_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_05.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_04_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_04.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_03_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_03.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | scan_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  94% ] [90m[1mreimport[22m | weapon_sponson.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | truss.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | hull_section.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | hull_fragment.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | engine_bell.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | broken_frame.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | slab_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | slab_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | slab_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | slab_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | slab_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | slab_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | shard_03_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | shard_03.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | shard_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | shard_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | shard_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | frag_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | frag_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | frag_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | frag_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | frag_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | frag_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | crystal_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | crystal_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | crystal_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_03_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_03.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | binary_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | binary_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | binary_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | scan_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | scan_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_04_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_04.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_03_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_03.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_02_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_02.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | rubble_01_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | rubble_01.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | rubble_00_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | rubble_00.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_05_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_05.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_04_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_04.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_03_lo.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | frag_03.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  99% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (1053 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-6d3abc1f05964a9497591f8e3e72e457\godot-profile-c7cfade48ee14788bf0ff17ac7eef720
