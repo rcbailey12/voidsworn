@@ -1,0 +1,77 @@
+@echo off
+rem Issue 1079: the nebula wake prototype's clip and cost (Opus worker; R334, the Board queues it).
+rem Writes only under Downloads\voidsworn_test\opus1079\. Never deletes anything. Every step logs to out\result.txt.
+rem 1. Clone branch opus/issue-1079 fresh into opus1079\run<N>\repo (first free N).
+rem 2. Copy in the installed ship files, the built hull cache (gen) and the import cache from build\godot (copy only).
+rem 3. Godot import of the clone.
+rem 4. Clip: the dense-storm fixture, a frigate and a capital fly through the nebula, wake off then on, 1280x720, 30 fps,
+rem    at the battle camera (c170) and closer (c120). Frames only; the cloud assembles and checks the video.
+rem    Stills: one frozen moment at max and low, wake on and off (the only difference between the pair).
+rem 5. Cost, GPU solo (R293): the same fixture, wake off/on, max and low, 1080p and 4K, 3 sessions; then scene 207
+rem    (bench\scene_gate.tscn) modes base, wake_idle, wake_full, 3 sessions.
+setlocal
+set "VT=%USERPROFILE%\Downloads\voidsworn_test"
+set "W=%VT%\opus1079"
+set "R=%W%\repo"
+set "O=%W%\out"
+set "B=%VT%\build\godot"
+set "G="
+if exist "%VT%\godot_path.txt" set /p G=<"%VT%\godot_path.txt"
+if not defined G set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
+if not exist "%O%" mkdir "%O%"
+set "RES=%O%\result.txt"
+echo start %date% %time% >> "%RES%"
+if not exist "%G%" (set "FAILMSG=no Godot at %G%" & goto fail)
+rem Artoo on PR 1181: never reset a reused clone. Each run clones fresh into the first free run folder; nothing is removed.
+set "N=1"
+:findrun
+if exist "%W%\run%N%" (set /a N+=1 & goto findrun)
+set "R=%W%\run%N%\repo"
+echo run folder %W%\run%N% >> "%RES%"
+git clone --depth 1 --branch opus/issue-1079 https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=git clone failed; see out\git_log.txt" & goto fail)
+:cloned
+for /f %%H in ('git -C "%R%" log -1 --format^=%%H') do set "HASH=%%H"
+echo commit %HASH% >> "%RES%"
+set "TMO=%VT%\build\tools\pc\tmo.bat"
+if not exist "%TMO%" set "TMO=%R%\tools\pc\tmo.bat"
+robocopy "%B%\assets\ships" "%R%\godot\assets\ships" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NP /NDL /NFL /R:1 /W:1 > "%O%\copy_ships.txt" 2>&1
+if errorlevel 8 (set "FAILMSG=ship copy failed; see out\copy_ships.txt" & goto fail)
+robocopy "%B%\gen" "%R%\godot\gen" /E /NP /NDL /NFL /R:1 /W:1 > "%O%\copy_gen.txt" 2>&1
+if errorlevel 8 (set "FAILMSG=gen copy failed; see out\copy_gen.txt" & goto fail)
+robocopy "%B%\.godot" "%R%\godot\.godot" /E /NP /NDL /NFL /R:1 /W:1 > "%O%\copy_import.txt" 2>&1
+if errorlevel 8 (set "FAILMSG=import cache copy failed; see out\copy_import.txt" & goto fail)
+if not exist "%R%\godot\gen\v3.txt" (set "FAILMSG=build\godot\gen has no v3.txt; the hull cache is not built" & goto fail)
+echo copied ships, gen and import cache from build\godot %time% >> "%RES%"
+call "%TMO%" 2400 "%G%" --headless --path "%R%\godot" --import > "%O%\import_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=Godot import failed; see out\import_log.txt" & goto fail)
+echo import ok %time% >> "%RES%"
+set "PC_GPU_ISSUE=1079"
+set "PC_GPU_MODE=shared"
+call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- "%O%\clip" shots max 1280 720 170 > "%O%\clip_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=clip capture c170 failed; see out\clip_log.txt" & goto fail)
+if not exist "%O%\clip\max_c170_on\f0329.jpg" (set "FAILMSG=clip c170 is missing frames" & goto fail)
+call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- "%O%\clip" shots max 1280 720 120 > "%O%\clip120_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=clip capture c120 failed; see out\clip120_log.txt" & goto fail)
+echo clip frames ok (c170 and c120) %time% >> "%RES%"
+for %%T in (max low) do (
+  call "%TMO%" 1800 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --script res://world/nebula_wake_capture.gd -- "%O%\still" still %%T 1280 720 > "%O%\still_%%T_log.txt" 2>&1
+  if errorlevel 1 (set "FAILMSG=still %%T failed; see out\still_%%T_log.txt" & goto fail)
+)
+echo stills ok %time% >> "%RES%"
+set "PC_GPU_MODE=solo"
+nvidia-smi --query-gpu=name,driver_version,utilization.gpu,clocks.gr,clocks.mem,temperature.gpu,power.draw,pstate,memory.used --format=csv > "%O%\gpu.csv" 2>&1
+call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --script res://world/nebula_wake_capture.gd -- "%O%\timing" timing > "%O%\timing_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=storm fixture timing failed; see out\timing_log.txt" & goto fail)
+echo storm fixture timing ok %time% >> "%RES%"
+call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\gate" --sessions 3 --warmup 180 --frames 720 --modes base,wake_idle,wake_full > "%O%\gate_log.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=scene 207 gate failed; see out\gate_log.txt" & goto fail)
+if not exist "%O%\gate\scene_gate.json" (set "FAILMSG=scene 207 gate wrote no scene_gate.json" & goto fail)
+echo scene 207 gate ok %time% >> "%RES%"
+nvidia-smi --query-gpu=name,driver_version,utilization.gpu,clocks.gr,clocks.mem,temperature.gpu,power.draw,pstate,memory.used --format=csv,noheader >> "%O%\gpu.csv" 2>&1
+echo all done >> "%RES%"
+exit /b 0
+:fail
+echo FAILED: %FAILMSG% >> "%RES%"
+echo all done >> "%RES%"
+exit /b 1
