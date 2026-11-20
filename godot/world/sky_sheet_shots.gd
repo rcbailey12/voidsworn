@@ -163,6 +163,12 @@ func _run() -> void:
 	for v in b.views.values(): ship_focus += v.position
 	ship_focus /= maxf(1.0, float(b.views.size()))
 	var shots := [[170.0, focus.lerp(ship_focus, 0.3)], [26.0, pn.lerp(ps, 0.35)]]
+	if "--ship-close" in argv:
+		# issue 1270: the close view is on a player hull (light on the hull), not on the gas
+		for v in b.views.values():
+			if str(v.u.get("side", "")) == "player":
+				shots = [[170.0, ship_focus], [26.0, v.position]]
+				break
 	if OS.get_environment("VS_SHEET_OVERVIEW") == "1": shots.append([420.0, b.world._center])
 	for shot in shots:
 		b.cam.r = shot[0]
