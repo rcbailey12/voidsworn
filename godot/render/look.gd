@@ -46,6 +46,7 @@ const FLOOK := preload("res://fx/faction_look.gd")
 #   rim       Godot's material rim and rim tint (it scales with the albedo, so it only helps the mid and pale hulls)
 #   emit      multiplies the hull's own baked glow (the glTF emissive strength, 4.0 on every A4 hull)
 #   metal     multiplies the metallic map; spec is Godot's specular (0.5 is the default)
+#   rim_light 0 keeps the faction's hulls off the rim light pair below (issue 1315, Glasswrights; leave it out for 1)
 # Damaged hulls keep all of these: fx/fx_hull.gd _exterior copies albedo, rim, metallic, specular and emission energy.
 # The dark factions (Sunward black iron, Hullbreaker rust, Eclipse violet-black) sit near the band's low end and the pale
 # ones (Hegemony, Glasswrights) below its top, so each keeps its own value and colour; the rim light gives the dark ones
@@ -57,7 +58,7 @@ const READ := {
 	"hegemony": {"lift": 0.4, "rim": 0.08, "rim_tint": 0.2, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"corsair": {"lift": 1.25, "rim": 0.15, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"chorus": {"lift": 1.9, "rim": 0.45, "rim_tint": 0.55, "emit": 1.0, "metal": 1.0, "spec": 0.5},
-	"ithar": {"lift": 0.4, "rim": 0.1, "rim_tint": 0.25, "emit": 0.15, "metal": 0.4, "spec": 0.3},
+	"ithar": {"lift": 0.4, "rim": 0.1, "rim_tint": 0.25, "emit": 0.15, "metal": 0.4, "spec": 0.3, "rim_light": 0.0},
 	"deathless": {"lift": 2.2, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
 }
 # The rim light (render/look_rim.gd): energy is its diffuse strength, spec multiplies its specular on top (Light3D
@@ -218,6 +219,11 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 	var ex = m.get_meta("extras", {})
 	if ex is Dictionary and (ex as Dictionary).has("rim_soft"):
 		m.set_meta("look_rim_soft", true)
+	# issue 1315: READ rim_light 0 keeps a faction's hulls off both rim lights (render/look_rim.gd). The Glasswright pearl is pale
+	# and near mirror: the rim's specular 8 flared white on its lips and glow spread it over the stern (PC probe 4: 1290 white
+	# stern pixels with the rim, 118 without, 655 with the soft rim). Pale hulls read on black without it.
+	if float(read_of(faction).get("rim_light", 1.0)) <= 0.0:
+		m.set_meta("look_rim_none", true)
 	if ex is Dictionary and (ex as Dictionary).get("authored_look", 0) == 1:
 		m.rim_enabled = true
 		m.rim = float(ex.get("rim", 0.08))

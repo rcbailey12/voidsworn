@@ -74,6 +74,8 @@ func _mark(n) -> void:
 	if g.layers & (LOOK.RIM_LAYER | LOOK.RIM_SOFT_LAYER):
 		return
 	if _is_hull(g):
+		if _has_mark(g, "look_rim_none"):   # issue 1315: a faction with READ rim_light 0 (the Glasswrights) takes no rim light
+			return
 		if _is_soft(g):      # issue 601: a stack-painted hull joins the soft rim light's layer instead
 			g.layers |= LOOK.RIM_SOFT_LAYER
 			var sl = get_parent().get_node_or_null("LookRimSoft") if get_parent() else null
@@ -114,6 +116,29 @@ static func _is_soft(g: GeometryInstance3D) -> bool:
 		return false
 	for i in mi.get_surface_override_material_count():
 		if _soft_mat(mi.get_surface_override_material(i)):
+			return true
+	return false
+
+
+static func _mark_mat(m: Material, key: String) -> bool:
+	if m == null:
+		return false
+	if m.has_meta(key):
+		return true
+	if m.has_meta("fx_hull_source"):
+		var src = m.get_meta("fx_hull_source")
+		return src is Material and (src as Material).has_meta(key)
+	return false
+
+
+static func _has_mark(g: GeometryInstance3D, key: String) -> bool:
+	if _mark_mat(g.material_override, key):
+		return true
+	var mi := g as MeshInstance3D
+	if mi == null or mi.mesh == null:
+		return false
+	for i in mi.get_surface_override_material_count():
+		if _mark_mat(mi.get_surface_override_material(i), key):
 			return true
 	return false
 
