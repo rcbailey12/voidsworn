@@ -1,0 +1,583 @@
+{
+ "code": "voidsworn_S9",
+ "sheet_version": 1,
+ "routes_note": "kit = the Voidsworn parts kit (tools/blender/kits/voidsworn/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "A1",
+   "kind": "gun",
+   "what": "sear repeater, three-barrel rotary casemate (fixed forward)",
+   "count": 3,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bow_gun"
+   ],
+   "turret": false
+  },
+  {
+   "id": "U1p",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U2p",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U3p",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U4p",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U1s",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U2s",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U3s",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "U4s",
+   "kind": "vent",
+   "what": "band louvre 0.15 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "band_louvres"
+   ]
+  },
+  {
+   "id": "F1",
+   "kind": "gun",
+   "what": "spark flak, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "flak"
+   ],
+   "turret": true,
+   "pivot_object": "F1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "F2",
+   "kind": "gun",
+   "what": "spark flak, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "flak"
+   ],
+   "turret": true,
+   "pivot_object": "F2_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "W1",
+   "kind": "slit",
+   "what": "vision slit 0.05 x 0.02",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bridge_slits"
+   ]
+  },
+  {
+   "id": "W2",
+   "kind": "slit",
+   "what": "vision slit 0.05 x 0.02",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bridge_slits"
+   ]
+  },
+  {
+   "id": "W3",
+   "kind": "slit",
+   "what": "vision slit 0.05 x 0.02",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bridge_slits"
+   ]
+  },
+  {
+   "id": "R1",
+   "kind": "radiator",
+   "what": "radiator spire, 0.47 tall, profile raked",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spires"
+   ]
+  },
+  {
+   "id": "R2",
+   "kind": "radiator",
+   "what": "radiator spire, 0.65 tall, profile stepped",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spires"
+   ]
+  },
+  {
+   "id": "R3",
+   "kind": "radiator",
+   "what": "radiator spire, 0.52 tall, profile blade",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spires"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.6 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.6 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "louvre panel 0.24 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2p",
+   "kind": "vent",
+   "what": "louvre panel 0.24 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "L1p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L2p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L3p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L4p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L5p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "louvre panel 0.24 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2s",
+   "kind": "vent",
+   "what": "louvre panel 0.24 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "L1s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L2s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L3s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L4s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L5s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "H1",
+   "kind": "hatch",
+   "what": "round hatch 0.1",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H2",
+   "kind": "hatch",
+   "what": "round hatch 0.1",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H3",
+   "kind": "hatch",
+   "what": "round hatch 0.11",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H4",
+   "kind": "hatch",
+   "what": "round hatch 0.11",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "hatches"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the blade",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bow ridge",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bow cheek plates, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bow cheek plates, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Band upper lip, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Band lower lip, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Band upper lip, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Band lower lip, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flak tub, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flak tub, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Spine block (the spire line's base)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Radiator spire R1 (raked, 0.47 tall)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Radiator spire R2 (stepped, 0.65 tall)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Radiator spire R3 (blade, 0.52 tall)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Belly armour step",
+   "route": "hand-built"
+  },
+  {
+   "name": "Dorsal power trunk",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 24.8 percent",
+   "bounded_by": [
+    "B-4"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1, upper half",
+   "stations": "24.8 to 56.2 percent",
+   "bounded_by": [
+    "B-4",
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1, lower half",
+   "stations": "24.8 to 56.2 percent",
+   "bounded_by": [
+    "B-4",
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece, upper half",
+   "stations": "56.2 to 100.0 percent",
+   "bounded_by": [
+    "B-1",
+    "B-3"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece, lower half",
+   "stations": "56.2 to 100.0 percent",
+   "bounded_by": [
+    "B-1",
+    "B-3"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}
