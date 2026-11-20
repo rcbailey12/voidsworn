@@ -1,0 +1,4 @@
+[armadillo] 13 bands, 46 runs, 2 steps clamped
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_CS1BA2\CS1BA2.npz (37166, 3, 3) objects 46
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-6bdeeb26c5894ec68718b142acb1d935

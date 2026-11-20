@@ -1,0 +1,80 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1e716de3f8804d8888c9e959e5a9f15f\godot-profile-f729151105aa464fb6cc89e3dc6a9cd7
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: GLB extras reached hull reader
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:84)
+ERROR: every authored seam survived (0 of 0)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:93)
+ERROR: piece count follows authored structure, not the legacy cruiser count (2)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:98)
+ERROR: the fracture plan has a seam break to move (1 breaks, 0 seams)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:104)
+ERROR: authored seams stay aligned when ShipView bobs the mesh
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:115)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: authored cut bypasses full fallback caps
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:122)
+ERROR: cut contains real interior triangles
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:128)
+ERROR: breach reader recognises authored rooms
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/authored_interiors_check.gd:20)
+       [1] _run (res://fx/test/authored_interiors_check.gd:141)
+AUTHORED_INTERIORS failures=15 interior_triangles=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1e716de3f8804d8888c9e959e5a9f15f\godot-profile-f729151105aa464fb6cc89e3dc6a9cd7

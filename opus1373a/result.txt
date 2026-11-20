@@ -1,0 +1,29 @@
+start chorus_CS1BA2 chorus_CS1BA2 opus/issue-1373 Fri 11/20/2026 12:52:30.84 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373a\repo
+commit=3d7f5499430cb08fec49524c278592b23d8fb033
+import exit 0 
+1_concept_in start 12:56:57.99 
+1_concept_in exit 0 at 12:57:01.93 
+2_shape_ref start 12:57:01.93 
+2_shape_ref exit 0 at 13:00:08.58 
+3_trace_hull start 13:00:08.59 
+3_trace_hull exit 0 at 13:01:17.15 
+4_parts_kit start 13:01:17.16 
+4_parts_kit exit 0 at 13:01:37.30 
+5_paint_bake start 13:01:37.30 
+5_paint_bake exit 0 at 13:05:05.27 
+6_lod start 13:05:05.27 
+6_lod exit 0 at 13:05:54.63 
+7_export start 13:05:54.63 
+7_export exit 0 at 13:06:28.40 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373a\repo\godot\assets\ships\chorus_CS1BA2\chorus_CS1BA2.glb 
+gpu readback exit 0 
+authored interiors exit 1 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: interiors death_seam Fri 11/20/2026 13:06:41.90 
+all done 
+pin ok 3d7f5499430cb08fec49524c278592b23d8fb033 

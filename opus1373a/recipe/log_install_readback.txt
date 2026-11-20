@@ -1,0 +1,5 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-104b88c84ebe48b497fe7e8b50d655b8\godot-profile-a8680b2a5bf74ac9b1804a81c6d6663f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+INSTALL READBACK PASS code=chorus_CS1BA2 nodes=7
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-104b88c84ebe48b497fe7e8b50d655b8\godot-profile-a8680b2a5bf74ac9b1804a81c6d6663f

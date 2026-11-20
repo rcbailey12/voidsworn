@@ -1,0 +1,35 @@
+{
+ "cell": "CS1BA2",
+ "hull_objects": 12,
+ "parts": 34,
+ "interiors": 5,
+ "seconds": 0.5,
+ "notes": [
+  {
+   "route": "build sheet chorus_CS1BA2",
+   "contract": {
+    "sheet": "chorus_CS1BA2",
+    "game_ship": "spore",
+    "variant": "",
+    "model_length": 1.6001,
+    "scale": 0.6249592712615004,
+    "length_world": 1.6,
+    "t_lines": [
+     -0.37498
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 2,
+    "guns": 2,
+    "engines": 4,
+    "bays": 0,
+    "points": 1,
+    "turrets": [],
+    "interior_objects": 5,
+    "slots": [
+     "0 sporeb T"
+    ]
+   }
+  }
+ ]
+}

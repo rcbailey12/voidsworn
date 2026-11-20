@@ -1,0 +1,1 @@
+[battle] CS1BA2 {"game": {"bow": 46.6, "midship": 69.9, "stern": 56.5, "whole": 60.0}, "studio": {"bow": 38.7, "midship": 81.0, "stern": 84.5, "whole": 74.0}}
