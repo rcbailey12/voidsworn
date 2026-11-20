@@ -808,6 +808,10 @@ of it.** Why: avoid a known film creature; the species is not made of glass (R66
 11.5 **The "Playtest: everything unlocked" switch stays on, with renown progression intact underneath, until Ryan says
 progression is ready to test.** Why: he tests the whole game, not the unlock path (R69). Set: Ryan (R69). Id: progression-01.
 
+11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
+Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
+20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
+
 ## 12. Automatic checks
 
 12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
