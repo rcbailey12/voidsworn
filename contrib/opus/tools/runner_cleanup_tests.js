@@ -242,6 +242,17 @@ try {
   const shipSupersededTwin = shipCopy('ship-superseded-twin', 'godot/assets/ships/T1_11/T1_11.glb', 26, 10, undefined, 'ship-superseded copy bake');
   const genSuperseded = shipCopy('gen-superseded', 'godot/gen/manifest.json', 26, 10, 'godot/gen/');
   const shipNewer = shipCopy('ship-newer', 'godot/assets/ships/T2_11/T2_11.glb', 26, 40);
+  // Run 8: a worktree whose folder is gone is prunable and shares nothing; a live one keeps the checkout.
+  const worktreeCopy = (name, keepLive) => {
+    const dir = makeCopy(`repo-kept-${name}`, 2, laneB);
+    const extra = path.join(root, `${name}-extra`);
+    git(['-C', dir, 'worktree', 'add', '-q', '--detach', extra]);
+    if (!keepLive) fs.rmSync(extra, { recursive: true, force: true });
+    dateTree(dir, 26);
+    return dir;
+  };
+  const worktreeStale = worktreeCopy('worktree-stale', false);
+  const worktreeLive = worktreeCopy('worktree-live', true);
   // Run 8: a damage glb with no build twin, while the build holds the same ship code installed later.
   const shipNoTwin = shipCopy('ship-no-twin', 'godot/assets/ships/T5_11/T5_11_damage.glb', 26, null);
   write(path.join(pc, 'build', 'godot/assets/ships/T5_11/T5_11.glb'), 'T5_11 reinstalled');
@@ -410,9 +421,9 @@ try {
         PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"`, ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
+  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, oldStage7, workClean, ...recover];
-  const preserve = [helperUnrelayed, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [worktreeLive, helperUnrelayed, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -450,6 +461,7 @@ try {
   // it is archived and read back before its checkout goes.
   assert.match(decision(dry, shipSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files, \d+ bytes/);
   assert.match(decision(dry, genSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
+  assert.match(decision(dry, worktreeLive, 'retained'), /checkout may be shared with another worktree: /);
   assert.match(decision(dry, shipNoTwin, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
   assert.match(dry, /superseded by the shared build: godot\/assets\/ships\/T5_11\/T5_11_damage\.glb \(copy .*; no build twin; ship T5_11 installed /);
   assert.match(decision(dry, shipNewer, 'retained'), /shared ship copy could not be verified/);

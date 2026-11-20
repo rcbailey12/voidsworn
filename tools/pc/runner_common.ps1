@@ -565,8 +565,16 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
     # Removal may accept ship and gen files the shared build has superseded; reuse never does.
     $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot) $true
     if (Test-Path -LiteralPath (Join-Path $gitDir 'worktrees')) {
-      $worktrees = @(Read-CleanupGit @('-C',$candidate,'worktree','list','--porcelain') | Where-Object { $_ -like 'worktree *' })
-      if ($gitExit -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
+      $lines = @(Read-CleanupGit @('-C',$candidate,'worktree','list','--porcelain'))
+      if ($gitExit -ne 0) { throw 'checkout may be shared with another worktree' }
+      # A worktree whose folder is gone is listed as prunable; it shares nothing (issue 1180 run 8). Count the live ones.
+      $live = @(); $current = $null
+      foreach ($line in ($lines + '')) {
+        if ($line -like 'worktree *') { $current = @{ Path = $line.Substring(9); Prunable = $false } }
+        elseif ($line -like 'prunable*' -and $current) { $current.Prunable = $true }
+        elseif (-not $line -and $current) { if (-not $current.Prunable) { $live += $current.Path }; $current = $null }
+      }
+      if ($live.Count -ne 1) { throw "checkout may be shared with another worktree: $(($live | Select-Object -Skip 1) -join ', ')" }
     }
     if (Cleanup-Paused) { throw 'PC pause is active' }
     $reason = 'rebuildable'
