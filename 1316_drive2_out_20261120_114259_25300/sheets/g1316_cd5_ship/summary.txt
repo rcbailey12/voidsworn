@@ -1,0 +1,9 @@
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 16, missing on one side: 0, largest: 2.124, mean: 0.711
+
+DIFFERS moments g1316_cd5_ship cam 170: 16 stills, largest 2.12
+
+Largest difference per moment and camera:
+  moments  issue 1316 drive glow      g1316_cd5_ship               cam  26  0.000
+  moments  issue 1316 drive glow      g1316_cd5_ship               cam  60  0.069
+  moments  issue 1316 drive glow      g1316_cd5_ship               cam 170  2.124

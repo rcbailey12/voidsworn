@@ -1,0 +1,1 @@
+Sky brightness behind the ships at the battle camera (mean of the cell corners, 0-255):

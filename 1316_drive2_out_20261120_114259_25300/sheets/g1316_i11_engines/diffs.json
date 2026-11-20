@@ -1,0 +1,439 @@
+{
+ "tol": 2.0,
+ "before": "main 7f13c847 (pale drive, silver corona)",
+ "after": "PR 1348 ed0dde7e (violet drive, no corona)",
+ "stills": [
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 0,
+   "t": 0.0,
+   "diff": 0.19318254886831276
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 1,
+   "t": 0.0333,
+   "diff": 0.19330713091563786
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 2,
+   "t": 0.0667,
+   "diff": 0.19209346064814814
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 3,
+   "t": 0.1,
+   "diff": 0.1905140817901235
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 4,
+   "t": 0.1333,
+   "diff": 0.1898831340020576
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 5,
+   "t": 0.1667,
+   "diff": 0.1903734246399177
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 6,
+   "t": 0.2,
+   "diff": 0.19095614711934158
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 7,
+   "t": 0.2333,
+   "diff": 0.19050202546296294
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 8,
+   "t": 0.2667,
+   "diff": 0.19357237011316872
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 9,
+   "t": 0.3,
+   "diff": 0.19196887860082304
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 10,
+   "t": 0.3333,
+   "diff": 0.18947321887860083
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 11,
+   "t": 0.3667,
+   "diff": 0.18900302211934158
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 12,
+   "t": 0.4,
+   "diff": 0.1900318287037037
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 13,
+   "t": 0.4333,
+   "diff": 0.19180812757201648
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 14,
+   "t": 0.4667,
+   "diff": 0.19262795781893005
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 170,
+   "cell": 15,
+   "t": 0.5,
+   "diff": 0.19278067129629628
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 0,
+   "t": 0.0,
+   "diff": 0.14747701260288068
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 1,
+   "t": 0.0333,
+   "diff": 0.14707111625514405
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 2,
+   "t": 0.0667,
+   "diff": 0.14678980195473249
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 3,
+   "t": 0.1,
+   "diff": 0.1459378215020576
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 4,
+   "t": 0.1333,
+   "diff": 0.14525061085390947
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 5,
+   "t": 0.1667,
+   "diff": 0.14554800025720163
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 6,
+   "t": 0.2,
+   "diff": 0.14619502314814814
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 7,
+   "t": 0.2333,
+   "diff": 0.14670540766460907
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 8,
+   "t": 0.2667,
+   "diff": 0.14882732124485598
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 9,
+   "t": 0.3,
+   "diff": 0.14625128600823045
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 10,
+   "t": 0.3333,
+   "diff": 0.1450858410493827
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 11,
+   "t": 0.3667,
+   "diff": 0.14639596193415638
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 12,
+   "t": 0.4,
+   "diff": 0.1472881301440329
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 13,
+   "t": 0.4333,
+   "diff": 0.14550379372427982
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 14,
+   "t": 0.4667,
+   "diff": 0.14480854552469136
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 60,
+   "cell": 15,
+   "t": 0.5,
+   "diff": 0.1452907986111111
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 0,
+   "t": 0.0,
+   "diff": 0.1786908436213992
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 1,
+   "t": 0.0333,
+   "diff": 0.18035059799382716
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 2,
+   "t": 0.0667,
+   "diff": 0.17934188528806583
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 3,
+   "t": 0.1,
+   "diff": 0.17762586805555555
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 4,
+   "t": 0.1333,
+   "diff": 0.1825247556584362
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 5,
+   "t": 0.1667,
+   "diff": 0.17820457175925927
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 6,
+   "t": 0.2,
+   "diff": 0.18356963734567902
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 7,
+   "t": 0.2333,
+   "diff": 0.17566068672839505
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 8,
+   "t": 0.2667,
+   "diff": 0.1795388052983539
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 9,
+   "t": 0.3,
+   "diff": 0.17607060185185186
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 10,
+   "t": 0.3333,
+   "diff": 0.17870289994855967
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 11,
+   "t": 0.3667,
+   "diff": 0.18721064814814814
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 12,
+   "t": 0.4,
+   "diff": 0.19021267361111113
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 13,
+   "t": 0.4333,
+   "diff": 0.19091595936213993
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 14,
+   "t": 0.4667,
+   "diff": 0.18387506430041153
+  },
+  {
+   "part": "moments",
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "cam": 26,
+   "cell": 15,
+   "t": 0.5,
+   "diff": 0.182958783436214
+  }
+ ]
+}

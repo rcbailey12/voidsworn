@@ -1,0 +1,20 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 0, missing on one side: 0, largest: 0.000, mean: 0.000
+
+SHEETS_DONE C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\sheets\g1316_eclipse_engines
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 0, missing on one side: 0, largest: 0.194, mean: 0.173
+
+SHEETS_DONE C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\sheets\g1316_i11_engines
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 48, missing on one side: 0, largest: 4.568, mean: 3.692
+
+SHEETS_DONE C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\sheets\g1316_cd5_engines
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 16, missing on one side: 0, largest: 2.124, mean: 0.711
+
+SHEETS_DONE C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\sheets\g1316_cd5_ship

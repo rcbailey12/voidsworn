@@ -1,0 +1,9 @@
+Look bench compare: before main 7f13c847 (pale drive, silver corona), after PR 1348 ed0dde7e (violet drive, no corona), tolerance 2.00 (mean absolute difference, 0-255 levels)
+stills compared: 48, over the tolerance: 0, missing on one side: 0, largest: 0.000, mean: 0.000
+
+No still differs over the tolerance.
+
+Largest difference per moment and camera:
+  moments  issue 1316 drive glow      g1316_eclipse_engines        cam  26  0.000
+  moments  issue 1316 drive glow      g1316_eclipse_engines        cam  60  0.000
+  moments  issue 1316 drive glow      g1316_eclipse_engines        cam 170  0.000

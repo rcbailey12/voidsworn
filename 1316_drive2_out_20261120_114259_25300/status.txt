@@ -1,0 +1,59 @@
+[Fri 11/20/2026 11:43:10.13] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T17:43:10Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+found pil: C:\Users\rcbai\AppData\Local\Programs\Python\Python312\python.exe
+all tools found
+[Fri 11/20/2026 11:43:11.31] ready: GPU label 1316
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1 (tools_live version 5b6fdb65e676)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new ed0dde7e530b075d4fb3c085d06eeccbaacc7889 C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\new
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\new_ships_identity.txt
+[Fri 11/20/2026 11:43:30.87] step new import start
+[Fri 11/20/2026 11:56:48.69] step new import ok
+[Fri 11/20/2026 11:56:48.71] step new bench g1316_eclipse_engines start
+[Fri 11/20/2026 11:57:35.51] step new bench g1316_eclipse_engines ok
+[Fri 11/20/2026 11:57:35.52] step new bench g1316_i11_engines start
+[Fri 11/20/2026 11:58:27.01] step new bench g1316_i11_engines ok
+[Fri 11/20/2026 11:58:27.02] step new bench g1316_cd5_engines start
+[Fri 11/20/2026 11:59:27.51] step new bench g1316_cd5_engines ok
+[Fri 11/20/2026 11:59:27.53] step new bench g1316_cd5_ship start
+[Fri 11/20/2026 12:00:27.51] step new bench g1316_cd5_ship ok
+checkout old 7f13c84701b4866d92d585bd64ec37e7c46321f8 C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old_ships_identity.txt
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old are the same fleet as the first checkout
+[Fri 11/20/2026 12:00:48.67] step old import start
+[Fri 11/20/2026 12:12:53.09] step old import ok
+[Fri 11/20/2026 12:12:53.11] step old bench g1316_eclipse_engines start
+[Fri 11/20/2026 12:13:39.69] step old bench g1316_eclipse_engines ok
+[Fri 11/20/2026 12:13:39.70] step old bench g1316_i11_engines start
+[Fri 11/20/2026 12:14:29.49] step old bench g1316_i11_engines ok
+[Fri 11/20/2026 12:14:29.51] step old bench g1316_cd5_engines start
+[Fri 11/20/2026 12:15:29.85] step old bench g1316_cd5_engines ok
+[Fri 11/20/2026 12:15:29.87] step old bench g1316_cd5_ship start
+[Fri 11/20/2026 12:16:30.32] step old bench g1316_cd5_ship ok
+[Fri 11/20/2026 12:16:30.33] step sheet g1316_eclipse_engines start
+[Fri 11/20/2026 12:16:31.90] step sheet g1316_eclipse_engines ok
+[Fri 11/20/2026 12:16:31.92] step sheet g1316_i11_engines start
+[Fri 11/20/2026 12:16:33.18] step sheet g1316_i11_engines ok
+[Fri 11/20/2026 12:16:33.20] step sheet g1316_cd5_engines start
+[Fri 11/20/2026 12:16:34.72] step sheet g1316_cd5_engines ok
+[Fri 11/20/2026 12:16:34.73] step sheet g1316_cd5_ship start
+[Fri 11/20/2026 12:16:35.99] step sheet g1316_cd5_ship ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Fri 11/20/2026 12:16:36.43
+checkout new kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\new (it holds 46 path(s) that are not rebuildable leftovers, e.g. new: godot/assets/ships/B19_11/B19_11_damage.glb.import; new: godot/assets/ships/B19_11/B19_11_emissive.jpg.import; new: godot/assets/ships/B19_11/B19_11_normal.jpg.import; new: godot/assets/ships/B19_11/B19_11_orm.jpg.import; new: godot/assets/ships/B19_11/B19_11_wreck.glb.import)
+checkout old kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1316\out_20261120_114259_25300\old (it holds 47 path(s) that are not rebuildable leftovers, e.g. new: godot/bench/look_moments_1316.json; new: godot/assets/ships/B19_11/B19_11_damage.glb.import; new: godot/assets/ships/B19_11/B19_11_emissive.jpg.import; new: godot/assets/ships/B19_11/B19_11_normal.jpg.import; new: godot/assets/ships/B19_11/B19_11_orm.jpg.import)
