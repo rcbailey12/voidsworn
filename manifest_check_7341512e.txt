@@ -1,0 +1,9 @@
+MANIFEST MISMATCH: 7 of 294
+size V16_37/V16_37.glb 10443868 vs 4531504
+size V16_37/V16_37_base.jpg 1663959 vs 1143387
+missing V16_37/V16_37_damage.glb
+missing V16_37/V16_37_emissive.jpg
+missing V16_37/V16_37_normal.jpg
+missing V16_37/V16_37_orm.jpg
+missing V16_37/V16_37_wreck.glb
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)

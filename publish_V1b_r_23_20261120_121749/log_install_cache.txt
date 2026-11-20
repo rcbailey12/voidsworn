@@ -1,0 +1,46 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[assets] A4 ship V1b_r_23
+[assets] check B16_23 loads=true skins=11 heavy_skins=10 hardpoints=17 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check B19_11 loads=true skins=0 heavy_skins=0 hardpoints=16 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check B20_11 loads=true skins=0 heavy_skins=0 hardpoints=16 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check B21_11 loads=true skins=0 heavy_skins=0 hardpoints=22 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check B22_11 loads=true skins=9 heavy_skins=8 hardpoints=15 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check B23_51 loads=true skins=1 heavy_skins=0 hardpoints=2 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check C13s_23 loads=true skins=0 heavy_skins=0 hardpoints=13 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check C14s_23 loads=true skins=0 heavy_skins=0 hardpoints=19 hull_meshes=3 holes=0 heavies=0 wreck_chunks=0
+[assets] check C15s_23 loads=true skins=0 heavy_skins=0 hardpoints=34 hull_meshes=7 holes=0 heavies=0 wreck_chunks=0
+[assets] check C16s_23 loads=true skins=0 heavy_skins=0 hardpoints=23 hull_meshes=3 holes=0 heavies=0 wreck_chunks=0
+[assets] check C19_51 loads=true skins=0 heavy_skins=0 hardpoints=45 hull_meshes=9 holes=0 heavies=0 wreck_chunks=0
+[assets] check D20_23 loads=true skins=0 heavy_skins=0 hardpoints=10 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check D21_23 loads=true skins=0 heavy_skins=0 hardpoints=21 hull_meshes=4 holes=0 heavies=0 wreck_chunks=0
+[assets] check D22_23 loads=true skins=0 heavy_skins=0 hardpoints=28 hull_meshes=4 holes=0 heavies=0 wreck_chunks=0
+[assets] check D9_23 loads=true skins=0 heavy_skins=0 hardpoints=10 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check H10_23 loads=true skins=0 heavy_skins=0 hardpoints=27 hull_meshes=5 holes=0 heavies=0 wreck_chunks=0
+[assets] check H4_11 loads=true skins=0 heavy_skins=0 hardpoints=30 hull_meshes=5 holes=0 heavies=0 wreck_chunks=0
+[assets] check H7_23 loads=true skins=5 heavy_skins=4 hardpoints=10 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check H8_23 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check H9_23 loads=true skins=7 heavy_skins=6 hardpoints=12 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I11_37 loads=true skins=7 heavy_skins=6 hardpoints=10 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I14_23 loads=true skins=4 heavy_skins=3 hardpoints=7 hull_meshes=1 holes=3 heavies=3 wreck_chunks=4
+[assets] check I15_11 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I16_11 loads=true skins=9 heavy_skins=8 hardpoints=14 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check I8_37 loads=true skins=0 heavy_skins=0 hardpoints=20 hull_meshes=4 holes=0 heavies=0 wreck_chunks=0
+[assets] check O1_37 loads=true skins=11 heavy_skins=10 hardpoints=11 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check O2_37 loads=true skins=7 heavy_skins=6 hardpoints=9 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check O3_11 loads=true skins=5 heavy_skins=4 hardpoints=5 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check S1_51 loads=true skins=1 heavy_skins=0 hardpoints=3 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check S2_23 loads=true skins=1 heavy_skins=0 hardpoints=6 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check V14_23 loads=true skins=0 heavy_skins=0 hardpoints=18 hull_meshes=3 holes=0 heavies=0 wreck_chunks=0
+[assets] check V15_37 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check V16_37 loads=true skins=0 heavy_skins=0 hardpoints=22 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check V17_37 loads=true skins=9 heavy_skins=8 hardpoints=19 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check V18_51 loads=true skins=9 heavy_skins=8 hardpoints=18 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check V1b_r_23 loads=true skins=0 heavy_skins=0 hardpoints=33 hull_meshes=5 holes=0 heavies=0 wreck_chunks=0
+[assets] check corsair_KB1CC loads=true skins=0 heavy_skins=0 hardpoints=10 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check hegemony_HF1D loads=true skins=0 heavy_skins=0 hardpoints=5 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check station_T2 loads=true skins=0 heavy_skins=0 hardpoints=0 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check voidsworn_SB4 loads=true skins=0 heavy_skins=0 hardpoints=7 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check voidsworn_SF3 loads=true skins=0 heavy_skins=0 hardpoints=6 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check: 41 A4 ships in the manifest
+[assets] ships refreshed: 41 A4 ships in res://gen/manifest.json

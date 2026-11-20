@@ -1,0 +1,17 @@
+waiting for OPUS1316_DRIVE2 exit and PT1120C player_path rerun exit Fri 11/20/2026 11:47:49.45 
+publish S8 start 12:17:49.14 
+publish S8 exit 0 at 12:19:28.17 
+publish S9 start 12:19:28.17 
+publish S9 exit 0 at 12:20:29.12 
+ship check against main 7341512e exit 1 
+MANIFEST MISMATCH: 7 of 294
+size V16_37/V16_37.glb 10443868 vs 4531504
+size V16_37/V16_37_base.jpg 1663959 vs 1143387
+missing V16_37/V16_37_damage.glb
+missing V16_37/V16_37_emissive.jpg
+missing V16_37/V16_37_normal.jpg
+missing V16_37/V16_37_orm.jpg
+missing V16_37/V16_37_wreck.glb
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)
+publish ember end 12:20:31.16 
+all done Fri 11/20/2026 12:20:31.16 

@@ -1,0 +1,27 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1158e8",
+ "ship": "voidsworn_S8",
+ "code": "V1b_r_23",
+ "commit": "b1687ca1a6d3210e700544c5b347473e807a8417",
+ "glb": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498",
+ "files": {
+  "V1b_r_23.glb": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498",
+  "V1b_r_23_base.jpg": "9ddf4ba9690bc42fe8609f8313f1556729d431972e29fa64bbce990fd36f57ef",
+  "V1b_r_23_glow_emission.jpg": "6366faa98b9dfec66881b768ab7a8de6b6e06dbc08156047edf13a833233a516",
+  "V1b_r_23_normal.png": "c864bf981964d137bd7843c002b0df95d10b489a8e99b87d8eae66fb61dcf826",
+  "V1b_r_23_orm.png": "502ad0f40f25afd1ea2b80c7eed648715433a6e97923b55b44e77e8c6689ff14",
+  "V1b_r_23_parts_base.jpg": "95997ddeb528433d29ba84885ad9cd3e55590abc247b37d30340cade01e9cc6b",
+  "V1b_r_23_parts_normal.png": "61b4675752a18828ab1a32bdece09ec15088086ee8809e5ea3c562cc88e6e157",
+  "V1b_r_23_parts_orm.png": "44b3884074f994e2a62d69b1082bb380d5e84e3fa9a4d8fc2c0d0ee2a40d51b0"
+ },
+ "checked": [
+  "V1b_r_23.glb",
+  "V1b_r_23_base.jpg",
+  "V1b_r_23_glow_emission.jpg",
+  "V1b_r_23_normal.png",
+  "V1b_r_23_orm.png",
+  "V1b_r_23_parts_base.jpg",
+  "V1b_r_23_parts_normal.png",
+  "V1b_r_23_parts_orm.png"
+ ]
+}

@@ -1,0 +1,1 @@
+[publish] kept V1b_r_23 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\V1b_r_23_20261120_121749
