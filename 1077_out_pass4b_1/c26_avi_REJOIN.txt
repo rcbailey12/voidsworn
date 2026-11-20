@@ -1,0 +1,3 @@
+Rejoin: copy /b FLAGSHIP1077_A16_c26_side_by_side.avi.part1 + FLAGSHIP1077_A16_c26_side_by_side.avi.part2 FLAGSHIP1077_A16_c26_side_by_side.avi
+(or: cat part1 part2 > file). Whole file 102714080 bytes, SHA256 7491431CE227893E4C1BD716CC80F9AB97808AA68BB1CA07E654E1559F064F83. Split because GitHub refuses files over 100 MB.
+
