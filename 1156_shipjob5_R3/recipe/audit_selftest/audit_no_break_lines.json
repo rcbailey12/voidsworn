@@ -1,0 +1,10 @@
+{
+ "result": "FAIL",
+ "failures": [
+  "the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull's"
+ ],
+ "problems": [],
+ "crossing_break_lines": [],
+ "guns": 3,
+ "guns_with_normals": 3
+}

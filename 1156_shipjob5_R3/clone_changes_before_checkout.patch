@@ -1,0 +1,1205 @@
+diff --git a/godot/assets/ships/manifest.json b/godot/assets/ships/manifest.json
+index 8b648b95..708b4c27 100644
+--- a/godot/assets/ships/manifest.json
++++ b/godot/assets/ships/manifest.json
+@@ -1474,52 +1474,57 @@
+    "preview": "previews/S2_23.jpg"
+   },
+   "V14_23": {
+-   "name": "Warden-class frigate",
++   "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
+    "faction": "voidsworn",
+    "cls": "Frigate",
+    "band": "S",
++   "game_ship": "warden",
+    "length_world": 6.5,
+    "hardpoints": {
+-    "gun": 3,
++    "gun": 7,
+     "engine": 2,
+-    "breach": 4,
+-    "core": 1
++    "breach": 2,
++    "core": 1,
++    "rcs": 4,
++    "board": 2
+    },
+-   "breaches": 4,
+-   "skins": 9,
++   "breaches": 2,
++   "turrets": 2,
+    "files": {
+     "V14_23.glb": {
+-     "bytes": 5261576,
+-     "sha256": "d16ba875b838731fa5df48c724838ca5253ce58fe03408f8bb81713b964f5bcc"
++     "bytes": 5921936,
++     "sha256": "c00db3009884bcd25f64f26a9a686d9781180ff5ed667a3bfb07030023321055"
+     },
+     "V14_23_base.jpg": {
+-     "bytes": 1278949,
+-     "sha256": "cddee4279e643cca2524b2b3f8d55f5cfc7d8c8320e709676a829503a1839b9c"
++     "bytes": 1207313,
++     "sha256": "97f178236656a691c34ad2f2842acc5aea11bb2e2b5296b2a86cc269eac6618d"
+     },
+-    "V14_23_damage.glb": {
+-     "bytes": 19825748,
+-     "sha256": "16e373b26e29d353418fab266f3503d506e2706296c202bb6717f744bec0b883"
+-    },
+-    "V14_23_emissive.jpg": {
+-     "bytes": 140036,
+-     "sha256": "a17d250dfc3c6568c135492eff2f4e6481ac6aab86dcf3b94b9f48e1a696fe4d"
++    "V14_23_glow_emission.jpg": {
++     "bytes": 569170,
++     "sha256": "e262958b4040b59652e7c74cc7d78b984d2ddc66ad47ae7158053a0a1c76ae5a"
+     },
+     "V14_23_normal.jpg": {
+-     "bytes": 2295707,
+-     "sha256": "b994bd7e3cfbe8302d49736b7e2c59d742158cf9477cbcd3d099894f8587450f"
++     "bytes": 589324,
++     "sha256": "4df8c51e31355c8e4b2ebf29a4cc28ff0d13ae341fe995c89c1bc0983a671396"
+     },
+     "V14_23_orm.jpg": {
+-     "bytes": 1900870,
+-     "sha256": "6f675da05e755ede7ad9ae2d0459bdd5f892c925331b71fabfb154abae157cd3"
++     "bytes": 1576282,
++     "sha256": "dc70474890b549b9d29b7fc48a90f1e626909bb0432de0e8b620981b24f1c967"
++    },
++    "V14_23_parts_base.jpg": {
++     "bytes": 1041431,
++     "sha256": "a181d252e9171659a0dd3f7ff6e62b4cdabd77b81bdc707359bad9a3a56f3c1b"
++    },
++    "V14_23_parts_normal.jpg": {
++     "bytes": 346938,
++     "sha256": "81421dddf4664e4a750fc6650305964e4216b6d69a0f3a747593e062c36f6ad7"
+     },
+-    "V14_23_wreck.glb": {
+-     "bytes": 2964328,
+-     "sha256": "a1ffc7c00a1b2c2435f0d5c6bce663959c16ca0b1dfd25d905881d076636e4e6"
++    "V14_23_parts_orm.jpg": {
++     "bytes": 1609445,
++     "sha256": "be3cc157af2beaafbb622f8eaba7603047b5782fb3b96dbda788c786fb268058"
+     }
+    },
+-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\",
+-   "preview": "previews/V14_23.jpg",
+-   "damage_preview": "previews/V14_23_damage.jpg"
++   "pc_path": "godot/assets/ships/V14_23/"
+   },
+   "V15_37": {
+    "name": "Harrow-class destroyer",
+diff --git a/godot/fx/atlases/death/capital/cool_flow.png.import b/godot/fx/atlases/death/capital/cool_flow.png.import
+index c374dcd7..c94c2c6a 100644
+--- a/godot/fx/atlases/death/capital/cool_flow.png.import
++++ b/godot/fx/atlases/death/capital/cool_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/cool_flow.png"
+-dest_files=["res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://bevdxg2c2vrbi"
++path="res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/cool_flow.png"
++dest_files=["res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/capital/cool_thickness.png.import b/godot/fx/atlases/death/capital/cool_thickness.png.import
+index 667d9fb3..f864a7e9 100644
+--- a/godot/fx/atlases/death/capital/cool_thickness.png.import
++++ b/godot/fx/atlases/death/capital/cool_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/cool_thickness.png"
+-dest_files=["res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://t6owc4x43psj"
++path="res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/cool_thickness.png"
++dest_files=["res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/capital/flash_flow.png.import b/godot/fx/atlases/death/capital/flash_flow.png.import
+index 935b9e62..f20980a8 100644
+--- a/godot/fx/atlases/death/capital/flash_flow.png.import
++++ b/godot/fx/atlases/death/capital/flash_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/flash_flow.png"
+-dest_files=["res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://bh1w37378o2fs"
++path="res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/flash_flow.png"
++dest_files=["res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/capital/flash_thickness.png.import b/godot/fx/atlases/death/capital/flash_thickness.png.import
+index c3a4bcb8..9aa9fdd4 100644
+--- a/godot/fx/atlases/death/capital/flash_thickness.png.import
++++ b/godot/fx/atlases/death/capital/flash_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/flash_thickness.png"
+-dest_files=["res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://cvse7q41esada"
++path="res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/flash_thickness.png"
++dest_files=["res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/capital/vent_flow.png.import b/godot/fx/atlases/death/capital/vent_flow.png.import
+index 9a1fc500..32296541 100644
+--- a/godot/fx/atlases/death/capital/vent_flow.png.import
++++ b/godot/fx/atlases/death/capital/vent_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/vent_flow.png"
+-dest_files=["res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://d2r0allrhqhi7"
++path="res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/vent_flow.png"
++dest_files=["res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/capital/vent_thickness.png.import b/godot/fx/atlases/death/capital/vent_thickness.png.import
+index a979511e..4c415262 100644
+--- a/godot/fx/atlases/death/capital/vent_thickness.png.import
++++ b/godot/fx/atlases/death/capital/vent_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/capital/vent_thickness.png"
+-dest_files=["res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://cic4h4btyq6wv"
++path="res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/capital/vent_thickness.png"
++dest_files=["res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/cool_flow.png.import b/godot/fx/atlases/death/cruiser/cool_flow.png.import
+index 247a9ca3..da3b2d24 100644
+--- a/godot/fx/atlases/death/cruiser/cool_flow.png.import
++++ b/godot/fx/atlases/death/cruiser/cool_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/cool_flow.png"
+-dest_files=["res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://c4gxm66xnmjbh"
++path="res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/cool_flow.png"
++dest_files=["res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/cool_thickness.png.import b/godot/fx/atlases/death/cruiser/cool_thickness.png.import
+index b53ed76f..20d55f96 100644
+--- a/godot/fx/atlases/death/cruiser/cool_thickness.png.import
++++ b/godot/fx/atlases/death/cruiser/cool_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/cool_thickness.png"
+-dest_files=["res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://d14vvn0h57m37"
++path="res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/cool_thickness.png"
++dest_files=["res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/flash_flow.png.import b/godot/fx/atlases/death/cruiser/flash_flow.png.import
+index e6b41642..6ced9087 100644
+--- a/godot/fx/atlases/death/cruiser/flash_flow.png.import
++++ b/godot/fx/atlases/death/cruiser/flash_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/flash_flow.png"
+-dest_files=["res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://cmdhsth1rsbay"
++path="res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/flash_flow.png"
++dest_files=["res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/flash_thickness.png.import b/godot/fx/atlases/death/cruiser/flash_thickness.png.import
+index b637f82d..ac91e435 100644
+--- a/godot/fx/atlases/death/cruiser/flash_thickness.png.import
++++ b/godot/fx/atlases/death/cruiser/flash_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/flash_thickness.png"
+-dest_files=["res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://cubevrurudh36"
++path="res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/flash_thickness.png"
++dest_files=["res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/vent_flow.png.import b/godot/fx/atlases/death/cruiser/vent_flow.png.import
+index 716834aa..e02195f5 100644
+--- a/godot/fx/atlases/death/cruiser/vent_flow.png.import
++++ b/godot/fx/atlases/death/cruiser/vent_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/vent_flow.png"
+-dest_files=["res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://ee3ox728ak8j"
++path="res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/vent_flow.png"
++dest_files=["res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/cruiser/vent_thickness.png.import b/godot/fx/atlases/death/cruiser/vent_thickness.png.import
+index 081e0783..d91b820d 100644
+--- a/godot/fx/atlases/death/cruiser/vent_thickness.png.import
++++ b/godot/fx/atlases/death/cruiser/vent_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/cruiser/vent_thickness.png"
+-dest_files=["res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://bcmbxtu1bbrgg"
++path="res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/cruiser/vent_thickness.png"
++dest_files=["res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/cool_flow.png.import b/godot/fx/atlases/death/small/cool_flow.png.import
+index 8aa8dc34..8e8b4469 100644
+--- a/godot/fx/atlases/death/small/cool_flow.png.import
++++ b/godot/fx/atlases/death/small/cool_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/cool_flow.png"
+-dest_files=["res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://d1pv0ghdbnmh0"
++path="res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/cool_flow.png"
++dest_files=["res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/cool_thickness.png.import b/godot/fx/atlases/death/small/cool_thickness.png.import
+index 45520278..65aceb91 100644
+--- a/godot/fx/atlases/death/small/cool_thickness.png.import
++++ b/godot/fx/atlases/death/small/cool_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/cool_thickness.png"
+-dest_files=["res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://c6qhpo8cbppgt"
++path="res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/cool_thickness.png"
++dest_files=["res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/flash_flow.png.import b/godot/fx/atlases/death/small/flash_flow.png.import
+index 537148f2..9b459bcb 100644
+--- a/godot/fx/atlases/death/small/flash_flow.png.import
++++ b/godot/fx/atlases/death/small/flash_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/flash_flow.png"
+-dest_files=["res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://bb6nn6cjfb3gj"
++path="res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/flash_flow.png"
++dest_files=["res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/flash_thickness.png.import b/godot/fx/atlases/death/small/flash_thickness.png.import
+index 0ec8afd4..cc652d18 100644
+--- a/godot/fx/atlases/death/small/flash_thickness.png.import
++++ b/godot/fx/atlases/death/small/flash_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/flash_thickness.png"
+-dest_files=["res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://1etadp6p4fak"
++path="res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/flash_thickness.png"
++dest_files=["res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/vent_flow.png.import b/godot/fx/atlases/death/small/vent_flow.png.import
+index 7bb31f1a..c96ba6be 100644
+--- a/godot/fx/atlases/death/small/vent_flow.png.import
++++ b/godot/fx/atlases/death/small/vent_flow.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/vent_flow.png"
+-dest_files=["res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://b5rsfqssi8ut3"
++path="res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/vent_flow.png"
++dest_files=["res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0
+diff --git a/godot/fx/atlases/death/small/vent_thickness.png.import b/godot/fx/atlases/death/small/vent_thickness.png.import
+index 07aae4a7..a4126a70 100644
+--- a/godot/fx/atlases/death/small/vent_thickness.png.import
++++ b/godot/fx/atlases/death/small/vent_thickness.png.import
+@@ -1,17 +1,40 @@
+-[remap]
+-importer="texture"
+-type="CompressedTexture2D"
+-path="res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex"
+-
+-[deps]
+-source_file="res://fx/atlases/death/small/vent_thickness.png"
+-dest_files=["res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex"]
+-
+-[params]
+-compress/mode=0
+-compress/normal_map=0
+-mipmaps/generate=false
+-process/fix_alpha_border=false
+-process/premult_alpha=false
+-process/hdr_as_srgb=false
+-detect_3d/compress_to=0
++[remap]
++
++importer="texture"
++type="CompressedTexture2D"
++uid="uid://brjy0p3h2xspv"
++path="res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex"
++metadata={
++"vram_texture": false
++}
++
++[deps]
++
++source_file="res://fx/atlases/death/small/vent_thickness.png"
++dest_files=["res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex"]
++
++[params]
++
++compress/mode=0
++compress/high_quality=false
++compress/lossy_quality=0.7
++compress/uastc_level=0
++compress/rdo_quality_loss=0.0
++compress/hdr_compression=1
++compress/normal_map=0
++compress/channel_pack=0
++mipmaps/generate=false
++mipmaps/limit=-1
++roughness/mode=0
++roughness/src_normal=""
++process/channel_remap/red=0
++process/channel_remap/green=1
++process/channel_remap/blue=2
++process/channel_remap/alpha=3
++process/fix_alpha_border=false
++process/premult_alpha=false
++process/normal_map_invert_y=false
++process/hdr_as_srgb=false
++process/hdr_clamp_exposure=false
++process/size_limit=0
++detect_3d/compress_to=0

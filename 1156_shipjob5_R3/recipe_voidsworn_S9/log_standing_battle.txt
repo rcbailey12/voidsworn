@@ -1,0 +1,2 @@
+  battle camera S9: game bow 59.7 midship 72.5 stern 47.6 whole 59.8, studio bow 63.7 midship 84.5 stern 48.7 whole 64.1
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

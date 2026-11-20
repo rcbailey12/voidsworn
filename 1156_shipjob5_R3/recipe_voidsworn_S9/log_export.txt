@@ -1,0 +1,20 @@
+GPU: waiting for shared claim, weight 2 (issue 1156)
+GPU: acquired shared claim 2df0d132-d2a2-411a-96f4-96e64f62e6fb
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+21:54:31 | INFO: Starting glTF 2.0 export
+21:54:31 | INFO: Extracting primitive: V14_23
+21:54:32 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+21:54:35 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+21:54:37 | INFO: Primitives created: 16
+21:54:37 | INFO: Extracting primitive: turret_0_turn
+21:54:37 | INFO: Primitives created: 1
+21:54:37 | INFO: Extracting primitive: turret_1_turn
+21:54:37 | INFO: Primitives created: 1
+21:54:37 | INFO: Finished glTF 2.0 export in 5.978127479553223 s
+
+[export7] V14_23 triangles 51810 hard points {"gun": 7, "engine": 2, "bay": 0, "breach": 2, "core": 1, "rcs": 4, "board": 2} turrets 2 (3408 triangles) files ['V14_23.glb', 'V14_23_base.jpg', 'V14_23_glow_emission.jpg', 'V14_23_normal.jpg', 'V14_23_orm.jpg', 'V14_23_parts_base.jpg', 'V14_23_parts_normal.jpg', 'V14_23_parts_orm.jpg']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export\V14_23
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\S9.blend"
+
+Blender quit
