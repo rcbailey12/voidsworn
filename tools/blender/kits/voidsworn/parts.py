@@ -1124,7 +1124,7 @@ def craft_spire(h, L, t, spread, fins=4):
             V = [(-L * 0.3, y0, z - th), (L * 0.3, y0, z - th), (L * 0.3, y1, z - th), (-L * 0.3, y1, z - th),
                  (-L * 0.26, y0, z + th), (L * 0.26, y0, z + th), (L * 0.26, y1 - sg * th, z + th), (-L * 0.26, y1 - sg * th, z + th)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-    p.add('fin', 'body', fin_mat, _join(fv))
+    p.add('fin', 'body', 'embar', _join(fv))
     gz = []
     for sg in (1, -1):
         for x in (-L * 0.35, L * 0.35):
