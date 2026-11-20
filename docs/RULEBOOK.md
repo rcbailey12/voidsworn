@@ -839,8 +839,11 @@ detail than the first pass.** Why: "T2 damaged" (R206); stations looked plain (R
 10.8 **A battle opens with both fleets in view; markers at the screen edge only where a ship can leave the view.** Set: Ryan
 (R62, R216).
 
-10.9 **Nebula colour is picked per region by eye on the sky sheet; no indigo to purple gradient; the faction tint share is a
-tuning value.** Why: Ryan listed indigo to purple gradients among the AI-made tells (R174). Set: Ryan (R82, R216).
+10.9 **The battle nebula is one rose colour (the hydrogen pink of real glowing gas) in every region and against every
+faction; no indigo to purple gradient.** It replaces R82's violet and the faction tint share (world_living.gd NEBULA_*).
+Why: "shouldn't we have nebulas be one color? ... I want it to be semi realistic", then "Yes agree on rose" on the NEB1268
+sheet (Nov 20 2026); rose reads apart from the teal ion storm; Ryan listed indigo to purple gradients among the AI-made
+tells (R174). Set: Ryan (R82, R216, R353).
 
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
