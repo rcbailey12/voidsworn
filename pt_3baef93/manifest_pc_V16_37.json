@@ -1,0 +1,41 @@
+{
+    "note":  "Read-only: files installed in build\\godot\\assets\\ships\\V16_37 after the 11:09 CST publish (publish\\V16_37_20261120_110818, receipt commit eef9fd81, glb dd2b04cc). Same shape as main\u0027s files block. *.import and *.uid left out.",
+    "ships":  {
+                  "V16_37":  {
+                                 "files":  {
+                                               "V16_37.glb":  {
+                                                                  "bytes":  10443868,
+                                                                  "sha256":  "dd2b04cc555989ff3d90eb91b49af65850238082c2d922616bdd478b1a6b567d"
+                                                              },
+                                               "V16_37_base.jpg":  {
+                                                                       "bytes":  1663959,
+                                                                       "sha256":  "8e73334600fc8053eb9a00aa54d4df9ce54f8fcc98e838734c869443d1d6c1c1"
+                                                                   },
+                                               "V16_37_glow_emission.jpg":  {
+                                                                                "bytes":  514774,
+                                                                                "sha256":  "4e7c68647522b3aea55d38c35014362b2a0ecccf7008fa9a1f089646bd9d9b94"
+                                                                            },
+                                               "V16_37_normal.png":  {
+                                                                         "bytes":  4379124,
+                                                                         "sha256":  "d4f06cd1ff75eb0be4872410a85663821de0abadb69f292cc48cc7ace70baaa4"
+                                                                     },
+                                               "V16_37_orm.png":  {
+                                                                      "bytes":  8390764,
+                                                                      "sha256":  "c2ab18f8676e47201d0dbc23daa079afd5cb4f52817df6065b49de4a4c3f3804"
+                                                                  },
+                                               "V16_37_parts_base.jpg":  {
+                                                                             "bytes":  1070987,
+                                                                             "sha256":  "9e74f505000e685f54510f45e8cdadbfe273e4586fb6f0250e87fac3c8e66692"
+                                                                         },
+                                               "V16_37_parts_normal.png":  {
+                                                                               "bytes":  3044792,
+                                                                               "sha256":  "5fdd138f317d0e208d859054b9b6bc8323efa028653825238f9d7faa9928cd33"
+                                                                           },
+                                               "V16_37_parts_orm.png":  {
+                                                                            "bytes":  6352726,
+                                                                            "sha256":  "566d8938e9575e3b5512df4f7b094c8eab2a9b2a5061a9b6ff0b16f2f0f97b90"
+                                                                        }
+                                           }
+                             }
+              }
+}
