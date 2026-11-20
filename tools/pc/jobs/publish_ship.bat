@@ -52,6 +52,17 @@ mkdir "%P%" || exit /b 1
 set "RES=%P%\result.txt"
 echo start publish %JOB_DIR% %CODE% %COMMIT% %GLB_SHA% %DATE% %TIME% > "%RES%"
 set "FAILED="
+rem Ryan's real game options are never touched (Fable, PR 1312; the 1078 pattern): his battle_opts.json and board_look.cfg
+rem are hashed now and at the end, into result.txt, and every program this job starts (the Godot cache build under python
+rem too) sees APPDATA and LOCALAPPDATA in the publish folder's throwaway profile. A change fails the job.
+set "REALU=%APPDATA%\Godot\app_userdata\Voidsworn"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_opts.json','board_look.cfg') { $p = Join-Path $env:REALU $f; if (Test-Path -LiteralPath $p) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash + ' ' + $f } else { 'absent ' + $f } }" > "%P%\real_opts_before.txt" 2>&1 || set "FAILED=could not hash Ryan's real options before the publish; nothing was started"
+if defined FAILED goto finish
+mkdir "%P%\profile\Roaming" "%P%\profile\Local" || set "FAILED=could not make the throwaway profile; nothing was started"
+if defined FAILED goto finish
+set "APPDATA=%P%\profile\Roaming"
+set "LOCALAPPDATA=%P%\profile\Local"
+echo profile guard APPDATA=%APPDATA% >> "%RES%"
 set "J=%V%\%JOB_DIR%"
 set "GAME=%V%\build\godot"
 set "GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe"
@@ -115,7 +126,7 @@ if defined FAILED goto finish
 copy /y "%V%\tools_live\%TLV%\recipe\manifest_merge.py" "%B%\tool\manifest_merge.py" > nul || set "FAILED=could not keep a copy of manifest_merge.py"
 if defined FAILED goto finish
 call :undo > "%B%\UNDO_%CODE%.bat"
-findstr /c:"publish_ship.py\" undo" "%B%\UNDO_%CODE%.bat" > nul || set "FAILED=could not write %B%\UNDO_%CODE%.bat; nothing was installed"
+findstr /x /c:"exit /b 1" "%B%\UNDO_%CODE%.bat" > nul || set "FAILED=could not write %B%\UNDO_%CODE%.bat; nothing was installed"
 if defined FAILED goto finish
 copy /y "%B%\UNDO_%CODE%.bat" "%P%\UNDO_%CODE%.bat" > nul
 echo undo: %B%\UNDO_%CODE%.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) >> "%RES%"
@@ -181,6 +192,19 @@ if "%EL%"=="0" set "FAILED=install (log_install.txt); %CODE% is back exactly as 
 if not "%EL%"=="0" set "FAILED=install (log_install.txt) AND the restore (log_restore.txt names what still differs; the kept files are in %B%)"
 
 :finish
+rem Ryan's real options again, compared with the start (REALU was read before APPDATA was redirected)
+if not exist "%P%\real_opts_before.txt" goto ending
+powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_opts.json','board_look.cfg') { $p = Join-Path $env:REALU $f; if (Test-Path -LiteralPath $p) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash + ' ' + $f } else { 'absent ' + $f } }" > "%P%\real_opts_after.txt" 2>&1
+echo Ryan's real options before: >> "%RES%"
+type "%P%\real_opts_before.txt" >> "%RES%"
+echo Ryan's real options after: >> "%RES%"
+type "%P%\real_opts_after.txt" >> "%RES%"
+fc /b "%P%\real_opts_before.txt" "%P%\real_opts_after.txt" > nul && echo Ryan's real options unchanged ^(battle_opts.json, board_look.cfg^) >> "%RES%"
+set "OPTSBAD="
+fc /b "%P%\real_opts_before.txt" "%P%\real_opts_after.txt" > nul || set "OPTSBAD=Ryan's real options changed during the publish (or could not be hashed), see real_opts_before.txt and real_opts_after.txt"
+if defined OPTSBAD if defined FAILED set "FAILED=%FAILED%; %OPTSBAD%"
+if defined OPTSBAD if not defined FAILED set "FAILED=%OPTSBAD%"
+:ending
 if defined FAILED goto failed
 echo published %CODE% from %JOB_DIR% at %COMMIT% into %GAME% >> "%RES%"
 echo all done PASS %DATE% %TIME% >> "%RES%"
@@ -196,6 +220,9 @@ rem prints "undo of CODE PASS" only when every step passed, and "undo of CODE FA
 echo @echo off
 echo rem Issue 1311: put %CODE% in build\godot back as it was before the publish of %STAMP% from %JOB_DIR%. Deletes nothing.
 echo setlocal EnableExtensions
+echo if not exist "%B%\undo_profile\Roaming" mkdir "%B%\undo_profile\Roaming" "%B%\undo_profile\Local"
+echo set "APPDATA=%B%\undo_profile\Roaming"
+echo set "LOCALAPPDATA=%B%\undo_profile\Local"
 echo set "U=%B%\undo_%%RANDOM%%.txt"
 echo set "TLV="
 echo if exist "%V%\tools_live\current.txt" set /p TLV=^<"%V%\tools_live\current.txt"

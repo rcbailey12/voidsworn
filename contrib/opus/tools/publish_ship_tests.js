@@ -49,7 +49,7 @@ assert(firstGameWrite > receipt, 'nothing in build\\godot changes before the rec
 assert(raw.includes('.gdignore'), 'the _replaced folder carries a .gdignore');
 const seals = main.filter(l => /"%PUB%" seal "%GAME%" %CODE% "%B%"/.test(l.s)).map(l => main.indexOf(l));
 assert(seals.length === 2 && seals[0] > install && seals[0] < at(/build_assets\.gd -- --ships-only/), 'sealed right after the install and again later');
-assert(main.some(l => /^findstr \/c:"publish_ship\.py\\" undo" "%B%\\UNDO_%CODE%\.bat"/.test(l.s)), 'the job checks UNDO_CODE.bat was written');
+assert(main.some(l => /^findstr \/x \/c:"exit \/b 1" "%B%\\UNDO_%CODE%\.bat"/.test(l.s)), 'the job checks UNDO_CODE.bat was written');
 assert(/^if not "%EL%"=="0" goto install_failed$/.test(main[install + 4].s), 'a failed install goes to the restore');
 assert(main.some(l => /"%PUB%" restore "%GAME%" %CODE% "%B%"/.test(l.s)), 'the restore puts every kept file back after a failed install');
 assert(main.some(l => /"%PUB%" locked "%GAME%" "%GD%" .*build_assets\.gd -- --ships-only/.test(l.s)), 'the cache build runs under the install lock');
@@ -76,6 +76,18 @@ const outs = code.filter(l => /^echo all done /.test(l.s)).map(l => l.s);
 assert(outs.some(s => s.startsWith('echo all done PASS')) && outs.some(s => s.startsWith('echo all done FAILED: %FAILED%')), 'both endings written');
 assert(!main.some(l => /^exit \/b [1-9]$/.test(l.s) && code.indexOf(l) > at(/^echo start publish/)), 'after the result starts, every way out goes through :finish');
 pass('every way out ends in all done PASS or all done FAILED');
+// Fable, PR 1312: a \" in a findstr search string is not an escape to cmd, so the old check could never fail
+assert(!code.some(l => /^findstr .*\\"/.test(l.s)), 'no findstr search string holds a backslash quote (cmd does not escape it)');
+// Fable, PR 1312: Ryan's real options are hashed before and after, and every step runs in a throwaway profile
+const iProf = main.findIndex(l => /^set "APPDATA=%P%\\profile\\Roaming"$/.test(l.s));
+const iLocal = main.findIndex(l => /^set "LOCALAPPDATA=%P%\\profile\\Local"$/.test(l.s));
+const iFirstTmo = main.findIndex(l => /^call "%TMO%"/.test(l.s));
+assert(iProf >= 0 && iLocal >= 0 && iProf < iFirstTmo && iLocal < iFirstTmo, 'APPDATA and LOCALAPPDATA are redirected before the first step');
+assert(code.filter(l => /^powershell .*battle_opts\.json','board_look\.cfg.*real_opts_(before|after)\.txt" 2>&1/.test(l.s)).length === 2, 'both options files are hashed before and after');
+assert(code.some(l => /^type "%P%\\real_opts_after\.txt" >> "%RES%"$/.test(l.s)), 'the hashes go into result.txt');
+assert(code.some(l => /set "FAILED=%OPTSBAD%"/.test(l.s)), 'a change to the real options fails the job');
+assert(undo.some(l => /^echo set "APPDATA=%B%\\undo_profile\\Roaming"$/.test(l.s)), 'the undo bat runs in a throwaway profile too');
+pass('Ryan\'s real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail');
 
 const py = ['python3', 'python'].map(c => spawnSync(c, ['-B', path.join(ROOT, 'tools/recipe/test/publish_ship_selftest.py')], { encoding: 'utf8' })).find(r => !r.error);
 assert(py, 'no python to run publish_ship_selftest.py');
