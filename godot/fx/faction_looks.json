@@ -1,6 +1,6 @@
 {
   "_doc": "Per-faction colours and styles for effects, hulls and backdrops (G4). Linear RGB. Read by fx/faction_look.gd. Change a faction's look here, not in code. See fx/API.md section 15. Lore round 8 palettes (approved Oct 27): Sunward Crusade (voidsworn) black iron, frost white, bright ember; Hegemony pale grey, steel blue, implant blue; Ashfall Hullbreakers (corsair) soot, rust, red running lights; the Chorus dark olive, ochre, bile yellow-green; the Glasswrights (ithar) clear crystal, silver, rainbow edge, stored light; Eclipse (deathless) violet-black, white-gold corona, violet-white inner glow in the base fields. Doom uses R263 weapon_core green and weapon_sheath violet-black. The R271 null tracer uses the existing violet-white weapon colour.",
-  "_fields": "All fields are in use. weapon_core and weapon_sheath: Eclipse weapon-only core and dark sheath (R263), independent of the ship and engine palettes. wound_kind: 0 metal, 1 living tissue, 2 crystal, 3 Eclipse machine. damage_glow: the fire and lit conduits inside hull damage, per faction (Crusade ember, Hegemony white-gold, Hullbreakers dirty red, Chorus bile, Glasswrights stored white light, Eclipse violet-white). accent: a corona round each engine core in a second colour (Crusade frost white, Hullbreakers red running lights, Eclipse white-gold; Eclipse's engine embers take it too); null where a faction has none (Hegemony, Chorus, and the Glasswrights since issue 1316: a violet drive glow with no white corona). shield_edge: the shield bubble's rim (Crusade frost white, Glasswrights rainbow); null for the others. Ids never change.",
+  "_fields": "All fields are in use. weapon_core and weapon_sheath: Eclipse weapon-only core and dark sheath (R263), independent of the ship and engine palettes. wound_kind: 0 metal, 1 living tissue, 2 crystal, 3 Eclipse machine. damage_glow: the fire and lit conduits inside hull damage, per faction (Crusade ember, Hegemony white-gold, Hullbreakers dirty red, Chorus bile, Glasswrights stored white light, Eclipse violet-white). accent: a corona round each engine core in a second colour (Crusade frost white, Hullbreakers red running lights, Eclipse white-gold; Eclipse's engine embers take it too); null where a faction has none (Hegemony, Chorus, and the Glasswrights since issue 1316: a violet drive glow with no white corona). shield_edge: the shield bubble's rim (Crusade frost white, Glasswrights rainbow); null for the others. death (R367, issue 1399): a faction's own ship death, read by fx_death.gd; style shatter (Glasswrights) or peel (Eclipse), fire and fire_mid the hot and cooler colours the death's fire pictures take, prism the rainbow edge on them (0 to 1), smoke the share of their smoke kept (0 none), spark the sparks and embers, light the core flash light, rim the glowing torn edges; a faction without one keeps the shared orange fire. Ids never change.",
   "voidsworn": {
     "fragment_paint": [0.20, 0.21, 0.22],
     "wound_kind": 0,
@@ -75,6 +75,7 @@
     "shielded": true,
     "engine_extra": "none",
     "damage_glow": [0.85, 0.92, 1.0],
+    "death": {"style": "shatter", "fire": [1.0, 1.0, 1.0], "fire_mid": [0.62, 0.74, 1.0], "prism": 1.0, "smoke": 0.0, "spark": [0.86, 0.93, 1.0], "light": [0.9, 0.95, 1.0], "rim": [0.85, 0.92, 1.0]},
     "hull_fix": [0.1, 0.25, 1.0],
     "nebula": [[0.05, 0.08, 0.18], [0.42, 0.48, 0.7], [0.85, 0.9, 1.0]],
     "accent": null,
@@ -93,6 +94,7 @@
     "shielded": false,
     "engine_extra": "embers",
     "damage_glow": [0.72, 0.5, 1.0],
+    "death": {"style": "peel", "fire": [0.86, 0.74, 1.0], "fire_mid": [0.46, 0.18, 1.0], "prism": 0.0, "smoke": 0.15, "spark": [0.8, 0.6, 1.0], "light": [0.62, 0.4, 1.0], "rim": [0.6, 0.3, 1.0]},
     "hull_fix": [0.4, 0.5, 1.3],
     "nebula": [[0.1, 0.04, 0.16], [0.34, 0.14, 0.52], [1.0, 0.84, 0.55]],
     "accent": [1.0, 0.84, 0.5],
