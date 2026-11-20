@@ -30,6 +30,13 @@ set "TMO_STEP=recipe 5 surface check"
 if /i "%BAKE%"=="bake_sheet.py" call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%RC%\surface_check.py" -- "%JOB%\surface" > "%JOB%\log_surface.txt" 2>&1
 if /i "%BAKE%"=="bake_sheet.py" if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: the surface check exited code %ERRORLEVEL%. See %JOB%\log_surface.txt & goto bad)
 if /i "%BAKE%"=="bake_sheet.py" (findstr /b /c:"PASS surface check" "%JOB%\log_surface.txt" || (findstr /c:"surface check" /c:"seen from outside" "%JOB%\log_surface.txt" & echo Stage 5 FAILED: surfaces seen from outside without the paint stack. See %JOB%\log_surface.txt & goto bad))
+rem Issue 1291: the surface-detail check. A ship whose json sets "surface_detail" fails on flat flesh (Ryan, Nov 19: C13's flesh
+rem "looks like red clay"): the relief in the normal map, the colour's local contrast and the roughness spread are measured over
+rem the soft flesh's texels. Every other ship has its numbers reported, never failed.
+set "TMO_STEP=recipe 5 detail check"
+if /i "%BAKE%"=="bake_sheet.py" call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%RC%\detail_check.py" -- "%JOB%" %CELL% "%R209_SHIP%" > "%JOB%\log_detail.txt" 2>&1
+if /i "%BAKE%"=="bake_sheet.py" if not "%ERRORLEVEL%"=="0" (type "%JOB%\log_detail.txt" & echo Stage 5 FAILED: the surface-detail check failed: the flesh is flat. See %JOB%\log_detail.txt & goto bad)
+if /i "%BAKE%"=="bake_sheet.py" findstr /c:"detail check" "%JOB%\log_detail.txt"
 if /i "%BAKE%"=="bake_sheet.py" if exist "%JOB%\density.json" "%BPY%" -c "import json,sys;d=json.load(open(sys.argv[1]))['summary'];print('Stage 5 R224 density (reported, not a pass bar): paint flags',len(d['paint_flags']),'mesh flags',len(d['mesh_flags']));[print('  ',f) for f in d['paint_flags']+d['mesh_flags']]" "%JOB%\density.json"
 :baked
 rem the ship's own fitted concept camera (stage 3), so the concept side still belongs to this ship and not to C15s_23

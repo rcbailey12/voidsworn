@@ -212,7 +212,8 @@ class Kit:
         if not w:
             return 0.0
         a, sd = w
-        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+        fn = getattr(self, 'wob_fn', None)   # issue 1291: a sheet's own swellings and folds grown into the skin, on top
+        return (fn(x, t) if fn else 0.0) + a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
                     + 0.2 * math.cos(0.9 * x - 1.0 * t))
 
     def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
