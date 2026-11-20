@@ -68,6 +68,8 @@ set "BR=%CODEX_TEST_BRANCH%"
 set "PUSHMODE=test"
 :setup
 rem The PowerShell parent owns the lane until this batch returns, including final reporting.
+set "PC_RUNNER_TEST=0"
+if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
 if "%~2"=="locked" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1" run "%N%" "%R%"
 exit /b %ERRORLEVEL%
@@ -76,8 +78,6 @@ set "CODEX_LOCKED_REPO="
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1""
 set "PSW=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%runner_common.ps1""
-set "PC_RUNNER_TEST=0"
-if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
 set "CHECKS_OK=0"
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
@@ -91,7 +91,7 @@ if errorlevel 1 exit /b 14
 rem (722) Free-space floor, Board hashes and the resolved model stamp, as in work_issue.bat.
 set "SETF=%ROOT%\work217\runner_settings.txt"
 set "HASHF=%ROOT%\work217\runner_hashes.txt"
-%COMMON% space "%O%" "%SETF%" "%ROOT%"
+%COMMON% space "%O%" "%SETF%" "%ROOT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
 %COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"
 %COMMON% model "%O%" "%CODEX_MODEL%" "%CODEX_MODEL%"

@@ -105,6 +105,10 @@ set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%runner_common.ps1""
 set "PC_RUNNER_TEST=0"
 if /i "%MODE%"=="dryrun" if defined WORK_TEST_AGENT set "PC_RUNNER_TEST=1"
+if "%~4"=="locked" if "%PC_RUNNER_LOCKED_ISSUE%"=="%N%" goto :locked
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1" run "%N%" "%ARM%" "%MODE%"
+exit /b %ERRORLEVEL%
+:locked
 rem Kimi Code runs on its own CLI and saved plan login, never an API key.
 if /i "%ARM%"=="kimicode" set "WORK_HARNESS=kimi"
 rem (722) What will actually run: the Kimi Code CLI model for the kimicode arm whenever the real CLI or its test
@@ -164,7 +168,7 @@ if not exist "%SETF%" call :settings
 %COMMON% init "%O%" "%BR%"
 if errorlevel 1 exit /b 14
 rem (722) Nothing runs below the free-space floor: no mirror fetch, no model probe, no agent.
-%COMMON% space "%O%" "%SETF%" "%VT%"
+%COMMON% space "%O%" "%SETF%" "%VT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
 rem (722) The Board's hashes guard the running copies; a mismatch warns and the run goes on (%TC% is set above).
 %COMMON% hashcheck "%O%" "%TC%" "%HASHF%"
@@ -431,6 +435,7 @@ exit /b 0
 >> "%SETF%" echo remove_repo_copy_after_push=no
 >> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
 >> "%SETF%" echo min_free_gb=60
+>> "%SETF%" echo janitor_free_gb=150
 >> "%SETF%" echo # OpenAI monthly estimate budget in USD. November 2026 starts with 94 left.
 >> "%SETF%" echo openai_budget_usd=94
 exit /b 0
