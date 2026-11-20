@@ -1,4 +1,6 @@
 extends SceneTree
+# issue 1077: these checks measure the multi-cut split (two cuts, three sections, staged parting), which stays the
+# death_story="off" path; the default one-crack strained death has its own check, fx/test/death_story_check.gd.
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 137 contracts: timed sections, tiers, lifetime, cleanup and vacuum drift.
 const FX := preload("res://fx/fx.gd")
@@ -20,7 +22,7 @@ func _run() -> void:
 		var fx = FX.new()
 		world.add_child(fx)
 		fx.manual = true
-		fx.setup({"quality": quality, "shake": 0.0})
+		fx.setup({"death_story": "off", "quality": quality, "shake": 0.0})
 		var probe_mat := preload("res://fx/fx_death.gd").flipbook_material(fx, "flash")
 		check(probe_mat.get_shader_parameter("atlas") is Texture2D, "baked atlas is imported")
 		var r := Node3D.new()

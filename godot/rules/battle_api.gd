@@ -188,6 +188,12 @@ func _clean_cfg(cfg: Dictionary) -> Dictionary:
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
+# The enemy AI level, "standard" or "veteran" (anything else is Veteran). Set it before new_battle: the enemy fleet is rolled
+# there at this level (battle.js genEnemyFleet reads AI_LEVEL), issue 1336.
+func set_ai_level(level: String) -> void:
+	_enter()
+	R.AI_LEVEL = level if level in ["standard", "veteran"] else "veteran"
+	_leave(false)
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_enter(); halted = ""
 	if R != null: R.not_ported = ""   # a new battle starts clean
@@ -699,6 +705,27 @@ func teaching_info() -> Dictionary:
 	var n = cfg.get("runBattle", cfg.get("teachingBattle", max(1, seen.size())))
 	var ev = R.B.get("event")
 	var out = {"battle": n, "arrived": R.jt(run.get("teachingReinforced")), "event": ev.duplicate(true) if ev is Dictionary else null}
+	_leave(false)
+	return out
+
+# Issue 1289: the hulls a battle will bring in after it starts (the rules' reinforcement event, known when the battle
+# starts), so the battle can load and draw them under the loading cover instead of in the frame they arrive. Read only:
+# no dice, no ids taken, so the battle plays exactly as without it. Same fields ShipView.setup reads from a view unit.
+func arrival_previews() -> Array:
+	_enter()
+	var out: Array = []
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var run = R.RUN if R.RUN is Dictionary else {}
+		var fac = B.get("cfg", {}).get("fac") if side == "enemy" else (run["fac"] if R.jt(run.get("fac")) else "voidsworn")
+		var tpl = R.cheapHull(fac)
+		var t: Dictionary = R.HULLS.get(tpl, {})
+		if not t.is_empty():
+			out.append({"id": "arrival_warm_0", "side": side, "tpl": tpl, "fac": t["fac"] if R.jt(t.get("fac")) else fac,
+				"cls": t.get("cls"), "size": t.get("size", 1.0), "facing": 0 if side == "player" else 3, "squadron": false,
+				"flagship": false, "hp": t.get("hp", 1), "maxHp": t.get("hp", 1)})
 	_leave(false)
 	return out
 

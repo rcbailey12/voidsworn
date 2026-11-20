@@ -84,7 +84,7 @@ static func _checkout_context(repo: String) -> Dictionary:
 	var python := OS.get_environment("PICTURE_PYTHON")
 	if python.is_empty():
 		var pc := OS.get_environment("USERPROFILE").path_join("Downloads")
-		for candidate in [pc.path_join("ComfyUI_windows_portable/python_embeded/python.exe"), pc.path_join("voidsworn_test/blender/blender-4.5.14-windows-x64/4.5/python/bin/python.exe")]:
+		for candidate in [pc.path_join("voidsworn_test/blender/blender-4.5.14-windows-x64/4.5/python/bin/python.exe")]:
 			if FileAccess.file_exists(candidate):
 				python = candidate
 				break

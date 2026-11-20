@@ -64,8 +64,8 @@ var flash_area_logging := false
 
 # --- settings (API.md 1, 8)
 var quality = "max"
-# Issue 1077 (prototype, off by default): a big hull strains along its break lines before it splits, and its wreck stays
-# grouped where it broke. rendering/effects/death_story="strain" or VS_DEATH_STORY=strain turns it on; nothing else does.
+# Issue 1077 (on since Ryan's yes on pass 6, Nov 20 2026): a big hull strains along one ragged crack before it splits, and
+# its wreck stays grouped where it broke. rendering/effects/death_story="off" or VS_DEATH_STORY=off turns it off.
 var death_story := false
 var reduce_flashing = false:
 	set(v):
@@ -182,6 +182,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_set_physics_awake(true)   # the world can outlive this fx (look bench battles share the root world)
 	release()
 
 
@@ -209,6 +210,9 @@ func release() -> void:
 	hull_arrays.clear()
 	_damage_templates.clear()
 	_power_templates.clear()
+	shield_poses.clear()
+	hull_shared.clear()
+	shield_keys.clear()
 	_dark_interiors.clear()
 	_wreck_interiors.clear()
 	_piece_builds.clear()
@@ -258,7 +262,7 @@ func setup(opts := {}) -> void:
 	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var story := String(opts.get("death_story", OS.get_environment("VS_DEATH_STORY")))
 	if story.is_empty():
-		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "off"))
+		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "strain"))
 	death_story = story == "strain"
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
@@ -290,6 +294,7 @@ func setup(opts := {}) -> void:
 	phys_root = Node3D.new()
 	phys_root.name = "fx_physics"
 	add_child(phys_root)
+	_phys_check_ms = 0
 	DEATH.setup_physics(self)
 	notes.append("fx: quality %s, %d lights in the event pool" % [quality, _lpool.size()])
 
@@ -361,7 +366,11 @@ func _process(delta: float) -> void:
 		step(delta)
 
 
+var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
+
+
 func step(delta: float) -> void:
+	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
 	var spd = 1.0
 	if now < _pause_until:
@@ -376,6 +385,7 @@ func step(delta: float) -> void:
 	var t0 := Time.get_ticks_usec()
 	_run_later()
 	_build_death_pieces()
+	_gate_physics()
 	t0 = pend("later", t0)
 	_update_feel(delta)
 	_update_dim()
@@ -392,6 +402,46 @@ func step(delta: float) -> void:
 		else:
 			(pools[k] as POOLS.Pool).flush()
 	pend("lights_pools", t0)
+
+
+# Issue 1279: Jolt runs its step jobs on the shared worker lanes and keeps each job in a fixed table (2048) until a
+# lane has run it. While any body moves (every live ship's hull collider rides its ship, so all battle long), a second
+# or more of long work holding every high-priority lane (shader and pipeline compiles on a capital's arrival, a death
+# cut's side-by-side lanes) filled that table: "Jolt Physics job system exceeded the maximum number of jobs", and the
+# physics step waited on the main thread. The colliders only matter to loose debris and wreck pieces, so the space
+# steps only while one of those is awake; with nothing awake Jolt makes no jobs at all.
+var _phys_awake := true
+var _phys_check_ms := 0
+const PHYS_CHECK_MS := 250
+
+
+func _set_physics_awake(on: bool) -> void:
+	if on == _phys_awake or phys_root == null or not phys_root.is_inside_tree():
+		return
+	PhysicsServer3D.space_set_active(phys_root.get_world_3d().space, on)
+	_phys_awake = on
+
+
+# Called by anything that puts a body into motion under phys_root, before it moves.
+func wake_physics() -> void:
+	_set_physics_awake(true)
+	_phys_check_ms = Time.get_ticks_msec() + PHYS_CHECK_MS
+
+
+func _gate_physics() -> void:
+	if phys_root == null:
+		return
+	var t := Time.get_ticks_msec()
+	if t < _phys_check_ms:
+		return
+	_phys_check_ms = t + PHYS_CHECK_MS
+	var awake := false
+	for n in phys_root.get_children():
+		var rb := n as RigidBody3D
+		if rb != null and not rb.freeze and not rb.sleeping and not rb.is_queued_for_deletion():
+			awake = true
+			break
+	_set_physics_awake(awake)
 
 
 # F3 profiling (the 20-ship bench's hitch frames): microseconds of main-thread fx work per named section since the last
@@ -437,6 +487,27 @@ func later(t: float, f: Callable) -> void:
 func free_effect(ref: WeakRef) -> void:
 	var node = ref.get_ref()
 	if is_instance_valid(node): node.queue_free()
+
+
+# Issue 1237: one-shot pictures (death flipbooks, staged flashes and smoke, hull hit pictures) come from a reused pool
+# instead of a new node, quad and material each (fx_pool.gd Pictures). `make` builds the material only when the pool has
+# none free for `key`. Return it with free_picture, bound with the picture's pic_gen, never with free_effect.
+func picture(key: String, make: Callable, node_name: String) -> MeshInstance3D:
+	return pictures().take(self, key, make, node_name)
+
+
+func pictures() -> POOLS.Pictures:
+	if not dstate.has("pics"): dstate["pics"] = POOLS.Pictures.new()
+	return dstate["pics"]
+
+
+func free_picture(ref: WeakRef, gen: int) -> void:
+	var node = ref.get_ref()
+	if not is_instance_valid(node): return
+	if dstate.has("pics") and node.has_meta("pic_key"):
+		(dstate["pics"] as POOLS.Pictures).give(node, gen)
+	else:
+		node.queue_free()
 
 
 func _run_later() -> void:
@@ -943,6 +1014,9 @@ func _update_lights() -> void:
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
 			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
+			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
+			# each one a pass over the fog froxels); the rest light hulls only.
+			l.light_volumetric_fog_energy = 1.0 if k < 2 else 0.0
 			l.visible = true
 		else:
 			l.visible = false
@@ -1217,7 +1291,7 @@ func _finish_shield_skins() -> void:
 		if not arrays.is_empty():
 			SHIP.save_shield_skin(key, arrays)
 			for entry in job["ships"]:
-				entry[0].install_shield_skin(arrays, entry[1])
+				entry[0].install_shield_skin(arrays, entry[1], self, key)
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1285,6 +1359,11 @@ func prepare_battle_hulls() -> void:
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
 var _death_cut_tasks := {}
+# Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
+var shield_poses := {}
+# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
+var hull_shared := {}
+var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
 func submit_death_cut(work: Callable) -> int:
@@ -1324,7 +1403,9 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
+	var t_col := Time.get_ticks_usec()
 	DEATH.add_collider(self, s)
+	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
@@ -1804,11 +1885,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		cs.shape = DEATH.safe_convex(PackedVector3Array([Vector3(-1, -1, -1), Vector3(1, -1, -1), Vector3(-1, 1, -1), Vector3(1, 1, -1),
 			Vector3(-1, -1, 1), Vector3(1, -1, 1), Vector3(-1, 1, 1), Vector3(0.8, 1.1, 0.9)]))
 		rb.add_child(cs)
+		wake_physics()
 		phys_root.add_child(rb)
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
-		get_tree().create_timer(0.5).timeout.connect(free_effect.bind(weakref(rb)))
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			free_effect(weakref(rb))
+			# issue 1279: the warm debris would drift far below the board for the whole battle and keep Jolt stepping;
+			# stopped, they sleep (the space with them) until a death reuses them from the pool
+			for b in dstate["debris"]:
+				if is_instance_valid(b) and (b as RigidBody3D).global_position.y < deep.y * 0.5:
+					(b as RigidBody3D).linear_velocity = Vector3.ZERO
+					(b as RigidBody3D).angular_velocity = Vector3.ZERO
+					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw

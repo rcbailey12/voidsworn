@@ -1,22 +1,186 @@
-Saved manifest before: 747ffb51f69ff0139a18d75906c44ca4a6c867e340ca85e56f3a3c9fff47d2cc
-Saved manifest after: aeb99b05371a5fef003b2a5e379269428923307211f75305c8d95a54b0775cee
+Saved manifest before: aeb99b05371a5fef003b2a5e379269428923307211f75305c8d95a54b0775cee
+Saved manifest after: b491b9564574e2fc18b7bb3a938100db3e579464168e3e12fbbdc0672fd750b9
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s9
-  turn 0, round 1, after tick player; unit x06 (player penitent)
-  state.units[1].q: 3 -> 6
-  later changed records: 401; total records: 402 -> 344
-FAIL battle s24
-  turn 0, round 1, after tick player; unit x08 (player reliquary)
-  state.units[1].q: 1 -> -1
-  later changed records: 621; total records: 499 -> 622
+FAIL battle s8
+  turn 0, round 1, after tick player; unit x09 (enemy i_carrier)
+  state.units[4].hp: 172 -> 207
+  later changed records: 118; total records: 118 -> 119
+FAIL battle s14
+  turn 0, round 1, after tick player; unit x09 (enemy i_song)
+  state.units[4].hp: 101 -> 121
+  later changed records: 147; total records: 148 -> 136
+FAIL battle s27
+  turn 0, round 1, after tick player; unit x06 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 325; total records: 326 -> 257
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x09 (enemy i_blade)
+  state.units[4].hp: 45 -> 51
+  later changed records: 218; total records: 163 -> 219
 FAIL battle s36
-  turn 0, round 1, after tick player; unit x09 (player reliquary)
-  state.units[2].q: 1 -> 0
-  later changed records: 357; total records: 218 -> 358
-FAIL battle s39
-  turn 0, round 1, after tick player; unit x08 (player penitent)
-  state.units[1].q: 6 -> 10
-  later changed records: 390; total records: 385 -> 391
-FAIL: saved Godot results; 284 battles checked, 4 changed, 0 other files changed, 4 failures; 12.993 s
+  turn 0, round 1, after tick player; unit x013 (enemy i_blade)
+  state.units[6].hp: 51 -> 58
+  later changed records: 357; total records: 358 -> 216
+FAIL battle s43
+  turn 0, round 1, after tick player; unit x07 (enemy i_blade)
+  state.units[3].hp: 44 -> 50
+  later changed records: 157; total records: 151 -> 158
+FAIL battle s45
+  turn 0, round 1, after tick player; unit x07 (enemy i_carrier_a)
+  state.units[3].hp: 157 -> 188
+  later changed records: 291; total records: 292 -> 280
+FAIL battle s55
+  turn 0, round 1, after tick player; unit x04 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 211; total records: 211 -> 212
+FAIL battle s56
+  turn 0, round 1, after tick player; unit x04 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 155; total records: 132 -> 156
+FAIL battle t_casttwice
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 92; total records: 93 -> 93
+FAIL battle t_flakskip
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 105; total records: 106 -> 106
+FAIL battle t_lensaloft
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_longfocus
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t_recordedangle
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 54; total records: 55 -> 55
+FAIL battle t_burnflaw
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t_longlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 37; total records: 38 -> 38
+FAIL battle t_flawforever
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 48; total records: 49 -> 49
+FAIL battle t_twoimages
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_angles
+  turn 0, round 1, after tick player; unit x04 (player i_wisp)
+  state.units[0].hp: 30 -> 36
+  later changed records: 75; total records: 76 -> 76
+FAIL battle t_refraction
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].hp: 30 -> 36
+  later changed records: 55; total records: 55 -> 56
+FAIL battle t_mirrorturns
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].hp: 30 -> 36
+  later changed records: 49; total records: 38 -> 50
+FAIL battle t_falsehulls
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_rechargelit
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 23; total records: 24 -> 24
+FAIL battle t_glasscorrected
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].hp: 30 -> 36
+  later changed records: 98; total records: 68 -> 99
+FAIL battle t_hardlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 69; total records: 70 -> 70
+FAIL battle t_wardglass
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 53; total records: 54 -> 54
+FAIL battle t_deployread
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 20; total records: 21 -> 21
+FAIL battle t_castcorrected
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 31; total records: 32 -> 32
+FAIL battle t_flagshiplens
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t_firstlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 54; total records: 55 -> 55
+FAIL battle t7a_flightpaths
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t7a_replay
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 104; total records: 105 -> 105
+FAIL battle t7a_starlings
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 95; total records: 96 -> 96
+FAIL battle t7a_flightcast
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 97; total records: 92 -> 98
+FAIL battle t7a_forgeahead
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].hp: 140 -> 168
+  later changed records: 98; total records: 99 -> 99
+FAIL battle t7a_onelens
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t7a_lighttogether
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 30; total records: 31 -> 31
+FAIL battle t7a_sunlens
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 36; total records: 37 -> 37
+FAIL battle t7a_mirroraside
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 65; total records: 66 -> 66
+FAIL battle t7a_splitthree
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t7a_fleetelsewhere
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 62; total records: 63 -> 63
+FAIL battle t7a_weakside
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t7a_prismsface
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 36; total records: 37 -> 37
+FAIL battle t7a_lensrotates
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 22; total records: 23 -> 23
+FAIL battle t7a_facetlit
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].hp: 90 -> 108
+  later changed records: 23; total records: 24 -> 24
+FAIL: saved Godot results; 284 battles checked, 45 changed, 0 other files changed, 45 failures; 15.043 s

@@ -1,0 +1,25 @@
+Issue 1262 new timing: median of per-session medians, ms (frame / GPU), fitted shields, GPU solo
+after | gate:max:2:base | 5.379 | 4.994 | sessions 3 | ssil False
+after | dense:max:2:native_lod | 3.933 | 3.460 | sessions 3 | ssil False
+after | gate:max:1:base | 3.062 | 2.541 | sessions 3 | ssil False
+after | dense:max:1:native_lod | 1.658 | 1.293 | sessions 3 | ssil False
+before | gate:max:2:base | 6.210 | 5.840 | sessions 3 | ssil True
+before | dense:max:2:native_lod | 5.205 | 4.803 | sessions 3 | ssil True
+before | gate:max:1:base | 3.236 | 2.738 | sessions 3 | ssil True
+before | dense:max:1:native_lod | 2.072 | 1.604 | sessions 3 | ssil True
+ssil | gate:max:2:base | 5.809 | 5.426 | sessions 3 | ssil True
+ssil | dense:max:2:native_lod | 4.337 | 3.863 | sessions 3 | ssil True
+ssil | gate:max:1:base | 3.156 | 2.652 | sessions 3 | ssil True
+ssil | dense:max:1:native_lod | 1.783 | 1.409 | sessions 3 | ssil True
+underlay | gate:max:2:base | 5.455 | 5.068 | sessions 3 | ssil False
+underlay | dense:max:2:native_lod | 4.004 | 3.532 | sessions 3 | ssil False
+underlay | gate:max:1:base | 3.058 | 2.552 | sessions 3 | ssil False
+underlay | dense:max:1:native_lod | 1.681 | 1.311 | sessions 3 | ssil False
+cards | gate:max:2:base | 5.726 | 5.340 | sessions 3 | ssil False
+cards | dense:max:2:native_lod | 4.812 | 4.337 | sessions 3 | ssil False
+cards | gate:max:1:base | 3.129 | 2.615 | sessions 3 | ssil False
+cards | dense:max:1:native_lod | 1.861 | 1.487 | sessions 3 | ssil False
+rockshadow | gate:max:2:base | 5.354 | 4.962 | sessions 3 | ssil False
+rockshadow | dense:max:2:native_lod | 3.892 | 3.421 | sessions 3 | ssil False
+rockshadow | gate:max:1:base | 3.057 | 2.532 | sessions 3 | ssil False
+rockshadow | dense:max:1:native_lod | 1.642 | 1.277 | sessions 3 | ssil False

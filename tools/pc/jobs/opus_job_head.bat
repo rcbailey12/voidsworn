@@ -14,14 +14,22 @@ rem                                   PC_KEEP_GODOT_PROFILE cleared, issue 1228)
 rem                                   board_look.cfg. Sets OJ_OUT (the attempt folder), OJ_ST (its status.txt), JW, JW_GODOT.
 rem   checkout <name> <40-hex sha>    a fresh checkout of that exact commit in OJ_OUT\<name> from the shared mirror; HEAD
 rem                                   must equal the pin. Sets OJ_REPO.
-rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO with
-rem                                   /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews, robocopy
-rem                                   8 or more fails, then fails if any tracked file in OJ_REPO differs from the pin.
+rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO: gen whole with
+rem                                   /E (gen\manifest.json must arrive), assets\ships with /E /XC /XN /XO /XF
+rem                                   manifest.json README.md a4_props.gd *.uid /XD test previews; robocopy 8 or more fails,
+rem                                   then fails if any tracked file in OJ_REPO differs from the pin, or if any copied
+rem                                   ship's glb stamp differs from its gen cache (a publish during the copy); the
+rem                                   measured hulls are listed in <OJ_REPO>_ships_identity.txt. Every checkout in a job
+rem                                   must list the same hulls as the first one. Optional OJ_NEED_HULLS: codes that
+rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
-rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done PASS" or
+rem   tail                            hashes Ryan's options again (a change fails the job), after a PASS removes the job's
+rem                                   own pinned checkouts that hold no work (a failure keeps all; out_* and logs stay;
+rem                                   OJ_KEEP_CHECKOUTS=1 keeps them), then
+rem                                   job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
-rem Nothing is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
+rem The tail removes only the job's own pinned checkouts (RULEBOOK 3.3, R326); nothing else is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
 if /i "%~1"=="init" goto oj_init
 if /i "%~1"=="checkout" goto oj_checkout
 if /i "%~1"=="ships" goto oj_ships
@@ -100,12 +108,30 @@ if defined JW_STOP (>> "%OJ_ST%" echo skipped ships: an earlier step failed & ex
 if not defined LB_SHIPS set "LB_SHIPS=%OJ_VT%\build\godot"
 if not exist "%LB_SHIPS%\gen" (call "%JW%" fail "no built ships at %LB_SHIPS%\gen" & exit /b 1)
 >> "%OJ_ST%" echo ships from %LB_SHIPS% into %OJ_REPO%
-robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_gen.txt" 2>&1
+rem The tail's checkout removal proves each copied ship file unchanged against this source.
+> "%OJ_OUT%\ships_source.txt" echo %LB_SHIPS%
+rem gen is untracked and copied whole with no skip flags, so the source always wins (as get_ship_files.bat does): its
+rem manifest.json is what the game reads to find the built hulls. The /XF list is for assets\ships only, where
+rem manifest.json is the tracked checksum list (RUN1262C dropped gen\manifest.json and every hull drew as a placeholder).
+robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_gen.txt" 2>&1
 if errorlevel 8 (call "%JW%" fail "ships copy gen, see %OJ_REPO%_ships_gen.txt" & exit /b 1)
+if not exist "%OJ_REPO%\godot\gen\manifest.json" (call "%JW%" fail "no gen\manifest.json after the ships copy; every hull would draw as a placeholder" & exit /b 1)
 if exist "%LB_SHIPS%\assets\ships" robocopy "%LB_SHIPS%\assets\ships" "%OJ_REPO%\godot\assets\ships" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_assets.txt" 2>&1
 if errorlevel 8 (call "%JW%" fail "ships copy assets, see %OJ_REPO%_ships_assets.txt" & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" tracked "%OJ_REPO%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "tracked files changed by the ships copy in %OJ_REPO%" & exit /b 1)
+rem The two copies are separate passes, so a ship published in between would pair a new glb with an old cache
+rem (Artoo, PR 1324). Every copied ship must match its cache stamp; the measured hulls go to <repo>_ships_identity.txt.
+rem OJ_NEED_HULLS (optional, codes split by spaces) names the hulls the job's fixtures draw; each must be a matching ship.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%" >> "%OJ_ST%" 2>&1
+if errorlevel 1 (call "%JW%" fail "ships do not match their cache in %OJ_REPO%, see %OJ_ST%" & exit /b 1)
+rem Every checkout in one job must measure the same fleet: a publish between two checkouts (OLD and NEW arms) would
+rem give each a self-consistent but different set of hulls (Artoo, PR 1324). The first checkout's identity is the
+rem reference; any later one that differs fails the job.
+if not exist "%OJ_OUT%\ships_identity_first.txt" (copy /y "%OJ_REPO%_ships_identity.txt" "%OJ_OUT%\ships_identity_first.txt" > nul & exit /b 0)
+fc /b "%OJ_OUT%\ships_identity_first.txt" "%OJ_REPO%_ships_identity.txt" > nul 2>&1
+if errorlevel 1 (call "%JW%" fail "the hulls in %OJ_REPO% differ from the first checkout's (a ship was published between them), see %OJ_OUT%\ships_identity_first.txt" & exit /b 1)
+>> "%OJ_ST%" echo ships in %OJ_REPO% are the same fleet as the first checkout
 exit /b 0
 
 rem ------------------------------------------------------------------ tail
@@ -126,5 +152,14 @@ goto oj_tail_end
 :oj_tail_changed
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
+rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so after a
+rem PASS they go, unless one holds work (dropcheckouts checks). A failed job keeps everything for the post-mortem (R326).
+rem out_*, the logs and the ship records always stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
+rem It runs after job_wrap end has written the done line, so a slow or stuck removal can never delay or lose the result.
+set "OJ_DROP=1"
+if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
+if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& set "OJ_DROP=")
 call "%JW%" end
-exit /b %ERRORLEVEL%
+set "OJ_RC=%ERRORLEVEL%"
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+exit /b %OJ_RC%

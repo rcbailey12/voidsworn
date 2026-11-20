@@ -108,14 +108,24 @@ The cruiser's death, longer and heavier:
 - Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
   second, so the flash feels like it took the light with it. Off under reduce flashing.
 
-Prototype, not installed (issue 1077, off by default until Ryan picks it): `rendering/effects/death_story="strain"` (or
-`VS_DEATH_STORY=strain`) adds strain to every cruiser and capital death before the split above, in the shared death code
+Installed (issue 1077, on by default since Ryan's yes on pass 6, Nov 20 2026; `rendering/effects/death_story="off"` or
+`VS_DEATH_STORY=off` turns it off for comparisons) adds strain to every cruiser and capital death before the split above, in the shared death code
 (fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
-each line bulges and ripples, hairline cracks light, and the hull groans between the chain blasts (sparks, a breath of
-gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
+each line bulges and ripples, hairline cracks light along a ragged line that steps across the plates (never a straight
+cut, Ryan on pass 4B), and the hull groans between the chain blasts (sparks, a small plate, a jolt). Smoke is light: one
+small puff per blast, no smoke body or gas veil at the core and no puff where the pieces part (Ryan on pass 4B: "way too
+much smoke"; pass 5: no haze at the split). A strained death breaks on one crack: a capital splits in two like a cruiser,
+and on an authored hull only the crosswise joint nearest the core breaks, with no lengthwise joints (fx_death.gd
+`fracture_plan`, Ryan on pass 5; a lengthwise joint's plane would cut its now longer parent where no joint was built, S8 and S9). After the split the pieces part by about a fifth of the length and settle, fragments slow,
 and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_interior`), since the grouped wreck keeps them
-in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths (Nov 20
-2026); it stays off by default until its clip is approved. Check: fx/test/death_story_check.gd (quality low and high).
+in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths and
+approved the pass 6 clip (Nov 20 2026, "Yep perfect"). Check: fx/test/death_story_check.gd (quality low and high).
+
+Many deaths at once (issue 1237, Neon's destruction audit F7): thrown plates fly two seconds as before, then slow and come
+to rest by five and a half, where they stay until the plate ring reuses them; wreck sections keep drifting and turning,
+but on the effect clock after four seconds instead of in Jolt. Death pictures are reused from a pool, the power-down
+budget is one per frame for every dying ship, and only the two strongest event lights light the fog. Done when three
+capitals at once keep p99 inside the 12.5 ms gate on the PC; check: fx/test/multi_death_check.gd (headless counts).
 
 ### Frigate, escort, destroyer
 

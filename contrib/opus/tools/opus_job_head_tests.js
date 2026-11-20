@@ -1,7 +1,7 @@
 'use strict';
 // Issue 1303: tools/pc/jobs/opus_job_head.bat is the one shared head for helper PC proof bats, and
 // opus_job_template.bat is how a helper starts one. A static contract runs everywhere; the PowerShell half
-// (opus_job_head.ps1: live, watchdog, checkout, tracked, hashes) also runs for real under pwsh (Linux CI).
+// (opus_job_head.ps1: live, watchdog, checkout, tracked, shipcheck, hashes) also runs for real under pwsh (Linux CI).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -32,18 +32,29 @@ assert(init.includes('set "JW=%~dp0..\\job_wrap.bat"'), 'steps run through the j
 const ships = headCode.slice(headCode.indexOf(':oj_ships'), headCode.indexOf(':oj_tail'));
 const flags = '/E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews';
 assert.equal((ships.match(/robocopy /g) || []).length, 2, 'two copies: gen and assets\\ships');
-for (const line of ships.split('\n').filter(l => l.includes('robocopy '))) assert(line.includes(flags), 'safe ships copy flags: ' + line);
+const copies = ships.split('\n').filter(l => l.includes('robocopy '));
+const genCopy = copies.find(l => l.includes('"%LB_SHIPS%\\gen"'));
+const shipCopy = copies.find(l => l.includes('"%LB_SHIPS%\\assets\\ships"'));
+assert(genCopy && genCopy.includes('/E ') && !/\/X[CNOF]\b/.test(genCopy), 'gen is copied whole with no skip flags, so its manifest.json lands and the source wins: ' + genCopy);
+assert(shipCopy && shipCopy.includes(flags), 'assets\\ships copy uses the safe flags: ' + shipCopy);
+assert(/if not exist "%OJ_REPO%\\godot\\gen\\manifest\.json" \(call "%JW%" fail/.test(ships), 'a missing gen manifest fails the job');
 assert.equal((ships.match(/if errorlevel 8 \(call "%JW%" fail/g) || []).length, 2, 'robocopy 8 or more fails the job');
 assert(ships.indexOf('tracked "%OJ_REPO%"') > ships.lastIndexOf('robocopy '), 'the tracked check runs after the copies');
+assert(ships.includes('> "%OJ_OUT%\\ships_source.txt" echo %LB_SHIPS%'), 'the ships step records its source for the tail\'s unchanged-copy proof');
+assert(ships.indexOf('shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%"') > ships.lastIndexOf('robocopy '), 'every copied ship is checked against its cache stamp after both copies');
+assert(/fc \/b "%OJ_OUT%\\ships_identity_first\.txt" "%OJ_REPO%_ships_identity\.txt"[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'every checkout must measure the same hulls as the first');
+assert(/shipcheck[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'a ship that does not match its cache fails the job');
 assert(/:oj_checkout[\s\S]*checkout "%OJ_OUT%" "%~2" "%~3"[\s\S]*set "OJ_REPO=%OJ_OUT%\\%~2"/.test(headCode), 'checkout goes into the attempt folder');
 const tail = headCode.slice(headCode.indexOf(':oj_tail'));
-assert(/hashes "%OJ_OUT%\\real_options_after\.txt"[\s\S]*fc \/b "%OJ_OUT%\\real_options_before\.txt" "%OJ_OUT%\\real_options_after\.txt"[\s\S]*Ryan's real options changed[\s\S]*call "%JW%" end\nexit \/b %ERRORLEVEL%/.test(tail), 'tail compares the options hash, then ends through job_wrap');
+assert(/hashes "%OJ_OUT%\\real_options_after\.txt"[\s\S]*fc \/b "%OJ_OUT%\\real_options_before\.txt" "%OJ_OUT%\\real_options_after\.txt"[\s\S]*Ryan's real options changed[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"/.test(tail), 'tail compares the options hash, then ends through job_wrap');
 for (const step of ['oj_checkout', 'oj_ships']) {
   const body = headCode.slice(headCode.indexOf(':' + step));
   assert(/if defined JW_STOP \([^\n]*skipped/.test(body.split('\n').slice(0, 4).join('\n')), step + ' is skipped after a failed step');
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
+assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*if defined JW_FAILED \([^\n]*set "OJ_DROP="\)\ncall "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%"[^\n]*\nexit \/b %OJ_RC%/.test(tail), 'the tail removes the job\'s own checkouts only after a PASS, after job_wrap end has written the result, and keeps its exit code');
+assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
 // ---------------------------------------------------------------- static contract: the template
@@ -62,8 +73,14 @@ console.log('PASS template: five fill lines, head from tools_live, every step th
 assert(psCode.includes("$mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None'"), 'takes the shared mirror lock');
 assert(psCode.includes("clone --local -q --no-checkout $mirror $repo"), 'clones from the shared mirror');
 assert(psCode.includes("'\\A[0-9a-f]{40}\\z'"), 'a pin must be a full commit');
-for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(psCode), 'ps1 must not use ' + banned);
-console.log('PASS ps1: shared mirror lock, full pins, nothing deleted');
+const walk = psCode.slice(psCode.indexOf('function Remove-LinkSafeTree'), psCode.indexOf('switch ($Action)'));
+const outsideWalk = psCode.replace(walk, '');
+for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(outsideWalk), 'ps1 must not use ' + banned + ' outside the link-safe walk');
+assert((psCode.match(/Remove-LinkSafeTree /g) || []).length === 1, 'the link-safe walk is called once, from dropcheckouts');
+const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'hashes' {"));
+assert(/HEAD is no longer the pin[\s\S]*Get-KeptWork \$repo[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$repo/.test(drop), 'a checkout goes only after its pin, its working files and the pause are checked');
+assert(/\[IO\.File\]::AppendAllText\(\(Join-Path \$attempt 'checkouts\.txt'\)/.test(psCode), 'the checkout step lists what it made');
+console.log('PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts');
 
 // ---------------------------------------------------------------- live fixtures (pwsh)
 const windows = process.platform === 'win32';
@@ -160,6 +177,105 @@ r = run('tracked', path.join(attempt, 'new'));
 assert.notEqual(r.status, 0, 'a changed tracked .gd fails the job');
 assert.match(r.out, /a4_props\.gd/);
 
+// shipcheck: each copied ship's glb stamp (unix mtime:size per glb, as build_assets.gd source_stamp) must equal its
+// gen\manifest.json "src", and its cached scene must exist.
+const sc = path.join(tmp, 'sc');
+const glb = path.join(sc, 'godot', 'assets', 'ships', 'S1', 'S1.glb');
+write(glb, 'twelve bytes');
+fs.utimesSync(glb, 1700000000, 1700000000);
+write(path.join(sc, 'godot', 'gen', 'ships', 'S1.scn'), 'scene');
+const man = src => write(path.join(sc, 'godot', 'gen', 'manifest.json'), JSON.stringify({ ships: { S1: { v: 9, res: 'res://gen/ships/S1.scn', src }, GONE: { res: 'res://gen/ships/GONE.scn' } } }));
+const ident = path.join(tmp, 'ident.txt');
+man('1700000000:12;');
+r = run('shipcheck', sc, ident);
+assert.equal(r.status, 0, 'a matching ship passes: ' + r.out);
+assert.match(fs.readFileSync(ident, 'utf8'), /^S1 1700000000:12; res:\/\/gen\/ships\/S1\.scn/m, 'the measured hull identity is recorded');
+assert.match(fs.readFileSync(ident, 'utf8'), /^GONE no-glb res:\/\/gen\/ships\/GONE\.scn scene=0/m, 'an older entry with no ship folder is listed, so checkouts must agree on it too');
+assert.equal(run('shipcheck', sc, ident, 'S1').status, 0, 'a needed hull that matches passes');
+r = run('shipcheck', sc, ident, 'S1 GONE');
+assert.notEqual(r.status, 0, 'a needed hull with no matching ship fails');
+assert.match(r.out, /GONE is needed by this job/);
+man('1600000000:12;');
+r = run('shipcheck', sc, ident);
+assert.notEqual(r.status, 0, 'a glb newer than its cache (a publish between the copies) fails');
+assert.match(r.out, /S1 cache was built from other files/);
+man('1700000000:12;');
+fs.rmSync(path.join(sc, 'godot', 'gen', 'ships', 'S1.scn'));
+assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing cached scene fails');
+fs.rmSync(path.join(sc, 'godot', 'gen', 'manifest.json'));
+assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest fails');
+
+// dropcheckouts: only the listed checkouts whose HEAD is still the pin go; links inside are not followed; out_* and
+// logs stay; the Board's pause and a folder outside voidsworn_test\<job>\out_* remove nothing.
+const listed = fs.readFileSync(path.join(attempt, 'checkouts.txt'), 'utf8');
+assert.match(listed, new RegExp(`^old ${one1}\\r?$`, 'm'), 'checkout lists old');
+assert.match(listed, new RegExp(`^new ${two}\\r?$`, 'm'), 'checkout lists new');
+const outside = path.join(tmp, 'outside');
+write(path.join(outside, 'keep.txt'), 'not ours');
+git(['checkout', '--', '.'], path.join(attempt, 'new'));
+write(path.join(attempt, 'new', 'godot', '.godot', 'cache.bin'), 'import cache');
+fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', '.godot', 'linked'), 'dir');
+write(path.join(attempt, 'new', 'godot', 'bench', 'copy.godot'), 'fixture two\n');
+// The ships source the ships step recorded; copied files keep its size and time, as robocopy leaves them.
+const shipsSrc = path.join(vt, 'build', 'godot');
+write(path.join(attempt, 'ships_source.txt'), shipsSrc + '\r\n');
+const copyShip = (rel, text) => {
+  const from = path.join(shipsSrc, ...rel.split('/')), to = path.join(attempt, 'new', 'godot', ...rel.split('/'));
+  write(from, text); write(to, text); fs.utimesSync(from, 1700000000, 1700000000); fs.utimesSync(to, 1700000000, 1700000000);
+};
+copyShip('gen/T1.glb', 'untracked ship');
+copyShip('assets/ships/S1/S1.glb', 'ship glb');
+write(path.join(attempt, 'new', 'godot', 'assets', 'ships', 'S1', 'S1.glb.import'), 'generated by import');
+r = run('checkout', attempt, 'work', two);
+assert.equal(r.status, 0, r.out);
+// A passing job that wrote ship output inside the copied tree keeps its checkout (Artoo, PR 1326).
+r = run('checkout', attempt, 'shipout', two);
+assert.equal(r.status, 0, r.out);
+const so = path.join(attempt, 'shipout', 'godot');
+write(path.join(shipsSrc, 'assets', 'ships', 'S2', 'S2.glb'), 'published ship');
+write(path.join(so, 'assets', 'ships', 'S2', 'S2.glb'), 'a re-export the job wrote over the copy');
+write(path.join(so, 'assets', 'ships', 'S9', 'S9.glb'), 'a new ship the job made');
+write(path.join(so, 'gen', 'orphan.res.import'), 'a sidecar with no proven file');
+// Same size and same time, different bytes: only a hash match proves a copy.
+write(path.join(shipsSrc, 'gen', 'same.res'), 'AAAA'); write(path.join(so, 'gen', 'same.res'), 'BBBB');
+fs.utimesSync(path.join(shipsSrc, 'gen', 'same.res'), 1700000000, 1700000000); fs.utimesSync(path.join(so, 'gen', 'same.res'), 1700000000, 1700000000);
+write(path.join(attempt, 'work', 'godot', 'project.godot'), 'an edit left by a step\n');
+write(path.join(attempt, 'work', 'godot', 'notes.txt'), 'a new output inside the checkout');
+write(path.join(attempt, 'out_new', 'samples.jsonl'), '{}');
+write(path.join(attempt, 'new_ships_identity.txt'), 'S1');
+write(path.join(attempt, 'stray'), 'not a checkout');
+fs.appendFileSync(path.join(attempt, 'checkouts.txt'), `stray ${two}\r\n../escape ${two}\r\n`);
+const pause = path.join(tmp, 'gpu_go.txt');
+write(pause, 'GPU not cleared: paused by the Board for a check\n');
+env.PC_CLEANUP_PAUSE_FILE = pause;
+r = run('dropcheckouts', attempt);
+assert.equal(r.status, 0, r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && fs.existsSync(path.join(attempt, 'old')), 'the PC pause removes nothing: ' + r.out);
+assert.match(r.out, /checkout new kept: .*pause/);
+fs.writeFileSync(pause, 'GPU cleared\n');
+fs.writeFileSync(path.join(attempt, 'old', '.git', 'HEAD'), two + '\n');
+const elsewhere = path.join(tmp, 'notjob', 'out_1');
+write(path.join(elsewhere, 'checkouts.txt'), `x ${two}\r\n`);
+write(path.join(elsewhere, 'x', '.git', 'HEAD'), two + '\n');
+r = run('dropcheckouts', elsewhere);
+assert(fs.existsSync(path.join(elsewhere, 'x')) && /not a job attempt folder/.test(r.out), 'a folder outside voidsworn_test\\<job>\\out_* is refused');
+r = run('dropcheckouts', attempt);
+assert.equal(r.status, 0, r.out);
+assert(!fs.existsSync(path.join(attempt, 'new')), 'the pinned new checkout is removed: ' + r.out);
+assert.match(r.out, /checkout new removed after the job/);
+assert(fs.existsSync(path.join(outside, 'keep.txt')), 'a link inside a checkout is removed as a link, never followed');
+assert(fs.existsSync(path.join(attempt, 'old')) && /checkout old kept: .*no longer the pin/.test(r.out), 'a checkout whose HEAD moved is kept');
+assert(/checkout stray kept: .*not a plain folder/.test(r.out) && fs.existsSync(path.join(attempt, 'stray')), 'a listed name that is not a checkout folder is kept');
+assert(/line not accepted, ignored: \.\.\/escape/.test(r.out), 'a path in checkouts.txt is never followed');
+assert(/checkout work kept: .*not rebuildable leftovers.*changed: godot\/project\.godot.*new: godot\/notes\.txt/.test(r.out), 'an edit and a new file with HEAD unchanged keep the checkout: ' + r.out);
+assert(/checkout shipout kept: .*not rebuildable leftovers/.test(r.out) && /S2\.glb/.test(r.out) && /S9\.glb/.test(r.out) && /orphan\.res\.import/.test(r.out) && /same\.res/.test(r.out), 'a changed copy, a new ship file, an unproven sidecar and a same-size same-time different-bytes file keep the checkout: ' + r.out);
+for (const f of ['assets/ships/S2/S2.glb', 'assets/ships/S9/S9.glb', 'gen/orphan.res.import', 'gen/same.res']) assert(fs.existsSync(path.join(so, ...f.split('/'))), f + ' survives');
+assert.equal(fs.readFileSync(path.join(attempt, 'work', 'godot', 'project.godot'), 'utf8'), 'an edit left by a step\n', 'the edit survives');
+assert(fs.existsSync(path.join(attempt, 'work', 'godot', 'notes.txt')), 'the new file survives');
+for (const keep of ['out_new/samples.jsonl', 'new_ships_identity.txt', 'checkouts.txt']) assert(fs.existsSync(path.join(attempt, keep)), keep + ' stays');
+r = run('dropcheckouts', attempt);
+assert.match(r.out, /checkout new already gone/);
+
 const before = path.join(tmp, 'before.txt'), after = path.join(tmp, 'after.txt');
 assert.equal(run('hashes', before).status, 0);
 assert.match(fs.readFileSync(before, 'utf8'), /absent battle_opts\.json/);
@@ -168,4 +284,4 @@ assert.equal(run('hashes', after).status, 0);
 assert.match(fs.readFileSync(after, 'utf8'), /^[0-9a-f]{64} battle_opts\.json/m);
 assert.notEqual(fs.readFileSync(before, 'utf8'), fs.readFileSync(after, 'utf8'), 'a change to the options shows in the hash');
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, options hash');
+console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, ship cache stamps, own checkouts removed safely, options hash');

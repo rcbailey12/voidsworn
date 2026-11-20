@@ -353,7 +353,7 @@ func _build_world() -> void:
 	_build_arrow()
 
 
-# the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
+# the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
 	vp.msaa_3d = LOOK.msaa_for_quality(q)
@@ -572,7 +572,8 @@ func _begin(a) -> void:
 		var vb: Dictionary = api.view()
 		var wi: Dictionary = api.world_info()
 		var world_opts := {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight}
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight,
+			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():
@@ -754,6 +755,8 @@ func _pipe_count() -> int:
 
 
 var warming := false
+const ArrivalWarm := preload("res://render/arrival_warm.gd")
+var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
 func _warmup() -> void:
@@ -768,6 +771,12 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
+		if api != null and api.has_method("arrival_previews"):
+			arrival_warm = ArrivalWarm.new()
+			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
+			for i in 2:
+				await get_tree().process_frame
 		await gfx.prepare_battle_hulls()
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
@@ -778,6 +787,8 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
+		if arrival_warm != null:
+			arrival_warm.park()
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
