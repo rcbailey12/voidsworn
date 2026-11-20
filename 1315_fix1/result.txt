@@ -1,0 +1,30 @@
+start ithar_CD5 I8_37 opus/issue-1315 Fri 11/20/2026  6:31:39.48 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close,cams FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\repo
+commit=62e693e61dd1d406189f5698cbdedcc271a70d1b
+import exit 0 
+1_concept_in start  6:36:43.74 
+1_concept_in exit 0 at  6:36:48.14 
+2_shape_ref start  6:36:48.14 
+2_shape_ref exit 0 at  6:36:49.38 
+3_trace_hull start  6:36:49.38 
+3_trace_hull exit 0 at  6:38:16.07 
+4_parts_kit start  6:38:16.07 
+4_parts_kit exit 0 at  6:39:03.52 
+5_paint_bake start  6:39:03.52 
+5_paint_bake exit 0 at  6:44:40.34 
+6_lod start  6:44:40.34 
+6_lod exit 0 at  6:45:54.81 
+7_export start  6:45:54.82 
+7_export exit 0 at  6:49:00.70 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\repo\godot\assets\ships\I8_37\I8_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026  6:49:40.15 
+all done 
+pin ok 62e693e61dd1d406189f5698cbdedcc271a70d1b 

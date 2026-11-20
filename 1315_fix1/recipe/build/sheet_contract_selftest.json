@@ -1,0 +1,53 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (26.0 = LENGTH 26.0)",
+  "ok   5 transverse seams at the sheet's stations",
+  "ok   0 longitudinal seams at the sheet's heights and spans",
+  "ok   5 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (5) has muzzles of its own",
+  "ok   3 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   3 engine exits and bell radii are the sheet's",
+  "ok   45 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 12 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (pulsar F) was refused: L1: weapon 'pulsar' arc 'F' names 0 slots of the data.js list [('pulsar', 'T'), ('turret', 'T'), ('flak', 'T')]",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-11.45 to -10.45) runs across the transverse seam B1: one compartment each",
+  "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+ ],
+ "record": {
+  "sheet": "ithar_CD5",
+  "game_ship": "i_boss",
+  "variant": "",
+  "model_length": 25.88274,
+  "scale": 0.03863578155405395,
+  "length_world": 26.0,
+  "t_lines": [
+   -0.42306,
+   -0.28784,
+   -0.17579,
+   -0.05602,
+   0.05602
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 5,
+  "guns": 5,
+  "engines": 3,
+  "bays": 0,
+  "points": 14,
+  "turrets": [
+   "O1_turret",
+   "O2_turret",
+   "O3_turret"
+  ],
+  "interior_objects": 45,
+  "slots": [
+   "0 pulsar F",
+   "1 pulsar F",
+   "2 pulsar T",
+   "3 turret T",
+   "4 flak T"
+  ]
+ }
+}

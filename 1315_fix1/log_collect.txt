@@ -1,0 +1,337 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:49:39 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         38	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\
+	    New File  		     387	audit.json100%  
+	    New File  		   38529	bow_blink.gif.provenance.json100%  
+	    New File  		    2707	CD5.json100%  
+	    New File  		     509	concept_camera.json100%  
+	    New File  		    1506	density.json100%  
+	    New File  		     504	log_audit.txt100%  
+	    New File  		    3782	log_audit_selftest.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		   57715	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     124	log_blink.txt100%  
+	    New File  		     815	log_build.txt100%  
+	    New File  		      65	log_clay.txt100%  
+	    New File  		      60	log_close.txt100%  
+	    New File  		    1667	log_export.txt100%  
+	    New File  		     780	log_export_check.txt100%  
+	    New File  		    2129	log_export_selftest.txt100%  
+	    New File  		    4652	log_godot.txt100%  
+	    New File  		     646	log_install_cache.txt100%  
+	    New File  		     644	log_install_readback.txt100%  
+	    New File  		    2058	log_lod.txt100%  
+	    New File  		  854889	log_render.txt 30%   61%   91%  100%  
+	    New File  		  158369	log_render_concept.txt 82%  100%  
+	    New File  		  311998	log_render_far.txt 42%   84%  100%  
+	    New File  		    1266	log_sheet_contract.txt100%  
+	    New File  		      99	log_sil.txt100%  
+	    New File  		     185	log_sildump.txt100%  
+	    New File  		     681	log_standing.txt100%  
+	    New File  		     681	log_standing4.txt100%  
+	    New File  		    1203	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		  122554	log_surface.txt100%  
+	    New File  		     689	log_thirds.txt100%  
+	    New File  		     689	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     448	audit_into_ship.json100%  
+	    New File  		     398	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     387	audit_no_longitudinal.json100%  
+	    New File  		     240	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\build\
+	    New File  		     815	CD5_build.json100%  
+	    New File  		    1829	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\glb\
+	    New File  		     315	CD5_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\
+	    New File  		   21413	bench209.json100%  
+	    New File  		    6142	CD5_auto_20.png.provenance.json100%  
+	    New File  		    6144	CD5_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	CD5_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	CD5_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	CD5_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	CD5_hand_20.png.provenance.json100%  
+	    New File  		    6144	CD5_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	CD5_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	CD5_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	CD5_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	CD5_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	CD5_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	CD5_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	CD5_off_20.png.provenance.json100%  
+	    New File  		    6143	CD5_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	CD5_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	CD5_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	CD5_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\r\
+	    New File  		   11364	CD5_battle.png.provenance.json100%  
+	    New File  		   41661	CD5_below.png.provenance.json100%  
+	    New File  		   41634	CD5_below_clay.png.provenance.json100%  
+	    New File  		   41670	CD5_concept.png.provenance.json100%  
+	    New File  		   41861	CD5_concept_cl.png.provenance.json100%  
+	    New File  		   41699	CD5_concept_clay.png.provenance.json100%  
+	    New File  		   41786	CD5_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41702	CD5_hero.png.provenance.json100%  
+	    New File  		   41695	CD5_hero_clay.png.provenance.json100%  
+	    New File  		   41652	CD5_hero_s.png.provenance.json100%  
+	    New File  		   41669	CD5_hero_s_clay.png.provenance.json100%  
+	    New File  		   41684	CD5_side.png.provenance.json100%  
+	    New File  		   41761	CD5_side_clay.png.provenance.json100%  
+	    New File  		   41626	CD5_side_s.png.provenance.json100%  
+	    New File  		   41651	CD5_side_s_clay.png.provenance.json100%  
+	    New File  		   41587	CD5_top.png.provenance.json100%  
+	    New File  		   41624	CD5_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\surface\
+	    New File  		     799	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        86        86         0         0         0         0
+   Bytes :    2.27 m    2.27 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            39836300 Bytes/sec.
+   Speed :            2279.451 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:49:39 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:49:40 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\r\
+	    New File  		   88491	CD5_battle.png100%  
+	    New File  		   2.9 m	CD5_below.png 17%   34%   51%   68%   85%  100%  
+	    New File  		   2.0 m	CD5_below_clay.png 23%   47%   71%   95%  100%  
+	    New File  		  929884	CD5_concept.png 28%   56%   84%  100%  
+	    New File  		  943331	CD5_concept_cl.png 27%   55%   83%  100%  
+	    New File  		  765787	CD5_concept_clay.png 34%   68%  100%  
+	    New File  		  771615	CD5_concept_clay_cl.png 33%   67%  100%  
+	    New File  		   1.1 m	CD5_hero.png 21%   43%   65%   87%  100%  
+	    New File  		 1043338	CD5_hero_clay.png 25%   50%   75%  100%  
+	    New File  		   1.1 m	CD5_hero_s.png 21%   42%   64%   85%  100%  
+	    New File  		   1.0 m	CD5_hero_s_clay.png 24%   48%   73%   97%  100%  
+	    New File  		   2.5 m	CD5_side.png 19%   39%   59%   78%   98%  100%  
+	    New File  		   1.9 m	CD5_side_clay.png 12%   25%   37%   50%   62%   75%   87%  100%  
+	    New File  		   2.5 m	CD5_side_s.png 19%   38%   57%   77%   96%  100%  
+	    New File  		   2.0 m	CD5_side_s_clay.png 24%   49%   73%   98%  100%  
+	    New File  		   2.7 m	CD5_top.png 17%   35%   53%   71%   89%  100%  
+	    New File  		   2.0 m	CD5_top_clay.png 24%   48%   72%   96%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   26.66 m   26.66 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1331652761 Bytes/sec.
+   Speed :            76197.782 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:49:40 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:49:40 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\surface\
+	    New File  		   72280	surface_below.png100%  
+	    New File  		   61896	surface_bow.png100%  
+	    New File  		   68097	surface_port.png100%  
+	    New File  		   67857	surface_starboard.png100%  
+	    New File  		   62669	surface_stern.png100%  
+	    New File  		   72664	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   395.9 k   395.9 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           135154333 Bytes/sec.
+   Speed :            7733.592 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:49:40 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:49:40 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\
+	    New File  		  506047	CD5_auto_20.png 25%   51%   77%  100%  
+	    New File  		  631479	CD5_auto_d1.2.png 41%   83%  100%  
+	    New File  		  203313	CD5_auto_d16.0.png 64%  100%  
+	    New File  		  286386	CD5_auto_d3.0.png 45%   91%  100%  
+	    New File  		  215588	CD5_auto_d8.0.png 60%  100%  
+	    New File  		  509079	CD5_hand_20.png 25%   51%   77%  100%  
+	    New File  		  633708	CD5_hand_d1.2.png 41%   82%  100%  
+	    New File  		  202812	CD5_hand_d17.4.png 64%  100%  
+	    New File  		  201926	CD5_hand_d18.6.png 64%  100%  
+	    New File  		  285774	CD5_hand_d2.9.png 45%   91%  100%  
+	    New File  		  278553	CD5_hand_d3.1.png 47%   94%  100%  
+	    New File  		  216823	CD5_hand_d7.75.png 60%  100%  
+	    New File  		  215245	CD5_hand_d8.25.png 60%  100%  
+	    New File  		  508737	CD5_off_20.png 25%   51%   77%  100%  
+	    New File  		  633742	CD5_off_d1.2.png 41%   82%  100%  
+	    New File  		  203367	CD5_off_d16.0.png 64%  100%  
+	    New File  		  283684	CD5_off_d3.0.png 46%   92%  100%  
+	    New File  		  216005	CD5_off_d8.0.png 60%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.94 m    5.94 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           445162000 Bytes/sec.
+   Speed :           25472.373 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:49:40 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:49:40 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1315fix1\out\recipe\export\I8_37\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\
+	    New File  		      24	export_status.txt100%  
+	    New File  		  19.8 m	I8_37.glb  5.0% 10.0% 15.1% 20.1% 25.2% 30.2% 35.3% 40.3% 45.4% 50.4% 55.5% 60.5% 65.6% 70.6% 75.7% 80.7% 85.8% 90.8% 95.9%100%  
+	    New File  		   1.7 m	I8_37_base.jpg 14%   28%   43%   57%   72%   86%  100%  
+	    New File  		    6905	I8_37_check.json100%  
+	    New File  		  366000	I8_37_emission.jpg 35%   71%  100%  
+	    New File  		   18310	I8_37_export.json100%  
+	    New File  		   2.2 m	I8_37_normal.png 22%   44%   66%   89%  100%  
+	    New File  		   4.5 m	I8_37_orm.png 11%   22%   33%   44%   55%   66%   77%   88%   99%  100%  
+	    New File  		  812752	I8_37_parts_base.jpg 32%   64%   96%  100%  
+	    New File  		  701614	I8_37_parts_normal.png 37%   74%  100%  
+	    New File  		   2.2 m	I8_37_parts_orm.png 22%   45%   67%   90%  100%  
+	    New File  		    1430	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\_gltf_source\
+	    New File  		   3.5 m	CD5_hull_albedo.png 14%   28%   42%   56%   71%   85%   99%  100%  
+	    New File  		   1.0 m	CD5_hull_emission.png 23%   46%   69%   92%  100%  
+	    New File  		   2.2 m	CD5_hull_normal.png 22%   44%   66%   89%  100%  
+	    New File  		   4.5 m	CD5_hull_orm.png 11%   22%   33%   44%   55%   66%   77%   88%   99%  100%  
+	    New File  		  619151	CD5_parts_albedo.png 42%   84%  100%  
+	    New File  		  701614	CD5_parts_normal.png 37%   74%  100%  
+	    New File  		   2.2 m	CD5_parts_orm.png 22%   45%   67%   90%  100%  
+	    New File  		  19.7 m	I8_37.bin  5.0% 10.1% 15.1% 20.2% 25.2% 30.3% 35.4% 40.4% 45.5% 50.5% 55.6% 60.6% 65.7% 70.8% 75.8% 80.9% 85.9% 91.0% 96.0%100%  
+	    New File  		   50173	I8_37.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   66.96 m   66.96 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           2194235875 Bytes/sec.
+   Speed :           125555.183 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:49:40 AM
+

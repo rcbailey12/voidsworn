@@ -1,0 +1,4 @@
+Info: Saved as "CD5.blend"
+[209] {"cell": "CD5", "hull_objects": 61, "parts": 67, "interiors": 45, "seconds": 3.1, "notes": [{"route": "build sheet ithar_CD5", "contract": {"sheet": "ithar_CD5", "game_ship": "i_boss", "variant": "", "model_length": 25.88274, "scale": 0.03863578155405395, "length_world": 26.0, "t_lines": [-0.42306, -0.28784, -0.17579, -0.05602, 0.05602], "l_line": [], "l_lines": [], "muzzles": 5, "guns": 5, "engines": 3, "bays": 0, "points": 14, "turrets": ["O1_turret", "O2_turret", "O3_turret"], "interior_objects": 45, "slots": ["0 pulsar F", "1 pulsar F", "2 pulsar T", "3 turret T", "4 flak T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-77d31766c5ed483cb1a42824e1a6409d

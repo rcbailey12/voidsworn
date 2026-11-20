@@ -1,0 +1,24 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+06:44:49 | INFO: Starting glTF 2.0 export
+06:44:49 | INFO: Extracting primitive: CD5_lod0
+06:44:50 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+06:44:50 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+06:44:50 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+06:44:50 | INFO: Primitives created: 13
+06:44:50 | INFO: Extracting primitive: CD5_lod1
+06:44:51 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+06:44:51 | INFO: Primitives created: 8
+06:44:51 | INFO: Extracting primitive: CD5_lod2
+06:44:51 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+06:44:51 | INFO: Primitives created: 8
+06:44:51 | INFO: Extracting primitive: CD5_lod3
+06:44:51 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+06:44:51 | INFO: Primitives created: 4
+06:44:52 | INFO: Finished glTF 2.0 export in 2.5034687519073486 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\glb\CD5.glb {"lod0": {"triangles": 484098, "objects": 173, "materials": 13}, "lod1": {"triangles": 452034, "objects": 126, "materials": 8}, "lod2": {"triangles": 224966, "objects": 123, "materials": 8}, "lod3": {"triangles": 94220, "objects": 114, "materials": 4}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\CD5.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-46f50538923a40cb8f7cab4fedcd35ea

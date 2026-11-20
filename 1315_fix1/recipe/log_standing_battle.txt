@@ -1,0 +1,2 @@
+  battle camera CD5: game bow 55.0 midship 44.0 stern 17.3 whole 38.0, studio bow 40.9 midship 59.3 stern 38.8 whole 46.9
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

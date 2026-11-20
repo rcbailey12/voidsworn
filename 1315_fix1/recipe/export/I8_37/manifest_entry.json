@@ -1,0 +1,53 @@
+{
+ "name": "The Unfinished, Glasswright flagship",
+ "faction": "ithar",
+ "cls": "Ark",
+ "band": "XL",
+ "game_ship": "i_boss",
+ "length_world": 26.0,
+ "hardpoints": {
+  "gun": 5,
+  "engine": 3,
+  "breach": 7,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 7,
+ "turrets": 3,
+ "files": {
+  "I8_37.glb": {
+   "bytes": 20769232,
+   "sha256": "eed394c72b66ea16096d82fdf32b8c56c7cad609978e93d674309ffc40938114"
+  },
+  "I8_37_base.jpg": {
+   "bytes": 1817547,
+   "sha256": "b5f3c8631f1f3ff381fc4ed9c478e145346042b2c28981b4fab89e5100810054"
+  },
+  "I8_37_emission.jpg": {
+   "bytes": 366000,
+   "sha256": "6902feb8c379e253e0d44182ba911d0521f77ab8059d8c4087a217532fcadbb3"
+  },
+  "I8_37_normal.png": {
+   "bytes": 2348941,
+   "sha256": "7e3d47190062fba12aab584814f14205b6ecc64fe5798ed81a41c10ee94c4235"
+  },
+  "I8_37_orm.png": {
+   "bytes": 4730465,
+   "sha256": "08442a7581b076af1fc616c83069f3ca7873481e6a6b0407e9c95fa866478342"
+  },
+  "I8_37_parts_base.jpg": {
+   "bytes": 812752,
+   "sha256": "44e73f03820e566ba2a4ea67a15ab81a287b9430e5c4af0c394d465308660fad"
+  },
+  "I8_37_parts_normal.png": {
+   "bytes": 701614,
+   "sha256": "c6aedca9c545e307c8213d75e2c4cec595e3050f951bf373a893deb4c6ff08fc"
+  },
+  "I8_37_parts_orm.png": {
+   "bytes": 2320490,
+   "sha256": "055c9c3d084a5daed88d4f4c4d935327d666e17869b4d47ad1f701d59034fd2b"
+  }
+ },
+ "pc_path": "godot/assets/ships/I8_37/"
+}
