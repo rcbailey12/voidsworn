@@ -20,13 +20,13 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | length side | 14.5 |
 | length top | 14.5 |
 | length disagreement percent | 0.0 |
-| beam top | 4.15 |
-| beam bow | 4.15 |
+| beam top | 4.162 |
+| beam bow | 4.162 |
 | beam disagreement percent | 0.0 |
 | height side | 3.538 |
 | height bow | 3.538 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 61.9 |
+| widest at station percent | 64.5 |
 | hull beam | 2.9 |
 | hull depth | 1.81 |
 | L to B hull | 5.0 |
@@ -195,7 +195,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 343 objects, 62 parts, 1071 close pairs, 344 rays, 9 guns, 0 sensor pairs, 0 turrets swept, 6 cones, 41 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 335 objects, 62 parts, 1002 close pairs, 344 rays, 9 guns, 0 sensor pairs, 0 turrets swept, 6 cones, 41 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -214,7 +214,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Attitude thrusters, deck and belly hatches, a hoist head, heat louvres, ember slits, frost running points and a belly armour step added.** a ship in space needs thrusters and access; the reactor needs louvres; the pictures show no underside; every part has a job (R221).
 - **Transverse breaks at the spearhead root (30 percent) and behind the spire line (B-2); the gun deck peel and the spire line peel sit in the one compartment between.** factions.md "How it breaks" (lengthwise between deck rows, the spire line as one piece); the build contract keeps every long seam inside one transverse compartment, and the spire line overlaps the gun deck stations on this hull.
 - **B-3 peels the belly plating below the gun deck, the liner is relieved along that seam and at both joints, frames between the breaks stop above it, and the keel deck and ballast tanks are gone.** the first peel sat on the sloped lower hull and tore through the liner and the rooms behind it, so the death check found 411 inside faces on the outer hull; the S8 liner relief and a clear belly bring that to 0.
-- **The battery ports are open bores: a longer thick-lipped tube lined dark to its foot, a small dark ball well down it with a faint ember ring, the barrel stub short (the kit broadside variant=1).** in game the first build's ports read as capped discs (the ball filled the throat); the concept draws deep dark tube mouths and the Board asked for dark open bores (Nov 20).
+- **The battery ports are S8's heavy broadside mount (forged surround, ball mantlet, a real barrel) scaled to the hull, 14.5 / 27.** Ryan, Nov 20 2026: the concept's open tube ports read as torpedo tubes in game; he picked S8's gun mounts "sized appropriately for the ship size", which also ties the Vigil to S8's family.
 
 ## Designed here, not shown in the picture
 

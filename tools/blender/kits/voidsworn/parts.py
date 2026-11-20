@@ -416,33 +416,7 @@ def _broadside(p, barrels, cal, blen, s, pitch, variant):
         a = 2 * math.pi * (i + 0.5) / 12
         st.append(_stud((sq * 0.82 * math.cos(a) * 1.12, sq * 0.82 * math.sin(a) * 1.12, 0.07 * s), (0, 0, 1), 0.028 * s))
     p.add('surroundstud', 'mount', 'sworn', _join(st))
-    # the port: a deep round collar standing out of the flank with a rolled lip, its dark throat behind the ball.
-    # variant 1 (the Vigil's open bore, Board Nov 20 2026: "dark and open, not capped discs", the concept's tube ports): a longer
-    # thick-lipped tube lined dark the whole way down, the ball small and dark well down the bore, a faint ember ring at its foot, so the port
-    # reads as a deep hole at the battle camera. A Sunward ship opts in with variant=1; variant 0 (S8) is unchanged.
-    if variant == 1:
-        zt = 0.6 * s
-        p.add('port', 'mount', 'siron', _zrev([(-0.1 * s, R), (zt - 0.08 * s, R), (zt, R * 1.16), (zt + 0.06 * s, R * 1.16), (zt + 0.06 * s, R * 0.74),
-                                              (-0.02 * s, R * 0.74)], 20, closed=True, phase=math.pi / 20))
-        p.add('portband', 'mount', 'sworn', _zrev([(zt * 0.35, R * 0.99), (zt * 0.35, R * 1.06), (zt * 0.5, R * 1.06), (zt * 0.5, R * 0.99)], 20, closed=True))
-        p.add('portstud', 'mount', 'sworn', _ring_studs(zt * 0.2, R * 1.0, 10, 0.026 * s))
-        p.add('throat', 'mount', 'dark', _zrev([(zt + 0.05 * s, R * 0.73), (-0.01 * s, R * 0.73), (-0.01 * s, 0.001)], 20))
-        p.add('throatember', 'mount', 'ember', _zrev([(0.05 * s, R * 0.72), (0.05 * s, R * 0.62), (0.08 * s, R * 0.62), (0.08 * s, R * 0.72)], 20, closed=True))
-        mr = 0.17 * s
-        trunnion = Vector((0, 0, 0.25 * s))
-        E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
-        ball = []
-        for i in range(11):
-            a = -math.pi / 2 + math.pi * i / 10
-            ball.append((mr * math.sin(a), max(0.001, mr * math.cos(a))))
-        p.add('mantlet', 'body', 'dark', moved(revolve(ball, 18), E))
-        muzzles = []
-        for i in range(barrels):
-            off = (i - (barrels - 1) / 2) * cal * 3.4
-            T = E @ Matrix.Translation((0, off, 0))
-            mz = _barrel(p, 'b%d_' % i, mr * 0.6, blen, cal, T, jacket=0.48)
-            muzzles.append(P(T @ mz))
-        return trunnion, muzzles, mr * 0.6 + blen, R * 1.2, E
+    # the port: a deep round collar standing out of the flank with a rolled lip, its dark throat behind the ball
     zt = 0.42 * s
     p.add('port', 'mount', 'siron', _zrev([(-0.1 * s, R), (zt - 0.06 * s, R), (zt, R * 1.08), (zt + 0.04 * s, R * 1.08), (zt + 0.04 * s, R * 0.8),
                                           (0.04 * s, R * 0.8)], 20, closed=True, phase=math.pi / 20))

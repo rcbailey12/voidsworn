@@ -10,3 +10,6 @@
   B-2 both faces, B-3 the belly peel from below, B-4 the spire root from above. Decks, frames and rooms show, never a hollow.
 - `S10_r3_ports_before_after.jpg`: the Board's Nov 20 follow-up, cloud build before painting. The battery ports were capped
   discs (the ball filled the throat); they are now open dark bores (the kit broadside's variant=1), beside the concept.
+- `S10_r4_guns_proposal.jpg`, `S10_r4_guns_sized.jpg`: round 4 (Ryan, Nov 20: the open tubes "look more like torpedo tubes";
+  he picked S8's gun mounts "sized appropriately for the ship size"). Cloud Godot previews: the proposal at S8 size, then the
+  mounts scaled 14.5 / 27. The kit broadside's variant=1 (the tube port) is removed.

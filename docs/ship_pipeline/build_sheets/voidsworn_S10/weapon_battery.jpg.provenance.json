@@ -1,33 +1,33 @@
 {
-  "source_commit": "a2302ad80d3cc56df21395dbfff32c59e3c43141",
+  "source_commit": "a7beb9da6287a79f875718f87fec733581594313",
   "source_dirty": true,
-  "source_diff_sha256": "79c42821c41fccf1239221f7063c7f9c4f2e69dc44402a861ca681a3aa862237",
+  "source_diff_sha256": "ff5107b6cc95a22e12fc5e83edf644e7774bb7c0d1f87b34313c9908787ccdf3",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_battery.jpg",
-  "date": "2026-11-20T06:16:42Z",
+  "date": "2026-11-20T14:37:08Z",
   "sources": [
     {
-      "source_commit": "a2302ad80d3cc56df21395dbfff32c59e3c43141",
+      "source_commit": "a7beb9da6287a79f875718f87fec733581594313",
       "source_dirty": true,
-      "source_diff_sha256": "79c42821c41fccf1239221f7063c7f9c4f2e69dc44402a861ca681a3aa862237",
+      "source_diff_sha256": "ff5107b6cc95a22e12fc5e83edf644e7774bb7c0d1f87b34313c9908787ccdf3",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_battery.png",
-      "source_commit": "a2302ad80d3cc56df21395dbfff32c59e3c43141",
+      "source_commit": "a7beb9da6287a79f875718f87fec733581594313",
       "source_dirty": true,
-      "source_diff_sha256": "79c42821c41fccf1239221f7063c7f9c4f2e69dc44402a861ca681a3aa862237",
+      "source_diff_sha256": "ff5107b6cc95a22e12fc5e83edf644e7774bb7c0d1f87b34313c9908787ccdf3",
       "stage": "sheet built",
-      "date": "2026-11-20T06:16:29Z",
-      "image_sha256": "77d9a53ce9928840c2a30de7dcc0cd89d655c0560841ffa53f03940f5f32b976",
+      "date": "2026-11-20T14:36:52Z",
+      "image_sha256": "bd035f08fb38d64e204316645c8e3ba2ca77fd55fa7f7b820f6349d2958fc095",
       "sources": [
         {
-          "source_commit": "a2302ad80d3cc56df21395dbfff32c59e3c43141",
+          "source_commit": "a7beb9da6287a79f875718f87fec733581594313",
           "source_dirty": true,
-          "source_diff_sha256": "79c42821c41fccf1239221f7063c7f9c4f2e69dc44402a861ca681a3aa862237",
+          "source_diff_sha256": "ff5107b6cc95a22e12fc5e83edf644e7774bb7c0d1f87b34313c9908787ccdf3",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "663eef98883450835c8e92942f4e9970077e5b052f38c2bf1c03b84a27dcae75"
+    "7b7952063dacdfc713689e97b12fadc212850e04e0dc503431b0199bb508120f"
   ],
-  "stamp_template_sha256": "9b2881455aabb4dfdfce77fddb0ded96531a3833df63589ffc8c067526ae84bd",
+  "stamp_template_sha256": "b2536bb021679b02926c66055eaa7a008a0acb4dad09c005ce8206862e1fc2d2",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "a81c75a1f5b76da1b00282630605e45237faf37a00cf396096de24ab59d11391"
+  "image_sha256": "d383d4e13a2faf56c10126ac4e2ab01cb0890676c7c2687513f925ea3d55c4d6"
 }

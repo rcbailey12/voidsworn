@@ -192,6 +192,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 4.63 | 4.07 | 8.23 | 7.29 |
-| build | 3.50 | 4.11 | 4.81 | 6.94 |
+| build | 3.49 | 4.11 | 4.91 | 6.94 |
 
 Lines not present, shaped and detailed without a reason: 0.
