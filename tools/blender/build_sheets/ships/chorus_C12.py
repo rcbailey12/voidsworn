@@ -183,7 +183,7 @@ def build(K):
     # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
     # armadillo bands of grown chitin wrapping the body down to the keel (plates.WRAP), broken round the
     # knoll, the tendril knot, the domes, the sacs, the siphons and the vents; the draped tendrils lie over the shell (skipped
-    # as keep-outs); flat caps over the domes; small fused chitin clusters on the strip of belly the bands leave open
+    # as keep-outs); flat caps over the domes; the belly is banded too
     plates.armadillo(K, _k, 2.15, -1.85, seed=1346, band=0.3, lap=1.45, thick=0.05, skip=('T1_body_',),
                      note='armadillo bands of grown chitin wrapping the body down to the keel, lips aft; broken round the knoll, the knot, domes, sacs, siphons and vents; hide rolled at the edges; the tendrils lie over it')
     plates.dome_caps(K, _k, caps, seed=1347, flat=True,
@@ -241,7 +241,7 @@ def build(K):
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown '
-             'chitin down to the keel, flat chitin caps over the domes, fused chitin clusters on the belly; the R341 scute shell removed',
+             'chitin down to the keel, flat chitin caps over the domes, the belly banded too (Ryan, Nov 20: armour almost everywhere); the R341 scute shell removed',
              'Ryan, Nov 20 (R349; C13 round G accepted in game, PR 1308): armour across the entire body, grown not tiled, "caps, but flatter"; '
              'issue 1291 brings C10 to C12 to the same kit calls')
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19)',
