@@ -22,11 +22,12 @@ const init = headCode.slice(headCode.indexOf(':oj_init'), headCode.indexOf(':oj_
 const order = ['tools_live\\current.txt', 'live "%OJ_HERE%."', 'OPUS_JOB_HEAD_PREMERGE', 'set "OJ_OUT=%OJ_VT%\\%OJ_JOB%\\out_%OJ_STAMP%_%RANDOM%"',
   'if exist "%OJ_OUT%"', 'set "PC_REAL_PROFILE="', 'set "PC_KEEP_GODOT_PROFILE="', 'set "JW_TOOLS="', 'set "JW_HASHES="',
   'set "JW_NO_REFRESH=1"', 'set "JW_NO_JANITOR=1"', 'call "%JW%" init "%OJ_OUT%" "%~3" "%~4"',
-  'bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE%', 'watchdog "%JW_TOOLS%"', 'hashes "%OJ_OUT%\\real_options_before.txt"'];
+  'bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE%', 'set "TMO_OWN_COPY=1"', 'watchdog "%JW_TOOLS%"', 'hashes "%OJ_OUT%\\real_options_before.txt"'];
 order.reduce((at, needle) => { const i = init.indexOf(needle, at); assert(i >= at && i >= 0, 'init order: ' + needle); return i; }, 0);
 assert(init.includes('if not "%OPUS_JOB_JANITOR%"=="1" set "JW_NO_JANITOR=1"'), 'the after-job janitor is off unless switched on');
 assert(/if not defined OJ_LIVE if not "%OPUS_JOB_HEAD_PREMERGE%"=="1" \(echo [^\n]*refused[^\n]*& exit \/b 2\)/.test(init), 'a head outside tools_live refuses');
 assert(/if exist "%OJ_OUT%" \([^\n]*exit \/b 2\)/.test(init), 'an attempt folder is never reused');
+assert(read(path.join(root, 'tools/pc/tmo.bat')).includes('if "%TMO_OWN_COPY%"=="1" goto run'), 'tmo.bat honours TMO_OWN_COPY, which keeps a job on the verified watchdog');
 assert(init.includes('set "JW=%~dp0..\\job_wrap.bat"'), 'steps run through the job_wrap beside the head');
 const ships = headCode.slice(headCode.indexOf(':oj_ships'), headCode.indexOf(':oj_tail'));
 const flags = '/E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews';

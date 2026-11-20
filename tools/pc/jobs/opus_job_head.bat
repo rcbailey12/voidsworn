@@ -17,6 +17,7 @@ rem                                   must equal the pin. Sets OJ_REPO.
 rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO with
 rem                                   /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews, robocopy
 rem                                   8 or more fails, then fails if any tracked file in OJ_REPO differs from the pin.
+rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
 rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
@@ -69,6 +70,12 @@ set "OJ_ST=%JW_ST%"
 if "%OJ_PRE%"=="1" >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE% >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "the head and watchdog are not one verified current tools_live version" & call "%JW%" end & exit /b 1)
+rem Stay on the bundle verified above for the whole job (Artoo on PR 1305): job_wrap always calls %JW_TOOLS%\tmo.bat, and
+rem with TMO_OWN_COPY=1 that tmo.bat runs its own run_timeout.ps1 instead of rereading current.txt, so a tools refresh by
+rem another process mid-job cannot switch the watchdog under it. Each step logs the watchdog it used.
+set "TMO_OWN_COPY=1"
+set "TMO_SAY_WATCHDOG=1"
+>> "%OJ_ST%" echo watchdog pinned for this job: %JW_TOOLS%\run_timeout.ps1 (tools_live version %OJ_TLV%)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" watchdog "%JW_TOOLS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "watchdog files missing in %JW_TOOLS%" & call "%JW%" end & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" hashes "%OJ_OUT%\real_options_before.txt" >> "%OJ_ST%" 2>&1
@@ -104,6 +111,9 @@ exit /b 0
 rem ------------------------------------------------------------------ tail
 :oj_tail
 if not defined OJ_OUT (echo opus_job_head: tail before init & exit /b 2)
+set "OJ_TLV_NOW="
+if exist "%OJ_VT%\tools_live\current.txt" set /p OJ_TLV_NOW=<"%OJ_VT%\tools_live\current.txt"
+if not "%OJ_TLV_NOW%"=="%OJ_TLV%" >> "%OJ_ST%" echo note: tools_live moved from %OJ_TLV% to %OJ_TLV_NOW% during the job; every step stayed on %OJ_TLV%
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" hashes "%OJ_OUT%\real_options_after.txt" >> "%OJ_ST%" 2>&1
 if errorlevel 1 goto oj_tail_nohash
 fc /b "%OJ_OUT%\real_options_before.txt" "%OJ_OUT%\real_options_after.txt" > nul 2>&1
