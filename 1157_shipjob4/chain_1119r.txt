@@ -1,0 +1,7 @@
+waiting for chain_1119m all done Thu 11/19/2026 20:20:26.35 
+HELPERS_CHAIN_1119R stopped by the Board before it ran anything (11/19 20:58:36); replaced by HELPERS_CHAIN_1119X.bat (after 1282 W1 in HELPERS_CHAIN_1119W)
+waiting for chain_1119w all done (HELPERS_CHAIN_1119X) Thu 11/19/2026 20:58:36.40 
+chain start Thu 11/19/2026 22:54:41.15 
+1157 S10 shipjob4 start 22:54:41.15 
+1157 S10 shipjob4 exit 1 at 23:14:06.40 
+all done Thu 11/19/2026 23:14:06.40 

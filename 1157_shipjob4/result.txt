@@ -1,0 +1,58 @@
+start voidsworn_S10 V16_37 opus/issue-1157 Thu 11/19/2026 22:54:42.99 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_225442_0190433 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)               -> refs/pull/1161/merge
+ - [deleted]             (none)               -> refs/pull/1184/merge
+ - [deleted]             (none)               -> refs/pull/1281/merge
+ - [deleted]             (none)               -> refs/pull/1288/merge
+   55c7bc794..d6364a0bf  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119zu  -> board/pc-out-1119zu
+ * [new branch]          board/pc-out-1119zzc -> board/pc-out-1119zzc
+ * [new branch]          board/pc-out-1119zze -> board/pc-out-1119zze
+ * [new branch]          board/pc-out-1119zzf -> board/pc-out-1119zzf
+ * [new branch]          board/pc-out-1119zzm -> board/pc-out-1119zzm
+ * [new branch]          board/pc-out-1119zzn -> board/pc-out-1119zzn
+   ab6b32589..7ff4320f8  main                 -> main
+   a80e5c6b6..cf0795f8b  opus/issue-1079      -> opus/issue-1079
+   fbd9da76a..7a6698d08  opus/issue-1155      -> opus/issue-1155
+   2c2e86da0..081c9e6fc  opus/issue-1156      -> opus/issue-1156
+   8e7884bf6..74624ac54  opus/issue-1157      -> opus/issue-1157
+   8a48d6063..09858ef97  opus/issue-1236      -> opus/issue-1236
+   2c2e86da0..081c9e6fc  refs/pull/1164/head  -> refs/pull/1164/head
+ + ce4b78641...1a08fe3a6 refs/pull/1164/merge -> refs/pull/1164/merge  (forced update)
+   8e7884bf6..74624ac54  refs/pull/1166/head  -> refs/pull/1166/head
+ + de45c02d3...f85ecd860 refs/pull/1166/merge -> refs/pull/1166/merge  (forced update)
+   fbd9da76a..7a6698d08  refs/pull/1172/head  -> refs/pull/1172/head
+ + 612761cf1...2d43eb940 refs/pull/1172/merge -> refs/pull/1172/merge  (forced update)
+   a80e5c6b6..cf0795f8b  refs/pull/1181/head  -> refs/pull/1181/head
+ + fa93fbb83...db48e298b refs/pull/1181/merge -> refs/pull/1181/merge  (forced update)
+   8a48d6063..09858ef97  refs/pull/1246/head  -> refs/pull/1246/head
+ + 0604b452d...5bde62d03 refs/pull/1246/merge -> refs/pull/1246/merge  (forced update)
+ + 43c0ecf27...a73e6c618 refs/pull/1283/merge -> refs/pull/1283/merge  (forced update)
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=74624ac54f71f12948b9a88a487f15992cc90b69
+import exit 0 
+1_concept_in start 22:55:03.07 
+1_concept_in exit 0 at 22:55:05.66 
+2_shape_ref start 22:55:05.67 
+2_shape_ref exit 0 at 22:55:06.62 
+3_trace_hull start 22:55:06.62 
+3_trace_hull exit 0 at 23:06:49.42 
+4_parts_kit start 23:06:49.43 
+4_parts_kit exit 0 at 23:07:23.44 
+5_paint_bake start 23:07:23.44 
+5_paint_bake exit 0 at 23:11:45.35 
+6_lod start 23:11:45.36 
+6_lod exit 0 at 23:12:46.66 
+7_export start 23:12:46.67 
+7_export exit 0 at 23:13:47.58 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1157\repo\godot\assets\ships\V16_37\V16_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: death_seam Thu 11/19/2026 23:14:06.39 
+all done 
