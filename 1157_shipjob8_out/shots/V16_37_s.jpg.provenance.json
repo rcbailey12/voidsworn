@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T15:29:20Z",
+	"image_sha256": "3e2b726932e2cc62f949160d549e407e6013fd6f620f5ab7792c3cab98fd435f",
+	"inputs": [],
+	"picture_name": "V16_37_s.jpg",
+	"schema": 1,
+	"source_commit": "45eecc667f307562f33f8992ccc430992b4629a8",
+	"source_diff_sha256": "03c940e8af546f5a79c219f5f04163324462afebd91e9eb5ee6592d5d9d8cd3b",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "45eecc667f307562f33f8992ccc430992b4629a8",
+			"source_diff_sha256": "03c940e8af546f5a79c219f5f04163324462afebd91e9eb5ee6592d5d9d8cd3b",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "0cca20af3209ab60f1ebe15aeed4bec24d53750045569af921245ab2b6cbe6ca",
+	"strip_sha256": [
+		"b30e266cc31f9ddc7844f52a93a53e4dcbc7f304c861db0657d6c5750ae00c67"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}
