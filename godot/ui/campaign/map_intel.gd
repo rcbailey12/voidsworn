@@ -51,6 +51,7 @@ func danger(n: Dictionary) -> Dictionary:
 	if s == 3 and R.get("late") is Dictionary:   # issue 1178: Sector 3's extra fleet budget at this AI level (battle.js genEnemyFleet)
 		var lm = float(R["late"].get("veteran" if ai_level == "veteran" else "standard", 1.0))
 		if lm != 1.0: budget *= lm; why.append(["Sector 3 fleets", lm])
+	if ai_level == "veteran": budget *= float(R.get("vet", 1.0)); why.append(["Veteran AI", float(R.get("vet", 1.0))])   # issue 1160: RAMP.vet, as battle.js genEnemyFleet
 	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Heat: Hunted", 1.15])
 	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)

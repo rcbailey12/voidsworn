@@ -512,18 +512,22 @@ def _skirt(section, pts_xt, w, h, rng, creases=True):
     return V, F
 
 
-def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide'):
+def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
+              close_gaps=True):
     """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
     wrapping the body (the default lo=-1.2 runs each band from belly edge to belly edge), bands of grown chitin
     running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
     round a fitting and both broken ends thin into the flesh; hide rolls and creases gather along the shell's lower edges.
+    close_gaps (issue 1291): when a long step would outrun a short band and leave a bare strip across the back, the next band
+    starts under this one's lip instead (no extra draw from rng, so only those steps change). False keeps the old steps: C13
+    as accepted and published (round G, PR 1308) has one such step and keeps it until Ryan asks for a rebuild.
     Returns the shell object and the skirt object."""
     register(kit_module)
     rng = random.Random(seed)
     blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18, 3 * thick))
     mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
     skirt = ([], [])
-    x = x_bow; nb = 0; runs_n = 0
+    x = x_bow; nb = 0; runs_n = 0; clamped = 0
     while x - band > x_aft:
         L_ = band * lap
         # round D: uneven bands, wider and narrower, their lower edges ragged
@@ -558,9 +562,15 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, th
             for tt in (a_, b_):
                 pts = [(x - L_ * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
                 _append(skirt, *_skirt(K.hpt, pts, 0.14, 0.014, rng))
-        x -= band * rng.uniform(0.65, 1.35); nb += 1
+        step = band * rng.uniform(0.65, 1.35)
+        if close_gaps and step > L_:
+            # issue 1291: a long step after a short band would leave a bare strip across the back; the next band starts under
+            # this one's lip instead. Only the steps that would open a gap change (no extra draw from rng), so a sheet whose
+            # bands never hit the case builds the same bytes as before
+            step = L_ * 0.92; clamped += 1
+        x -= step; nb += 1
     # the first band's root: the hide it grows out of, rolled against it
-    print('[armadillo] %d bands, %d runs' % (nb, runs_n), flush=True)
+    print('[armadillo] %d bands, %d runs, %d steps clamped' % (nb, runs_n, clamped), flush=True)
     shell = K.hull_detail('armour_shell', mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])
     if shell is not None:
         K.mass('Armour shell', shell, 'grown chitin bands', note=note or 'armadillo bands of grown chitin over the back, lips aft (issue 1291)')
