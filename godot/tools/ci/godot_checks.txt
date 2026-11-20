@@ -65,6 +65,7 @@ headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
 headless|scenes/battle/test/hit_timing_check.gd|-|-|issue 1211: a [miss, miss, hit] volley lands its sound, HP drop and number on the hitting shot on the effect clock; a second-of-three hit breaks the shield there; the enemy target is ringed and named
 headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapping volleys on the fitted and the egg shield, reduced flashing off and on; the clean collapse starts once, on the draining hit
+headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg
 headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
@@ -167,6 +168,7 @@ gpu|fx/test/fx_proj_probe.gd|envpng:PROBE_OUT|-|rocket and torpedo flight betwee
 gpu|fx/test/fx_range_probe.gd|env:PROBE_OUT|-|every weapon at the battle camera's range: needs the GPU and the ship files
 gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, stills: needs the GPU and the ship files
 gpu|fx/test/shield_fail_probe.gd|env:PROBE_OUT|--quick|issue 1078: the shield failure looks side by side on a real ship at camera 170 (the full sheets, clips and cost run is tools/pc/jobs/shield_looks_1078.bat): needs the GPU and the ship files
+gpu|fx/test/shield_handoff_probe.gd|env:PROBE_OUT|-|issue 1239: before and after sheets of the clean collapse hand-off (shoulder break, lethal break, torpedo salvo) on real ships; same file on main and the branch
 gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside, guns and gun smoke together (issue 209): needs the GPU and the ship built from its recipe export
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files

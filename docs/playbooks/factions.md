@@ -242,7 +242,10 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   deep folds and wrinkles grown into the skin (kit `body.field`), never a smooth tube with plates on top. Armour is grown
   chitin almost everywhere (Ryan, Nov 20 4:18 PM CT: "cover the chorus ships in armor almost everywhere"): armadillo bands
   that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
-  higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs.
+  higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs; where a fitting cuts
+  a band, a half band still grows on its clear side (`fill`), so the shell hugs each fitting. Sacs and pods show dark veins and
+  only thin bile slits, never round lit windows or glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random
+  yellow circles on the pods ... looks odd").
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
   the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.

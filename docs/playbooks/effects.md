@@ -34,14 +34,17 @@ effect: a weapon hit, a shield response, a trail, a death.
   hits array, including the soft flash fallback; do not add a separate flat ring.
   Check C15s, H9 and E12 at cameras 170 and 60, plus the fitted skin from the side.
 - Shield failure (R340, Ryan Nov 19 2026, issue 1078): every shielded ship fails with the clean collapse, on both shapes:
-  one even flash, then one band closes from the far side into the breach in 0.7 s, a knot and a flat ring of sparks
-  there, nothing left behind. Faction colour stays (R163); hits are unchanged. It lives only in the shared shield code
+  one even flash, then one band closes from the far side into the breach in 1.225 s (R358, Ryan Nov 20 2026, issue 1239:
+  75% slower than the first 0.7 s, picked on the pace sheet; `COLLAPSE_CLOSE` in fx_ship.gd, the shader's `brk_close`),
+  a knot and a flat ring of sparks there, nothing left behind. The collapse closes where the breaking shot struck, and a
+  ship killed by that volley keeps it to its end (issue 1239). Faction colour stays (R163); hits are unchanged. It lives only in the shared shield code
   (fx_ship.gd `_break_collapse`, the SHIELD shader), so Sunward, Hegemony, Ashfall and the Glasswrights all pick up any
   change to it; never add a per-ship failure. The old per-faction break (`today`) and the energy shear (`shear`) stay
   only for dev comparisons through `rendering/effects/shield_failure` (or `VS_SHIELD_FAILURE`); they are not game looks.
   The band is drawn by the shader, not a sprite flash, so the flash budget never sees it: under reduce flashing it is
   softer, and the probe's flash pass (`PROBE_FLASH=1`) counts screen flashes with several Glasswright ships, then several Hullbreaker ships, failing at once.
-  Sheets, clips, cost and flash: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
+  Sheets, clips, cost and flash: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`. Pace and
+  hand-off before and after sheets: `fx/test/shield_handoff_probe.gd` (dev pace setting `VS_SHIELD_CLOSE`).
 - Issue 1211 (Board brief from the Nov 19 weapon effects audit): every effect shader and every mark on a hull carries
   `fog_disabled`, like the hulls (nebula_hulls.gd, R82), so a nebula never dulls a blast; pixel floors and caps are in
   1080-line pixels (px_world, or the raw size times VIEWPORT_SIZE.y / 1080), so a streak keeps its shape at 4K. A hit's
