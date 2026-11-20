@@ -8,7 +8,10 @@ extends SceneTree
 #   something of the wreck is on the board: its own pieces, or the burnt hulk the board lays when a death left none;
 #   no death piece leaves its hex: no main piece, fragment or thrown plate is farther out than the hex's rest radius
 #     (radius times WRECK_LEASH_K) or where it was born; the main pieces rest inside the rest radius, and the settled
-#     wreck (drawn together for a hull longer than the hex, Ryan's option 1) reaches at most REACH_MAX hex radii.
+#     wreck is drawn together for a hull longer than the hex (Ryan's option 1).
+#   (Artoo) a piece's limit is read where it was made, before its first move: a hand-made piece born inside and thrown
+#     out stays inside, one born past the radius on purpose is drawn back;
+#   the settled wreck's real hull sits inside its hex's six edges (at most PAST_MAX past one);
 #   a death that left no pieces gets the burnt hulk the map's own wrecks use, in its hex.
 # Prints each wreck's farthest piece in hex radii. With "-- shot <png>" on a windowed run (the PC), also saves the
 # top-down c170 picture at +8 s, 720 px tall, with its code name on it.
@@ -19,7 +22,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const STEP := 1.0 / 60.0
 const SETTLE := 8.0
 const SEED := 1236
-const REACH_MAX := 1.15   # the settled wreck's farthest hull point from the hex centre, in hex radii (1.0 is a hex corner)
+const PAST_MAX := 0.1     # world units: the settled wreck's real hull may sit at most this far past any of its hex's six edges
 
 class Playback extends "res://scenes/battle/battle.gd":
 	pass
@@ -104,6 +107,7 @@ func _play(quality: String) -> void:
 		var pieces: int = battle.gfx.wreck_pieces(id)
 		_check(pieces > 0 or hull_laid, "%s %s: something of the wreck is on the board (pieces %d)" % [quality, id, pieces])
 		var c: Vector3 = board.hex_world(at.x, at.y)
+		var apothem: float = board.HS * cos(PI / 6.0)   # centre to the middle of an edge (the board's hexes have corners at 30 + 60 n degrees)
 		var worst := 0.0
 		var over := 0
 		for nd in nodes:
@@ -117,6 +121,7 @@ func _play(quality: String) -> void:
 		# the main pieces: centres at rest inside the hex, and the whole settled wreck about the hex across (option 1)
 		var main_far := 0.0
 		var reach := 0.0
+		var past := -INF   # the farthest any hull point sits past one of the hex's six edges (negative: inside)
 		for nd in DEATH.leashed_nodes(battle.gfx, id, true):
 			var off: Vector3 = DEATH.leash_centre(nd) - c
 			off.y = 0.0
@@ -128,10 +133,16 @@ func _play(quality: String) -> void:
 				for v in (mi as MeshInstance3D).mesh.get_faces():
 					var q: Vector3 = xf * v - c
 					reach = maxf(reach, Vector2(q.x, q.z).length())
+					for e in 6:
+						var a := deg_to_rad(60.0 * e)
+						past = maxf(past, q.x * cos(a) + q.z * sin(a) - apothem)
 		_check(main_far <= radius * 1.05, "%s %s: main pieces rest within the hex (%.2f, rest radius %.2f)" % [quality, id, main_far, radius])
-		_check(reach <= board.HS * REACH_MAX, "%s %s: the settled wreck reaches %.2f hex radii (at most %.2f)" % [quality, id, reach / board.HS, REACH_MAX])
-		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii hull_laid=%s" % [
-			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, str(hull_laid)])
+		_check(past <= PAST_MAX, "%s %s: the settled wreck stays inside its hex's six edges (%.2f units past one)" % [quality, id, past])
+		var drawn := 1.0
+		for w in battle.gfx.dstate["wrecks"]:
+			if w["id"] == id: drawn = float(w.get("leash_s", 1.0))
+		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii past_edge=%.2f units drawn_to=%.2f hull_laid=%s" % [
+			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, past, drawn, str(hull_laid)])
 	if quality == "low" and not want.is_empty():
 		# a death that left no pieces (the cold-kill fallback PR 1231 found): the board lays the burnt hulk in the hex
 		var id: String = want.keys()[0]
@@ -181,8 +192,56 @@ func _shot(battle: Playback, want: Dictionary) -> void:
 	LOOK.tactical = false
 
 
+# Artoo on 52f0022c: a piece's limit was read after its first move, so a first step over the edge could pass as a hull
+# born past it. Two hand-made pieces on a bare effects node: one born just inside the rest radius and thrown outward
+# fast (its limit stays the rest radius and it ends inside), and one born past it on purpose, as a long hull's end is
+# (its limit is where it was born, and it is drawn back inside).
+func _first_step() -> void:
+	var holder := Node3D.new()
+	root.add_child(holder)
+	var fx = load("res://fx/fx.gd").new()
+	holder.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "low", "camera": null, "shake": 0.0})
+	var c := Vector3(50, 0, 50)
+	var r := 8.0
+	DEATH.anchor_wreck(fx, "t1", c, r)
+	var cases := {"inside_thrown_out": [Vector3(r - 0.2, 0, 0), Vector3(400, 0, 0)], "born_past_on_purpose": [Vector3(r * 1.5, 0, 0), Vector3.ZERO]}
+	var nodes := {}
+	var wreck := {"id": "t1", "t0": fx.now, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0}
+	for name in cases:
+		var nd := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(1, 1, 1)
+		mi.mesh = box
+		nd.add_child(mi)
+		fx.phys_root.add_child(nd)
+		nd.global_position = c + cases[name][0]
+		wreck["nodes"].append(nd)
+		wreck["fires"].append({"node": nd, "vel": cases[name][1], "ang": Vector3.ZERO})
+		nodes[name] = nd
+	fx.dstate["wrecks"].append(wreck)
+	var born := {}
+	for i in 240:
+		fx.step(STEP)
+		if i == 0:
+			for name in nodes: born[name] = float(nodes[name].get_meta("leash_born", -1.0))
+	for name in nodes:
+		var off: Vector3 = DEATH.leash_centre(nodes[name]) - c
+		off.y = 0.0
+		print("WRECK_HEX first step %s born_limit=%.2f end=%.2f (rest radius %.1f)" % [name, born[name], off.length(), r])
+	_check(is_equal_approx(born["inside_thrown_out"], r), "a piece born inside and thrown out keeps the rest radius as its limit (%.2f)" % born["inside_thrown_out"])
+	_check((DEATH.leash_centre(nodes["inside_thrown_out"]) - c).length() <= r + 0.01, "the thrown piece never crosses the rest radius")
+	_check(is_equal_approx(born["born_past_on_purpose"], r * 1.5), "a piece born past the radius is limited to where it was born (%.2f)" % born["born_past_on_purpose"])
+	_check((DEATH.leash_centre(nodes["born_past_on_purpose"]) - c).length() <= r, "a piece born past the radius is drawn back inside")
+	holder.queue_free()
+	await process_frame
+
+
 func _run() -> void:
 	LOOK.set_look("cine", false)
+	await _first_step()
 	for quality in ["low", "max"]:
 		await _play(quality)
 	print("WRECK_HEX failures=%d" % failures)

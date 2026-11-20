@@ -3201,6 +3201,8 @@ static func clear_wreck(fx, id: String) -> void:
 static func update(fx, dt: float) -> void:
 	if not fx.dstate.has("wrecks"):
 		return
+	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
+	_leash_mark(fx)
 	for ship in fx.ships.values(): _update_dying(fx, ship)
 	for w in fx.dstate["wrecks"]:
 		var speed: float = maxf(fx.anim_speed(), 0.01)
@@ -3255,28 +3257,27 @@ static func update(fx, dt: float) -> void:
 # ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
 # The rules turn a dead cruiser or capital's hex into a wreck that blocks movement and fire (rules "wreck" event). The
 # battle anchors that death here, so its pieces, fragments and plates come to rest inside the hex instead of drifting
-# across the board. A piece brakes from LEASH_SOFT of its rest limit (the hex's rest radius less half the piece's own
-# size) and never drifts past it; a piece past it (a long hull overhangs its hex) is drawn back in, and nothing is ever
-# farther out than where it was born or the rest radius.
+# across the board. A piece's middle brakes from LEASH_SOFT of its rest limit and never drifts past it; a piece past it
+# (a long hull overhangs its hex) is drawn back in, and nothing is ever farther out than where it was born or the rest
+# radius. The rest radius (0.8 of the hex radius) is inside the hex's flat edges (0.87).
 # Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex. A hull longer than the hex
-# (a cruiser is 23 units, a dreadnought 34, the hex 17 across) settles into tighter pieces: between LEASH_SHRINK seconds
-# after the break the wreck draws together about the hex centre, every piece and the gaps between them, until the whole
-# wreck spans LEASH_FIT of the rest radius. The break itself plays at full size.
-const LEASH_SOFT := 0.6        # share of the rest radius where a piece's brake starts
-const LEASH_BRAKE := 4.0       # per second, the brake at the rest radius (it ramps up from zero at LEASH_SOFT)
-const LEASH_PULL := 1.0        # per second: a piece past the rest radius comes back in at this share of the gap
-const LEASH_FIT := 1.8         # the settled wreck's length, in rest radii (0.8 of the hex radius each: just inside the hex across)
-const LEASH_SHRINK := Vector2(1.5, 5.5)   # seconds after the break: the wreck draws together over this window
+# (a cruiser is 23 units, a dreadnought 34, the hex 17 across) settles into tighter pieces: from LEASH_SHRINK_FROM
+# seconds after the break the wreck shrinks about the hex centre, pieces and the gaps between them alike, to the size at
+# which the pieces as they broke (each one's place plus its reach, from its real mesh) fit inside the rest radius; a
+# piece that drifted farther is drawn in until its whole footprint is inside, and from LEASH_SETTLED it is held there.
+# The break plays at full size.
+const LEASH_SOFT := 0.6        # share of the rest limit where a piece's brake starts
+const LEASH_BRAKE := 4.0       # per second, the brake at the rest limit (it ramps up from zero at LEASH_SOFT)
+const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes back in at this share of the gap
+const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the wreck starts to draw together
+const LEASH_SHRINK_RATE := 1.2 # per second: how fast the pieces close on the size that fits (most of it in about 2.5 s)
+const LEASH_SETTLED := 5.5     # seconds after the break: each main piece is held hard inside the rest radius
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
 static func anchor_wreck(fx, id: String, centre: Vector3, radius: float) -> void:
 	if not fx.dstate.has("anchors"): fx.dstate["anchors"] = {}
-	var k := 1.0
-	var s = fx.ships.get(id)
-	if s != null and s.hull != null and float(s.hull.L) > 0.0:
-		k = minf(1.0, radius * LEASH_FIT / float(s.hull.L))
-	fx.dstate["anchors"][id] = {"c": centre, "r": radius, "k": k}
+	fx.dstate["anchors"][id] = {"c": centre, "r": radius}
 
 
 # how many pieces of a ship's wreck are still on the board (the battle's fallback hull when a death left none)
@@ -3302,17 +3303,48 @@ static func leashed_nodes(fx, id: String, main_only := false) -> Array:
 	return out
 
 
+static func _leash_mark(fx) -> void:
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
+	if anchors.is_empty(): return
+	for w in fx.dstate["wrecks"]:
+		var an = anchors.get(w["id"])
+		if an == null: continue
+		for nd in w["nodes"] + w.get("frags", []):
+			if is_instance_valid(nd): _born(nd, an)
+	for b in fx.dstate.get("debris", []):
+		if not is_instance_valid(b) or not b.visible: continue
+		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		if an != null: _born(b, an)
+
+
 static func _leash(fx, dt: float) -> void:
 	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	if anchors.is_empty() or dt <= 0.0: return
 	for w in fx.dstate["wrecks"]:
 		var an = anchors.get(w["id"])
 		if an == null: continue
-		var k: float = an.get("k", 1.0)
-		var sc := 1.0
-		if k < 1.0:
-			sc = lerpf(1.0, k, smoothstep(float(w["t0"]) + LEASH_SHRINK.x, float(w["t0"]) + LEASH_SHRINK.y, fx.now))
 		var prev: float = w.get("leash_s", 1.0)
+		var sc := prev
+		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
+		if drawing:
+			# the size the wreck settles at: the pieces as they broke (each one's distance from the hex centre where it
+			# was made, plus its reach from its real mesh), scaled about the hex centre until the farthest point is a hair
+			# inside the rest radius. The layout keeps its shape, so the pieces fit without piling on each other.
+			if not w.has("leash_target"):
+				var far := 0.0
+				var measured := true
+				for nd in w["nodes"]:
+					if not is_instance_valid(nd): continue
+					if not nd.has_meta("leash_rad"):
+						_measure_reach(nd)
+						measured = false
+						break   # one piece's faces a frame, so a big wreck never costs one long frame
+					far = maxf(far, float(nd.get_meta("leash_off0", 0.0)) + leash_half(nd) / maxf(prev, 0.001))
+				if measured:
+					w["leash_target"] = minf(1.0, float(an["r"]) * 0.95 / maxf(far, 0.001))
+			if w.has("leash_target"):
+				sc = lerpf(prev, float(w["leash_target"]), 1.0 - exp(-LEASH_SHRINK_RATE * dt))
+				if absf(sc - float(w["leash_target"])) < 0.002: sc = float(w["leash_target"])
 		w["leash_s"] = sc
 		var pieces: Array = w["nodes"] + w.get("frags", [])
 		if sc != prev:
@@ -3321,12 +3353,15 @@ static func _leash(fx, dt: float) -> void:
 		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
 		for f in w["fires"]:
 			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
-				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt)
+				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
+		# once the wreck has drawn together, each piece is held hard at its rest limit (a physics piece jostled past it
+		# by its neighbours is put back), so the settled wreck sits inside the hex's edges
+		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
 		for nd in pieces:
 			if not is_instance_valid(nd): continue
 			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt)
-			_leash_clamp(nd, an)
+				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt, drawing)
+			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
 	for b in fx.dstate.get("debris", []):
 		if not is_instance_valid(b) or not b.visible: continue
 		var an = anchors.get(str(b.get_meta("leash_id", "")))
@@ -3365,13 +3400,33 @@ static func leash_centre(nd: Node3D) -> Vector3:
 	return nd.global_position
 
 
-# half the piece's footprint on the board as drawn now (its mesh box, at its current scale), for the rest limit
+# how far the piece reaches from its middle as drawn now, as it turns about the vertical: the farthest point of its real
+# mesh from its box middle on the board plane (measured once, unscaled, and kept on the piece; the drift brake uses half the box's longest side until then)
 static func leash_half(nd: Node3D) -> float:
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
-			var sz: Vector3 = (ch as MeshInstance3D).mesh.get_aabb().size * (ch as Node3D).transform.basis.get_scale()
-			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z))
+			var mi := ch as MeshInstance3D
+			var k: float = mi.transform.basis.get_scale().x
+			if nd.has_meta("leash_rad"): return float(nd.get_meta("leash_rad")) * k
+			var sz: Vector3 = mi.mesh.get_aabb().size
+			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z)) * k
 	return 0.0
+
+
+# measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in
+static func _measure_reach(nd: Node3D) -> void:
+	if nd.has_meta("leash_rad"): return
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			var mi := ch as MeshInstance3D
+			var mid: Vector3 = mi.mesh.get_aabb().get_center()
+			var far := 0.0
+			# on the board plane: a big hull's pieces turn mostly about the vertical (issue 461), so their height does not
+			# reach across the hex
+			for v in mi.mesh.get_faces(): far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
+			nd.set_meta("leash_rad", sqrt(far))   # in the mesh's own units; leash_half scales it as drawn
+			return
+	nd.set_meta("leash_rad", 0.0)
 
 
 # how far from the hex centre a piece may ever be: where it was born when that is past the rest radius, else the radius
@@ -3381,16 +3436,23 @@ static func _born(nd: Node3D, an: Dictionary) -> float:
 	off.y = 0.0
 	var lim := maxf(float(an["r"]), off.length())
 	nd.set_meta("leash_born", lim)
+	nd.set_meta("leash_off0", off.length())
 	return lim
 
 
-static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float) -> Vector3:
+# where a piece's middle rests: its whole footprint inside the rest radius (whole), or for the drift brake no nearer
+# the centre than half the radius, so a big piece still too large for it is not dragged onto its neighbours (drawing
+# the wreck together makes it fit)
+static func _rest_limit(nd: Node3D, an: Dictionary, whole := false) -> float:
+	var lim := float(an["r"]) - leash_half(nd)
+	return maxf(0.0, lim) if whole else maxf(float(an["r"]) * 0.5, lim)
+
+
+static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float, whole := false) -> Vector3:
 	var off: Vector3 = leash_centre(nd) - (an["c"] as Vector3)
 	off.y = 0.0
 	_born(nd, an)
-	# the whole piece rests inside the rest radius, not only its middle (a quarter of the radius at least, so the
-	# pieces of a big hull do not all pile on the centre)
-	var lim: float = maxf(float(an["r"]) * 0.25, float(an["r"]) - leash_half(nd))
+	var lim := _rest_limit(nd, an, whole)
 	var d := off.length()
 	var soft := lim * LEASH_SOFT
 	if d <= soft: return v
@@ -3403,11 +3465,11 @@ static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float) -> Vec
 	return v
 
 
-static func _leash_clamp(nd: Node3D, an: Dictionary) -> void:
+static func _leash_clamp(nd: Node3D, an: Dictionary, hard := -1.0) -> void:
 	var c: Vector3 = an["c"]
 	var off: Vector3 = leash_centre(nd) - c
 	off.y = 0.0
-	var lim := _born(nd, an)
+	var lim := _born(nd, an) if hard < 0.0 else hard
 	if off.length() > lim:
 		var back := off - off.normalized() * lim
 		nd.global_position -= back
