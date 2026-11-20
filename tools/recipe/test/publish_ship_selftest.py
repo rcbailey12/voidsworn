@@ -5,8 +5,9 @@ Receipts: the three real ones in test/publish_receipts (S9 shipjob5 R3 and CD5 r
 done" then "pin ok <sha>") pass with their own commit and glb, and fail on another commit, a short commit, a glb other than the
 listed one, a "pin ok" of another commit, a done FAILED line, a collected file whose sha256 is not the listed one, and a checked
 file the export does not hold. Undo: publish A, publish B, undo A puts back only A (its files, scenes and manifest rows) and
-leaves B as published; an undo after A's live files changed refuses and touches nothing; a forced failure while restoring
-prints UNDO FAILED, exits 1 and never prints UNDO PASS. Prints PASS lines and exits 0, or stops at the first failure.
+leaves B as published; an undo after A's live files changed refuses and touches nothing; a corrupt or missing kept copy
+is refused before anything live moves (UNDO FAILED, exit 1, never UNDO PASS); a failure forced in the middle of the live
+steps puts the published files, scenes and both manifest rows back, and a clean undo still passes afterwards. Prints PASS lines and exits 0, or stops at the first failure.
 """
 import hashlib
 import json
@@ -162,7 +163,7 @@ def check_undo(root):
         assert r['A1_11'] == json.loads(start[rel.replace('/', os.sep)])['ships']['A1_11'], rel + ' A row not restored'
         assert r['B2_22'] == json.loads(published[rel.replace('/', os.sep)])['ships']['B2_22'], rel + ' B row rolled back'
         assert r['C3_33'] == json.loads(start[rel.replace('/', os.sep)])['ships']['C3_33'], rel + ' C row changed'
-    assert (a / 'undone_1' / 'ship' / 'A1_11.glb').read_bytes() == b'new A1_11', 'the published A is not kept aside'
+    assert (a / 'undone_1' / 'published' / 'assets' / 'ships' / 'A1_11' / 'A1_11.glb').read_bytes() == b'new A1_11', 'the published A is not kept aside'
     ok('publish A, publish B, undo A: only A goes back (files, scenes, both manifest rows); B and C stay as they were')
 
     rc, out = run('undo', game, 'A1_11', a)
@@ -175,17 +176,45 @@ def check_undo(root):
     ok('an undo refuses, touching nothing, once the ship changed since its publish (and a second undo of A)')
 
     (game / 'assets' / 'ships' / 'B2_22' / 'B2_22.glb').write_bytes(b'new B2_22')
-    os.replace(b / 'ship', b / 'ship_hidden')
-    before = snapshot(game)
+    published = snapshot(game)
+    for spoil, why in ((lambda: (b / 'ship' / 'B2_22.glb').write_bytes(b'corrupt'), 'a corrupt kept ship file'),
+                       (lambda: os.replace(b / 'ship', b / 'ship_hidden'), 'a missing kept ship folder'),
+                       (lambda: (b / 'gen' / 'ships' / 'B2_22.scn').write_bytes(b'corrupt'), 'a corrupt kept scene')):
+        keep = Path(tempfile.mkdtemp())
+        shutil.copytree(b, keep / 'b')
+        spoil()
+        rc, out = run('undo', game, 'B2_22', b)
+        assert rc == 1 and 'UNDO FAILED' in out and 'UNDO PASS' not in out and 'nothing was touched' in out, f'{why}: {out}'
+        assert snapshot(game) == published, f'{why}: the undo touched the live game'
+        shutil.rmtree(b)
+        shutil.copytree(keep / 'b', b)
+    ok('a corrupt or missing kept copy is refused before anything live moves; live files and both manifest rows intact')
+
+    # a failure in the middle of the live steps: the third os.replace inside the undo raises
+    sys.path.insert(0, str(TOOL.parent))
+    import publish_ship
+    real, calls = os.replace, []
+
+    def flaky(src, dst):
+        calls.append(src)
+        if len(calls) == 3:
+            raise OSError('forced failure')
+        return real(src, dst)
+    publish_ship.os.replace = flaky
+    try:
+        publish_ship.undo(str(game), 'B2_22', str(b))
+        raise AssertionError('the forced failure did not stop the undo')
+    except ValueError as exc:
+        assert 'put back as it was' in str(exc), exc
+    finally:
+        publish_ship.os.replace = real
+    assert snapshot(game) == published, 'a failed undo left the live game changed'
+    for rel in ('assets/ships/manifest.json', 'gen/manifest.json'):
+        assert rows_of(game, rel)['B2_22'] == json.loads(published[rel.replace('/', os.sep)])['ships']['B2_22'], rel
+    ok('a forced failure in the middle of the live steps puts the published ship back: live folder, scenes, both rows')
     rc, out = run('undo', game, 'B2_22', b)
-    assert rc == 1 and 'UNDO FAILED' in out and 'UNDO PASS' not in out, out
-    assert snapshot(game) == before, 'an undo with a missing kept copy touched the game'
-    os.replace(b / 'ship_hidden', b / 'ship')
-    os.replace(b / 'gen' / 'ships' / 'B2_22.scn', b / 'scene_hidden')
-    (b / 'gen' / 'ships' / 'B2_22.scn').mkdir()
-    rc, out = run('undo', game, 'B2_22', b)
-    assert rc == 1 and 'UNDO FAILED' in out and 'UNDO PASS' not in out, out
-    ok('a forced restore failure (a kept copy missing or unreadable) reports UNDO FAILED and exit 1, never UNDO PASS')
+    assert rc == 0 and 'UNDO PASS B2_22' in out, out
+    ok('after the failed attempt, a clean undo of B still passes')
 
 
 def main():
