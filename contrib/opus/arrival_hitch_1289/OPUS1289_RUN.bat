@@ -22,7 +22,7 @@ rem PASSED needs every row collected AND every AFTER prewarmed and firstkill row
 rem broke into pieces (summary1289.ps1 prints the table and ACCEPT n of m into result.txt). Ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=52f7d10b0cb647b468b55c5b0075806d19d136c3
-set BEFORE=ab6b325862a27cdc3ff8ed51d8db1ec10d77a3cb
+set BEFORE=ab6b3258965d05f745e8897fc7219c9775580ace
 set CAPREF=%AFTER%
 set ROWS=28
 set V=%USERPROFILE%\Downloads\voidsworn_test
