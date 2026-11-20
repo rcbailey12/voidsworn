@@ -1,0 +1,22 @@
+start voidsworn_S11 V15_37 board/pin-1414c Fri 11/20/2026 17:29:09.38 
+inputs STAGES=4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)               -> refs/pull/1426/merge
+   2ac51f1c8..f3e1118f0  main                 -> main
+ + a853bb348...f5c975e56 refs/pull/1172/merge -> refs/pull/1172/merge  (forced update)
+ + 71bd1ff77...88294e4c9 refs/pull/1347/merge -> refs/pull/1347/merge  (forced update)
+ + 95460d6be...91017bcc3 refs/pull/1427/merge -> refs/pull/1427/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1414c\repo
+commit=f4867b996a7591f4f5897c427ca0d650b5c02316
+import exit 0 
+4_parts_kit start 17:33:16.97 
+4_parts_kit exit 1 at 17:33:35.34 
+5_paint_bake SKIPPED: stage 4_parts_kit failed 
+6_lod SKIPPED: stage 4_parts_kit failed 
+7_export SKIPPED: stage 4_parts_kit failed 
+checks and shots SKIPPED: stage 4_parts_kit failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Fri 11/20/2026 17:33:35.42 
+all done 

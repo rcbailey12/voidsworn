@@ -1,0 +1,10 @@
+chain BR2 waiting for 1155 C14_H exit in chain_1119bq.txt Fri 11/20/2026 16:40:00.96 
+note: BR (first waiter) was stopped before it ran anything at 16:39 and replaced by BR2 (fix for a parenthesis inside an if block); BR2 restarted this log 16:40:22
+swapped out before it ran anything: replaced by HELPERS_CHAIN_1119BR3.bat (also waits for PUBLISH C10E exit; Board, Nov 20 23:17 UTC) 17:17:45
+chain BR3 waiting for 1155 C14_H exit in chain_1119bq.txt and PUBLISH C10E exit in opus1399_burst2b_wait.txt Fri 11/20/2026 17:17:46.41 
+mirror fetch exit 0
+f4867b996a7591f4f5897c427ca0d650b5c02316 reachable in the mirror
+3f0732b24cd61861489cc535ed36066f3214a0c4 reachable in the mirror
+1414C S11 start 17:29:08.44 
+1414C S11 exit 1 at 17:33:35.43 
+1373 ithar_GV2 start 17:33:35.43 

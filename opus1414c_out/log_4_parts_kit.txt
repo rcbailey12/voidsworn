@@ -1,0 +1,38 @@
+{
+ "problems": [],
+ "parts": 198,
+ "crossing_break_lines": [],
+ "structure_across_seams": [
+  "H3",
+  "H4",
+  "L1p",
+  "L1s"
+ ],
+ "guns_with_normals": 3,
+ "guns_into_ship": 0,
+ "guns": 3,
+ "break_lines": {
+  "t_lines": [
+   -0.0790472182371318,
+   0.3319983165959536
+  ],
+  "l_line": [
+   0.04652543604952606,
+   -0.4110455348330854,
+   -0.11066610553198453
+  ],
+  "l_lines": [
+   [
+    0.04652543604952606,
+    -0.4110455348330854,
+    -0.11066610553198453
+   ],
+   [
+    -0.01578309457468065,
+    -0.07377740368798968,
+    0.3214586874976693
+   ]
+  ]
+ },
+ "result": "PASS"
+}Stage 4 FAILED: the outline could not be scored. See C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\log_sil.txt 

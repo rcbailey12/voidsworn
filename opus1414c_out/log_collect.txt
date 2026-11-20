@@ -1,0 +1,57 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:33:35 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1414c\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir          7	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\
+	    New File  		     613	audit.json100%  
+	    New File  		     658	log_audit.txt100%  
+	    New File  		    4530	log_audit_selftest.txt100%  
+	    New File  		     815	log_build.txt100%  
+	    New File  		    1226	log_sheet_contract.txt100%  
+	    New File  		     737	log_sil.txt100%  
+	    New File  		     188	log_sildump.txt100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     674	audit_into_ship.json100%  
+	    New File  		     624	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     329	audit_no_longitudinal.json100%  
+	    New File  		     232	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	    New File  		     622	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S11\build\
+	    New File  		     985	S11_build.json100%  
+	    New File  		    1938	sheet_contract_selftest.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         4         3         1         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    14.7 k    14.7 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :             1256583 Bytes/sec.
+   Speed :              71.902 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:33:35 PM
+
