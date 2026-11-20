@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 49, in <module>
+    d = json.load(open(P)) if os.path.exists(P) else {}; print(get(d, sys.argv[3]))
+                                                               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 30, in get
+    if key == 'length_world' and d.get('sheet'): return sheet_length(d['sheet'])
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 25, in sheet_length
+    return float(ast.literal_eval(node.value))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 110, in literal_eval
+    return _convert(node_or_string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 109, in _convert
+    return _convert_signed_num(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 83, in _convert_signed_num
+    return _convert_num(node)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 74, in _convert_num
+    _raise_malformed_node(node)
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 71, in _raise_malformed_node
+    raise ValueError(msg + f': {node!r}')
+ValueError: malformed node or string on line 22: <ast.Attribute object at 0x00000219FB9AA890>
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+detail check FAIL: no hull atlas to measure in C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1 (GB1_hull_normal.png)
+Stage 5 R224 density (reported, not a pass bar): paint flags 2 mesh flags 1
+   engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3
+   launcher: paint_detail_share 0.0 is 0.00 of the hull's 0.3
+   launcher: edges_per_unit2 1842.0 is 0.53 of the hull's 3479.1
+Stage 5: skipped C15s close-ups for sheet ship ithar_GB1. 
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\r

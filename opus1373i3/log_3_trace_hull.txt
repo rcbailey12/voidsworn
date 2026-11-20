@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 49, in <module>
+    d = json.load(open(P)) if os.path.exists(P) else {}; print(get(d, sys.argv[3]))
+                                                               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 30, in get
+    if key == 'length_world' and d.get('sheet'): return sheet_length(d['sheet'])
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1373i3\repo\tools\recipe\ship.py", line 25, in sheet_length
+    return float(ast.literal_eval(node.value))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 110, in literal_eval
+    return _convert(node_or_string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 109, in _convert
+    return _convert_signed_num(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 83, in _convert_signed_num
+    return _convert_num(node)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 74, in _convert_num
+    _raise_malformed_node(node)
+  File "C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\python\Lib\ast.py", line 71, in _raise_malformed_node
+    raise ValueError(msg + f': {node!r}')
+ValueError: malformed node or string on line 22: <ast.Attribute object at 0x0000018A7692A890>
+wrote C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\concept.png (1200, 1200)
+[fit] 128 0.954 {'az': 66.147, 'el': -8.977, 'roll': 10.717, 'dist': 2.682, 'focal': 2349.948, 'cx': 637.893, 'cy': 553.668}
+[fit] 256 0.9553 {'az': 65.693, 'el': -9.04, 'roll': 10.345, 'dist': 2.643, 'focal': 2376.583, 'cx': 632.381, 'cy': 552.078}
+[fit] 512 0.9525 {'az': 65.042, 'el': -8.981, 'roll': 10.293, 'dist': 2.641, 'focal': 2392.246, 'cx': 631.056, 'cy': 552.219}
+[fit] B0 overlap at the fitted camera 0.9461 at round 3 hero camera framed 0.2567
+The hull is the build sheet ithar_GB1: no tune. 
+  outline GB1: bow 57.0, midship 66.0, stern 39.0, whole 57.9 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 56.0, midship 67.9, stern 91.7
+  REPORT bow overlap 57.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 66.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 39.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 57.9 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+REPORT GB1 outline overlap 57.9 percent, outline_gate 90 is context only (not a pass bar)
+The overlay is C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\sil\sil_GB1.png (green both, red concept only, yellow ship only).
+Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)

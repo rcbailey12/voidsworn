@@ -1,0 +1,108 @@
+{
+ "cell": "GB1",
+ "route": "build sheet ithar_GB1 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 57.1,
+ "geometry_seconds": 0.3,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 16,
+  "part_objects": 5,
+  "glow_objects": 10,
+  "interior_objects": 3,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 6.2,
+  "bake_H_albedo_s": 4.6,
+  "bake_H_orm_s": 4.6,
+  "bake_H_emission_s": 4.7,
+  "bake_H_normal_s": 5.4,
+  "zones_H": [
+   "gw_mosaic",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "bake_P_masks_s": 8.5,
+  "bake_P_albedo_s": 4.6,
+  "bake_P_orm_s": 4.7,
+  "bake_P_normal_s": 5.1,
+  "zones_P": [
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "glow_materials": [
+   "ithar_glow_gw_drive",
+   "ithar_glow_gw_drive_core",
+   "ithar_glow_gw_gem_green"
+  ],
+  "inside_materials": [
+   "ithar_inside_core",
+   "ithar_inside_crew",
+   "ithar_inside_engroom"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.2572,
+    "area": 1.56306,
+    "texels_per_unit2": 2760470.7
+   },
+   "parts": {
+    "uv_share": 0.7098,
+    "area": 0.04249,
+    "texels_per_unit2": 280267117.6
+   }
+  },
+  "stack_seconds": 55.9
+ },
+ "density": {
+  "paint_flags": [
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "launcher: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "launcher: edges_per_unit2 1842.0 is 0.53 of the hull's 3479.1"
+  ],
+  "hull": {
+   "area": 1.56306,
+   "triangles": 22520,
+   "tris_per_unit2": 14407.7,
+   "edges_per_unit2": 3479.1,
+   "texels_per_unit2": 2760470.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 52.89,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "ithar_GB1",
+  "game_ship": "bomber",
+  "variant": "",
+  "model_length": 1.60702,
+  "scale": 0.6222688832362728,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.29869
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 1,
+  "engines": 3,
+  "bays": 0,
+  "points": 1,
+  "turrets": [],
+  "interior_objects": 3,
+  "slots": [
+   "0 bombs T"
+  ]
+ },
+ "triangles": 29856,
+ "objects": 31,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

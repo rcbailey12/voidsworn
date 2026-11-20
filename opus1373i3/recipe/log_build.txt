@@ -1,0 +1,5 @@
+Info: Saved as "GB1.blend"
+[209] {"cell": "GB1", "hull_objects": 16, "parts": 15, "interiors": 3, "seconds": 0.3, "notes": [{"route": "build sheet ithar_GB1", "contract": {"sheet": "ithar_GB1", "game_ship": "bomber", "variant": "", "model_length": 1.60702, "scale": 0.6222688832362728, "length_world": 1.6, "t_lines": [-0.29869], "l_line": [], "l_lines": [], "muzzles": 2, "guns": 1, "engines": 3, "bays": 0, "points": 1, "turrets": [], "interior_objects": 3, "slots": ["0 bombs T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
