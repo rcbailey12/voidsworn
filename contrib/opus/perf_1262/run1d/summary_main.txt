@@ -1,0 +1,5 @@
+Issue 1262 main timing: median of per-session medians, ms (frame / GPU), fitted shields, GPU solo
+main | gate:max:2:base | 6.185 | 5.818 | sessions 3 | ssil True
+main | dense:max:2:native_lod | 5.193 | 4.753 | sessions 3 | ssil True
+main | gate:max:1:base | 3.238 | 2.728 | sessions 3 | ssil True
+main | dense:max:1:native_lod | 2.077 | 1.617 | sessions 3 | ssil True

@@ -1,0 +1,85 @@
+start voidsworn_S9 V14_23 opus/issue-1156 Thu 11/19/2026 21:43:41.61 
+inputs STAGES=4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_214340_9729087 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                      -> refs/pull/1231/merge
+ - [deleted]             (none)                      -> refs/pull/1243/merge
+ - [deleted]             (none)                      -> refs/pull/1275/merge
+ - [deleted]             (none)                      -> refs/pull/1276/merge
+ - [deleted]             (none)                      -> refs/pull/1277/merge
+ - [deleted]             (none)                      -> refs/pull/1278/merge
+   ac624ead7..1df0ef4ee  board/pc-in-1119            -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119ze         -> board/pc-out-1119ze
+ * [new branch]          board/pc-out-1119zo         -> board/pc-out-1119zo
+ * [new branch]          board/pc-out-1119zp         -> board/pc-out-1119zp
+ * [new branch]          board/pc-out-1119zz         -> board/pc-out-1119zz
+ * [new branch]          board/pc-out-1119zza        -> board/pc-out-1119zza
+ * [new branch]          board/pc-out-1119zzb        -> board/pc-out-1119zzb
+ * [new branch]          board/pc-out-1119zzh        -> board/pc-out-1119zzh
+ * [new branch]          board/pc-out-1119zzi        -> board/pc-out-1119zzi
+ * [new branch]          board/pc-out-1119zzk        -> board/pc-out-1119zzk
+ * [new branch]          board/pc-out-1119zzl        -> board/pc-out-1119zzl
+   2a5112338..2e2d3b573  main                        -> main
+ * [new branch]          muse/issue-1253             -> muse/issue-1253
+   a76a2b1aa..2b23ec1a4  opus/issue-1077             -> opus/issue-1077
+   b825840d8..a80e5c6b6  opus/issue-1079             -> opus/issue-1079
+   944f20f12..2c2e86da0  opus/issue-1156             -> opus/issue-1156
+   0be79bf45..8e7884bf6  opus/issue-1157             -> opus/issue-1157
+   5531da452..d29333f34  opus/issue-1178             -> opus/issue-1178
+   eb34e8a17..469f568e6  opus/issue-1180-gen         -> opus/issue-1180-gen
+   773e06787..870100867  opus/issue-1180-helper-base -> opus/issue-1180-helper-base
+ * [new branch]          opus/issue-1180-pointer     -> opus/issue-1180-pointer
+ * [new branch]          opus/issue-1180-refill      -> opus/issue-1180-refill
+   99ad9e840..6b69276a4  opus/issue-1183             -> opus/issue-1183
+   46aefbf02..c2907dabb  opus/issue-1232             -> opus/issue-1232
+ * [new branch]          opus/issue-1234-seam        -> opus/issue-1234-seam
+   22d5b2a22..1bc76f81e  opus/issue-1237             -> opus/issue-1237
+ * [new branch]          opus/issue-1282             -> opus/issue-1282
+ + 9afa53ac5...e27af6c08 refs/pull/1163/merge        -> refs/pull/1163/merge  (forced update)
+   944f20f12..2c2e86da0  refs/pull/1164/head         -> refs/pull/1164/head
+ + 4be67bdf6...ce4b78641 refs/pull/1164/merge        -> refs/pull/1164/merge  (forced update)
+   0be79bf45..8e7884bf6  refs/pull/1166/head         -> refs/pull/1166/head
+ + 72315d73a...de45c02d3 refs/pull/1166/merge        -> refs/pull/1166/merge  (forced update)
+ + ba0e1a2c8...3fed92eb2 refs/pull/1168/merge        -> refs/pull/1168/merge  (forced update)
+   b825840d8..a80e5c6b6  refs/pull/1181/head         -> refs/pull/1181/head
+ + 79711ff68...fa93fbb83 refs/pull/1181/merge        -> refs/pull/1181/merge  (forced update)
+   99ad9e840..6b69276a4  refs/pull/1184/head         -> refs/pull/1184/head
+ + cca28a573...fff7d0b36 refs/pull/1184/merge        -> refs/pull/1184/merge  (forced update)
+   a76a2b1aa..a2eaddc6b  refs/pull/1231/head         -> refs/pull/1231/head
+   46aefbf02..c2907dabb  refs/pull/1240/head         -> refs/pull/1240/head
+ + 571b59144...1c88073b1 refs/pull/1240/merge        -> refs/pull/1240/merge  (forced update)
+   22d5b2a22..1bc76f81e  refs/pull/1255/head         -> refs/pull/1255/head
+ + 39d91b59d...c40a69977 refs/pull/1255/merge        -> refs/pull/1255/merge  (forced update)
+   773e06787..870100867  refs/pull/1275/head         -> refs/pull/1275/head
+   5531da452..d29333f34  refs/pull/1276/head         -> refs/pull/1276/head
+   eb34e8a17..469f568e6  refs/pull/1278/head         -> refs/pull/1278/head
+ * [new ref]             refs/pull/1280/head         -> refs/pull/1280/head
+ * [new ref]             refs/pull/1281/head         -> refs/pull/1281/head
+ * [new ref]             refs/pull/1281/merge        -> refs/pull/1281/merge
+ * [new ref]             refs/pull/1283/head         -> refs/pull/1283/head
+ * [new ref]             refs/pull/1283/merge        -> refs/pull/1283/merge
+ * [new ref]             refs/pull/1284/head         -> refs/pull/1284/head
+ * [new ref]             refs/pull/1285/head         -> refs/pull/1285/head
+ * [new ref]             refs/pull/1285/merge        -> refs/pull/1285/merge
+ * [new ref]             refs/pull/1286/head         -> refs/pull/1286/head
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=2c2e86da0b4a8ef930012c4b4d6e85752c95635a
+import exit 0 
+4_parts_kit start 21:44:23.46 
+4_parts_kit exit 0 at 21:45:34.82 
+5_paint_bake start 21:45:34.82 
+5_paint_bake exit 0 at 21:53:26.35 
+6_lod start 21:53:26.35 
+6_lod exit 0 at 21:54:23.02 
+7_export start 21:54:23.02 
+7_export exit 0 at 21:55:07.43 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1156\repo\godot\assets\ships\V14_23\V14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 21:55:29.71 
+all done 

@@ -1,7 +1,7 @@
 'use strict';
 // Issue 1303: tools/pc/jobs/opus_job_head.bat is the one shared head for helper PC proof bats, and
 // opus_job_template.bat is how a helper starts one. A static contract runs everywhere; the PowerShell half
-// (opus_job_head.ps1: live, watchdog, checkout, tracked, hashes) also runs for real under pwsh (Linux CI).
+// (opus_job_head.ps1: live, watchdog, checkout, tracked, shipcheck, hashes) also runs for real under pwsh (Linux CI).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -32,9 +32,17 @@ assert(init.includes('set "JW=%~dp0..\\job_wrap.bat"'), 'steps run through the j
 const ships = headCode.slice(headCode.indexOf(':oj_ships'), headCode.indexOf(':oj_tail'));
 const flags = '/E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews';
 assert.equal((ships.match(/robocopy /g) || []).length, 2, 'two copies: gen and assets\\ships');
-for (const line of ships.split('\n').filter(l => l.includes('robocopy '))) assert(line.includes(flags), 'safe ships copy flags: ' + line);
+const copies = ships.split('\n').filter(l => l.includes('robocopy '));
+const genCopy = copies.find(l => l.includes('"%LB_SHIPS%\\gen"'));
+const shipCopy = copies.find(l => l.includes('"%LB_SHIPS%\\assets\\ships"'));
+assert(genCopy && genCopy.includes('/E ') && !/\/X[CNOF]\b/.test(genCopy), 'gen is copied whole with no skip flags, so its manifest.json lands and the source wins: ' + genCopy);
+assert(shipCopy && shipCopy.includes(flags), 'assets\\ships copy uses the safe flags: ' + shipCopy);
+assert(/if not exist "%OJ_REPO%\\godot\\gen\\manifest\.json" \(call "%JW%" fail/.test(ships), 'a missing gen manifest fails the job');
 assert.equal((ships.match(/if errorlevel 8 \(call "%JW%" fail/g) || []).length, 2, 'robocopy 8 or more fails the job');
 assert(ships.indexOf('tracked "%OJ_REPO%"') > ships.lastIndexOf('robocopy '), 'the tracked check runs after the copies');
+assert(ships.indexOf('shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%"') > ships.lastIndexOf('robocopy '), 'every copied ship is checked against its cache stamp after both copies');
+assert(/fc \/b "%OJ_OUT%\\ships_identity_first\.txt" "%OJ_REPO%_ships_identity\.txt"[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'every checkout must measure the same hulls as the first');
+assert(/shipcheck[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'a ship that does not match its cache fails the job');
 assert(/:oj_checkout[\s\S]*checkout "%OJ_OUT%" "%~2" "%~3"[\s\S]*set "OJ_REPO=%OJ_OUT%\\%~2"/.test(headCode), 'checkout goes into the attempt folder');
 const tail = headCode.slice(headCode.indexOf(':oj_tail'));
 assert(/hashes "%OJ_OUT%\\real_options_after\.txt"[\s\S]*fc \/b "%OJ_OUT%\\real_options_before\.txt" "%OJ_OUT%\\real_options_after\.txt"[\s\S]*Ryan's real options changed[\s\S]*call "%JW%" end\nexit \/b %ERRORLEVEL%/.test(tail), 'tail compares the options hash, then ends through job_wrap');
@@ -160,6 +168,34 @@ r = run('tracked', path.join(attempt, 'new'));
 assert.notEqual(r.status, 0, 'a changed tracked .gd fails the job');
 assert.match(r.out, /a4_props\.gd/);
 
+// shipcheck: each copied ship's glb stamp (unix mtime:size per glb, as build_assets.gd source_stamp) must equal its
+// gen\manifest.json "src", and its cached scene must exist.
+const sc = path.join(tmp, 'sc');
+const glb = path.join(sc, 'godot', 'assets', 'ships', 'S1', 'S1.glb');
+write(glb, 'twelve bytes');
+fs.utimesSync(glb, 1700000000, 1700000000);
+write(path.join(sc, 'godot', 'gen', 'ships', 'S1.scn'), 'scene');
+const man = src => write(path.join(sc, 'godot', 'gen', 'manifest.json'), JSON.stringify({ ships: { S1: { v: 9, res: 'res://gen/ships/S1.scn', src }, GONE: { res: 'res://gen/ships/GONE.scn' } } }));
+const ident = path.join(tmp, 'ident.txt');
+man('1700000000:12;');
+r = run('shipcheck', sc, ident);
+assert.equal(r.status, 0, 'a matching ship passes: ' + r.out);
+assert.match(fs.readFileSync(ident, 'utf8'), /^S1 1700000000:12; res:\/\/gen\/ships\/S1\.scn/m, 'the measured hull identity is recorded');
+assert.match(fs.readFileSync(ident, 'utf8'), /^GONE no-glb res:\/\/gen\/ships\/GONE\.scn scene=0/m, 'an older entry with no ship folder is listed, so checkouts must agree on it too');
+assert.equal(run('shipcheck', sc, ident, 'S1').status, 0, 'a needed hull that matches passes');
+r = run('shipcheck', sc, ident, 'S1 GONE');
+assert.notEqual(r.status, 0, 'a needed hull with no matching ship fails');
+assert.match(r.out, /GONE is needed by this job/);
+man('1600000000:12;');
+r = run('shipcheck', sc, ident);
+assert.notEqual(r.status, 0, 'a glb newer than its cache (a publish between the copies) fails');
+assert.match(r.out, /S1 cache was built from other files/);
+man('1700000000:12;');
+fs.rmSync(path.join(sc, 'godot', 'gen', 'ships', 'S1.scn'));
+assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing cached scene fails');
+fs.rmSync(path.join(sc, 'godot', 'gen', 'manifest.json'));
+assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest fails');
+
 const before = path.join(tmp, 'before.txt'), after = path.join(tmp, 'after.txt');
 assert.equal(run('hashes', before).status, 0);
 assert.match(fs.readFileSync(before, 'utf8'), /absent battle_opts\.json/);
@@ -168,4 +204,4 @@ assert.equal(run('hashes', after).status, 0);
 assert.match(fs.readFileSync(after, 'utf8'), /^[0-9a-f]{64} battle_opts\.json/m);
 assert.notEqual(fs.readFileSync(before, 'utf8'), fs.readFileSync(after, 'utf8'), 'a change to the options shows in the hash');
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, options hash');
+console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, ship cache stamps, options hash');

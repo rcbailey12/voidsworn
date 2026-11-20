@@ -702,6 +702,27 @@ func teaching_info() -> Dictionary:
 	_leave(false)
 	return out
 
+# Issue 1289: the hulls a battle will bring in after it starts (the rules' reinforcement event, known when the battle
+# starts), so the battle can load and draw them under the loading cover instead of in the frame they arrive. Read only:
+# no dice, no ids taken, so the battle plays exactly as without it. Same fields ShipView.setup reads from a view unit.
+func arrival_previews() -> Array:
+	_enter()
+	var out: Array = []
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var run = R.RUN if R.RUN is Dictionary else {}
+		var fac = B.get("cfg", {}).get("fac") if side == "enemy" else (run["fac"] if R.jt(run.get("fac")) else "voidsworn")
+		var tpl = R.cheapHull(fac)
+		var t: Dictionary = R.HULLS.get(tpl, {})
+		if not t.is_empty():
+			out.append({"id": "arrival_warm_0", "side": side, "tpl": tpl, "fac": t["fac"] if R.jt(t.get("fac")) else fac,
+				"cls": t.get("cls"), "size": t.get("size", 1.0), "facing": 0 if side == "player" else 3, "squadron": false,
+				"flagship": false, "hp": t.get("hp", 1), "maxHp": t.get("hp", 1)})
+	_leave(false)
+	return out
+
 # ---------------- the game's own player-side AI ----------------
 # ai_activate(id): one player ship acts on its own, as the game's battle sim plays your side (sim3d.js botUnit: the Admiral's
 # Command when it pays, abilities, rams, boarding, the best move for its guns and the objective, every gun at its best target,

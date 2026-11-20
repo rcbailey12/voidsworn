@@ -19,6 +19,7 @@ const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const LOOK := preload("res://render/look.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
@@ -527,7 +528,9 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	var high: bool = expanded and W.quality == "high"
+	# Issue 1262: Max uses the same bounded cards and baked lattice as High (1070's masking saved 2.2 ms on Max in its
+	# run 1); VS_1262_OLD=cards restores Max's unbounded cards for the before and after timing.
+	var high: bool = expanded and (W.quality == "high" or (W.quality == "max" and not LOOK.perf_old("cards")))
 	if high and _gas_lattice == null and ResourceLoader.exists(GAS_LATTICE_PATH):
 		var source = load(GAS_LATTICE_PATH)
 		_gas_lattice = source.texture()
