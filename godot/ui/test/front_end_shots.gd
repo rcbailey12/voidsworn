@@ -15,15 +15,10 @@ var _saved_settings = null   # the settings file's bytes at the start; the captu
 var _failed := 0             # pictures that did not save
 
 
-# On Windows the capture runs only inside the throwaway profile frontend_ui_check.bat makes (the player-path pattern,
-# PR 1188): the real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
+# On Windows the capture runs only inside the watchdog's throwaway profile (issue 1369; tools/throwaway_profile.gd): the
+# real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
 func _profile_error() -> String:
-	if OS.get_name() != "Windows": return ""   # the cloud and CI have no player profile
-	var profile := OS.get_environment("VS_SHOTS_PROFILE").replace("\\", "/").simplify_path().trim_suffix("/")
-	var actual := ProjectSettings.globalize_path("user://").replace("\\", "/").simplify_path().trim_suffix("/")
-	if profile == "" or not actual.to_lower().begins_with(profile.to_lower() + "/"):
-		return "user:// (%s) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat" % actual
-	return ""
+	return preload("res://tools/throwaway_profile.gd").refusal("front_end_shots.gd")
 
 
 func _initialize() -> void:

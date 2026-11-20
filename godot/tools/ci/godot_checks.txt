@@ -170,4 +170,5 @@ headless|ui/campaign/test/debrief_ledger_test.gd|-|-|issue 805: DB1 receipt reac
 headless|ui/campaign/test/fleet_manifest_test.gd|-|-|issue 868: FL5 read-only screen, real refit fit move remove, compatibility, promotion, doctrine and return routes, twelve ships without scrolling and long fleets at 1080 1440 and 2160
 headless|ui/campaign/test/hull_text_test.gd|-|-|issue 932: a hull figure reads as a whole number rounded up, so 25.5 / 40 reads 26 / 40 and 0.5 / 40 reads 1 / 40, while numstr keeps the browser's 25.5
 headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels and press sounds, title Settings and Credits Esc, UI scale focus, Settings fits Larger, toast, font credits, campaign Esc back paths and faction music preview
+headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
