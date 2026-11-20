@@ -1,4 +1,4 @@
-# Issue 1290: the late-balance fixes from the PR 1276 review. Checks that the late market never offers the Smuggler's ledger or
+# Issue 1290: the late-balance fixes from the PR 1276 review. Checks that the late market never offers the Smuggler's ledger, the Scrap rig or
 # the logbook, that a ship regrown from an Eclipse core decommissions for 0 until it has fought a battle (then for the usual
 # 35%), and that the Chorus decommission into biomass. Headless it checks the rules and that the pages build; with a display it
 # also saves the two decommission pictures.
@@ -60,8 +60,8 @@ func _run() -> void:
 			campaign.RUN["stats"]["battles"] = b
 			var st = campaign.lateStock({"col": col})
 			for r in st["relics"]:
-				if r == "ledger" or r == "logbook": _fail("late market offered " + r + " at col " + str(col) + " battles " + str(b)); return
-	print("PASS: no ledger or logbook in 96 late market rolls")
+				if r == "ledger" or r == "logbook" or r == "salvage": _fail("late market offered " + r + " at col " + str(col) + " battles " + str(b)); return
+	print("PASS: no ledger, logbook or Scrap rig in 96 late market rolls")
 
 	# 2. Eclipse: a regrown ship decommissions for 0 until it has fought
 	_start("nekhet", "deathless", 1291)

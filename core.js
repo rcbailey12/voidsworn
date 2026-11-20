@@ -237,8 +237,9 @@ function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
 function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
 const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
-const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
-// issue 1290: skip = relics the late market never offers (+25% battle credits and +30% XP cannot earn back 120 with 2 to 5 fights left)
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salvage']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+// issue 1290: skip = relics the late market never offers: +25% battle credits, +30% XP and the Scrap rig (15 credits and 8% hull a
+// win, about 40 a battle at the measured 707 fleet hull) cannot earn back 120 in the 2 or 3 fights left after a Sector 3 yard
 // Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 100 a battle (issue 1290: about 25% of
 // a hull's price, up from 15 to 18%; still under the 35% decommission value, so losing a ship never profits)
 const CULLET={Frigate:25,Destroyer:45,Cruiser:70,Carrier:85,Battleship:100,cap:100};
