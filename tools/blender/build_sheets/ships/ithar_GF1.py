@@ -50,7 +50,7 @@ def gw_kit(name):
 TAU = 2 * math.pi
 X0, X1 = -0.5 * LENGTH + 0.03 * LENGTH, 0.5 * LENGTH   # the core; the stern stones stand on its blunt face out to -0.8
 HW, HH = 0.095 * LENGTH, 0.070 * LENGTH   # the core's half-beam and half-height at its widest (about 5 to 1)
-BOW_EXP, BOW_MIN = 0.45, 0.10   # how fast the core swells from its point, and its least size in the fore half (the bomber sets both)
+BOW_EXP = 0.75   # how fast the core swells from its bow point (t=1 is the bow, X1); lower is a blunter, rounder bow (the bomber sets it)
 MOSAIC_WEIGHTS = None           # the mosaic's amber, violet, green shares; None: the kit's (the bomber sets its own)
 
 
@@ -59,8 +59,8 @@ def core(x, a, inset=0.0):
     t = (x - X0) / (X1 - X0)
     if t < 0.0 or t > 1.0:
         return (min(X1, max(X0, x)), 0.0, 0.0)
-    env = math.sin(math.pi * t ** 0.9) ** (0.75 if t > 0.5 else BOW_EXP)
-    env = max(env, BOW_MIN if t < 0.5 else 0.0)
+    env = math.sin(math.pi * t ** 0.9) ** (BOW_EXP if t > 0.5 else 0.45)
+    env = max(env, 0.10 if t < 0.5 else 0.0)
     w = max(0.0, HW * (1 + 0.15 * math.sin(math.pi * t)) * env - inset)
     h = max(0.0, HH * env - inset)
     return (x, w * math.cos(a), h * math.sin(a))

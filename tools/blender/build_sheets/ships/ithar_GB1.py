@@ -34,7 +34,7 @@ F.CODE = CODE
 # Round 2 (Ryan, Nov 20: "hard to read any difference between the fighter and bomber"): much fatter with a blunt rounded bow,
 # five broad ribbons so more of the mosaic shows, and the mosaic mostly green (the bomber's seed-stone colour; the fighter is amber)
 F.HW, F.HH = 0.175 * LENGTH, 0.125 * LENGTH
-F.BOW_EXP, F.BOW_MIN = 0.22, 0.32
+F.BOW_EXP = 0.30   # t=1 is the bow: the fore half stays full almost to a rounded tip
 F.NRIB = 5
 F.HALF = 0.26
 F.MOSAIC_WEIGHTS = (14, 18, 68)
