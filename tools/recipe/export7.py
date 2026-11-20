@@ -375,6 +375,8 @@ else:
         role = {'base': bs.inputs['Base Color'].links[0].from_node.image, 'orm': sep.inputs[0].links[0].from_node.image}
         nm = next((n for n in nt.nodes if n.type == 'NORMAL_MAP'), None)
         if nm is not None: role['normal'] = nm.inputs['Color'].links[0].from_node.image
+        em = bs.inputs['Emission Color'].links      # issue 1183: a stack's hull emission atlas goes to the same map size
+        if em and em[0].from_node.type == 'TEX_IMAGE': role['emission'] = em[0].from_node.image
         for r, im in role.items():
             if max(im.size) > MAPS:
                 resize_atlas(im, r)
