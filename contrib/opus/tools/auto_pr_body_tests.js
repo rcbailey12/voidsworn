@@ -27,6 +27,7 @@ const fakeGh = [
   '        *) return 2 ;;',
   '      esac ;;',
   '    "api repos/example/voidsworn/issues/1098") echo "Fixture title" ;;',
+  '    "api repos/example/voidsworn/pulls/42") printf "%s\\n" "$EXISTING_PR_BODY" ;;',
   '    "pr create"|"pr edit")',
   '      [ "$2" = "$PR_ACTION" ] && [ "${@: -2:1}" = --body-file ] || return 2',
   '      [ "$(wc -c < "${!#}")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
@@ -48,7 +49,7 @@ const windowsSetup = [
   'fi',
 ].join('\n');
 
-function send(action, message, head = branch) {
+function send(action, message, head = branch, existingBody = '') {
   const payload = JSON.stringify({ head_commit: { message } });
   fs.writeFileSync(event, payload);
   const result = spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
@@ -56,7 +57,7 @@ function send(action, message, head = branch) {
     input: [windows ? windowsSetup : '', fakeGh, step].join('\n'),
     encoding: 'utf8',
     env: { ...process.env, PR_ACTION: action, BRANCH: head, REPO: 'example/voidsworn',
-      STANDING: '256', GITHUB_EVENT_PATH: 'event.json' },
+      STANDING: '256', GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: existingBody },
     timeout: 30000,
     windowsHide: true,
   });
@@ -133,4 +134,21 @@ for (const action of ['create', 'edit']) {
   assert.match(send(action, museShort, 'muse/look-pass-726'), /^Refs #726$/m);
 }
 
-console.log('PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex, plain and issue-less Muse bodies');
+// Issue 1135: a refresh respects the Board's Refs decision for the branch issue.
+const refreshMessage = `${title}\n\n${report}`;
+const refreshFooter = `Refreshed from the latest push to branch ${branch}. The Board reviews and merges.`;
+const refreshed = `\n${report}\n\n${refreshFooter}\n\n`;
+assert.equal(send('edit', refreshMessage, branch, 'Older report\n\nRefs #1098\nCloses #727'),
+  refreshed + 'Refs #1098\n', 'keep the Board Refs directive for this issue');
+assert.equal(send('edit', `${refreshMessage}\n\nFIXES: #1098\nCloses #727`, branch, 'Refs #1098'),
+  `\n${report}\n\nRefs #1098\nCloses #727\n\n${refreshFooter}\n`, 'replace a closing word for this issue only');
+assert.equal(send('edit', refreshMessage, branch, 'Closes #1098'), refreshed + 'Closes #1098\n');
+assert.equal(send('edit', refreshMessage, branch, 'Refs #1098\nFIXES: #1098'), refreshed + 'Closes #1098\n');
+assert.equal(send('edit', refreshMessage, branch, 'Older report'), refreshed + 'Closes #1098\n');
+assert.equal(send('edit', refreshMessage, branch, 'Older report\n\nRefs #10980'), refreshed + 'Closes #1098\n');
+
+const standingBody = send('edit', `${refreshMessage}\n\nCloses #256`, 'codex/issue-256', 'Closes #256');
+assert.match(standingBody, /^Refs #256$/m);
+assert.doesNotMatch(standingBody, /^Closes #256$/m);
+
+console.log('PASS auto_pr_body_tests: create and edit bound long bodies and refreshes keep the Board Refs directive');

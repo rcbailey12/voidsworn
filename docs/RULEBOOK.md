@@ -343,6 +343,8 @@ agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do w
 if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
 (G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
+PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
+
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
 use for all of this?" (R126); holding the lock hides his windows; Task Manager ignores remote clicks. Set: Ryan (R126); Board

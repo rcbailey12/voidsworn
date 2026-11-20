@@ -12,6 +12,11 @@ var q := 1.0                  # 1 high, 0 low
 var blinkers: Array = []      # [glow mesh, phase, period] running lights that blink (map3d animates them)
 static var _rock_cache := {}
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_rock_cache.clear()
+	_unit_box = null
+
 func _init(system) -> void:
 	sys = system; q = system.q
 

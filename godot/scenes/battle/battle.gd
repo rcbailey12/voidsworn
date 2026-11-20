@@ -1060,6 +1060,8 @@ func _exit_tree() -> void:
 	if _think_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_think_tid)
 		_think_tid = -1
+	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
+	ShipView.clear_look_cache()
 
 
 # Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live
@@ -4733,7 +4735,7 @@ func _panel_info() -> Dictionary:
 
 # ---------------------------------------------------------------- the full ship sheet (ui3d.js refreshPanel)
 const SEC_LBL := {"prow": "Prow", "mid": "Midships", "eng": "Engines"}
-static var _boon_d = null   # campaign_tables.json BOON_D: boon id -> description per rarity
+static var _boon_d = null   # not GPU: campaign_tables.json BOON_D: boon id -> description per rarity
 
 
 # a number as the browser prints it (2, not 2.0)
@@ -5819,12 +5821,6 @@ func _quit(code := 0) -> void:
 		c.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	ShipView.clear_static()
-	Fx.clear_static()
-	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
-		if ResourceLoader.exists(sp):
-			var sc = load(sp)
-			if sc != null and sc.has_method("clear_static"):
-				sc.clear_static()
+	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
+	load("res://render/static_caches.gd").clear_all()
 	get_tree().quit(code)

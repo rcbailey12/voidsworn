@@ -185,6 +185,7 @@ func _scene(sid: String, shape: String, look: String, radius: float) -> bool:
 		return false
 	_note_scene(bench.T)
 	_note_scene(bench.A)
+	await _settle_shields()
 	var sh = bench.fx.ship("T")
 	if not sh.shielded or sh._shield_mat == null:
 		_fail(sid + " has no shield")
@@ -200,7 +201,7 @@ func _scene(sid: String, shape: String, look: String, radius: float) -> bool:
 
 func _story(sid: String, shape: String, look: String, radius: int) -> void:
 	stills.clear()
-	if not _scene(sid, shape, look, radius):
+	if not await _scene(sid, shape, look, radius):
 		return
 	await bench.fx.warmup(bench.cam)
 	for i in 60:
@@ -398,6 +399,7 @@ func _cost() -> void:
 				return
 			_note_scene(v)
 			ids.append("T%d" % i)
+		await _settle_shields()
 		await bench.fx.warmup(bench.cam)
 		for i in 90:
 			await bench._step()
@@ -470,6 +472,7 @@ func _flash_group(group: String, subjects: Array, shape: String, looks: PackedSt
 			return false
 		_note_scene(v)
 		ids.append("G%d" % i)
+	await _settle_shields()
 	await bench.fx.warmup(bench.cam)
 	for i in 90:
 		await bench._step()
@@ -517,6 +520,20 @@ func _flash_group(group: String, subjects: Array, shape: String, looks: PackedSt
 				await bench._step()
 	bench.fx.reduce_flashing = false
 	return true
+
+
+# Since PR 1241 a fitted skin missing from the disk cache is baked on a worker when defer_initial_cuts is on, and the
+# ship shows the egg until it lands; wait for every queued skin, so each picture and number is of the asked shape.
+func _settle_shields() -> void:
+	if not ("_shield_jobs" in bench.fx):
+		return
+	var guard := 0
+	while not bench.fx._shield_jobs.is_empty() and guard < 3600:
+		bench.fx._finish_shield_skins()
+		await process_frame
+		guard += 1
+	if not bench.fx._shield_jobs.is_empty():
+		_fail("fitted shield skins were still baking after 3600 frames")
 
 
 # the installed ship each picture or number was drawn from: its packed scene path and sha256 (Artoo on PR 1170: prove
