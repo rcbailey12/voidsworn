@@ -63,6 +63,8 @@ class and faction (issue 363), never from a constant.
   ribs as on the concepts; the fins themselves never glow. Why: Ryan, Nov 19 2026 (R331), on the Sunward concepts: "can we
   scale down the giant radiator/orange towers on each ship a bit too?"; S8 first (issue 1158), then Warden, Vigil, Harrow,
   Hearth and Bastion (R333). Ryan, Nov 20 2026, on the Warden's lit fins reading as copper: "fix ember glow" (issue 1156).
+  The ember is bright: the whole core sits near the tip's level (stack.py SPIRE, root .70 of the tip), the tip still under
+  the 0.8 glow threshold. Why: Ryan, Nov 20 2026 13:43 UTC, on S8 in game beside a brighter mock-up: "A bit brighter".
 - **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed

@@ -203,7 +203,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
    tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
    treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
-   later Sunward build.
+   later Sunward build. Second case: how bright the spire ember is lives only in the Sunward stack (`SPIRE` in
+   tools/blender/kits/voidsworn/stack.py), never in a ship's sheet; a change there reaches S8, S9, S10, SF3 and SB4 on their
+   next stage 5 rebake (Ryan, Nov 20 2026 13:43 UTC: "A bit brighter", applied to every Sunward ship, not one hull).
 15. **A build is not "in" until build\godot holds it (issue 1311, Board, Nov 20 2026).** A ship job installs only into its
    own clone. After Ryan says yes to its pictures, the Board queues `tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA`
    with the full commit from the job's receipt and the full glb sha256 from its export's CODE_export.json. It refuses a
