@@ -281,6 +281,26 @@ function Test-SharedBuildCopy($repo, $path, $allowSuperseded = $false) {
     $script:cleanupSuperseded += ,$path
     return $true
   }
+  if (-not $shared -and $allowSuperseded -and $path -match '\Agodot/gen/' -and
+      $local -is [IO.FileInfo] -and -not ($local.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    # Issue 1180 (Board, Nov 20, R8 dry run 2): a generated file with no build twin (an old gen/damage scene) is a
+    # candidate when the build's gen was regenerated later: gen/manifest.json is written on every regeneration, so a
+    # file the newer gen no longer has is superseded. Archived and read back before removal, like every superseded file.
+    $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+    for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+    }
+    $manifest = Get-Item -LiteralPath (Join-Path $build 'godot/gen/manifest.json') -Force -ErrorAction SilentlyContinue
+    if ($manifest -isnot [IO.FileInfo] -or ($manifest.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
+    $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+    $copyTime = $local.LastWriteTimeUtc; $genTime = $manifest.LastWriteTimeUtc
+    $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; no build twin; build gen regenerated $($genTime.ToString('o'))"
+    if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $genTime -lt $floor -or $genTime -gt $ceiling) { Log "shared copy time not trusted, kept: $path ($detail)"; return $false }
+    if ($copyTime -ge $genTime) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+    Log "superseded by the shared build: $path ($detail)"
+    $script:cleanupSuperseded += ,$path
+    return $true
+  }
   foreach ($file in @($local, $shared)) {
     if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
   }
