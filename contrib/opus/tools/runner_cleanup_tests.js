@@ -242,6 +242,10 @@ try {
   const shipSupersededTwin = shipCopy('ship-superseded-twin', 'godot/assets/ships/T1_11/T1_11.glb', 26, 10, undefined, 'ship-superseded copy bake');
   const genSuperseded = shipCopy('gen-superseded', 'godot/gen/manifest.json', 26, 10, 'godot/gen/');
   const shipNewer = shipCopy('ship-newer', 'godot/assets/ships/T2_11/T2_11.glb', 26, 40);
+  // Run 8: a damage glb with no build twin, while the build holds the same ship code installed later.
+  const shipNoTwin = shipCopy('ship-no-twin', 'godot/assets/ships/T5_11/T5_11_damage.glb', 26, null);
+  write(path.join(pc, 'build', 'godot/assets/ships/T5_11/T5_11.glb'), 'T5_11 reinstalled');
+  buildTimes.push([path.join(pc, 'build', 'godot/assets/ships/T5_11/T5_11.glb'), 10]);
   const shipMissing = shipCopy('ship-missing', 'godot/assets/ships/T3_11/T3_11.glb', 26, null);
   const shipOldTime = shipCopy('ship-old-time', 'godot/assets/ships/T4_11/T4_11.glb', null, 10);
   fs.utimesSync(path.join(shipOldTime, 'godot/assets/ships/T4_11/T4_11.glb'), new Date(Date.UTC(1990, 0, 1)), new Date(Date.UTC(1990, 0, 1)));
@@ -406,7 +410,7 @@ try {
         PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"`, ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
+  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, oldStage7, workClean, ...recover];
   const preserve = [helperUnrelayed, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
@@ -446,6 +450,8 @@ try {
   // it is archived and read back before its checkout goes.
   assert.match(decision(dry, shipSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files, \d+ bytes/);
   assert.match(decision(dry, genSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
+  assert.match(decision(dry, shipNoTwin, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
+  assert.match(dry, /superseded by the shared build: godot\/assets\/ships\/T5_11\/T5_11_damage\.glb \(copy .*; no build twin; ship T5_11 installed /);
   assert.match(decision(dry, shipNewer, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /copy is not older than the shared build, kept: godot\/assets\/ships\/T2_11\/T2_11\.glb \(copy /);
   assert.match(decision(dry, shipMissing, 'retained'), /shared ship copy could not be verified/);
@@ -492,7 +498,8 @@ try {
   const stored = {};
   for (const [dir, file, bytes] of [[shipSuperseded, 'godot/assets/ships/T1_11/T1_11.glb', 'ship-superseded copy bake'],
     [shipSupersededTwin, 'godot/assets/ships/T1_11/T1_11.glb', 'ship-superseded copy bake'],
-    [genSuperseded, 'godot/gen/manifest.json', 'gen-superseded copy bake']]) {
+    [genSuperseded, 'godot/gen/manifest.json', 'gen-superseded copy bake'],
+    [shipNoTwin, 'godot/assets/ships/T5_11/T5_11_damage.glb', 'ship-no-twin copy bake']]) {
     const archive = path.join(salvageRoot, `board_b_${path.basename(dir)}_superseded`);
     const row = read(path.join(archive, 'superseded_manifest.txt'));
     const hash = crypto.createHash('sha256').update(bytes).digest('hex');
