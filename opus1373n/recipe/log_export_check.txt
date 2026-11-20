@@ -1,0 +1,6 @@
+[check] 34874 triangles (9944 on part surfaces), box x -0.500 to 0.500, y -0.064 to 0.088, z -0.147 to 0.149
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] slot 0 sporeb T: 2 hard points
+[check] hard points: {"core": 1, "engine": 4, "gun": 2}
+PASS chorus_CS1BA2 game export: every required point is there and every hard point passes the mesh checks

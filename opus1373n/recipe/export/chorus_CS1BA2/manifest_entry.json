@@ -1,0 +1,47 @@
+{
+ "name": "Sealed Gills spore swarm, the Chorus spore swarm craft (the Chorus)",
+ "faction": "chorus",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "spore",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 4,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 0,
+ "files": {
+  "chorus_CS1BA2.glb": {
+   "bytes": 1383648,
+   "sha256": "7b5c4dfaff8979ce9fc8dfc6d8ac5ba75b4204571acfd27da0052d8bc8f28ec7"
+  },
+  "chorus_CS1BA2_base.jpg": {
+   "bytes": 697520,
+   "sha256": "b2a5391de79d2d032530800fa909ee6ee221b99e024c6e69ddcac3040a81a5a2"
+  },
+  "chorus_CS1BA2_normal.png": {
+   "bytes": 6321596,
+   "sha256": "cb9daabed691af164e826b5b4c15b4211c36c1a9dbc0959f03abfce016cd4dc0"
+  },
+  "chorus_CS1BA2_orm.png": {
+   "bytes": 4004003,
+   "sha256": "5f0f513e0d00fae6a50f7c525bd49ccc8f525856819d3d703128a72133d813d4"
+  },
+  "chorus_CS1BA2_parts_base.jpg": {
+   "bytes": 494237,
+   "sha256": "b61a52d0b3685900669c8dbc35b4bf1e5a4738829b4d81618a0fa8c8d352b1cf"
+  },
+  "chorus_CS1BA2_parts_normal.png": {
+   "bytes": 5891429,
+   "sha256": "674c3b13db4e0d32c867b8e746a02eb20caf590d8cb9a54191b04d780e8e33f9"
+  },
+  "chorus_CS1BA2_parts_orm.png": {
+   "bytes": 3663497,
+   "sha256": "911f756fe01ad554ea79889c637e48cd4bae2feeef81541502bb4745f9a69a23"
+  }
+ },
+ "pc_path": "godot/assets/ships/chorus_CS1BA2/",
+ "wing_role": "spore"
+}

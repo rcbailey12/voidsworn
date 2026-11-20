@@ -1,0 +1,11 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim dee8eaeb-acd5-45a4-b8f2-b360b43eb647
+14:00:39 | INFO: Data are loaded, start creating Blender stuff
+14:00:39 | INFO: Blender create Mesh node geometry_0
+14:00:39 | INFO: glTF import finished in 0.50s
+[ai_align] measured shape_ref_yaw -179.9 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_CS1BA2\b0.npz (559836, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim dee8eaeb-acd5-45a4-b8f2-b360b43eb647

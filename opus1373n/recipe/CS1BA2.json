@@ -1,0 +1,110 @@
+{
+ "cell": "CS1BA2",
+ "route": "build sheet chorus_CS1BA2 + the chorus paint stack (kits/chorus/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 95.0,
+ "geometry_seconds": 0.6,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 12,
+  "part_objects": 26,
+  "glow_objects": 8,
+  "interior_objects": 5,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 10.1,
+  "bake_H_albedo_s": 7.9,
+  "bake_H_orm_s": 6.2,
+  "bake_H_normal_s": 15.9,
+  "zones_H": [
+   "bone",
+   "carapace",
+   "chitin",
+   "flesh",
+   "flesh2",
+   "hide",
+   "pore",
+   "vein"
+  ],
+  "bake_P_masks_s": 10.1,
+  "bake_P_albedo_s": 8.6,
+  "bake_P_orm_s": 6.0,
+  "bake_P_normal_s": 18.5,
+  "zones_P": [
+   "amber",
+   "flesh",
+   "flesh2",
+   "maw",
+   "tissue"
+  ],
+  "glow_materials": [
+   "chorus_light_bile",
+   "chorus_light_membrane"
+  ],
+  "inside_materials": [
+   "chorus_inside_ganglion",
+   "chorus_inside_gland",
+   "chorus_inside_gut",
+   "chorus_inside_organ"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.6602,
+    "area": 1.85047,
+    "texels_per_unit2": 5985460.7
+   },
+   "parts": {
+    "uv_share": 0.7269,
+    "area": 0.45899,
+    "texels_per_unit2": 26569008.2
+   }
+  },
+  "stack_seconds": 93.5
+ },
+ "density": {
+  "paint_flags": [],
+  "mesh_flags": [],
+  "hull": {
+   "area": 1.85047,
+   "triangles": 24930,
+   "tris_per_unit2": 13472.3,
+   "edges_per_unit2": 4715.0,
+   "texels_per_unit2": 5985460.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 39.89,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "chorus_CS1BA2",
+  "game_ship": "spore",
+  "variant": "",
+  "model_length": 1.6001,
+  "scale": 0.6249592712615004,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.37498
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 2,
+  "engines": 4,
+  "bays": 0,
+  "points": 1,
+  "turrets": [],
+  "interior_objects": 5,
+  "slots": [
+   "0 sporeb T"
+  ]
+ },
+ "triangles": 37166,
+ "objects": 46,
+ "surfaces": 4,
+ "draw_calls_merged": 4
+}

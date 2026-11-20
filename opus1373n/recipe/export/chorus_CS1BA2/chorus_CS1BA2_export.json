@@ -1,0 +1,291 @@
+{
+ "ship": "chorus_CS1BA2",
+ "code": "chorus_CS1BA2",
+ "cell": "CS1BA2",
+ "game_ship": "spore",
+ "faction": "chorus",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 34874,
+ "turret_triangles": 0,
+ "turrets": [],
+ "surfaces": 4,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "sporeb",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_sporeb_T_0",
+    "hp_w0_sporeb_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 2,
+  "engine": 4,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "chorus_CS1BA2",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_sporeb_T_0",
+   "p": [
+    0.25844,
+    0.09864,
+    0.04369
+   ],
+   "fwd": [
+    0.9999,
+    0.0158,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "sporeb",
+   "radius": 0.007305513568325519,
+   "socket": "S1"
+  },
+  {
+   "name": "hp_w0_sporeb_T_1",
+   "p": [
+    0.25844,
+    -0.09864,
+    0.04369
+   ],
+   "fwd": [
+    0.9999,
+    -0.0158,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "sporeb",
+   "radius": 0.007305513568325519,
+   "socket": "S2"
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49797,
+    0.022,
+    0.0205
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.014174076272210831,
+   "engine": "E1"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49797,
+    -0.022,
+    -0.0185
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.014174076272210831,
+   "engine": "E4"
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.49797,
+    -0.023,
+    0.0195
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.013649110484351168,
+   "engine": "E2"
+  },
+  {
+   "name": "hp_eng_3",
+   "p": [
+    -0.49797,
+    0.021,
+    -0.018
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.013439124169207306,
+   "engine": "E3"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.11999,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "Sealed Gills spore swarm, the Chorus spore swarm craft (the Chorus)",
+  "faction": "chorus",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "spore",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 2,
+   "engine": 4,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 0,
+  "files": {
+   "chorus_CS1BA2.glb": {
+    "bytes": 1383648,
+    "sha256": "7b5c4dfaff8979ce9fc8dfc6d8ac5ba75b4204571acfd27da0052d8bc8f28ec7"
+   },
+   "chorus_CS1BA2_base.jpg": {
+    "bytes": 697520,
+    "sha256": "b2a5391de79d2d032530800fa909ee6ee221b99e024c6e69ddcac3040a81a5a2"
+   },
+   "chorus_CS1BA2_normal.png": {
+    "bytes": 6321596,
+    "sha256": "cb9daabed691af164e826b5b4c15b4211c36c1a9dbc0959f03abfce016cd4dc0"
+   },
+   "chorus_CS1BA2_orm.png": {
+    "bytes": 4004003,
+    "sha256": "5f0f513e0d00fae6a50f7c525bd49ccc8f525856819d3d703128a72133d813d4"
+   },
+   "chorus_CS1BA2_parts_base.jpg": {
+    "bytes": 494237,
+    "sha256": "b61a52d0b3685900669c8dbc35b4bf1e5a4738829b4d81618a0fa8c8d352b1cf"
+   },
+   "chorus_CS1BA2_parts_normal.png": {
+    "bytes": 5891429,
+    "sha256": "674c3b13db4e0d32c867b8e746a02eb20caf590d8cb9a54191b04d780e8e33f9"
+   },
+   "chorus_CS1BA2_parts_orm.png": {
+    "bytes": 3663497,
+    "sha256": "911f756fe01ad554ea79889c637e48cd4bae2feeef81541502bb4745f9a69a23"
+   }
+  },
+  "pc_path": "godot/assets/ships/chorus_CS1BA2/",
+  "wing_role": "spore"
+ },
+ "files": {
+  "chorus_CS1BA2.glb": {
+   "bytes": 1383648,
+   "sha256": "7b5c4dfaff8979ce9fc8dfc6d8ac5ba75b4204571acfd27da0052d8bc8f28ec7"
+  },
+  "chorus_CS1BA2_base.jpg": {
+   "bytes": 697520,
+   "sha256": "b2a5391de79d2d032530800fa909ee6ee221b99e024c6e69ddcac3040a81a5a2"
+  },
+  "chorus_CS1BA2_normal.png": {
+   "bytes": 6321596,
+   "sha256": "cb9daabed691af164e826b5b4c15b4211c36c1a9dbc0959f03abfce016cd4dc0"
+  },
+  "chorus_CS1BA2_orm.png": {
+   "bytes": 4004003,
+   "sha256": "5f0f513e0d00fae6a50f7c525bd49ccc8f525856819d3d703128a72133d813d4"
+  },
+  "chorus_CS1BA2_parts_base.jpg": {
+   "bytes": 494237,
+   "sha256": "b61a52d0b3685900669c8dbc35b4bf1e5a4738829b4d81618a0fa8c8d352b1cf"
+  },
+  "chorus_CS1BA2_parts_normal.png": {
+   "bytes": 5891429,
+   "sha256": "674c3b13db4e0d32c867b8e746a02eb20caf590d8cb9a54191b04d780e8e33f9"
+  },
+  "chorus_CS1BA2_parts_orm.png": {
+   "bytes": 3663497,
+   "sha256": "911f756fe01ad554ea79889c637e48cd4bae2feeef81541502bb4745f9a69a23"
+  }
+ },
+ "seconds": 12.2,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}
