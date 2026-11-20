@@ -1,0 +1,10 @@
+start run 5 Thu 11/19/2026 18:28:34.81 
+run folder C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run3 
+commit 93050fcdaa7ff6cc86d80bbf5c77f77ed91725ce 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1079\profile_3\appdata 
+copied ships, gen and import cache from build\godot 18:29:55.50 
+import ok 18:39:08.13 
+stills ok 18:42:17.52 
+scene 207 gate ok 18:48:29.28 
+real options unchanged 
+all done 
