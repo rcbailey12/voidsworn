@@ -281,7 +281,9 @@ def glow_material(zone, hull=False):
         # issue 1291 round D: the veils as dark wet skin in the hide's colour, not pale paper. The glow materials export as
         # plain glTF factors (no baked map), so a node pattern here would export white: colour and roughness only.
         bsdf.inputs['Base Color'].default_value = (.040, .029, .017, 1)
-        bsdf.inputs['Roughness'].default_value = .34
+        # run E: .34 caught the rim light as hot white spots at the veil tips (runs D2 and D3). A glTF factor cannot vary along
+        # the veil, so the whole veil goes satin: still a sheen, no pinpoint highlight.
+        bsdf.inputs['Roughness'].default_value = .6
     bsdf.inputs['Emission Color'].default_value = (*colour, 1)
     bsdf.inputs['Emission Strength'].default_value = power
     material['ps_glow'] = 1
