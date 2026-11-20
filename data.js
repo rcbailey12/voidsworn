@@ -1053,6 +1053,12 @@ for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[
   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
     if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3;
     const pm=(FAC_PRICE[fid]||{})[h.cls]||1; if(pm!==1&&h.cost0==null){ h.cost0=h.cost; h.cost=Math.round(h.cost*pm/5)*5; } } }
+// Issue 1354 (Nov 20): Navy hulls 20% and Crusade hulls 5% cheaper in the shop, to lift both back above 30% at Veteran after the
+// Glasswright hull rise (PR 1353). Shop price only: h.val keeps the ladder price, so ransom, strip, scrap and Cinder Line
+// prices (shipValue, capturedHullPrice) and every enemy ship are unchanged.
+const SHOP_DISCOUNT={hegemony:.8,voidsworn:.95};
+for(const [fid,d] of Object.entries(SHOP_DISCOUNT)) for(const id of FACTIONS[fid].roster){ const h=HULLS[id]; if(!h||h.sq||h.val!=null) continue;
+  h.val=h.cost; h.cost=Math.round(h.cost*d/5)*5; }
 
 // ---------- progression between runs ----------
 // Hull variants: bought once with renown, then sold in your faction's shipyards beside the standard hull

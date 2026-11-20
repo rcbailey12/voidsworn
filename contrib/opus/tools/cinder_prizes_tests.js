@@ -50,8 +50,8 @@ check('from run 3 a Crusade yard stocks two captured Hegemony or Eclipse hulls',
 check('captured hulls sell at Crusade prices, not at the owners faction prices', () => {
   setup('voidsworn', 3);
   const warden = T.HULLS.warden, mote = T.HULLS.d_scythe, picket = T.HULLS.h_picket;
-  if (T.capturedHullPrice(mote) !== warden.cost) return false; // a 1 CP frigate costs what a Warden costs (70), not the Eclipse 110
-  if (T.capturedHullPrice(picket) !== picket.cost) return false; // Hegemony is already the 1.0 baseline
+  if (T.capturedHullPrice(mote) !== warden.val) return false; // a 1 CP frigate costs the Warden's ladder price (70), not the Eclipse 110; the issue 1354 shop discount is not applied to captured hulls
+  if (T.capturedHullPrice(picket) !== picket.val) return false; // Hegemony is already the 1.0 baseline (its ladder price, before the issue 1354 shop discount)
   const corsair = T.HULLS.c_raider;
   return T.capturedHullPrice(T.HULLS.c_reaver) === Math.round(Math.round((T.HULLS.c_reaver.cost0 != null ? T.HULLS.c_reaver.cost0 : T.HULLS.c_reaver.cost) / 5) * 5); // corsair destroyer base 130, no voidsworn destroyer markup
 });
