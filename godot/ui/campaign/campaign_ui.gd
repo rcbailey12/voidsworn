@@ -1079,7 +1079,8 @@ func _map() -> Control:
 	if not _find(_acts, "saveQuit", "").is_empty(): top.add_child(tbtn("Save and quit", 17, 24, func(): C.act("saveQuit", ""), "", true))
 	wrap.add_child(top)
 	var P = View.purse(C)
-	var purse = _baseline_row([["Credits", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["credits"]), font_num_b, 28, GS.TEXT], [48],
+	var bio_cells = [["Biomass", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["bio"]), font_num_b, 28, GS.TEXT], [48]] if P.has("bio") else []
+	var purse = _baseline_row(bio_cells + [["Credits", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["credits"]), font_num_b, 28, GS.TEXT], [48],
 		["Command points", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["cp"]), font_num_b, 28, GS.TEXT], [0], ["/" + C.numstr(P["cp_cap"]), font_num, 28, GS.TEXT2]], 32)
 	purse.anchor_left = 1.0; purse.anchor_right = 1.0; purse.anchor_top = 1.0; purse.anchor_bottom = 1.0
 	purse.offset_right = -px(48); purse.offset_left = purse.offset_right - purse.custom_minimum_size.x; purse.offset_bottom = -px(40); purse.offset_top = purse.offset_bottom - purse.custom_minimum_size.y
@@ -1610,20 +1611,46 @@ func _fleet(d: Dictionary) -> Control:
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
+	var hw = " biomass" if C.hullKey() == "bio" else ""   # issue 1178: Chorus hull work is paid in biomass
+	if hw != "":
+		head.add_child(_readout("Biomass", C.numstr(C.z0(R.get("bio"))), BONE, true)); var gb = Control.new(); gb.custom_minimum_size.x = px(28); head.add_child(gb)
 	head.add_child(_readout("Credits", C.numstr(R["credits"]), BONE, true)); var gp = Control.new(); gp.custom_minimum_size.x = px(28); head.add_child(gp); head.add_child(_readout("Command points", C.numstr(cp) + "/" + C.numstr(R["cpCap"]), BONE, true))
 	var rb = abtn("Refits", "yardFleet")
 	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
-	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh lieutenant." % ("1 credit" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001)) + " credits"), 18, BONE2))
+	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Credits buy refits.", 18, VERD))
+	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh lieutenant." % (("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
-	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm))) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
+	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
 	add(v, _yard_bar)
+	var cores = C.or_(R.get("cores"), [])
+	if not cores.is_empty():   # issue 1178: Eclipse core recovery
+		v.add_child(sec_head("Recovered cores"))
+		v.add_child(lbl("Each core regrows its ship at Mk I, full hull, no refits.", 17, BONE3))
+		var crow = flow(8)
+		for i in range(cores.size()): add(crow, abtn("Regrow the " + str(C.HULLS[cores[i]]["n"]) + " for " + C.numstr(C.coreCost(cores[i])), "restoreCore", i))
+		v.add_child(crow)
+	if st.get("late") is Dictionary:   # issue 1178: the Sector 3 market
+		v.add_child(sec_head("Late market"))
+		v.add_child(lbl("Sector 3 yards sell what the war has left: relics, and room for one more ship.", 17, BONE3))
+		var lm = flow()
+		for o in C.lateShopOffers():
+			var lc = card(false, 300)
+			if o["kind"] == "relic":
+				lc[1].add_child(lbl(C.relicName(o["r"]), 20, BONE, font_semi)); lc[1].add_child(lbl(C.RELICS[o["r"]]["d"], 18, BONE2))
+			else:
+				lc[1].add_child(lbl("Command expansion", 20, BONE, font_semi)); lc[1].add_child(lbl("+1 command point for the rest of the run (at most " + C.numstr(C.TB["LATE_SHOP"]["cpMax"]) + " a run).", 18, BONE2))
+			if C.jt(o["done"]): lc[1].add_child(lbl("Bought", 18, VERD))
+			elif C.jt(o.get("full")): lc[1].add_child(lbl("Already at the limit", 18, BONE3))
+			else: add(lc[1], abtn("Buy for " + C.numstr(o["cost"]), "lateBuy", o["id"]))
+			lm.add_child(lc[0])
+		v.add_child(lm)
 	var cards = flow()
 	for s in R["fleet"]:
 		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.prizeScrap(s["tpl"])   # R1 (TXT-8): what the button pays; hulls without a shop price too
-		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc)) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
-			abtn(("Mk " + C.roman(float(s["mk"]) + 1) + " for " + C.numstr(mc)) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true),
+		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc) + hw) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
+			abtn(("Mk " + C.roman(float(s["mk"]) + 1) + " for " + C.numstr(mc) + hw) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true),
 			abtn("Decommission (+" + C.numstr(sell) + ")", "sellShip", s["uid"], false, true)]
 		cards.add_child(_ship_card(s, false, ex))
 	v.add_child(cards)
@@ -1640,7 +1667,7 @@ func _shipyard() -> Control:
 		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
 		cvv.add_child(lbl("Ability: " + (str(C.ABILITIES[t["ab"]]["n"]) if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]) else "none"), 17, BONE3))
-		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost), "buyHull", h))
+		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost) + hw, "buyHull", h))
 		if not fits: fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
 		elif uniq: fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
 		cvv.add_child(fr); hs.add_child(cv[0])
@@ -1659,7 +1686,7 @@ func _shipyard() -> Control:
 			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
 			cvv3.add_child(lbl("Ability: " + (str(C.ABILITIES[t2["ab"]]["n"]) if C.jt(t2.get("ab")) and C.ABILITIES.has(t2["ab"]) else "none"), 17, BONE3))
-			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2), "buyHull", h))
+			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2) + hw, "buyHull", h))
 			if not fits2: fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
 			cvv3.add_child(fr2); cs.add_child(cv3[0])
 		v.add_child(cs)
@@ -2244,11 +2271,14 @@ func _modal(md: Dictionary) -> void:
 			var sm: Dictionary = d.get("summary", {})
 			h2.call("Flagship destroyed" if d["kind"] == "boss" else "Victory")
 			if str(d.get("beat3Debrief", "")) != "": p.call(d["beat3Debrief"], VERD)
-			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["credits"]), VERD) + c(" credits.", VERD), 17))
+			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["econ"]["bio"] if d.get("econ") is Dictionary and d["econ"].has("bio") else d["credits"]), VERD) + c(" biomass." if d.get("econ") is Dictionary and d["econ"].has("bio") else " credits.", VERD), 17))
 			if not sm.get("lost", []).is_empty():
 				var ls = []
 				for l in sm["lost"]: ls.append("the " + str(l["ship"]) + " and " + str(l["cap"]))
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
+			var econ: Dictionary = d["econ"] if d.get("econ") is Dictionary else {}   # issue 1178: faction economies on the victory card
+			if econ.has("cullet"): p.call("Cullet from the lost glass: +" + C.numstr(econ["cullet"]) + " credits.", VERD)
+			if econ.has("core"): p.call("Core recovered: the " + str(C.HULLS[econ["core"]]["n"]) + " can be regrown at a shipyard.", VERD)
 			if d.get("extra", "") != "": p.call(d["extra"], VERD)
 			for line in d.get("weaknessConfirmed", []): p.call(line, VERD)
 			if not d["wrecks"].is_empty(): _salvage_choices(v, d["wrecks"], acts)

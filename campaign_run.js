@@ -188,31 +188,56 @@ function shipyardStock(n){
   /* hull variants you've unlocked are sold beside their standard hull */ for(const h of pickH.slice()){ for(const [vid,v] of Object.entries(HULL_VARIANTS)) if(v.base===h&&META.variants&&META.variants[vid]) pickH.splice(pickH.indexOf(h)+1,0,vid); }
   const cap=cinderOpen()?shuffle(cinderPool()).slice(0,2):[]; // R78 Q9: from run 3 the Crusade yards sell captured Hegemony and Eclipse hulls, class unlocks apply
   n.stock={hulls:pickH, mods:shuffle(modulePool()).slice(0,3), sold:[], cap};
+  if(RUN.sector>=3) n.stock.late=lateStock(n);
   return n.stock;
 }
+// issue 1178: the Sector 3 market, things worth buying late. Two relics (picked without the random stream, so the rest of the run
+// rolls as before) and one extra command point per yard, at most LATE_SHOP.cpMax a run. Paid in credits, never touches repair prices.
+function lateStock(n){
+  const pool=Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r)).sort(), k=pool.length?((n.col||0)*7+RUN.stats.battles*3)%pool.length:0;
+  return {relics:pool.length>1?[pool[k],pool[(k+1)%pool.length]]:pool.slice(),bought:[],cp:false};
+}
+function lateShopOffers(){
+  const st=yardNode&&yardNode.stock&&yardNode.stock.late; if(!st) return [];
+  const pm=priceMult(), rc=Math.round(LATE_SHOP.relic*pm), cc=Math.round(LATE_SHOP.cp*pm);
+  const out=st.relics.map(r=>({id:'relic:'+r,kind:'relic',r,cost:rc,value:2,ok:!st.bought.includes(r)&&!RUN.relics.includes(r)&&RUN.credits>=rc,done:st.bought.includes(r)}));
+  out.push({id:'cp',kind:'cp',cost:cc,value:1,ok:!st.cp&&(RUN.lateCp||0)<LATE_SHOP.cpMax&&RUN.credits>=cc,done:st.cp,full:(RUN.lateCp||0)>=LATE_SHOP.cpMax});
+  return out;
+}
+ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) return; const st=yardNode.stock.late; RUN.credits-=o.cost;
+  if(o.kind==='relic'){ st.bought.push(o.r); changeFleet(()=>RUN.relics.push(o.r)); toast(`${relicName(o.r)} is yours. ${RELICS[o.r].d}`); }
+  else { st.cp=true; RUN.lateCp=(RUN.lateCp||0)+1; RUN.cpCap++; toast(`Command grows: ${RUN.cpCap} command points.`); }
+  try{ tel('shop',{k:'late',id,cost:o.cost}); }catch(e){} shipyardScreen(yardNode); };
+// issue 1178: Eclipse core recovery (1086 E-B). A win recovers the core of the most valuable ship you lost (one a battle); at a
+// shipyard the core and 20% of the hull's value regrow it at Mk I with no refits and full hull.
+function coreCost(tpl){ return Math.round(shipValue(tpl)*LATE_SHOP.core*priceMult()); }
+ACT.restoreCore=i=>{ const cs=RUN.cores||[], tpl=cs[+i]; if(!tpl||!HULLS[tpl]) return; const c=coreCost(tpl); if(RUN.credits<c||fleetCP()+(HULLS[tpl].cp||1)>RUN.cpCap) return;
+  RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
 let yardNode=null;
 function shipyardScreen(n){
   yardNode=n; const st=shipyardStock(n), pm=priceMult();
-  const cp=fleetCP();
+  const cp=fleetCP(), hw=hullKey()==='bio'?' biomass':'';
   const hulls=st.hulls.map(h=>{ const t=HULLS[h], cost=Math.round(t.cost*pm); const fits=cp+t.cp<=RUN.cpCap; const uniq=t.unique&&RUN.fleet.some(s=>s.tpl===h);
     return `<div class="card"><h3>${t.n}${t.variant?' <span class="pill g">Variant</span>':''}</h3>${t.variant?`<p class="gilt" style="font-size:14px">${esc(HULL_VARIANTS[t.variant].d)}</p>`:''}<p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
-      <div class="foot"><button ${RUN.credits>=cost&&fits&&!uniq?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':uniq?'<span class="dim">Only one allowed</span>':''}</div></div>`; }).join('');
+      <div class="foot"><button ${hullFunds()>=cost&&fits&&!uniq?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}${hw}</button> ${!fits?'<span class="dim">Not enough command points</span>':uniq?'<span class="dim">Only one allowed</span>':''}</div></div>`; }).join('');
   const capHulls=(st.cap||[]).map(h=>{ const t=HULLS[h], cost=capturedHullPrice(t); const fits=cp+t.cp<=RUN.cpCap;
     return `<div class="card"><h3>${t.n}</h3><p class="gilt" style="font-size:14px">Captured prize, links ripped out.</p><p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
-      <div class="foot"><button ${RUN.credits>=cost&&fits?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':''}</div></div>`; }).join('');
+      <div class="foot"><button ${hullFunds()>=cost&&fits?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}${hw}</button> ${!fits?'<span class="dim">Not enough command points</span>':''}</div></div>`; }).join('');
   const mods=st.mods.map((m,i)=>{ const sold=st.sold.includes(i), cost=Math.round(MODULES[m].cost*pm);
     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${RUN.credits>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}</button>`}</div></div>`; }).join('');
   const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=prizeScrap(s.tpl); // R1 (TXT-8): the label pays what the button pays (no NaN for hulls without a shop price)
     return shipCard(s,{extra:`<div class="sect row wrap">
-      <button class="small" ${miss>0&&RUN.credits>=rc?'':'disabled'} data-act="repair" data-arg="${s.uid}">${miss>0?`Repair ${miss} for ${rc}`:'Fully repaired'}</button>
-      <button class="small" ${s.mk<3&&RUN.credits>=mc?'':'disabled'} data-act="upgradeMk" data-arg="${s.uid}">${s.mk<3?`Mk ${roman(s.mk+1)} for ${mc}`:'Max Mark'}</button>
+      <button class="small" ${miss>0&&hullFunds()>=rc?'':'disabled'} data-act="repair" data-arg="${s.uid}">${miss>0?`Repair ${miss} for ${rc}${hw}`:'Fully repaired'}</button>
+      <button class="small" ${s.mk<3&&hullFunds()>=mc?'':'disabled'} data-act="upgradeMk" data-arg="${s.uid}">${s.mk<3?`Mk ${roman(s.mk+1)} for ${mc}${hw}`:'Max Mark'}</button>
       <button class="small danger" ${RUN.fleet.length>1?'':'disabled'} data-act="sellShip" data-arg="${s.uid}">Decommission (+${sell})</button></div>`}); }).join('');
   const allMiss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), allCost=Math.ceil(allMiss/2*pm);
   show(`<div class="screen"><div class="page">
-    <div class="row wrap"><h2 class="gothic">Shipyard</h2><span class="spacer"></span><span class="gilt num" style="font-size:22px">${RUN.credits} credits</span>
+    <div class="row wrap"><h2 class="gothic">Shipyard</h2><span class="spacer"></span><span class="gilt num" style="font-size:22px">${RUN.credits} credits${hw?` · ${RUN.bio||0} biomass`:''}</span>
       <span class="num">${cp}/${RUN.cpCap} CP</span><button data-act="yardFleet">Refits</button><button class="primary" data-act="leaveYard">Leave shipyard</button></div>
-    <p class="lede">Repairs cost 1 credit per 2 hull. A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh lieutenant.</p>
-    <div class="row" style="margin-bottom:14px"><button ${allMiss>0&&RUN.credits>=allCost?'':'disabled'} data-act="repairAll">${allMiss>0?`Repair entire fleet for ${allCost}`:'Fleet fully repaired'}</button></div>
+    <p class="lede">${hw?'The Chorus regrow with biomass: repairs cost 1 biomass per 2 hull, and new hulls and Marks are paid in biomass. Credits buy refits.':'Repairs cost 1 credit per 2 hull.'} A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh lieutenant.</p>
+    <div class="row" style="margin-bottom:14px"><button ${allMiss>0&&hullFunds()>=allCost?'':'disabled'} data-act="repairAll">${allMiss>0?`Repair entire fleet for ${allCost}${hw}`:'Fleet fully repaired'}</button></div>
+    ${(RUN.cores||[]).length?`<h3 style="margin:26px 0 10px">Recovered cores</h3><p class="muted" style="margin:0 0 10px">Each core regrows its ship at Mk I, full hull, no refits.</p><div class="row wrap">${RUN.cores.map((tpl,i)=>{ const c=coreCost(tpl), fits=cp+(HULLS[tpl].cp||1)<=RUN.cpCap; return `<button ${RUN.credits>=c&&fits?'':'disabled'} data-act="restoreCore" data-arg="${i}">Regrow the ${esc(HULLS[tpl].n)} for ${c}</button>`; }).join('')}</div>`:''}
+    ${st.late?`<h3 style="margin:26px 0 10px">Late market</h3><p class="muted" style="margin:0 0 10px">Sector 3 yards sell what the war has left: relics, and room for one more ship.</p><div class="cards">${lateShopOffers().map(o=>o.kind==='relic'?`<div class="card"><h3>${esc(relicName(o.r))}</h3><p>${esc(RELICS[o.r].d)}</p><div class="foot">${o.done?'<span class="verd">Bought</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="${o.id}">Buy for ${o.cost}</button>`}</div></div>`:`<div class="card"><h3>Command expansion</h3><p>+1 command point for the rest of the run (at most ${LATE_SHOP.cpMax} a run).</p><div class="foot">${o.done?'<span class="verd">Bought</span>':o.full?'<span class="dim">Already at the limit</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="cp">Buy for ${o.cost}</button>`}</div></div>`).join('')}</div>`:''}
     <div class="cards">${ships}</div>
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
     ${capHulls?`<h3 style="margin:26px 0 10px">Captured hulls</h3><p class="muted" style="margin:0 0 10px">Prizes taken from the Hegemony and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.</p><div class="cards">${capHulls}</div>`:''}
@@ -225,11 +250,11 @@ ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',i
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
-ACT.buyHull=h=>{ const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h), cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(RUN.credits<cost||fleetCP()+t.cp>RUN.cpCap) return; RUN.credits-=cost; try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
+ACT.buyHull=h=>{ const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h), cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(hullFunds()<cost||fleetCP()+t.cp>RUN.cpCap) return; hullPay(cost); try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
 ACT.buyMod=i=>{ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
-ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(RUN.credits<c) return; RUN.credits-=c; s.hp=d.maxHp; shipyardScreen(yardNode); };
-ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(RUN.credits<c) return; RUN.credits-=c; RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
-ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||RUN.credits<c) return; RUN.credits-=c; try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
+ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(hullFunds()<c) return; hullPay(c); s.hp=d.maxHp; shipyardScreen(yardNode); };
+ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(hullFunds()<c) return; hullPay(c); RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
+ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
 ACT.sellShip=uid=>{ if(RUN.fleet.length<=1) return; const s=RUN.fleet.find(x=>x.uid===uid);
   modal(`<h2>Decommission the ${esc(s.name)}?</h2><p class="muted">Its captain retires and its refits return to the hold. You receive ${prizeScrap(s.tpl)} credits.</p><div class="row"><button class="primary danger" data-act="sellConfirm" data-arg="${uid}">Decommission</button><button data-act="closeModal">Keep it</button></div>`); };
 ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); RUN.credits+=prizeScrap(s.tpl); RUN.fleet.splice(i,1); closeModal(); shipyardScreen(yardNode); };
@@ -619,6 +644,14 @@ const REWARD_DEF={salvage:'Strip a wreck for a refit, scrap it for credits, or t
   relic:'Salvage is a fleet-wide effect that lasts for the rest of this run.',
   promotion:'A promotion lets a captain with enough experience pick a perk. Perks stay with the captain, even on a new ship.'};
 function rewardDef(k){ return REWARD_DEF[k]?`<p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">${REWARD_DEF[k]}</p>`:''; }
+function factionWinEcon(credits,summary){
+  const lost=(summary.lost||[]).filter(l=>l&&HULLS[l.tpl]), out={};
+  if(RUN.fac==='chorus'){ out.bio=credits+Math.min(12,2*(summary.kills||0)); RUN.bio=(RUN.bio||0)+out.bio; } else RUN.credits+=credits;
+  if(RUN.fac==='ithar'&&lost.length){ out.cullet=Math.min(CULLET.cap,lost.reduce((a,l)=>a+(CULLET[HULLS[l.tpl].cls]||20),0)); RUN.credits+=out.cullet; }
+  if(RUN.fac==='deathless'&&lost.length){ const best=lost.filter(l=>!HULLS[l.tpl].boss).sort((a,b)=>shipValue(b.tpl)-shipValue(a.tpl))[0];
+    if(best){ (RUN.cores=RUN.cores||[]).push(best.tpl); out.core=best.tpl; } }
+  return out;
+}
 function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
@@ -626,7 +659,9 @@ function rewardFlow(summary){
   const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay
   if(rf.salvage){ credits+=15; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.08)); }); }
-  RUN.credits+=credits;
+  // issue 1178 faction economies: the Chorus bank the win pay as biomass plus 2 per kill (at most 12); Glasswrights melt their own
+  // losses into cullet credits; the Eclipse recover the core of the most valuable ship they lost
+  const econ=factionWinEcon(credits,summary);
   // the node's payout: a patron's boon (pick 1 of 3), a refit (pick 1 of 3), or credits or repairs
   const node=cfg.node&&findNode(cfg.node); ensurePatrons(); const rw=(node&&node.rw)||(cfg.kind==='battle'?{k:'boon',p:pick(RUN.patrons)}:{k:'boon',p:pick(RUN.patrons),min:1});
   const fl0=RUN.flagUid; ensureFlagship(); const flagMoved=fl0&&RUN.flagUid!==fl0&&flagshipOf();
@@ -638,7 +673,7 @@ function rewardFlow(summary){
   const prizes=(summary.prizes||[]).filter(p=>p&&HULLS[p.tpl]);
   RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'victory',boonOffer:null,modOffer:null};
   const debrief=beat3Debrief(); if(debrief) RUN.beat3DebriefSeen=true;
-  RUN.reward.victory={summary:{kills:summary.kills,rounds:summary.rounds,lost:summary.lost,xp:summary.xp,boonStats:summary.boonStats||{},treeStats:summary.treeStats||{}},credits,extra,flagName:flagMoved?flagMoved.name:'',beat3Debrief:debrief};
+  RUN.reward.victory={summary:{kills:summary.kills,rounds:summary.rounds,lost:summary.lost,xp:summary.xp,boonStats:summary.boonStats||{},treeStats:summary.treeStats||{}},credits,econ,extra,flagName:flagMoved?flagMoved.name:'',beat3Debrief:debrief};
   const confirmed=(summary.nem||[]).filter(line=>line.startsWith('Weakness confirmed: '));
   if(summary.nemFound) confirmed.push(summary.nemFound);
   if(confirmed.length) RUN.reward.victory.weaknessConfirmed=confirmed;
@@ -653,11 +688,11 @@ function victoryCard(){
   const details=RUN.reward.victory;
   const heading=`<h2>${RUN.reward.kind==='boss'?'Flagship destroyed':'Victory'}</h2>`;
   if(!details){ modal(heading+next); return; }
-  const {summary,credits,extra,flagName,beat3Debrief,weaknessConfirmed=[]}=details;
+  const {summary,credits,econ={},extra,flagName,beat3Debrief,weaknessConfirmed=[]}=details;
   const xpLines=summary.xp.map(x=>`<li>${esc(x.cap)} of the ${esc(x.ship)}: +${x.xp} experience${x.up?` <span class="gilt">promoted to ${RANKS[x.rank]}</span>`:''}</li>`).join('');
   const lost=summary.lost.length?`<p class="blood">Lost: ${summary.lost.map(l=>`the ${esc(l.ship)} and ${esc(l.cap)}`).join(', ')}.</p>`:'';
   modal(`${heading}${beat3Debrief?`<p class="gilt">${esc(beat3Debrief)}</p>`:''}
-    <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra?`<p class="gilt">${esc(extra)}</p>`:''}
+    <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">${econ.bio!=null?`+${econ.bio} biomass.`:`+${credits} credits.`}</span></p>${lost}${econ.cullet?`<p class="gilt">Cullet from the lost glass: +${econ.cullet} credits.</p>`:''}${econ.core?`<p class="gilt">Core recovered: the ${esc(HULLS[econ.core].n)} can be regrown at a shipyard.</p>`:''}${extra?`<p class="gilt">${esc(extra)}</p>`:''}
     ${weaknessConfirmed.map(line=>`<p class="gilt">${esc(line)}</p>`).join('')}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagName?`<p class="gilt">The admiral transfers the flag to the ${esc(flagName)}. Its aspect goes with it.</p>`:''}
