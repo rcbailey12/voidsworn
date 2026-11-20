@@ -1,0 +1,1 @@
+[battle] C12 {"game": {"bow": 44.2, "midship": 71.9, "stern": 51.7, "whole": 57.7}, "studio": {"bow": 42.9, "midship": 78.9, "stern": 58.9, "whole": 62.0}}
