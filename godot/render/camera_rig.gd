@@ -31,11 +31,39 @@ var shake := Vector3.ZERO
 var screen_shift := 0.0
 
 
+# Issue 1264: the far plane follows the zoom and pan, so the backdrop system is never cut off. The worst case from the
+# board centre is a giant planet's ring at the largest framing a stop can give (issue 1272: a boss stop scales the
+# planet's angle by up to PLANET_FRAME_MAX): world.gd DIST 3300 + 2.3 ring radii of 3300 * sin(0.18 * 1.5) = 5325 units (moons
+# reach 1.15 * 3300 * (1 + sin(0.04)) = 3947, mountains about 2620). A camera r units out, looking at t (inside bounds),
+# is at most r + |t| from the board origin, and the board centre is at most |bounds| from the origin; depth never
+# exceeds straight-line distance. godot/world/test/backdrop_clip_check.gd builds ringed giants and holds this to the
+# real meshes. Shadows (directional_shadow_max_distance 600) and volumetric fog (its own length) do not key off far.
+const BACKDROP_REACH := 5400.0
+# The largest planet framing scale any stop may use (world_sky.gd STOP_MOOD "frame" and STOP_FRAMES "scale", issue 1272).
+# backdrop_clip_check fails if a stop table ever asks for more, and builds every ringed planet at this scale.
+const PLANET_FRAME_MAX := 1.5
+const FAR_MARGIN := 100.0
+# Issue 1264: ROCK_SHADER fades a rock before this live near plane cuts it (global shader uniform, project.godot).
+const NEAR_GLOBAL := &"cam_near"
+# Artoo on PR 1306: the fade also needs this camera's eye and forward, so a shadow pass (drawn from the light) fades a
+# rock against the same camera the near plane belongs to. cam_eye.w is 1 while a rig is current, 0 otherwise.
+const EYE_GLOBAL := &"cam_eye"
+const FWD_GLOBAL := &"cam_fwd"
+
+
 func _ready() -> void:
 	fov = 45.0
 	near = 0.5
-	far = 5000.0
 	_apply()
+
+
+func _exit_tree() -> void:
+	if current:
+		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4.ZERO)
+
+
+static func far_for(radius: float, target: Vector3, board_bounds: Vector2) -> float:
+	return BACKDROP_REACH + radius + target.length() + board_bounds.length() + FAR_MARGIN
 
 
 func reset_view() -> void:
@@ -194,6 +222,9 @@ func _apply() -> void:
 	# Issue 368: fixed zoom bands reserve froxels for the board.
 	if OS.get_environment("VS_NEBULA_ROUTE") != "today":
 		near = 15.0 if _cr >= 100.0 else (5.0 if _cr >= 45.0 else 1.0)
+	far = far_for(_cr, _ct + shake, bounds)
+	if current:
+		RenderingServer.global_shader_parameter_set(NEAR_GLOBAL, near)
 	# Keep the far side of a cloud in range as the player zooms out.
 	var env := get_world_3d().environment if is_inside_tree() else null
 	if env != null and env.volumetric_fog_enabled and OS.get_environment("VS_NEBULA_ROUTE") != "today":
@@ -202,6 +233,9 @@ func _apply() -> void:
 	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
 	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))
 	look_at_from_position(p, tg, up)
+	if current:
+		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4(p.x, p.y, p.z, 1.0))
+		RenderingServer.global_shader_parameter_set(FWD_GLOBAL, (tg - p).normalized())
 	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
 	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
