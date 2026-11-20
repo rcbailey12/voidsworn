@@ -1,0 +1,50 @@
+opus1217 frontend start Thu 11/19/2026 17:28:21.36 branch opus/issue-1217-p4 
+commit bdf6dd865197bf6728dfc9c5148068f25bbd5d11 
+pictures in C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148 
+[front-end-shots] showcase ready, enemy deathless
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_settings_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_title_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_credits_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_settings_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_title_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F2_credits_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_setup_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_corsair.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_ithar.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_desk_deathless.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_run_options.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F3_setup_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_picked.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\1080/F4_flagship_ithar.png
+[front-end-shots] PASS
+[front-end-shots] showcase ready, enemy ithar
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_settings_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_title_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_credits_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_settings_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_title_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F2_credits_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_setup_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_corsair.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_ithar.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_desk_deathless.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_run_options.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F3_setup_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_picked.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots\20261119_174148\2160/F4_flagship_ithar.png
+[front-end-shots] PASS
+opus1217 frontend done Thu 11/19/2026 17:46:14.21 

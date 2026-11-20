@@ -1,0 +1,4 @@
+waiting for go1204_pc.bat to end Thu 11/19/2026 14:36:30.29 
+go1204_pc ended, starting OPUS1217_FRONTEND.bat Thu 11/19/2026 17:28:21.32 
+OPUS1217_FRONTEND exit 0 at 17:46:14.95 
+all done 17:46:14.95 
