@@ -1,0 +1,12 @@
+waiting for all done in opus1077_pass6_wait.txt (RUN1262C waiter) Thu 11/19/2026 23:21:54.54 
+OPUS1262_RUN1C_WAIT stopped by the Board before it ran anything (11/19 23:47:54); replaced by OPUS1262_RUN1C_WAIT_B.bat (after 1079 run 10, same log)
+waiting for all done in opus1079_run10_wait.txt (RUN1262C waiter B) Thu 11/19/2026 23:47:54.30 
+OPUS1262_RUN1C_WAIT_B stopped by the Board before it ran anything (11/20 00:24:58); replaced by OPUS1262_RUN1C_WAIT_C.bat (after the backdrop set, same log)
+waiting for all done in opusbackdrop_wait.txt (RUN1262C waiter C) Fri 11/20/2026  0:24:58.73 
+OPUS1262_RUN1C_WAIT_C stopped by the Board before it ran anything (11/20 00:51:38); replaced by OPUS1262_RUN1C_WAIT_D.bat (after 1289 run 4, same log)
+waiting for all done in opus1289_run4_wait.txt (RUN1262C waiter D) Fri 11/20/2026  0:51:38.95 
+OPUS1262_RUN1C_WAIT_D stopped by the Board before it ran anything (11/20 01:38:15); replaced by OPUS1262_RUN1C_WAIT_E.bat (after 1079 run 11, same log)
+waiting for all done in opus1079_run11_wait.txt (RUN1262C waiter E) Fri 11/20/2026  1:38:15.58 
+RUN1262C start Fri 11/20/2026  3:00:16.20 
+RUN1262C exit 1 at  3:15:56.58 
+all done  3:15:56.58 

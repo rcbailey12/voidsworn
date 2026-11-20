@@ -1,0 +1,12 @@
+run1262b start Fri 11/20/2026  3:00:17.57 run_20261120_030017 
+new = 905cbf3f2b5ad78e941bd22b9a5bd92485f9386e 
+old = 475b98f53e2c66fadc391e36de016488faf22e30 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\tmo.bat 
+6A3CD167FE64E9C3CF9C44140F840B1F25794582A966FA7A59DDB289B1DC4F42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\tmo.bat
+93768E46A4CEF4E24633F557880744749085C2815F7ABEA142B16B4556C63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\run_timeout.ps1
+new ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+FAILED: new timing or shots, see C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\out_new\log.txt  
+main ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+FAILED: main timing or shots, see C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\out_main\log.txt  
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+run1262b FAILED Fri 11/20/2026  3:15:56.53 

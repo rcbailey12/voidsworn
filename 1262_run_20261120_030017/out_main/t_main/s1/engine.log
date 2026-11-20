@@ -1,0 +1,215 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 315 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.456, target 4.4; visual tuning (R191)
+ERROR: placeholder hull: V1b_r_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V1b_r_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V17_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V17_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V16_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V16_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V18_51
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V18_51 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V15_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V15_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V15_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V15_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V14_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V14_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V14_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V14_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V14_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V14_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: V14_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on V14_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: C19_51
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on C19_51 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: C13s_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on C13s_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: H8_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on H8_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: H7_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on H7_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: B20_11
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on B20_11 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: B19_11
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on B19_11 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: I11_37
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on I11_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: I14_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on I14_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: D21_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on D21_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+ERROR: placeholder hull: D20_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:147)
+       [1] _make_view (res://scenes/battle/battle.gd:821)
+       [2] _begin (res://scenes/battle/battle.gd:585)
+[attach] hp_core missing on D20_23 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[world] baked 3ec174b6b1465181e4e32e0a7c59248786b73f667879406b8557562c1bc04b36 4096x2048 in 6100 ms (worker)
+[world] baked 0b053083bcd9948ed3610938421ef1cc25e691789f09ae1443271933f4cfe1c1 4096x2048 in 8570 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 9023 ms (worker)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 9459 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[world] baked d96a99dfaafc20a97242d5fd2f3a0e449ce798d74ca045870744887fe4a87b56 4096x2048 in 2153 ms (worker)
+[attach] hp_rcs missing on V1b_r_23; using the surface ray
+[attach] hp_rcs missing on C19_51; using the surface ray
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1982 ms (worker)
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on C13s_23; using the surface ray
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 1911 ms (worker)
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] hp_rcs missing on D20_23; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V17_37; using the surface ray
+[attach] hp_rcs missing on B19_11; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on B20_11; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] flare on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on H7_23: placed on the plating (a surface sample; not a hard point type)
+[scene_gate] base built and ready in 41553 ms
+placeholder hull: V1b_r_23
+placeholder hull: V17_37
+placeholder hull: V16_37
+placeholder hull: V18_51
+placeholder hull: V15_37
+placeholder hull: V14_23
+placeholder hull: C19_51
+placeholder hull: C13s_23
+placeholder hull: H8_23
+placeholder hull: H7_23
+placeholder hull: B20_11
+placeholder hull: B19_11
+placeholder hull: I11_37
+placeholder hull: I14_23
+placeholder hull: D21_23
+placeholder hull: D20_23
+placeholder hull: 20 hull(s) had no built file; no picture written
+[attach] battle x011 V1b_r_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x012 V17_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x013 V16_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x014 V18_51: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x015 V15_37: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x016 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x017 V14_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x018 V14_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x019 V14_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x020 V14_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x021 C19_51: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x022 C13s_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x023 H8_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x024 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x026 B19_11: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x027 I11_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x028 I14_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] battle x029 D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x030 D20_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
