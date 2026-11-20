@@ -82,8 +82,9 @@ func _run() -> void:
 	_trail_check()
 	_parked_fleet_check("max")
 	_parked_fleet_check("low")
+	_restart_check()
 	if failed == 0:
-		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip; a parked fleet never starves a mover)")
+		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip; a parked fleet never starves a mover; a restart never moves the old trail)")
 	quit(1 if failed > 0 else 0)
 
 
@@ -160,3 +161,38 @@ func _parked_fleet_check(quality: String) -> void:
 				break
 	check(live_frames >= 38, "%s: with %d parked ships a moving ship still has a trail (%d of 40 frames)" % [quality, w.points + 4, live_frames])
 	for p in ships: p.queue_free()
+
+
+# Artoo on PR 1181: a ship that moves, pauses briefly and moves on must leave its old trail exactly as it was (its push
+# and its distance behind the bow); the restart used to drop them to defaults, a jump of 0.9 to 21 in the packed push.
+func _restart_check() -> void:
+	var src := GDScript.new()
+	src.source_code = "extends Node3D\nvar L := 40.0\nvar dead := false\n"
+	src.reload()
+	var ship: Node3D = src.new()
+	root.add_child(ship)
+	var w = WAKE.new("max")
+	var x := 0.0
+	var old := []      # the old trail's piece: its two ends, then its packed bow distance and push just before the restart
+	var after := []
+	for k in 16:
+		if k < 6 or k >= 12:   # 1 unit of travel, then 0.2 s still, then on
+			x += 1.0 / 6.0 if k < 6 else 0.1
+		ship.position = Vector3(x, 0.0, 0.0)
+		w.update(1.0 / 30.0, [ship])
+		var u: PackedFloat32Array = w.uniforms()
+		if k == 11:
+			var hd: Dictionary = w._ring[w._head[ship.get_instance_id()]]
+			old = [hd.a, hd.b]
+		for i in w.points:
+			var o: int = i * WAKE.FLOATS
+			if old.size() >= 2 and Vector3(u[o], u[o + 1], u[o + 2]).distance_to(old[0]) < 0.001 and Vector3(u[o + 3], u[o + 4], u[o + 5]).distance_to(old[1]) < 0.001:
+				if k == 11:
+					old.append_array([u[o + 8], u[o + 11]])
+				elif k == 13:
+					after = [u[o + 8], u[o + 11]]
+	check(old.size() == 4 and after.size() == 2, "restart: the old trail's piece is still there after the restart")
+	if old.size() == 4 and after.size() == 2:
+		check(absf(float(after[0]) - float(old[2])) < 0.001 and absf(float(after[1]) - float(old[3])) < 0.001,
+			"restart: the old trail keeps its bow distance and push (%.3f, %.3f before; %.3f, %.3f after)" % [old[2], old[3], after[0], after[1]])
+	ship.queue_free()

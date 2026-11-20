@@ -178,8 +178,8 @@ func update(dt: float, ships: Array) -> void:
 		var h: int = _head.get(key, -1)
 		if h < 0 or int(_ring[h].owner) != key or clock - float(last.t) > PAUSE_S:
 			# Starting to move, or moving again after a stop: a fresh trail from where the bow was, easing in.
+			_freeze(key)   # before _close, which forgets the head the freeze reads (Artoo on PR 1181)
 			_close(key)
-			_freeze(key)
 			_trails[key] = int(_trails.get(key, 0)) + 1
 			h = _start(key, was + reach, r, clock - dt, 0.0)
 			_head[key] = h
