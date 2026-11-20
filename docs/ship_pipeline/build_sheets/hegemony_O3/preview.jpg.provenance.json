@@ -5,7 +5,7 @@
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "preview.jpg",
-  "date": "2026-11-20T23:13:53Z",
+  "date": "2026-11-20T23:25:27Z",
   "sources": [
     {
       "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
@@ -21,8 +21,8 @@
       "source_dirty": true,
       "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
       "stage": "sheet built",
-      "date": "2026-11-20T23:13:49Z",
-      "image_sha256": "ac874eb00db3b4181408c7767f561612e623cde0c9a190c1836b869d20e0d553",
+      "date": "2026-11-20T23:25:21Z",
+      "image_sha256": "90a08dfac25ea44f2a8514c5b7fcf4dca1154fecf2dff64f08b1d58bdcdc29ac",
       "sources": [
         {
           "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "96d8ecaaea334b770ae88307d06928aef2b8b6236356fdf94ba7828d7e17cf70"
+    "c7612ecb226f803c2a2d6938f6de2d4d26d2ef929e7f2cdc8aefa2c944799348"
   ],
-  "stamp_template_sha256": "68d0d78aac3c0ea4af8576e5ad2912677331170ec7d45a612a8de48b6b73855d",
+  "stamp_template_sha256": "ad9b41300cfce4868158b40326007443261e36d651a1716b492704efca879f84",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWP2D+eJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCjAYA6BhOj+0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "27d3201d575fc5bcdc9f12be5fe1101b2737074a5c3506f9dedb4653b80dbfac"
+  "image_sha256": "b12d26464134ecfcd45fdfcfbe03370a5478948cd9bde80b37e93628e60deed2"
 }

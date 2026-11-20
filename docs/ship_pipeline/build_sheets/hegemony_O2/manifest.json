@@ -31,7 +31,7 @@
    "kind": "container",
    "what": "cargo module 0.86 x 1.86 x 1.00",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "cargo"
@@ -42,7 +42,7 @@
    "kind": "container",
    "what": "cargo module 0.86 x 1.86 x 1.00",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "cargo"
@@ -53,7 +53,7 @@
    "kind": "container",
    "what": "cargo module 0.86 x 1.86 x 1.00",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "cargo"
@@ -64,7 +64,7 @@
    "kind": "container",
    "what": "cargo module 0.86 x 1.86 x 1.00",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "cargo"

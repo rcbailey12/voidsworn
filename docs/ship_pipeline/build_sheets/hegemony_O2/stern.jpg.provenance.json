@@ -5,7 +5,7 @@
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "stern.jpg",
-  "date": "2026-11-20T22:28:49Z",
+  "date": "2026-11-20T23:25:13Z",
   "sources": [
     {
       "source_commit": "2e457c0e9014cf8cbe1f46590ada387eca16afc7",
@@ -21,8 +21,8 @@
       "source_dirty": true,
       "source_diff_sha256": "520af95ade39d9aa80cdb7670cec6ed1443896e1ff600261227c6e8e1c6ee32f",
       "stage": "sheet built",
-      "date": "2026-11-20T22:28:46Z",
-      "image_sha256": "bb0d607d0f9d8801cb933607ae7f735e7500ebf4811c6a702004243cef7d725a",
+      "date": "2026-11-20T23:25:08Z",
+      "image_sha256": "756a2dadc0992237e8a309ba5b2c323589e477e30ef1470b9222a70b5abf691a",
       "sources": [
         {
           "source_commit": "2e457c0e9014cf8cbe1f46590ada387eca16afc7",
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "7e5e9de9c018c142bf685e4762e411e202e03cf103745a3dd81e5fde6bde965e"
+    "d6febf246712b1607483c8a206533057afcbba6e36306e8a092df46d9258f5fb"
   ],
-  "stamp_template_sha256": "9754c44d86f12741ed38e42efc5f5dde8b2b7a3deb6726353c9d667ab38d73d2",
+  "stamp_template_sha256": "2a99d9861041ae1813f52a052b05e635940c4786a67664e3d54810bce6f497ce",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "63d5c2aae3c4393afae2e374b338996e5e9e201c20a4ca37bfec425ae0441ea4"
+  "image_sha256": "8e89ff028fb67725a5e4ab5d823599288de46a3d28817112dbf156d9473ae617"
 }

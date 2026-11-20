@@ -5,7 +5,7 @@
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "beauty_vs_blockout.jpg",
-  "date": "2026-11-20T23:13:54Z",
+  "date": "2026-11-20T23:25:28Z",
   "sources": [
     {
       "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "1e1b90354d29226f2e7c3e115b31b83de4939c4ffd54f85483fdbb8bc7d7dc6c"
+    "c6b7e36d3d8c3ab2544f4ed6abb6d59904f1f649082e63e0c3db595c77f6e8f3"
   ],
-  "stamp_template_sha256": "bfa40453b17d8cef5d86f0710854e8305c4113b3d3d756f651e1b9641d85dd61",
+  "stamp_template_sha256": "1a1d4ed4304a2e9b1486512826474c09222029782c945f60a08ad017293ae028",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "9cd9a75720ca276027f037c14853052101bfc4db5b12b45cd492833d4d523e4f"
+  "image_sha256": "5b2bc5fd2e6a5ec64bb9c7196217dbf2fff46927868a1523bc462caaa76ed1cc"
 }
