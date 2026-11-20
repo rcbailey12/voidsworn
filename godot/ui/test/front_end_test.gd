@@ -50,6 +50,14 @@ func frames(n := 3) -> void:
 	for i in n: await process_frame
 
 
+# one press and release of an input action, through the real GUI (focus moves, Accept presses the focused button)
+func press(action: String) -> void:
+	for down in [true, false]:
+		var e := InputEventAction.new(); e.action = action; e.pressed = down
+		root.push_input(e)
+		await process_frame
+
+
 func esc() -> InputEventKey:
 	var e := InputEventKey.new(); e.keycode = KEY_ESCAPE; e.physical_keycode = KEY_ESCAPE; e.pressed = true
 	return e
@@ -201,10 +209,37 @@ func campaign_checks(snd: FakeSound) -> void:
 	if sc5 != null: over = sc5.get_v_scroll_bar().max_value - sc5.size.y
 	check(sc5 != null and over <= 1.0, "at Larger the desk also fits a 1280x1024 window with no scroll (over by %d px)" % int(over))
 	root.size = Vector2i(1920, 1080); ui._dirty = true; await frames(4)
-	ui.desk_opts_open = true; ui._dirty = true; await frames(3)
+	# issue 1261: Run options opened by keyboard holds the focus; Tab and Accept never reach the desk behind it; Esc closes
+	# it and the focus goes back to Run options
+	var ro_btn: Control = ui.page_box.find_child("RunOptionsButton", true, false)
+	if ro_btn != null: ro_btn.grab_focus()
+	await frames()
+	await press("ui_accept"); await frames(4)
+	var dr: Node = ui.page_box.find_child("RunOptionsDrawer", true, false)
+	var fo: Control = root.gui_get_focus_owner()
+	check(ui.desk_opts_open and dr != null and fo != null and dr.is_ancestor_of(fo), "Accept on Run options opens the drawer and focus starts inside it (%s)" % (str(fo.name) if fo != null else "none"))
+	var fac_before := str(C.picked_faction); var adm_before := str(C.picked_admiral); var escaped := []
+	for i in 24:
+		await press("ui_focus_next"); await frames(2)
+		dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+		if dr == null or fo == null or not dr.is_ancestor_of(fo): escaped.append(str(fo.name) if fo != null else "none")
+	for i in 6:
+		await press("ui_focus_prev"); await frames(2)
+		dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+		if dr == null or fo == null or not dr.is_ancestor_of(fo): escaped.append(str(fo.name) if fo != null else "none")
+	check(escaped.is_empty(), "Tab and Shift+Tab stay inside the open drawer (left it for %s)" % str(escaped))
+	ui.page_box.find_child("MapTrialToggle", true, false).grab_focus(); await frames()
+	var trial0: bool = C.map_trial_choice
+	await press("ui_accept"); await frames(4)
+	dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+	check(C.map_trial_choice != trial0 and dr != null and fo != null and str(fo.name) == "MapTrialToggle", "Accept inside the drawer changes its option and the focus stays on that control after the redraw (%s)" % (str(fo.name) if fo != null else "none"))
+	if C.map_trial_choice != trial0: C.act("optMapTrial", "1" if trial0 else "0"); await frames(3)
+	check(str(C.picked_faction) == fac_before and str(C.picked_admiral) == adm_before and str(C.page["kind"]) == "admiral", "nothing on the desk behind the drawer was pressed")
 	var ro_open: bool = ui.desk_opts_open
-	ui._unhandled_input(esc()); await frames(3)
-	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral", "Esc closes the Run options drawer first and stays on the desk")
+	ui._unhandled_input(esc()); await frames(4)
+	fo = root.gui_get_focus_owner()
+	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral" and fo != null and str(fo.name) == "RunOptionsButton",
+		"Esc closes the Run options drawer first, stays on the desk, and gives focus back to Run options (%s)" % (str(fo.name) if fo != null else "none"))
 	mus.queue_free()
 	var back: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):

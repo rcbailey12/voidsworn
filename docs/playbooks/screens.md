@@ -55,8 +55,11 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   (campaign_ui.gd ESC_BACK). The UI scale is never capped; each layout fits 831 design pixels tall. Progression, Lineage and How to play sit in the
   desk's frame (campaign_ui.gd _kit_page: ledger veil, one centred column, a fixed bar with Back) and their card rows are
   kit grids (Kit.card_grid: one width, one height per row, actions at the foot); tab strips use Kit.tab_button. Checked by
-  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group); contact sheets
-  by godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K.
+  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group, --expect=WxH
+  fails a frame of the wrong size: Godot hides --resolution from the script); contact sheets by
+  godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K. An open
+  drawer on a page (Run options) holds keyboard and controller focus (campaign_ui.gd _trap_focus) and closing it gives the
+  focus back to the button that opened it (issue 1261).
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 
