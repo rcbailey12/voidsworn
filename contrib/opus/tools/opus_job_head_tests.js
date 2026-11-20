@@ -213,8 +213,8 @@ assert.match(listed, new RegExp(`^new ${two}\\r?$`, 'm'), 'checkout lists new');
 const outside = path.join(tmp, 'outside');
 write(path.join(outside, 'keep.txt'), 'not ours');
 git(['checkout', '--', '.'], path.join(attempt, 'new'));
-fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', '.godot', 'linked'), 'dir');
 write(path.join(attempt, 'new', 'godot', '.godot', 'cache.bin'), 'import cache');
+fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', '.godot', 'linked'), 'dir');
 write(path.join(attempt, 'new', 'godot', 'bench', 'copy.godot'), 'fixture two\n');
 // The ships source the ships step recorded; copied files keep its size and time, as robocopy leaves them.
 const shipsSrc = path.join(vt, 'build', 'godot');
