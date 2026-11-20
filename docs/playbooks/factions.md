@@ -156,6 +156,11 @@ ships catch, store and release light.
 
 - **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
   collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
+- **A small elite fleet, never a swarm (Ryan, Nov 20, issue 1298).** "Glasswrights aren't supposed to be a swarm faction like
+  chorus or even hullbreakers. A little more elite." Few ships, each worth more: balance them with more hull on the
+  four fleet hulls (sliver, lancet, prism, aperture; player and enemy copies alike, "so it's consistent"), not with cheaper
+  or more numerous ships. The boss, The Unfinished, is not a fleet hull and keeps its own hull (470). They stay
+  glassy: no armour added, evasion and shields still carry them.
 - **First rule, ahead of any shape rule (R192).** Ryan, Nov 11: "It doesn't match with how I envision the glasswrights being
   artistic, thoughtful in creation and looking to create beauty with function, even in these warships." Every structural
   part is shaped with care and is also the ornament; the weapons are the centrepieces and must make sense.
@@ -222,9 +227,22 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
 - **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
   inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
-- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside. The C10 and C11 pictures came
-  out greyer; the colour is set in the build sheet's colour notes and the paint stage, not by more image rounds (R204; Ryan:
-  "we can fix color ourselves rather than get stuck in a loop with color fixes with image generation").
+- **Colours:** muddy olive-brown hide with dark red veins, pores and wrinkles (never maroon, never "red clay"), chitin a bone to
+  horn tone, bile yellow-green light from inside at the veil roots and bile slits. The colour lives in the shared Chorus paint
+  stack (tools/blender/kits/chorus/stack.py) and the build sheet's colour notes, not in more image rounds (R204; Ryan: "we can
+  fix color ourselves rather than get stuck in a loop with color fixes with image generation"). Veils are satin (roughness
+  0.6), not gloss, so they show no white hot spots.
+- **Body and armour (R349, Ryan Nov 20; C13 round G accepted in game Nov 20, PR 1308):** a full body of lumpy fused swellings,
+  deep folds and wrinkles grown into the skin (kit `body.field`), never a smooth tube with plates on top. Armour is grown
+  chitin over the entire body, not just the top: armadillo bands that wrap from belly edge to belly edge (kit
+  `plates.armadillo`, lo -1.2), banded and ridged, lips aft, hide rolled up into their edges, broken round the organs.
+  Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
+  `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). Small fused chitin clusters sit on the strip of belly the bands
+  leave open (kit `plates.fused_patches`). No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
+  Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
+  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every Chorus ship is gated
+  by the stage 5 detail check unless its recipe says "surface_detail": false. Surface detail must read at
+  camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
