@@ -46,8 +46,7 @@ func _run() -> void:
 	var prof := _norm(OS.get_environment("VS_CAPTURE_PROFILE"))
 	var app := _norm(OS.get_environment("APPDATA"))
 	var throwaway := prof != "" and udir.begins_with(prof + "/")
-	if app != "" and udir.begins_with(app + "/") and app.get_file().begins_with("godot-profile-") \
-			and FileAccess.file_exists(app.get_base_dir().path_join(".voidsworn-run-owner")):
+	if preload("res://tools/throwaway_profile.gd").in_watchdog_profile(ProjectSettings.globalize_path("user://"), OS.get_environment("APPDATA")):
 		throwaway = true
 	if real == "" or udir.begins_with(real + "/") or not throwaway:
 		printerr("HIT_CAPTURE_REFUSED user:// is %s: not a throwaway profile (VS_CAPTURE_PROFILE %s, APPDATA %s, real %s); run it from shots1211.bat" % [udir, prof, app, real])
