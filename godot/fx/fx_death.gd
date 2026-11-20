@@ -2192,7 +2192,9 @@ static func _power_down(fx, s) -> void:
 	s.set_meta("death_poses", poses)
 	s.set_meta("death_power_queue", queue)
 	s._reacting = false
-	s._shield_until = -1.0
+	# issue 1239 (F2.3): a shield failure still playing (the volley that broke the shield also killed the ship) runs to
+	# its end on the dying hull instead of vanishing on the kill frame; any other shield glow goes now
+	s._shield_until = minf(s._shield_until, s._brk_until) if fx.now < s._brk_until else -1.0
 	_power_down_step(fx, s, POWER_BUDGET)
 
 

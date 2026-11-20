@@ -1516,9 +1516,11 @@ func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictiona
 	return WEAP.volley_points(self, from, kind, to, opts)
 
 
-func shield_break(id: String, quad: int) -> void:
+# hit_lp (issue 1239): the breaking hit's point on the shield, in the shield's frame (a volley's "hit_pts"); INF aims
+# at the middle of the quadrant.
+func shield_break(id: String, quad: int, hit_lp := Vector3.INF) -> void:
 	if ships.has(id):
-		(ships[id] as SHIP).shield_break(self, quad)
+		(ships[id] as SHIP).shield_break(self, quad, hit_lp)
 
 
 func death(id: String, cause := "blast") -> float:
@@ -1643,8 +1645,8 @@ func torp_launch(lane_id: String) -> void:
 	WEAP.torp_launch(self, lane_id)
 
 
-func torp_strike(lane_id: String, target_id: String, hit := {}) -> Dictionary:
-	return WEAP.torp_strike(self, lane_id, target_id, hit)
+func torp_strike(lane_id: String, target_id: String, hit := {}, more := [], break_k := -1) -> Dictionary:
+	return WEAP.torp_strike(self, lane_id, target_id, hit, more, break_k)
 
 
 func torp_lane_clear(lane_id: String) -> void:

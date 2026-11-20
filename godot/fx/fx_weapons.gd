@@ -56,6 +56,9 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
 const CRIT_BEAT := 0.12
+# Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
+# shield failure's flash, so the two read as two beats instead of one orange smear
+const BREAK_HULL_BEAT := 0.08
 # F3 (feel pass, Ryan Nov 1: "effects looked very weak, especially at a distance and for smaller ships"): the size every
 # effect is drawn at follows the ship (scale_k, a frigate 0.43, a super-dreadnought 2.07), which left a frigate's fire
 # and the hits on it a fifth of a capital's. Fire and impact visuals now use at least these scales (geometry such as
@@ -250,11 +253,17 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var pd_left := maxi(int(opts.get("pd", 0)), 0)
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
+	# issue 1239: each hit's point on the target's shield (shield frame; INF when it never touched the shield), so the
+	# battle can aim the shield failure at the shot that broke it; break_k is that hit (-1: none breaks the shield)
+	var hit_pts: Array = []
+	var break_k := int(opts.get("break_k", -1))
 	for i in total:
 		var hit: bool = bool(shots[i])
 		var hd: Dictionary = {}
+		var hk := -1
 		if hit:
 			hd = hits[hj] if hj < hits.size() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
+			hk = hj
 			hj += 1
 		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
 			hd = {"pd": true}
@@ -264,6 +273,10 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt, pattern[i], rhythm, clusters)
 		tgt["gk"] = gk
 		tgt["tk"] = tk
+		if hk >= 0:
+			hit_pts.append(_shield_lp(tgt))
+			if hk == break_k:
+				tgt["breaking"] = true
 		if bool(opts.get("debug", false)):
 			# (tests: where each shot strikes, in world space and relative to the target's centre)
 			var tp: Vector3 = Tg.root.global_position if Tg != null else to_c
@@ -281,7 +294,16 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			Tg.busy_until = maxf(Tg.busy_until, float(r[0]))
 	for k in tur_last:
 		A.hull.turret_release(int(k), float(tur_last[k]))
-	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms}
+	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms, "hit_pts": hit_pts}
+
+
+# Issue 1239: where a shot met the target's shield, in the shield's frame (INF when it never touched it).
+static func _shield_lp(tg: Dictionary) -> Vector3:
+	if bool(tg.get("shield", false)) and tg.has("local"):
+		return tg["local"]
+	if tg.has("through"):
+		return (tg["through"] as Dictionary)["local"]
+	return Vector3.INF
 
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
@@ -1414,7 +1436,11 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return
-	if tg.has("through") and Tg != null:
+	if tg.has("through") and Tg != null and bool(tg.get("breaking", false)):
+		# issue 1239 (F2.2): the shot that breaks the shield and still hurts the hull. The failure's own flash marks the
+		# shield here, so no extra ripple, and the hull's fire waits a beat so the collapse's flash reads first
+		T += BREAK_HULL_BEAT
+	elif tg.has("through") and Tg != null:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
 			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)
@@ -2021,7 +2047,14 @@ static func torp_launch(fx, lane_id: String) -> void:
 
 
 # Next turn: the lane ramps to white (two-stage warning, about 0.8 s), the torpedo closes and strikes.
-static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Dictionary:
+# Issue 1239 (F2.4): more holds the salvo's other warheads (hits 2 to N, the same shape as hit). Each lands a beat
+# after the one before (TORP_WARHEAD_GAP) with its own impact, so a first warhead the shield soaks no longer hides the
+# hull damage, scars and criticals of the rest. The result's impacts give one time per warhead, in order, and hit_pts
+# their shield points (as a volley's).
+const TORP_WARHEAD_GAP := 0.09
+
+
+static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary, more: Array = [], break_k := -1) -> Dictionary:
 	var lanes: Dictionary = fx.dstate.get("lanes", {})
 	if not lanes.has(lane_id):
 		return {"impacts": [], "done": 0.0}
@@ -2052,14 +2085,35 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Di
 		projectile["t1"] = ti
 		projectile["last"] = T + warn_t
 
+	var impacts: Array = [ti - T]
+	var hit_pts: Array = [_shield_lp(tg)] if not hit.is_empty() else []
+	var last_t: float = ti
 	if not bool(tg.get("miss", false)):
 		# Faction lane visuals change here; the existing R80 lane wound stays torp.
 		tg["mark_look"] = "torp"
+		if break_k == 0:
+			tg["breaking"] = true
 		_impact(fx, ln["look"], 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
+		# the other warheads of the salvo, each on its own point (a shield soaks the first, the rest can reach the hull)
+		var j := 0
+		var rh: RandomNumberGenerator = _volley_rng(fx) if not more.is_empty() else null   # (scatter on real plating, as a volley's shots, so warheads do not stack on one point)
+		for h in more:
+			j += 1
+			if not (h is Dictionary) or (h as Dictionary).is_empty():
+				continue
+			var tj: float = ti + TORP_WARHEAD_GAP * j
+			var tgj = _target(fx, Tg, to_c, start, true, h, -1, kt, {"spread": 1.0}, rh)
+			tgj["mark_look"] = "torp"
+			if j == break_k:
+				tgj["breaking"] = true
+			_impact(fx, ln["look"], 3, Tg, tgj, tj, ln["fac"]["weapon"], (tgj["p"] - start).normalized(), h, kt, 0.0)
+			impacts.append(tj - T)
+			hit_pts.append(_shield_lp(tgj))
+			last_t = tj
 		if Tg != null:
-			Tg.busy_until = maxf(Tg.busy_until, ti)
-	fx.later(ti + 0.2, func l_lane_clear() -> void: torp_lane_clear(fx, lane_id, false))
-	return {"impacts": [ti - T], "done": ti - T + 0.5, "at": tg["p"]}
+			Tg.busy_until = maxf(Tg.busy_until, last_t)
+	fx.later(last_t + 0.2, func l_lane_clear() -> void: torp_lane_clear(fx, lane_id, false))
+	return {"impacts": impacts, "done": last_t - T + 0.5, "at": tg["p"], "hit_pts": hit_pts}
 
 
 static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:
