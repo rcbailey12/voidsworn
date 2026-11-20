@@ -64,9 +64,9 @@ LOOK = dict(
     pearl=dict(base=lin((240, 216, 170)), tones=(lin((246, 226, 182)), lin((232, 198, 142)), lin((242, 216, 168)),
                                                  lin((226, 200, 160))),
                iris=(lin((255, 204, 120)), lin((246, 172, 112)), lin((236, 162, 168)), lin((205, 180, 230))),
-               iris_weight=0.45, strands=7.0, line=0.07, metallic=0.65, roughness=0.08, coat=1.0, coat_roughness=0.04,
+               iris_weight=0.45, strands=7.0, line=0.07, metallic=0.65, roughness=0.08, game_roughness=0.18, coat=1.0, coat_roughness=0.04,
                thin_film_nm=520.0, transmission=0.0, wear=0.0),
-    silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, transmission=0.0),
+    silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, game_roughness=0.20, transmission=0.0),
     mosaic=dict(emission=3.4, roughness=0.10, coat=0.35, cell_scale=4.2, lead=0.045, sparkle=0.006, facet_tilt=0.45,
                 body=0.08, cell_lo=0.55, cell_hi=1.2, lead_rgb=(0.035, 0.026, 0.018), transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
@@ -402,11 +402,13 @@ def surface_layers(c, zone, tiles):
             t.inputs[1].default_value = 0.19; t.inputs[2].default_value = 0.48
             col = mixc(nt, col, PANEL['violet'], t.outputs[0])
         metal = _m(nt, 'ADD', L['metallic'], _m(nt, 'MULTIPLY', line, 1 - L['metallic']))
-        rough = _m(nt, 'SUBTRACT', L['roughness'], _m(nt, 'MULTIPLY', line, 0.04))
+        # Warming round (issue 1282): the game map is rougher than the review. Godot has no clear coat, so at 0.08 the key
+        # light made tiny glints hot enough to bloom into a white halo at camera 170 (PC run W1C, shot q).
+        rough = _m(nt, 'SUBTRACT', L['game_roughness'], _m(nt, 'MULTIPLY', line, 0.04))
         return col, _m(nt, 'MULTIPLY', _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4)), 0.3), rough, metal
     if zone in ('gw_silver', 'cd5_silver'):
         L = LOOK['silver']
-        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
+        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['game_roughness'], 0.0), L['metallic']
     if zone == 'gw_mosaic':
         L = LOOK['mosaic']
         tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']

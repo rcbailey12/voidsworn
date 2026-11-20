@@ -83,6 +83,16 @@ func _run() -> void:
 		have[str(n.name)] = true
 	var missing := want.filter(func(x): return not have.has(x))
 	check(missing.is_empty(), "ShipView's %s lacks %d installed nodes: %s" % [code, missing.size(), str(missing.slice(0, 6))])
+	# Issue 1282 (Fable on PR 1184): a turret the sheet lets train (an arc wider than nothing) must be able to leave rest in
+	# the game. The clearance test (fx/fx_hull.gd _turret_clearance) locks a turret whose barrels touch the ship at rest; that
+	# was only a log line, so CD5's three optics shipped locked. Here it fails the readback.
+	if role.is_empty() and sv.has_method("_attach_hull"):
+		var at = sv._attach_hull()
+		if at != null:
+			for t: Dictionary in at.turrets:
+				var arc := float(t["hi"]) - float(t["lo"])
+				var moves := bool(t["full"]) or float(t["ymax"]) - float(t["ymin"]) > 0.0
+				check(arc <= 0.0 or moves, "turret %s (%s) is locked at rest: its barrels touch the ship, but its arc is %.0f to %.0f" % [t["name"], t["id"], float(t["lo"]), float(t["hi"])])
 	sv.queue_free()
 	_done(code, want.size())
 

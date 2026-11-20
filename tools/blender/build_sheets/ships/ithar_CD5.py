@@ -276,7 +276,9 @@ def optical_gun(K, x, fid, weapon, colour):
     p = own_part()
     # Round 5 (outside read): no pastel domes, they are not in the concept. A small flat pearl seat sunk in the ribbons
     # and a small cut stone on it: a glint among the mosaic, not the first thing the eye goes to.
-    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.20), (0.42, 0.42, 0.20), 48, 16))
+    # Issue 1282 (Fable on PR 1184): the seat's top sits 0.08 under the pivot, clear of the barrel's lower edge (calibre 0.09),
+    # so the game's clearance test lets the optic train; at -0.20 its top met the barrel and all three stayed locked at rest.
+    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28), (0.42, 0.42, 0.20), 48, 16))
     gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02), (0, 0, 1), 0.26, 0.12, 10)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
     p.add('stored_light', 'turn', 'cd5_' + colour, ellipsoid((0, 0, -0.03), (0.20, 0.20, 0.05), 32, 12))
