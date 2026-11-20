@@ -290,7 +290,7 @@ static func route_material(fx, code: String, rel: String, production := false, s
 # ---------------------------------------------------------------- R367 (issue 1399): a faction's own death
 # A faction's death style comes from faction_looks.json ("death"), the one file the ships, engines, shields and damage
 # already take their colours from. A faction without one keeps today's shared orange fire. Colours are linear RGB.
-static var _styles: Dictionary = {}
+static var _styles: Dictionary = {}   # not GPU: per-faction death colours and numbers only
 
 static func dstyle(src) -> Dictionary:
 	if not (src is Object) or not is_instance_valid(src): return {}
