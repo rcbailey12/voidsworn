@@ -382,12 +382,13 @@ def _dome_section(tree, centre, axis, radius):
     return at
 
 
-def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide'):
+def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide', counts=None):
     """R341 (the Board, Nov 19): small scutes capping the top of each grown dome the shell leaves open (sacs, knolls), lips down
     the dome, so the armour wraps them; never on a gland, maw or vent. domes = [(prefixes, centre, axis, radius, reach)], with
     the hull objects or fittings whose names start with `prefixes` as the dome's surface and `reach` the polar angle (radians
     from the crown) the cap comes down to; an optional sixth value starts the cap that far from the crown, so a gland's knoll is
-    armoured round its slopes with its vent and spines open. One hull-detail object for the ship; returns it."""
+    armoured round its slopes with its vent and spines open. counts (opt-in, C14's many small sacs): the scutes in each ring,
+    crown first; the default keeps (4, 8, 12), or (10, 13, 16) for an open crown. One hull-detail object for the ship; returns it."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     register(kit_module)
@@ -409,8 +410,9 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
         t = 0.075 * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
         k = 0
         ph = start
-        step = (reach - start) / 3.0
-        for n_ in ((4, 8, 12) if not start else (10, 13, 16)):
+        rings = counts or ((4, 8, 12) if not start else (10, 13, 16))
+        step = (reach - start) / float(len(rings))
+        for n_ in rings:
             off = rng.uniform(0, math.tau)
             w = math.tau / n_
             for i in range(n_):

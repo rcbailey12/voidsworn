@@ -25,7 +25,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_broo
 CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
-SHEET = dict(version=6, round='blockout v6, the armour shell with the sacs capped (R341, issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
+SHEET = dict(version=7, round='blockout v7, the sacs capped lighter (16 scutes a bulb; R341, issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
              before='First full layout', before_note='The first complete C14 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.1, 2.0)    # a domed back, a round belly: a sac, no flat face anywhere
@@ -351,7 +351,7 @@ def build(K):
     # the front's creased lobes and spine pore (the maw), the honeycomb field and its rim (the spore cloud) stay bare; the five
     # launch necks, the sacs' necks, the siphons and the vents stand in open sockets; the shell runs from the front skin's
     # sunk back edge to the stern. The teardrop sacs are capped in smaller scutes (Ryan, Nov 20).
-    plates.dome_caps(K, _k, caps, seed=1356)
+    plates.dome_caps(K, _k, caps, seed=1356, counts=(7, 9))   # 16 scutes a bulb: 36 bulbs at the default 39 cost about 400k triangles (the Board, Nov 20)
     shells = plates.armour(K, _k, 4.3, -5.0, seed=1355, keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'), rows=9, scute=0.95, thick=0.2,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, '
                        'the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes')
