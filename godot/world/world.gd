@@ -23,6 +23,7 @@ const BAKER := preload("res://world/world_bake.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
+const LOOK := preload("res://render/look.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 const BACKDROP_ROCK_ANGLE := 0.05
 # R78 Q18 (the run 5 finale): the board brightens sector by sector as the new sun catches. Six sectors, one per stage of
@@ -58,6 +59,7 @@ var _yaw := 0.0
 var _sky_tex: Texture2D = null
 var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
 var _under_mat: ShaderMaterial = null
+var _under_mi: MeshInstance3D = null
 var _terr_pts := {"neb": [], "storm": [], "debris": []}   # board positions of those hexes (the living look builds on them)
 var _rock_kind := "stone"
 var _fac := "voidsworn"
@@ -262,6 +264,9 @@ func set_look() -> void:
 	var sp := BL.spec()
 	if _under_mat != null:
 		_under_mat.set_shader_parameter("vis", float(sp["underlay"]))
+		# Issue 1262: at zero the plane only wrote alpha 0, still running its planet and ring maths per pixel.
+		if _under_mi != null:
+			_under_mi.visible = float(sp["underlay"]) >= 0.001 or LOOK.perf_old("underlay")
 	for c in _old_clouds:
 		if is_instance_valid(c):
 			(c as Node3D).visible = bool(sp["old_clouds"])
@@ -910,6 +915,22 @@ func _over_board(p: Vector3, margin: float) -> bool:
 	return p.x > _lo.x - margin and p.x < _hi.x + margin and p.z > _lo.z - margin and p.z < _hi.z + margin
 
 
+# Issue 1262: can a rock of size s at p shade the board or a ship? Follows the key light down from the rock through the
+# band the board and its ships live in (2 below the board to 15 above) and asks whether that path passes over the board,
+# padded by the rock's size and a margin. A rock below the band, or whose path misses the board, shades nothing in play.
+func _shades_board(p: Vector3, s: float) -> bool:
+	var d := LOOK.KEY_DIR.normalized()
+	var y0 := _center.y - 2.0
+	var y1 := _center.y + 15.0
+	if p.y + s < y0: return false
+	var t_a := maxf(0.0, (p.y - s - y1) / -d.y)
+	var t_b := (p.y + s - y0) / -d.y
+	for i in 9:
+		var q := p + d * lerpf(t_a, t_b, i / 8.0)
+		if _over_board(q, s * 1.5 + 10.0): return true
+	return false
+
+
 # Would a point below the board be seen through the board from the default camera (which looks toward -z, 34 degrees
 # down: a point h below shows h / tan(34) nearer the camera) or from straight above? Such points are left empty, so
 # the only rocks seen through the hexes are the board's own.
@@ -1028,7 +1049,9 @@ func fields(mk: String, kind: String) -> void:
 		var nm := _pick(kind, r)
 		nm = nm if s > 5.0 else nm + "_lo"
 		s = _backdrop_scale(nm, s, p, 20.0)
-		_batch.add(nm, mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
+		# Issue 1262: only ring rocks whose shadow can reach the board or a ship cast into the shadow map.
+		var cast := LOOK.perf_old("rockshadow") or _shades_board(p, s)
+		_batch.add(nm, mat, cast, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
 		placed += 1
 	# 2. the deep field: far below, wide, sizes growing with depth so it reads as a volume, never right under a ship's hex
 	var deep := 0
@@ -1292,6 +1315,7 @@ func underlay() -> void:
 	# drawn after the lens (which copies the screen, render_priority -30) and before the board's own fills
 	m.render_priority = -20
 	_under_mat = m
+	_under_mi = mi
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# below the feet of the board's rocks and debris, above anything deep
