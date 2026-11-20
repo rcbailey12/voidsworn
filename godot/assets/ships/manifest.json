@@ -1478,56 +1478,57 @@
    "preview": "previews/S2_23.jpg"
   },
   "V14_23": {
-   "name": "Warden-class frigate",
+   "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "warden",
    "length_world": 6.5,
    "hardpoints": {
-    "gun": 3,
+    "gun": 7,
     "engine": 2,
-    "breach": 4,
-    "core": 1
+    "breach": 2,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 2,
+   "turrets": 2,
    "files": {
     "V14_23.glb": {
-     "bytes": 6003028,
-     "sha256": "a70eda919be78dab96caa2a9a3cb7ff23ed93dd980e21432b5c76592a07e67f5"
+     "bytes": 6003024,
+     "sha256": "6fcf53844e1076d4038876f4b8f94e7c9853489fa7a3a7dd7ed57bdf1dd03da4"
     },
     "V14_23_base.jpg": {
-     "bytes": 1224643,
-     "sha256": "8812e9c041a3c84d92d9c0db89339a61a83ffc5ac6c8d9d80e569856ffb70eb2"
+     "bytes": 1230098,
+     "sha256": "ee277ec88da57dafeef01b010a9077c64a390ce150395d50cd7998e87ce51233"
     },
     "V14_23_glow_emission.jpg": {
-     "bytes": 446930,
-     "sha256": "8c7434dd835b57042676789558c4494995f2ffdaebafa2e5b0b89533a8ef2f7f"
+     "bytes": 448498,
+     "sha256": "b6e06404003b53bcc3284778eef41b249970e028246affabe6d3f2055b990414"
     },
-    "V14_23_normal.jpg": {
-     "bytes": 583392,
-     "sha256": "e001cde167e58b673425a87fc3568c049719f7f9aa6721e5efa62734737d4255"
+    "V14_23_normal.png": {
+     "bytes": 4581595,
+     "sha256": "a2d118e37179f18f25a978fa19009fbae3ce14f7a9e4cd0cb59608ff7d0651a4"
     },
-    "V14_23_orm.jpg": {
-     "bytes": 1613564,
-     "sha256": "f7361adc232366221d5ac25097835b0f22ef12f0458b46289f8d69d00488418a"
+    "V14_23_orm.png": {
+     "bytes": 6649208,
+     "sha256": "16c32f8abff86bce3f880b0b4cff4d6024dde19d7a950a8854f4ff1889bc745e"
     },
     "V14_23_parts_base.jpg": {
-     "bytes": 1061485,
-     "sha256": "46205800f20c5926112f125c78bc9e5c337a6f15e5d1d54d5cf061248b0f85b0"
+     "bytes": 1066747,
+     "sha256": "f1b781043d0a7a12d23c688a0a91978976328e3fa0e23d261f3646ddc0660139"
     },
-    "V14_23_parts_normal.jpg": {
-     "bytes": 344748,
-     "sha256": "0cafdc650c63b32dc694f840ac059df9cd2550a135993c9f1a089405ea451703"
+    "V14_23_parts_normal.png": {
+     "bytes": 3282893,
+     "sha256": "b6a77f644b261e01e3849f087e5581022bacabb5f5132f61a12c5f30a1406766"
     },
-    "V14_23_parts_orm.jpg": {
-     "bytes": 1637186,
-     "sha256": "910e0f5f2dce29f25b587645bf2dd66ff9ec199a5ed6ca3859165ff91027c814"
+    "V14_23_parts_orm.png": {
+     "bytes": 6292066,
+     "sha256": "ed142c9e7c5aa7fd779b0ea17e128b91936ad1a2b4f9b24a62374f04ee49dc26"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\",
-   "preview": "previews/V14_23.jpg",
-   "damage_preview": "previews/V14_23_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\"
   },
   "V15_37": {
    "name": "Harrow-class destroyer",
@@ -1741,36 +1742,36 @@
    "turrets": 4,
    "files": {
     "V1b_r_23.glb": {
-     "bytes": 13271080,
-     "sha256": "e5686f47f2e6c45235f2eb4ca5c7fc3c7d7a17855304a92ecfb708ae6587615a"
+     "bytes": 13087572,
+     "sha256": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498"
     },
     "V1b_r_23_base.jpg": {
-     "bytes": 1653241,
-     "sha256": "243df4319f41a5d277e07ba80e1edb840f567b21397f2ccaf305cfc8dd0e6519"
+     "bytes": 1658192,
+     "sha256": "9ddf4ba9690bc42fe8609f8313f1556729d431972e29fa64bbce990fd36f57ef"
     },
     "V1b_r_23_glow_emission.jpg": {
-     "bytes": 938731,
-     "sha256": "be0907037ed4baa9635f833ff60408b0f3e723fb372d61c8931205b8be3a9354"
+     "bytes": 558103,
+     "sha256": "6366faa98b9dfec66881b768ab7a8de6b6e06dbc08156047edf13a833233a516"
     },
-    "V1b_r_23_normal.jpg": {
-     "bytes": 527520,
-     "sha256": "c7e868ae1687f9eea466984abbf1a8f6cbd88f645733ab3765de8b61b7aff420"
+    "V1b_r_23_normal.png": {
+     "bytes": 4219521,
+     "sha256": "c864bf981964d137bd7843c002b0df95d10b489a8e99b87d8eae66fb61dcf826"
     },
-    "V1b_r_23_orm.jpg": {
-     "bytes": 2008858,
-     "sha256": "f3596754c4dcf51be0fa2111f5bb53fe03d2d14c775b4f622952361cfe1a241c"
+    "V1b_r_23_orm.png": {
+     "bytes": 8302565,
+     "sha256": "502ad0f40f25afd1ea2b80c7eed648715433a6e97923b55b44e77e8c6689ff14"
     },
     "V1b_r_23_parts_base.jpg": {
-     "bytes": 1145097,
-     "sha256": "a0b1ed987072c5b7f0790028e25604bc5c86cc6a16629bac6997aac96d160bfa"
+     "bytes": 1167882,
+     "sha256": "95997ddeb528433d29ba84885ad9cd3e55590abc247b37d30340cade01e9cc6b"
     },
-    "V1b_r_23_parts_normal.jpg": {
-     "bytes": 292006,
-     "sha256": "75b6607f79bede829adbf09e9e48b280dc23884ea103a56b619cb85a0981188f"
+    "V1b_r_23_parts_normal.png": {
+     "bytes": 2962010,
+     "sha256": "61b4675752a18828ab1a32bdece09ec15088086ee8809e5ea3c562cc88e6e157"
     },
-    "V1b_r_23_parts_orm.jpg": {
-     "bytes": 1705233,
-     "sha256": "939d8b070a8a96c5050b82716290d94b9045f47b777871756189503306a80e5f"
+    "V1b_r_23_parts_orm.png": {
+     "bytes": 6797738,
+     "sha256": "44b3884074f994e2a62d69b1082bb380d5e84e3fa9a4d8fc2c0d0ee2a40d51b0"
     }
    },
    "pc_path": "godot/assets/ships/V1b_r_23/"
