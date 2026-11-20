@@ -158,7 +158,7 @@ func _play(quality: String) -> void:
 
 
 func _shot(battle: Playback, want: Dictionary) -> void:
-	# top down at the battle's c170 distance, over the middle of the two wrecks; the game's look first, then the grid (Z)
+	# top down over the middle of the two wrecks
 	var mid := Vector3.ZERO
 	for id in want:
 		mid += battle.board.hex_world(want[id].x, want[id].y)
@@ -176,17 +176,26 @@ func _shot(battle: Playback, want: Dictionary) -> void:
 	layer.add_child(label)
 	battle.add_child(layer)
 	var rev := OS.get_environment("WH_REV")
-	for grid in [false, true]:
-		LOOK.tactical = grid
+	# the check plays as the title screen's showcase (no HUD or turns), which hides the board grid; a battle shows it
+	battle.board.fills.visible = true
+	# the game's look and the grid (Z) at the battle's c170, then the grid closer in (c80) on the dreadnought's hex
+	var close_on: Vector3 = mid
+	for id in want:
+		close_on = battle.board.hex_world(want[id].x, want[id].y)   # the last wreck: the dreadnought in this scenario
+	for row in [["", false, 170.0, mid], ["_grid", true, 170.0, mid], ["_grid_c80", true, 80.0, close_on]]:
+		LOOK.tactical = row[1]
 		battle.board.apply_look(false)
-		label.text = "WH1236%s  wrecks in their blocking hex  c170 top down  +%d s after the kills%s" % [
-			"_GRID" if grid else "", int(SETTLE), ("  rev " + rev) if rev != "" else ""]
+		battle.cam.t = row[3]
+		battle.cam.r = row[2]
+		battle.cam.snap()
+		label.text = "WH1236%s  wrecks in their blocking hex  c%d top down  +%d s after the kills%s" % [
+			str(row[0]).to_upper(), int(row[2]), int(SETTLE), ("  rev " + rev) if rev != "" else ""]
 		for i in 6:
 			await process_frame
 		var img := root.get_texture().get_image()
 		if img.get_height() > 720:
 			img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
-		var path := shot if not grid else shot.get_basename() + "_grid.png"
+		var path := shot.get_basename() + str(row[0]) + ".png"
 		preload("res://tools/picture_provenance.gd").save_png(img, path)
 		print("WRECK_HEX shot ", path)
 	LOOK.tactical = false
