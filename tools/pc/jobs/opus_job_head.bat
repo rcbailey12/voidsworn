@@ -153,9 +153,11 @@ call "%JW%" fail "Ryan's real options changed during the job"
 rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so after a
 rem PASS they go, unless one holds work (dropcheckouts checks). A failed job keeps everything for the post-mortem (R326).
 rem out_*, the logs and the ship records always stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
-if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& goto oj_tail_done)
-if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& goto oj_tail_done)
-powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
-:oj_tail_done
+rem It runs after job_wrap end has written the done line, so a slow or stuck removal can never delay or lose the result.
+set "OJ_DROP=1"
+if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
+if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& set "OJ_DROP=")
 call "%JW%" end
-exit /b %ERRORLEVEL%
+set "OJ_RC=%ERRORLEVEL%"
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+exit /b %OJ_RC%

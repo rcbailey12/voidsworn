@@ -45,14 +45,14 @@ assert(/fc \/b "%OJ_OUT%\\ships_identity_first\.txt" "%OJ_REPO%_ships_identity\.
 assert(/shipcheck[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'a ship that does not match its cache fails the job');
 assert(/:oj_checkout[\s\S]*checkout "%OJ_OUT%" "%~2" "%~3"[\s\S]*set "OJ_REPO=%OJ_OUT%\\%~2"/.test(headCode), 'checkout goes into the attempt folder');
 const tail = headCode.slice(headCode.indexOf(':oj_tail'));
-assert(/hashes "%OJ_OUT%\\real_options_after\.txt"[\s\S]*fc \/b "%OJ_OUT%\\real_options_before\.txt" "%OJ_OUT%\\real_options_after\.txt"[\s\S]*Ryan's real options changed[\s\S]*call "%JW%" end\nexit \/b %ERRORLEVEL%/.test(tail), 'tail compares the options hash, then ends through job_wrap');
+assert(/hashes "%OJ_OUT%\\real_options_after\.txt"[\s\S]*fc \/b "%OJ_OUT%\\real_options_before\.txt" "%OJ_OUT%\\real_options_after\.txt"[\s\S]*Ryan's real options changed[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"/.test(tail), 'tail compares the options hash, then ends through job_wrap');
 for (const step of ['oj_checkout', 'oj_ships']) {
   const body = headCode.slice(headCode.indexOf(':' + step));
   assert(/if defined JW_STOP \([^\n]*skipped/.test(body.split('\n').slice(0, 4).join('\n')), step + ' is skipped after a failed step');
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
-assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*if defined JW_FAILED \([^\n]*goto oj_tail_done\)\npowershell [^\n]*dropcheckouts "%OJ_OUT%"[^\n]*\n:oj_tail_done\ncall "%JW%" end/.test(tail), 'the tail removes the job\'s own checkouts only after a PASS, after the options check, before job_wrap end');
+assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*if defined JW_FAILED \([^\n]*set "OJ_DROP="\)\ncall "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%"[^\n]*\nexit \/b %OJ_RC%/.test(tail), 'the tail removes the job\'s own checkouts only after a PASS, after job_wrap end has written the result, and keeps its exit code');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
