@@ -1,0 +1,20 @@
+{
+ "ship": "ithar_GB1",
+ "name": "The Needle bomber, the Glasswright bomber wing craft (The Glasswrights)",
+ "faction": "ithar",
+ "game_ship": "bomber",
+ "game_code": "ithar_GB1",
+ "sheet": "ithar_GB1",
+ "concept": "docs/ship_pipeline/build_sheets/ithar_GF1/concept.jpg",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "GB1",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5,
+ "lights": {},
+ "light_min_px": 2,
+ "notes": "Issue 1373 (R362; Ryan picked GF1 on Nov 20 2026): the Glasswright bomber wing craft (the bomber of the GF1 family), built from the build sheet tools/blender/build_sheets/ships/ithar_GB1.py (which builds the GF1 body at bomber proportions) on the shared Glasswright kit (tools/blender/kits/ithar): pearl ribbons, silver edges, the glowing mosaic core (the emission atlas) and cut stones; nothing see-through; no wear. LENGTH 1.6 (CLS_LEN Squadron). The game loads it through godot/render/squadron_wing.gd by its manifest wing_role (bomber).",
+ "parts": []
+}
