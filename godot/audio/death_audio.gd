@@ -5,7 +5,8 @@ extends Node
 # core flash, a mix duck under that flash, and (capital or flagship) a short beat of near-silence.
 # Issue 1238 (F5.1, F5.4): every death cue carries the dying ship's faction, so a cue with a faction variant in
 # cues.json plays that faction's own sound (Chorus wet and breathing, Glasswright glass and tone) instead of steel.
-# A Chorus hull's skin tears just before it ruptures, not at a fixed .4 s.
+# A Chorus hull's skin tears just before it ruptures, not at a fixed .4 s. Issue 1385: the bed and the sub-drop carry
+# the faction too (no variants yet; a later faction sound lands in cues.json alone).
 var sfx: Node
 var fx: Node
 var deaths: Array = []
@@ -46,7 +47,7 @@ func watch(id: String, pos: Vector3) -> void:
 		if span <= 0.0:
 			span = 3.0 if str(ship.faction) == "chorus" else (16.0 if capital else 10.0)
 		d.capital = capital
-		sfx.death_bed(span, pos)
+		sfx.death_bed(span, pos, fac)
 	else:
 		sfx.play("death_run", {"pos": pos, "tag": d.tag, "variant": fac})
 	deaths.append(d)
@@ -87,7 +88,7 @@ func _process(_delta: float) -> void:
 			if not d.bass and fx.now >= d.core and float(fx.get("_death_slow_left")) <= 0.0:
 				d.bass = true
 				if not fx.reduce_flashing:
-					sfx.play("bass_drop", {"pos": d.pos, "death": true})
+					sfx.play("bass_drop", {"pos": d.pos, "death": true, "variant": d.fac})
 			# The rest of the mix ducks under the core flash; the death bus stays out of it.
 			if not d.duck and fx.now >= d.core:
 				d.duck = true
