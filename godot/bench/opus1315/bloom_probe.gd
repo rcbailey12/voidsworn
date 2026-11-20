@@ -30,10 +30,23 @@ func _run() -> void:
 	var line := "BLOOM_PROBE glb %s sha256 %s renderer %s adapter %s stern box %s" % [glb, FileAccess.get_sha256(glb),
 		RenderingServer.get_current_rendering_method(), RenderingServer.get_video_adapter_name(), str(STERN)]
 	print(line); rep.store_line(line)
+	# Artoo on PR 1317: ShipView draws the generated scene the manifest names, not the glb, so prove that scene was built
+	# from this glb (build_assets' own source stamp) and log its path and hash; any other hull path stops the run
+	var man := ShipView.manifest()
+	var ent: Dictionary = man.get("ships", {}).get("I8_37", {})
+	var stamp: String = preload("res://render/build_assets.gd").source_stamp("res://assets/ships", "I8_37")
+	var scn := ProjectSettings.globalize_path(str(ent.get("res", "")))
+	if ent.is_empty() or not FileAccess.file_exists(scn) or str(ent.get("src", "")) != stamp:
+		line = "BLOOM_PROBE FAILED: the game scene for I8_37 is missing or stale (manifest %s, glb stamp %s)" % [str(ent), stamp]
+		print(line); rep.store_line(line); rep.close()
+		return
+	line = "BLOOM_PROBE scene %s sha256 %s built from glb stamp %s" % [scn, FileAccess.get_sha256(scn), stamp]
+	print(line); rep.store_line(line)
 	var L := _len_of("ithar", "Ark")
 	var sv := _spawn("I8_37", "ithar", "Ark", Vector3.ZERO)
-	if PG.stop_if_any():
-		rep.store_line("FAILED: CD5 drew as a placeholder block"); rep.close()
+	if PG.stop_if_any() or not sv.a4:
+		line = "BLOOM_PROBE FAILED: CD5 did not load as its authored scene (placeholder or fallback hull)"
+		print(line); rep.store_line(line); rep.close()
 		return
 	var lights: Array = find_children("*", "DirectionalLight3D", true, false)
 	var energies := lights.map(func(l): return (l as DirectionalLight3D).light_energy)
