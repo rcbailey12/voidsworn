@@ -178,6 +178,7 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 	_stern = _engine_origin(body)
 	var craft_root := Node3D.new()
 	craft_root.name = fac + "_" + kind
+	craft_root.set_meta("model_code", code)   # issue 1373: acceptance runs assert the installed model, never the code fallback
 	craft_root.add_child(body)
 	return craft_root
 

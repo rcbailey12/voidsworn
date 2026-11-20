@@ -12,6 +12,7 @@ var fx
 var out := ""
 var title: Label
 var detail: Label
+var expect := {}   # issue 1373: SQUADRON_EXPECT="ithar|fighter=ithar_GF1,..."; every listed wing must load exactly that model
 
 func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
@@ -23,6 +24,9 @@ func _run() -> void:
 		quit(1)
 		return
 	DirAccess.make_dir_recursive_absolute(out)
+	for pair in OS.get_environment("SQUADRON_EXPECT").split(",", false):
+		var kv := pair.split("=")
+		if kv.size() == 2: expect[kv[0].strip_edges()] = kv[1].strip_edges()
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	vp = SubViewport.new()
 	vp.size = Vector2i(2560, 1440)
@@ -76,13 +80,31 @@ func _run() -> void:
 	print("SQUADRON_CAPTURE_COMPLETE " + out)
 	PG.finish(0)
 
-func _view(fac: String, cls: String, kind: String, at: Vector3):
+func _view(fac: String, cls: String, kind: String, at: Vector3, want_models := true):
 	var sv := SV.new()
 	world.add_child(sv)
 	sv.setup({"id": fac + cls + kind, "fac": fac, "cls": cls, "tpl": kind, "facing": 0}, at)
 	sv.set_process(false)
-	if cls == "Squadron": sv.hull.set_process(false)
+	if cls == "Squadron":
+		sv.hull.set_process(false)
+		_check_models(sv, fac, kind, want_models)
 	return sv
+
+# Fail before any picture or timing when a wing is not the model this run expects (Artoo, PR 1382): the loader falls back to
+# the code-built craft silently, so a missing install must stop the run, not pass on the old boxes.
+func _check_models(sv, fac: String, kind: String, want_models: bool) -> void:
+	var key := fac + "|" + kind
+	if not expect.has(key):
+		return
+	var want: String = expect[key] if want_models else ""
+	for craft in sv.hull.craft:
+		var got: String = craft.get_meta("model_code", "")
+		if got != want:
+			push_error("SQUADRON_EXPECT failed: %s has %s, expected %s" % [key, got if got != "" else "the code-built craft", want if want != "" else "the code-built craft"])
+			PG.note("expected model %s for %s" % [want if want != "" else "code-built", key])   # no picture or timing after this
+			PG.finish(4)
+			return
+	print("SQUADRON_EXPECT ok %s %s" % [key, want if want != "" else "code-built"])
 
 func _still(name: String) -> void:
 	if PG.stop_if_any():
@@ -201,13 +223,15 @@ func _timing() -> void:
 			else:
 				roles.append(c[2])
 			for j in roles.size():
-				var w = _view(fac, "Squadron", roles[j], base + Vector3(-8, 2, -10 - 6 * j))
+				var w = _view(fac, "Squadron", roles[j], base + Vector3(-8, 2, -10 - 6 * j), mode == "after")
 				var wid := "t_%s_w%d" % [fac, j]
 				fx.add_ship(wid, w, {"faction": fac, "squadron": true, "meshes": w.meshes})
 				fx.launch("t_%s_carrier" % fac, wid)
 				nodes.append(w)
 				wings.append(w)
 		fx._later.clear()
+		if PG.stop_if_any():
+			return
 		title.text = "Full launch timing: " + mode
 		detail.text = "%d wings | %s" % [wings.size(), "code-built craft" if mode == "before" else "kit-built craft, hull finish"]
 		cam.look_at_from_position(Vector3(0, 0, 0) + Vector3(0.0, 0.557, 0.831) * 170.0, Vector3(0, 0, 0))
