@@ -1,0 +1,35 @@
+﻿OPUS1078_RUN4 start Thu 11/19/2026 17:47:15.53 
+shield1078 start Thu 11/19/2026 17:47:43.47 ref=origin/opus/issue-1078 
+checked out origin/opus/issue-1078 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_32269 
+commit 8605a168 attempt 8605a168_139747369: results in out\8605a168_139747369 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1078\profile_8605a168_139747369\appdata 
+imported Thu 11/19/2026 17:48:07.40 
+look pass done Thu 11/19/2026 17:57:55.31 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+flash pass ran Thu 11/19/2026 18:00:56.56 
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.39754,"max_frame_delta":0.16835,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.5021,"max_frame_delta":0.08869,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.35141,"max_frame_delta":0.07907,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.31701,"max_frame_delta":0.047,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.48692,"max_frame_delta":0.26015,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.63685,"max_frame_delta":0.15131,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.35416,"max_frame_delta":0.11588,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.40516,"max_frame_delta":0.09461,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.14486,"max_frame_delta":0.09402,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.11039,"max_frame_delta":0.03789,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.15129,"max_frame_delta":0.10385,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.09167,"max_frame_delta":0.01973,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.18986,"max_frame_delta":0.1346,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.16235,"max_frame_delta":0.04886,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.19506,"max_frame_delta":0.14553,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.11267,"max_frame_delta":0.02592,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+flash threshold: every row at or under 3 flashes a second 
+cost pass done Thu 11/19/2026 18:02:20.72 
+checked out origin/main safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_main_22008 
+FAILED: the main cost pass on efc81e62 did not finish, see cost_main_log.txt; no main cost numbers 
+checked out 8605a168 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_29556 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+RESULT: FAILED, see the FAILED lines above Thu 11/19/2026 18:02:27.87 
+shield1078 end Thu 11/19/2026 18:02:27.93 
+RESULT: FAILED 
+all done 

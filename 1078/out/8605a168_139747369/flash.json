@@ -1,0 +1,237 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "commit": "",
+ "cost": [],
+ "flash": [
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "today",
+   "max_block_luminance": 0.39754,
+   "max_frame_delta": 0.16835,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "collapse",
+   "max_block_luminance": 0.5021,
+   "max_frame_delta": 0.08869,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 1,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "today",
+   "max_block_luminance": 0.35141,
+   "max_frame_delta": 0.07907,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 0,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "collapse",
+   "max_block_luminance": 0.31701,
+   "max_frame_delta": 0.047,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "today",
+   "max_block_luminance": 0.48692,
+   "max_frame_delta": 0.26015,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "collapse",
+   "max_block_luminance": 0.63685,
+   "max_frame_delta": 0.15131,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 1,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "today",
+   "max_block_luminance": 0.35416,
+   "max_frame_delta": 0.11588,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "glasswrights",
+   "look": "collapse",
+   "max_block_luminance": 0.40516,
+   "max_frame_delta": 0.09461,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 1,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "today",
+   "max_block_luminance": 0.14486,
+   "max_frame_delta": 0.09402,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 0,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "collapse",
+   "max_block_luminance": 0.11039,
+   "max_frame_delta": 0.03789,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "today",
+   "max_block_luminance": 0.15129,
+   "max_frame_delta": 0.10385,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 0,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "collapse",
+   "max_block_luminance": 0.09167,
+   "max_frame_delta": 0.01973,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "fitted",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 1,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "today",
+   "max_block_luminance": 0.18986,
+   "max_frame_delta": 0.1346,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 1,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "collapse",
+   "max_block_luminance": 0.16235,
+   "max_frame_delta": 0.04886,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": false,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 2,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "today",
+   "max_block_luminance": 0.19506,
+   "max_frame_delta": 0.14553,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "egg",
+   "ships": 4
+  },
+  {
+   "block_max_per_second": 0,
+   "frames": 198,
+   "group": "hullbreakers",
+   "look": "collapse",
+   "max_block_luminance": 0.11267,
+   "max_frame_delta": 0.02592,
+   "mean_max_per_second": 0,
+   "pass": true,
+   "reduce_flashing": true,
+   "shape": "egg",
+   "ships": 4
+  }
+ ],
+ "godot": "4.7.2-stable (official)",
+ "method": "forward_plus",
+ "rev": "r3",
+ "scenes": {
+  "C16s_23": {
+   "res": "res://gen/ships/C16s_23.scn",
+   "sha256": "2f249a55a119405a2143686f501abc8b7c3e565592cfa10b5be5e09a47abb2d8"
+  },
+  "C19_51": {
+   "res": "res://gen/ships/C19_51.scn",
+   "sha256": "6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0"
+  },
+  "I16_11": {
+   "res": "res://gen/ships/I16_11.scn",
+   "sha256": "66d01c9b1e5b611e2c4cbedce17d6e22602104c70e8329fbf86096881f4c9a86"
+  },
+  "I8_37": {
+   "res": "res://gen/ships/I8_37.scn",
+   "sha256": "bd85faa6e4f928548948a2efe52d9a15e1e7592d3dbfbd7621ebc82ca4f75227"
+  }
+ },
+ "stories": []
+}

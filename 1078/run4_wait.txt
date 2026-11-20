@@ -1,0 +1,10 @@
+waiting for the 1217 front-end job to end Thu 11/19/2026 15:21:31.29 
+settings before run 4 Thu 11/19/2026 17:47:11.75 
+battle_opts.json  sha256 c92fe4ca1d3e462b0cf27077e15f331ae2815199e1faa0d2201be434d556aad9  bytes 217  modified 2026-11-19 16:19:07
+board_look.cfg  sha256 e9e03d93a3ecb04ea33934f1694541b23f91202f8e2763cebc526da01121630e  bytes 23  modified 2026-11-02 20:06:44
+OPUS1078_RUN4 start Thu 11/19/2026 17:47:14.84 
+OPUS1078_RUN4 exit 1 at 18:02:27.94 
+settings after run 4 Thu 11/19/2026 18:02:27.94 
+battle_opts.json  sha256 c92fe4ca1d3e462b0cf27077e15f331ae2815199e1faa0d2201be434d556aad9  bytes 217  modified 2026-11-19 16:19:07
+board_look.cfg  sha256 e9e03d93a3ecb04ea33934f1694541b23f91202f8e2763cebc526da01121630e  bytes 23  modified 2026-11-02 20:06:44
+all done 18:02:28.38 

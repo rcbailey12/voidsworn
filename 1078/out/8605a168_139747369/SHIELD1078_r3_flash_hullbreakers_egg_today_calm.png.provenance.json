@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAABINJREFUeJzt3UmO2zAQQFE5yDESIPe/JLPpwTZstyVxKLLeA5LubALZqw+KRV7+/P1XNqC/y+gHGM9XANDHr9EPAGmVjz+J+QoA+vg9+gEgvc/iSbzcdR99ib8KgCYEH0RxXT3Ji+fZql/yrwXgMMEHER19z7l4EWligGPs4YOVJNoUl+ijApwm+GBFiWoo0UcFOEzwwcoS1VCijwqwm+CDDBLVUKKPCvA2QxuQSaJhkEcfdcKPAVCF4AN+tsh4rAgEshJ8wD6LHRS9SMsCvGQPH3DMgpvlFvxIANu2WeEDzlpsxW/bXPUGrEfwAXUsPBDiqjdgdoIPGGviFUL7/4BZ2MMHxDD5BrrJHx9YnOADYinb1PU06WMDixN8QFyTht+kjw0szB4+IL5JT0y2xw+IQvABc9qzhBagtkz6AiMJPmB9gSeBnfkH9CD4gDx+WhUMUFuB2xSYmOAD+BRo012gRwEWIPgAHgn0rnXSmRUgEMEH8I5gUxciENjDOXwAZwQ6dC/QowDBCD6AGgLVVqBHAYLwShegpkDTFiZ+gU+CD6CVIPEn/ADBB9DDmXeslUotSH8CAwg+gOgalFqwoWOgMcEHMJPG5wMGOn4QqEjwAczsnVfFJ6rN/j9Yg+ADWF2FarP/D+Ym+ACyqLRc55YPmI/gA8hm78TwGzUnAiE2wQfAawcnOez/gzhcrQbAPjvvbnPVG4wn+AA4RvjBNLzSBeCcnSO8XvVCf4IPgHp2rvh9uQhAaEnwATBe+QjAu+oTgVCH4AMgjrv3va56gzoMbQAQz5MJD4MfcIwVPgDiejLh4ao32EfwARDfi9HeZyt+QhC+CT4A5nFwCvii/khO8AGwvHJVf+KPjAxtAJBKKbcBCBkIPgBSEn5kIvgASE34kYE9fACw3UWfq95YjOADgHvlasr3qvxEILMSfADwSnnw6+XmB4Qn+ABgr3Lz4zv8FCBBCT4AOKnc/XLTfSKQAAQfAFRWnvzDoc+M4lgWAOjEETCMIvgAoDPhR29e6QLAIOV6z5/XvTRkhQ8ABiuff1n1oxHBBwAB3Ez6Cj8q80oXAIK4OdfvaPR5NcwDVvgAIJhTC3xWCHlA8AFAQKebTfhxRfABQFBVmk34sdnDBwDh3ffaoW161/+JfX7pCD4AmMyzBbu3O85ASDqCDwAW0XwR72aMmJnYwwcAC2q6dc++wOkIPgBYWNMuE37TEHwAsLjmTSb8whN8AJBAlx4TfmEJPgBIoluLlU38BSP4ACCR7g0m/EJwLAsAJHOkv06fxOJIl6Gs8AEAP6q2SGfFbwjBBwC8pWqnCb+uvNIFAN5W/c2sO367sMIHAOzWZHHOql8zgg8AOMTVbfMQfADAYa5um4PgAwBOcXVbfIIPADjN1W2xmdIFAKooW6dB21fRZ9L3ISt8AEA1wxfg3OP7kBU+AKCqIVe3PeKMvy9W+ACA4boMfiQm+ACAEERfO4IPAAhD9LUh+ACAUERffYIPAAin+aBtsugTfAAAixN8AACLE3wAAIsTfAAAixN8AACL+w/nS/fswoGXFQAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T00:00:51Z",
+	"image_sha256": "df5e0419fc6f77b37c42a0f6b489255adab65e5d7de3b8b76e49d27912ac0a15",
+	"inputs": [],
+	"picture_name": "SHIELD1078_r3_flash_hullbreakers_egg_today_calm.png",
+	"schema": 1,
+	"source_commit": "8605a168e3b5e364b157541bd79480f232b599f7",
+	"source_diff_sha256": "c043323e7c8e658e5073009aab5970c3deb0a04b1183a638e489b0304066b95f",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "8605a168e3b5e364b157541bd79480f232b599f7",
+			"source_diff_sha256": "c043323e7c8e658e5073009aab5970c3deb0a04b1183a638e489b0304066b95f",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "39d0a8632af7f75ae3273f6acf0a443171a1df720bd275bc6ad0d47a4a7d7eeb",
+	"strip_sha256": [
+		"39d0a8632af7f75ae3273f6acf0a443171a1df720bd275bc6ad0d47a4a7d7eeb"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

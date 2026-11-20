@@ -1,0 +1,12 @@
+GPU: waiting for solo claim, weight 1 (1078)
+GPU: acquired solo claim 52e28974-60e9-4b45-97d8-9b26297b62ff
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+SCRIPT ERROR: Parse Error: Cannot call non-static function "_luma()" on the class "res://bench/scene_gate.gd" directly. Make an instance instead.
+   at: GDScript::reload (res://fx/test/shield1078_main_probe.gd:496)
+SCRIPT ERROR: Parse Error: Cannot call non-static function "_flash_stats()" on the class "res://bench/scene_gate.gd" directly. Make an instance instead.
+   at: GDScript::reload (res://fx/test/shield1078_main_probe.gd:501)
+ERROR: Failed to load script "res://fx/test/shield1078_main_probe.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+GPU: released solo claim 52e28974-60e9-4b45-97d8-9b26297b62ff
