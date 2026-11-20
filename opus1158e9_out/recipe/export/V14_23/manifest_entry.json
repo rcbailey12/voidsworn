@@ -1,0 +1,53 @@
+{
+ "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
+ "faction": "voidsworn",
+ "cls": "Frigate",
+ "band": "S",
+ "game_ship": "warden",
+ "length_world": 6.5,
+ "hardpoints": {
+  "gun": 7,
+  "engine": 2,
+  "breach": 2,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 2,
+ "turrets": 2,
+ "files": {
+  "V14_23.glb": {
+   "bytes": 6003024,
+   "sha256": "6fcf53844e1076d4038876f4b8f94e7c9853489fa7a3a7dd7ed57bdf1dd03da4"
+  },
+  "V14_23_base.jpg": {
+   "bytes": 1230099,
+   "sha256": "372b00f8213de5b8f1c998975e84a03c4fd986475140445b57a6491b44afac0e"
+  },
+  "V14_23_glow_emission.jpg": {
+   "bytes": 448458,
+   "sha256": "5e34cc24a0ff3b76a8621cb28933af97baa6bea909dc22db7d6c811d4791fb93"
+  },
+  "V14_23_normal.png": {
+   "bytes": 4581606,
+   "sha256": "ff07dfd53b8911b763be3c29b03cbc6c1052109da1ec97f4c9f4e6b148cdbcae"
+  },
+  "V14_23_orm.png": {
+   "bytes": 6649219,
+   "sha256": "f122e44396de26b4fc1efa96785c1dc9227724dfcb384b3c8a7586fb264240ab"
+  },
+  "V14_23_parts_base.jpg": {
+   "bytes": 1066587,
+   "sha256": "951b8cbd4856a17480578aaf64ce9c3dba7b958efcd25b1a6ef82c292efe40c3"
+  },
+  "V14_23_parts_normal.png": {
+   "bytes": 3282898,
+   "sha256": "9a9f9617c68d03c1ce2bad5f92e314995eae3834ba04d7889755ae77e2f99144"
+  },
+  "V14_23_parts_orm.png": {
+   "bytes": 6292081,
+   "sha256": "49b55f774c3673b25cf311e68990ae64f8422cf493c4f4fbdfe41c709f2e2a0b"
+  }
+ },
+ "pc_path": "godot/assets/ships/V14_23/"
+}

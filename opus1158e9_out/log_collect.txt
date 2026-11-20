@@ -1,0 +1,472 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:47 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\
+	    New File  		     602	audit.json100%  
+	    New File  		   38436	bow_blink.gif.provenance.json100%  
+	    New File  		     507	concept_camera.json100%  
+	    New File  		    3665	density.json100%  
+	    New File  		     543	licences.json100%  
+	    New File  		     651	log_audit.txt100%  
+	    New File  		    4487	log_audit_selftest.txt100%  
+	    New File  		     612	log_b0dump.txt100%  
+	    New File  		  101025	log_bake.txt100%  
+	    New File  		     156	log_battle.txt100%  
+	    New File  		     127	log_blink.txt100%  
+	    New File  		     933	log_build.txt100%  
+	    New File  		      68	log_clay.txt100%  
+	    New File  		      63	log_close.txt100%  
+	    New File  		    1584	log_export.txt100%  
+	    New File  		     646	log_export_check.txt100%  
+	    New File  		    2149	log_export_selftest.txt100%  
+	    New File  		    4623	log_godot.txt100%  
+	    New File  		     648	log_install_cache.txt100%  
+	    New File  		     441	log_install_readback.txt100%  
+	    New File  		    1581	log_lod.txt100%  
+	    New File  		   1.1 m	log_render.txt 22%   44%   67%   89%  100%  
+	    New File  		  211791	log_render_concept.txt 61%  100%  
+	    New File  		  426034	log_render_far.txt 30%   61%   92%  100%  
+	    New File  		    1249	log_sheet_contract.txt100%  
+	    New File  		      97	log_sil.txt100%  
+	    New File  		     296	log_sildump.txt100%  
+	    New File  		     682	log_standing.txt100%  
+	    New File  		     682	log_standing4.txt100%  
+	    New File  		    1230	log_standing_all.txt100%  
+	    New File  		     213	log_standing_battle.txt100%  
+	    New File  		      95	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		  159998	log_surface.txt 81%  100%  
+	    New File  		     690	log_thirds.txt100%  
+	    New File  		     690	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	    New File  		    4539	S9.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     663	audit_into_ship.json100%  
+	    New File  		     613	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     311	audit_no_longitudinal.json100%  
+	    New File  		     232	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	    New File  		     611	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\build\
+	    New File  		     994	S9_build.json100%  
+	    New File  		    1972	sheet_contract_selftest.json100%  
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\clay\
+	    New File  		   67823	S9_aft_clay.png.provenance.json100%  
+	    New File  		   70262	S9_aft_concept.png.provenance.json100%  
+	    New File  		   74045	S9_aft_studio.png.provenance.json100%  
+	    New File  		   73143	S9_bow_clay.png.provenance.json100%  
+	    New File  		   64818	S9_bow_concept.png.provenance.json100%  
+	    New File  		   70561	S9_bow_studio.png.provenance.json100%  
+	    New File  		   54007	S9_cas_clay.png.provenance.json100%  
+	    New File  		   54250	S9_cas_concept.png.provenance.json100%  
+	    New File  		   53949	S9_cas_studio.png.provenance.json100%  
+	    New File  		   59765	S9_drums_clay.png.provenance.json100%  
+	    New File  		   72012	S9_drums_concept.png.provenance.json100%  
+	    New File  		   71235	S9_drums_studio.png.provenance.json100%  
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\close\
+	    New File  		   67771	S9_aft_clay.png.provenance.json100%  
+	    New File  		   87774	S9_aft_concept.png.provenance.json100%  
+	    New File  		   95449	S9_aft_studio.png.provenance.json100%  
+	    New File  		   72707	S9_bow_clay.png.provenance.json100%  
+	    New File  		   72950	S9_bow_concept.png.provenance.json100%  
+	    New File  		   85377	S9_bow_studio.png.provenance.json100%  
+	    New File  		   54015	S9_cas_clay.png.provenance.json100%  
+	    New File  		   54190	S9_cas_concept.png.provenance.json100%  
+	    New File  		   53961	S9_cas_studio.png.provenance.json100%  
+	    New File  		   59537	S9_drums_clay.png.provenance.json100%  
+	    New File  		   93696	S9_drums_concept.png.provenance.json100%  
+	    New File  		   93095	S9_drums_studio.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\glb\
+	    New File  		     310	S9_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\
+	    New File  		   20390	bench209.json100%  
+	    New File  		    6141	S9_auto_20.png.provenance.json100%  
+	    New File  		    6143	S9_auto_d1.2.png.provenance.json100%  
+	    New File  		    6144	S9_auto_d16.0.png.provenance.json100%  
+	    New File  		    6143	S9_auto_d3.0.png.provenance.json100%  
+	    New File  		    6143	S9_auto_d8.0.png.provenance.json100%  
+	    New File  		    6141	S9_hand_20.png.provenance.json100%  
+	    New File  		    6143	S9_hand_d1.2.png.provenance.json100%  
+	    New File  		    6144	S9_hand_d17.4.png.provenance.json100%  
+	    New File  		    6144	S9_hand_d18.6.png.provenance.json100%  
+	    New File  		    6143	S9_hand_d2.9.png.provenance.json100%  
+	    New File  		    6143	S9_hand_d3.1.png.provenance.json100%  
+	    New File  		    6144	S9_hand_d7.75.png.provenance.json100%  
+	    New File  		    6144	S9_hand_d8.25.png.provenance.json100%  
+	    New File  		    6140	S9_off_20.png.provenance.json100%  
+	    New File  		    6142	S9_off_d1.2.png.provenance.json100%  
+	    New File  		    6143	S9_off_d16.0.png.provenance.json100%  
+	    New File  		    6142	S9_off_d3.0.png.provenance.json100%  
+	    New File  		    6142	S9_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\r\
+	    New File  		   11383	S9_battle.png.provenance.json100%  
+	    New File  		   41756	S9_below.png.provenance.json100%  
+	    New File  		   41657	S9_below_clay.png.provenance.json100%  
+	    New File  		   41673	S9_concept.png.provenance.json100%  
+	    New File  		   41792	S9_concept_cl.png.provenance.json100%  
+	    New File  		   41638	S9_concept_clay.png.provenance.json100%  
+	    New File  		   41837	S9_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41673	S9_hero.png.provenance.json100%  
+	    New File  		   41702	S9_hero_clay.png.provenance.json100%  
+	    New File  		   41663	S9_hero_s.png.provenance.json100%  
+	    New File  		   41696	S9_hero_s_clay.png.provenance.json100%  
+	    New File  		   41675	S9_side.png.provenance.json100%  
+	    New File  		   41752	S9_side_clay.png.provenance.json100%  
+	    New File  		   41693	S9_side_s.png.provenance.json100%  
+	    New File  		   41674	S9_side_s_clay.png.provenance.json100%  
+	    New File  		   41658	S9_top.png.provenance.json100%  
+	    New File  		   41631	S9_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\surface\
+	    New File  		     795	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        13        10         3         0         0         0
+   Files :       112       112         0         0         0         0
+   Bytes :    4.41 m    4.41 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            59403794 Bytes/sec.
+   Speed :            3399.112 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:47 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:47 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\clay\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\clay\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\clay\
+	    New File  		 1007375	S9_aft_clay.png 26%   52%   78%  100%  
+	    New File  		   1.0 m	S9_aft_concept.png 24%   48%   72%   96%  100%  
+	    New File  		   1.0 m	S9_aft_studio.png 23%   47%   71%   95%  100%  
+	    New File  		  536355	S9_bow_clay.png 48%   97%  100%  
+	    New File  		  552052	S9_bow_concept.png 47%   94%  100%  
+	    New File  		  569898	S9_bow_studio.png 45%   91%  100%  
+	    New File  		  937189	S9_cas_clay.png 27%   55%   83%  100%  
+	    New File  		  914921	S9_cas_concept.png 28%   57%   85%  100%  
+	    New File  		  942734	S9_cas_studio.png 27%   55%   83%  100%  
+	    New File  		 1043141	S9_drums_clay.png 25%   50%   75%  100%  
+	    New File  		   1.0 m	S9_drums_concept.png 23%   46%   69%   93%  100%  
+	    New File  		   1.0 m	S9_drums_studio.png 23%   46%   69%   92%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   10.44 m   10.44 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           608461555 Bytes/sec.
+   Speed :           34816.449 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:47 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:47 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\r\
+	    New File  		   83456	S9_battle.png100%  
+	    New File  		   2.2 m	S9_below.png 22%   44%   66%   89%  100%  
+	    New File  		   2.1 m	S9_below_clay.png 23%   46%   70%   93%  100%  
+	    New File  		  916137	S9_concept.png 28%   57%   85%  100%  
+	    New File  		  908428	S9_concept_cl.png 28%   57%   86%  100%  
+	    New File  		  823900	S9_concept_clay.png 31%   63%   95%  100%  
+	    New File  		  837815	S9_concept_clay_cl.png 31%   62%   93%  100%  
+	    New File  		   1.1 m	S9_hero.png 22%   44%   67%   89%  100%  
+	    New File  		   1.0 m	S9_hero_clay.png 24%   48%   72%   96%  100%  
+	    New File  		   1.1 m	S9_hero_s.png 22%   44%   66%   89%  100%  
+	    New File  		   1.0 m	S9_hero_s_clay.png 23%   46%   70%   93%  100%  
+	    New File  		   2.2 m	S9_side.png 22%   44%   67%   89%  100%  
+	    New File  		   2.0 m	S9_side_clay.png 23%   47%   71%   95%  100%  
+	    New File  		   2.2 m	S9_side_s.png 22%   45%   67%   90%  100%  
+	    New File  		   2.1 m	S9_side_s_clay.png 23%   47%   71%   94%  100%  
+	    New File  		   2.3 m	S9_top.png 20%   41%   62%   83%  100%  
+	    New File  		   2.1 m	S9_top_clay.png 23%   47%   70%   94%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   25.29 m   25.29 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1560180764 Bytes/sec.
+   Speed :            89274.259 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:48 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:48 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\close\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\close\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\close\
+	    New File  		 1000993	S9_aft_clay.png 26%   52%   78%  100%  
+	    New File  		   1.1 m	S9_aft_concept.png 21%   43%   64%   86%  100%  
+	    New File  		   1.2 m	S9_aft_studio.png 20%   40%   60%   81%  100%  
+	    New File  		  534192	S9_bow_clay.png 49%   98%  100%  
+	    New File  		  681799	S9_bow_concept.png 38%   76%  100%  
+	    New File  		  703208	S9_bow_studio.png 37%   74%  100%  
+	    New File  		  934906	S9_cas_clay.png 28%   56%   84%  100%  
+	    New File  		  965443	S9_cas_concept.png 27%   54%   81%  100%  
+	    New File  		 1000821	S9_cas_studio.png 26%   52%   78%  100%  
+	    New File  		 1040135	S9_drums_clay.png 25%   50%   75%  100%  
+	    New File  		   1.2 m	S9_drums_concept.png 20%   41%   61%   82%  100%  
+	    New File  		   1.2 m	S9_drums_studio.png 19%   39%   59%   79%   99%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   11.40 m   11.40 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           664562444 Bytes/sec.
+   Speed :           38026.568 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:48 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:48 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\surface\
+	    New File  		   71509	surface_below.png100%  
+	    New File  		   62389	surface_bow.png100%  
+	    New File  		   69228	surface_port.png100%  
+	    New File  		   69061	surface_starboard.png100%  
+	    New File  		   63047	surface_stern.png100%  
+	    New File  		   71517	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   397.2 k   397.2 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           101687750 Bytes/sec.
+   Speed :            5818.619 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:48 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:48 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\godot\
+	    New File  		  399519	S9_auto_20.png 32%   65%   98%  100%  
+	    New File  		  495888	S9_auto_d1.2.png 26%   52%   79%  100%  
+	    New File  		  202974	S9_auto_d16.0.png 64%  100%  
+	    New File  		  263011	S9_auto_d3.0.png 49%   99%  100%  
+	    New File  		  212269	S9_auto_d8.0.png 61%  100%  
+	    New File  		  397656	S9_hand_20.png 32%   65%   98%  100%  
+	    New File  		  495815	S9_hand_d1.2.png 26%   52%   79%  100%  
+	    New File  		  202392	S9_hand_d17.4.png 64%  100%  
+	    New File  		  202023	S9_hand_d18.6.png 64%  100%  
+	    New File  		  266527	S9_hand_d2.9.png 49%   98%  100%  
+	    New File  		  259748	S9_hand_d3.1.png 50%  100%  
+	    New File  		  212878	S9_hand_d7.75.png 61%  100%  
+	    New File  		  210967	S9_hand_d8.25.png 62%  100%  
+	    New File  		  400486	S9_off_20.png 32%   65%   98%  100%  
+	    New File  		  495614	S9_off_d1.2.png 26%   52%   79%  100%  
+	    New File  		  202749	S9_off_d16.0.png 64%  100%  
+	    New File  		  262746	S9_off_d3.0.png 49%   99%  100%  
+	    New File  		  211757	S9_off_d8.0.png 61%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.14 m    5.14 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           385358500 Bytes/sec.
+   Speed :           22050.390 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:48 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:31:48 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export\V14_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\out\recipe\export\V14_23\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export\V14_23\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         16	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export\V14_23\
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1472	manifest_entry.json100%  
+	    New File  		   5.7 m	V14_23.glb  8.7% 17.4% 26.2% 34.9% 43.6% 52.4% 61.1% 69.8% 78.6% 87.3% 96.0%100%  
+	    New File  		   1.1 m	V14_23_base.jpg 21%   42%   63%   85%  100%  
+	    New File  		    5414	V14_23_check.json100%  
+	    New File  		   14815	V14_23_export.json100%  
+	    New File  		  448458	V14_23_glow_emission.jpg 29%   58%   87%  100%  
+	    New File  		  583392	V14_23_normal.jpg 44%   89%  100%  
+	    New File  		   4.3 m	V14_23_normal.png 11%   22%   34%   45%   57%   68%   80%   91%  100%  
+	    New File  		   1.5 m	V14_23_orm.jpg 16%   32%   48%   64%   81%   97%  100%  
+	    New File  		   6.3 m	V14_23_orm.png  7.8% 15.7% 23.6% 31.5% 39.4% 47.3% 55.1% 63.0% 70.9% 78.8% 86.7% 94.6%100%  
+	    New File  		   1.0 m	V14_23_parts_base.jpg 24%   49%   73%   98%  100%  
+	    New File  		  344748	V14_23_parts_normal.jpg 38%   76%  100%  
+	    New File  		   3.1 m	V14_23_parts_normal.png 15%   31%   47%   63%   79%   95%  100%  
+	    New File  		   1.5 m	V14_23_parts_orm.jpg 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   6.0 m	V14_23_parts_orm.png  8.3% 16.6% 24.9% 33.3% 41.6% 49.9% 58.3% 66.6% 74.9% 83.3% 91.6% 99.9%100%  
+	  New Dir         16	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\export\V14_23\_gltf_source\
+	    New File  		  446930	S9_engine_emission.jpg 29%   58%   87%  100%  
+	    New File  		   1.6 m	S9_engine_emission.png 14%   29%   44%   58%   73%   88%  100%  
+	    New File  		   1.1 m	S9_hull_albedo.jpg 21%   42%   64%   85%  100%  
+	    New File  		   4.8 m	S9_hull_albedo.png 10%   20%   30%   41%   51%   61%   71%   82%   92%  100%  
+	    New File  		  583392	S9_hull_normal.jpg 44%   89%  100%  
+	    New File  		   4.3 m	S9_hull_normal.png 11%   22%   34%   45%   57%   68%   80%   91%  100%  
+	    New File  		   1.5 m	S9_hull_orm.jpg 16%   32%   48%   64%   81%   97%  100%  
+	    New File  		   6.3 m	S9_hull_orm.png  7.8% 15.7% 23.6% 31.5% 39.4% 47.3% 55.1% 63.0% 70.9% 78.8% 86.7% 94.6%100%  
+	    New File  		   1.0 m	S9_parts_albedo.jpg 24%   49%   74%   98%  100%  
+	    New File  		   4.4 m	S9_parts_albedo.png 11%   22%   33%   44%   56%   67%   78%   89%  100%  
+	    New File  		  344748	S9_parts_normal.jpg 38%   76%  100%  
+	    New File  		   3.1 m	S9_parts_normal.png 15%   31%   47%   63%   79%   95%  100%  
+	    New File  		   1.5 m	S9_parts_orm.jpg 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   6.0 m	S9_parts_orm.png  8.3% 16.6% 24.9% 33.3% 41.6% 49.9% 58.3% 66.6% 74.9% 83.3% 91.6% 99.9%100%  
+	    New File  		   5.6 m	V14_23.bin  8%   17%   26%   35%   43%   52%   61%   70%   79%   87%   96%  100%  
+	    New File  		   52233	V14_23.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        32        32         0         0         0         0
+   Bytes :   75.36 m   75.36 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1796093977 Bytes/sec.
+   Speed :           102773.321 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:31:48 AM
+

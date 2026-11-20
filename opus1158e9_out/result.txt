@@ -1,0 +1,41 @@
+start voidsworn_S9 V14_23 opus/issue-1158-ember Fri 11/20/2026  8:16:17.99 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                 -> refs/pull/1299/merge
+ - [deleted]             (none)                 -> refs/pull/1301/merge
+ - [deleted]             (none)                 -> refs/pull/1307/merge
+ * [new branch]          board/pc-out-1119zzzs4 -> board/pc-out-1119zzzs4
+   0ac29b171..90ff8bc55  main                   -> main
+   bb7ed70fb..238ec7525  opus/issue-1239        -> opus/issue-1239
+   af1d75f8d..e323b4967  opus/issue-1264        -> opus/issue-1264
+   af1d75f8d..e323b4967  refs/pull/1306/head    -> refs/pull/1306/head
+ + 9aed88c9d...c1af7c4ae refs/pull/1306/merge   -> refs/pull/1306/merge  (forced update)
+   bb7ed70fb..238ec7525  refs/pull/1329/head    -> refs/pull/1329/head
+ + 92dc90d37...5697102c1 refs/pull/1329/merge   -> refs/pull/1329/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\repo
+commit=46ddbe90b1c77bc9eb1bc933c83845040c7d016e
+import exit 0 
+1_concept_in start  8:21:44.97 
+1_concept_in exit 0 at  8:21:48.57 
+2_shape_ref start  8:21:48.57 
+2_shape_ref exit 0 at  8:21:49.35 
+3_trace_hull start  8:21:49.35 
+3_trace_hull exit 0 at  8:23:07.25 
+4_parts_kit start  8:23:07.25 
+4_parts_kit exit 0 at  8:23:39.06 
+5_paint_bake start  8:23:39.06 
+5_paint_bake exit 0 at  8:29:41.63 
+6_lod start  8:29:41.64 
+6_lod exit 0 at  8:30:38.83 
+7_export start  8:30:38.83 
+7_export exit 0 at  8:31:31.01 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1158e9\repo\godot\assets\ships\V14_23\V14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: death_seam Fri 11/20/2026  8:31:48.19 
+all done 
+pin ok 46ddbe90b1c77bc9eb1bc933c83845040c7d016e  

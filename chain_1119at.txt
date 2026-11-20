@@ -1,0 +1,7 @@
+chain AT waiting for all done in chain_1119as.txt Fri 11/20/2026  7:54:18.50 
+mirror refresh  8:02:19.14 
+mirror fetch exit 0
+46ddbe90b1c77bc9eb1bc933c83845040c7d016e reachable in the mirror
+1158 ember start  8:02:20.73 
+1158 ember exit 1 at  8:31:48.81 
+all done Fri 11/20/2026  8:31:48.81 

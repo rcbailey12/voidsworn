@@ -1,0 +1,14 @@
+  outline S8: bow 49.5, midship 66.7, stern 12.1, whole 50.1 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 59.5, midship 53.6, stern 77.2
+  REPORT bow overlap 49.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 66.7 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 12.1 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 50.1 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera S8: game bow 37.0 midship 62.1 stern 23.7 whole 40.1, studio bow 31.7 midship 56.1 stern 21.9 whole 36.6
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check

@@ -1,0 +1,31 @@
+start voidsworn_S8 V1b_r_23 opus/issue-1158-ember Fri 11/20/2026  8:02:22.22 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ + 3c45015fa...92dc90d37 refs/pull/1329/merge -> refs/pull/1329/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\repo
+commit=46ddbe90b1c77bc9eb1bc933c83845040c7d016e
+import exit 0 
+1_concept_in start  8:07:07.46 
+1_concept_in exit 0 at  8:07:10.02 
+2_shape_ref start  8:07:10.02 
+2_shape_ref exit 0 at  8:07:10.78 
+3_trace_hull start  8:07:10.79 
+3_trace_hull exit 0 at  8:08:21.68 
+4_parts_kit start  8:08:21.68 
+4_parts_kit exit 0 at  8:09:04.87 
+5_paint_bake start  8:09:04.88 
+5_paint_bake exit 0 at  8:13:21.97 
+6_lod start  8:13:21.97 
+6_lod exit 0 at  8:14:27.43 
+7_export start  8:14:27.44 
+7_export exit 0 at  8:15:55.75 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1158e8\repo\godot\assets\ships\V1b_r_23\V1b_r_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: death_seam Fri 11/20/2026  8:16:16.80 
+all done 
+pin ok 46ddbe90b1c77bc9eb1bc933c83845040c7d016e  

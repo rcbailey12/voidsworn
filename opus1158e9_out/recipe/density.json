@@ -1,0 +1,135 @@
+{
+ "summary": {
+  "paint_flags": [
+   "radiator: paint_detail_share 0.222 is 0.74 of the hull's 0.3"
+  ],
+  "mesh_flags": [],
+  "hull": {
+   "area": 1.16056,
+   "triangles": 16746,
+   "tris_per_unit2": 14429.2,
+   "edges_per_unit2": 15390.9,
+   "texels_per_unit2": 8688266.2,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 414.38,
+  "paint_top": 0.3
+ },
+ "types": {
+  "hull": {
+   "area": 1.16056,
+   "triangles": 16746,
+   "tris_per_unit2": 14429.2,
+   "edges_per_unit2": 15390.9,
+   "texels_per_unit2": 8688266.2,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "gun": {
+   "area": 0.07637,
+   "triangles": 6194,
+   "tris_per_unit2": 81108.1,
+   "edges_per_unit2": 50911.9,
+   "texels_per_unit2": 17086196.3,
+   "atlas": "parts",
+   "paint_detail_share": 0.369,
+   "tris_per_unit2_vs_hull": 5.62,
+   "edges_per_unit2_vs_hull": 3.31,
+   "texels_per_unit2_vs_hull": 1.97,
+   "paint_detail_share_vs_hull": 1.23
+  },
+  "vent": {
+   "area": 0.02713,
+   "triangles": 1824,
+   "tris_per_unit2": 67240.0,
+   "edges_per_unit2": 60162.1,
+   "texels_per_unit2": 18670957.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.408,
+   "tris_per_unit2_vs_hull": 4.66,
+   "edges_per_unit2_vs_hull": 3.91,
+   "texels_per_unit2_vs_hull": 2.15,
+   "paint_detail_share_vs_hull": 1.36
+  },
+  "slit": {
+   "area": 0.0021,
+   "triangles": 420,
+   "tris_per_unit2": 199954.9,
+   "edges_per_unit2": 171389.9,
+   "texels_per_unit2": 18670980.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.384,
+   "tris_per_unit2_vs_hull": 13.86,
+   "edges_per_unit2_vs_hull": 11.14,
+   "texels_per_unit2_vs_hull": 2.15,
+   "paint_detail_share_vs_hull": 1.28
+  },
+  "radiator": {
+   "area": 0.08594,
+   "triangles": 1552,
+   "tris_per_unit2": 18059.8,
+   "edges_per_unit2": 17780.6,
+   "texels_per_unit2": 17889649.8,
+   "atlas": "parts",
+   "paint_detail_share": 0.222,
+   "tris_per_unit2_vs_hull": 1.25,
+   "edges_per_unit2_vs_hull": 1.16,
+   "texels_per_unit2_vs_hull": 2.06,
+   "paint_detail_share_vs_hull": 0.74
+  },
+  "engine": {
+   "area": 0.24025,
+   "triangles": 9008,
+   "tris_per_unit2": 37493.7,
+   "edges_per_unit2": 25806.0,
+   "texels_per_unit2": 16353888.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.342,
+   "tris_per_unit2_vs_hull": 2.6,
+   "edges_per_unit2_vs_hull": 1.68,
+   "texels_per_unit2_vs_hull": 1.88,
+   "paint_detail_share_vs_hull": 1.14
+  },
+  "thruster": {
+   "area": 0.00736,
+   "triangles": 1264,
+   "tris_per_unit2": 171769.8,
+   "edges_per_unit2": 98115.4,
+   "texels_per_unit2": 17489657.4,
+   "atlas": "parts",
+   "paint_detail_share": 0.472,
+   "tris_per_unit2_vs_hull": 11.9,
+   "edges_per_unit2_vs_hull": 6.37,
+   "texels_per_unit2_vs_hull": 2.01,
+   "paint_detail_share_vs_hull": 1.57
+  },
+  "lamp": {
+   "area": 0.00398,
+   "triangles": 560,
+   "tris_per_unit2": 140531.3,
+   "edges_per_unit2": 120455.4,
+   "texels_per_unit2": 18074753.1,
+   "atlas": "parts",
+   "paint_detail_share": 0.497,
+   "tris_per_unit2_vs_hull": 9.74,
+   "edges_per_unit2_vs_hull": 7.83,
+   "texels_per_unit2_vs_hull": 2.08,
+   "paint_detail_share_vs_hull": 1.66
+  },
+  "hatch": {
+   "area": 0.00575,
+   "triangles": 1520,
+   "tris_per_unit2": 264286.1,
+   "edges_per_unit2": 197519.1,
+   "texels_per_unit2": 16961226.4,
+   "atlas": "parts",
+   "paint_detail_share": 0.471,
+   "tris_per_unit2_vs_hull": 18.32,
+   "edges_per_unit2_vs_hull": 12.83,
+   "texels_per_unit2_vs_hull": 1.95,
+   "paint_detail_share_vs_hull": 1.57
+  }
+ }
+}

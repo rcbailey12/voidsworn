@@ -1,0 +1,6 @@
+start Fri 11/20/2026  8:02:20.75 pin 46ddbe90b1c77bc9eb1bc933c83845040c7d016e 
+S8 pin ok 
+S8 FAILED, see opus1158e8\out\result.txt 
+S9 pin ok 
+S9 FAILED, see opus1158e9\out\result.txt 
+all done Fri 11/20/2026  8:31:48.80 

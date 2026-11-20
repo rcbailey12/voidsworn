@@ -1,0 +1,16 @@
+wrote C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\concept.png (1024, 1024)
+[fit] 128 0.7403 {'az': 55.901, 'el': 32.175, 'roll': -8.275, 'dist': 2.645, 'focal': 2571.233, 'cx': 622.676, 'cy': 462.55}
+[fit] 256 0.7512 {'az': 56.412, 'el': 34.224, 'roll': -7.93, 'dist': 2.56, 'focal': 2591.634, 'cx': 616.506, 'cy': 463.483}
+[fit] 512 0.7519 {'az': 56.645, 'el': 34.535, 'roll': -7.769, 'dist': 2.552, 'focal': 2594.771, 'cx': 616.339, 'cy': 464.459}
+[fit] B0 overlap at the fitted camera 0.7512 at round 3 hero camera framed 0.4008
+The hull is the build sheet voidsworn_S9: no tune. 
+  outline S9: bow 52.9, midship 73.8, stern 43.7, whole 57.7 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 51.9, midship 51.2, stern 55.7
+  REPORT bow overlap 52.9 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 73.8 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 43.7 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 57.7 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+REPORT S9 outline overlap 57.7 percent, outline_gate 90 is context only (not a pass bar)
+The overlay is C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9\sil\sil_S9.png (green both, red concept only, yellow ship only).
+Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)
