@@ -87,6 +87,11 @@ assert(code.filter(l => /^powershell .*battle_opts\.json','board_look\.cfg.*real
 assert(code.some(l => /^type "%P%\\real_opts_after\.txt" >> "%RES%"$/.test(l.s)), 'the hashes go into result.txt');
 assert(code.some(l => /set "FAILED=%OPTSBAD%"/.test(l.s)), 'a change to the real options fails the job');
 assert(undo.some(l => /^echo set "APPDATA=%B%\\undo_profile\\Roaming"$/.test(l.s)), 'the undo bat runs in a throwaway profile too');
+// PR 1312 run one: build\godot has no tools folder, so the shots step names tools_live's stamp tool and python itself
+const iStamp = main.findIndex(l => /^set "PICTURE_STAMP_TOOL=%V%\\tools_live\\%TLV%\\picture_provenance\.py"$/.test(l.s));
+const iShots = main.findIndex(l => /a4_shots\.tscn/.test(l.s));
+assert(iStamp >= 0 && iStamp < iShots && main.some(l => /^set "PICTURE_PYTHON=%BPY%"$/.test(l.s)), 'the shots step sets PICTURE_STAMP_TOOL and PICTURE_PYTHON before it runs');
+pass('the shots step uses tools_live\'s stamp tool and the Blender python');
 pass('Ryan\'s real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail');
 
 const py = ['python3', 'python'].map(c => spawnSync(c, ['-B', path.join(ROOT, 'tools/recipe/test/publish_ship_selftest.py')], { encoding: 'utf8' })).find(r => !r.error);
