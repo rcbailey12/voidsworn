@@ -1,0 +1,7 @@
+chain start Fri 11/20/2026 11:20:19.98 
+mirror fetch exit 0
+23edc0aa02313dbb49475a6c87bf585c97101661 reachable in the mirror
+1291 C11 B start 11:20:20.98 
+1291 C11 B exit 0 at 11:34:33.04 
+after-job janitor ran, output in janitor_after_1119az.txt 11:34:33.51 
+all done Fri 11/20/2026 11:34:33.51 

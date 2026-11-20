@@ -1,0 +1,120 @@
+{
+ "cell": "C11",
+ "route": "build sheet chorus_C11 + the chorus paint stack (kits/chorus/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 100.5,
+ "geometry_seconds": 9.0,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 12,
+  "part_objects": 77,
+  "glow_objects": 23,
+  "interior_objects": 29,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 10.7,
+  "bake_H_albedo_s": 8.2,
+  "bake_H_orm_s": 6.6,
+  "bake_H_normal_s": 14.4,
+  "zones_H": [
+   "bone",
+   "carapace",
+   "carapace_joint",
+   "flesh",
+   "flesh2",
+   "tissue"
+  ],
+  "bake_P_masks_s": 8.9,
+  "bake_P_albedo_s": 8.1,
+  "bake_P_orm_s": 6.9,
+  "bake_P_normal_s": 12.9,
+  "zones_P": [
+   "chitin",
+   "flesh",
+   "flesh2",
+   "maw",
+   "pore",
+   "tissue"
+  ],
+  "glow_materials": [
+   "chorus_light_bile",
+   "chorus_light_bilewet",
+   "chorus_light_maw_amber",
+   "chorus_light_maw_amber_wet",
+   "chorus_light_membrane"
+  ],
+  "inside_materials": [
+   "chorus_inside_bonefr",
+   "chorus_inside_engroom",
+   "chorus_inside_ganglion",
+   "chorus_inside_gland",
+   "chorus_inside_gut",
+   "chorus_inside_organ",
+   "chorus_inside_septum",
+   "chorus_inside_vat"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.6063,
+    "area": 2.69034,
+    "texels_per_unit2": 3780843.4
+   },
+   "parts": {
+    "uv_share": 0.3383,
+    "area": 1.51148,
+    "texels_per_unit2": 3754853.3
+   }
+  },
+  "stack_seconds": 89.1
+ },
+ "density": {
+  "paint_flags": [],
+  "mesh_flags": [
+   "sac: tris_per_unit2 35230.9 is 0.51 of the hull's 68578.6"
+  ],
+  "hull": {
+   "area": 2.69034,
+   "triangles": 184500,
+   "tris_per_unit2": 68578.6,
+   "edges_per_unit2": 9784.6,
+   "texels_per_unit2": 3780843.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 44.23,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "chorus_C11",
+  "game_ship": "b_razor",
+  "variant": "",
+  "model_length": 14.50971,
+  "scale": 0.06891934543132365,
+  "length_world": 14.5,
+  "t_lines": [
+   -0.04135,
+   0.20676
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 5,
+  "guns": 3,
+  "engines": 6,
+  "bays": 0,
+  "points": 11,
+  "turrets": [],
+  "interior_objects": 29,
+  "slots": [
+   "0 tendril T",
+   "1 bioplasma F"
+  ]
+ },
+ "triangles": 315930,
+ "objects": 112,
+ "surfaces": 7,
+ "draw_calls_merged": 7
+}

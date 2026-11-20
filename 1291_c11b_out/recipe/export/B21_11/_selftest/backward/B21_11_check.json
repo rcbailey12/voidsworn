@@ -1,0 +1,392 @@
+{
+ "ok": false,
+ "problems": [
+  "hp_w0_tendril_T_0 rests aimed backward (x -1.00)"
+ ],
+ "notes": [
+  "authored interiors: 14408 triangles, 9 surfaces; authored seams: 2",
+  "194238 triangles (102802 on part surfaces), box x -0.495 to 0.505, y -0.171 to 0.327, z -0.256 to 0.252",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 0 written (none); marked by the kit: none"
+ ],
+ "cls": "Cruiser",
+ "faction": "chorus",
+ "expected_breach": 4,
+ "required": {
+  "weapon_slots": 2,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 4,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "tendril",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_tendril_T_0",
+    "hp_w0_tendril_T_1",
+    "hp_w0_tendril_T_2"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "hard_points": [
+    "hp_w1_bioplasma_F_0",
+    "hp_w1_bioplasma_F_1"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "board": 2,
+  "breach": 4,
+  "core": 1,
+  "engine": 6,
+  "rcs": 4,
+  "gun": 5
+ },
+ "maps": [],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_board_0",
+   "p": [
+    0.0548,
+    0.0172,
+    -0.1804
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.0548,
+    0.0172,
+    0.1809
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.2756,
+    0.0159,
+    -0.1978
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.111,
+    -0.994
+   ],
+   "clear": 0.0559
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.096,
+    -0.1134,
+    0.1188
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.832,
+    0.555
+   ],
+   "clear": 0.0351
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    -0.1001,
+    -0.1038,
+    -0.0614
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.155,
+    -0.988
+   ],
+   "clear": 0.0384
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    -0.2714,
+    -0.0637,
+    0.0394
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.789,
+    0.615
+   ],
+   "clear": 0.0312
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.0413,
+    -0.0034,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.3858,
+    0.0193,
+    -0.0358
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0063
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.3858,
+    -0.0165,
+    -0.0358
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0061
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.3858,
+    0.0372,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.006
+  },
+  {
+   "name": "hp_eng_3",
+   "p": [
+    -0.3858,
+    -0.0344,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0061
+  },
+  {
+   "name": "hp_eng_4",
+   "p": [
+    -0.3858,
+    0.0193,
+    0.0358
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.006
+  },
+  {
+   "name": "hp_eng_5",
+   "p": [
+    -0.3858,
+    -0.0165,
+    0.0358
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0059
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.3136,
+    -0.0965,
+    -0.1627
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.3136,
+    -0.095,
+    0.1601
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_2",
+   "p": [
+    -0.2726,
+    0.0213,
+    -0.0758
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_3",
+   "p": [
+    -0.2726,
+    0.0211,
+    0.0748
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_tendril_T_0",
+   "p": [
+    -0.2795,
+    0.3138,
+    -0.135
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_tendril_T_1",
+   "p": [
+    -0.2594,
+    0.2972,
+    -0.0821
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_tendril_T_2",
+   "p": [
+    -0.2416,
+    0.2939,
+    0.0196
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w1_bioplasma_F_0",
+   "p": [
+    0.4347,
+    -0.0193,
+    -0.0841
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w1_bioplasma_F_1",
+   "p": [
+    0.4347,
+    -0.0193,
+    0.0841
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  }
+ ],
+ "turrets": []
+}

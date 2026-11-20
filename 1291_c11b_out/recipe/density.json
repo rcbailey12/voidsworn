@@ -1,0 +1,96 @@
+{
+ "summary": {
+  "paint_flags": [],
+  "mesh_flags": [
+   "sac: tris_per_unit2 35230.9 is 0.51 of the hull's 68578.6"
+  ],
+  "hull": {
+   "area": 2.69034,
+   "triangles": 184500,
+   "tris_per_unit2": 68578.6,
+   "edges_per_unit2": 9784.6,
+   "texels_per_unit2": 3780843.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 44.23,
+  "paint_top": 0.3
+ },
+ "types": {
+  "hull": {
+   "area": 2.69034,
+   "triangles": 184500,
+   "tris_per_unit2": 68578.6,
+   "edges_per_unit2": 9784.6,
+   "texels_per_unit2": 3780843.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "spinal": {
+   "area": 0.42492,
+   "triangles": 24112,
+   "tris_per_unit2": 56745.2,
+   "edges_per_unit2": 39628.9,
+   "texels_per_unit2": 3762601.3,
+   "atlas": "parts",
+   "paint_detail_share": 0.351,
+   "tris_per_unit2_vs_hull": 0.83,
+   "edges_per_unit2_vs_hull": 4.05,
+   "texels_per_unit2_vs_hull": 1.0,
+   "paint_detail_share_vs_hull": 1.17
+  },
+  "gun": {
+   "area": 0.19642,
+   "triangles": 16168,
+   "tris_per_unit2": 82314.9,
+   "edges_per_unit2": 60188.5,
+   "texels_per_unit2": 3742476.1,
+   "atlas": "parts",
+   "paint_detail_share": 0.389,
+   "tris_per_unit2_vs_hull": 1.2,
+   "edges_per_unit2_vs_hull": 6.15,
+   "texels_per_unit2_vs_hull": 0.99,
+   "paint_detail_share_vs_hull": 1.3
+  },
+  "sac": {
+   "area": 0.82257,
+   "triangles": 28980,
+   "tris_per_unit2": 35230.9,
+   "edges_per_unit2": 11650.0,
+   "texels_per_unit2": 3748705.3,
+   "atlas": "parts",
+   "paint_detail_share": 0.31,
+   "tris_per_unit2_vs_hull": 0.51,
+   "edges_per_unit2_vs_hull": 1.19,
+   "texels_per_unit2_vs_hull": 0.99,
+   "paint_detail_share_vs_hull": 1.03
+  },
+  "thruster": {
+   "area": 0.01313,
+   "triangles": 2304,
+   "tris_per_unit2": 175483.3,
+   "edges_per_unit2": 79515.8,
+   "texels_per_unit2": 3853359.5,
+   "atlas": "parts",
+   "paint_detail_share": 0.341,
+   "tris_per_unit2_vs_hull": 2.56,
+   "edges_per_unit2_vs_hull": 8.13,
+   "texels_per_unit2_vs_hull": 1.02,
+   "paint_detail_share_vs_hull": 1.14
+  },
+  "engine": {
+   "area": 0.05444,
+   "triangles": 5472,
+   "tris_per_unit2": 100509.2,
+   "edges_per_unit2": 52899.6,
+   "texels_per_unit2": 3808169.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.404,
+   "tris_per_unit2_vs_hull": 1.47,
+   "edges_per_unit2_vs_hull": 5.41,
+   "texels_per_unit2_vs_hull": 1.01,
+   "paint_detail_share_vs_hull": 1.35
+  }
+ }
+}

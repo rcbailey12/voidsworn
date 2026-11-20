@@ -1,0 +1,6 @@
+[armadillo] 15 bands, 52 runs, 1 steps clamped
+Info: Saved as "C11.blend"
+[209] {"cell": "C11", "hull_objects": 12, "parts": 100, "interiors": 29, "seconds": 9.0, "notes": [{"route": "build sheet chorus_C11", "contract": {"sheet": "chorus_C11", "game_ship": "b_razor", "variant": "", "model_length": 14.50971, "scale": 0.06891934543132365, "length_world": 14.5, "t_lines": [-0.04135, 0.20676], "l_line": [], "l_lines": [], "muzzles": 5, "guns": 3, "engines": 6, "bays": 0, "points": 11, "turrets": [], "interior_objects": 29, "slots": ["0 tendril T", "1 bioplasma F"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
