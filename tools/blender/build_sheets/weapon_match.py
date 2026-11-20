@@ -54,7 +54,7 @@ FITS = {
     'ion': ({'ion_trench'}, {'fixed'}),                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
     'pulsar': ({'gun'}, {'fixed', 'turret'}),                 # lance: Glasswright bow waveguide or grown turning optic (CD5, issue 912)
     'turbo': ({'gun'}, {'turret', 'casemate'}),               # battery: the Hegemony plasma lance (issue 768: the Iron Mandate's bridge turret)
-    'tendril': ({'tendril', 'mane'}, {'turret', 'fixed'}),    # bio: a tendril crown turns; the mane is a fixed organ
+    'tendril': ({'tendril', 'mane', 'drape'}, {'turret', 'fixed'}),   # bio: a tendril crown turns; the mane and C12's drape are fixed organs
     # squadron craft (issue 769, R253: own fighter and bomber models per faction; data.js fighter and bomber, both arc T)
     'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
     'bombs': ({'bomb_tube'}, {'launcher'}),                   # sq: a bomber's bomb tubes, fixed forward in the bow cassette
