@@ -2208,7 +2208,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		"peel": _peel(fx, s, T, timeline)
 		"drumbeat": _drumbeat(fx, s, T, timeline)
 		"patch": _patch_tear(fx, s, T, timeline)
-		"arc": fx.later(T + float(timeline.cut), _arcs.bind(fx, s, at, axis))
+		"arc": fx.later(T + float(timeline.cut), _arcs.bind(fx, s))
 	if s.death_big:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
 	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN) if s.death_big else _small_hit(fx, s)
@@ -2981,20 +2981,43 @@ static func _patch_plate(fx, s) -> void:
 
 
 # R367 round 2: the Hegemony Navy breaks with no fire in the gap: blue-white arcs jump it for a third of a second as the
-# pieces part, pinned at both torn faces (the shared lightning ribbon). `at` and `axis` are the break line, ship frame.
-static func _arcs(fx, s, at: Vector3, axis: Vector3) -> void:
-	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or fx.quality == "low": return
-	var h = s.hull
-	var col := dcol(s, "spark", Color(0.7, 0.88, 1.0))
+# pieces part. Each arc runs from a point on one main piece's torn face to the nearest point on the next piece's torn face
+# (their arc_sites, read at the strike, so the arc follows the pieces as they move), the shared lightning ribbon pinned at
+# both ends. Before the wreck exists (the cut still finishing) it waits a beat, up to a second.
+static func _arcs(fx, s, tries := 0) -> void:
+	if fx.ships.get(s.id) != s or fx.quality == "low": return
+	var wreck: Dictionary = {}
+	for w in fx.dstate.get("wrecks", []):
+		if w.get("id", "") == s.id and not w.get("hulk", false): wreck = w
+	var nodes: Array = []
+	for nd in wreck.get("nodes", []):
+		if is_instance_valid(nd) and (nd as Node3D).has_meta("arc_sites"): nodes.append(nd)
+	if nodes.size() < 2:
+		if tries < 20: fx.later(fx.now + 0.05, _arcs.bind(fx, s, tries + 1))
+		return
 	var n := 8 if s.death_tier == "capital" else (6 if s.death_big else 3)
-	var ax: Vector3 = (s.xf().basis * axis).normalized()
-	var gap: float = h.L * 0.07
+	s.set_meta("death_arcs", [])
 	for j in n:
-		var off := Vector3(0.0, h.H * fx.rng.randf_range(-0.35, 0.35), h.W * fx.rng.randf_range(-0.4, 0.4))
-		var mid: Vector3 = s.to_world(at + off)
-		var tilt: Vector3 = (ax + fx.rdir() * 0.35).normalized()
-		fx.rib(mid - tilt * gap * 0.5, tilt, gap * fx.rng.randf_range(0.8, 1.4), fx.now + 0.33 * float(j) / float(n), 0.12, col, 2.2,
-			maxf(h.L * 0.004, 0.04), maxf(h.L * 0.003, 0.03), 6)
+		fx.later(fx.now + 0.33 * float(j) / float(n), _arc_strike.bind(fx, s, weakref(nodes[0]), weakref(nodes[1])))
+
+
+static func _arc_strike(fx, s, ra: WeakRef, rb: WeakRef) -> void:
+	var na = ra.get_ref()
+	var nb = rb.get_ref()
+	if not is_instance_valid(na) or not is_instance_valid(nb): return
+	var sa: PackedVector3Array = (na as Node3D).get_meta("arc_sites")
+	var sb: PackedVector3Array = (nb as Node3D).get_meta("arc_sites")
+	if sa.is_empty() or sb.is_empty(): return
+	var a: Vector3 = (na as Node3D).to_global(sa[fx.rng.randi() % sa.size()])
+	var b: Vector3 = (nb as Node3D).to_global(sb[0])
+	for q in sb:
+		var w: Vector3 = (nb as Node3D).to_global(q)
+		if w.distance_to(a) < b.distance_to(a): b = w
+	var d: float = a.distance_to(b)
+	if d < 1e-3: return
+	var L: float = s.hull.L
+	fx.rib(a, (b - a) / d, d, fx.now, 0.12, dcol(s, "spark", Color(0.7, 0.88, 1.0)), 2.2, maxf(L * 0.004, 0.04), maxf(L * 0.003, 0.03), 6)
+	(s.get_meta("death_arcs", []) as Array).append([a, b, na, nb])
 
 
 # R367 (issue 1399): an Eclipse hull peels during the tell: shade plates lift away band by band, a beat apart, from the
@@ -3307,6 +3330,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var face_view := Vector3(0, 1, 1).normalized()
 		if is_instance_valid(fx.camera): face_view = node.to_local(fx.camera.global_position).normalized()
 		node.set_meta("tear_site", _edge_sites(pc, cen, face_view, 1)[0] + face_view * h.L * 0.02)
+		# R367 round 2: a Hegemony break's arcs are pinned to points on each piece's own torn face (Artoo on PR 1418)
+		if str(dstyle(s).get("style", "")) == "arc": node.set_meta("arc_sites", _edge_sites(pc, cen, face_view, 8))
 		# Separate on the board plane while allowing each piece to tumble freely.
 		var out: Vector3 = cen - h.c
 		out.y = 0.0

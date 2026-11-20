@@ -63,6 +63,7 @@ func _run() -> void:
 	check(int(sun["sprites_before_split"]) >= int(today["sprites_before_split"]) + 5, "voidsworn: a row of magazine pops before the split (%d sprites against plain %d)" % [sun["sprites_before_split"], today["sprites_before_split"]])
 	# Hegemony
 	check(int(heg["ribbons"]) >= int(today["ribbons"]) + 6, "hegemony: arcs jump the gap (%d ribbons against plain %d)" % [heg["ribbons"], today["ribbons"]])
+	check(int(heg.get("arcs", 0)) >= 6 and int(heg.get("arcs_pinned", 0)) == int(heg.get("arcs", 0)), "hegemony: every arc ran from one piece's torn face to the other's (%d of %d pinned)" % [heg.get("arcs_pinned", 0), heg.get("arcs", 0)])
 	check((heg["ember"] as Vector3).z > 0.9 if heg.get("ember") is Vector3 else false, "hegemony: its tear is blue-white")
 	# Hullbreakers
 	check(int(ash["plates_before_split"]) > int(today["plates_before_split"]), "corsair: patch plates tear loose before the split (%d against plain %d)" % [ash["plates_before_split"], today["plates_before_split"]])
@@ -108,6 +109,8 @@ func _kill(fac: String) -> Dictionary:
 	var res := {"fac": fac, "pics": 0, "styled": 0, "prism": false, "smoke": 0, "n_frag": int(plan.get("n_frag", 0)),
 		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0, "sprites_before_split": 0, "ribbons": 0}
 	var split_seen := false
+	var arcs_seen := 0
+	var arcs_pinned := 0
 	for i in 7 * 60:
 		fx.step(1.0 / 60.0)
 		await process_frame
@@ -122,6 +125,20 @@ func _kill(fac: String) -> Dictionary:
 			res["plates_before_split"] = (fx.dstate.get("debris_awake", {}) as Dictionary).size()
 			res["sprites_before_split"] = _emitted(fx, "spr") - spr0
 			split_seen = s.has_meta("death_hidden")
+		# each new arc's two ends sit on two different pieces' torn faces in the frame it strikes (within 5 percent of the length)
+		var live: Array = s.get_meta("death_arcs", [])
+		while arcs_seen < live.size():
+			var arc: Array = live[arcs_seen]
+			arcs_seen += 1
+			var ok: bool = arc[2] != arc[3]
+			for e in 2:
+				var nd = arc[2 + e]
+				if not is_instance_valid(nd): ok = false; continue
+				var best := INF
+				for q in ((nd as Node3D).get_meta("arc_sites") as PackedVector3Array):
+					best = minf(best, (arc[e] as Vector3).distance_to((nd as Node3D).to_global(q)))
+				if best > s.hull.L * 0.05: ok = false
+			if ok: arcs_pinned += 1
 		for n in fx.get_children():
 			if not (n is MeshInstance3D) or not n.visible or seen.has(n.get_instance_id() * 1000 + int(n.get_meta("pic_gen", 0))): continue
 			var nm := String(n.name)
@@ -136,6 +153,9 @@ func _kill(fac: String) -> Dictionary:
 			if nm == "fx_beat_impact": res["smoke"] += 1
 	res["streaks"] = _emitted(fx, "stk") - streaks0
 	res["ribbons"] = _emitted(fx, "rib") - rib0
+	var arcs: Array = s.get_meta("death_arcs", [])
+	res["arcs"] = arcs.size()
+	res["arcs_pinned"] = arcs_pinned
 	for w in fx.dstate.get("wrecks", []):
 		if w["id"] != "k": continue
 		for nd in w["nodes"]:
