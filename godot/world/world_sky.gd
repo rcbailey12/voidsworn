@@ -116,8 +116,19 @@ static func planet_variant(s0: Dictionary, sector_key: String) -> Dictionary:
 	var s := s0.duplicate(true)
 	if absi(hash(sector_key)) % 2 == 1:
 		var i := int(s["planet_i"]) % PLANETS_ALT.size()
+		s["planet_base_i"] = int(s["planet_i"])
 		s["planet_i"] = i + PLANETS.size()
 		s["planet"] = PLANETS_ALT[i]
+	return s
+
+
+# The sector's own base planet look (undoes planet_variant), for boards that keep today's look.
+static func base_planet(s0: Dictionary) -> Dictionary:
+	if not s0.has("planet_base_i"): return s0
+	var s := s0.duplicate(true)
+	s["planet_i"] = int(s["planet_base_i"])
+	s["planet"] = PLANETS[s["planet_i"]]
+	s.erase("planet_base_i")
 	return s
 
 

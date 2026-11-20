@@ -51,6 +51,7 @@ func _initialize() -> void:
 	var looks := {}
 	var moods := {"plain": 0, "rival": 0, "boss": 0, "salvage": 0}
 	var runs := 40
+	var exempt_checked := 0
 	var min_gap := {}
 	for seed in range(1, runs + 1):
 		JSM.rnd_seed(seed)
@@ -67,6 +68,12 @@ func _initialize() -> void:
 			var base: Dictionary = SKY.setting(m["biome"], str(m["fac"]), "open", false, 0)
 			today[str(base["planet_i"]) + "|" + _sky_key(base)] = true
 			var sector_s: Dictionary = WORLD.sector_setting(C.RUN)
+			# dead-star boards and the dawn finale keep main's look exactly: today's sector setting, base planet, no mood
+			var boss_stop := {"kind": "boss", "fac": str(m["fac"]), "sector_fac": str(m["fac"]), "node": "9|3"}
+			for exempt in [[{"stop": boss_stop, "finale": true}, false], [{"stop": boss_stop}, true]]:
+				var got: Dictionary = WORLD.stop_setting(sector_s, exempt[0], exempt[1], "open")
+				check(var_to_str(got) == var_to_str(base), "seed %d sector %d: %s keeps main's setting" % [seed, sector, "dead star" if exempt[1] else "dawn finale"])
+				exempt_checked += 1
 			looks[int(sector_s["planet_i"])] = true
 			var plain_sky := {}
 			var by_mood := {}
@@ -106,6 +113,7 @@ func _initialize() -> void:
 	print("STOP_SKY campaigns %d | backdrop vistas per campaign: today %.1f, now %.1f | planet looks seen %d of %d | stops plain %d rival %d boss %d salvage %d" % [
 		runs, float(today_total) / runs, float(new_total) / runs, looks.size(), SKY.PLANETS.size() + SKY.PLANETS_ALT.size(),
 		moods["plain"], moods["rival"], moods["boss"], moods["salvage"]])
+	print("STOP_SKY dead-star and finale settings identical to main: %d of %d" % [exempt_checked - fails, exempt_checked])
 	print("STOP_SKY smallest sky change from a plain stop of the same sector: ", min_gap)
 	check(float(new_total) / runs >= 2.0 * float(today_total) / runs, "a campaign shows at least twice today's vistas")
 	check(looks.size() > SKY.PLANETS.size(), "campaigns show more planet looks than the eight base ones")

@@ -98,6 +98,14 @@ static func sector_setting(run: Dictionary) -> Dictionary:
 	return SKY.planet_variant(SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0), key)
 
 
+# Issue 1272: the stop's mood and framing on the sector setting. Dead-star boards and the dawn finale are exempt and keep
+# the sector's own look, base planet included (RULEBOOK 10.10, issue 1271).
+static func stop_setting(s: Dictionary, opts: Dictionary, deadstar: bool, map_kind: String) -> Dictionary:
+	if deadstar or bool(opts.get("finale", false)): return SKY.base_planet(s)
+	if opts.get("stop") is Dictionary: return SKY.stop_mood(s, opts["stop"], map_kind)
+	return s
+
+
 func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
 	quality = q
 	setting = sector_setting(run)
@@ -205,7 +213,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	setting["yaw"] = SKY.setting(biome, fac, mk, deadstar, bseed)["yaw"]
 	setting["deadstar"] = deadstar
 	setting["map"] = mk
-	if opts.get("stop") is Dictionary: setting = SKY.stop_mood(setting, opts["stop"], mk)   # issue 1272
+	setting = stop_setting(setting, opts, deadstar, mk)   # issue 1272
 	_yaw = float(setting["yaw"])
 	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
