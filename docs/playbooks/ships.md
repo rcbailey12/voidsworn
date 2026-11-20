@@ -204,6 +204,15 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
    treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
    later Sunward build.
+15. **A build is not "in" until build\godot holds it (issue 1311, Board, Nov 20 2026).** A ship job installs only into its
+   own clone. After Ryan says yes to its pictures, the Board queues `tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA`
+   with the full commit from the job's receipt and the full glb sha256 from its export's CODE_export.json. It refuses a
+   receipt that is not a passed ship_job run of exactly that commit (tail "all done", or "all done" then "pin ok COMMIT"),
+   and an export whose files are not the listed hashes or not what the job checked. It keeps the old ship and its cache
+   scenes in build\godot\_replaced\CODE_<stamp>\ with an UNDO_CODE.bat, installs through manifest_merge.py --install,
+   rebuilds the ship cache, reads it back and takes the in-game shots from build\godot. The undo restores only that ship's
+   files and manifest rows, under the install lock, and refuses if the ship changed since. Why: Ryan accepted Warden S9 and
+   CD5 on Nov 19, but build\godot still held their Nov 1 hulls, and a capture job drew the old CD5.
 
 ### Named variant parts (issue 812)
 
@@ -413,6 +422,7 @@ we don't run into the issues of before with just empty looking husks". What he w
 | F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Opus worker or Codex renders, Board looks, Ryan's eye decides |
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
+| I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
 
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
