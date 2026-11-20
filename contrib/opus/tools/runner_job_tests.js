@@ -713,7 +713,8 @@ foreach ($lane in @('board_c','board_d','slot_deepseek','slot_openai','board_b')
     $gitLog = [IO.File]::ReadAllText((Join-Path $out 'git_log.txt'))
     $result = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
     $status = (& $script:git -C $slot status --porcelain=v1 2>&1 | Select-Object -First 10) -join ' | '
-    throw ("$lane keeps code: slot holds [$seen]; status [$status]; result [$result]; git log [$gitLog]" -replace "\r?\n", " / ")
+    [Console]::Error.WriteLine(("DIAG $lane keeps code: slot holds [$seen]; status [$status]; result [$result]; git log [$gitLog]" -replace '[\r\n]+', ' / '))
+    throw "$lane keeps code (see DIAG line)"
   }
   foreach ($name in $paths) {
     Assert ((Test-Path -LiteralPath (Join-Path $slot $name)) -eq ($lane -eq 'board_b')) "$lane checks out the right paths: $name"
