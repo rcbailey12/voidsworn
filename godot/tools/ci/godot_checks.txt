@@ -111,6 +111,7 @@ headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target previe
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
+headless|main/test/finale_runs_check.gd|-|-|issue 1271: the dawn finale flag is off on run 4 and on for runs 5, 6 and 9, and battle.gd lights dawn only for the sector 3 boss
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
@@ -118,6 +119,7 @@ headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 1021: KEEL battle H
 headless|ui/career/test/career_readability_test.gd|-|-|issue 729: the Career screen's dim BONE3 labels are 4.5 to 1 or better on their card, the panels and the screen behind them at 1080 and 1440, measured like ledger_readability_test.gd
 headless|ui/career/test/career_honours_test.gd|-|-|issue 869: CR4 opens without writing saves, word tab keys, six labelled figures, Sunward crests, all factions, fourth hero row and long records at 1080 1440 and 2160
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn
+headless|scenes/battle/test/wreck_hex_check.gd|-|-|issue 1236: a cruiser and a dreadnought die in a real battle at quality low and max; every rules wreck gets a board wreck (hex, terrain, edge, anchor), something of it stays on the board, no death piece goes past the hex or where it was born, the settled wreck's real hull stays inside its hex's six edges (big hulls draw together, Ryan Nov 20), a piece's limit is read before its first move (Artoo), and a death with no pieces gets the burnt hulk
 gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window

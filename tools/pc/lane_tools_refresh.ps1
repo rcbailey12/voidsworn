@@ -19,7 +19,7 @@ $liveTools = Join-Path $root "$Build\tools"
 $liveRoot = Join-Path $root 'tools_live'
 $keepBackups = 3
 # The watchdog, slot and step helper files a job runs; hashcheck strict stops a job when one differs (issue 1194).
-$hashedFiles = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat', 'runner_common.ps1')
+$hashedFiles = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat', 'runner_common.ps1', 'jobs\opus_job_head.bat', 'jobs\opus_job_head.ps1')
 $logPath = Join-Path $root 'lane_tools_refresh.txt'
 $sourceRoot = Join-Path $root 'lane_tools_source'
 $sourceRepo = Join-Path $sourceRoot 'main.git'
