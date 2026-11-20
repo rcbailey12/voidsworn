@@ -136,7 +136,7 @@ func _three(prepared: bool) -> Dictionary:
 	var w := await _window(12 * 60)
 	# the effect-clock time after the kill when Jolt's active body count last reached 0 and stayed there
 	var rest_at := -1.0
-	var act: Array = w["active_bodies"]
+	var act: Array = w["awake_fx_bodies"]
 	var times: Array = w["fx_t"]
 	for i in range(act.size() - 1, -1, -1):
 		if int(act[i]) > 0:
@@ -197,12 +197,24 @@ func _awake_plates() -> int:
 	return n
 
 
+# Godot's PHYSICS_3D_ACTIVE_OBJECTS monitor reads 0 under Jolt (TIMING4 on the PC: 0 on every frame, both commits), so the
+# rest gate counts fx's own moving bodies: awake plates plus wreck sections still simulated (processing, not frozen,
+# not asleep).
+func _awake_bodies() -> int:
+	var n := _awake_plates()
+	for wr in bench.fx.dstate.get("wrecks", []):
+		for nd in wr.get("nodes", []):
+			if is_instance_valid(nd) and nd is RigidBody3D and nd.can_process() and not nd.freeze and not nd.sleeping: n += 1
+	return n
+
+
 func _window(frames: int) -> Dictionary:
 	var wall: Array = []
 	var gpu: Array = []
 	var cpu: Array = []
 	var bodies: Array = []
 	var plates: Array = []
+	var fxbodies: Array = []
 	var ft: Array = []
 	var vrid: RID = bench.vp.get_viewport_rid()
 	for i in frames:
@@ -211,10 +223,11 @@ func _window(frames: int) -> Dictionary:
 		cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(vrid))
 		bodies.append(int(Performance.get_monitor(Performance.PHYSICS_3D_ACTIVE_OBJECTS)))
 		plates.append(_awake_plates())
+		fxbodies.append(_awake_bodies())
 		ft.append(snappedf(bench.fx.now, 0.001))
 	return {"frames": frames, "wall": _stats(wall), "gpu": _stats(gpu), "render_cpu": _stats(cpu),
 		"wall_ms": wall.map(func(x: float) -> float: return snappedf(x, 0.01)), "gpu_ms": gpu.map(func(x: float) -> float: return snappedf(x, 0.01)),
-		"active_bodies": bodies, "awake_plates": plates, "fx_t": ft}
+		"active_bodies": bodies, "awake_plates": plates, "awake_fx_bodies": fxbodies, "fx_t": ft}
 
 
 func _stats(a: Array) -> Dictionary:
