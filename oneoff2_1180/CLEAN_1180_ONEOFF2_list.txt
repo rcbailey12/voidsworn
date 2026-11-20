@@ -1,0 +1,18 @@
+# Issue 1180 oneoff2 list. Evidence: probe_out/1180_oneoff2/probe_report.txt (board/pc-out-1119za, 61c037b5) and GitHub.
+# Format: <full path> | issue <N> | <evidence>
+# Board kept copies: git status fails "bad object HEAD"; no process; issue closed with a merged PR.
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-a96a526aa67d494fbbf7d841454ca0cb | issue 975 | 4.94 GB, bad HEAD, newest work file Nov 18 00:04, PR 977 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-cb9c4e3c05c8424cba7a86cb5a9de9cb | issue 1035 | 4.92 GB, bad HEAD, Nov 18 00:52, PR 1043 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-81506ef10ec64d3c96aa8cacc744b33c | issue 1044 | 4.95 GB, bad HEAD, Nov 18 08:22, PR 1049 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-64b7f32ffa4849c7a4bd726da6ea4cb4 | issue 1057 | 4.96 GB, bad HEAD, Nov 18 10:26, PR 1071 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-70f1a89ca7014f369e1696c81db59112 | issue 1059 | 4.97 GB, bad HEAD, Nov 18 11:49, PRs 1087 and 1126 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-aceb3473930c4e27ad65642d23ce25fa | issue 1065 | 4.97 GB, bad HEAD, Nov 18 12:10, PR 1127 merged
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-d084110f41ff45c69bea582ef588917c | issue 1082 | 4.97 GB, bad HEAD, Nov 18 14:07, PR 1103 merged
+# Board kept copies stopped mid Base merge (MERGE_HEAD); no process.
+C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-0007d7218e4a477fa27a2c925515cd68 | issue 1058 | 5.03 GB, conflicted Base merge, Nov 18 21:53, superseded (PR 1083 closed for 1242, Board)
+C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-7103eb6705144c7da25ef676a676852a | issue 946 | 4.71 GB, conflicted Base merge, Nov 17 14:59, PR 1020 merged, issue closed
+C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-21f1637f37cd4c49b04eae1a5492281b | issue 985 | 4.66 GB, conflicted Base merge, Nov 17 12:34, PR 993 merged, issue closed
+# Idle helper folders: PR merged, not on the Board active list, no process; unrelayed files are logs, caches or rebuildable.
+C:\Users\rcbai\Downloads\voidsworn_test\opus1204 | issue 1204 | 11.36 GB, PR 1216 merged, issue closed; unrelayed: bot_log.txt, import_log.txt, wait.txt, 2 .bat (1.3 MB)
+C:\Users\rcbai\Downloads\voidsworn_test\opus1217 | issue 1217 | 13.66 GB, PRs 1221 1222 1227 1229 1233 merged, issue closed; unrelayed 342 files: Godot profile caches (.cache, shader_cache, world_bakes .png), json, logs, 3 .bat (116 MB)
+C:\Users\rcbai\Downloads\voidsworn_test\opus1194 | issue 1194 | 0.12 GB, PR 1254 merged, issue closed; unrelayed: test copies of tools (rot_1 tools_live, lane_tools_source) (47 MB)
