@@ -1,0 +1,38 @@
+start ithar_CD5 I8_37 opus/issue-1183 Thu 11/19/2026 20:05:42.34 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close,cams FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   e50bf5213..ac624ead7  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119za  -> board/pc-out-1119za
+   93050fcda..b825840d8  opus/issue-1079      -> opus/issue-1079
+   05dc78046..99ad9e840  opus/issue-1183      -> opus/issue-1183
+   93050fcda..b825840d8  refs/pull/1181/head  -> refs/pull/1181/head
+ + 0e8d88c58...79711ff68 refs/pull/1181/merge -> refs/pull/1181/merge  (forced update)
+   05dc78046..99ad9e840  refs/pull/1184/head  -> refs/pull/1184/head
+ + e2983a835...cca28a573 refs/pull/1184/merge -> refs/pull/1184/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5c\repo
+commit=99ad9e840c14cbbb467b6ed545a5a5754f4a3f56
+import exit 0 
+1_concept_in start 20:10:48.49 
+1_concept_in exit 0 at 20:10:50.33 
+2_shape_ref start 20:10:50.33 
+2_shape_ref exit 0 at 20:10:51.60 
+3_trace_hull start 20:10:51.60 
+3_trace_hull exit 0 at 20:17:19.84 
+4_parts_kit start 20:17:19.84 
+4_parts_kit exit 0 at 20:17:56.55 
+5_paint_bake start 20:17:56.55 
+5_paint_bake exit 0 at 20:27:08.39 
+6_lod start 20:27:08.40 
+6_lod exit 0 at 20:28:23.49 
+7_export start 20:28:23.49 
+7_export exit 0 at 20:31:19.19 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5c\repo\godot\assets\ships\I8_37\I8_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 20:32:01.61 
+all done 
