@@ -14,6 +14,8 @@ headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep 
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches every calm gas shader at max, high and low when on (high is where 1210 picks its optimised cards); off and storm shaders unchanged
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
+headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets, rings and moons stay inside the camera far plane at r 900 with the widest pan, and rock fades read the live near plane
+headless|world/test/cloud_edge_check.gd|-|-|issue 1263: storm and nebula cloud footprints reach zero smoothly inside their texture on all four sides, so no cloud ends in a straight line
 headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
@@ -101,6 +103,7 @@ headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-
 headless|render/test/arrival_warm_check.gd|-|-|issue 1289: the arrival warm kit builds the reinforcement's hull into the effects for the load, then parks it hidden and keeps it loaded
 headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
+headless|render/test/hazard_edge_check.gd|-|-|issue 1267: the cine look draws a faint line round only the outer edge of nebula and storm patches (no inner, debris or rock edges), Z unchanged, and edge rebuilds keep it
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
 headless|render/test/parked_thrusters_check.gd|-|-|issue 1203: count jets and read the pilot glow over 30 seconds parked on the map and in battle, then verify that the drives light for travel and settle at arrival
 headless|assets/ships/test/station_size_check.gd|-|-|issue 975: an installed T2 is used at unit scale for the large station; the teaching station uses O1_37 at its own scale
@@ -119,6 +122,7 @@ headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
 headless|main/test/finale_runs_check.gd|-|-|issue 1271: the dawn finale flag is off on run 4 and on for runs 5, 6 and 9, and battle.gd lights dawn only for the sector 3 boss
 headless|world/test/stop_sky_check.gd|-|-|issue 1272: 40 seeded campaigns through three sectors: rival, boss and wreck-field stops each change the sky from a plain stop, the anchor planet stays, vistas per campaign rise from 3 and more than eight planet looks appear; no stop means no change
+headless|main/test/ai_level_fleet_check.gd|-|-|issue 1336: the campaign host rolls enemy fleets at the player's AI setting, and the map danger bands follow it with RAMP.vet on Veteran
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
