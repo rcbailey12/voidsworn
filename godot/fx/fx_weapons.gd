@@ -56,6 +56,9 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
 const CRIT_BEAT := 0.12
+# Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
+# shield failure's flash, so the two read as two beats instead of one orange smear
+const BREAK_HULL_BEAT := 0.08
 # F3 (feel pass, Ryan Nov 1: "effects looked very weak, especially at a distance and for smaller ships"): the size every
 # effect is drawn at follows the ship (scale_k, a frigate 0.43, a super-dreadnought 2.07), which left a frigate's fire
 # and the hits on it a fifth of a capital's. Fire and impact visuals now use at least these scales (geometry such as
@@ -250,11 +253,18 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var pd_left := maxi(int(opts.get("pd", 0)), 0)
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
+	# issue 1239: each hit's point on the target's shield (shield frame; INF when it never touched the shield), so the
+	# battle can aim the shield failure at the shot that broke it; break_k is that hit (-1: none breaks the shield)
+	var hit_pts: Array = []
+	var shot_pts: Array = []   # each shot's aim point (world), so the checks can follow every projectile to its own shot
+	var break_k := int(opts.get("break_k", -1))
 	for i in total:
 		var hit: bool = bool(shots[i])
 		var hd: Dictionary = {}
+		var hk := -1
 		if hit:
 			hd = hits[hj] if hj < hits.size() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
+			hk = hj
 			hj += 1
 		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
 			hd = {"pd": true}
@@ -264,6 +274,11 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt, pattern[i], rhythm, clusters)
 		tgt["gk"] = gk
 		tgt["tk"] = tk
+		shot_pts.append(tgt["p"])
+		if hk >= 0:
+			hit_pts.append(_shield_lp(tgt))
+			if hk == break_k:
+				tgt["breaking"] = true
 		if bool(opts.get("debug", false)):
 			# (tests: where each shot strikes, in world space and relative to the target's centre)
 			var tp: Vector3 = Tg.root.global_position if Tg != null else to_c
@@ -281,7 +296,16 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			Tg.busy_until = maxf(Tg.busy_until, float(r[0]))
 	for k in tur_last:
 		A.hull.turret_release(int(k), float(tur_last[k]))
-	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms}
+	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms, "hit_pts": hit_pts, "points": shot_pts}
+
+
+# Issue 1239: where a shot met the target's shield, in the shield's frame (INF when it never touched it).
+static func _shield_lp(tg: Dictionary) -> Vector3:
+	if bool(tg.get("shield", false)) and tg.has("local"):
+		return tg["local"]
+	if tg.has("through"):
+		return (tg["through"] as Dictionary)["local"]
+	return Vector3.INF
 
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
@@ -1410,7 +1434,11 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return
-	if tg.has("through") and Tg != null:
+	if tg.has("through") and Tg != null and bool(tg.get("breaking", false)):
+		# issue 1239 (F2.2): the shot that breaks the shield and still hurts the hull. The failure's own flash marks the
+		# shield here, so no extra ripple, and the hull's fire waits a beat so the collapse's flash reads first
+		T += BREAK_HULL_BEAT
+	elif tg.has("through") and Tg != null:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
 			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)

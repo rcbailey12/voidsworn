@@ -1355,6 +1355,9 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				d["sh"][int(e["quad"])] = 0
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(e["unit"]), true)
+			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
+			if gfx != null and gfx.has_method("shield_break"):
+				gfx.shield_break(str(e["unit"]), int(e["quad"]))
 		"section_down":
 			var sec := str(e["section"])
 			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Broadsides and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
@@ -1986,7 +1989,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)),
+			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
+		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
 		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)
 		var fires: Array = r.get("fires", [])
 		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
@@ -2189,7 +2194,11 @@ func _shield_downs(land: Dictionary) -> void:
 			_float(g["unit"], "Shields down", Color("#9fe2ff"), FLOAT_LANE_SHIELD)
 		sfx.shield(_pos(g["unit"]), true)
 		if gfx != null and gfx.has_method("shield_break"):
-			gfx.shield_break(str(g["unit"]), int(g["quad"]))
+			# issue 1239 (F2.1): the failure closes where the breaking shot struck (the quadrant's middle without one)
+			var pts: Array = land.get("pts", [])
+			var bk := int(land["break_k"])
+			var lp: Vector3 = pts[bk] if str(g["unit"]) == str(land.get("t_id", "")) and bk >= 0 and bk < pts.size() else Vector3.INF
+			gfx.shield_break(str(g["unit"]), int(g["quad"]), lp)
 		elif land["tsv"] != null:
 			fx.shield(land["tsv"], float(land["L"]), int(g["quad"]), land["shield_col"], 0.0, true)
 
