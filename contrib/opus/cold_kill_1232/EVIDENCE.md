@@ -42,8 +42,25 @@ in the battle before it started, and its hull's death overlays were never drawn.
 - Every fx/test headless line in godot_checks.txt passed (23 of 23), load_all 247 scripts 0 failed, death_seam_check 0
   failures (cut 1.9 s against 2.4 to 2.8 s before).
 
-## PC timing run (to come)
+## PC timing run 4 (RTX 5080, solo GPU, Nov 20 01:50 UTC; files in the project folder pc/1232/out_1119y/1232_run4)
 
-OPUS1232_RUN.bat: before (main 280bb3a9) and after (cb721036), three fresh sessions each, each with its own empty
-profile (empty shader cache): arrival (warm-up at load, A16 arrives and dies 6 frames later) and cold (nothing warmed).
-Reads: worst kill frame, pipelines compiled at arrival and at the kill, late hull shaders, outcome and pieces.
+AFTER 98d470c4 (the fix merged with main), BEFORE d2717a32 (that main). Each row is a fresh process with an empty
+throwaway profile (empty shader and shield caches); Ryan's real options were unchanged. Frames paced to 60 a second.
+
+| row | outcome | pieces | kill frame (ms) | worst frame after the kill (ms) | pipelines built at the kill | late hull shaders | worst frame on arrival (ms) |
+|---|---|---|---|---|---|---|---|
+| after arrival s1 | fractured | 4 + 11 frags | 49.3 | 10.1 | 1 | 0 | 986 |
+| after arrival s2 | fractured | 4 + 11 frags | 38.8 | 10.1 | 1 | 0 | 978 |
+| after arrival s3 | fractured | 4 + 11 frags | 38.6 | 10.2 | 1 | 0 | 998 |
+| before arrival s1 | no pieces (pop at 2.68 s) | 0 | 282.6 | 7.7 | 24 | 2 | 858 |
+| before arrival s2 | Godot stopped: "FATAL Jolt Physics job system exceeded" at 22 s (exit 124) | - | - | - | - | - | - |
+| before arrival s3 | no pieces (pop at 2.68 s) | 0 | 262.9 | 7.8 | 24 | 2 | 845 |
+| after cold s1 to s3 | fractured | 4 + 11 frags | 135 to 142 | 4997 to 5120 | 97 | 7 | 236 to 254 |
+| before cold s1 to s3 | fractured | 4 + 11 frags | 136 to 139 | 4934 to 5089 | 97 | 7 | 242 to 257 |
+
+Read: the battle-like case (a ship arriving after the load and dying 6 frames later) now always breaks into pieces, its kill
+frame fell from 263 to 283 ms to 39 to 49 ms, and the kill builds 1 pipeline instead of 24. About 130 ms moved to the
+arrival frame (132 pipelines built there against 90): the arrival frame is about 1 s on both commits in an empty profile
+(first sight of the hull, its shield skin and its materials), which is a separate cost from this issue. The cold rows
+(never warmed at all, a bench-only path: every battle warms under the loading cover) are unchanged, as expected.
+On the PC the cut is 3157 ms one thread, 1534 ms side by side, same pieces (cold_kill_check); a stuck cut held 5.07 s.
