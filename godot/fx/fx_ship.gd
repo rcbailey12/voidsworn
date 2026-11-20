@@ -523,6 +523,7 @@ func _shield_skin(fx = null) -> ArrayMesh:
 	var visual: Node3D = view.hull if view != null else null
 	var bob := visual.position - view.hull_base if visual != null else Vector3.ZERO
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue

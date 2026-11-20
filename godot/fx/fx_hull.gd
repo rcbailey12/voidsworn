@@ -452,6 +452,7 @@ static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null, frames
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -528,6 +529,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -1299,6 +1301,7 @@ func _turret_clearance(root: Node3D, meshes: Array) -> void:
 		return
 	var fixed: Array = []
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi != null and _turret_above(mi, root) < 0:
 			fixed.append(mi)
