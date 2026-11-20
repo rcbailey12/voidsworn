@@ -422,8 +422,11 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         import random
         rp = random.Random(seed + 41)
         # the head's own end: it carries on the snout's taper (never a cap standing out of it) to a fat puckered lip round a big bore
-        kp = [(-0.25, lr * 0.8), (L * 0.2, lr * 0.84), (L * 0.5, lr * 0.86), (L * 0.74, lr * 0.82), (L * 0.88, r * 1.9), (L * 0.97, r * 1.55),
-              (L * 1.0, r * 1.15)]
+        # (Board on v3: no straight collar) the head narrows into a waist, then flares into a soft fat lip that rolls in to the bore
+        # the root carries on the hull's own taper, so the head runs into the mouth with no step
+        # (the root stays inside the head's own flesh, never a rim standing proud of it)
+        kp = [(-0.25, lr * 0.66), (L * 0.3, lr * 0.68), (L * 0.6, lr * 0.64), (L * 0.78, lr * 0.71), (L * 0.9, lr * 0.84),
+              (L * 0.97, lr * 0.82), (L * 1.0, (lr * 0.8 + r * 1.12) * 0.5), (L * 1.0, r * 1.12)]
 
         def krad(x_):
             for (xa, ra), (xb, rb) in zip(kp, kp[1:]):
@@ -434,6 +437,13 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         # puckered: lumps that wander round and along the knoll, never a smooth turned bulb
         V = [(x + 0.05 * L * nf(Vector((x * 3, y, z)).normalized()), y * (1 + 0.14 * nf(Vector((y, z, x * 2)).normalized())),
               z * (1 + 0.14 * nf(Vector((z, x * 2, y)).normalized()))) for (x, y, z) in V]
+
+        def pucker(v):
+            # the lip puckers: soft lobes round the mouth, strongest at the lip, gone by the waist
+            x, y, z = v; w = max(0.0, min(1.0, (x - L * 0.72) / (L * 0.28))); a = math.atan2(z, y)
+            f = 1 + w * (0.09 * math.sin(9 * a + seed) + 0.04 * math.sin(4 * a + 2 * seed))
+            return (x - w * 0.06 * L * (1 + math.sin(9 * a + seed)) * 0.5, y * f, z * f)
+        V = [pucker(v) for v in V]
         p.add('lip0', 'mount', 'tissue', (V, F))
         # pucker folds: short creases radiating back from the vent over the knoll's face
         for k in range(22):
@@ -459,13 +469,13 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             a = 2 * math.pi * (k + 0.5) / ns + rp.uniform(-0.12, 0.12)
             ca, sa = math.cos(a), math.sin(a)
             # short hooks on the lip, curving forward and in over the bore (the picture's crown, a quarter of a spike's length)
-            x_ = L * rp.uniform(0.9, 0.95); rr_ = krad(x_) * 0.97
+            x_ = L * rp.uniform(0.95, 0.985); rr_ = krad(x_) * 0.94   # set into the lip's rolled face
             out = Vector((0, ca, sa)); lean = math.radians(rp.uniform(35, 50))
             d = (Vector((1, 0, 0)) * math.cos(lean) + out * math.sin(lean)).normalized()
-            ln = r * rp.uniform(0.5, 0.65); b = Vector((x_, rr_ * ca, rr_ * sa)) - d * r * 0.12
+            ln = r * rp.uniform(0.32, 0.4); b = Vector((x_, rr_ * ca, rr_ * sa)) - d * r * 0.08
             pts = [b, b + d * ln * 0.45, b + d * ln * 0.8 + Vector((ln * 0.2, 0, 0)) - out * ln * 0.1, b + d * ln * 0.9 + Vector((ln * 0.45, 0, 0)) - out * ln * 0.3]
-            p.add('crown%d' % k, 'body', 'bone', tube(pts, [r * 0.17, r * 0.13, r * 0.07, 0.003], n=7))
-            p.add('crownc%d' % k, 'mount', 'tissue', tube([b - d * r * 0.08, b + d * r * 0.12], [r * 0.2, r * 0.18], n=8))
+            p.add('crown%d' % k, 'body', 'bone', tube(pts, [r * 0.11, r * 0.085, r * 0.045, 0.003], n=7))
+            p.add('crownc%d' % k, 'mount', 'tissue', tube([b - d * r * 0.06, b + d * r * 0.07], [r * 0.14, r * 0.12], n=8))
     else:
         # flared rim: a thick lip rolled outward, with radial creases on its face
         # a rolled lip: the throat wall curls out and back over itself in a fat round roll
@@ -526,10 +536,12 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         p.add('tooth%d' % k, 'body' if style == 'folded' else 'mount', 'chitin', tube([b0, b1, b2], [r * 0.07, r * 0.04, r * 0.005], n=5))
     # the bore and the gland: the gland sits deep in the throat; its light falls on the bore's wet wall, brightest at the
     # back and fading to dark tissue at the lip (the glow is down inside, never a disc at the mouth; R228 item 5 in spirit)
-    ga = gland_at; gr = 0.62
+    ga = gland_at; gr = 0.32 if style == 'knoll' else 0.62   # a knoll's bore reads dark bow-on: a small gland far down it
     xg = L * ga
     p.add('bore', 'mount', 'maw', revolve([(xg + r * 0.05, r * 0.7), (xg - r * 0.3, r * 0.6), (0.0, r * 0.5)], seg, cap1=True))
     xl = L * 0.9; bands = (('gland', 0.0, 0.3), ('bilewet', 0.3, 0.62), ('tissue', 0.62, 1.0))
+    if style == 'knoll':
+        bands = (('gland', 0.0, 0.1), ('bilewet', 0.1, 0.25), ('maw', 0.25, 1.0))
     for mat_, f0, f1 in bands:
         a0 = xg + (xl - xg) * f0; a1 = xg + (xl - xg) * f1
         rad0 = r * (0.7 + 0.25 * f0); rad1 = r * (0.7 + 0.25 * f1)

@@ -90,7 +90,7 @@ def build(K):
         return th if side > 0 else math.pi - th
 
     # ---------------- the prow knoll (bioplasma F, the spine volley) ----------------
-    K.spinal('M1', (2.2, 0.0, 0.0), 0.72, r=0.22, slot='F', weapon='bioplasma', inv='knoll', style='knoll', lip_r=0.52, teeth=8, seed=7,
+    K.spinal('M1', (2.15, 0.0, 0.0), 0.72, r=0.42, slot='F', weapon='bioplasma', inv='knoll', style='knoll', lip_r=0.74, teeth=8, seed=7,
              gland_at=0.12, crown=12,
              note='the knoll: the head ends in a round puckered mouth of raw flesh, a big deep dark bore (about half the head\'s width) with a fat lip ringed by short bone hooks; the bile gland lies deep down the bore')
     K.mass('Prow knoll', _bpy.data.objects['M1_mount_tissue'], 'raw flesh, bone hooks', note='the gun and nothing else at the prow (Ryan\'s edits, issue 631)')
@@ -109,7 +109,7 @@ def build(K):
             arch = ARCH * math.sin(math.pi * min(1.0, t * 1.6)) * (1 - t) ** 0.5   # the cables rise out of the knot before they lie down
             x = xs[0] + (xs[1] - xs[0]) * t + 0.09 * math.sin(t * 6.5 + 2 * side + xs[0])
             th = ths[0] + (ths[1] - ths[0]) * t + 0.06 * math.sin(t * 4 + side)
-            p_, n0 = K.hpt(x, side_th(th, side) if side else th, out=R_T + 0.11 + arch)
+            p_, n0 = K.hpt(x, side_th(th, side) if side else th, out=R_T + 0.15 + arch)
             pts.append(p_)
         if hang:
             e = pts[-1]; d0 = (pts[-1] - pts[-2]).normalized()
@@ -200,10 +200,10 @@ def build(K):
     K.organ_room('ganglion', 'ganglion', (1.2, 0.0, 0.5), (0.24, 0.2, 0.15), note='the Node: the knot of nerve that steers the body', seed=3)
     for i, x in enumerate(DOMES):
         for side in (1, -1):
-            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (0.72 - 0.05 * i), -0.15), (0.22, 0.17, 0.16),
+            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (0.56 - 0.06 * i), -0.15), (0.2, 0.14, 0.15),
                          note='the bile store behind the dome', seed=10 + i)
     K.organ_room('heart_vat', 'vat', (0.25, 0.0, 0.0), (0.42, 0.34, 0.3), note='the heart vat: the core (hp_core), lit bile-green', seed=20)
-    K.organ_room('gut', 'gut', (0.95, 0.0, -0.5), (0.6, 0.38, 0.22), note='the gut', seed=21)
+    K.organ_room('gut', 'gut', (0.95, 0.0, -0.4), (0.55, 0.34, 0.2), note='the gut (kept well off the belly skin: death seam check, issue 1153 run 1)', seed=21)
     for i, (x, side, r) in enumerate(SACS):
         K.organ_room('regrowth_%d' % (i + 1), 'organ', (x, side * 0.32, -0.5), (0.26, 0.2, 0.16), note='regrowth tissue over the reserve sac (regen 3)', seed=23 + i)
     K.organ_room('knot_muscle', 'organ', (MOUND_X, 0.0, 0.52), (0.42, 0.3, 0.16), note='the knot\'s root muscle: it throws the tendrils', seed=25)
@@ -238,7 +238,7 @@ def build(K):
              'minus the spine, maw, engines and weapons; the knoll, the tendril knot, domes, sacs, siphons and vents stand in open sockets')
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19)',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette')
-    K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore with a fat lip and twelve short bone hooks (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body)',
+    K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore about half the lip\'s width, in a soft puckered lip that flares from a waist, twelve short bone hooks set into the lip (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body; Board on v3: open the bore so it dominates bow-on, no straight collar)',
              'data.js b_drone has one bioplasma slot (issue 649, Ryan\'s "send the frigate back on guns"); 2 shots leave the one vent in turn')
     K.change('The tendril mound is fixed, not a turret: a knot of muscle holding five draped tendrils (new kit part type drape; accepted by the Board on blockout v2)', 'the slot is all round (T); tendrils lying over the hull reach every way at once, as C11\'s mane (issue 623); a turning crown would sweep them through the hull')
     K.change('The tendrils are laid on the hull clear of the hide and hang free below the waterline at their tips', 'they must not sit in the hull (fit check CLASH); the picture\'s tips hang off the flanks')

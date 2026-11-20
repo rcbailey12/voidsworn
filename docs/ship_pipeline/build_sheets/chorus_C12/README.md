@@ -1,4 +1,4 @@
-# chorus_C12 build sheet: the drone-spawn, the Chorus frigate (version 1, blockout v3)
+# chorus_C12 build sheet: the drone-spawn, the Chorus frigate (version 1, blockout v3 plus the Board's two bow fixes)
 
 Issue 1153 (R328, R330). The Chorus, class Frigate, **6.5 world units** spine hooks to veil tips (godot/render/hull_table.gd
 CLS_LEN; data.js `b_drone`, "Chorus drone-spawn": bioplasma F, tendril T; ability regrow; regen 3; speed 5, evasion 15; no
@@ -23,7 +23,7 @@ camera, then bow, midships and stern), then [sheet.jpg](sheet.jpg), [cells.jpg](
 | Fit check (R217, R219, R221): clash, mount, arc, sensor, sweep, exhaust, exit, lane | **0** in all eight ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
 | Weapon match (R241) | PASS, 0 problems ([weapon_match.json](weapon_match.json), [weapon_review.jpg](weapon_review.jpg)) |
 | Inventory (R218, R221) | 15 lines, every one with a job; 0 cells not present, shaped and detailed ([inventory.md](inventory.md)) |
-| Outline overlap at the concept's camera (reported, not a bar) | 76.8 percent, mass outline 78.5 percent ([outline_check.jpg](outline_check.jpg)) |
+| Outline overlap at the concept's camera (reported, not a bar) | 75.5 percent, mass outline 76.9 percent (v3 was 76.8 / 78.5; the wider mouth trims the prow's match) ([outline_check.jpg](outline_check.jpg)) |
 | Proportions, envelope length to beam / to height (concept sheet against build, same measure) | 1.90 / 2.22 against 2.09 / 2.16 |
 
 ## What it is
@@ -40,7 +40,7 @@ cup and curl. From above: the only Chorus hull that reads as a knot with a crown
 
 | Slot | Weapon | Built as |
 |---|---|---|
-| F | Spine volley (bioplasma, 2 shots) | the head's puckered mouth (kit spinal style `knoll`): a fat lip with creases and pores, twelve short bone hooks, a sphincter, a deep dark bore with the bile gland far down it. Fixed forward. One vent fires both shots in turn. |
+| F | Spine volley (bioplasma, 2 shots) | the head's puckered mouth (kit spinal style `knoll`): the head runs into a waist, then a soft lip that flares and puckers, with creases and pores and twelve short bone hooks set into it; the dark bore is about half the lip's width (Board on v3), a sphincter, a deep dark bore with the bile gland far down it. Fixed forward. One vent fires both shots in turn. |
 | T | Boarding tendrils (tendril, 2 shots) | a knot of muscle with five draped blunt tendrils (kit gun `drape`, part type `drape`). Fixed: tendrils lying over the hull reach every way at once, as C11's mane (issue 623); a turning crown would sweep them through the hull. The Board accepted the drape type and the fixed knot on blockout v2. |
 
 ## INSIDE (R209): flesh, bone and organs, never rooms that reach the skin
@@ -53,8 +53,8 @@ bursting first; no machine on it. Two breach anchors (Frigate base 2; the Chorus
 
 ## Kit additions (issue 1153; R333: every Chorus ship reuses them)
 
-- `spinal(style='knoll', crown=N)`: a head-end puckered mouth, deep dark bore, short bone hooks. Its collar stays inside the
-  mouth so no ribs read as a can.
+- `spinal(style='knoll', crown=N)`: a head-end puckered mouth, deep dark bore, short bone hooks set into a soft flared lip;
+  a small gland far down so the bore reads dark bow-on. Its collar stays inside the mouth so no ribs read as a can.
 - `gun(weapon='tendril', drape=[...])`: part type `drape`, a knot mound with heavy blunt tendrils laid along paths the sheet
   computes on its own hull (`weapon_match.py` tendril row accepts `drape`).
 - `engine_bell(trail='veil', veil=, fan=, splay=)`: wide thin cupped sheets that twist and ripple. `veil`, `fan` and `splay`

@@ -141,7 +141,8 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `activation` | `unit, side` | This ship (or squadron, in a swarm phase) starts its activation. |
 | `move` | `unit, path, late_fire` | Animate the burn along `path` (steps `{q, r, f, rot?, slip?, rev?, over?}`). With `late_fire`, the ship's shots that follow are fired on the move (start them about two-thirds of the way through the burn). A turn in place is a one-step path with `rot: true`. |
 | `fire` | `unit, weapon, weapon_id, kind, arc, name, target, shots: [bool], pd, quad` | One weapon's volley: one entry per shot (hit or miss). `pd` is rockets shot down by point defence; `quad` is the target facing hit. |
-| `hit` | `unit, target, quad, section, shield, hull, crit` | One landed shot: shield damage absorbed, hull damage taken, which section, whether it was a critical. `unit` can be null for station guns. |
+| `hit` | `unit, target, quad, section, shield, hull, crit, regenLock?` | One landed shot: shield damage absorbed, hull damage taken, which section, whether it was a critical. `unit` can be null for station guns. Optional `regenLock: true` means the hit applied an ion regeneration lock. |
+| `regen_unlock` | `unit` | The ship's side started its turn and consumed the ion regeneration lock. |
 | `shield_down` | `unit, quad` | That facing's shield is gone. |
 | `section_down` | `unit, section` | `"prow"` (forward guns silenced), `"mid"` (broadsides and shield generator), `"eng"` (engines crippled). |
 | `system` | `unit, text` | A critical knocked out a system ("Engines hit", "Shield generator down", "<gun> knocked out", "Fire on deck"). |

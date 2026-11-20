@@ -1,33 +1,33 @@
 {
-  "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+  "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
   "source_dirty": true,
-  "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+  "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_tendril.jpg",
-  "date": "2026-11-19T15:19:02Z",
+  "date": "2026-11-19T23:53:51Z",
   "sources": [
     {
-      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
       "source_dirty": true,
-      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_tendril.png",
-      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
       "source_dirty": true,
-      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
       "stage": "sheet built",
-      "date": "2026-11-19T15:18:51Z",
-      "image_sha256": "1a2c6682c6dfc47b659cbf1e175aef96873458191c63ec5577908f89056d9a84",
+      "date": "2026-11-19T23:53:40Z",
+      "image_sha256": "7fb21830f4c36b9363b395cf4080d1966c9169d6fddc8e3fb051217e2aae8b88",
       "sources": [
         {
-          "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+          "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
           "source_dirty": true,
-          "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+          "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "e1e409e11478b78ac4219c9420e0c1eb8037a88f3141186c1a3434dc9031e43d"
+    "a7f76994fe2271eea61ad7b02c2c6e45e528a481c16062d8ba66a9af54d1de37"
   ],
-  "stamp_template_sha256": "2fbeec77f377bbaeaf71f39794e4c62d5a7ce68e2ef06c02cc8daa9cbcd23116",
+  "stamp_template_sha256": "a49f919207c43bc3d014fe6b49f7cb345cd89312c9f4b6f4a7259a8b5de0e6d4",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "f5892a21517abe74336b46e71cedf9f7a7ca74e55eaa05cf42348f4431b99657"
+  "image_sha256": "40b22364aeffcc78dbb48286d48a405f56fb1409ffa2dfdd5f832c4100600eb6"
 }

@@ -545,10 +545,10 @@ func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
 	return str(HIT_BY_WEAPON.get(fam, "hit"))
 
 
-func impact(fam: String, target_fac: String, pos = null, heavy := false) -> void:
+func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) -> void:
 	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
 	if heavy and HIT_BY_TARGET.has(target_fac):
-		play("hit_heavy", {"pos": pos, "delay": CRIT_BEAT, "gain": 0.55})
+		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55}))
 
 
 func shield(pos = null, big := false) -> void:

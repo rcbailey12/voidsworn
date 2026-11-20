@@ -1,33 +1,33 @@
 {
-  "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+  "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
   "source_dirty": true,
-  "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+  "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "threequarter.jpg",
-  "date": "2026-11-19T15:18:58Z",
+  "date": "2026-11-19T23:53:49Z",
   "sources": [
     {
-      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
       "source_dirty": true,
-      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "threequarter.png",
-      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
       "source_dirty": true,
-      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
       "stage": "sheet built",
-      "date": "2026-11-19T15:18:53Z",
-      "image_sha256": "3e92205b7d46e769ad59b4652219839566ec0abf6a2d7d46b473b9b0ab2ed8bf",
+      "date": "2026-11-19T23:53:42Z",
+      "image_sha256": "5a9981f34fdb95508281a9f756a11da2a6b2e4ce8f7ecd0e10d8ed6f7a3259fe",
       "sources": [
         {
-          "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+          "source_commit": "6ce025e6f9bd866d86f58c9b2e494a512ba78680",
           "source_dirty": true,
-          "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+          "source_diff_sha256": "4697eafc9134d8648f9389fcb5b141f16c85acc1c0d8790150cc9b37f2c2bf56",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     98
   ],
   "strip_sha256": [
-    "b04fd63ff9109172d48e3b9ebe4c27d370584265089fe6bfce4e60b317dcac96"
+    "e68079bd245f910e5e7f12a33ad0ebd3eb2885c456a6640430333b58378adf6e"
   ],
-  "stamp_template_sha256": "c378493534586de12a354dbd60d79db45dd9fa78bc2432242ac4df65c2ceed5b",
+  "stamp_template_sha256": "c95772878cc1d97211710218e4fb421234539077778649e17ae7cf0541782506",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAWwb8ufgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBEDOBVtUAXSgus06AAAAAElFTkSuQmCC"
   ],
-  "image_sha256": "4ba210e754776df164c379e219182b4cfa615dce8590d084f20bd13b6f12fb69"
+  "image_sha256": "bbda37eb364591bf994a28d12e2529ca5aaeb3520412a2624f79ffddbbcfada6"
 }
