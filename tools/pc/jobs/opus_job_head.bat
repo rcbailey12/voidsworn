@@ -108,6 +108,8 @@ if defined JW_STOP (>> "%OJ_ST%" echo skipped ships: an earlier step failed & ex
 if not defined LB_SHIPS set "LB_SHIPS=%OJ_VT%\build\godot"
 if not exist "%LB_SHIPS%\gen" (call "%JW%" fail "no built ships at %LB_SHIPS%\gen" & exit /b 1)
 >> "%OJ_ST%" echo ships from %LB_SHIPS% into %OJ_REPO%
+rem The tail's checkout removal proves each copied ship file unchanged against this source.
+> "%OJ_OUT%\ships_source.txt" echo %LB_SHIPS%
 rem gen is untracked and copied whole with no skip flags, so the source always wins (as get_ship_files.bat does): its
 rem manifest.json is what the game reads to find the built hulls. The /XF list is for assets\ships only, where
 rem manifest.json is the tracked checksum list (RUN1262C dropped gen\manifest.json and every hull drew as a placeholder).
