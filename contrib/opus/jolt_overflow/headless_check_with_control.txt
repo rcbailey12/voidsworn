@@ -1,0 +1,6 @@
+JOLT_JOBS lanes: threads 4, low-priority cap 1, cut lanes 1
+  starve 2.0 s on 4 lanes: frames ran 2.5 s, job table warnings 0
+WARNING: Jolt Physics job system exceeded the maximum number of jobs. This should not happen. Please report this. Waiting for jobs to become available...
+  starve 2.0 s on 4 lanes: frames ran 2.5 s, job table warnings 1
+JOLT_JOBS control (space awake, every lane held 2 s): warnings 1 (1 shows the starve reaches Jolt here)
+JOLT_JOBS PASS (0 failures)

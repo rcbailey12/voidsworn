@@ -3,7 +3,8 @@ extends RefCounted
 # Bounded: a fixed set of short line segments along each ship's recent path goes to the gas shaders as uniforms. There
 # is no fluid simulation. The newest segment of each ship stretches with it every frame and the age runs smoothly along
 # the trail, so the wake is one continuous strip with no steps (Ryan, Nov 19: the point version showed stages).
-# Off by default (settings key nebula_wake, battle flag --nebula-wake). Off, the shaders are byte for byte today's.
+# On by default in play (Ryan, Nov 20: settings key nebula_wake_on); a battle started without it, as benches and tests
+# do, stays off (battle flag --nebula-wake turns it on). Off, the shaders are byte for byte today's.
 # Shared: every ShipView the battle shows feeds it (every faction and class, squadrons included), sized by hull length.
 
 const HIGH_POINTS := 12     # trail segments at Max and High

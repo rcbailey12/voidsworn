@@ -2088,6 +2088,26 @@ void fragment() {
 }
 """
 
+# Issue 1077: a ragged, stepped offset along a cut's axis, so a tear line wanders across the plates: value noise over the
+# cut plane in plate-sized cells, eased so each plate holds a level and the line steps between them, plus a finer octave.
+# fx_jag.x is the reach (ship units), fx_jag.y the plate size; zero reach is a straight line.
+const JAG_FN := """
+uniform vec2 fx_jag = vec2(0.0, 1.0);
+float fxj_hash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+float fxj_vn(vec3 x) {
+	vec3 i = floor(x);
+	vec3 f = smoothstep(0.3, 0.7, fract(x));
+	return mix(mix(mix(fxj_hash(i), fxj_hash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(fxj_hash(i + vec3(0.0, 1.0, 0.0)), fxj_hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+		mix(mix(fxj_hash(i + vec3(0.0, 0.0, 1.0)), fxj_hash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(fxj_hash(i + vec3(0.0, 1.0, 1.0)), fxj_hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+float fx_jag_offset(vec3 p, vec3 axis) {
+	if (fx_jag.x <= 0.0) { return 0.0; }
+	vec3 q = (p - axis * dot(p, axis)) / max(fx_jag.y, 1e-4);
+	float v = 0.7 * fxj_vn(q) + 0.3 * fxj_vn(q * 2.7 + 5.3);
+	return (v - 0.5) * 2.0 * fx_jag.x;
+}
+"""
+
 # Issue 1077 (prototype, off by default: rendering/effects/death_story): structural strain before a big hull splits. The
 # plating along each break line bulges a little and ripples (outward only, so it never sinks into the authored decks),
 # and the dying hull's power-down material and the tear overlay move it the same way. Ship-space points and normals.
@@ -2119,7 +2139,11 @@ vec3 fx_strain_offset(vec3 p, vec3 n, float t) {
 # material moves it (plus a hair outward, so the additive overlay never loses its depth test), and hairline stress
 # cracks along every break line, broken into dashes and flickering, that appear while the hull strains.
 static func tear_strain_code() -> String:
-	var c: String = TEAR.replace("uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n")
+	var c: String = TEAR.replace("uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n" + JAG_FN)
+	# Ryan on pass 4B: "the two straight clean lines of the glow and break". The tear and the hairlines run on a ragged,
+	# stepped line across the plates (fx_jag: its reach and its plate size), not on the straight cut plane
+	c = c.replace("\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9);", "\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9 + fx_jag_offset(cut_p, axis));")
+	assert(c.contains("fx_jag_offset(cut_p, axis)"))
 	c = c.replace("\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n",
 		"\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n\tvec3 sn = normalize(mat3(frame) * NORMAL);\n\tvec3 so = fx_strain_offset(cut_p, sn, scene_t);\n\tVERTEX += inverse(mat3(frame)) * (so * 1.08 + sn * fx_strain_k.x * 0.04 * fx_strain_amount(scene_t));\n")
 	c = c.replace("\tif (dot(col, col) < 1e-6) { discard; }",
@@ -2129,7 +2153,7 @@ static func tear_strain_code() -> String:
 		for (int i = 0; i < 3; i++) {
 			if (fx_strain_at[i].w <= 0.0) { continue; }
 			float wig = sin(dot(cut_p, vec3(2.3, 9.1, 4.7))) * 0.6 + sin(dot(cut_p, vec3(6.1, 3.7, 12.9))) * 0.4;
-			float d = abs(dot(cut_p - fx_strain_at[i].xyz, fx_strain_n[i].xyz) + wig * hw * 1.2);
+			float d = abs(dot(cut_p - fx_strain_at[i].xyz, fx_strain_n[i].xyz) + wig * hw * 1.2 + fx_jag_offset(cut_p, fx_strain_n[i].xyz));
 			float line = 1.0 - smoothstep(hw * 0.3, hw, d);
 			float dash = smoothstep(0.15, 0.75, sin(dot(cut_p, vec3(3.1, 7.7, 5.3)) * fx_hair.y + float(i) * 1.7) * 0.5 + 0.5);
 			float flick = 0.65 + 0.35 * sin(scene_t * 23.0 + float(i) * 2.1 + dot(cut_p, vec3(0.9, 1.3, 0.7)));
@@ -2137,7 +2161,7 @@ static func tear_strain_code() -> String:
 			// far away the band itself carries the tell (the hairlines are under a pixel at the battle camera): it brightens as a
 			// pixel grows towards a tenth of the band's half width
 			float far = clamp(pxw / max(fx_strain_n[i].w * 0.1, 1e-4), 0.0, 1.0);
-			col += ember * vec3(0.6, 0.45, 0.35) * (0.12 + 0.33 * far) * flick * fx_strain_band(i, cut_p) * amt;
+			col += ember * vec3(0.6, 0.45, 0.35) * (0.12 + 0.33 * far) * flick * fx_strain_band(i, cut_p + fx_strain_n[i].xyz * fx_jag_offset(cut_p, fx_strain_n[i].xyz)) * amt;
 		}
 	}
 	if (dot(col, col) < 1e-6) { discard; }""")
