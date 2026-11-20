@@ -79,7 +79,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
    glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
    concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
-   No wear. The bake marks it authored_look so the game keeps its values (R329).
+   No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
+   hulls (`godot/render/look.gd` READ ithar rim_light 0, issue 1315): its specular flared white on the pearl lips.
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
    ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
