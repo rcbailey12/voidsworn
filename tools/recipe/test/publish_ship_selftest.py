@@ -40,20 +40,28 @@ def sha(b):
     return hashlib.sha256(b).hexdigest()
 
 
-def fake_job(root, receipt, code, files=None):
-    """a job folder: the real receipt, an export with CODE_export.json listing its files, the clone's checked install"""
+# the V14_23 export of opus1156 (export7's 8 files); CODE_export.json lists each as {"bytes": N, "sha256": hex}
+LAYOUT = ('{c}.glb', '{c}_base.jpg', '{c}_normal.png', '{c}_orm.png', '{c}_parts_base.jpg', '{c}_parts_normal.png',
+          '{c}_parts_orm.png', '{c}_maps.json')
+
+
+def fake_job(root, receipt, code, files=None, bare=False):
+    """a job folder: the real receipt, an export with CODE_export.json listing its files in export7's shape ({"bytes",
+    "sha256"} per file; bare=True writes the old bare hex string), the clone's checked install"""
     job = root / receipt.split('_result')[0]
     exp = job / 'out' / 'recipe' / 'export' / code
     inst = job / 'repo' / 'godot' / 'assets' / 'ships' / code
     exp.mkdir(parents=True)
     inst.mkdir(parents=True)
     shutil.copy(RECEIPTS / receipt, job / 'out' / 'result.txt')
-    files = files or {f'{code}.glb': b'glb ' + code.encode(), f'{code}_base.jpg': b'base ' + code.encode()}
+    files = files or {n.format(c=code): (n.split('}')[1] + ' ' + code).encode() for n in LAYOUT}
+    files[f'{code}_base.jpg'] = b'base ' + code.encode()
     for name, data in files.items():
         (exp / name).write_bytes(data)
         (inst / name).write_bytes(data)
     (inst / f'{code}.glb.import').write_text('godot import', encoding='utf-8')
-    (exp / f'{code}_export.json').write_text(json.dumps(dict(files={n: sha(d) for n, d in files.items()})), encoding='utf-8')
+    listed = {n: sha(d) if bare else dict(bytes=len(d), sha256=sha(d)) for n, d in files.items()}
+    (exp / f'{code}_export.json').write_text(json.dumps(dict(ship='S', code=code, files=listed), indent=2), encoding='utf-8')
     return job, sha(files[f'{code}.glb'])
 
 
@@ -95,6 +103,28 @@ def check_receipts(root):
         rc, out = run('receipt', job, code, commit, glb, rec)
         assert rc == 1 and 'was checked by the job' in out, out
         ok(f'{receipt} refuses a done FAILED, a changed export file and a checked file the export lacks')
+    # PR 1312 run one: the real CODE_export.json lists {"bytes", "sha256"}; the old bare hex form still passes, a listing
+    # with no full sha256 or a wrong size is refused
+    receipt, code, commit = cases[0]
+    job, glb = fake_job(root / 'bare', receipt, code, bare=True)
+    rc, out = run('receipt', job, code, commit, glb, root / 'bare.json')
+    assert rc == 0 and 'SHIP=' in out and '8 listed' in out, out
+    job, glb = fake_job(root / 'shape', receipt, code)
+    js = job / 'out' / 'recipe' / 'export' / code / f'{code}_export.json'
+    good = js.read_text(encoding='utf-8')
+    rc, out = run('receipt', job, code, commit, glb, root / 'shape.json')
+    assert rc == 0 and '8 listed and 8 checked' in out, out
+    d = json.loads(good)
+    d['files'][f'{code}_orm.png']['bytes'] += 1
+    js.write_text(json.dumps(d), encoding='utf-8')
+    rc, out = run('receipt', job, code, commit, glb, root / 'shape.json')
+    assert rc == 1 and 'not the size' in out, out
+    d = json.loads(good)
+    d['files'][f'{code}_orm.png'] = dict(bytes=3)
+    js.write_text(json.dumps(d), encoding='utf-8')
+    rc, out = run('receipt', job, code, commit, glb, root / 'shape.json')
+    assert rc == 1 and 'without a full sha256' in out, out
+    ok('the real export json shape ({"bytes", "sha256"}, 8 files) passes, the bare form too; a wrong size or no sha256 is refused')
 
 
 def fake_game(root):
