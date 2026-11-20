@@ -209,6 +209,9 @@ func release() -> void:
 	hull_arrays.clear()
 	_damage_templates.clear()
 	_power_templates.clear()
+	shield_poses.clear()
+	hull_shared.clear()
+	shield_keys.clear()
 	_dark_interiors.clear()
 	_wreck_interiors.clear()
 	_piece_builds.clear()
@@ -1217,7 +1220,7 @@ func _finish_shield_skins() -> void:
 		if not arrays.is_empty():
 			SHIP.save_shield_skin(key, arrays)
 			for entry in job["ships"]:
-				entry[0].install_shield_skin(arrays, entry[1])
+				entry[0].install_shield_skin(arrays, entry[1], self, key)
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1285,6 +1288,11 @@ func prepare_battle_hulls() -> void:
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
 var _death_cut_tasks := {}
+# Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
+var shield_poses := {}
+# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
+var hull_shared := {}
+var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
 func submit_death_cut(work: Callable) -> int:
@@ -1324,7 +1332,9 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
+	var t_col := Time.get_ticks_usec()
 	DEATH.add_collider(self, s)
+	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
