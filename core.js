@@ -97,6 +97,7 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
   if(!Number.isFinite(r.credits)){ rep.push('credits'); r.credits=0; } // B1 (B-5): a save whose credits went NaN from selling a captured flagship
+  if(r.fac==='chorus'&&!Number.isFinite(r.bio)){ r.bio=r.credits; r.credits=0; } // issue 1178: a Chorus run saved before biomass moves its purse to biomass, as a new run starts
   if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
     if(!['prize','salvage','victory','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
     R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];

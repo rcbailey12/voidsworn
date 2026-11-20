@@ -356,6 +356,8 @@ func repairRunIds(r) -> Variant:
 			if s.get("uid") == r["flagUid"]: ok = true
 		if not ok: r["flagUid"] = null
 	if not (r.get("credits") is int or r.get("credits") is float) or is_nan(float(r["credits"])) or is_inf(float(r["credits"])): rep.append("credits"); r["credits"] = 0
+	if r.get("fac") == "chorus" and not (r.get("bio") is int or r.get("bio") is float):   # issue 1178: a Chorus run saved before biomass moves its purse to biomass
+		r["bio"] = float(r["credits"]); r["credits"] = 0.0
 	if r.get("reward") != null:
 		var R = r["reward"]
 		if not (R is Dictionary): r["reward"] = null
