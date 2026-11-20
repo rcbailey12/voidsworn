@@ -845,7 +845,8 @@ function applyHit(att,w,t,dmg,quad){
   if(B&&B.tr&&B.tr.grandTarget===t.id&&att&&att.side==='player'){ if(!B.tr.grandFirstDone) B.tr.grandFirstDone=1; else pierce=1; } // Vex capstone 1
   if(t._treePierce){ pierce=1; t._treePierce=0; } // Saro T3a: the third and later volley hits ignore shields
   if(!t.isSq&&quad!=null) (t.shHit=t.shHit||[0,0,0,0])[quad]=1; // B3 Ithar prism charge: this facing was hit since the ship's last turn
-  if(!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
+  const locksRegen=!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0;
+  if(locksRegen) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const sh0=s, sp0=t.shp||0; const absorbed=Math.min(shieldable,s/ion);
   if(absorbed>0){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,sp0-absorbed*ion*lossy); if(t.shp<1) t.shp=0; if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); } // R246 (issue 371): the struck side routes power at a loss; a pool under 1 point is empty, and an empty pool drops every side at once
@@ -881,7 +882,9 @@ function applyHit(att,w,t,dmg,quad){
   t.hp-=hull; att.dealt+=hull;
   let hard=false; { const hl=treeSkill('hardLight'); if(hl&&t.side==='player'&&cmdActive('player','iron')&&!t.treeHardUsed&&t.shMax>0&&sp0>0){ hard=true; t.treeHardUsed=1; treeFx(t,'hardLight','the shield holds the section'); } } // Brin T3b: the first hit with shield left skips section damage
   if(!hard) damageSection(t, t._calledSec||SEC_OF_QUAD[quad], hull, att);
-  return {shield:Math.round(absorbed*ion), hull, crit};
+  const hit={shield:Math.round(absorbed*ion), hull, crit};
+  if(locksRegen) hit.regenLock=true;
+  return hit;
 }
 const SEC_OF_QUAD=['prow','mid','eng','mid'], SEC_NAME={prow:'prow',mid:'midships',eng:'engines'};
 // v41: Restore mends destroyed sections too, giving back what the break took

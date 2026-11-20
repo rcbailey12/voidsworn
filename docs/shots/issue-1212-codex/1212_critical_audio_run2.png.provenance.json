@@ -1,0 +1,36 @@
+{
+  "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+  "source_dirty": true,
+  "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_critical_audio_run2.png",
+  "date": "2026-11-19T23:06:50Z",
+  "sources": [
+    {
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    252,
+    636,
+    350
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "947e83131b2018381fe0a3c6c4a7e67ab450f8863e7551a4d433a27fd9e80ea8"
+  ],
+  "stamp_template_sha256": "947e83131b2018381fe0a3c6c4a7e67ab450f8863e7551a4d433a27fd9e80ea8",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABGzv+RaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMBG9kBDQNoHDsAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "65817118ea3d82e6980fc03f376c97e5d7ea5ca7dc5f7dc245a9ee207f18da7f"
+}
