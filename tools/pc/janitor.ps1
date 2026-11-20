@@ -122,19 +122,22 @@ function Open-JanitorLock($path, $wait) {
 }
 function Get-CommandLines {
   # Every running process's command line, read once per janitor run. $null means the list could not be read: callers keep.
-  if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) { return ,@($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ }) }
-  try { return ,@(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.CommandLine } | ForEach-Object { $_.CommandLine }) }
+  # Command lines stay internal: only a process ID and name ever reach the log, which may be relayed (Artoo, PR 1266).
+  if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) {
+    return ,@($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Name = 'fixture'; Line = $_ } })
+  }
+  try {
+    return ,@(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.CommandLine } |
+      ForEach-Object { [pscustomobject]@{ Id = $_.ProcessId; Name = $_.Name; Line = $_.CommandLine } })
+  }
   catch { return $null }
 }
 function Assert-NoProcessUses($dir) {
   if ($null -eq $script:commandLines) { throw 'running processes could not be checked' }
   # The whole folder name only: opus121 must not match a command line that names opus1211 (R8 dry run).
   $needle = [regex]::Escape($dir.FullName.TrimEnd('\','/')) + '(?=$|[\\/"''\s])'
-  foreach ($line in $script:commandLines) {
-    if ($line -match $needle) {
-      $shown = if ($line.Length -gt 160) { $line.Substring(0, 160) + '...' } else { $line }
-      throw "a running process names this folder: $shown"
-    }
+  foreach ($process in $script:commandLines) {
+    if ($process.Line -match $needle) { throw "a running process names this folder (process $($process.Id) $($process.Name))" }
   }
 }
 # Issue 1180 run 8 (Board, Nov 20): names only our tools create. A runner GUID, run_parity.js mkdtemp (6 characters) and

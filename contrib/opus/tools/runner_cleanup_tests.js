@@ -528,7 +528,8 @@ try {
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
-  assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder/);
+  assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder \(process 0 fixture\)/);
+  assert(!dry.includes('fixture.exe'), 'a command line never reaches the log (Artoo, PR 1266)');
   assert.match(decision(dry, legacyLookalike, 'would keep'), /name match without owner record/);
   assert.match(decision(dry, legacyLinked, 'would remove'), /1 links not followed; scratch named by our tools/);
   assert.match(decision(dry, ownedLinked, 'would remove'), /1 links not followed; owned TEMP scratch/);
