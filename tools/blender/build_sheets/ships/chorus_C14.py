@@ -25,7 +25,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_broo
 CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
-SHEET = dict(version=4, round='blockout v4, the Board\'s notes on v3 (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
+SHEET = dict(version=5, round='blockout v5, the armour shell (R341, issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
              before='First full layout', before_note='The first complete C14 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.1, 2.0)    # a domed back, a round belly: a sac, no flat face anywhere
@@ -70,7 +70,7 @@ PL = dict(size=(0.5, 1.05), thick=(0.02, 0.05), skip=0.15, stack=0.0, mats={'fle
 FACE_D = 0.32         # the front: a low dome of flesh over the hull's front section, the throat flush at its centre
 R_THROAT = 0.42       # the spine pore: a small dark pinch where the folds meet, no ring lip (Board v2 note 1); one modest weapon (designs.md)
 # the five launch openings (hangar 3): (id, station x, section angle, lean along x); the front view's five round the axis
-MOUTHS = (('L1', -3.6, math.pi / 2, -0.45),         # on the back at the stern, leaning aft
+MOUTHS = (('L1', -3.6, math.pi / 2, -0.36),         # on the back at the stern, leaning aft
           ('L2', -1.8, 0.34, -0.3), ('L3', -1.8, math.pi - 0.34, -0.3),    # high on the aft shoulders
           ('L4', 2.85, 0.06, 0.3), ('L5', 2.85, math.pi - 0.06, 0.3))          # on the rim at the forward corners (all five read from above)
 R_MOUTH = 1.05        # as big as the beauty's (Board v1 note 3), on taller necks with fat round lips
@@ -94,7 +94,12 @@ def build(K):
     from mathutils import Vector
     import bpy as _bpy
     import random
+    import sys
+    if _k._KITS not in sys.path:
+        sys.path.append(_k._KITS)
+    from chorus import plates
     HP = _k.HP
+    plates.register(_k)   # the armour shell's materials (R341)
 
     hull = K.hull(HULL, 'flesh', shell=0.3, rounded=True, pexp=PEXP, n=56, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the giant sac', hull, 'dark olive flesh', note='as long as it is wide, two thirds as tall: one central chamber of folded flesh')
@@ -323,87 +328,52 @@ def build(K):
                  note='pulse vent with two wide trailing veils lit from within (the family\'s veil, as C12), splayed away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents at the stern, the membranes streaming aft')
 
-    # ---------------- grown detail on the hull ----------------
-    # stretch wrinkles: the skin drawn up into each opening's neck
-    for fid, x0, th0, lean in MOUTHS:   # one fold set per opening (inventory count 5)
-        V, F = [], []
-        for k in range(12):
-            a = 2 * math.pi * (k + rnd.uniform(-0.25, 0.25)) / 12
-            ln = rnd.uniform(1.0, 1.8)
-            pts = []; nrms = []; ws = []; hs = []
-            for j in range(9):
-                t = j / 8
-                rr = R_MOUTH * 2.3 + ln * t
-                rad = _k.sec_at(HULL, x0)[1]
-                x = x0 + rr * math.cos(a); th = th0 + rr * math.sin(a) / max(2.5, rad)
-                if x > x_back(th) - 0.2 or x < -4.6:
-                    break
-                p_, n_ = K.hpt(x, th, out=-0.02); pts.append(p_); nrms.append(n_)
-                env = math.sin(math.pi * (0.1 + 0.8 * t))
-                ws.append(0.22 * env + 0.04); hs.append(0.07 * env + 0.01)
-            if len(pts) < 4:
+    # R341 (Ryan, Nov 19): the whole body is armoured, so the stretch folds, body folds, wrinkles, shoulder pores and scar
+    # patches of v4 are gone: they lay where the scutes now lie. The wet hide shows only round the fittings and between scutes.
+
+    # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
+    # the front's creased lobes and spine pore (the maw), the honeycomb field and its rim (the spore cloud) stay bare; the five
+    # launch necks, the sacs' necks, the siphons and the vents stand in open sockets; the shell runs from the front skin's
+    # sunk back edge to the stern. The teardrop sacs stay pale and smooth (Board v2 note 4), uncapped.
+    shells = plates.armour(K, _k, 4.3, -5.0, seed=1355, keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'), rows=9, scute=0.95, thick=0.2,
+                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, '
+                       'the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear')
+    # where the stern falls away under a leaning launch lip, a scute laid over the neck's foot would run into the lip: leave that
+    # scute off (the kit trims by the fitting's foot; the lip stands out of its reach)
+    import bmesh
+    from mathutils.bvhtree import BVHTree
+    lips = [ob for ob in K.coll.objects if ob.type == 'MESH' and ob.name[:1] == 'L' and ob.name[1:2].isdigit() and '_body_' in ob.name]
+    trees = [BVHTree.FromPolygons([ob.matrix_world @ v.co for v in ob.data.vertices], [p_.vertices for p_ in ob.data.polygons]) for ob in lips]
+    for sh in shells:
+        bm = bmesh.new(); bm.from_mesh(sh.data)
+        M = sh.matrix_world
+        st = BVHTree.FromPolygons([M @ v.co for v in bm.verts], [[v.index for v in f.verts] for f in bm.faces])
+        bm.faces.ensure_lookup_table()
+        hit = {j for t in trees for _, j in st.overlap(t)}
+        for f in bm.faces:   # and a scute the lip sits inside, or nearly touches
+            c = M @ f.calc_center_median()
+            if any(t.find_nearest(c, 0.3)[0] is not None for t in trees):
+                hit.add(f.index)
+        seen = set(); drop = set()
+        for j in hit:   # the whole scute: every face linked to the one that touches the lip
+            if j in seen:
                 continue
-            vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        K.hull_detail('stretch_folds_' + fid, (V, F), 'flesh2', inv='stretch_folds', kind='welt', subs=['welt'])
-    # the folded sac: long broken fold rolls running fore and aft over the body between the openings (never a band or segment)
-    V, F = [], []
-    keep_clear = [(x, th) for _, x, th, _ in MOUTHS] + [(x, side_th(th, s)) for x, th, _ in SIPHONS for s in (1, -1)]
-    for k in range(40):
-        th0 = rnd.uniform(-1.0, math.pi + 1.0)
-        xa = rnd.uniform(-3.4, 3.6); ln = rnd.uniform(1.5, 3.4)
-        pts = []; nrms = []; ws = []; hs = []
-        for j in range(12):
-            t = j / 11
-            x = xa - ln * t
-            th = th0 + 0.06 * math.sin(j * 0.9 + k)
-            if x < -4.4 or x > x_back(th) - 0.3 or in_field(x, th, 0.6) < 1.0 or any(abs(x - cx) < 2.3 and abs(math.atan2(math.sin(th - ct), math.cos(th - ct))) < 0.6 for cx, ct in keep_clear):
-                break
-            p_, n_ = K.hpt(x, th, out=-0.03); pts.append(p_); nrms.append(n_)
-            env = math.sin(math.pi * (0.06 + 0.88 * t))
-            ws.append(0.5 * env + 0.05); hs.append(0.12 * env + 0.01)
-        if len(pts) < 4:
-            continue
-        vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
-        o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('body_folds', (V, F), 'flesh2', inv='body_folds', kind='welt', subs=['welt'])
-    # fine wrinkles over the sac between the folds (Board v2 note 3: wrinkles and pores, never dots in rows or seams)
-    V, F = [], []
-    for k in range(150):
-        th0 = rnd.uniform(-1.2, math.pi + 1.2); xa = rnd.uniform(-4.2, 3.4); ln = rnd.uniform(0.5, 1.1); ang = rnd.uniform(-0.6, 0.6)
-        pts = []; nrms = []; ws = []; hs = []
-        for j in range(6):
-            t = j / 5
-            x = xa - ln * t * math.cos(ang); th = th0 + ln * t * math.sin(ang) / 4.0 + 0.04 * math.sin(3 * t + k)
-            if x < -4.6 or x > x_back(th) - 0.3 or in_field(x, th, 0.4) < 1.0 or any(abs(x - cx) < 2.1 and abs(math.atan2(math.sin(th - ct), math.cos(th - ct))) < 0.55 for cx, ct in keep_clear):
-                break
-            p_, n_ = K.hpt(x, th, out=-0.01); pts.append(p_); nrms.append(n_)
-            env = math.sin(math.pi * (0.1 + 0.8 * t)); ws.append(0.07 * env + 0.01); hs.append(0.03 * env + 0.005)
-        if len(pts) < 4:
-            continue
-        vv, ff = HP.welt(pts, nrms, ws, hs, n=4)
-        o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('body_wrinkles', (V, F), 'flesh2', inv='body_folds', kind='welt', subs=['welt'])
-    # pore fields round the front and over the shoulders (the Chorus has no eyes: it tastes)
-    for name, x0, x1, t0, t1, nper in (('shoulder', -3.0, 3.0, 1.0, 2.1, 70),):
-        V, F = [], []
-        for _ in range(nper):
-            x = rnd.uniform(x0, x1); th = rnd.uniform(t0, t1)
-            if in_field(x, th, 0.5) < 1.0 or any(abs(x - cx) < 2.3 and abs(math.atan2(math.sin(th - ct), math.cos(th - ct))) < 0.55 for cx, ct in keep_clear):
-                continue
-            pos, nrm = K.hpt(x, th, out=0.0)
-            vv, ff = HP.pore(pos, nrm, rnd.uniform(0.06, 0.1), n=10)
-            o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
-        K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
-    # scars: regrowth patches with knit ridges (the picture's scarred flesh)
-    for k, (x, th, r) in enumerate(((0.2, 0.8, 0.45), (0.9, 2.65, 0.5), (-0.6, -0.4, 0.42), (-3.4, 1.9, 0.4), (2.0, -0.35, 0.38), (-2.6, 2.9, 0.36))):
-        pos, nrm = K.hpt(x, th, out=0.0)
-        (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=40 + k, knits=3)
-        K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])
-        K.hull_detail('scar%d_knit' % k, (kv, kf), 'tissue')
+            stack = [bm.faces[j]]
+            while stack:
+                f = stack.pop()
+                if f.index in seen:
+                    continue
+                seen.add(f.index); drop.add(f)
+                stack.extend(g for e in f.edges for g in e.link_faces if g.index not in seen)
+        if drop:
+            bmesh.ops.delete(bm, geom=list(drop), context='FACES')
+            bm.to_mesh(sh.data); sh.data.update()
+            print('[armour] %s: %d scute faces left off under the launch lips' % (sh.name, len(drop)))
+        bm.free()
 
     # ---------------- colour zones ----------------
-    K.colour('dark olive flesh, hard chitin hide in grown irregular plates (paint stage, R325)', 6.2, -5.15, 'whole body')
+    K.colour('warm brown flesh (paint stage)', 6.2, -5.15, 'whole body')
+    K.colour('brown keratin scutes over warm brown hide (R341)', 4.3, -5.0, 'the armour shell, belly to back')
     K.colour('raw transition tissue', 3.0, -2.5, 'the lips of the five openings and the spore patch walls')
     K.colour('wet dark maw, dim bile at the floor', 3.0, -2.5, 'inside the five openings')
     K.colour('bile yellow-green light', 6.2, 5.4, 'the spine pore\'s gland')
@@ -469,6 +439,8 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field, the launch necks and the pale sacs stay bare',
+             'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13. The sacs stay pale and smooth (the Board on v2, note 4)')
     K.change('No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide\'s grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety')
     K.change('Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners',

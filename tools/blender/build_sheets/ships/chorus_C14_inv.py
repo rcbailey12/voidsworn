@@ -13,7 +13,7 @@ INVENTORY = [
          what='the front\'s skin folds: six big uneven lobes parted by deep creases that start at the rim and curve in toward the mouth', count=1, cells=['bow/top', 'bow/side', 'bow/below'],
          reads='rounded cushions between deep dark folds, uneven in width and reach', src='picture', note='Board v1 note 1, v2 note 2, v3 note 2'),
     dict(id='pore_fields', job='sense: it tastes the dark through pore fields (no eyes; lore 5.8)', type='pore',
-         what='pore fields over the front folds and the shoulders, and one small eye-hole above the mouth', count=3, cells=['bow/top', 'bow/side', 'mid/top'],
+         what='pore fields over the front folds, and one small eye-hole above the mouth', count=2, cells=['bow/top', 'bow/side'],
          reads='a raised rim round a sunk pit', src='picture'),
     dict(id='siphons', job='attitude: squirt to swing the front and the stern', type='thruster', what='puckered jet siphons, a pair forward and a pair aft',
          count=4, cells=['bow/side', 'stern/side'], reads='a muscle collar, a puckered lip, a dark bore', src='designed', note='the picture shows none'),
@@ -30,13 +30,13 @@ INVENTORY = [
          what='a honeycomb of pores over the upper front, about a fifth of the top, sunk in a raised roll of skin (body_folds)', count=1, cells=['bow/top', 'mid/top', 'mid/side'],
          reads='a raised rim round a sunk pit, packed into a honeycomb', src='picture',
          note='Board v1 note 4'),
-    dict(id='stretch_folds', job='the skin drawn up into each neck: the muscle that squeezes a squadron out', type='welt',
-         what='wrinkles converging on each opening', count=5, cells=['bow/side', 'mid/top', 'mid/side', 'stern/top'], reads='raised welts', src='picture'),
-    dict(id='body_folds', job='the sac\'s muscle: it swells and folds as the brood grows', type='welt',
-         what='broken fold rolls over the sac between the openings, fine wrinkles between them, and the roll of skin round the honeycomb field', count=3, cells=['mid/top', 'mid/side', 'mid/below', 'stern/side'],
-         reads='raised welts in broken runs', src='picture'),
-    dict(id='scars', job='regrowth (regen 6): wounds knitting shut', type='scar', what='scarred patches on the back and flanks', count=6,
-         cells=['bow/top', 'mid/top', 'mid/side', 'stern/top'], reads='a raised irregular patch, knit ridges across it', src='picture'),
+    dict(id='body_folds', job='the sac\'s muscle round the spore field: the roll of skin the honeycomb sinks in', type='welt',
+         what='the raised roll of skin round the honeycomb field', count=1, cells=['bow/top', 'mid/top'],
+         reads='a raised welt', src='picture'),
+    dict(id='hide', job='the armour shell (R341): banded keratin scutes over the whole sac, the first thing a hit tears', type='plate',
+         what='overlapping scutes in seven bands from belly to back, lips aft, every fitting in an open socket', count=1,
+         cells=['bow/side', 'bow/below', 'mid/top', 'mid/side', 'mid/below', 'stern/top', 'stern/side', 'stern/below'],
+         reads='thick scutes, each lip proud over the next root, a keel, grooves', src='designed', note='Ryan, Nov 19 (R341); the picture shows folded flesh'),
     # ---------------- below ----------------
     dict(id='teardrop_sacs', job='spore feed storage for the squadrons and regrowth flesh (regen 6); they rupture first', type='sac',
          what='a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin necks, in one spaced row low on the belly\'s edge, hanging well below the outline', count=18, cells=['bow/side', 'bow/below', 'mid/side', 'mid/below', 'stern/below'],
@@ -45,7 +45,7 @@ INVENTORY = [
     dict(id='body', job='the body: one giant sac, its chambers the hangar, the heart vat and the guts', type='hull',
          what='a vast sac of folded, scarred flesh, as long as it is wide', count=1,
          cells=['bow/top', 'bow/side', 'bow/below', 'mid/top', 'mid/side', 'mid/below', 'stern/top', 'stern/side', 'stern/below'],
-         reads='fold rolls, wrinkles, pore fields', src='picture'),
+         reads='the armour shell, the creased front, the openings', src='picture'),
     # ---------------- stern ----------------
     dict(id='vents', job='drive (sp 2): four pulse vents push the sac; no nozzles (factions.md)', type='engine',
          what='the membranes streaming from the stern, lit from within', count=4, cells=['stern/top', 'stern/side', 'stern/below'],
@@ -53,9 +53,10 @@ INVENTORY = [
 ]
 
 LEFT_PLAIN = [
-    'Fine wrinkle grain, wet sheen, mottling and the grown chitin plates of the hide: surface texture and paint (recipe stage 5), not modelled (blockout v3: the modelled hide pads and their pores read as rivets and panel seams, the Board on v2).',
+    'Fine wrinkle grain, wet sheen and mottling: surface texture and paint (recipe stage 5), not modelled. The v2 hide pads read as rivets and panel seams (the Board on v2); the hide is now the R341 scute shell.',
     'The squadron pods of earlier takes: removed from the art by Ryan (Nov 13); the openings are drawn empty.',
     'The small spines round the stern in the side view: no job (R221), cut.',
+    'The stretch folds, body folds, wrinkles, shoulder pores and scar patches of v1 to v4: under the armour shell (R341), removed.',
     'The designed flank veins of v1 and v2: they read as panel seams at the battle camera (the Board on v2), cut; the picture shows none.',
 ]
 
