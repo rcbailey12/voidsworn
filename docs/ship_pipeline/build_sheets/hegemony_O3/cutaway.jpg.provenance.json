@@ -1,33 +1,33 @@
 {
-  "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+  "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
   "source_dirty": true,
-  "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+  "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "cutaway.jpg",
-  "date": "2026-11-20T23:08:52Z",
+  "date": "2026-11-20T23:13:52Z",
   "sources": [
     {
-      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
       "source_dirty": true,
-      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "cutaway.png",
-      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
       "source_dirty": true,
-      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
       "stage": "sheet built",
-      "date": "2026-11-20T23:08:48Z",
-      "image_sha256": "27f41dc467d1ce922d052e196af3d069ca9dee34daf8b5a35c523f8e94c17aab",
+      "date": "2026-11-20T23:13:48Z",
+      "image_sha256": "0347078b10574cb6948d027bf56d58b4c6382774d3c8e9ea1ae93b3ece61f5aa",
       "sources": [
         {
-          "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+          "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
           "source_dirty": true,
-          "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+          "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "761a2a990d2e7e4fbf50a8d3e3675a4e992ff285359d42a5b7ff018042b004c4"
+    "2c8ccc5f69a41fab015a3defb471c652966fe9e411a1598f1cf14b301dc4e4a5"
   ],
-  "stamp_template_sha256": "a062a3dd41f3eac435e998abb9028748f9077ae34418f04762bbbfea9c517fcb",
+  "stamp_template_sha256": "900bd14fb9ff506cd1694b9e05158843ee3ea04fd0696469a41ec6b986128921",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAACr0lEQVR4nO3aTUgUcRiA8ZnYHbNsZ9a0ENNLJH2QRCCSLmQGRUR0Sjr0cRCCIsLoUmGnSOgQdJA61TFIiqhLXZJISrIso0PbF2hq0+aqaB+MitlhYFrC3QV5d7f/zvM7vcu+A+/lOewyel1dRFNT/ZaaUyePunPnoyftV66l3q+sKL986bw7R999PHuuLbP3wX8W5fqAhXOmpry5wAim3TcM4++zzlSKTWBhVM4pIYnEVJIxEpJzHCcjN8HfFM7px89f3myaobT7Ycuc91lAisI52XZsbm7OnUtLlqfdL0nYse2vmToLPqZwTtPT099GRt3ZskJLCgtT75eVrfTmwaEvGbwMfqVwTpqm9Q98dgdd16uqVqdeXrd2TcKDQxk8C36ldk69va+9eVP1hhSbxcXhVeVl7tw/MBiPj2b2MviS2jn1vOjzfj41bK0LBALJNrdvi+i67s7Pel5m4zj4j9o5TU5+f9r93J1DoWV7du+Yd80yQ95XMzMzDzu7snQffEbtnDRNu3Hzzuzsb3fe37S3euP6fxYWFxS0nDhSVLTU/Xj/QWd8dCyrJ8I3lM/JtmMdt+66czAYbD3TcvhgU2VFuWEY4bAZqa+92NbqNTY8bHfcvpe7Y5HndHXf2Ut0/FhzY0N96p2JicnTrRdisZHsnAQfypOcdF3ftbPx0IF9yd42etX3pv3q9fHxiSwfBl/Jk5xclhmKRGprazavKC2xLNNxnLGx8ej7T4+7ut9GP+T6OuS/vMoJyC3l/4oA/h/kBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADF/APT0lbCDqknaAAAAAElFTkSuQmCC"
   ],
-  "image_sha256": "3e7d6e518839884b3e8a6ab0265cf9637685d7406c02bc06f2cc4479d4f15e0a"
+  "image_sha256": "aeece4fff4145b719a3df6e99a6314f8113da28d84acc6714f8baa9986fc8a32"
 }

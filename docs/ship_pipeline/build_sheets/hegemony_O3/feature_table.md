@@ -2,7 +2,7 @@
 
 Hegemony Navy (hegemony) | class beacon | version 1 (first sheet), 2026-11-20 | blockout: rendered in the issue 1413 cloud copy (Blender 4.5 as the bpy module, Cycles CPU); `build.py hegemony_O3 <out> render` rebuilds it from this file
 
-**Length 7.5 world units** (data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 is designs.md's proposal (footprint 7.5 long), not a measurement: the Board locks it against the capture-zone radius). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
+**Length 7.5 world units** (data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 rail end to rail end: designs.md's proposal, locked by the Board Nov 20 2026 and recorded in godot/render/hull_table.gd HULL_LEN). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
 ## Measured off the views
 
@@ -136,7 +136,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **The rails run along the module, two either side at two heights, in every view.** designs.md: the front view's sideways rails are a picture slip; the top view, the side view and the beauty run them along the module.
-- **Length 7.5 to the rail ends, the cradle 4.1 across the rails, the module 2.2 square.** designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locks the size against the capture zone.
+- **Length 7.5 to the rail ends, the cradle 4.1 across the rails, the module 2.2 square.** designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locked 7.5 (hull_table.gd HULL_LEN).
 - **The cradle is one saddle per side at the module's middle, an arm and a latched clamp round each rail.** the top and side views clamp the rails at the middle; a clamp needs a latch (R221).
 - **Four mooring collars, one per rail, the upper pair forward and the lower pair aft.** designs.md: four mooring collars on the rails; mirrored port and starboard (factions.md: no asymmetry).
 - **Eight station-keeping thruster pads on the module's chamfered edges, two stations.** designs.md: pads on the module's sides only, no propulsion row; on the chamfers they fire clear of the rails.
@@ -145,7 +145,6 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Designed here, not shown in the picture
 
-- The relay's size: no length in data or the class table; 7.5 is a proposal for the Board.
 - The lens ring's pulse in time with the fleet is a game effect, not modelled.
 - Stencil marks and the steel-blue trim tone are paint (the Hegemony stack), not modelled.
 - Q1pu (station-keeping thruster, two rectangular nozzles): station-keeping thruster pad: the relay holds its place, it does not fly.

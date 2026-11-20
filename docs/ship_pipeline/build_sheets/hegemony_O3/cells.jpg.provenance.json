@@ -1,33 +1,33 @@
 {
-  "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+  "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
   "source_dirty": true,
-  "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+  "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "cells.jpg",
-  "date": "2026-11-20T23:08:54Z",
+  "date": "2026-11-20T23:13:54Z",
   "sources": [
     {
-      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
       "source_dirty": true,
-      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "cells.jpg",
-      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
       "source_dirty": true,
-      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
       "stage": "sheet built",
-      "date": "2026-11-20T23:08:51Z",
-      "image_sha256": "887f8c2675e7dc1e5b96d411dfe56eccd824c68f9fce0c4cc6d99b5881bd3583",
+      "date": "2026-11-20T23:13:51Z",
+      "image_sha256": "f6ebf0aa9a94944e32baa044890b64c562c49e1171139f4db3e5b67208adee1a",
       "sources": [
         {
-          "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+          "source_commit": "85819dc18756842942de5c8a97fe8a82e4412b28",
           "source_dirty": true,
-          "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+          "source_diff_sha256": "56a889fc5ddd5fe7572c887812f419f86db1d1218e233a3e39d67019b6c2e0ca",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     98
   ],
   "strip_sha256": [
-    "827429b7292b93e7838f7069d3340599d1e110ea8adba69ea25afc2413eb1f4d"
+    "bba13176399daa64bbec019aed5e210fd0a1e9109cbd5f3a7f5f6a626a4a2714"
   ],
-  "stamp_template_sha256": "132907db29f2cdcd469380875fd52ba25e2abe0890d3dd3f79808c0ff2f3458f",
+  "stamp_template_sha256": "9e28929be0bbbf12b8056ae4714d2409f09491d0100f1d5abbcf02fe72a6832b",
   "covered_pixels": [
     "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"
   ],
-  "image_sha256": "b5751083150b409e1aaa509add7c956bfee66d0809f1b3fe3a90795c4a82db85"
+  "image_sha256": "7dc47ed09fb719432d0bae6f2743aec3a7fff84d81665d64d5ca1128fa98a822"
 }

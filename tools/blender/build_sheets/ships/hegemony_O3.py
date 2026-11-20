@@ -19,7 +19,7 @@ NAME = 'Relay beacon (Hegemony Navy objective)'
 FACTION = 'Hegemony Navy (hegemony)'
 CLASS = 'beacon'
 LENGTH = 7.5
-GAME = "data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 is designs.md's proposal (footprint 7.5 long), not a measurement: the Board locks it against the capture-zone radius"
+GAME = "data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 rail end to rail end: designs.md's proposal, locked by the Board Nov 20 2026 and recorded in godot/render/hull_table.gd HULL_LEN"
 BEAUTY = 'docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg'
 KIT = 'hegemony'
 CONCEPT_SHEET = 'docs/ship_pipeline/build_sheets/hegemony_O3/concept_sheet.jpg'
@@ -282,14 +282,13 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('The rails run along the module, two either side at two heights, in every view', 'designs.md: the front view\'s sideways rails are a picture slip; the top view, the side view and the beauty run them along the module')
     K.change('Length 7.5 to the rail ends, the cradle 4.1 across the rails, the module 2.2 square',
-             'designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locks the size against the capture zone')
+             'designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locked 7.5 (hull_table.gd HULL_LEN)')
     K.change('The cradle is one saddle per side at the module\'s middle, an arm and a latched clamp round each rail', 'the top and side views clamp the rails at the middle; a clamp needs a latch (R221)')
     K.change('Four mooring collars, one per rail, the upper pair forward and the lower pair aft', 'designs.md: four mooring collars on the rails; mirrored port and starboard (factions.md: no asymmetry)')
     K.change('Eight station-keeping thruster pads on the module\'s chamfered edges, two stations', 'designs.md: pads on the module\'s sides only, no propulsion row; on the chamfers they fire clear of the rails')
     K.change('Module bands at the relay-ring joints (x +0.45 and -0.5) carry the break lines; the cradle joints are not a separate seam',
              'designs.md: it breaks into modules, not a spine; the rails part with the module pieces')
     K.change('A deck hatch, a belly hatch and four heat louvres added; the side view\'s longer module not followed', 'a maintained relay needs access and cooling (R221); the top view governs the module\'s length')
-    K.open_item('The relay\'s size: no length in data or the class table; 7.5 is a proposal for the Board')
     K.open_item('The lens ring\'s pulse in time with the fleet is a game effect, not modelled')
     K.open_item('Stencil marks and the steel-blue trim tone are paint (the Hegemony stack), not modelled')
 
