@@ -1,0 +1,1 @@
+FLAGSHIP1077_A16_c26_side_by_side.avi kept on the PC (opus1077\out_pass6_1): 103573356 bytes, SHA256 AFE8D2270D4637ED939824CDA143742EF8012F8F4E91D0B5A06051E22DBF933C. Pushed as FLAGSHIP1077_A16_c26_side_by_side_720p.mp4 (720p H.264 crf 20, no audio, trellis2 imageio_ffmpeg v7.1).

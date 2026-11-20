@@ -1,0 +1,78 @@
+{
+  "chapters": [
+    {
+      "frame": 52,
+      "fx_time": 2.71666666666666,
+      "name": "fatal"
+    },
+    {
+      "frame": 89,
+      "fx_time": 3.93467068620799,
+      "name": "tell"
+    },
+    {
+      "frame": 154,
+      "fx_time": 6.11799999999998,
+      "name": "split"
+    },
+    {
+      "frame": 263,
+      "fx_time": 9.7513333333334,
+      "name": "wreck"
+    },
+    {
+      "frame": 569,
+      "fx_time": 19.9513333333335,
+      "name": "cold"
+    }
+  ],
+  "frames": 573,
+  "kill_at": 3.93467068620799,
+  "radius": 26,
+  "split_at": 5.93467068620799,
+  "stills": {
+    "cold": {
+      "frame": 569,
+      "fx_time": 19.9513333333335
+    },
+    "core": {
+      "frame": 160,
+      "fx_time": 6.30133333333332
+    },
+    "fatal": {
+      "frame": 52,
+      "fx_time": 2.73333333333333
+    },
+    "settled": {
+      "frame": 389,
+      "fx_time": 13.9513333333336
+    },
+    "split": {
+      "frame": 154,
+      "fx_time": 6.11799999999998
+    },
+    "stage4": {
+      "frame": 37,
+      "fx_time": 2.21666666666666
+    },
+    "strain_early": {
+      "frame": 110,
+      "fx_time": 4.65133333333332
+    },
+    "strain_late": {
+      "frame": 140,
+      "fx_time": 5.65133333333332
+    },
+    "wreck": {
+      "frame": 263,
+      "fx_time": 9.7513333333334
+    }
+  },
+  "variant": "strain",
+  "wreck": {
+    "fragment_from_middle_max_L": 0.375465512292771,
+    "fragments": 8,
+    "piece_from_middle_max_L": 0.365483820089334,
+    "pieces": 2
+  }
+}

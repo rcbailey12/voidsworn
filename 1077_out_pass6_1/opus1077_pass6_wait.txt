@@ -1,0 +1,4 @@
+waiting for all done in opus1289_run2_wait.txt Thu 11/19/2026 23:12:51.65 
+OPUS1077_PASS6 start through q_opus1077_pass6.bat Fri 11/20/2026  0:36:52.18, expecting out_pass6_1 
+OPUS1077_PASS6 PASSED at  0:43:52.12 
+all done  0:43:52.13 
