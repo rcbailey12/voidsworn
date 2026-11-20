@@ -497,6 +497,15 @@ var _gas_edge_gain := 0.0
 var hazard_edges: MeshInstance3D
 var _hazard_edge_gain := 0.0
 const HAZARD_EDGE := ["neb", "storm"]
+# Issue 1359 (Neon backdrop audit H4): at c170, passable debris (cover) and impassable rock, hulk and station hexes
+# looked alike without Z. The normal view adds the same faint edge language as the hazards: a warm rim round solid
+# ground (the colour of the planet and station exclusion rims) and, by the look's cover_edge, a softer tan one round
+# debris. The look's solid_edge and cover_edge say how strong; Z's gas_edge already draws both, so Z sets them to 0.
+const SOLID_EDGE_C := Color(0.95, 0.56, 0.24, 0.8)
+var solid_edges: MeshInstance3D
+var cover_edges: MeshInstance3D
+var _solid_edge_gain := 0.0
+var _cover_edge_gain := 0.0
 
 
 func _well_info() -> void:
@@ -587,6 +596,26 @@ func _terrain_edges() -> void:
 		if groups.has(g):
 			nz += _edge_into(sz, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
 	hazard_edges.mesh = sz.commit() if nz > 0 else null
+	# Issue 1359: solid ground includes the map's set-piece holes, which are never board cells
+	var solid: Dictionary = (groups.get("rock", {}) as Dictionary).duplicate()
+	if meta is Dictionary:
+		for hole in meta.get("holes", []):
+			if str(hole.get("kind", "")) == "deadstar": continue
+			for cell in hole.get("cells", []): solid[key(int(cell[0]), int(cell[1]))] = true
+	solid_edges = _edge_mesh("SolidEdges", em, solid, SOLID_EDGE_C)
+	cover_edges = _edge_mesh("CoverEdges", em, groups.get("debris", {}), EDGE_C["debris"])
+
+
+func _edge_mesh(nm: String, em: ShaderMaterial, keys: Dictionary, col: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.name = nm
+	mi.material_override = em.duplicate()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	mi.mesh = st.commit() if _edge_into(st, keys, col, 0.32, 2.2, -0.36) > 0 else null
+	return mi
 
 
 # the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
@@ -649,6 +678,14 @@ func _edge_gains(sp: Dictionary) -> void:
 		_hazard_edge_gain = float(sp.get("hazard_edge", 0.0))
 		(hazard_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _hazard_edge_gain)
 		hazard_edges.visible = _hazard_edge_gain > 0.0
+	if solid_edges != null:
+		_solid_edge_gain = float(sp.get("solid_edge", 0.0))
+		(solid_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _solid_edge_gain)
+		solid_edges.visible = _solid_edge_gain > 0.0
+	if cover_edges != null:
+		_cover_edge_gain = float(sp.get("cover_edge", 0.0))
+		(cover_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _cover_edge_gain)
+		cover_edges.visible = _cover_edge_gain > 0.0
 
 
 func _look_ui(toast: bool) -> void:
@@ -708,6 +745,10 @@ func _process(dt: float) -> void:
 			gas_edges.visible = fills.visible and _gas_edge_gain > 0.0
 		if hazard_edges != null:
 			hazard_edges.visible = fills.visible and _hazard_edge_gain > 0.0
+		if solid_edges != null:
+			solid_edges.visible = fills.visible and _solid_edge_gain > 0.0
+		if cover_edges != null:
+			cover_edges.visible = fills.visible and _cover_edge_gain > 0.0
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 
@@ -973,7 +1014,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 
 
 func _rebuild_edges() -> void:
-	for n in [edges, gas_edges, hazard_edges]:
+	for n in [edges, gas_edges, hazard_edges, solid_edges, cover_edges]:
 		if is_instance_valid(n):
 			remove_child(n)
 			n.queue_free()

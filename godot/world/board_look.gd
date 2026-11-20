@@ -56,7 +56,7 @@ static func next() -> String:
 static func spec() -> Dictionary:
 	var l := current()
 	if l == "cine" and tactical:
-		return {"plate": false, "underlay": 0.45, "fills": true, "grid": "tactical", "terrain_edge": 0.9, "gas_edge": 0.9, "hazard_edge": 0.0, "reach": "holo", "living": true, "gas_k": 0.3, "old_clouds": false, "funnel": true}
+		return {"plate": false, "underlay": 0.45, "fills": true, "grid": "tactical", "terrain_edge": 0.9, "gas_edge": 0.9, "hazard_edge": 0.0, "solid_edge": 0.0, "cover_edge": 0.0, "reach": "holo", "living": true, "gas_k": 0.3, "old_clouds": false, "funnel": true}
 	match l:
 		"holo":
 			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.75, "reach": "holo", "living": false, "gas_k": 1.0, "old_clouds": true, "funnel": true}
@@ -67,5 +67,7 @@ static func spec() -> Dictionary:
 			# Z shows the hexes (gas_edge: those edges; terrain_edge: objective zones and the dead star's rings).
 			# Issue 1267: hazard_edge, a faint line round only the outside of nebula and storm patches (Z's gas_edge
 			# already draws them, so Z sets it to 0)
-			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.3, "gas_edge": 0.0, "hazard_edge": 0.25, "reach": "holo", "living": true, "gas_k": 1.0, "old_clouds": false, "funnel": true}
+			# Issue 1359: solid_edge, a faint amber rim round rock, hulk and station hexes (no entry), and cover_edge, a
+			# fainter tan one round debris (cover you can fly into); Z's gas_edge draws both, so Z sets them to 0
+			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.3, "gas_edge": 0.0, "hazard_edge": 0.25, "solid_edge": 0.35, "cover_edge": 0.18, "reach": "holo", "living": true, "gas_k": 1.0, "old_clouds": false, "funnel": true}
 	return {"plate": true, "underlay": 1.0, "fills": true, "grid": "today", "terrain_edge": 0.0, "reach": "today", "living": false, "gas_k": 1.0, "old_clouds": true, "funnel": false}
