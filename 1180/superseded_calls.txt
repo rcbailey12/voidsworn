@@ -1,0 +1,7 @@
+superseded by the shared build: godot/assets/ships/D20_23/D20_23.glb (copy 2026-11-01T13:54:59.6744525Z, 6376952 bytes; build 2026-11-18T19:22:40.6302059Z, 4824324 bytes)
+superseded by the shared build: godot/assets/ships/D20_23/D20_23_base.jpg (copy 2026-11-18T06:34:04.4089786Z, 713685 bytes; build 2026-11-18T19:22:40.6211973Z, 884853 bytes)
+superseded by the shared build: godot/assets/ships/D20_23/D20_23.glb (copy 2026-11-01T13:54:59.6744525Z, 6376952 bytes; build 2026-11-18T19:22:40.6302059Z, 4824324 bytes)
+superseded by the shared build: godot/assets/ships/D20_23/D20_23_base.jpg (copy 2026-11-18T06:34:04.4089786Z, 713685 bytes; build 2026-11-18T19:22:40.6211973Z, 884853 bytes)
+superseded by the shared build: godot/assets/ships/D20_23/D20_23.glb (copy 2026-11-01T13:54:59.6744525Z, 6376952 bytes; build 2026-11-18T19:22:40.6302059Z, 4824324 bytes)
+superseded by the shared build: godot/assets/ships/D20_23/D20_23_base.jpg (copy 2026-11-18T06:34:04.4089786Z, 713685 bytes; build 2026-11-18T19:22:40.6211973Z, 884853 bytes)
+superseded by the shared build: godot/gen/manifest.json (copy 2026-11-19T04:33:49.4745047Z, 24405 bytes; build 2026-11-19T14:09:37.4444399Z, 24405 bytes)
