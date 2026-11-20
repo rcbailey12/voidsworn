@@ -908,7 +908,10 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
                     a, b = j * q + k, j * q + k + 1
                     (FR if j == 0 else F).append((b, a, nb + a, nb + b) if j == 0 else (a, b, nb + b, nb + a))
             p.add('membrane%d' % i, 'body', 'membrane', _used(V, F))
-            p.add('membraner%d' % i, 'body', 'veilroot', _used(V, FR))
+            # issue 1291 (Ryan, Nov 20: "a yellow random strip near the tail"): the root rows of the veil sheet were one flat
+            # glowing lime band (a glTF glow is a single factor, it cannot fade along the veil), so they stay dark membrane
+            # now; the light at the root comes from the thin glowing ribs below and the bile deep in the vent
+            p.add('membraner%d' % i, 'body', 'membrane', _used(V, FR))
             # veins of light along the veil: lit from the root, fading into the dark membrane toward the torn end
             for q_, kk in enumerate((1, 3, 5)):
                 pts = [Vector(V[j * q + kk]) for j in range(m + 1)]

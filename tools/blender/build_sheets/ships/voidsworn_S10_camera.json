@@ -1,0 +1,21 @@
+{
+ "az": 53.09453456030322,
+ "el": 24.52049326909863,
+ "roll": -8.493941369072552,
+ "dist": 61.849329928963925,
+ "mm": 178.08108980029073,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.015502294695292454,
+ "sy": -0.026540832361380964,
+ "res": [
+  1920,
+  1200
+ ],
+ "iou": 0.8819,
+ "body_iou": 0.8815,
+ "note": "Vigil beauty (issue 1157): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges over 28 or luminance over the blurred picture, closed, filled, largest shape)"
+}

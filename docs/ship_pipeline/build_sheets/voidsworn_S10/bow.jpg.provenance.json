@@ -1,0 +1,54 @@
+{
+  "source_commit": "67709f3d768e37886ad480f405773e0f114dc964",
+  "source_dirty": true,
+  "source_diff_sha256": "5f3dacf4e872082faec8608460890169885e60ce7e8764042b3c01aeb7861cb0",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "bow.jpg",
+  "date": "2026-11-20T15:18:42Z",
+  "sources": [
+    {
+      "source_commit": "67709f3d768e37886ad480f405773e0f114dc964",
+      "source_dirty": true,
+      "source_diff_sha256": "5f3dacf4e872082faec8608460890169885e60ce7e8764042b3c01aeb7861cb0",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "bow.png",
+      "source_commit": "67709f3d768e37886ad480f405773e0f114dc964",
+      "source_dirty": true,
+      "source_diff_sha256": "5f3dacf4e872082faec8608460890169885e60ce7e8764042b3c01aeb7861cb0",
+      "stage": "sheet built",
+      "date": "2026-11-20T15:18:38Z",
+      "image_sha256": "618332ec6a325e94f59df0525bfe78474c4d701b8020d71ad3cff3991d681de0",
+      "sources": [
+        {
+          "source_commit": "67709f3d768e37886ad480f405773e0f114dc964",
+          "source_dirty": true,
+          "source_diff_sha256": "5f3dacf4e872082faec8608460890169885e60ce7e8764042b3c01aeb7861cb0",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    612,
+    282,
+    661
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "86c317c09ee6fbeff4391dfe9c81935531c33effbd8f829f1e9923429dca64ac"
+  ],
+  "stamp_template_sha256": "531b869db7b8d804519445c41412f9cd0912a11320f92d0f3899d47574f6200a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "368dd0e82946644096fce0b5fda62c8b23723f64c642d50af9786de0bc52a349"
+}
