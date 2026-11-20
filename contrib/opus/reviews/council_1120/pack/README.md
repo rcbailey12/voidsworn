@@ -1,0 +1,28 @@
+# Council pack: build 25adec31 (Nov 20 2026)
+
+Every picture here comes from the council playtest build: Voidsworn.exe exported from main 25adec31 (main at 17:20 UTC plus
+the export rock fix and the Vigil manifest row). Bot smoke 0 errors; 295 packaged ship files match the manifest. Stage of
+every picture: **installed in game, playtest build**. Sources are on the project drive at
+board/council_1120/playtest_25adec3/.
+
+## What is here
+
+- `stills/`: title and credits (1080p capture), and six battle moments from Battle 1 (start, move preview, enemy clicked, tip
+  card and legend, enemy turn, menu focus), all scaled to 720 px tall.
+- `run_seed10/`, `run_seed121/`: one frame every 8 seconds from the two player-path recordings (fresh Sunward runs, the
+  player's default settings: Standard AI, Max quality, tips on). Frame `tNNN` is at about (NNN - 1) x 8 seconds. Each run
+  shows flagship pick, the sector map, Battle 1 with its teaching cards, the reward and promotion screens, and Battle 2.
+- `traces/`: the recorder's event log per run (one JSON line per moment: teaching cards, previews, cut-ins, end cards).
+
+## Read this before judging
+
+- The runs are played by a **scripted route**, not a person: the moves are the script's, not a new player's. Judge what the
+  screen shows and teaches, not the script's tactics.
+- Seed 121 **lost Battle 2** (vs a Hullbreaker gutship and raider, 7 rounds). Seed 10 won Battles 1 and 2, then the script
+  stopped because the map did not offer the route it expected ("expected route 2-2 is missing after Battle 2"). Neither run
+  reached Battle 3. Whether a plain first route can lose Battle 2 is a fair first-time player question.
+- Ship revisions: B20_11, I8_37 and V14_23 match publish receipts. B19_11, B21_11 and H4_11 are a **PC snapshot, not an
+  approved revision**, and the Chorus ships are mid rebuild: do not judge them as finished art.
+- The front-end screen set (setup, faction desks, settings, help, progression) failed to capture for a tools reason and is
+  being rerun; earlier front-end shots from Nov 19 are on the project drive under board/1217/ if a seat has drive access.
+- No sound is reviewed. Videos are not in git (8 MB each); the stills cover them.
