@@ -452,19 +452,23 @@ def build(K):
     K.hull_detail('tail_folds', (V, F), 'flesh2', inv='tail_folds', kind='welt', subs=['welt'])
 
     # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
-    # armadillo bands of grown chitin wrapping the body from belly edge to belly edge (section angle -1.2) behind the head,
+    # armadillo bands of grown chitin over the back behind the head, down to the flank fold,
     # broken round the flank folds, the crown, the brood sacs, the siphons and the tail; small fused chitin clusters on the
     # belly between the spore glands. The brood sacs stay uncapped: their birth slits must stay clear (fit check EXIT)
-    plates.armadillo(K, _k, 7.3, -7.7, seed=1352, lo=-1.2, band=1.25, lap=1.45, thick=0.19,
+    # lap 1.9: the shortest band (0.75 of band * lap) still reaches the next band's root at the longest step (1.35 * band), so
+    # no bare strip opens across the back; lo -0.2: on this hull the bands stop just under the flank fold, because the brood
+    # sacs and their necks fill the lower flank and cut the bands there into scraps; the lower flank and belly carry fused chitin
+    plates.armadillo(K, _k, 7.3, -7.7, seed=1352, lo=-0.2, band=1.25, lap=1.9, thick=0.19,
                      keep=('flank_fold', 'head_folds', 'pores_', 'tail_folds', 'scar'),
-                     note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the flank folds, the crown, the brood sacs, siphons and vents; hide rolled at the edges')
-    plates.fused_patches(K, _k, [(6.8, -1.3, 0.95, 3), (6.8, math.pi + 1.3, 0.95, 3), (2.6, -1.25, 1.05, 4), (2.6, math.pi + 1.25, 1.05, 4),
-                                 (-2.4, -1.28, 1.0, 3), (-2.4, math.pi + 1.28, 1.0, 3), (-7.0, -1.3, 0.8, 3), (-7.0, math.pi + 1.3, 0.8, 3)],
+                     note='armadillo bands of grown chitin over the back down to the flank folds, lips aft; broken round the flank folds, the crown, the brood sacs, siphons and vents; hide rolled at the edges')
+    spots = [(6.8, -1.3, 0.95, 3), (2.6, -1.25, 1.05, 4), (-2.4, -1.28, 1.0, 3), (-7.0, -1.3, 0.8, 3),   # the belly, between the glands
+             (6.9, -0.45, 0.9, 3), (2.7, -0.5, 0.95, 4), (-1.6, -0.45, 0.85, 3), (-5.6, -0.4, 0.75, 3)]   # the lower flank, between the sacs
+    plates.fused_patches(K, _k, [(x, t, sz, n) for (x, t0, sz, n) in spots for t in (t0, math.pi - t0)],
                          seed=1353, thick=0.14)
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 14.0, -10.2, 'whole body')
-    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 7.3, -7.7, 'the armadillo bands, belly edge to belly edge')
+    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 7.3, -7.7, 'the armadillo bands on the back, fused clusters below')
     K.colour('ochre chitin', 8.2, -8.0, 'the edge of each flank fold')
     K.colour('bile yellow-green light', 14.0, 12.0, 'the throat glands, deep in the mouths')
     K.colour('bile yellow-green light', -10.2, -14.0, 'the vents and the light in the membranes')
@@ -537,7 +541,7 @@ def build(K):
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The C13 round G look on the shared kit: lumpy swellings grown into the skin behind the head (body.field), armadillo bands of grown '
-             'chitin from belly edge to belly edge broken round the flank folds, fused chitin on the belly; the flank veins and body scars removed, '
+             'chitin over the back down to the flank folds, fused chitin clusters on the lower flanks and belly; the flank veins and body scars removed, '
              'the head, its folds and the maws as accepted (R302, R306); the brood sacs uncapped so the birth slits stay clear',
              'Ryan, Nov 20 (R349; C13 round G accepted in game, PR 1308): armour across the entire body, grown not tiled; issue 1291 brings C10 to C12 to the same kit calls')
     K.change('Colour: bile yellow-green light over dark olive flesh and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b)')
