@@ -1,0 +1,39 @@
+start Thu 11/19/2026 19:21:10.57 attempt 1 
+---- 1. main's tools 
+main 6769f41195399fc7729e9807a0d076fabfd4b0f0 
+---- 2. wait for an idle GPU and queue 
+waiting: a job runs in queue\running 19:21:14.61 
+idle after 4 min 19:25:14.60 
+---- 3. install tools_live 
+2026-11-20T01:25:14Z tools_live checking for running jobs
+2026-11-20T01:25:15Z tools_live fetched origin/main 6769f41195399fc7729e9807a0d076fabfd4b0f0
+2026-11-20T01:25:17Z tools_live saved tools snapshot dc630028a9578b6f5258c2786655f7469f88eaa8
+2026-11-20T01:25:18Z tools_live copied main tools to the tools_live stage
+2026-11-20T01:25:24Z tools_live installed tools_live\dc630028a957 from origin/main 6769f41195399fc7729e9807a0d076fabfd4b0f0
+2026-11-20T01:25:24Z tools_live tools_live now uses dc630028a957 (was none)
+current dc630028a957 
+runner files match the Board hashes (5 checked)
+---- 4. an old tmo.bat copy hands off to tools_live 
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\dc630028a957\pc\run_timeout.ps1
+rollout step ran
+---- 5. PC doctor, read only 
+PC doctor 2026-11-19 19:25 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live\dc630028a957 (files match their hashes)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: free
+  gpu_slot_2: free
+  gpu_solo: free
+Claims held: 0
+
+Godot and Blender processes (CPU sampled over 30 s):
+  none running
+Possibly stuck: 0
+
+queue: 0 running, 0 failed
+queue_b: 0 running, 0 failed
+PASSED 
+all done Thu 11/19/2026 19:25:27.28 

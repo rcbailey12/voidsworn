@@ -1,0 +1,18 @@
+PC doctor 2026-11-19 19:25 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live\dc630028a957 (files match their hashes)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: free
+  gpu_slot_2: free
+  gpu_solo: free
+Claims held: 0
+
+Godot and Blender processes (CPU sampled over 30 s):
+  none running
+Possibly stuck: 0
+
+queue: 0 running, 0 failed
+queue_b: 0 running, 0 failed
