@@ -1,0 +1,2 @@
+waiting for OPUS1379_BODY_RUN3 exit in opus1379d_wait.txt Fri 11/20/2026 17:00:33.58 
+swapped out before it ran anything: replaced by GPU_PUB_C10E_THEN_BURST2.bat (C10 E publish first; Board, Nov 20 23:16 UTC) 17:16:49
