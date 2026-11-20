@@ -73,7 +73,7 @@ func _run() -> void:
 	bench._setup_view()
 	bench._cam(Vector3.ZERO, 170.0)
 	await bench._world({"rock": "stone", "planet": 4}, {}, [])
-	var info := {"mode": mode, "adapter": RenderingServer.get_video_adapter_name(),
+	var info := {"mode": mode, "commit": OS.get_environment("CAPTURE1237_SHA"), "adapter": RenderingServer.get_video_adapter_name(),
 		"renderer": RenderingServer.get_current_rendering_method(), "godot": Engine.get_version_info().string,
 		"ship_manifest_sha256": FileAccess.get_sha256("res://assets/ships/manifest.json"), "budget_ms": BUDGET_MS}
 	info["result"] = await _three(mode == "prepared")
@@ -155,6 +155,20 @@ func _three(prepared: bool) -> Dictionary:
 		"active_bodies_zero_after_s": rest_at, "pieces": pieces, "late_shaders": Bench.HULL.late_shader_names()}
 	if pics != null:
 		res["pictures"] = {"made": pics.made - made0, "reused": pics.reused - reused0, "free": pics.free_count()}
+	# Artoo on PR 1255: the prepared run is proof only if it was prepared, all three fractured for real, p99 is inside the
+	# gate and Jolt is idle within 8 s. The cold run is a stress result: reported, never gated.
+	var fractured := 0
+	for k in pieces: if String(pieces[k]["outcome"]) == "fractured": fractured += 1
+	var why: Array = []
+	if prepared:
+		if not all_built: why.append("not prepared")
+		if fractured < 3: why.append("%d of 3 fractured" % fractured)
+		if float(w.wall.p99) > BUDGET_MS: why.append("p99 %.2f ms over %.1f" % [w.wall.p99, BUDGET_MS])
+		if rest_at < 0.0 or rest_at > 8.0: why.append("active bodies not 0 within 8 s (%.2f)" % rest_at)
+	res["fractured"] = fractured
+	res["gate"] = ("PASS" if why.is_empty() else "FAIL: " + ", ".join(why)) if prepared else "STRESS (not gated)"
+	if prepared and not why.is_empty(): failed = true
+	print("CAPTURE1237 GATE %s %s" % ["prepared" if prepared else "cold", res["gate"]])
 	print("CAPTURE1237 %s kill=%.1f ms wall p50=%.2f p95=%.2f p99=%.2f worst=%.2f gpu p99=%.2f budget=%.1f within=%s bodies_peak=%d zero_after=%.2f s pieces=%s pictures=%s" % [
 		"prepared" if prepared else "cold", kill_ms, w.wall.p50, w.wall.p95, w.wall.p99, w.wall.worst, w.gpu.p99, BUDGET_MS,
 		str(w.wall.p99 <= BUDGET_MS), int(act.max()) if not act.is_empty() else 0, rest_at, JSON.stringify(pieces),
