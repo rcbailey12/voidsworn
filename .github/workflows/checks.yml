@@ -17,6 +17,7 @@ on:
       - 'muse/**'
       - 'work/**'
       - 'opus/**'
+      - 'neon/**'
       # A run the PC runner marks partial pushes to <branch>-partial: a mid-work snapshot that fails by nature and opens no
       # pull request, so it gets no checks (each failure mailed Ryan; Nov 15, "I keep seeing GitHub errors"). The resumed
       # run's own branch is checked when it lands.

@@ -24,6 +24,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   godot --headless --path godot --script res://render/test/turret_check.gd [-- --out FILE.json]
 
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const FIX := "res://render/test/fixtures/T560_fx/T560_fx.glb"
 const K := 23.2          # the Cruiser class length 14.5 times SHIP_K 1.6 (render/hull_table.gd): the size ShipView draws it at
@@ -114,6 +115,7 @@ func _run() -> void:
 	var tgt := _box("TGT", Vector3(RANGE, 0, 0))
 	fx.add_ship("T", tgt, {"faction": "corsair", "cls": "Frigate", "size": 0.6, "shielded": false})
 	var A = fx.ship("A")
+	check(ROOT.at_game_size(A, 0.0), ROOT.size_note(A, 0.0))
 	var h = A.hull
 
 	# 1. what arrives
@@ -281,6 +283,7 @@ func _run() -> void:
 	var b_node := _load("T560_fx_fixed", Vector3(0, 0, 400), true)
 	fx.add_ship("B", b_node, {"faction": "corsair", "cls": "Cruiser", "size": 1.0, "code": "T560_fx_fixed"})
 	var Bs = fx.ship("B")
+	check(ROOT.at_game_size(Bs, 0.0), ROOT.size_note(Bs, 0.0))
 	check(Bs.hull.turrets.is_empty(), "the copy with its turret nodes removed has no turrets (fixed guns, as before)")
 	var tgt2 := _box("TGT2", Vector3(RANGE, 0, 400))
 	fx.add_ship("T2", tgt2, {"faction": "corsair", "cls": "Frigate", "size": 0.6, "shielded": false})

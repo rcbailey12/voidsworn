@@ -369,7 +369,15 @@ try {
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
   $mirror = Repo-Mirror
-  foreach ($lane in @('board','board_b','board_c','board_d')) {
+  # Issue 1186: each Workhorse arm's slot folder keeps its set-aside copies beside its one checkout, like a board lane.
+  $slots = @()
+  $workRoot = Join-Path $root 'work217'
+  if (Test-Path -LiteralPath $workRoot -PathType Container) {
+    $slots = @((Get-Item -LiteralPath $workRoot -Force).EnumerateDirectories('slot_*') |
+      Where-Object { $_.Name -cmatch '\Aslot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai)\z' -and
+        -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) } | ForEach-Object { "work217\$($_.Name)" })
+  }
+  foreach ($lane in (@('board','board_b','board_c','board_d') + $slots)) {
     $board = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
     Assert-GpuQuiet

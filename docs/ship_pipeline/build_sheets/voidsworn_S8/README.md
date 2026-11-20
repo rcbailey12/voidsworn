@@ -16,6 +16,11 @@ fit check is still all zero and the weapon match PASS. The views, the overview a
 are still the Nov 15 build; the before and after is [docs/shots/ships/S8/](../../../shots/ships/S8/) (blockout revision 2,
 then the painted run).
 
+**Painted run of Nov 20 2026 (1158_shipjob2, main 291dfcac, R347).** Built with the Warden round 3 kit, so the ember is now
+the lit spire core between dark iron ribs, as on S9. All seven stages exit 0, readback, interiors and death seam pass, done PASS.
+In game beside the concept and the old towers: [S8_1158_ingame_shipjob2.jpg](../../../shots/ships/S8/S8_1158_ingame_shipjob2.jpg).
+LOD0 114,274 triangles, 16 surfaces (was 115,546 and 23); 20 ships with hand LODs 52 draw calls, 1.15 ms median at 1080p.
+
 ![voidsworn_S8 overview](voidsworn_S8_sheet_overview.jpg)
 
 Start here: [the overview](voidsworn_S8_sheet_overview.jpg), [the whole concept beside the build](voidsworn_S8_compare_S8.jpg)
@@ -37,7 +42,7 @@ Files: design `tools/blender/build_sheets/ships/voidsworn_S8.py`, inventory `voi
 4. **S8's four deck turrets in its grid**, on low forged tubs at the deck edges: the two Sear turrets forward (turret T: one
    heavy emitter each), the two spark flak twins aft (flak T). Each pair is one data.js slot and every mount fires every volley.
 5. **The spire line**: seven radiator spires on a forged spine block, tallest at the middle of the row, four profiles (blade,
-   raked, stepped, twin): a few glowing radiator fins standing apart between iron posts, the dark iron core between them
+   raked, stepped, twin): the lit ember core showing between dark iron ribs
    (the ember in the fin slats, the shared Sunward option `radiator(..., glow='slats')`; R331, issue 1158). The command deck looks out through ember slits
    in the spine block's face. A dorsal power trunk runs forward from it along the centreline (S8's centre strip).
 6. **Two big ember bells**, 2.1 across, on riveted drums running 1.55 deep into the stern; bell rings, ember lining, glowing plug.

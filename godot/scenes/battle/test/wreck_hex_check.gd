@@ -100,7 +100,7 @@ func _play(quality: String) -> void:
 		var k: String = board.key(at.x, at.y)
 		_check(board.wrecks.get(id, "") == k, "%s %s: the board has a wreck at %s" % [quality, id, k])
 		_check(str(board.VW.get("terrain", {}).get(k, "")) == "hulk", "%s %s: the board's terrain blocks %s" % [quality, id, k])
-		_check(board.gas_edges != null and board.gas_edges.mesh != null, "%s %s: the blocked-hex edge was rebuilt" % [quality, id])
+		_check(board.solid_edges != null and board.solid_edges.mesh != null, "%s %s: the blocked-hex edge was rebuilt" % [quality, id])
 		_check(anchors.has(id), "%s %s: its death pieces are anchored to the hex" % [quality, id])
 		var nodes: Array = DEATH.leashed_nodes(battle.gfx, id)
 		var hull_laid: bool = board.wreck_hulls.has(id)

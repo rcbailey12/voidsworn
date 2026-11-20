@@ -13,7 +13,8 @@ if ($mode -eq 'run') {
     $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($repo))
     # Keep this file beside the checkout so moving or cloning repo cannot change the lock.
     # lane_tools_refresh.ps1 opens the same file, also without sharing.
-    $lock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None')
+    # Child processes inherit this handle, so the lock outlives this PowerShell while the batch still runs (Artoo, PR 1250).
+    $lock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', [IO.FileShare]::Inheritable)
     $runner = Join-Path $PSScriptRoot 'codex_issue.bat'
     $start = New-Object Diagnostics.ProcessStartInfo
     $start.FileName = $env:COMSPEC
