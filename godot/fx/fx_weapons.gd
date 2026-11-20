@@ -903,13 +903,31 @@ static func _kit_body(fx, lk: String, faction: String) -> Node3D:
 	var key := "munition_%s_%s" % [faction, lk]
 	if not fx.dstate.has(key):
 		fx.dstate[key] = _load_munition(MUNITIONS_DIR + "%s_%s.glb" % [faction, lk], faction)
-	var src = fx.dstate[key]
-	if src == null:
+	return _build_munition(fx.dstate[key])
+
+
+# The cache holds only refcounted data (meshes, finished materials, transforms), never a Node: fx.release() clears dstate and
+# that frees it all (Artoo on PR 1416: an unattached template node would outlive every battle). Each shot builds its own nodes,
+# which its projectile owns and frees.
+static func _build_munition(parts) -> Node3D:
+	if not parts is Array or (parts as Array).is_empty():
 		return null
-	return (src as Node3D).duplicate()
+	var root := Node3D.new()
+	root.name = "kit_body"
+	for part in parts:
+		var mi := MeshInstance3D.new()
+		mi.name = str(part["name"])
+		mi.mesh = part["mesh"]
+		mi.transform = part["xf"]
+		var mats: Array = part["mats"]
+		for i in mats.size():
+			mi.set_surface_override_material(i, mats[i])
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(mi)
+	return root
 
 
-static func _load_munition(path: String, faction: String) -> Node3D:
+static func _load_munition(path: String, faction: String) -> Array:
 	var n: Node = null
 	if ResourceLoader.exists(path):
 		var ps = load(path)
@@ -922,27 +940,22 @@ static func _load_munition(path: String, faction: String) -> Node3D:
 		if doc.append_from_buffer(FileAccess.get_file_as_bytes(path), "", st) == OK:
 			n = doc.generate_scene(st)
 	if n == null:
-		return null
-	var root := Node3D.new()
-	root.name = "kit_body"
+		return []
+	var parts: Array = []
 	var LOOK = load("res://render/look.gd") if ResourceLoader.exists("res://render/look.gd") else null
 	for m in n.find_children("*", "MeshInstance3D", true, false):
 		var src := m as MeshInstance3D
 		if src.mesh == null:
 			continue
-		var mi := MeshInstance3D.new()
-		mi.name = String(src.name)
-		mi.mesh = src.mesh
-		mi.transform = _to_root(n, src)
+		var mats: Array = []
 		for i in src.mesh.get_surface_count():
 			var mat: Material = src.get_active_material(i)
 			if mat != null and LOOK != null:
 				mat = LOOK.hull(mat, faction, true)
-			mi.set_surface_override_material(i, mat)
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		root.add_child(mi)
+			mats.append(mat)
+		parts.append({"name": String(src.name), "mesh": src.mesh, "xf": _to_root(n, src), "mats": mats})
 	n.free()
-	return root if root.get_child_count() > 0 else null
+	return parts
 
 
 static func _to_root(root: Node, n: Node3D) -> Transform3D:

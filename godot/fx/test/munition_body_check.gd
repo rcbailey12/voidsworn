@@ -25,7 +25,7 @@ func _init() -> void:
 	for f in BODIES:
 		var path := W.MUNITIONS_DIR + "%s_%s.glb" % f
 		_ok(FileAccess.file_exists(path), "%s exists" % path)
-		var body: Node3D = W._load_munition(path, f[0])
+		var body: Node3D = W._build_munition(W._load_munition(path, f[0]))
 		_ok(body != null, "%s %s body loads" % f)
 		if body == null:
 			continue
@@ -61,5 +61,35 @@ func _init() -> void:
 	_ok(old.find_child("kit_body", true, false) == null and fx.dstate.has("weapon_torp_casing"), "a faction with no body keeps the code casing")
 	var star: Node3D = W._projectile_body(fx, "star", 1.0, Color(1, 0.5, 0.2), "ithar")
 	_ok(star.find_child("kit_body", true, false) == null, "the Glasswright star torpedo stays an effect")
+	for n in [kit, old, star]:
+		n.free()
+	# Artoo on PR 1416: the cache holds no node, so nothing outlives a battle. Two FX lifecycles each load and fire a body; after
+	# each release no kit_body node is left anywhere and the node count is back where it started.
+	var cached_nodes := 0
+	for v in fx.dstate.values():
+		if v is Node:
+			cached_nodes += 1
+		elif v is Array:
+			for e in v:
+				if e is Node or (e is Dictionary and (e as Dictionary).values().any(func(x): return x is Node)):
+					cached_nodes += 1
+	_ok(cached_nodes == 0, "the munition cache holds data only, no nodes")
+	fx.release()
+	fx.free()
+	await process_frame
+	var base := Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
+	for life in 2:
+		var f2 := Node3D.new()
+		f2.set_script(load("res://fx/fx.gd"))
+		get_root().add_child(f2)
+		await process_frame
+		var shot: Node3D = W._projectile_body(f2, "rockets", 1.0, Color(1, 0.5, 0.2), "corsair")
+		_ok(shot.find_child("kit_body", true, false) != null, "lifecycle %d: a Hullbreaker rocket flies the kit body" % (life + 1))
+		shot.free()
+		f2.release()
+		f2.free()
+		await process_frame
+		var now := Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
+		_ok(now <= base, "lifecycle %d: no node left behind (%d nodes, %d before)" % [life + 1, now, base])
 	print("MUNITION_BODY_CHECK %s, %d failures" % ["PASS" if fails == 0 else "FAIL", fails])
 	quit(1 if fails else 0)
