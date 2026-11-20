@@ -1,5 +1,9 @@
 """ithar_GF1: the Needle, the Glasswright fighter wing craft (data.js fighter: cls 'Squadron', guns T; hp 18, sp 6).
 
+SUPERSEDED as a game craft (R370, Ryan Nov 20 2026: "Go back to my Nov 16 picks"): the fighter is ithar_GV2 (V2d) and the
+bomber ithar_GW4 (W4b); this file has no recipe and is never published. It stays as the shared Glasswright craft machinery
+(the mosaic core, ribbons, stern stones, rooms and records) that both of those sheets load and override.
+
 Issue 1373 (R362: anything solid near a ship is built from the ship part kits and takes the hull finish). Ryan picked GF1 from
 three kit-built options on Nov 20 2026 (decision card, 18:38 UTC; the sheet: /mnt/project-files/board/1373/
 GW_craft_options_r1.jpg, the concept of record docs/ship_pipeline/build_sheets/ithar_GF1/concept.jpg).
@@ -165,7 +169,16 @@ def own_part(kind):
 
 
 GX = U(0.075)     # the gun optic's station on the spine
+CREST = 0.010     # the optic's height over the core (share of LENGTH)
 STONES = [(0.5, 'p'), (2.6, 'u'), (4.7, 's')]   # the three stern stones round the stern face (section angle, name)
+STONE_RING = (0.022, 0.018)   # their offsets from the axis (shares of LENGTH, beam and height); other members of the family set these
+STONE_X = -0.5 + 0.006        # the stones' exit station (share of LENGTH)
+STONE_R = 0.013               # a stone's radius (share of LENGTH)
+ROOMS = [('pilot', 'crew', 0.08, 0.16, 0.02, 0.012, 0.022, 'the pilot\'s cell under the gun optic'),
+         ('light_core', 'core', -0.22, 0.05, 0.03, 0.02, 0.02, 'the stored light the mosaic glows with'),
+         ('drive_well', 'engroom', -0.40, -0.26, 0.025, 0.02, 0.02, 'the light well that feeds the three stones')]   # (name, kind, x0, x1, half-beam, below, above)
+BREAK_X = -0.3                # the records-only break line's station
+CORE_PT = -0.05               # hp_core's station
 
 
 def build(K):
@@ -177,7 +190,7 @@ def build(K):
 
 
 def body(K):
-    """the Needle family's body (ithar_GB1, the bomber, builds the same with its own proportions): the mosaic core, the
+    """the Glasswright craft body (ithar_GV2 and ithar_GW4 build the same with their own core and proportions): the mosaic core, the
     ribbons, the stern stones, the colour zones, the small inside and the records"""
     import kit
     stack = gw_kit('stack')
@@ -221,9 +234,9 @@ def body(K):
     # ---------------- the drive: three cut violet stones round the blunt stern face (no flame, no nozzle) ----------------
     for ang, sn in STONES:   # each stone's pearl seat runs forward into the core's stern swell (stage 4 audit: nothing floats)
         fid = 'E' + sn
-        y, z = U(0.022) * math.cos(ang), U(0.018) * math.sin(ang)
-        ex = -0.5 * LENGTH + U(0.006)
-        R = U(0.013)
+        y, z = U(STONE_RING[0]) * math.cos(ang), U(STONE_RING[1]) * math.sin(ang)
+        ex = U(STONE_X)
+        R = U(STONE_R)
         K._obj(fid + '_seat', *ellipsoid((ex + U(0.03), y, z), (U(0.035), R * 1.15, R * 1.15), 16, 8), 'gw_pearl', smooth=True, grp=fid)
         K._obj(fid + '_stone', *P.cut_lens((ex, y, z), (-1, 0, 0), R, R * 0.45, 10), 'gw_drive', grp=fid)
         K._obj(fid + '_core', *P.cut_lens((ex - U(0.001), y, z), (-1, 0, 0), R * 0.45, R * 0.6, 8), 'gw_drive_core', grp=fid)
@@ -241,14 +254,14 @@ def body(K):
     K.colour('amber gun optic; violet drive stones', GX + U(0.02), X0, 'the spine optic, the stern face')
 
     # ---------------- INSIDE: kept small; the build contract needs one, the game never breaks a craft ----------------
-    K.room('pilot', 'crew', U(0.08), U(0.16), -U(0.02), U(0.02), -U(0.012), U(0.022), note='the pilot\'s cell under the gun optic')
-    K.room('light_core', 'core', U(-0.22), U(0.05), -U(0.03), U(0.03), -U(0.02), U(0.02), note='the stored light the mosaic glows with')
-    K.room('drive_well', 'engroom', U(-0.40), U(-0.26), -U(0.025), U(0.025), -U(0.02), U(0.02), note='the light well that feeds the three stones')
+    for nm, kind, a0, a1, hw, zb, zt, note in ROOMS:
+        K.room(nm, kind, U(a0), U(a1), -U(hw), U(hw), -U(zb), U(zt), note=note)
     K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside.'))
     K.armour('annealed outer glass', U(0.004), 'pearl ribbons over the mosaic; no plates')
-    K.break_line('B-1', U(-0.3), 'the craft shatters aft of the light core (records only: the game never breaks a craft)',
-                 path=[(U(-0.3), U(0.3)), (U(-0.29), U(0.05)), (U(-0.31), 0.0), (U(-0.3), U(-0.05)), (U(-0.3), U(-0.3))])
-    K.point('core', 'hp_core', (U(-0.05), 0.0, 0.0))
+    b = BREAK_X
+    K.break_line('B-1', U(b), 'the craft shatters aft of the light core (records only: the game never breaks a craft)',
+                 path=[(U(b), U(0.3)), (U(b + 0.01), U(0.05)), (U(b - 0.01), 0.0), (U(b), U(-0.05)), (U(b), U(-0.3))])
+    K.point('core', 'hp_core', (U(CORE_PT), 0.0, 0.0))
 
     K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as every craft; length to beam about 5 to 1',
              'docs/playbooks/scale.md, Squadron rows, binding; Glasswrights are a small elite fleet, so the craft is slim and sleek (Ryan, Nov 20)')
@@ -264,7 +277,7 @@ def gun_optic(K):
     gv, gf = P.cut_lens((0, 0, 0.0), (0, 0, 1), U(0.016), U(0.010), 10)
     p.add('lens', 'turn', 'gw_gem_amber', (gv, gf))
     p.fit = dict(pivot=('p', (0, 0, 0)), reach=U(0.016), radius=U(0.018), muzzles=[('p', (U(0.016), 0, U(0.004)))], aim=('d', (1, 0, 0)))
-    crest = core(GX, math.pi / 2)[2] + U(0.010)
+    crest = core(GX, math.pi / 2)[2] + U(CREST)
     K.gun('G1', (GX, 0.0, crest), 0.0, cal=U(0.004), blen=U(0.016), barrels=3, slot='T', weapon='guns', part=p, inv=['gun_optic'],
           band=(0, 10, 20, 30), note='the interceptor guns (data.js guns T, 3 shots): one amber cut optic set in the ribbons on the spine; its stone turns, three pulses per volley')
     K.features[-1]['what'] = 'amber cut optic, interceptor guns'

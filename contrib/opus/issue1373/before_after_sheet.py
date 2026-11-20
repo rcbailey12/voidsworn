@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 shots, out, rev = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-ROWS = [('ithar_fighter', 'GF1 The Needle', 'Glasswright fighter'), ('ithar_bomber', 'GB1 Needle bomber', 'Glasswright bomber'),
+ROWS = [('ithar_fighter', 'GV2 Starling Shard (V2d)', 'Glasswright fighter'), ('ithar_bomber', 'GW4 Heliograph Prism (W4b)', 'Glasswright bomber'),
         ('chorus_spore', 'CS1BA2 spore, round G shell', 'Chorus spore'), ('hegemony_bomber', 'HB1 (HF1D family)', 'Navy bomber'),
         ('corsair_fighter', 'KF1 (KB1CC family)', 'Hullbreaker fighter')]
 W, H = 1280, 720
