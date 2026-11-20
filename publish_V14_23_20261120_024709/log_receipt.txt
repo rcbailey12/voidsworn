@@ -1,0 +1,2 @@
+[publish] receipt ok: voidsworn_S9 V14_23 commit 2c2e86da0b4a8ef930012c4b4d6e85752c95635a, glb a70eda919be78dab96caa2a9a3cb7ff23ed93dd980e21432b5c76592a07e67f5, 8 listed and 8 checked files
+SHIP=voidsworn_S9

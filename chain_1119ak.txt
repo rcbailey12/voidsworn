@@ -1,0 +1,8 @@
+publish run one again, start Fri 11/20/2026  2:47:09.07 
+chain start Fri 11/20/2026  2:47:09.07 
+step 1 publish V14_23 from opus1156 start  2:47:09.08 
+step 1 exit 1 at  2:59:41.61 
+step 1 result: C:\Users\rcbai\Downloads\voidsworn_test\publish\V14_23_20261120_024709\result.txt 
+step 1 last line: all done FAILED: shots (the ship is published, read back and sealed; only the picture failed) Fri 11/20/2026  2:59:41.61  
+step 1 did not pass; step 2 NOT run  
+all done Fri 11/20/2026  2:59:41.63  

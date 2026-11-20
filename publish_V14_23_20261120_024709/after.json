@@ -1,0 +1,76 @@
+{
+ "files": {
+  "V14_23.glb": "a70eda919be78dab96caa2a9a3cb7ff23ed93dd980e21432b5c76592a07e67f5",
+  "V14_23_base.jpg": "8812e9c041a3c84d92d9c0db89339a61a83ffc5ac6c8d9d80e569856ffb70eb2",
+  "V14_23_glow_emission.jpg": "8c7434dd835b57042676789558c4494995f2ffdaebafa2e5b0b89533a8ef2f7f",
+  "V14_23_normal.jpg": "e001cde167e58b673425a87fc3568c049719f7f9aa6721e5efa62734737d4255",
+  "V14_23_orm.jpg": "f7361adc232366221d5ac25097835b0f22ef12f0458b46289f8d69d00488418a",
+  "V14_23_parts_base.jpg": "46205800f20c5926112f125c78bc9e5c337a6f15e5d1d54d5cf061248b0f85b0",
+  "V14_23_parts_normal.jpg": "0cafdc650c63b32dc694f840ac059df9cd2550a135993c9f1a089405ea451703",
+  "V14_23_parts_orm.jpg": "910e0f5f2dce29f25b587645bf2dd66ff9ec199a5ed6ca3859165ff91027c814"
+ },
+ "scenes": {
+  "gen/ships/V14_23.scn": "b839bf2307434879bff33682cde0a698ace6b19df0731cd5c4d89eccf7962c34",
+  "gen/damage/V14_23_damage.scn": "de998ccdc1d063cfc6cf0c93c6ef5b06ae886bd6d0f68f8e17e94370cc90760f",
+  "gen/wreck/V14_23_wreck.scn": "a4370b3487c86cbe1b5ff43119a21c36ee8755a51ede040c5c7a68352aac9153"
+ },
+ "asset_row": {
+  "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
+  "faction": "voidsworn",
+  "cls": "Frigate",
+  "band": "S",
+  "game_ship": "warden",
+  "length_world": 6.5,
+  "hardpoints": {
+   "gun": 7,
+   "engine": 2,
+   "breach": 2,
+   "core": 1,
+   "rcs": 4,
+   "board": 2
+  },
+  "breaches": 2,
+  "turrets": 2,
+  "files": {
+   "V14_23.glb": {
+    "bytes": 6003028,
+    "sha256": "a70eda919be78dab96caa2a9a3cb7ff23ed93dd980e21432b5c76592a07e67f5"
+   },
+   "V14_23_base.jpg": {
+    "bytes": 1224643,
+    "sha256": "8812e9c041a3c84d92d9c0db89339a61a83ffc5ac6c8d9d80e569856ffb70eb2"
+   },
+   "V14_23_glow_emission.jpg": {
+    "bytes": 446930,
+    "sha256": "8c7434dd835b57042676789558c4494995f2ffdaebafa2e5b0b89533a8ef2f7f"
+   },
+   "V14_23_normal.jpg": {
+    "bytes": 583392,
+    "sha256": "e001cde167e58b673425a87fc3568c049719f7f9aa6721e5efa62734737d4255"
+   },
+   "V14_23_orm.jpg": {
+    "bytes": 1613564,
+    "sha256": "f7361adc232366221d5ac25097835b0f22ef12f0458b46289f8d69d00488418a"
+   },
+   "V14_23_parts_base.jpg": {
+    "bytes": 1061485,
+    "sha256": "46205800f20c5926112f125c78bc9e5c337a6f15e5d1d54d5cf061248b0f85b0"
+   },
+   "V14_23_parts_normal.jpg": {
+    "bytes": 344748,
+    "sha256": "0cafdc650c63b32dc694f840ac059df9cd2550a135993c9f1a089405ea451703"
+   },
+   "V14_23_parts_orm.jpg": {
+    "bytes": 1637186,
+    "sha256": "910e0f5f2dce29f25b587645bf2dd66ff9ec199a5ed6ca3859165ff91027c814"
+   }
+  },
+  "pc_path": "godot/assets/ships/V14_23/"
+ },
+ "cache_row": {
+  "mirror": false,
+  "res": "res://gen/ships/V14_23.scn",
+  "src": "1795146877:6003028;",
+  "v": 3.0
+ }
+}

@@ -1,0 +1,32 @@
+GPU: waiting for shared claim, weight 1 (1311)
+GPU: acquired shared claim 8c2fa5ff-056b-4551-a3cf-1e74a69465b1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-46f32994f523409b99fdd5b1380d0e0b\godot-profile-5a3f6a3cb18f4d6d881f356b97b2bd66
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\publish\V14_23_20261120_024709\shots facs ["voidsworn"] sets ["battle", "close"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\V14_23_20261120_024709\shots/voidsworn_battle.jpg
+ERROR: Parse JSON failed. Error at line 0: Unknown error getting token
+   at: parse_string (core/io/json.cpp:629)
+   GDScript backtrace (most recent call first):
+       [0] _context (res://tools/picture_provenance.gd:28)
+       [1] _save (res://tools/picture_provenance.gd:88)
+       [2] save_jpg (res://tools/picture_provenance.gd:11)
+       [3] _snap (res://assets/ships/test/a4_shots.gd:337)
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'Dictionary'.
+   at: _context (res://tools/picture_provenance.gd:28)
+   GDScript backtrace (most recent call first):
+       [0] _context (res://tools/picture_provenance.gd:28)
+       [1] _save (res://tools/picture_provenance.gd:88)
+       [2] save_jpg (res://tools/picture_provenance.gd:11)
+       [3] _snap (res://assets/ships/test/a4_shots.gd:337)
+ERROR: Picture stamp FAILED: C:\Users\rcbai\Downloads\voidsworn_test\publish\V14_23_20261120_024709\shots/voidsworn_battle.jpg
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _failed (res://tools/picture_provenance.gd:125)
+       [1] _save (res://tools/picture_provenance.gd:90)
+       [2] save_jpg (res://tools/picture_provenance.gd:11)
+       [3] _snap (res://assets/ships/test/a4_shots.gd:337)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-46f32994f523409b99fdd5b1380d0e0b\godot-profile-5a3f6a3cb18f4d6d881f356b97b2bd66
+GPU: released shared claim 8c2fa5ff-056b-4551-a3cf-1e74a69465b1

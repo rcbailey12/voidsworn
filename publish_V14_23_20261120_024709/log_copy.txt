@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 2:47:11 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1156\out\recipe\export\V14_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\V14_23_20261120_024709\export\V14_23\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1156\out\recipe\export\V14_23\
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1470	manifest_entry.json100%  
+	    New File  		   5.7 m	V14_23.glb  8.7% 17.4% 26.2% 34.9% 43.6% 52.4% 61.1% 69.8% 78.6% 87.3% 96.0%100%  
+	    New File  		   1.1 m	V14_23_base.jpg 21%   42%   64%   85%  100%  
+	    New File  		    5414	V14_23_check.json100%  
+	    New File  		   14811	V14_23_export.json100%  
+	    New File  		  446930	V14_23_glow_emission.jpg 29%   58%   87%  100%  
+	    New File  		  583392	V14_23_normal.jpg 44%   89%  100%  
+	    New File  		   1.5 m	V14_23_orm.jpg 16%   32%   48%   64%   81%   97%  100%  
+	    New File  		   1.0 m	V14_23_parts_base.jpg 24%   49%   74%   98%  100%  
+	    New File  		  344748	V14_23_parts_normal.jpg 38%   76%  100%  
+	    New File  		   1.5 m	V14_23_parts_orm.jpg 16%   32%   48%   64%   80%   96%  100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1156\out\recipe\export\V14_23\_gltf_source\
+	    New File  		  446930	S9_engine_emission.jpg 29%   58%   87%  100%  
+	    New File  		   1.1 m	S9_hull_albedo.jpg 21%   42%   64%   85%  100%  
+	    New File  		  583392	S9_hull_normal.jpg 44%   89%  100%  
+	    New File  		   1.5 m	S9_hull_orm.jpg 16%   32%   48%   64%   81%   97%  100%  
+	    New File  		   1.0 m	S9_parts_albedo.jpg 24%   49%   74%   98%  100%  
+	    New File  		  344748	S9_parts_normal.jpg 38%   76%  100%  
+	    New File  		   1.5 m	S9_parts_orm.jpg 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   5.6 m	V14_23.bin  8%   17%   26%   35%   43%   52%   61%   70%   79%   87%   96%  100%  
+	    New File  		   52240	V14_23.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   24.66 m   24.66 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           957966518 Bytes/sec.
+   Speed :           54815.283 MegaBytes/min.
+   Ended : Friday, November 20, 2026 2:47:11 AM
+
