@@ -1,0 +1,8 @@
+waiting for chain_1119aq all done Fri 11/20/2026  7:08:40.29 
+mirror refresh  7:17:40.18 
+mirror fetch exit 0
+729a0ed1bbcfcfbb2e58b34923093a4021279f1f reachable in the mirror
+chain start Fri 11/20/2026  7:17:41.65 
+1291 export F start  7:17:41.65 
+1291 export F exit 0 at  7:36:28.34 
+all done Fri 11/20/2026  7:36:28.34 

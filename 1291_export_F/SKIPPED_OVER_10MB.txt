@@ -1,0 +1,2 @@
+recipe\export\B20_11\B20_11.glb  15623044 bytes
+recipe\export\B20_11\_gltf_source\B20_11.bin  15596512 bytes

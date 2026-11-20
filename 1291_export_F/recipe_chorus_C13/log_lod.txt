@@ -1,0 +1,20 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+07:32:43 | INFO: Starting glTF 2.0 export
+07:32:43 | INFO: Extracting primitive: C13_lod0
+07:32:44 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:32:45 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:32:45 | INFO: Primitives created: 14
+07:32:45 | INFO: Extracting primitive: C13_lod1
+07:32:45 | INFO: Primitives created: 6
+07:32:45 | INFO: Extracting primitive: C13_lod2
+07:32:45 | INFO: Primitives created: 6
+07:32:45 | INFO: Extracting primitive: C13_lod3
+07:32:45 | INFO: Primitives created: 5
+07:32:46 | INFO: Finished glTF 2.0 export in 2.4572298526763916 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\glb\C13.glb {"lod0": {"triangles": 447576, "objects": 158, "materials": 14}, "lod1": {"triangles": 398476, "objects": 133, "materials": 6}, "lod2": {"triangles": 198713, "objects": 115, "materials": 6}, "lod3": {"triangles": 86626, "objects": 95, "materials": 5}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\C13.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-935acf6111764e26b77a2baf974f6b27
