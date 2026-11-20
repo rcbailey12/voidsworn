@@ -182,6 +182,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_set_physics_awake(true)   # the world can outlive this fx (look bench battles share the root world)
 	release()
 
 
@@ -293,6 +294,7 @@ func setup(opts := {}) -> void:
 	phys_root = Node3D.new()
 	phys_root.name = "fx_physics"
 	add_child(phys_root)
+	_phys_check_ms = 0
 	DEATH.setup_physics(self)
 	notes.append("fx: quality %s, %d lights in the event pool" % [quality, _lpool.size()])
 
@@ -383,6 +385,7 @@ func step(delta: float) -> void:
 	var t0 := Time.get_ticks_usec()
 	_run_later()
 	_build_death_pieces()
+	_gate_physics()
 	t0 = pend("later", t0)
 	_update_feel(delta)
 	_update_dim()
@@ -399,6 +402,46 @@ func step(delta: float) -> void:
 		else:
 			(pools[k] as POOLS.Pool).flush()
 	pend("lights_pools", t0)
+
+
+# Issue 1279: Jolt runs its step jobs on the shared worker lanes and keeps each job in a fixed table (2048) until a
+# lane has run it. While any body moves (every live ship's hull collider rides its ship, so all battle long), a second
+# or more of long work holding every high-priority lane (shader and pipeline compiles on a capital's arrival, a death
+# cut's side-by-side lanes) filled that table: "Jolt Physics job system exceeded the maximum number of jobs", and the
+# physics step waited on the main thread. The colliders only matter to loose debris and wreck pieces, so the space
+# steps only while one of those is awake; with nothing awake Jolt makes no jobs at all.
+var _phys_awake := true
+var _phys_check_ms := 0
+const PHYS_CHECK_MS := 250
+
+
+func _set_physics_awake(on: bool) -> void:
+	if on == _phys_awake or phys_root == null or not phys_root.is_inside_tree():
+		return
+	PhysicsServer3D.space_set_active(phys_root.get_world_3d().space, on)
+	_phys_awake = on
+
+
+# Called by anything that puts a body into motion under phys_root, before it moves.
+func wake_physics() -> void:
+	_set_physics_awake(true)
+	_phys_check_ms = Time.get_ticks_msec() + PHYS_CHECK_MS
+
+
+func _gate_physics() -> void:
+	if phys_root == null:
+		return
+	var t := Time.get_ticks_msec()
+	if t < _phys_check_ms:
+		return
+	_phys_check_ms = t + PHYS_CHECK_MS
+	var awake := false
+	for n in phys_root.get_children():
+		var rb := n as RigidBody3D
+		if rb != null and not rb.freeze and not rb.sleeping and not rb.is_queued_for_deletion():
+			awake = true
+			break
+	_set_physics_awake(awake)
 
 
 # F3 profiling (the 20-ship bench's hitch frames): microseconds of main-thread fx work per named section since the last
@@ -1842,11 +1885,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		cs.shape = DEATH.safe_convex(PackedVector3Array([Vector3(-1, -1, -1), Vector3(1, -1, -1), Vector3(-1, 1, -1), Vector3(1, 1, -1),
 			Vector3(-1, -1, 1), Vector3(1, -1, 1), Vector3(-1, 1, 1), Vector3(0.8, 1.1, 0.9)]))
 		rb.add_child(cs)
+		wake_physics()
 		phys_root.add_child(rb)
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
-		get_tree().create_timer(0.5).timeout.connect(free_effect.bind(weakref(rb)))
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			free_effect(weakref(rb))
+			# issue 1279: the warm debris would drift far below the board for the whole battle and keep Jolt stepping;
+			# stopped, they sleep (the space with them) until a death reuses them from the pool
+			for b in dstate["debris"]:
+				if is_instance_valid(b) and (b as RigidBody3D).global_position.y < deep.y * 0.5:
+					(b as RigidBody3D).linear_velocity = Vector3.ZERO
+					(b as RigidBody3D).angular_velocity = Vector3.ZERO
+					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw
