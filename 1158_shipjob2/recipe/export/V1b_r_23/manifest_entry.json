@@ -1,0 +1,53 @@
+{
+ "name": "Daybreak-class dreadnought, the Sunward flagship (Sunward Crusade)",
+ "faction": "voidsworn",
+ "cls": "Dreadnought",
+ "band": "XL",
+ "game_ship": "ascendant",
+ "length_world": 27.0,
+ "hardpoints": {
+  "gun": 16,
+  "engine": 2,
+  "breach": 8,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 8,
+ "turrets": 4,
+ "files": {
+  "V1b_r_23.glb": {
+   "bytes": 13087572,
+   "sha256": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498"
+  },
+  "V1b_r_23_base.jpg": {
+   "bytes": 1658015,
+   "sha256": "69221e4e74f39451f605197e413eae26d0516852d8e2f2d709198e8e8d679a49"
+  },
+  "V1b_r_23_glow_emission.jpg": {
+   "bytes": 552507,
+   "sha256": "6906e4e202754c49c128632af31901255fa36ba4acdbf04cec5e21624ec35e95"
+  },
+  "V1b_r_23_normal.png": {
+   "bytes": 4219518,
+   "sha256": "cf5fddad94f3da021445dbac0cca13e8e2cf0a33cbe80606a639ce7677f2fa97"
+  },
+  "V1b_r_23_orm.png": {
+   "bytes": 8302541,
+   "sha256": "32234bab62ad1156f83e6bec1e697de6364b3ad1713b35baf01e4d21248182f6"
+  },
+  "V1b_r_23_parts_base.jpg": {
+   "bytes": 1167893,
+   "sha256": "256b077ff3832cff7098ebf707873710f5ec9ee5dd8d5d9f8126092b70dfbbce"
+  },
+  "V1b_r_23_parts_normal.png": {
+   "bytes": 2962016,
+   "sha256": "cb1cff4ee8367f45a5c5fb217c780a0739485c123393680008edc34501f6f8ce"
+  },
+  "V1b_r_23_parts_orm.png": {
+   "bytes": 6797784,
+   "sha256": "7879c84506302cf58a1e7e2276fd4ea1ae1a187fcef1d3685829702f0cd5ac83"
+  }
+ },
+ "pc_path": "godot/assets/ships/V1b_r_23/"
+}

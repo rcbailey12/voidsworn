@@ -1,0 +1,4 @@
+chain start Thu 11/19/2026 23:25:17.83 
+1158 S8 shipjob2 start 23:25:17.83 
+1158 S8 shipjob2 exit 0 at 23:48:50.28 
+all done Thu 11/19/2026 23:48:50.28 

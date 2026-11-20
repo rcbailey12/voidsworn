@@ -1,0 +1,10 @@
+[check] authored interiors: 17092 triangles, 11 surfaces; authored seams: 4
+[check] 97182 triangles (54144 on part surfaces), box x -0.500 to 0.500, y -0.068 to 0.135, z -0.132 to 0.132
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 4 written (turret_0 F1, turret_1 F2, turret_2 T1, turret_3 T2); marked by the kit: ['F1', 'F2', 'T1', 'T2']
+[check] slot 0 hbattery P: 5 hard points
+[check] slot 1 hbattery S: 5 hard points
+[check] slot 2 turret T: 2 hard points
+[check] slot 3 flak T: 4 hard points
+[check] hard points: {"board": 2, "breach": 8, "core": 1, "engine": 2, "rcs": 4, "gun": 16}
+PASS V1b_r_23 game export: every required point is there and every hard point passes the mesh checks

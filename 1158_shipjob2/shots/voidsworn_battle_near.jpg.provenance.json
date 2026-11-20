@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T05:48:48Z",
+	"image_sha256": "7b70d06a18662d562a20b0dcdd0fedee39e6ae7e4955ff442ea39d96cd2a7a3f",
+	"inputs": [],
+	"picture_name": "voidsworn_battle_near.jpg",
+	"schema": 1,
+	"source_commit": "291dfcaca818fc783c3a808d85c54744051af6ae",
+	"source_diff_sha256": "1a730c3b793ba82b29cce85a2e82b9a9cb2a26ab0ffb9ba59e63f64cfb9ba519",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "291dfcaca818fc783c3a808d85c54744051af6ae",
+			"source_diff_sha256": "1a730c3b793ba82b29cce85a2e82b9a9cb2a26ab0ffb9ba59e63f64cfb9ba519",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "0b4d7daddab9397d7347173f45bb6979c3880bebb4a9fb4ba27dfa8fbc508b35",
+	"strip_sha256": [
+		"58d80db63be04acd525950ddf216e557d3d950ff5827dfad83efe0fb405e8615"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

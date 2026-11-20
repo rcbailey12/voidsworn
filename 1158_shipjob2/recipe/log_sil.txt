@@ -1,0 +1,1 @@
+[score] S8 {'overlap': 50.1, 'concept_covered': 65.6, 'cell_outside': 31.9, 'triangles': 99026}

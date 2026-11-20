@@ -1,0 +1,16 @@
+{
+ "textures": [
+  {
+   "file": "sunward_trim.png",
+   "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "trim sheet: forged rivets, scuffs (rows: rivets, scuffs)"
+  },
+  {
+   "file": "sunward_decals.png",
+   "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "decal atlas: half-sun crest, spine line, deck row numbers, heat-shed marks"
+  }
+ ]
+}
