@@ -42,7 +42,7 @@ Files: design `tools/blender/build_sheets/ships/voidsworn_S8.py`, inventory `voi
 4. **S8's four deck turrets in its grid**, on low forged tubs at the deck edges: the two Sear turrets forward (turret T: one
    heavy emitter each), the two spark flak twins aft (flak T). Each pair is one data.js slot and every mount fires every volley.
 5. **The spire line**: seven radiator spires on a forged spine block, tallest at the middle of the row, four profiles (blade,
-   raked, stepped, twin): a few glowing radiator fins standing apart between iron posts, the dark iron core between them
+   raked, stepped, twin): the lit ember core showing between dark iron ribs
    (the ember in the fin slats, the shared Sunward option `radiator(..., glow='slats')`; R331, issue 1158). The command deck looks out through ember slits
    in the spine block's face. A dorsal power trunk runs forward from it along the centreline (S8's centre strip).
 6. **Two big ember bells**, 2.1 across, on riveted drums running 1.55 deep into the stern; bell rings, ember lining, glowing plug.
