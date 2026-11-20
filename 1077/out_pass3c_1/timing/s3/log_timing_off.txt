@@ -1,0 +1,99 @@
+GPU: waiting for solo claim, weight 1 (1077)
+GPU: acquired solo claim 933df50a-5f31-40b9-9cc0-490f67611dc3
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] loaded 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 613 ms (worker)
+[world] loaded d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 706 ms (worker)
+[world] loaded 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 710 ms (worker)
+[world] loaded 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 715 ms (worker)
+[world] loaded 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 100 ms (worker)
+[world] loaded 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 98 ms (worker)
+[world] loaded 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 93 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+CAPTURE1077 {"adapter":"NVIDIA GeForce RTX 5080","commit":"66e55036710f2707b589e13178b70de74991b687","godot":"4.7.2-stable (official)","mode":"timing","renderer":"forward_plus","scene_sha256":"6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0","ship_manifest_sha256":"f446283f6282be297ad563ecaf8857ef844c7d76f772c7c10206643d96b55b54"}
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1077 timing off ships=1 first=true wall_p50=2.21 p95=2.68 worst=6.86 gpu_p50=1.79 p95=1.84 worst=2.09
+CAPTURE1077 timing off ships=1 first=false wall_p50=2.20 p95=3.11 worst=8.54 gpu_p50=1.75 p95=1.82 worst=1.83
+CAPTURE1077 timing off ships=2 first=false wall_p50=2.45 p95=3.62 worst=9.12 gpu_p50=1.67 p95=1.76 worst=1.77
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1077 timing off ships=3 wall_p50=4.24 p95=8.80 worst=17.73 gpu_p50=2.08 p95=2.13 worst=2.33
+[attach] battle T0 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle T1 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle T2 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle T3 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle U0 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle U1 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle U2 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+CAPTURE1077 DONE
+GPU: released solo claim 933df50a-5f31-40b9-9cc0-490f67611dc3
