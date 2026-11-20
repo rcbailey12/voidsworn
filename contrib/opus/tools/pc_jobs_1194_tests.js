@@ -12,7 +12,8 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '../../..');
 const PC = path.join(ROOT, 'tools/pc');
-const read = p => fs.readFileSync(p, 'utf8');
+// Files check out CRLF on the PC; compare them as LF everywhere.
+const read = p => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 let groups = 0;
 const pass = msg => { groups++; console.log('PASS ' + msg); };
 

@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const script = fs.readFileSync(path.join(__dirname, 'lane_tools_refresh.ps1'), 'utf8');
+// The PC checks .ps1 files out with CRLF; read them as LF so the patterns hold on both.
+const script = fs.readFileSync(path.join(__dirname, 'lane_tools_refresh.ps1'), 'utf8').replace(/\r\n/g, '\n');
 
 assert.doesNotMatch(script, /\/(?:mir|purge|mov|move)\b/i, 'robocopy must keep destination files');
 assert.doesNotMatch(script, /\bStop-Process\b|\[(?:IO\.)?(?:File|Directory)\]::Delete\b/i, 'refresh leaves processes alone');
