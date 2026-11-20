@@ -21,7 +21,7 @@ rem Writes only under opus1289\ (out_<A>, A the first unused attempt number). Ne
 rem PASSED needs every row collected AND every AFTER prewarmed and firstkill row with no frame over 100 ms and a kill that
 rem broke into pieces (summary1289.ps1 prints the table and ACCEPT n of m into result.txt). Ends with "all done".
 setlocal EnableDelayedExpansion
-set AFTER=__AFTER__
+set AFTER=52f7d10b0cb647b468b55c5b0075806d19d136c3
 set BEFORE=ab6b325862a27cdc3ff8ed51d8db1ec10d77a3cb
 set CAPREF=%AFTER%
 set ROWS=28
