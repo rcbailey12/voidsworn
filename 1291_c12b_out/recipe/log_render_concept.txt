@@ -1,0 +1,713 @@
+GPU: waiting for shared claim, weight 2 (1291)
+GPU: acquired shared claim 783af96d-9f1e-49b4-a03b-9cd1636be910
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\C12.blend"
+Fra:1 Mem:168.52M (Peak 168.78M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C12_hull
+Fra:1 Mem:168.52M (Peak 168.78M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_flesh2
+Fra:1 Mem:168.94M (Peak 168.94M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_maw
+Fra:1 Mem:169.06M (Peak 169.06M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_gland
+Fra:1 Mem:169.16M (Peak 169.16M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:170.30M (Peak 170.30M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:170.89M (Peak 170.89M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:171.46M (Peak 171.46M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_bile
+Fra:1 Mem:172.17M (Peak 172.17M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_pore
+Fra:1 Mem:172.23M (Peak 172.23M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh2
+Fra:1 Mem:172.36M (Peak 172.36M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh2
+Fra:1 Mem:172.39M (Peak 172.39M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_bile
+Fra:1 Mem:172.61M (Peak 172.61M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_pore
+Fra:1 Mem:173.40M (Peak 173.40M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh
+Fra:1 Mem:173.53M (Peak 173.53M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh2
+Fra:1 Mem:173.53M (Peak 173.53M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh
+Fra:1 Mem:173.59M (Peak 173.59M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh2
+Fra:1 Mem:173.65M (Peak 173.65M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:173.98M (Peak 173.98M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_pore
+Fra:1 Mem:174.06M (Peak 174.06M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:174.11M (Peak 174.11M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh2
+Fra:1 Mem:174.28M (Peak 174.28M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:174.48M (Peak 174.48M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_maw
+Fra:1 Mem:174.51M (Peak 174.51M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_bilewet
+Fra:1 Mem:174.54M (Peak 174.54M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_bile
+Fra:1 Mem:174.83M (Peak 174.83M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_pore
+Fra:1 Mem:174.86M (Peak 174.86M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_mount_flesh
+Fra:1 Mem:175.57M (Peak 175.57M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_mount_flesh2
+Fra:1 Mem:175.72M (Peak 175.72M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_flesh2
+Fra:1 Mem:175.60M (Peak 175.72M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | rim
+Fra:1 Mem:175.85M (Peak 175.85M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_pore
+Fra:1 Mem:175.72M (Peak 175.85M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | fill
+Fra:1 Mem:175.76M (Peak 175.85M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:175.85M (Peak 175.85M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_flesh2
+Fra:1 Mem:175.92M (Peak 175.92M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_maw
+Fra:1 Mem:175.99M (Peak 175.99M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_flesh2
+Fra:1 Mem:176.03M (Peak 176.03M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_maw
+Fra:1 Mem:176.04M (Peak 176.04M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_tissue
+Fra:1 Mem:176.04M (Peak 176.04M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_maw
+Fra:1 Mem:176.36M (Peak 176.36M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:176.38M (Peak 176.38M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_tissue
+Fra:1 Mem:176.40M (Peak 176.40M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:176.46M (Peak 176.46M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:176.46M (Peak 176.46M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:176.49M (Peak 176.49M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_tissue
+Fra:1 Mem:176.51M (Peak 176.51M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:176.52M (Peak 176.52M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_bile
+Fra:1 Mem:176.58M (Peak 176.58M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_veilroot
+Fra:1 Mem:176.61M (Peak 176.61M) | Time:00:00.22 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh
+Fra:1 Mem:177.06M (Peak 177.06M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:177.10M (Peak 177.10M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_tissue
+Fra:1 Mem:177.34M (Peak 177.34M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_bile
+Fra:1 Mem:177.45M (Peak 177.45M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh2
+Fra:1 Mem:177.46M (Peak 177.46M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_tissue
+Fra:1 Mem:177.52M (Peak 177.52M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_maw
+Fra:1 Mem:178.43M (Peak 178.43M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_knot_muscle
+Fra:1 Mem:178.58M (Peak 178.58M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_veilroot
+Fra:1 Mem:178.68M (Peak 178.68M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:178.80M (Peak 178.80M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_caps
+Fra:1 Mem:178.85M (Peak 178.85M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_patches
+Fra:1 Mem:179.58M (Peak 179.58M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_lower
+Fra:1 Mem:179.98M (Peak 179.98M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_2
+Fra:1 Mem:182.40M (Peak 182.40M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_upper
+Fra:1 Mem:182.96M (Peak 182.96M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_1
+Fra:1 Mem:183.26M (Peak 183.26M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:183.38M (Peak 183.38M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:183.45M (Peak 183.45M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:183.52M (Peak 183.52M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:184.32M (Peak 184.32M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:184.37M (Peak 184.37M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland
+Fra:1 Mem:184.39M (Peak 184.39M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:184.52M (Peak 184.52M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1s
+Fra:1 Mem:184.59M (Peak 184.59M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:184.77M (Peak 184.59M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:184.49M (Peak 184.59M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:184.53M (Peak 184.59M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:190.96M (Peak 192.38M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:187.14M (Peak 192.38M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C12_hull_albedo
+Fra:1 Mem:187.14M (Peak 192.38M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C12_parts_orm
+Fra:1 Mem:566.61M (Peak 763.19M) | Time:00:00.56 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:566.61M (Peak 763.19M) | Time:00:00.56 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:566.61M (Peak 763.19M) | Time:00:00.56 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:566.61M (Peak 763.19M) | Time:00:00.56 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:566.70M (Peak 763.19M) | Time:00:00.64 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:566.73M (Peak 763.19M) | Time:00:00.64 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:566.73M (Peak 763.19M) | Time:00:00.64 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:566.73M (Peak 763.19M) | Time:00:00.64 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:578.47M (Peak 763.19M) | Time:00:00.72 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:578.47M (Peak 763.19M) | Time:00:00.72 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:593.96M (Peak 763.19M) | Time:00:00.72 | Mem:384.07M, Peak:384.07M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.73 | Mem:399.53M, Peak:399.53M | Scene, ViewLayer | Updating Geometry BVH light 131/130 | Building BVH
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.73 | Mem:399.53M, Peak:399.53M | Scene, ViewLayer | Updating Geometry BVH T1_mount_flesh2 14/130 | Building BVH
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.73 | Mem:399.53M, Peak:399.53M | Scene, ViewLayer | Updating Geometry BVH chorus_C12_hull 2/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.22M (Peak 763.19M) | Time:00:00.73 | Mem:399.58M, Peak:399.58M | Scene, ViewLayer | Updating Geometry BVH rim 130/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.92M (Peak 763.19M) | Time:00:00.73 | Mem:399.61M, Peak:399.61M | Scene, ViewLayer | Updating Geometry BVH fill 129/130 | Building BVH
+Fra:1 Mem:594.92M (Peak 763.19M) | Time:00:00.73 | Mem:399.61M, Peak:399.61M | Scene, ViewLayer | Updating Geometry BVH fill 129/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.92M (Peak 763.19M) | Time:00:00.73 | Mem:399.62M, Peak:399.62M | Scene, ViewLayer | Updating Geometry BVH key 128/130 | Building BVH
+Fra:1 Mem:594.92M (Peak 763.19M) | Time:00:00.73 | Mem:399.62M, Peak:399.62M | Scene, ViewLayer | Updating Geometry BVH key 128/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:399.64M, Peak:399.64M | Scene, ViewLayer | Updating Geometry BVH in_pulse_bladder 127/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:399.64M, Peak:399.64M | Scene, ViewLayer | Updating Geometry BVH in_pulse_bladder 127/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.60M, Peak:400.64M | Scene, ViewLayer | Updating Geometry BVH T1_body_bilewet 17/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.60M, Peak:400.64M | Scene, ViewLayer | Updating Geometry BVH T1_body_bilewet 17/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.92M, Peak:400.92M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh 18/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.92M, Peak:400.92M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh 18/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.68M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh2 19/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.68M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh2 19/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.69M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_body_bile 20/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.73 | Mem:400.69M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_body_bile 20/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.00M (Peak 763.19M) | Time:00:00.73 | Mem:400.69M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_body_pore 21/130 | Building BVH
+Fra:1 Mem:595.00M (Peak 763.19M) | Time:00:00.73 | Mem:400.80M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1p_body_pore 21/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.95M (Peak 763.19M) | Time:00:00.73 | Mem:400.69M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh 22/130 | Building BVH
+Fra:1 Mem:594.95M (Peak 763.19M) | Time:00:00.73 | Mem:400.69M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh 22/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.00M (Peak 763.19M) | Time:00:00.73 | Mem:400.76M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh2 23/130 | Building BVH
+Fra:1 Mem:595.00M (Peak 763.19M) | Time:00:00.73 | Mem:400.95M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh2 23/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.97M (Peak 763.19M) | Time:00:00.73 | Mem:400.77M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_body_bile 24/130 | Building BVH
+Fra:1 Mem:594.97M (Peak 763.19M) | Time:00:00.73 | Mem:400.97M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_body_bile 24/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.94M (Peak 763.19M) | Time:00:00.73 | Mem:400.78M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_body_pore 25/130 | Building BVH
+Fra:1 Mem:594.94M (Peak 763.19M) | Time:00:00.73 | Mem:400.78M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S1s_body_pore 25/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.93M (Peak 763.19M) | Time:00:00.73 | Mem:400.78M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh 26/130 | Building BVH
+Fra:1 Mem:594.93M (Peak 763.19M) | Time:00:00.73 | Mem:400.80M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh 26/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.98M (Peak 763.19M) | Time:00:00.73 | Mem:400.84M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh2 27/130 | Building BVH
+Fra:1 Mem:594.98M (Peak 763.19M) | Time:00:00.73 | Mem:400.85M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh2 27/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.98M (Peak 763.19M) | Time:00:00.73 | Mem:400.85M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_body_bile 28/130 | Building BVH
+Fra:1 Mem:594.98M (Peak 763.19M) | Time:00:00.73 | Mem:400.85M, Peak:400.98M | Scene, ViewLayer | Updating Geometry BVH S2p_body_bile 28/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.96M (Peak 763.19M) | Time:00:00.73 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Geometry BVH S2p_body_pore 29/130 | Building BVH
+Fra:1 Mem:594.96M (Peak 763.19M) | Time:00:00.73 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Geometry BVH S2p_body_pore 29/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.26M (Peak 763.19M) | Time:00:00.73 | Mem:400.91M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh 30/130 | Building BVH
+Fra:1 Mem:594.26M (Peak 763.19M) | Time:00:00.73 | Mem:400.96M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh 30/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.31M (Peak 763.19M) | Time:00:00.73 | Mem:400.97M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_knot_muscle 126/130 | Building BVH
+Fra:1 Mem:594.31M (Peak 763.19M) | Time:00:00.73 | Mem:400.97M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_knot_muscle 126/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.73 | Mem:400.98M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh2 31/130 | Building BVH
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.73 | Mem:400.99M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh2 31/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.73 | Mem:400.99M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_body_bile 32/130 | Building BVH
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.73 | Mem:401.30M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_body_bile 32/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.73 | Mem:401.00M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_body_pore 33/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.73 | Mem:401.02M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S2s_body_pore 33/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.73 | Mem:401.00M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh 34/130 | Building BVH
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.73 | Mem:401.01M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh 34/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.73 | Mem:401.06M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh2 35/130 | Building BVH
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.73 | Mem:401.06M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh2 35/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.07M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_body_bile 36/130 | Building BVH
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.07M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_body_bile 36/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.08M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_body_pore 37/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.13M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3p_body_pore 37/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.74 | Mem:401.08M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh 38/130 | Building BVH
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.74 | Mem:401.09M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh 38/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.74 | Mem:401.15M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh2 39/130 | Building BVH
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.74 | Mem:401.16M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh2 39/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.16M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_body_bile 40/130 | Building BVH
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_body_bile 40/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.17M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_body_pore 41/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.17M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH S3s_body_pore 41/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.74 | Mem:401.17M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh 42/130 | Building BVH
+Fra:1 Mem:594.17M (Peak 763.19M) | Time:00:00.74 | Mem:401.18M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh 42/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.74 | Mem:401.23M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh2 43/130 | Building BVH
+Fra:1 Mem:594.23M (Peak 763.19M) | Time:00:00.74 | Mem:401.24M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh2 43/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.24M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_flesh2 44/130 | Building BVH
+Fra:1 Mem:594.24M (Peak 763.19M) | Time:00:00.74 | Mem:401.24M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_flesh2 44/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.26M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_maw 45/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.28M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_maw 45/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.26M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_2 125/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.26M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_2 125/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.27M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bilewet 46/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.28M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bilewet 46/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.28M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bile 47/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.28M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bile 47/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.28M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_pore 48/130 | Building BVH
+Fra:1 Mem:594.18M (Peak 763.19M) | Time:00:00.74 | Mem:401.42M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R1p_body_pore 48/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.13M (Peak 763.19M) | Time:00:00.74 | Mem:401.30M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh 49/130 | Building BVH
+Fra:1 Mem:594.13M (Peak 763.19M) | Time:00:00.74 | Mem:401.32M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh 49/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.19M (Peak 763.19M) | Time:00:00.74 | Mem:401.36M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh2 50/130 | Building BVH
+Fra:1 Mem:594.19M (Peak 763.19M) | Time:00:00.74 | Mem:401.36M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh2 50/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.19M (Peak 763.19M) | Time:00:00.74 | Mem:401.37M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_flesh2 51/130 | Building BVH
+Fra:1 Mem:594.19M (Peak 763.19M) | Time:00:00.74 | Mem:401.38M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_flesh2 51/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.20M (Peak 763.19M) | Time:00:00.74 | Mem:401.38M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_maw 52/130 | Building BVH
+Fra:1 Mem:594.20M (Peak 763.19M) | Time:00:00.74 | Mem:401.38M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_maw 52/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bilewet 53/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bilewet 53/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.40M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bile 54/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.41M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bile 54/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.40M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_pore 55/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.74 | Mem:401.41M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH R2s_body_pore 55/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.15M (Peak 763.19M) | Time:00:00.74 | Mem:401.42M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_flesh 56/130 | Building BVH
+Fra:1 Mem:594.15M (Peak 763.19M) | Time:00:00.74 | Mem:401.72M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_flesh 56/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.09M (Peak 763.19M) | Time:00:00.74 | Mem:401.43M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_tissue 57/130 | Building BVH
+Fra:1 Mem:594.09M (Peak 763.19M) | Time:00:00.74 | Mem:401.43M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_tissue 57/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.09M (Peak 763.19M) | Time:00:00.74 | Mem:401.43M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_flesh2 58/130 | Building BVH
+Fra:1 Mem:594.09M (Peak 763.19M) | Time:00:00.74 | Mem:401.48M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_flesh2 58/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.74 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_maw 59/130 | Building BVH
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.74 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_maw 59/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_flesh 60/130 | Building BVH
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_flesh 60/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_1 124/130 | Building BVH
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.44M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_1 124/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_tissue 61/130 | Building BVH
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.47M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_tissue 61/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_flesh2 62/130 | Building BVH
+Fra:1 Mem:594.08M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_flesh2 62/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_maw 63/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.46M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_maw 63/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.01M (Peak 763.19M) | Time:00:00.75 | Mem:401.47M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_flesh 64/130 | Building BVH
+Fra:1 Mem:594.01M (Peak 763.19M) | Time:00:00.75 | Mem:401.52M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_flesh 64/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.01M (Peak 763.19M) | Time:00:00.75 | Mem:401.47M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_tissue 65/130 | Building BVH
+Fra:1 Mem:594.01M (Peak 763.19M) | Time:00:00.75 | Mem:401.52M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_tissue 65/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.48M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_flesh2 66/130 | Building BVH
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_flesh2 66/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.48M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_maw 67/130 | Building BVH
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.48M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_maw 67/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.48M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_flesh 68/130 | Building BVH
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_flesh 68/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_tissue 69/130 | Building BVH
+Fra:1 Mem:594.00M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_tissue 69/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_flesh2 70/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.52M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_flesh2 70/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_maw 71/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.49M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_maw 71/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.50M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh 72/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.51M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh 72/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.50M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh2 73/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.51M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh2 73/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.51M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_tissue 74/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.54M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_tissue 74/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.51M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_maw 75/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.51M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_maw 75/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.52M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_gut 123/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.52M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_gut 123/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.53M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_bile 76/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.53M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_bile 76/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.53M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_membrane 77/130 | Building BVH
+Fra:1 Mem:593.99M (Peak 763.19M) | Time:00:00.75 | Mem:401.53M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_membrane 77/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.04M (Peak 763.19M) | Time:00:00.75 | Mem:401.58M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_veilroot 78/130 | Building BVH
+Fra:1 Mem:594.04M (Peak 763.19M) | Time:00:00.75 | Mem:401.58M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E1_body_veilroot 78/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.06M (Peak 763.19M) | Time:00:00.75 | Mem:401.62M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh 79/130 | Building BVH
+Fra:1 Mem:594.06M (Peak 763.19M) | Time:00:00.75 | Mem:401.63M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh 79/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.61M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh2 80/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.63M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh2 80/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.62M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_tissue 81/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.62M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_tissue 81/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.62M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_maw 82/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.65M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_maw 82/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.63M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_bile 83/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.64M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_bile 83/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.75 | Mem:401.63M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_membrane 84/130 | Building BVH
+Fra:1 Mem:594.07M (Peak 763.19M) | Time:00:00.76 | Mem:401.64M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_membrane 84/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.12M (Peak 763.19M) | Time:00:00.76 | Mem:401.68M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_veilroot 85/130 | Building BVH
+Fra:1 Mem:594.12M (Peak 763.19M) | Time:00:00.76 | Mem:401.69M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E2_body_veilroot 85/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.74M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh 86/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.74M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh 86/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.71M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh2 87/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.75M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh2 87/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.72M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_tissue 88/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_tissue 88/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_maw 89/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_maw 89/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_bile 90/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_bile 90/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.73M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_heart_vat 122/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.74M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH in_heart_vat 122/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.74M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_membrane 91/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.86M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_membrane 91/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.80M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_veilroot 92/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.80M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E3_body_veilroot 92/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.83M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh 93/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.86M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh 93/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh2 94/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.87M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh2 94/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.84M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_tissue 95/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.84M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_tissue 95/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_maw 96/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.86M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_maw 96/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_bile 97/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_bile 97/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_membrane 98/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:402.10M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_membrane 98/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.91M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_veilroot 99/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:402.04M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH E4_body_veilroot 99/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.97M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_shell 100/130 | Building BVH
+Fra:1 Mem:594.14M (Peak 763.19M) | Time:00:00.76 | Mem:401.97M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_shell 100/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.81M (Peak 763.19M) | Time:00:00.76 | Mem:402.63M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_skirt 101/130 | Building BVH
+Fra:1 Mem:594.81M (Peak 763.19M) | Time:00:00.76 | Mem:402.65M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_skirt 101/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.76 | Mem:402.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_caps 102/130 | Building BVH
+Fra:1 Mem:595.01M (Peak 763.19M) | Time:00:00.76 | Mem:402.85M, Peak:403.50M | Scene, ViewLayer | Updating Geometry BVH armour_caps 102/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.19M (Peak 763.19M) | Time:00:00.76 | Mem:404.01M, Peak:404.03M | Scene, ViewLayer | Updating Geometry BVH armour_patches 103/130 | Building BVH
+Fra:1 Mem:596.19M (Peak 763.19M) | Time:00:00.76 | Mem:404.02M, Peak:404.03M | Scene, ViewLayer | Updating Geometry BVH armour_patches 103/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.27M (Peak 763.19M) | Time:00:00.76 | Mem:404.09M, Peak:404.10M | Scene, ViewLayer | Updating Geometry BVH armour_patches_hide 104/130 | Building BVH
+Fra:1 Mem:596.27M (Peak 763.19M) | Time:00:00.76 | Mem:404.11M, Peak:404.11M | Scene, ViewLayer | Updating Geometry BVH armour_patches_hide 104/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.29M (Peak 763.19M) | Time:00:00.76 | Mem:404.11M, Peak:404.13M | Scene, ViewLayer | Updating Geometry BVH in_deck_lower 105/130 | Building BVH
+Fra:1 Mem:596.29M (Peak 763.19M) | Time:00:00.76 | Mem:404.13M, Peak:404.13M | Scene, ViewLayer | Updating Geometry BVH in_deck_lower 105/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.28M (Peak 763.19M) | Time:00:00.76 | Mem:404.12M, Peak:404.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3s 121/130 | Building BVH
+Fra:1 Mem:596.28M (Peak 763.19M) | Time:00:00.76 | Mem:404.23M, Peak:404.23M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3s 121/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.24M (Peak 763.19M) | Time:00:00.76 | Mem:404.14M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_deck_upper 106/130 | Building BVH
+Fra:1 Mem:596.24M (Peak 763.19M) | Time:00:00.76 | Mem:404.19M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_deck_upper 106/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.15M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F0 107/130 | Building BVH
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.18M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F0 107/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.15M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F1 108/130 | Building BVH
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F1 108/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.16M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F2 109/130 | Building BVH
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F2 109/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.16M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F3 110/130 | Building BVH
+Fra:1 Mem:596.22M (Peak 763.19M) | Time:00:00.77 | Mem:404.16M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F3 110/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.23M (Peak 763.19M) | Time:00:00.77 | Mem:404.18M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F4 111/130 | Building BVH
+Fra:1 Mem:596.23M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F4 111/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.23M (Peak 763.19M) | Time:00:00.77 | Mem:404.17M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F5 112/130 | Building BVH
+Fra:1 Mem:596.23M (Peak 763.19M) | Time:00:00.77 | Mem:404.17M, Peak:404.38M | Scene, ViewLayer | Updating Geometry BVH in_bh_F5 112/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.18M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.43M | Scene, ViewLayer | Updating Geometry BVH in_bh_F6 113/130 | Building BVH
+Fra:1 Mem:596.18M (Peak 763.19M) | Time:00:00.77 | Mem:404.32M, Peak:404.43M | Scene, ViewLayer | Updating Geometry BVH in_bh_F6 113/130 | Building OptiX acceleration structure
+Fra:1 Mem:596.16M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.43M | Scene, ViewLayer | Updating Geometry BVH in_bile_gland 114/130 | Building BVH
+Fra:1 Mem:596.16M (Peak 763.19M) | Time:00:00.77 | Mem:404.19M, Peak:404.43M | Scene, ViewLayer | Updating Geometry BVH in_bile_gland 114/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.50M (Peak 763.19M) | Time:00:00.77 | Mem:404.32M, Peak:407.51M | Scene, ViewLayer | Updating Geometry BVH in_ganglion 115/130 | Building BVH
+Fra:1 Mem:595.50M (Peak 763.19M) | Time:00:00.77 | Mem:404.76M, Peak:407.51M | Scene, ViewLayer | Updating Geometry BVH in_ganglion 115/130 | Building OptiX acceleration structure
+Fra:1 Mem:595.30M (Peak 763.19M) | Time:00:00.77 | Mem:404.34M, Peak:407.51M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1p 116/130 | Building BVH
+Fra:1 Mem:595.30M (Peak 763.19M) | Time:00:00.77 | Mem:404.34M, Peak:407.51M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1p 116/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.13M (Peak 763.19M) | Time:00:00.77 | Mem:404.63M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1s 117/130 | Building BVH
+Fra:1 Mem:594.13M (Peak 763.19M) | Time:00:00.77 | Mem:404.82M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1s 117/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.05M (Peak 763.19M) | Time:00:00.77 | Mem:404.64M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2p 118/130 | Building BVH
+Fra:1 Mem:594.05M (Peak 763.19M) | Time:00:00.77 | Mem:404.74M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2p 118/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.04M (Peak 763.19M) | Time:00:00.77 | Mem:404.65M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2s 119/130 | Building BVH
+Fra:1 Mem:594.04M (Peak 763.19M) | Time:00:00.77 | Mem:404.69M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2s 119/130 | Building OptiX acceleration structure
+Fra:1 Mem:594.05M (Peak 763.19M) | Time:00:00.77 | Mem:404.66M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3p 120/130 | Building BVH
+Fra:1 Mem:594.05M (Peak 763.19M) | Time:00:00.77 | Mem:404.66M, Peak:410.17M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3p 120/130 | Building OptiX acceleration structure
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.78 | Mem:404.70M, Peak:410.17M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.78 | Mem:404.70M, Peak:410.17M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.78 | Mem:404.72M, Peak:410.17M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:593.94M (Peak 763.19M) | Time:00:00.78 | Mem:404.72M, Peak:410.17M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:404.72M, Peak:410.17M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.00M, Peak:411.00M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.00M, Peak:411.00M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.00M, Peak:411.00M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.00M, Peak:411.00M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.00M, Peak:411.00M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.09M, Peak:411.09M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:600.23M (Peak 763.19M) | Time:00:00.78 | Mem:411.09M, Peak:411.09M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:601.53M (Peak 763.19M) | Time:00:00.79 | Mem:412.39M, Peak:412.39M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:601.53M (Peak 763.19M) | Time:00:00.79 | Mem:412.39M, Peak:412.39M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:601.54M (Peak 763.19M) | Time:00:00.79 | Mem:412.31M, Peak:412.39M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:601.54M (Peak 763.19M) | Time:00:00.79 | Mem:412.40M, Peak:412.40M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:601.54M (Peak 763.19M) | Time:00:00.79 | Mem:412.40M, Peak:412.40M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:601.54M (Peak 763.19M) | Time:00:00.79 | Mem:412.40M, Peak:412.40M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:609.42M (Peak 763.19M) | Time:00:00.80 | Mem:1105.40M, Peak:1105.40M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:685.43M (Peak 763.19M) | Time:00:00.81 | Remaining:00:00.81 | Mem:1181.40M, Peak:1181.40M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:685.44M (Peak 763.19M) | Time:00:00.98 | Remaining:00:00.03 | Mem:1181.41M, Peak:1181.41M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:717.44M (Peak 765.44M) | Time:00:03.20 | Mem:1181.41M, Peak:1181.41M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:717.44M (Peak 765.44M) | Time:00:03.20 | Mem:1181.41M, Peak:1181.41M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\r\C12_concept_cl.png'
+Time: 00:03.44 (Saving: 00:00.16)
+
+[209] shot concept
+Fra:1 Mem:175.76M (Peak 176.02M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C12_hull
+Fra:1 Mem:175.76M (Peak 176.02M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_flesh2
+Fra:1 Mem:176.18M (Peak 176.18M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_chitin
+Fra:1 Mem:176.28M (Peak 176.28M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_bilewet
+Fra:1 Mem:176.37M (Peak 176.37M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_mount_flesh2
+Fra:1 Mem:177.30M (Peak 177.30M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:177.33M (Peak 177.33M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:177.35M (Peak 177.35M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_bile
+Fra:1 Mem:177.35M (Peak 177.35M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:177.46M (Peak 177.46M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh2
+Fra:1 Mem:178.26M (Peak 178.26M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_bile
+Fra:1 Mem:178.39M (Peak 178.39M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:178.71M (Peak 178.71M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh
+Fra:1 Mem:178.72M (Peak 178.72M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_bile
+Fra:1 Mem:178.83M (Peak 178.83M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh
+Fra:1 Mem:178.92M (Peak 178.92M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:178.96M (Peak 178.96M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh2
+Fra:1 Mem:179.00M (Peak 179.00M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:179.04M (Peak 179.04M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:179.46M (Peak 179.46M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_pore
+Fra:1 Mem:179.53M (Peak 179.53M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_mount_flesh
+Fra:1 Mem:179.62M (Peak 179.62M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_mount_flesh2
+Fra:1 Mem:179.70M (Peak 179.70M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_maw
+Fra:1 Mem:179.71M (Peak 179.71M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R1p_body_pore
+Fra:1 Mem:179.74M (Peak 179.74M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_mount_flesh
+Fra:1 Mem:179.75M (Peak 179.75M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_mount_flesh2
+Fra:1 Mem:179.69M (Peak 179.75M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_flesh2
+Fra:1 Mem:179.69M (Peak 179.75M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_maw
+Fra:1 Mem:179.77M (Peak 179.77M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_bilewet
+Fra:1 Mem:180.16M (Peak 180.16M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | R2s_body_bile
+Fra:1 Mem:180.18M (Peak 180.18M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_tissue
+Fra:1 Mem:180.19M (Peak 180.19M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_flesh2
+Fra:1 Mem:180.19M (Peak 180.19M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:180.20M (Peak 180.20M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_flesh
+Fra:1 Mem:180.20M (Peak 180.20M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_flesh
+Fra:1 Mem:180.21M (Peak 180.21M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_flesh
+Fra:1 Mem:180.22M (Peak 180.22M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_flesh2
+Fra:1 Mem:180.23M (Peak 180.23M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:180.24M (Peak 180.24M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_maw
+Fra:1 Mem:180.26M (Peak 180.26M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:180.27M (Peak 180.27M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:180.27M (Peak 180.27M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh
+Fra:1 Mem:180.57M (Peak 180.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:180.57M (Peak 180.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:180.58M (Peak 180.58M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | rim
+Fra:1 Mem:180.58M (Peak 180.58M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:180.59M (Peak 180.59M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_veilroot
+Fra:1 Mem:180.60M (Peak 180.60M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh
+Fra:1 Mem:180.62M (Peak 180.62M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:180.68M (Peak 180.68M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_maw
+Fra:1 Mem:180.89M (Peak 180.89M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_bile
+Fra:1 Mem:180.89M (Peak 180.89M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_veilroot
+Fra:1 Mem:180.93M (Peak 180.93M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh
+Fra:1 Mem:181.03M (Peak 181.03M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh2
+Fra:1 Mem:181.09M (Peak 181.09M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_tissue
+Fra:1 Mem:181.12M (Peak 181.12M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_maw
+Fra:1 Mem:181.42M (Peak 181.42M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_membrane
+Fra:1 Mem:181.15M (Peak 181.42M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_shell
+Fra:1 Mem:181.16M (Peak 181.42M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:182.25M (Peak 182.25M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_caps
+Fra:1 Mem:182.26M (Peak 182.26M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_patches
+Fra:1 Mem:182.40M (Peak 182.41M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_patches_hide
+Fra:1 Mem:182.82M (Peak 182.82M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | key
+Fra:1 Mem:182.83M (Peak 182.83M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pulse_bladder
+Fra:1 Mem:182.93M (Peak 182.93M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:182.85M (Peak 182.93M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_knot_muscle
+Fra:1 Mem:182.97M (Peak 182.97M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_2
+Fra:1 Mem:183.33M (Peak 183.33M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_1
+Fra:1 Mem:183.45M (Peak 183.45M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:183.52M (Peak 183.52M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:183.57M (Peak 183.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland
+Fra:1 Mem:183.55M (Peak 183.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:183.56M (Peak 183.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1s
+Fra:1 Mem:183.56M (Peak 183.57M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:183.62M (Peak 183.62M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:185.15M (Peak 185.15M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:185.46M (Peak 185.46M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut
+Fra:1 Mem:186.35M (Peak 186.83M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:182.52M (Peak 186.83M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C12_parts_normal
+Fra:1 Mem:182.52M (Peak 186.83M) | Time:00:00.14 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C12_parts_orm
+Fra:1 Mem:561.95M (Peak 758.58M) | Time:00:00.44 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:561.95M (Peak 758.58M) | Time:00:00.44 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:561.95M (Peak 758.58M) | Time:00:00.44 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:561.95M (Peak 758.58M) | Time:00:00.44 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:562.04M (Peak 758.58M) | Time:00:00.51 | Mem:384.02M, Peak:384.02M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:562.07M (Peak 758.58M) | Time:00:00.51 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:562.07M (Peak 758.58M) | Time:00:00.51 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:562.07M (Peak 758.58M) | Time:00:00.51 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:562.07M (Peak 758.58M) | Time:00:00.51 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:562.07M (Peak 758.58M) | Time:00:00.51 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:563.46M (Peak 758.58M) | Time:00:00.51 | Mem:384.06M, Peak:384.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.51 | Mem:385.42M, Peak:385.42M | Scene, ViewLayer | Updating Geometry BVH M1_body_bone 7/130 | Building BVH
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.51 | Mem:385.42M, Peak:385.42M | Scene, ViewLayer | Updating Geometry BVH chorus_C12_hull 2/65 | Building BVH
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.51 | Mem:385.42M, Peak:385.42M | Scene, ViewLayer | Updating Geometry BVH T1_body_flesh 16/130 | Building BVH
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.51 | Mem:385.42M, Peak:385.42M | Scene, ViewLayer | Updating Geometry BVH T1_body_flesh 16/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.51 | Mem:385.42M, Peak:385.42M | Scene, ViewLayer | Updating Geometry BVH rim 130/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:385.48M, Peak:385.48M | Scene, ViewLayer | Updating Geometry BVH fill 129/130 | Building BVH
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:385.48M, Peak:385.48M | Scene, ViewLayer | Updating Geometry BVH fill 129/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.50M (Peak 758.58M) | Time:00:00.51 | Mem:385.59M, Peak:385.59M | Scene, ViewLayer | Updating Geometry BVH key 128/130 | Building BVH
+Fra:1 Mem:564.50M (Peak 758.58M) | Time:00:00.51 | Mem:385.59M, Peak:385.59M | Scene, ViewLayer | Updating Geometry BVH key 128/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.50M (Peak 758.58M) | Time:00:00.51 | Mem:385.59M, Peak:385.59M | Scene, ViewLayer | Updating Geometry BVH in_pulse_bladder 127/130 | Building BVH
+Fra:1 Mem:564.50M (Peak 758.58M) | Time:00:00.51 | Mem:385.59M, Peak:385.59M | Scene, ViewLayer | Updating Geometry BVH in_pulse_bladder 127/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.51M (Peak 758.58M) | Time:00:00.51 | Mem:386.50M, Peak:386.57M | Scene, ViewLayer | Updating Geometry BVH T1_body_bilewet 17/130 | Building BVH
+Fra:1 Mem:564.51M (Peak 758.58M) | Time:00:00.51 | Mem:386.50M, Peak:386.57M | Scene, ViewLayer | Updating Geometry BVH T1_body_bilewet 17/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.42M (Peak 758.58M) | Time:00:00.51 | Mem:386.50M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh 18/130 | Building BVH
+Fra:1 Mem:564.42M (Peak 758.58M) | Time:00:00.51 | Mem:386.56M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh 18/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.48M (Peak 758.58M) | Time:00:00.51 | Mem:386.58M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh2 19/130 | Building BVH
+Fra:1 Mem:564.48M (Peak 758.58M) | Time:00:00.51 | Mem:386.61M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_mount_flesh2 19/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.48M (Peak 758.58M) | Time:00:00.51 | Mem:386.72M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_body_bile 20/130 | Building BVH
+Fra:1 Mem:564.48M (Peak 758.58M) | Time:00:00.51 | Mem:386.89M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_body_bile 20/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:386.58M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_body_pore 21/130 | Building BVH
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:386.62M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1p_body_pore 21/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:386.58M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh 22/130 | Building BVH
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:386.60M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh 22/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.46M (Peak 758.58M) | Time:00:00.51 | Mem:386.65M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh2 23/130 | Building BVH
+Fra:1 Mem:564.46M (Peak 758.58M) | Time:00:00.51 | Mem:386.84M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_mount_flesh2 23/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.43M (Peak 758.58M) | Time:00:00.51 | Mem:386.66M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_body_bile 24/130 | Building BVH
+Fra:1 Mem:564.43M (Peak 758.58M) | Time:00:00.51 | Mem:386.75M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_body_bile 24/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.40M (Peak 758.58M) | Time:00:00.51 | Mem:386.67M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_body_pore 25/130 | Building BVH
+Fra:1 Mem:564.40M (Peak 758.58M) | Time:00:00.51 | Mem:386.78M, Peak:386.91M | Scene, ViewLayer | Updating Geometry BVH S1s_body_pore 25/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.34M (Peak 758.58M) | Time:00:00.51 | Mem:386.67M, Peak:386.93M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh 26/130 | Building BVH
+Fra:1 Mem:564.34M (Peak 758.58M) | Time:00:00.51 | Mem:386.68M, Peak:386.93M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh 26/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.40M (Peak 758.58M) | Time:00:00.51 | Mem:386.73M, Peak:386.93M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh2 27/130 | Building BVH
+Fra:1 Mem:564.40M (Peak 758.58M) | Time:00:00.51 | Mem:386.74M, Peak:386.93M | Scene, ViewLayer | Updating Geometry BVH S2p_mount_flesh2 27/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:386.74M, Peak:386.93M | Scene, ViewLayer | Updating Geometry BVH S2p_body_bile 28/130 | Building BVH
+Fra:1 Mem:564.41M (Peak 758.58M) | Time:00:00.51 | Mem:387.04M, Peak:387.04M | Scene, ViewLayer | Updating Geometry BVH S2p_body_bile 28/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.70M (Peak 758.58M) | Time:00:00.52 | Mem:386.80M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2p_body_pore 29/130 | Building BVH
+Fra:1 Mem:563.71M (Peak 758.58M) | Time:00:00.52 | Mem:386.85M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2p_body_pore 29/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:386.80M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh 30/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:386.85M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh 30/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.87M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh2 31/130 | Building BVH
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.89M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_mount_flesh2 31/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:386.88M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_knot_muscle 126/130 | Building BVH
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:386.88M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_knot_muscle 126/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.89M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_body_bile 32/130 | Building BVH
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.89M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_body_bile 32/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:386.90M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_body_pore 33/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:386.90M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S2s_body_pore 33/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:386.90M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh 34/130 | Building BVH
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:386.90M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh 34/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:386.96M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh2 35/130 | Building BVH
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:386.97M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_mount_flesh2 35/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.97M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_body_bile 36/130 | Building BVH
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:386.97M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_body_bile 36/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:386.98M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_body_pore 37/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.03M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3p_body_pore 37/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:386.98M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh 38/130 | Building BVH
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:386.99M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh 38/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:387.04M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh2 39/130 | Building BVH
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:387.05M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_mount_flesh2 39/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:387.05M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_body_bile 40/130 | Building BVH
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:387.36M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_body_bile 40/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.08M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_body_pore 41/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.11M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH S3s_body_pore 41/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:387.07M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh 42/130 | Building BVH
+Fra:1 Mem:563.67M (Peak 758.58M) | Time:00:00.52 | Mem:387.07M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh 42/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:387.13M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh2 43/130 | Building BVH
+Fra:1 Mem:563.73M (Peak 758.58M) | Time:00:00.52 | Mem:387.14M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_mount_flesh2 43/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:387.14M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_flesh2 44/130 | Building BVH
+Fra:1 Mem:563.74M (Peak 758.58M) | Time:00:00.52 | Mem:387.14M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_flesh2 44/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.52 | Mem:387.15M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_maw 45/130 | Building BVH
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.52 | Mem:387.17M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_maw 45/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.16M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bilewet 46/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.18M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bilewet 46/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.16M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_2 125/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.17M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_2 125/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.17M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bile 47/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.19M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_bile 47/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.18M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_pore 48/130 | Building BVH
+Fra:1 Mem:563.68M (Peak 758.58M) | Time:00:00.52 | Mem:387.49M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R1p_body_pore 48/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.52 | Mem:387.20M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh 49/130 | Building BVH
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.52 | Mem:387.20M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh 49/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.52 | Mem:387.26M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh2 50/130 | Building BVH
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.52 | Mem:387.27M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_mount_flesh2 50/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.70M (Peak 758.58M) | Time:00:00.52 | Mem:387.27M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_flesh2 51/130 | Building BVH
+Fra:1 Mem:563.70M (Peak 758.58M) | Time:00:00.52 | Mem:387.28M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_flesh2 51/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.70M (Peak 758.58M) | Time:00:00.52 | Mem:387.28M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_maw 52/130 | Building BVH
+Fra:1 Mem:563.70M (Peak 758.58M) | Time:00:00.52 | Mem:387.28M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_maw 52/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.53 | Mem:387.29M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bilewet 53/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.53 | Mem:387.31M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bilewet 53/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.53 | Mem:387.30M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bile 54/130 | Building BVH
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.53 | Mem:387.30M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_bile 54/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.53 | Mem:387.30M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_pore 55/130 | Building BVH
+Fra:1 Mem:563.64M (Peak 758.58M) | Time:00:00.53 | Mem:387.31M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH R2s_body_pore 55/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.53 | Mem:387.31M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_flesh 56/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.53 | Mem:387.31M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_flesh 56/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.60M (Peak 758.58M) | Time:00:00.53 | Mem:387.33M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_tissue 57/130 | Building BVH
+Fra:1 Mem:563.60M (Peak 758.58M) | Time:00:00.53 | Mem:387.35M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_tissue 57/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.59M (Peak 758.58M) | Time:00:00.53 | Mem:387.33M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_flesh2 58/130 | Building BVH
+Fra:1 Mem:563.59M (Peak 758.58M) | Time:00:00.53 | Mem:387.37M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_body_flesh2 58/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.59M (Peak 758.58M) | Time:00:00.53 | Mem:387.33M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_maw 59/130 | Building BVH
+Fra:1 Mem:563.59M (Peak 758.58M) | Time:00:00.53 | Mem:387.33M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1p_mount_maw 59/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.33M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_flesh 60/130 | Building BVH
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.35M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_flesh 60/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.34M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_tissue 61/130 | Building BVH
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.36M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_tissue 61/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.34M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_1 124/130 | Building BVH
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.35M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_regrowth_1 124/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.35M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_flesh2 62/130 | Building BVH
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.53 | Mem:387.39M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_body_flesh2 62/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.53 | Mem:387.36M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_maw 63/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.53 | Mem:387.67M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2p_mount_maw 63/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.51M (Peak 758.58M) | Time:00:00.53 | Mem:387.36M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_flesh 64/130 | Building BVH
+Fra:1 Mem:563.51M (Peak 758.58M) | Time:00:00.53 | Mem:387.41M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_flesh 64/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.51M (Peak 758.58M) | Time:00:00.53 | Mem:387.37M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_tissue 65/130 | Building BVH
+Fra:1 Mem:563.51M (Peak 758.58M) | Time:00:00.53 | Mem:387.37M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_tissue 65/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_flesh2 66/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.40M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_body_flesh2 66/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_maw 67/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.41M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q1s_mount_maw 67/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_flesh 68/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_flesh 68/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_tissue 69/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.38M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_tissue 69/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.39M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_flesh2 70/130 | Building BVH
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.42M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_body_flesh2 70/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.39M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_maw 71/130 | Building BVH
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.39M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH Q2s_mount_maw 71/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.39M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh 72/130 | Building BVH
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.41M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh 72/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.40M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh2 73/130 | Building BVH
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.40M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_mount_flesh2 73/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.40M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_tissue 74/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.40M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_tissue 74/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.42M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_maw 75/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.43M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_maw 75/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.47M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_bile 76/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.53 | Mem:387.47M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_bile 76/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.42M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_gut 123/130 | Building BVH
+Fra:1 Mem:563.49M (Peak 758.58M) | Time:00:00.53 | Mem:387.43M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_gut 123/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.54 | Mem:387.43M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_membrane 77/130 | Building BVH
+Fra:1 Mem:563.50M (Peak 758.58M) | Time:00:00.54 | Mem:387.43M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_membrane 77/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.54 | Mem:387.48M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_veilroot 78/130 | Building BVH
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.54 | Mem:387.48M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E1_body_veilroot 78/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.50M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh 79/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.52M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh 79/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.51M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh2 80/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.52M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_mount_flesh2 80/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.53M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_tissue 81/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.53M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_tissue 81/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.54 | Mem:387.52M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_maw 82/130 | Building BVH
+Fra:1 Mem:563.58M (Peak 758.58M) | Time:00:00.54 | Mem:387.53M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_maw 82/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.54M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_bile 83/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.54M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_bile 83/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.53M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_membrane 84/130 | Building BVH
+Fra:1 Mem:563.57M (Peak 758.58M) | Time:00:00.54 | Mem:387.55M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_membrane 84/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.62M (Peak 758.58M) | Time:00:00.54 | Mem:387.58M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_veilroot 85/130 | Building BVH
+Fra:1 Mem:563.62M (Peak 758.58M) | Time:00:00.54 | Mem:387.59M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E2_body_veilroot 85/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.60M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh 86/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.63M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh 86/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.61M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh2 87/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.63M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_mount_flesh2 87/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.62M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_tissue 88/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.65M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_tissue 88/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.62M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_maw 89/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.62M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_maw 89/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.65M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_bile 90/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.65M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_bile 90/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.63M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_membrane 91/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.63M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_membrane 91/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.54 | Mem:387.68M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_heart_vat 122/130 | Building BVH
+Fra:1 Mem:563.69M (Peak 758.58M) | Time:00:00.54 | Mem:387.79M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH in_heart_vat 122/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.70M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_veilroot 92/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.83M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E3_body_veilroot 92/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.73M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh 93/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.73M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh 93/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.73M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh2 94/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.73M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_mount_flesh2 94/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.74M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_tissue 95/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_tissue 95/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.74M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_maw 96/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_maw 96/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_bile 97/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.76M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_bile 97/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_membrane 98/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.87M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_membrane 98/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.81M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_veilroot 99/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.87M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH E4_body_veilroot 99/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.87M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_shell 100/130 | Building BVH
+Fra:1 Mem:563.65M (Peak 758.58M) | Time:00:00.54 | Mem:387.87M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_shell 100/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.31M (Peak 758.58M) | Time:00:00.54 | Mem:388.51M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_skirt 101/130 | Building BVH
+Fra:1 Mem:564.31M (Peak 758.58M) | Time:00:00.54 | Mem:388.53M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_skirt 101/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.51M (Peak 758.58M) | Time:00:00.55 | Mem:388.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_caps 102/130 | Building BVH
+Fra:1 Mem:564.51M (Peak 758.58M) | Time:00:00.55 | Mem:388.75M, Peak:389.39M | Scene, ViewLayer | Updating Geometry BVH armour_caps 102/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.69M (Peak 758.58M) | Time:00:00.55 | Mem:389.92M, Peak:389.92M | Scene, ViewLayer | Updating Geometry BVH armour_patches 103/130 | Building BVH
+Fra:1 Mem:565.69M (Peak 758.58M) | Time:00:00.55 | Mem:389.92M, Peak:389.92M | Scene, ViewLayer | Updating Geometry BVH armour_patches 103/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.77M (Peak 758.58M) | Time:00:00.55 | Mem:389.99M, Peak:390.00M | Scene, ViewLayer | Updating Geometry BVH armour_patches_hide 104/130 | Building BVH
+Fra:1 Mem:565.77M (Peak 758.58M) | Time:00:00.55 | Mem:389.99M, Peak:390.00M | Scene, ViewLayer | Updating Geometry BVH armour_patches_hide 104/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.79M (Peak 758.58M) | Time:00:00.55 | Mem:390.01M, Peak:390.03M | Scene, ViewLayer | Updating Geometry BVH in_deck_lower 105/130 | Building BVH
+Fra:1 Mem:565.79M (Peak 758.58M) | Time:00:00.55 | Mem:390.12M, Peak:390.12M | Scene, ViewLayer | Updating Geometry BVH in_deck_lower 105/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.75M (Peak 758.58M) | Time:00:00.55 | Mem:390.02M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_deck_upper 106/130 | Building BVH
+Fra:1 Mem:565.75M (Peak 758.58M) | Time:00:00.55 | Mem:390.02M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_deck_upper 106/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.74M (Peak 758.58M) | Time:00:00.55 | Mem:390.03M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3s 121/130 | Building BVH
+Fra:1 Mem:565.74M (Peak 758.58M) | Time:00:00.55 | Mem:390.09M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3s 121/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.04M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F0 107/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.04M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F0 107/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.08M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F1 108/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.08M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F1 108/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.05M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F2 109/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.08M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F2 109/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.06M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F3 110/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.06M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F3 110/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.07M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F4 111/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.09M, Peak:390.26M | Scene, ViewLayer | Updating Geometry BVH in_bh_F4 111/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.32M, Peak:390.32M | Scene, ViewLayer | Updating Geometry BVH in_bh_F5 112/130 | Building BVH
+Fra:1 Mem:565.73M (Peak 758.58M) | Time:00:00.55 | Mem:390.32M, Peak:390.32M | Scene, ViewLayer | Updating Geometry BVH in_bh_F5 112/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.68M (Peak 758.58M) | Time:00:00.55 | Mem:390.08M, Peak:390.32M | Scene, ViewLayer | Updating Geometry BVH in_bh_F6 113/130 | Building BVH
+Fra:1 Mem:565.68M (Peak 758.58M) | Time:00:00.55 | Mem:390.22M, Peak:390.32M | Scene, ViewLayer | Updating Geometry BVH in_bh_F6 113/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.66M (Peak 758.58M) | Time:00:00.55 | Mem:391.59M, Peak:391.59M | Scene, ViewLayer | Updating Geometry BVH in_bile_gland 114/130 | Building BVH
+Fra:1 Mem:565.66M (Peak 758.58M) | Time:00:00.55 | Mem:391.59M, Peak:391.59M | Scene, ViewLayer | Updating Geometry BVH in_bile_gland 114/130 | Building OptiX acceleration structure
+Fra:1 Mem:565.00M (Peak 758.58M) | Time:00:00.55 | Mem:390.66M, Peak:393.41M | Scene, ViewLayer | Updating Geometry BVH in_ganglion 115/130 | Building BVH
+Fra:1 Mem:565.00M (Peak 758.58M) | Time:00:00.55 | Mem:391.19M, Peak:393.41M | Scene, ViewLayer | Updating Geometry BVH in_ganglion 115/130 | Building OptiX acceleration structure
+Fra:1 Mem:564.81M (Peak 758.58M) | Time:00:00.55 | Mem:390.24M, Peak:393.41M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1p 116/130 | Building BVH
+Fra:1 Mem:564.81M (Peak 758.58M) | Time:00:00.55 | Mem:390.24M, Peak:393.41M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1p 116/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.63M (Peak 758.58M) | Time:00:00.55 | Mem:390.53M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1s 117/130 | Building BVH
+Fra:1 Mem:563.63M (Peak 758.58M) | Time:00:00.55 | Mem:390.94M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_1s 117/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.56M (Peak 758.58M) | Time:00:00.55 | Mem:390.54M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2p 118/130 | Building BVH
+Fra:1 Mem:563.56M (Peak 758.58M) | Time:00:00.55 | Mem:390.64M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2p 118/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.55 | Mem:390.55M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2s 119/130 | Building BVH
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.55 | Mem:390.55M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_2s 119/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.55 | Mem:390.56M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3p 120/130 | Building BVH
+Fra:1 Mem:563.55M (Peak 758.58M) | Time:00:00.55 | Mem:390.60M, Peak:396.06M | Scene, ViewLayer | Updating Geometry BVH in_bile_store_3p 120/130 | Building OptiX acceleration structure
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.56 | Mem:390.59M, Peak:396.06M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.56 | Mem:390.59M, Peak:396.06M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.56 | Mem:390.62M, Peak:396.06M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:563.44M (Peak 758.58M) | Time:00:00.56 | Mem:390.62M, Peak:396.06M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.56 | Mem:390.62M, Peak:396.06M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.90M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.90M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.90M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.90M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.90M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.98M, Peak:396.98M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.98M, Peak:396.98M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.98M, Peak:396.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.98M, Peak:396.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.90M, Peak:396.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.99M, Peak:396.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:569.73M (Peak 758.58M) | Time:00:00.57 | Mem:396.99M, Peak:396.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:569.74M (Peak 758.58M) | Time:00:00.57 | Mem:396.99M, Peak:396.99M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:577.62M (Peak 758.58M) | Time:00:00.58 | Mem:1089.99M, Peak:1089.99M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:653.62M (Peak 758.58M) | Time:00:00.58 | Remaining:00:00.68 | Mem:1165.99M, Peak:1165.99M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:653.63M (Peak 758.58M) | Time:00:00.72 | Remaining:00:00.02 | Mem:1166.00M, Peak:1166.00M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:685.64M (Peak 758.58M) | Time:00:02.96 | Mem:1166.00M, Peak:1166.00M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:685.64M (Peak 758.58M) | Time:00:02.96 | Mem:1166.00M, Peak:1166.00M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\r\C12_concept_clay_cl.png'
+Time: 00:03.12 (Saving: 00:00.08)
+
+[209] shot concept_clay
+[209] RENDER DONE C12
+GPU: released shared claim 783af96d-9f1e-49b4-a03b-9cd1636be910

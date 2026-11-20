@@ -1,0 +1,49 @@
+{
+ "name": "The drone-spawn, the Chorus frigate (The Chorus)",
+ "faction": "chorus",
+ "cls": "Frigate",
+ "band": "S",
+ "game_ship": "b_drone",
+ "length_world": 6.5,
+ "hardpoints": {
+  "gun": 3,
+  "engine": 4,
+  "breach": 2,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 2,
+ "turrets": 0,
+ "files": {
+  "B19_11.glb": {
+   "bytes": 7801680,
+   "sha256": "356f45537193b729fa9110bf276b2a9514fcf58f83ebd50daf1fb1770ede865c"
+  },
+  "B19_11_base.jpg": {
+   "bytes": 795050,
+   "sha256": "8ab6876e3b415ba13637f9b4355f1d90141a7d5a621e2ea77cf9ff908d20f57d"
+  },
+  "B19_11_normal.png": {
+   "bytes": 6785716,
+   "sha256": "4016e1e1f5d187781ae32bf8a055aead958b21b4f66ff911d69ca0607a8277c7"
+  },
+  "B19_11_orm.png": {
+   "bytes": 4640628,
+   "sha256": "20d0bbbf174f62e0374608d2342a7eec20bcf05da559d4cd8c1ac6f3a73bc885"
+  },
+  "B19_11_parts_base.jpg": {
+   "bytes": 1019018,
+   "sha256": "b53bc1c2af9fb76eb8048366802b3974205aec8f58016d9194349212063f4337"
+  },
+  "B19_11_parts_normal.png": {
+   "bytes": 6204247,
+   "sha256": "22fc37d6929db44797c91534486862ff9198a6eed75b976af42286f466885ae8"
+  },
+  "B19_11_parts_orm.png": {
+   "bytes": 5552896,
+   "sha256": "6314298751f29a2035efc96ccb88304dacb33c12b96f64f18677c58d5c2d8411"
+  }
+ },
+ "pc_path": "godot/assets/ships/B19_11/"
+}

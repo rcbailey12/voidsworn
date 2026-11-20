@@ -1,0 +1,8 @@
+chain AY waiting for 1158 ember 2 exit in chain_1119ax.txt Fri 11/20/2026 10:02:42.89 
+mirror refresh 11:05:43.22 
+mirror fetch exit 0
+bade6c5fb3491e60093739ceb5f3feffaa94c5e2 reachable in the mirror
+1291 C12 B start 11:05:44.26 
+1291 C12 B exit 0 at 11:18:32.77 
+after-job janitor ran, output in janitor_after_1119ay.txt 11:18:33.22 
+all done Fri 11/20/2026 11:18:33.22 
