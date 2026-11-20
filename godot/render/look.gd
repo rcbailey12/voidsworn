@@ -99,7 +99,7 @@ static func rim_of() -> Dictionary:
 	return r
 
 
-# Issue 1262: the cheaper 4K Max items (ssil, underlay, cards, rockshadow) can be switched back to the old way for the
+# Issue 1262: the cheaper 4K Max items (ssil, underlay, cards) can be switched back to the old way for the
 # before and after timing and pictures: VS_1262_OLD=all or a comma list. Capture only; never set in play.
 static func perf_old(item: String) -> bool:
 	var v := OS.get_environment("VS_1262_OLD")
