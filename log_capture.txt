@@ -1,0 +1,29 @@
+GPU: waiting for shared claim, weight 1 (1359)
+GPU: acquired shared claim 45b40b9e-e8da-4453-8924-f3d8a5f99586
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c2c3f1f43714ea9b29460f9be2ee42b\godot-profile-8eb352140db0477298d408f7820bf81e
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 316 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.603, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[world] baked 413b7f8c2caff6f5c732c30e5950ec4373bc7128ebd66353db8d939051533b17 4096x2048 in 8870 ms (worker)
+[world] baked 738254082e40cebe4dbdbc79f099a4daea7ae1eb3d41195b3ae9b1fc63c53931 4096x2048 in 11731 ms (worker)
+[world] baked 2ae7f80e1f27f3f4c6efe927ab4ba2dfe125aab4b3fd8647b30e1257493376ee 4096x2048 in 1589 ms (worker)
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[world_shots] boneyard_graveyard: scene build 1 ms; system: planet 5, 0 moons; fields: 39 edge rocks, 171 deep, 0 belt, 4 mountains; wisps: 41 gas clouds at middle distance; setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless; rocks: 692 in all (14 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 301 ms; living debris: 912 rocks and wreck pieces on 40 hexes; debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 2023, sun glints, three hot points per heated kit piece; legacy debris: 2 materials hidden in living/cine and restored in today/holo; living terrain built in 212 ms; painted hull debris: 8 cached chunks, 40 instances
+[1359] boneyard_graveyard: focus debris 1,20 with 3 solid hexes near; classes Cruiser, Destroyer, Frigate
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1359\out/boneyard_graveyard_1359_1_cine_no_hover_c170.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1359\out/boneyard_graveyard_1359_2_cine_hover_solid_c170.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1359\out/boneyard_graveyard_1359_3_cine_hover_debris_c170.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1359\out/boneyard_graveyard_1359_4_Z_grid_c170.jpg
+[attach] battle x011 D20_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x012 D20_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x013 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[world_shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c2c3f1f43714ea9b29460f9be2ee42b\godot-profile-8eb352140db0477298d408f7820bf81e
+GPU: released shared claim 45b40b9e-e8da-4453-8924-f3d8a5f99586
