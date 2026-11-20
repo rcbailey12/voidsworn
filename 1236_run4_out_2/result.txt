@@ -1,0 +1,72 @@
+start Thu 11/19/2026 22:37:24.21 attempt 2 
+drive bytes free 428989353984 
+warning: in the working copy of 'godot/assets/ships/test/a4_shots.tscn', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/cool_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/cool_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/cool_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/flash_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/flash_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/flash_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/vent_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/vent_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/capital/vent_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/cool_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/cool_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/cool_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/flash_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/flash_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/flash_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/vent_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/vent_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/cruiser/vent_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/cool_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/cool_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/cool_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/flash_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/flash_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/flash_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/vent_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/vent_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/death/small/vent_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/impact/impact_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/impact/impact_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/impact/impact_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/muzzle/muzzle_color.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/muzzle/muzzle_flow.png.import', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'godot/fx/atlases/weapons/muzzle/muzzle_thickness.png.import', LF will be replaced by CRLF the next time Git touches it
+commit=8a48d60638ef932d2651702c202928e667828f5e 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+clone scripts clean 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+headless check exit 0 
+WRECK_HEX first step inside_thrown_out born_limit=8.00 end=4.64 (rest radius 8.0)
+WRECK_HEX first step born_past_on_purpose born_limit=12.00 end=4.87 (rest radius 8.0)
+WRECK_HEX low x07 hex=14,2 pieces=2 leashed=8 farthest=0.47 main=0.26 reach=0.60 hex radii past_edge=-2.66 units drawn_to=0.60 hull_laid=false
+WRECK_HEX low x08 hex=16,2 pieces=4 leashed=14 farthest=0.51 main=0.14 reach=0.39 hex radii past_edge=-4.79 units drawn_to=0.39 hull_laid=false
+WRECK_HEX low x07 no pieces: burnt hulk laid=true
+WRECK_HEX max x07 hex=14,2 pieces=2 leashed=28 farthest=0.77 main=0.22 reach=0.64 hex radii past_edge=-2.29 units drawn_to=0.61 hull_laid=false
+WRECK_HEX max x08 hex=16,2 pieces=4 leashed=41 farthest=0.78 main=0.18 reach=0.37 hex radii past_edge=-5.02 units drawn_to=0.39 hull_laid=false
+WRECK_HEX failures=0
+windowed check and pictures exit 0 
+WRECK_HEX first step inside_thrown_out born_limit=8.00 end=4.64 (rest radius 8.0)
+WRECK_HEX first step born_past_on_purpose born_limit=12.00 end=4.87 (rest radius 8.0)
+WRECK_HEX low x07 hex=14,2 pieces=2 leashed=8 farthest=0.45 main=0.24 reach=0.59 hex radii past_edge=-3.20 units drawn_to=0.60 hull_laid=false
+WRECK_HEX low x08 hex=16,2 pieces=4 leashed=14 farthest=0.29 main=0.13 reach=0.38 hex radii past_edge=-5.01 units drawn_to=0.39 hull_laid=false
+WRECK_HEX low x07 no pieces: burnt hulk laid=true
+WRECK_HEX max x07 hex=14,2 pieces=2 leashed=28 farthest=0.78 main=0.31 reach=0.57 hex radii past_edge=-3.19 units drawn_to=0.60 hull_laid=false
+WRECK_HEX max x08 hex=16,2 pieces=4 leashed=41 farthest=0.79 main=0.24 reach=0.48 hex radii past_edge=-4.07 units drawn_to=0.39 hull_laid=false
+WRECK_HEX shot C:\Users\rcbai\Downloads\voidsworn_test\opus1236\out_2\WH1236.png
+WRECK_HEX shot C:\Users\rcbai\Downloads\voidsworn_test\opus1236\out_2\WH1236_grid.png
+WRECK_HEX failures=0
+real options unchanged 
+PASSED 
+all done Thu 11/19/2026 22:40:30.11 

@@ -1,0 +1,89 @@
+GPU: waiting for shared claim, weight 1 (1236)
+GPU: acquired shared claim be590d41-e8d7-40f2-9227-f83114b3e4ab
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0fc0b644b1cd45248ad22eae8e57b680\godot-profile-ff33cea224dd4791837d20699b470ee7
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+WRECK_HEX first step inside_thrown_out born_limit=8.00 end=4.64 (rest radius 8.0)
+WRECK_HEX first step born_past_on_purpose born_limit=12.00 end=4.87 (rest radius 8.0)
+[sfx] 71 cues, 67 clip sets, loaded in 313 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.940, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 93fff33f11694988920504bf73a7b1faae5d9cacbbc47f6f717dd73379f5705e 2048x1024 in 8292 ms (worker)
+[world] baked 64a1b8f83066035edc32ddea64e431a49c6c3802ab8d1afe7f91c677638c97c9 4096x2048 in 10777 ms (worker)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 11234 ms (worker)
+[world] baked e92b089b4758deb07cbd4b1fdfbb5d2ccc84954672e92703f1ef80876ce48001 1024x512 in 11607 ms (worker)
+[world] baked 09df0f1dc35c54792ee6791ab8f778c48c57609e6d406a33f213e215901a719f 1024x512 in 11969 ms (worker)
+[world] baked 62aa0bdfb02a1df3db7088812ce6ab62dad4fdc47d998db72eade76029f554c6 4096x2048 in 2400 ms (worker)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 2296 ms (worker)
+[world] baked f04bf75d195da0ca7f54da58f4bdba3597b63ba9a284ce9821826b13579279b2 1024x512 in 2296 ms (worker)
+[world] baked 7882d7fabcb3e61007a4dbd8928966e0789275ca23a5efb46ff46aa013c3bb3c 1024x512 in 2276 ms (worker)
+[attach] hp_rcs missing on H9_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+WRECK_HEX low x07 hex=14,2 pieces=2 leashed=8 farthest=0.45 main=0.24 reach=0.59 hex radii past_edge=-3.20 units drawn_to=0.60 hull_laid=false
+WRECK_HEX low x08 hex=16,2 pieces=4 leashed=14 farthest=0.29 main=0.13 reach=0.38 hex radii past_edge=-5.01 units drawn_to=0.39 hull_laid=false
+WRECK_HEX low x07 no pieces: burnt hulk laid=true
+[attach] battle x04 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x05 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x07 H9_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 H10_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x09 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle x010 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 4246 41162.4 ms
+[fx] late shader: mat STREAK frame 4246 41239.3 ms
+[fx] late shader: mat RING frame 4246 41290.7 ms
+[fx] late shader: mat RIBBON frame 4246 41327.1 ms
+[fx] late shader: mat ECLIPSE_ARC frame 4246 41376.7 ms
+[fx] late shader: mat NULL_SLUG frame 4246 41416.2 ms
+[fx] late shader: mat SHARD frame 4246 41446.4 ms
+[fx] late shader: hit fragments frame 4246 41554.7 ms
+[fx] late shader: mat DISTORT frame 4246 41665.7 ms
+[fx] late shader: death debris body frame 4246 41670.3 ms
+[fx] late shader: mat TEAR frame 4246 41805.7 ms
+[sfx] 71 cues, 67 clip sets, loaded in 296 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.940, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 4248 43660.4 ms
+[fx] late shader: mat SHIELD frame 4248 43743.6 ms
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[fx] late shader: mat CRAFT_TRAIL frame 4248 45534.0 ms
+[world] baked d1873335885dd1abf169b85482d367a59618fc210b417b163723d6505b61094b 4096x2048 in 6623 ms (worker)
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs missing on V14_23; using the surface ray
+WRECK_HEX max x07 hex=14,2 pieces=2 leashed=28 farthest=0.78 main=0.31 reach=0.57 hex radii past_edge=-3.19 units drawn_to=0.60 hull_laid=false
+WRECK_HEX max x08 hex=16,2 pieces=4 leashed=41 farthest=0.79 main=0.24 reach=0.48 hex radii past_edge=-4.07 units drawn_to=0.39 hull_laid=false
+WRECK_HEX shot C:\Users\rcbai\Downloads\voidsworn_test\opus1236\out_2\WH1236.png
+WRECK_HEX shot C:\Users\rcbai\Downloads\voidsworn_test\opus1236\out_2\WH1236_grid.png
+[attach] battle x04 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x05 V14_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle x010 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+WRECK_HEX failures=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0fc0b644b1cd45248ad22eae8e57b680\godot-profile-ff33cea224dd4791837d20699b470ee7
+GPU: released shared claim be590d41-e8d7-40f2-9227-f83114b3e4ab

@@ -1,0 +1,44 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-464b61dcef4341d49e022d266cafadc3\godot-profile-b5155df20eea4744b1361da1bbaf0695
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WRECK_HEX first step inside_thrown_out born_limit=8.00 end=4.64 (rest radius 8.0)
+WRECK_HEX first step born_past_on_purpose born_limit=12.00 end=4.87 (rest radius 8.0)
+[sfx] 71 cues, 67 clip sets, loaded in 2619 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.940, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+WRECK_HEX low x07 hex=14,2 pieces=2 leashed=8 farthest=0.47 main=0.26 reach=0.60 hex radii past_edge=-2.66 units drawn_to=0.60 hull_laid=false
+WRECK_HEX low x08 hex=16,2 pieces=4 leashed=14 farthest=0.51 main=0.14 reach=0.39 hex radii past_edge=-4.79 units drawn_to=0.39 hull_laid=false
+WRECK_HEX low x07 no pieces: burnt hulk laid=true
+[attach] battle x09 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle x010 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 304 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.940, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+[attach] death on hegemony|fighter: placed on the plating (a surface sample; not a hard point type)
+WRECK_HEX max x07 hex=14,2 pieces=2 leashed=28 farthest=0.77 main=0.22 reach=0.64 hex radii past_edge=-2.29 units drawn_to=0.61 hull_laid=false
+WRECK_HEX max x08 hex=16,2 pieces=4 leashed=41 farthest=0.78 main=0.18 reach=0.37 hex radii past_edge=-5.02 units drawn_to=0.39 hull_laid=false
+[attach] battle x09 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle x010 hegemony|fighter: skipped 0; death hp 0 ray 1 centre 0 skip 0
+WRECK_HEX failures=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-464b61dcef4341d49e022d266cafadc3\godot-profile-b5155df20eea4744b1361da1bbaf0695
