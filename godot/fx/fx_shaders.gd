@@ -1248,7 +1248,7 @@ uniform float regen_t = -100.0;
 uniform int brk_look = 2;
 uniform bool brk_low = false;
 // issue 1239: the collapse's close time (COLLAPSE_CLOSE, fx_ship.gd) and how long the break plays in all (1.6 s, longer for a slower close)
-uniform float brk_close = 0.7;
+uniform float brk_close = 1.225;
 uniform float brk_win = 1.6;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
@@ -1428,7 +1428,7 @@ void fragment() {
 			add += ((lead + glow) * (0.65 + 0.35 * pat) + (sh + flare) * pat) * stut;
 			hot += lead * 0.5;
 		} else {
-			// collapse: one even flash, then a single clean band closes from the far side into the breach in 0.7 s
+			// collapse: one even flash, then a single clean band closes from the far side into the breach in 1.225 s
 			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
 			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
 			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band

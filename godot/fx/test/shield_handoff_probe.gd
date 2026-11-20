@@ -310,7 +310,7 @@ func _hsheet(sid: String, story: String, code: String, runs: Array) -> void:
 const PCELL := Vector2i(248, 140)
 const PFOOT := 92   # room under the rows for the picture stamp, so it never covers a cell
 const PACE_AT := [0.1, 0.35, 0.6, 0.85, 1.1, 1.4]
-const PACE_NAMES := {"0.7": "Today (0.70 s)", "1.05": "50% slower (1.05 s)", "1.225": "75% slower (1.23 s)", "1.4": "100% slower (1.40 s)"}
+const PACE_NAMES := {"0.7": "R340 first (0.70 s)", "1.05": "50% slower (1.05 s)", "1.225": "75% slower (1.23 s, R358)", "1.4": "100% slower (1.40 s)"}
 
 
 func _pace() -> void:

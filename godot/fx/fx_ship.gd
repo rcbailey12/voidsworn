@@ -1056,13 +1056,14 @@ func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
 # Issue 1078, collapse: the cleaner failure. The field flashes once, evenly, then one bright band closes over it from the
 # far side into the breach and the field pinches out there in a small knot and a flat ring of sparks. No crackle, no
 # scattered pops; the faction still shows in colour and in the band's pattern.
-const COLLAPSE_CLOSE := 0.7   # seconds until the band reaches the breach (shader: brk_close)
+# R358 (Ryan, Nov 20 2026, issue 1239 pace sheet): 75% slower than R340's first 0.70 s, so the band stays easy to see
+const COLLAPSE_CLOSE := 1.225   # seconds until the band reaches the breach (shader: brk_close)
 const COLLAPSE_TAIL := 0.25   # issue 1239: the knot's fade after the close (shader: exp(-kt * 5.0))
 
 
-# Issue 1239 (Ryan, Nov 20: "close the shield collapse by like 50, 75 or 100% so it's slightly more visible"): a slower
-# close for the comparison sheets. rendering/effects/shield_collapse_close (or VS_SHIELD_CLOSE), in seconds; the default
-# is COLLAPSE_CLOSE until Ryan picks one.
+# Issue 1239 (Ryan, Nov 20: "close the shield collapse by like 50, 75 or 100% so it's slightly more visible"; he picked
+# 75% slower, R358): the close time, for dev comparisons only. rendering/effects/shield_collapse_close (or
+# VS_SHIELD_CLOSE), in seconds; the game look is COLLAPSE_CLOSE.
 static func collapse_close_setting() -> float:
 	var v := OS.get_environment("VS_SHIELD_CLOSE")
 	if v.is_empty():
