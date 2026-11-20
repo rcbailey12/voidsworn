@@ -16,7 +16,7 @@ const srcs = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.j
 const names = [];
 for (const s of srcs) { const re = /^(?:const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm; let m; while ((m = re.exec(s))) if (!names.includes(m[1])) names.push(m[1]); }
 // a few tables are declared later on the same line as another (const A=..., B=...)
-for (const extra of ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'TORP_STRAY', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD']) if (!names.includes(extra)) names.push(extra);
+for (const extra of ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD']) if (!names.includes(extra)) names.push(extra);
 vm.runInThisContext(srcs.join('\n') + '\nglobalThis.__T={' + names.map(n => JSON.stringify(n) + ':(typeof ' + n + "!=='undefined'?" + n + ':undefined)').join(',') + '};', { filename: 'export_bundle.js' });
 // live game state, not tables (the port starts these itself)
 const STATE = ['RNG_S', 'SPEED', 'UID', 'SAVED_RUN', 'RUN', 'B', 'ARENA', 'CUT', 'SOLID', 'TERRAIN_META'];
@@ -41,7 +41,7 @@ for (const f of fs.readdirSync(gdDir).filter(f => f.endsWith('.gd'))) {
 }
 required.sort();
 const missing = required.filter(n => !(n in out) && !OPTIONAL.includes(n));
-const extraMissing = ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'TORP_STRAY', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD'].filter(n => !(n in out));
+const extraMissing = ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD'].filter(n => !(n in out));
 if (missing.length || extraMissing.length) {
   console.error('FAIL: tables the Godot port reads are missing from the JS oracle (' + ROOT + '): ' + missing.concat(extraMissing.filter(n => !missing.includes(n))).join(' '));
   console.error('Nothing written. Rename the table in godot/rules/*.gd too, or bring it back in the JS.');

@@ -799,8 +799,12 @@ Board. Id: screens-11.
 Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
 program-01.
 
-9.11 **Torpedoes show their hit chance and a visible flight with a clear hit or miss.** Why: his playtest call (R76). Set:
-Ryan, Nov 2. Id: R76b.
+9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
+show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
+defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
+and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
+the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
+Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
 
 9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan

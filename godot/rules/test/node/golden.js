@@ -117,7 +117,7 @@ async function pBotFull(u){
   if(gone()) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
-  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
   if(gone()) return;
   if(late&&B.cfg.cmdRound===B.round&&canCommand('player')&&!B.busy&&(u.hexMoved||0)>0) await actF(()=>useCommand('player'));
