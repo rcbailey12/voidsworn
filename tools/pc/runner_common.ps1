@@ -236,7 +236,7 @@ function Warn-KeptRepos($repo) {
     } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
   }
 }
-function Test-SharedBuildCopy($repo, $path) {
+function Test-SharedBuildCopy($repo, $path, $allowSuperseded = $false) {
   # Use the same default shared build as get_ship_files.bat.
   $build = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build'
   $local = Get-Item -LiteralPath (Join-Path $repo $path) -Force -ErrorAction SilentlyContinue
@@ -244,14 +244,26 @@ function Test-SharedBuildCopy($repo, $path) {
   foreach ($file in @($local, $shared)) {
     if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
   }
-  if ($local.Length -ne $shared.Length) { return $false }
   # Git can list the contents of a junction as ignored files. Keep checkouts that contain a linked ship directory.
   $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
   for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
     if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
   }
-  return (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
-         (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash
+  if ($local.Length -eq $shared.Length -and (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
+      (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash) { return $true }
+  if (-not $allowSuperseded) { return $false }
+  # Removal only, never reuse (issue 1180 run 7, Board Nov 20): a differing copy is superseded when the shared build holds
+  # the same file written strictly later. Robocopy and checkout can reset times, so a missing (before 2000) or future time
+  # keeps the copy, and every call logs both times and sizes.
+  $copyTime = $local.LastWriteTimeUtc; $buildTime = $shared.LastWriteTimeUtc
+  $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+  $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; build $($buildTime.ToString('o')), $($shared.Length) bytes"
+  if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $buildTime -lt $floor -or $buildTime -gt $ceiling) {
+    Log "shared copy time not trusted, kept: $path ($detail)"; return $false
+  }
+  if ($copyTime -ge $buildTime) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+  Log "superseded by the shared build: $path ($detail)"
+  return $true
 }
 function Get-RepoCleanupStatus($repo) {
   $status = @(Read-CleanupGit @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
@@ -261,7 +273,7 @@ function Get-RepoCleanupStatus($repo) {
   }
   return $status
 }
-function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false) {
+function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false, $forRemoval = $false) {
   foreach ($line in $status) {
     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
@@ -283,7 +295,7 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
     }
     if ($line -match '^!! ("?)(godot/(?:gen|assets/ships)/[^"\\:\r\n]+)(?<!/)\1$') {
       $path = $Matches[2]
-      if (-not (Test-SharedBuildCopy $repo $path)) {
+      if (-not (Test-SharedBuildCopy $repo $path $forRemoval)) {
         $kind = if ($inGen) { 'generated' } else { 'ship' }
         throw "working tree needs keeping: $line (shared $kind copy could not be verified)"
       }
@@ -294,7 +306,7 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
     throw "working tree needs keeping: $line"
   }
 }
-function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false) {
+function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $forRemoval = $false) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
   if (-not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container)) { throw 'not a standalone checkout' }
   $top = @(Read-CleanupGit @('-C',$repo,'rev-parse','--show-toplevel'))
@@ -309,7 +321,7 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false) {
   $flags = @(Read-CleanupGit @('-C',$repo,'ls-files','-v'))
   if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
   $status = @(Get-RepoCleanupStatus $repo)
-  $caches = @(Reuse-Caches $repo $status $allowWork)
+  $caches = @(Reuse-Caches $repo $status $allowWork $forRemoval)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
   $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
@@ -493,7 +505,8 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
     foreach ($state in @('index.lock','HEAD.lock','packed-refs.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules')) {
       if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
     }
-    $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot)
+    # Removal may accept ship and gen files the shared build has superseded; reuse never does.
+    $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot) $true
     if (Test-Path -LiteralPath (Join-Path $gitDir 'worktrees')) {
       $worktrees = @(Read-CleanupGit @('-C',$candidate,'worktree','list','--porcelain') | Where-Object { $_ -like 'worktree *' })
       if ($gitExit -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
