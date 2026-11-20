@@ -184,9 +184,9 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 |---|---:|---:|---:|---|---|---|
 | hp_core | 80.5 | 0.00 | -0.25 |  |  |  |
 | hp_breach_0 | 15.6 | 0.87 | 0.00 | port | prow | on open side plating |
-| hp_breach_1 | 21.1 | -1.08 | 0.15 | stbd | prow | on open side plating |
-| hp_breach_2 | 74.3 | 1.43 | -0.30 | port | eng | on open side plating |
-| hp_breach_3 | 79.8 | -1.38 | -0.30 | stbd | eng | on open side plating |
+| hp_breach_1 | 48.7 | -1.25 | -0.45 | stbd | mid | on open side plating |
+| hp_breach_2 | 43.2 | 1.34 | 0.15 | port | mid | on open side plating |
+| hp_breach_3 | 74.3 | -1.43 | -0.30 | stbd | eng | on open side plating |
 | hp_rcs_0 | 11.4 | 0.58 | -0.31 | port |  |  |
 | hp_rcs_2 | 86.0 | 1.12 | 0.41 | port |  |  |
 | hp_board_0 | 70.8 | 1.45 | 0.00 | port |  |  |

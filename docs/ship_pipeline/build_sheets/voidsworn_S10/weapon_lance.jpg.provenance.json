@@ -1,33 +1,33 @@
 {
-  "source_commit": "3834f610ebb1a696a37c943e661b4940d6777bb3",
+  "source_commit": "0be79bf45dbabd4cc78a6ce0207f6f2e76b78c68",
   "source_dirty": true,
-  "source_diff_sha256": "cb43fd77fcf826aa6aa2f5292095d4a7acbcfaea9ff92f1bdd9a8c88b23d9c4e",
+  "source_diff_sha256": "bdb5eef383f471557fb7c42264bc243d0d6b6774bfd47f23e6672c2eb7faa34d",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_lance.jpg",
-  "date": "2026-11-20T00:38:50Z",
+  "date": "2026-11-20T02:19:37Z",
   "sources": [
     {
-      "source_commit": "3834f610ebb1a696a37c943e661b4940d6777bb3",
+      "source_commit": "0be79bf45dbabd4cc78a6ce0207f6f2e76b78c68",
       "source_dirty": true,
-      "source_diff_sha256": "cb43fd77fcf826aa6aa2f5292095d4a7acbcfaea9ff92f1bdd9a8c88b23d9c4e",
+      "source_diff_sha256": "bdb5eef383f471557fb7c42264bc243d0d6b6774bfd47f23e6672c2eb7faa34d",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_lance.png",
-      "source_commit": "3834f610ebb1a696a37c943e661b4940d6777bb3",
+      "source_commit": "0be79bf45dbabd4cc78a6ce0207f6f2e76b78c68",
       "source_dirty": true,
-      "source_diff_sha256": "cb43fd77fcf826aa6aa2f5292095d4a7acbcfaea9ff92f1bdd9a8c88b23d9c4e",
+      "source_diff_sha256": "bdb5eef383f471557fb7c42264bc243d0d6b6774bfd47f23e6672c2eb7faa34d",
       "stage": "sheet built",
-      "date": "2026-11-20T00:38:13Z",
-      "image_sha256": "c5505a0f0d88900e0439250a8da48eea3ccac7e3098da2585650bafb00c6eccc",
+      "date": "2026-11-20T02:17:57Z",
+      "image_sha256": "cbd1ff7dc0509bf7814f1a0e760fcd9df6abc43802714da58651aa626799b319",
       "sources": [
         {
-          "source_commit": "3834f610ebb1a696a37c943e661b4940d6777bb3",
+          "source_commit": "0be79bf45dbabd4cc78a6ce0207f6f2e76b78c68",
           "source_dirty": true,
-          "source_diff_sha256": "cb43fd77fcf826aa6aa2f5292095d4a7acbcfaea9ff92f1bdd9a8c88b23d9c4e",
+          "source_diff_sha256": "bdb5eef383f471557fb7c42264bc243d0d6b6774bfd47f23e6672c2eb7faa34d",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "4ee9ad8b1bc221a11e0b395143b8d4ceaf017699ec48bc937fd8cf75259fe85d"
+    "18de30663054cc8f93a1b48697810764f12c8841240339e68bd2d4c5c4627adc"
   ],
-  "stamp_template_sha256": "42cc5288d7dc711f315498af52292e6745a79a7770d627b5fd83795fb6c3a3e2",
+  "stamp_template_sha256": "3a2cd35d22363ee3638ee48de5dee0e5adfaeb2558c8e9c607bc0b3a3eca3516",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAEf0lEQVR4nO2a247bNhRF96F1scZpevmcIP//MQ1QoB3bkizr7DyQFDVOi6IFkcwM9nqZsURKhsGFzXMk+/TpM4T4jpjZse8//vzheOxJGszMCAIAGYcAhBkAEDBYPJJPbaMMlj+UeTCQNDNwf1sCtru2OT3dmiRosPjdSC+33n3nMizfZT8gnmrq/lJC/Cskx2mab/PT0/Dbr79YMNIBxEVsZiTS0gcQrSmiRf1IwpAlBAGYBaR5hFl0Jo4DAOYLJm3jlPwPkn0kCRjLvREP5GEEjY+ybV9SOokfgzvP5+s0zR9Op58+nkIIIJBcolmIC5agM0UH4mdjWeIGMzhhVlJrixqgGEXQ0qB0pVDszWGXnclz8SD2/uzfEir8MEL8X+739c+/nr/8/sc4TgTT1s5CCgnCLFrwguJAyhgD4VkUy5s60j3m3j7ibLsCyLgtBMG4PzRLG73oGqyM3909xVm8QD4KgEon8YMhOc3z/OV2Og2n01PbtsFyNWUlTMrOjXBwW9/bdi4gxFx6aVoclHzYVn8cEwWOEm0VVzq17fmIh9yLkse42xV0gGon8UogeT5fL5exaZq+b4fjsT92h3DYQgOIMYJtEZO0YGDuTqQOAVOzgADSukdOoW/JlsaNX/QmR1iKSjDXXbsuRP6bCrN0NekkXhEkl2VZluV8vh4Oh77vhqHv2q5tmy2OnG4hb8VYKhxP2QLs+w5RMwOYg45RydJUSLNKEu5qKoI504IFxnxCybHtFAB3l07ilbKu6/U6juMUgjVNc+y74WlomzaEhw547Hwj5IZc3omlVkba6aUeR8ygF7OZnSytCu7irtRdfDnLYRZgJNw91njSSbxqSK4r1/U2z7fn8/VwCH3XHYe+77qmbbZ1n9p/W4GUUyXElkPKJkN6cGQpXnLz0BC2pjnydZz++PCqCAaEwNz9iEm1rKt0Em8Gd3f3ZblfrmMIoW2bYTj2Xdd1bQghPhFODiA+JLK8wduagaW9UIqxcqREV+m250fK2RykLp6nKU6f5/vlfB6nWTqJtwfJdV3XdZ3nm5k1zeHY98PTsW3bELZS6eUU4OEJ0n7vFkMqlWGWXdr9g63+So0+hhDu6zqO4+UyzvMtnpBO4g1DkuTt5rfb8ny+NM2h7/uYWE0Ttr4b49sU6QUkmJnDsyMwM3fm2Ik1UXnpKbcwSp/DzJb7fbxOl+v1fl/3NZV0Eu8EkstyX5b75XINwbquG4Z+GIbUdoPTmXrr0RKPfbn0oCm2E1I3Lzf1ShlGMs53On2abuu6fvsdpJN4b8TuxThO4ziF8Jy3f1trjizt9d3hf7jUf7q1dBLvGXd3/3630zt7QlRDOglRDekkRDWkkxDVkE5CVEM6CVEN6SRENaSTENWQTkJUQzoJUQ3pJEQ1pJMQ1ZBOQlRDOglRDekkRDWkkxDVkE5CVEM6CVEN6SRENaSTENWQTkJUQzoJUQ3pJEQ1pJMQ1ZBOQlRDOglRDekkRDWkkxDVkE5CVEM6CVEN6SRENaSTENWQTkJUQzoJUY2vV6PLMkTR/hwAAAAASUVORK5CYII="
   ],
-  "image_sha256": "0a532b738c0cfc120f463c2777aa27b67dc467f9dd46a8a811c65fee3a663dd9"
+  "image_sha256": "2793406f85bbb74588bba2b7c739aba9a7fa7a5362bd735026b91cd837384140"
 }
