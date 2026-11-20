@@ -1,0 +1,6 @@
+waiting for all done in opus1279_run2_wait.txt (GLASS7 waiter) Fri 11/20/2026  0:08:35.42 
+OPUS1078_GLASS7_WAIT stopped by the Board before it ran anything (11/20 04:03:33); replaced by OPUS1078_GLASS7_WAIT_B.bat (after 1154 GATE_C, since 1279 RUN2 was dropped; same log)
+waiting for all done in opus1154\gate_c_wait.txt (GLASS7 waiter B) Fri 11/20/2026  4:03:34.04 
+OPUS1078_GLASS7 start Fri 11/20/2026  6:15:34.18 
+OPUS1078_GLASS7 exit 0 at  6:19:17.47 
+all done  6:19:17.47 

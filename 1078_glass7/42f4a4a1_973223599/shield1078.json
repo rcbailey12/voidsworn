@@ -1,0 +1,81 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "commit": "",
+ "cost": [],
+ "flash": [],
+ "godot": "4.7.2-stable (official)",
+ "method": "forward_plus",
+ "rev": "r4",
+ "scenes": {
+  "I8_37": {
+   "res": "res://gen/ships/I8_37.scn",
+   "sha256": "c6f73675e704199d57dd04dfd44a56dc835b27d58d49a2f778c2ba7ba9dfb82a"
+  },
+  "V16_37": {
+   "res": "res://gen/ships/V16_37.scn",
+   "sha256": "bad96283328905e2343d27da56e7a11ca4883fc57dac8a4a471cf1746d32c2e2"
+  }
+ },
+ "stories": [
+  {
+   "look": "collapse",
+   "moments": {
+    "beside": 3.64999999999999,
+    "double": 2.53333333333333,
+    "fail_0.10": 4.58333333333332,
+    "fail_0.30": 4.79999999999999,
+    "fail_0.55": 5.04999999999999,
+    "fail_0.85": 5.34999999999999,
+    "hit": 1.41666666666667
+   },
+   "radius": 170,
+   "shape": "fitted",
+   "subject": "i_boss"
+  },
+  {
+   "look": "collapse",
+   "moments": {
+    "beside": 3.64999999999999,
+    "double": 2.53333333333333,
+    "fail_0.10": 4.58333333333332,
+    "fail_0.30": 4.79999999999999,
+    "fail_0.55": 5.04999999999999,
+    "fail_0.85": 5.34999999999999,
+    "hit": 1.41666666666667
+   },
+   "radius": 60,
+   "shape": "fitted",
+   "subject": "i_boss"
+  },
+  {
+   "look": "collapse",
+   "moments": {
+    "beside": 3.58333333333333,
+    "double": 2.45,
+    "fail_0.10": 4.51666666666666,
+    "fail_0.30": 4.73333333333332,
+    "fail_0.55": 4.98333333333332,
+    "fail_0.85": 5.28333333333332,
+    "hit": 1.4
+   },
+   "radius": 170,
+   "shape": "egg",
+   "subject": "i_boss"
+  },
+  {
+   "look": "collapse",
+   "moments": {
+    "beside": 3.58333333333333,
+    "double": 2.45,
+    "fail_0.10": 4.51666666666666,
+    "fail_0.30": 4.73333333333332,
+    "fail_0.55": 4.98333333333332,
+    "fail_0.85": 5.28333333333332,
+    "hit": 1.4
+   },
+   "radius": 60,
+   "shape": "egg",
+   "subject": "i_boss"
+  }
+ ]
+}

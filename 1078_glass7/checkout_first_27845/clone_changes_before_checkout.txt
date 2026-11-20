@@ -1,0 +1,3 @@
+ M godot/assets/ships/README.md
+ M godot/assets/ships/manifest.json
+ M godot/assets/ships/test/a4_shots.gd

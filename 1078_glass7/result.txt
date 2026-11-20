@@ -1,0 +1,133 @@
+OPUS1078_RUN start Thu 11/19/2026  9:27:48.72 
+Cloning into 'C:\Users\rcbai\Downloads\voidsworn_test\opus1078\repo'...
+Updating files:   6% (681/10781)Updating files:   7% (755/10781)Updating files:   8% (863/10781)Updating files:   8% (932/10781)Updating files:   9% (971/10781)Updating files:  10% (1079/10781)Updating files:  11% (1186/10781)Updating files:  11% (1235/10781)Updating files:  12% (1294/10781)Updating files:  13% (1402/10781)Updating files:  14% (1510/10781)Updating files:  14% (1581/10781)Updating files:  15% (1618/10781)Updating files:  16% (1725/10781)Updating files:  17% (1833/10781)Updating files:  18% (1941/10781)Updating files:  19% (2049/10781)Updating files:  19% (2151/10781)Updating files:  20% (2157/10781)Updating files:  21% (2265/10781)Updating files:  22% (2372/10781)Updating files:  23% (2480/10781)Updating files:  24% (2588/10781)Updating files:  24% (2623/10781)Updating files:  25% (2696/10781)Updating files:  26% (2804/10781)Updating files:  27% (2911/10781)Updating files:  28% (3019/10781)Updating files:  29% (3127/10781)Updating files:  29% (3229/10781)Updating files:  30% (3235/10781)Updating files:  31% (3343/10781)Updating files:  32% (3450/10781)Updating files:  33% (3558/10781)Updating files:  34% (3666/10781)Updating files:  34% (3680/10781)Updating files:  35% (3774/10781)Updating files:  36% (3882/10781)Updating files:  37% (3989/10781)Updating files:  38% (4097/10781)Updating files:  38% (4128/10781)Updating files:  39% (4205/10781)Updating files:  40% (4313/10781)Updating files:  40% (4416/10781)Updating files:  41% (4421/10781)Updating files:  42% (4529/10781)Updating files:  43% (4636/10781)Updating files:  43% (4680/10781)Updating files:  44% (4744/10781)Updating files:  45% (4852/10781)Updating files:  46% (4960/10781)Updating files:  46% (5003/10781)Updating files:  47% (5068/10781)Updating files:  48% (5175/10781)Updating files:  48% (5209/10781)Updating files:  49% (5283/10781)Updating files:  50% (5391/10781)Updating files:  51% (5499/10781)Updating files:  51% (5518/10781)Updating files:  52% (5607/10781)Updating files:  53% (5714/10781)Updating files:  53% (5804/10781)Updating files:  54% (5822/10781)Updating files:  55% (5930/10781)Updating files:  56% (6038/10781)Updating files:  56% (6054/10781)Updating files:  57% (6146/10781)Updating files:  58% (6253/10781)Updating files:  58% (6278/10781)Updating files:  59% (6361/10781)Updating files:  60% (6469/10781)Updating files:  61% (6577/10781)Updating files:  61% (6621/10781)Updating files:  62% (6685/10781)Updating files:  63% (6793/10781)Updating files:  64% (6900/10781)Updating files:  64% (6970/10781)Updating files:  65% (7008/10781)Updating files:  66% (7116/10781)Updating files:  67% (7224/10781)Updating files:  68% (7332/10781)Updating files:  68% (7361/10781)Updating files:  69% (7439/10781)Updating files:  70% (7547/10781)Updating files:  70% (7572/10781)Updating files:  71% (7655/10781)Updating files:  72% (7763/10781)Updating files:  73% (7871/10781)Updating files:  74% (7978/10781)Updating files:  74% (8066/10781)Updating files:  75% (8086/10781)Updating files:  76% (8194/10781)Updating files:  77% (8302/10781)Updating files:  78% (8410/10781)Updating files:  79% (8517/10781)Updating files:  79% (8529/10781)Updating files:  80% (8625/10781)Updating files:  81% (8733/10781)Updating files:  82% (8841/10781)Updating files:  83% (8949/10781)Updating files:  84% (9057/10781)Updating files:  85% (9164/10781)Updating files:  86% (9272/10781)Updating files:  87% (9380/10781)Updating files:  87% (9429/10781)Updating files:  88% (9488/10781)Updating files:  89% (9596/10781)Updating files:  90% (9703/10781)Updating files:  90% (9705/10781)Updating files:  91% (9811/10781)Updating files:  92% (9919/10781)Updating files:  93% (10027/10781)Updating files:  93% (10090/10781)Updating files:  94% (10135/10781)Updating files:  95% (10242/10781)Updating files:  96% (10350/10781)Updating files:  97% (10458/10781)Updating files:  98% (10566/10781)Updating files:  98% (10578/10781)Updating files:  99% (10674/10781)Updating files: 100% (10781/10781)Updating files: 100% (10781/10781), done.
+From https://github.com/rcbailey12/voidsworn
+   585b8747..607938d0  opus/issue-1078 -> origin/opus/issue-1078
+   e838aa54..f7ac9350  opus/issue-1156 -> origin/opus/issue-1156
+   3cdb8ec5..a2270b75  opus/issue-1157 -> origin/opus/issue-1157
+HEAD is now at 607938d0 Shield looks PC job: main cost pass checks its checkout, the resolved origin/main SHA, the done line and a fresh json
+shield1078 start Thu 11/19/2026  9:29:39.29 ref=origin/opus/issue-1078 
+commit 607938d0 
+imported Thu 11/19/2026  9:45:29.17 
+look pass done Thu 11/19/2026 10:03:38.43 
+no ffmpeg: clip frames kept, no mp4 
+FAILED: the cost pass did not finish, see C:\Users\rcbai\Downloads\voidsworn_test\opus1078\work\607938d0\cost_log.txt 
+shield1078 end Thu 11/19/2026 11:03:44.91 
+all done 
+OPUS1078_RUN3 start Thu 11/19/2026 13:34:08.89 
+shield1078 start Thu 11/19/2026 13:34:18.16 ref=origin/opus/issue-1078 
+FAILED: checkout origin/opus/issue-1078: the clone has local changes outside godot\assets\ships, listed in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_32193\clone_changes_unexpected.txt and saved as a patch; nothing was reset 
+shield1078 end Thu 11/19/2026 13:34:19.40 
+RESULT: FAILED 
+all done 
+OPUS1078_RUN3 start Thu 11/19/2026 13:46:54.31 
+shield1078 start Thu 11/19/2026 13:46:56.69 ref=origin/opus/issue-1078 
+checked out origin/opus/issue-1078 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_1926 
+commit 060649cc attempt 060649cc_240121560: results in out\060649cc_240121560 
+imported Thu 11/19/2026 13:47:15.52 
+look pass done Thu 11/19/2026 13:57:08.08 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+cost pass done Thu 11/19/2026 14:00:21.03 
+FAILED: checkout origin/main: the clone has local changes outside godot\assets\ships, listed in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_main_16334\clone_changes_unexpected.txt and saved as a patch; nothing was reset 
+FAILED: cannot check out origin/main, no main cost numbers 
+FAILED: checkout 060649cc: the clone has local changes outside godot\assets\ships, listed in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_7946\clone_changes_unexpected.txt and saved as a patch; nothing was reset 
+RESULT: FAILED, see the FAILED lines above Thu 11/19/2026 14:00:21.48 
+shield1078 end Thu 11/19/2026 14:00:21.67 
+RESULT: FAILED 
+all done 
+OPUS1078_RUN3_R3 start Thu 11/19/2026 14:00:38.53 
+shield1078 start Thu 11/19/2026 14:00:42.40 ref=origin/opus/issue-1078 
+checked out origin/opus/issue-1078 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_3435 
+commit ecfa36a7 attempt ecfa36a7_903930039: results in out\ecfa36a7_903930039 
+imported Thu 11/19/2026 14:00:56.31 
+look pass done Thu 11/19/2026 14:11:48.97 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+cost pass done Thu 11/19/2026 14:17:22.36 
+checked out origin/main safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_main_25233 
+main cost pass 977b7af5 done in cost_main_977b7af5_2192024112 Thu 11/19/2026 14:20:50.16 
+checked out ecfa36a7 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_10617 
+DONE ecfa36a7 Thu 11/19/2026 14:20:50.96 
+shield1078 end Thu 11/19/2026 14:20:51.10 
+all done 
+OPUS1078_RUN4 start Thu 11/19/2026 17:47:15.53 
+shield1078 start Thu 11/19/2026 17:47:43.47 ref=origin/opus/issue-1078 
+checked out origin/opus/issue-1078 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_32269 
+commit 8605a168 attempt 8605a168_139747369: results in out\8605a168_139747369 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1078\profile_8605a168_139747369\appdata 
+imported Thu 11/19/2026 17:48:07.40 
+look pass done Thu 11/19/2026 17:57:55.31 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+flash pass ran Thu 11/19/2026 18:00:56.56 
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.39754,"max_frame_delta":0.16835,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.5021,"max_frame_delta":0.08869,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.35141,"max_frame_delta":0.07907,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.31701,"max_frame_delta":0.047,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.48692,"max_frame_delta":0.26015,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.63685,"max_frame_delta":0.15131,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"glasswrights","look":"today","max_block_luminance":0.35416,"max_frame_delta":0.11588,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"glasswrights","look":"collapse","max_block_luminance":0.40516,"max_frame_delta":0.09461,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.14486,"max_frame_delta":0.09402,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.11039,"max_frame_delta":0.03789,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.15129,"max_frame_delta":0.10385,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.09167,"max_frame_delta":0.01973,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"fitted","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.18986,"max_frame_delta":0.1346,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":1,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.16235,"max_frame_delta":0.04886,"mean_max_per_second":0,"pass":true,"reduce_flashing":false,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":2,"frames":198,"group":"hullbreakers","look":"today","max_block_luminance":0.19506,"max_frame_delta":0.14553,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+SHIELD1078 flash {"block_max_per_second":0,"frames":198,"group":"hullbreakers","look":"collapse","max_block_luminance":0.11267,"max_frame_delta":0.02592,"mean_max_per_second":0,"pass":true,"reduce_flashing":true,"shape":"egg","ships":4}
+flash threshold: every row at or under 3 flashes a second 
+cost pass done Thu 11/19/2026 18:02:20.72 
+checked out origin/main safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_main_22008 
+FAILED: the main cost pass on efc81e62 did not finish, see cost_main_log.txt; no main cost numbers 
+checked out 8605a168 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_29556 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+RESULT: FAILED, see the FAILED lines above Thu 11/19/2026 18:02:27.87 
+shield1078 end Thu 11/19/2026 18:02:27.93 
+RESULT: FAILED 
+all done 
+OPUS1078_COST5 start Thu 11/19/2026 21:43:53.53 commit c3dc2b64 
+shield1078 start Thu 11/19/2026 21:44:33.98 ref=c3dc2b649a842239872ad729301d1980b1c16454 
+checked out c3dc2b649a842239872ad729301d1980b1c16454 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_5391 
+commit c3dc2b64 attempt c3dc2b64_2125828224: results in out\c3dc2b64_2125828224 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1078\profile_c3dc2b64_2125828224\appdata 
+imported Thu 11/19/2026 21:46:03.13 
+cost pass done Thu 11/19/2026 21:49:57.91 
+checked out origin/main safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_main_2909 
+main cost pass 2e2d3b57 done in cost_main_2e2d3b57_2386719379 Thu 11/19/2026 21:50:36.27 
+checked out c3dc2b64 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_29953 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+DONE c3dc2b64 Thu 11/19/2026 21:50:37.54 
+shield1078 end Thu 11/19/2026 21:50:37.55 
+all done 
+OPUS1078_GLASS6 start Fri 11/20/2026  0:02:52.97 commit 20fb9d01 
+shield1078 start Fri 11/20/2026  0:03:17.74 ref=20fb9d01b22b3cfec994322eead6f8ca1857868f 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat sha256 6A3CD167FE64E9C3CF9C44140F840B1F25794582A966FA7A59DDB289B1DC4F42 
+checked out 20fb9d01b22b3cfec994322eead6f8ca1857868f safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_26471 
+commit 20fb9d01 attempt 20fb9d01_601922913: results in out\20fb9d01_601922913 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1078\profile_20fb9d01_601922913\appdata 
+imported Fri 11/20/2026  0:03:40.21 
+look pass done Fri 11/20/2026  0:04:31.89 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+checked out 20fb9d01 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_7682 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+DONE 20fb9d01 Fri 11/20/2026  0:04:33.13 
+shield1078 end Fri 11/20/2026  0:04:33.15 
+all done 
+OPUS1078_GLASS7 start Fri 11/20/2026  6:15:34.54 commit 42f4a4a1 
+shield1078 start Fri 11/20/2026  6:15:57.76 ref=42f4a4a190a5998f2b78fda1830f66959f5fd8b2 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat sha256 6A3CD167FE64E9C3CF9C44140F840B1F25794582A966FA7A59DDB289B1DC4F42 
+checked out 42f4a4a190a5998f2b78fda1830f66959f5fd8b2 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_first_27845 
+commit 42f4a4a1 attempt 42f4a4a1_973223599: results in out\42f4a4a1_973223599 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1078\profile_42f4a4a1_973223599\appdata 
+imported Fri 11/20/2026  6:16:40.79 
+ship cache rebuilt from assets\ships Fri 11/20/2026  6:18:31.03 
+file C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37.glb 2026-11-19T22:01:33 sha256 01B16B327558445C08D3704096722253FC4B860FF3E1CE16260D996F289DD9DC
+file C:\Users\rcbai\Downloads\voidsworn_test\build\godot\gen\ships\I8_37.scn 2026-11-20T03:04:48 sha256 E8FB8817993B76FE8FBEFE2499A26AB4AF11CFCF1C36A6C4BCA132827A29646D
+file C:\Users\rcbai\Downloads\voidsworn_test\opus1078\repo\godot\assets\ships\I8_37\I8_37.glb 2026-11-19T22:01:33 sha256 01B16B327558445C08D3704096722253FC4B860FF3E1CE16260D996F289DD9DC
+file C:\Users\rcbai\Downloads\voidsworn_test\opus1078\repo\godot\gen\ships\I8_37.scn 2026-11-20T06:17:53 sha256 C6F73675E704199D57DD04DFD44A56DC835B27D58D49A2F778C2BA7BA9DFB82A
+look pass done Fri 11/20/2026  6:19:16.47 
+no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ 
+checked out 42f4a4a1 safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out\checkout_back_28006 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+DONE 42f4a4a1 Fri 11/20/2026  6:19:17.44 
+shield1078 end Fri 11/20/2026  6:19:17.46 
+all done 
