@@ -196,53 +196,54 @@
    "damage_preview": "previews/B21_11_damage.jpg"
   },
   "B22_11": {
-   "name": "Chorus brood-sac",
+   "name": "The brood-sac, the Chorus carrier (The Chorus)",
    "faction": "chorus",
    "cls": "Carrier",
    "band": "L",
+   "game_ship": "b_brood",
    "length_world": 16.5,
    "hardpoints": {
-    "gun": 2,
-    "bay": 2,
-    "engine": 2,
-    "breach": 8,
-    "core": 1
+    "gun": 4,
+    "engine": 4,
+    "bay": 5,
+    "breach": 7,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 7,
+   "turrets": 1,
    "files": {
     "B22_11.glb": {
-     "bytes": 6462312,
-     "sha256": "76f8c644b15962bf46125a723890e738bcba61ee6a0a695aca273307a8749927"
+     "bytes": 18580540,
+     "sha256": "ea4731103e4f12f0248f68d2a09c16a7dc9d89fd41de1baa1999c417c5934d07"
     },
     "B22_11_base.jpg": {
-     "bytes": 4341957,
-     "sha256": "980337a315f470995f5fd69ab0ee758d3cf1712d1c3846c2acacac01da0ad860"
+     "bytes": 922766,
+     "sha256": "8f6ba5b1afe4e96e37543daa9d79696419ede0c59ce37bf22cf8bd12c724e32b"
     },
-    "B22_11_damage.glb": {
-     "bytes": 22571492,
-     "sha256": "97fee6b16bc1bbc39e1ef96731185e04ff387cf708e51d413c194b9fed9b08cb"
+    "B22_11_normal.png": {
+     "bytes": 6785651,
+     "sha256": "410d55b7242ee86525aa5d6f1a693d654b16d9dd9405d632b6db5245920d968c"
     },
-    "B22_11_emissive.jpg": {
-     "bytes": 269154,
-     "sha256": "a066c0a06058fd3bf032425c416f496afd6c53957a58ec24d84d4df939e5fab6"
+    "B22_11_orm.png": {
+     "bytes": 5467204,
+     "sha256": "0fbf563cadd06fc74d880c726ad36651ef52c18aacb12bc484e7830456bdc8fe"
     },
-    "B22_11_normal.jpg": {
-     "bytes": 7227908,
-     "sha256": "ef2e4a0186b0fdedff38c406b80f6749a26ec5845c9339eacab111680dc066e7"
+    "B22_11_parts_base.jpg": {
+     "bytes": 1047578,
+     "sha256": "41cfb1aede88177bc64080976a16a5c17b67e0e15a50aed87796f9109d7c0d5c"
     },
-    "B22_11_orm.jpg": {
-     "bytes": 3025965,
-     "sha256": "4f1658c746f55c1644f7b19f9baae38d26a4258196f267f76b9fead71131e313"
+    "B22_11_parts_normal.png": {
+     "bytes": 6286931,
+     "sha256": "3c36d4009d250e3c5aae542d8a39bfab869b591c6cb9e85405103fb518131e35"
     },
-    "B22_11_wreck.glb": {
-     "bytes": 3945948,
-     "sha256": "6195c6aa135d7f02e462d7a51ddf8b8997ccc568d9a74bc2c1071e4f1a6e9c29"
+    "B22_11_parts_orm.png": {
+     "bytes": 6060336,
+     "sha256": "e4d259e9896944ddc98744d8c19217af9a7ffb160156e2ed24b2c0ac45d768c7"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B22_11\\",
-   "preview": "previews/B22_11.jpg",
-   "damage_preview": "previews/B22_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B22_11\\"
   },
   "B23_51": {
    "name": "Spore wing",
