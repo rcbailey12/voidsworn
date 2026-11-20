@@ -1,0 +1,8 @@
+GPU: waiting for shared claim, weight 1 (1211)
+GPU: acquired shared claim 493e4a33-262a-46ba-a5f1-ecdd0da5270a
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-51c213151951464a903fca7d08eb08e3\godot-profile-4ba59dfd0a864548856a85c23ad696c2
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+HIT_CAPTURE_REFUSED user:// is c:/users/rcbai/appdata/local/temp/voidsworn-run-51c213151951464a903fca7d08eb08e3/godot-profile-4ba59dfd0a864548856a85c23ad696c2/godot/app_userdata/voidsworn/, not inside VS_CAPTURE_PROFILE (c:/users/rcbai/downloads/voidsworn_test/opus1211_run2/profile/before_nebula_3840x2160_gun_shield): run it from shots1211.bat
+GPU: released shared claim 493e4a33-262a-46ba-a5f1-ecdd0da5270a

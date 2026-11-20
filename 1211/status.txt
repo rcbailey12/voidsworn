@@ -1,0 +1,22 @@
+shots1211 start Thu 11/19/2026 18:03:10.43 
+HIT_CAPTURE_DONE case nebula_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: after nebula_1920x1080_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 2160 stills 7 of 7 frames 0
+own settings untouched: after nebula_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case clear_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: after clear_1920x1080_gun_shield 
+FAILED: after clear_3840x2160_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\after\log_clear_3840x2160_gun_shield.txt 
+own settings untouched: after clear_3840x2160_gun_shield 
+HIT_CAPTURE_DONE case nebula_gun_shield height 1080 stills 7 of 7 frames 0
+own settings untouched: after nebula_1920x1080clip_gun_shield 
+FAILED: before nebula_1920x1080_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\log_nebula_1920x1080_gun_shield.txt 
+own settings untouched: before nebula_1920x1080_gun_shield 
+FAILED: before nebula_3840x2160_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\log_nebula_3840x2160_gun_shield.txt 
+own settings untouched: before nebula_3840x2160_gun_shield 
+FAILED: before clear_1920x1080_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\log_clear_1920x1080_gun_shield.txt 
+own settings untouched: before clear_1920x1080_gun_shield 
+FAILED: before clear_3840x2160_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\log_clear_3840x2160_gun_shield.txt 
+own settings untouched: before clear_3840x2160_gun_shield 
+FAILED: before nebula_1920x1080clip_gun_shield, see C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\log_nebula_1920x1080clip_gun_shield.txt 
+own settings untouched: before nebula_1920x1080clip_gun_shield 
+shots1211 done Thu 11/19/2026 18:28:14.72 

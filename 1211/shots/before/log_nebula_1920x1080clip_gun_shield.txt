@@ -1,0 +1,16 @@
+GPU: waiting for shared claim, weight 1 (1211)
+GPU: acquired shared claim a72df392-3466-4787-8ffc-07675bba07ad
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-dd7b72fc90d3450d87e939360a653393\godot-profile-23a45b6709214a9da7a7d168213f7cae
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 60 FPS...
+HIT_CAPTURE_REFUSED user:// is c:/users/rcbai/appdata/local/temp/voidsworn-run-dd7b72fc90d3450d87e939360a653393/godot-profile-23a45b6709214a9da7a7d168213f7cae/godot/app_userdata/voidsworn/, not inside VS_CAPTURE_PROFILE (c:/users/rcbai/downloads/voidsworn_test/opus1211_run2/profile/before_nebula_1920x1080clip_gun_shield): run it from shots1211.bat
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots\before\clip_nebula_1080_gun_shield.avi
+1 frames at 60 FPS (movie length: 00:00:00:01), recorded in 00:00:03 (33% of real-time speed).
+CPU render time: 0.00 seconds (average: 2.21 ms/frame)
+GPU render time: 0.00 seconds (average: 0.00 ms/frame)
+Encoding time: 0.01 seconds (average: 11.55 ms/frame)
+--------------------------------------------------------------------------------
+GPU: released shared claim a72df392-3466-4787-8ffc-07675bba07ad

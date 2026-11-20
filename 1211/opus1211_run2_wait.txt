@@ -1,0 +1,4 @@
+waiting for all done in opus1078\run4_wait.txt Thu 11/19/2026 15:46:39.50 
+shots1211_run2 start Thu 11/19/2026 18:03:09.12 
+shots1211_run2 exit 0 at 18:28:14.83 
+all done 18:28:14.83 
