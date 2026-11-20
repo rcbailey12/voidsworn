@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAAA4hJREFUeJzt21FvokAYhtHPzd66m/T//9bOXqgriFakUofXc9KkiLYCls7Toe72+49W0LmPj7/VqlVrrVqrqtaOty+Wq50+juuPhstfrfvK4Qke+5qZdqs9eCNaHfbLb6MXWO+gv+XL2cVOd7ER3djv/1T7PzYcxpHT8nld/R9LxvfVYKwYrDsvDI72tXWX7j7gMTPHg11V/X7SU8Kq2q3AG8VePT/2Voy8xU5x9Irn3fL3p2YMQyNv3+Dd7ny3G9al1j7P48JF6M37XPX92GtXF7+/czVrPGgl+NiIafCdPg9j7/xX2PAkXBR7PYbe0LOjr9sdZbm7w87C7xCk65nlLjdqkz4nM3p1MZtXNZ3FWxZ7160Uew8SfGxCuxp5N2LvPLU3WL583M1nevqM+2pOGzg3/LrfIb7jwX9QeB/3DsvLDpvX66dcXsKtenw2b27sTV/VPmLPJV02Yxp5V/5n7yL2JifXvdhro1N4Oza1scz12MXXN9T9Yeh+A9/GOfiqvp7Bmwbh8d6qye3xuvH6K2s6+HEQfGzC9FJu1b3YG59f3f6ZH/keDMaW/3R1MEq8wmZ2ezMb+tZOwVd1a5bvcOv2TN6Sy7g/5IEBZOddugAA2X69egMAAFiX4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwgk+AIBwgg8AIJzgAwAIJ/gAAMIJPgCAcIIPACCc4AMACCf4AADCCT4AgHCCDwAgnOADAAgn+AAAwv0DJMyQC+emOaMAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-20T14:58:31Z",
+	"image_sha256": "0abff77a2b7095feb2cfa324e501f710fad6acc0ac4de5d897dbad6d99f84b09",
+	"inputs": [],
+	"picture_name": "SHIELD1239_r1_I8_37_i_boss_torpedo.png",
+	"schema": 1,
+	"source_commit": "dd86803ccb78b9109cfd27cee1fbb2b6856e3d0d",
+	"source_diff_sha256": "40f73136d9300c55da062bbffe802ff26d15956a76aec7716719c8386814a69a",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "dd86803ccb78b9109cfd27cee1fbb2b6856e3d0d",
+			"source_diff_sha256": "40f73136d9300c55da062bbffe802ff26d15956a76aec7716719c8386814a69a",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		516,
+		636,
+		614
+	],
+	"stamp_template_sha256": "46d3765cc39cacc816f5343fc1efb9a8b429589f607177b622b6f68123bdcf03",
+	"strip_sha256": [
+		"46d3765cc39cacc816f5343fc1efb9a8b429589f607177b622b6f68123bdcf03"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

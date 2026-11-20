@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"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"
+	],
+	"date": "2026-11-20T14:41:29Z",
+	"image_sha256": "fa6cfa6308039b8cd5f6f01921ea519b7507690f94f8b3588c6c861f6cf1fb3e",
+	"inputs": [],
+	"picture_name": "f_0051.jpg",
+	"schema": 1,
+	"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		504,
+		720
+	],
+	"stamp_template_sha256": "c8bebbc9220ccfc82bb9f3d4edbd84cbad85749030ec3fe4333d1d999bd79a5d",
+	"strip_sha256": [
+		"752128ce221cedbb099c94779f990dd2a580dfdbc313c4870eede1b9b5340ff7"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

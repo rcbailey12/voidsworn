@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"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"
+	],
+	"date": "2026-11-20T14:41:36Z",
+	"image_sha256": "d3defde318d0d80d8a21d0abb393f9ef0f4c0cbfd62f2c8330b7ab6f63dcefe9",
+	"inputs": [],
+	"picture_name": "f_0063.jpg",
+	"schema": 1,
+	"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		504,
+		720
+	],
+	"stamp_template_sha256": "05c046314df833752e59f28ec246fc0c96039372cd469e7dbba7fd9b375660e5",
+	"strip_sha256": [
+		"b1a65e53d66dbf4d049a0aef9eabb1dc1df0758893c243734f8edcdbe0faa308"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

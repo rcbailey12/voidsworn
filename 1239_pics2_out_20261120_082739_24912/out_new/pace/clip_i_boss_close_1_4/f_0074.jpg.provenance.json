@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"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"
+	],
+	"date": "2026-11-20T14:41:49Z",
+	"image_sha256": "c3adc374f307fef2ca2eef2d9eeb1894b1cf917f162f86bf7080ad7d9a2fc0d6",
+	"inputs": [],
+	"picture_name": "f_0074.jpg",
+	"schema": 1,
+	"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		504,
+		720
+	],
+	"stamp_template_sha256": "304e273307c71271edb8fe8a43d137d489f494eebc6d97147824da1bf86f9ba6",
+	"strip_sha256": [
+		"5f1bfb294c94f81b786ad3cd0019b578727dbf71050d8222e08d13370de58770"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

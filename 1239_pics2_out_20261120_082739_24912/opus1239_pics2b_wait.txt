@@ -1,0 +1,10 @@
+PICS2 rerun waiter start Fri 11/20/2026  8:27:37.24 
+mirror refresh  8:27:37.24 
+mirror fetch exit 0
+bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6 reachable in the mirror
+dd86803ccb78b9109cfd27cee1fbb2b6856e3d0d reachable in the mirror
+OPUS1239_PICS2 start through wait1239\q_opus1239_pics2.bat Fri 11/20/2026  8:27:39.11 
+run folder out_20261120_082739_24912
+result: done PASS
+OPUS1239_PICS2 waiter end at  8:58:39.96 
+all done  8:58:39.96 

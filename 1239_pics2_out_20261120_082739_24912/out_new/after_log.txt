@@ -1,0 +1,51 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1239)
+GPU: acquired shared claim cd8fb32a-6210-4cbd-8a9f-a2e971b059f1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2060173fc01c451a832553015b39e130\godot-profile-dd4a399036ad46b6afb3036aeb86ecdf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 story i_boss shoulder {"aim":"(-1.575596, 0.657651, 4.666264)","break_t":1.51666666666667,"code":"I8_37","impacts":[0.328241850137711,0.516383255720138],"moments":{"0.10":1.63333333333333,"0.30":1.83333333333333,"0.55":2.08333333333333,"0.85":2.38333333333333},"story":"shoulder","subject":"i_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T I8_37: skipped 0; rcs hp 12 ray 0 centre 0 skip 0
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 story i_boss lethal {"aim":"(-1.575596, 0.657651, 4.666264)","break_t":1.51666666666667,"code":"I8_37","impacts":[0.328241850137711,0.516383255720138],"moments":{"0.10":1.63333333333333,"0.30":1.83333333333333,"0.55":2.08333333333333,"0.85":2.38333333333333},"story":"lethal","subject":"i_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T I8_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+SHIELD1239 story i_boss torpedo {"aim":"(-7.201255, 2.531947, 3.313451)","break_t":3.33333333333333,"code":"I8_37","impacts":[1.65,1.74,1.83],"moments":{"0.05":3.38505919999999,"0.14":3.48615765645994,"0.23":3.57082432576085,"0.60":3.93866666683536},"story":"torpedo","subject":"i_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T I8_37: skipped 0; rcs hp 64 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 story h_boss shoulder {"aim":"(-17.35928, 2.99601, 8.585459)","break_t":1.4,"code":"H4_11","impacts":[0.306301523447037,0.388062704801559],"moments":{"0.10":1.51666666666667,"0.30":1.71666666666667,"0.55":1.96666666666666,"0.85":2.26666666666666},"story":"shoulder","subject":"h_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T H4_11: skipped 0; rcs hp 12 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 story h_boss lethal {"aim":"(-17.35928, 2.99601, 8.585459)","break_t":1.4,"code":"H4_11","impacts":[0.306301523447037,0.388062704801559],"moments":{"0.10":1.51666666666667,"0.30":1.71666666666667,"0.55":1.96666666666666,"0.85":2.26666666666666},"story":"lethal","subject":"h_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T H4_11: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+SHIELD1239 story h_boss torpedo {"aim":"(-4.954869, 3.960051, 9.843946)","break_t":3.33333333333333,"code":"H4_11","impacts":[1.65,1.74,1.83],"moments":{"0.05":3.38505919999999,"0.14":3.48615765645994,"0.23":3.57082432576085,"0.60":3.93866666683536},"story":"torpedo","subject":"h_boss"}
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H4_11: skipped 0; rcs hp 64 ray 0 centre 0 skip 0
+SHIELD1239_DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2060173fc01c451a832553015b39e130\godot-profile-dd4a399036ad46b6afb3036aeb86ecdf
+GPU: released shared claim cd8fb32a-6210-4cbd-8a9f-a2e971b059f1

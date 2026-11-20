@@ -1,0 +1,70 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "commit": "",
+ "new_api": true,
+ "rev": "r1",
+ "rows": [
+  {
+   "close": 0.7,
+   "code": "I8_37",
+   "frames": 92,
+   "subject": "i_boss"
+  },
+  {
+   "close": 1.05,
+   "code": "I8_37",
+   "frames": 93,
+   "subject": "i_boss"
+  },
+  {
+   "close": 1.225,
+   "code": "I8_37",
+   "frames": 92,
+   "subject": "i_boss"
+  },
+  {
+   "close": 1.4,
+   "code": "I8_37",
+   "frames": 93,
+   "subject": "i_boss"
+  },
+  {
+   "close": 0.7,
+   "code": "H4_11",
+   "frames": 92,
+   "subject": "h_boss"
+  },
+  {
+   "close": 1.05,
+   "code": "H4_11",
+   "frames": 93,
+   "subject": "h_boss"
+  },
+  {
+   "close": 1.225,
+   "code": "H4_11",
+   "frames": 92,
+   "subject": "h_boss"
+  },
+  {
+   "close": 1.4,
+   "code": "H4_11",
+   "frames": 93,
+   "subject": "h_boss"
+  }
+ ],
+ "scenes": {
+  "H4_11": {
+   "res": "res://gen/ships/H4_11.scn",
+   "sha256": "40ab32fb91aa26d7f60909b6785d25980d9a67471637c301036425e283f34f7b"
+  },
+  "I8_37": {
+   "res": "res://gen/ships/I8_37.scn",
+   "sha256": "e8fb8817993b76fe8fbefe2499a26ab4af11cfcf1c36a6c4bca132827a29646d"
+  },
+  "V16_37": {
+   "res": "res://gen/ships/V16_37.scn",
+   "sha256": "bad96283328905e2343d27da56e7a11ca4883fc57dac8a4a471cf1746d32c2e2"
+  }
+ }
+}

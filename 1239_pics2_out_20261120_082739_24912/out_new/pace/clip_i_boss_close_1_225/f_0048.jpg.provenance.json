@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAIAAAAzwFa5AAAAAXNSR0IArs4c6QAACWJJREFUeJztnVty4zgMAO0qn2C39v5HzXx4NnFsiQJJgHiw+ytTkQBKNlsckGLu//z7303Kl/HvT844Oa0/2t7Uu1937wZ00tfe46PVrjleoO7Q2T5/Tx7iI7F8BjzvS2/u6X76lamvd7T09FCdq9W8Z06Wz/OxR0Eoen2LizJi+TZLb4R6ssOAnV04ieunLY/ijXNWRyJ6Bct3SgLLH7Huyh3v8TN1qR4tvRgG8rU+91C0Ra+jcCw/yIqrjXlHi+g+yEA+ZKC+uOm/Ct40RI/l12J7eRlvnqAuE1UABSvyTLpm5kz0WN4eq0vSiavVurlemqQG/0KcpTUoHr45FH0syxdRvMllKAS1vr2v8Yf6bSbXB6nVZFD8RfQ0H3kS3kQv6/VY/pKQo3X3mzlaek/g+mq1GvP7zdKapbyKHssPYdjKwdDB79uQ7kO7noG8VvS4n3FynqLXNENly5u3aSRBxBsloMbCmiAD+QKKN0++N48OUew2lg+5ujHEndGjR/fhBvURBvIoHiSIt0DYwfKY3YlwChdQx/IUajZAJvrClqfCDp2g+PnoKH4xAtFXtbzR/jyLz9yIe+NfTo0YOHS23QVqNVh+PVeir2d5x4lnxZNrIej5/pZH8fPRUbwXTdEXs3yMt4vw+xulLG+ztCaJ4i8SYHlHzkVfxvLew27M3iC+5d33nsxQjr9IgOLdORG9Uf16seVdZ0Pxuwaeli+ieM1AI9GxfASORK/2huzvY0NbHrk70Lc1ZSbLo/gl+UHMh+gLWL4jLpUZeIdyvEp0FB+K36LPbnlp0NnkyN0eh+F8kVoNhRr44EX0RpafDTKfTSEnZldHY5cYTSrUalwti+Ij87/o7Sy/wJGtFLzElJH74Y/2ycaOC1CrWWFZy13ZwJiH6p5monMWvrHExjJBaaohnuVRvGNy0EC8qVkfS0rzWD4nQSzvWKtJMuPayoHicyEVvcoE7EKwfERQfCrFn6bB8ukQiV5lArYzzro8KH4NmSxvUKtA8eDItegjluZ7c2sdDaNEsHx6xSvH6s6B5fNyIXqt3WyUUVq3ieUXkEbxp8fto/jTNCg+O4qTse5FGywfjjSWR/EM5EvTEr3WqvklSsXy4XC3vEutBsVDQE5Fn+fdKBbYRERkeQby5oEG06D4YhyLXlGFxkUbLB8RX8uj+Jk0KL4k8zX6VUUbLJ+E6JYPW6thuhXMOBC91npK2I0rWdwlB5llbxy0teLX5Qc/Jkf0CwV/V8j2/YXmwaQLih9knWKx/Na8iz5odf6YcfdjfC1EihccZ5O9cdA+ij9NhuL3YWZEv3CxzZMDsc+O85/fdXQ/gK/iRYFjluNX+xXLw2/R5/SdgqvRvRyBIFC8aZTZfCh+Q4y2KTbjdASvUMJH921yKP70oK0Uf5oSy+/Jj+hHtrVxoeX6G7q3AMWPg+IhAH9Fr/4H9wI+B3qj3NC91A62i2pEsVVrNSgeijFWuvEW4IXM1Sy9re7FakDxdlEUUqJ4ePK4JRXZ9cAd3Y/Qp/ieE3pZXKsppvjWL2A/Hv3++jr80QFRkUankqMZKCpxRvGi8KEU7+NURvEgJduqmzdev9SnGhYdpJYtFT1SMB/CS8OjeEbx0Mmc6EONcj+/4wdtu18eMZYtzm1oMySCFUN4UQY9v6Ut1JxmRfHQYED0aysmM1zL2Mr7U7H0mOj8i8bv0iQovpkYy0Ob5KWbLq5lrFmbWal+pX6+VO7SPCj+KjeWh0sMRR9iUN+mJfb72S9UskVitd+lqaKtm4yn+NYvAF6wHdEncP03p1WcpNX4NvfDH9cmHjhoq3WT17mxPAiZFn0ml/dwOthP6n03s/elRfGy3CgeujCv0Vd4ELTcHtb7/mbvy4/iZem9P0xIyYrJ2Aquf0VU2T/+tQ0ffT+GDKStYLpV1gL/dkFadlp1Y8HF2prDvjlg//M+HrL3o3jFFvg3CvKjIXrBiL3aoL7BWb88nd0dihaSjsai+Kv0qT55iM6Y6D+8LXP9bR/df1K647oofvAcqyhZ08MODI/oR1x/Q/e10PB7X5ipc6yi6LfAv11Qi5nSzaDrb+g+OX0aQvGnYHlYhPZkbE8xXnPDAbBHz+/dwcbPsYoyD5aHdTzmpkmPzh6KqL/hAGig7eNBj6F4gBnmR/Qnrr8NOjvsC0j7YCNjvyG8ZqBJUDz48LgprH088bpGJf56sSJoMO4aA7+Pn2YYaB7WUIIbf0f0GuvcT2LYTLzyAJhnyjLXJ6P4J6rrSQGG+CndGLr+tq4GzwOggYJZ8HsHFGogCupbIFw9L5xWVm74AFirTrPaj0OgeVA8xOKX6JU2KhC4PMzKys++l1T9+hLJ4nflWJNQiIeIvI/o9TalERdrgrm20S2DPAMMxSENbVze94llQvgGwhYclG70XP8d78nQm1SveItW2GnHmuljBNWXoMzPt4qlxXubIrYRtuS4Rm+8UmY0cLvfeD8GvgndvT2WsyvfkND394ckzYQtaE3Gag/tXwO/oTc1cEiYZ4ADfqtgnKYNvAjdONici1U3q9bIGNfpD/tgSfsHmBw1EV42i2ZrL1TiQG2i5ZUeSyIlPWXvl243KajkUGaOVkItOlTVsY7eaQV8AxtVx5kJyKDiAEuA3GEOFrSw8kv3C1PxdP+J5Vg9TSdOa+A0d/gJloc2IWQ5+Gbsqh0NdMlerGlgrpcV/krmSBQPtyz2mN0CIafx30g0V7taJvj9CBS/GzFt0IHaXjdhNjXQ4rLz6l5lFFesa0eUK+4Fy9ejhLGaqG9qdruF29TAiDodvOJ/E+z4yn4BJahoFEtMRP9JouLIJji4qo4ecf0Y9Hhzzm7xItEfsrg4sjPOWipoxe/vZoRre+0o9KqCzH9mnqK/xHQTsdpE0E+MRljz9TK8173gse81vUGfAvc0tOiFFF41KSGcTsM1aBlv3zgGKnHZ7aZXEP0Z9XY5C63Q0I1zIem3LB/c6Esqi76B/U46gySzZbLmgpT5v6mAfEOxqeglILFjuC8fJFqFY+pf5B4WRA8Csmhse1AtHILo4QjMHh6cDnIeBacsYQDMPgd9BSLTHNHvsZXB1uB3gA3oLN2wlUEBkDvAZmjU6Cn+BAezA+yN8WRsnD/LtxWYHQBecF110+UjngoNMDsAnJNneSW78j3B6QDQSR7RX1JpbzNsDgB6FBL9GTH/K4DKAUCRpsf+AM4U2U5ZG2kpAAAAAElFTkSuQmCC"
+	],
+	"date": "2026-11-20T14:41:42Z",
+	"image_sha256": "fa0b3f7c450a860ea3f245195c2cf2fdf1b0e4aaf577e14c48b7e9078d013010",
+	"inputs": [],
+	"picture_name": "f_0048.jpg",
+	"schema": 1,
+	"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		504,
+		720
+	],
+	"stamp_template_sha256": "bcb846a3646cce545952d3415c3bcae46263607f4018af3bfa0786d9aac0affe",
+	"strip_sha256": [
+		"b63d2e8a82a0649569bad1df50934fff97c822dd9602b0ee65dda079fadbf6b4"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

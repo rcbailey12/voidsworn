@@ -1,0 +1,43 @@
+[Fri 11/20/2026  8:27:40.14] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T14:27:41Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Fri 11/20/2026  8:27:41.20] ready: GPU label 1239
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1 (tools_live version 5b6fdb65e676)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new bb7ed70fb6cb7da5d5b6571a8b0b773a9fd9cfe6 C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\new
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\new_ships_identity.txt
+[Fri 11/20/2026  8:28:03.28] step new import start
+[Fri 11/20/2026  8:41:12.79] step new import ok
+[Fri 11/20/2026  8:41:12.81] step new pace start
+[Fri 11/20/2026  8:42:18.83] step new pace ok
+[Fri 11/20/2026  8:42:18.84] step new after start
+[Fri 11/20/2026  8:43:02.47] step new after ok
+checkout old dd86803ccb78b9109cfd27cee1fbb2b6856e3d0d C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old_ships_identity.txt
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old are the same fleet as the first checkout
+[Fri 11/20/2026  8:43:17.70] step old import start
+[Fri 11/20/2026  8:57:43.86] step old import ok
+[Fri 11/20/2026  8:57:43.89] step old before start
+[Fri 11/20/2026  8:58:26.22] step old before ok
+[Fri 11/20/2026  8:58:26.23] step sheets start
+[Fri 11/20/2026  8:58:33.39] step sheets ok
+[Fri 11/20/2026  8:58:33.49] no ffmpeg found: the pace clip frames stay in out_new\pace
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Fri 11/20/2026  8:58:33.99
+checkout new kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\new (it holds 41 path(s) that are not rebuildable leftovers, e.g. new: godot/assets/ships/B19_11/B19_11_damage.glb.import; new: godot/assets/ships/B19_11/B19_11_emissive.jpg.import; new: godot/assets/ships/B19_11/B19_11_normal.jpg.import; new: godot/assets/ships/B19_11/B19_11_orm.jpg.import; new: godot/assets/ships/B19_11/B19_11_wreck.glb.import)
+checkout old kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1239\out_20261120_082739_24912\old (it holds 42 path(s) that are not rebuildable leftovers, e.g. new: godot/fx/test/shield1239_main_probe.gd; new: godot/assets/ships/B19_11/B19_11_damage.glb.import; new: godot/assets/ships/B19_11/B19_11_emissive.jpg.import; new: godot/assets/ships/B19_11/B19_11_normal.jpg.import; new: godot/assets/ships/B19_11/B19_11_orm.jpg.import)

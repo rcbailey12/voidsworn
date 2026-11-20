@@ -1,0 +1,48 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1239)
+GPU: acquired shared claim f0c53b1f-74b0-48ff-8418-184ca9f4b3b4
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c38eec7a3a1c4c82992bfd1ffefb18ab\godot-profile-861e159086b14f19852640d37221ca5f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 pace i_boss I8_37 close 0.7
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 pace i_boss I8_37 close 1.05
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 pace i_boss I8_37 close 1.225
+[turret] turret_0 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_1 on I8_37: its barrels touch the ship at rest; it stays at rest
+[turret] turret_2 on I8_37: its barrels touch the ship at rest; it stays at rest
+SHIELD1239 pace i_boss I8_37 close 1.4
+SHIELD1239 sheet SHIELD1239_r1_pace_I8_37_i_boss.png
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 pace h_boss H4_11 close 0.7
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 pace h_boss H4_11 close 1.05
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 pace h_boss H4_11 close 1.225
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1239 pace h_boss H4_11 close 1.4
+SHIELD1239 sheet SHIELD1239_r1_pace_H4_11_h_boss.png
+SHIELD1239_DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c38eec7a3a1c4c82992bfd1ffefb18ab\godot-profile-861e159086b14f19852640d37221ca5f
+GPU: released shared claim f0c53b1f-74b0-48ff-8418-184ca9f4b3b4
