@@ -1,0 +1,2 @@
+[score] S10 {'overlap': 44.5, 'concept_covered': 60.5, 'cell_outside': 37.4, 'triangles': 74444}
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-ddb0ce3fb498412abd6ef8e3cab6c55b
