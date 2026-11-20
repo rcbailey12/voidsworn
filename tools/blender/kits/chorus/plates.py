@@ -513,18 +513,27 @@ def _skirt(section, pts_xt, w, h, rng, creases=True):
     return V, F
 
 
-def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
+# issue 1291 (Ryan, Nov 20 4:18 PM CT: "run it down low too. we should cover the chorus ships in armor almost everywhere"):
+# the armadillo bands wrap the body down to the keel by default; KEEL is how close to the keel line a band end may come
+WRAP = -1.5
+KEEL = -math.pi / 2 + 0.02
+
+
+def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
               close_gaps=True):
     """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
-    wrapping the body (the default lo=-1.2 runs each band from belly edge to belly edge), bands of grown chitin
+    wrapping the body (lo=-1.2 runs each band from belly edge to belly edge; the default wraps to the keel), bands of grown chitin
     running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
     round a fitting and both broken ends thin into the flesh; hide rolls and creases gather along the shell's lower edges.
     close_gaps (issue 1291): when a long step would outrun a short band and leave a bare strip across the back, the next band
     starts under this one's lip instead (no extra draw from rng, so only those steps change). False keeps the old steps: C13
     as accepted and published (round G, PR 1308) has one such step and keeps it until Ryan asks for a rebuild.
+    lo=None (the default, Ryan Nov 20: "cover the chorus ships in armor almost everywhere") is WRAP: each band runs down both
+    flanks to the keel, where the two ends meet; a band never crosses the keel.
     Returns the shell object and the skirt object."""
     register(kit_module)
     rng = random.Random(seed)
+    lo = WRAP if lo is None else lo
     blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18, 3 * thick))
     mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
     skirt = ([], [])
@@ -534,6 +543,7 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, th
         # round D: uneven bands, wider and narrower, their lower edges ragged
         L_ = band * lap * rng.uniform(0.75, 1.25)
         lo_ = lo + rng.uniform(-0.16, 0.16); hi_ = math.pi - lo + rng.uniform(-0.16, 0.16)
+        lo_ = max(lo_, KEEL); hi_ = min(hi_, math.pi - KEEL)   # the two ends meet at the keel, never cross it
         n = 80; free = []
         for j in range(n + 1):
             th = lo_ + (hi_ - lo_) * j / n

@@ -16,6 +16,8 @@ The Board runs `RUN_RETRY.bat <issue> openai 7200` using its installed retry lau
 An invalid value falls back to high with an ignored-setting message. The existing provider guard ignores a
 `WORK_MODEL` from another provider. Add a named entry in `openaiPrices` in `work_issue.ps1` and configure the
 model and its variants in OpenCode before using another OpenAI model.
+Priced and configured: gpt-6.2-sol, gpt-6.1-sol, gpt-6.1-terra and gpt-6.2-astra (issue 1408: $8 in, $40 out a million;
+its cached rate, $0.80, is 10 percent of input, not confirmed on OpenAI's page). Astra runs only on the Board's go (one shot).
 
 The runner passes `--variant <effort>` to the preflight and the agent, and stamps it in `out\model.txt`,
 `out\status.json` and `out\result.txt`. OpenCode 1.19.5 merges the selected model variant's
