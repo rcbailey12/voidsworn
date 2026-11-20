@@ -280,7 +280,7 @@ def build(K):
         sn = 'P' if side > 0 else 'S'
         for i, x in enumerate(GUN_X):
             hw = st_at(x)[1]
-            K.gun('%s%d' % (sn, i + 1), (x, side * (hw - 0.04), BALL_Z), 90 * side, 0.0, barrels=1, cal=0.1, blen=0.14, size=GUN_S, mount='casemate',
+            K.gun('%s%d' % (sn, i + 1), (x, side * (hw - 0.04), BALL_Z), 90 * side, 0.0, barrels=1, cal=0.1, blen=0.06, size=GUN_S, mount='casemate', variant=1,
                   normal=(0, side, 0), slot=sn, weapon='battery', inv='broadside',
                   note='%s battery port %d of 4 (Sear battery, battery %s)' % ('port' if side > 0 else 'starboard', i + 1, sn))
 
@@ -509,6 +509,8 @@ def build(K):
              'factions.md "How it breaks" (lengthwise between deck rows, the spire line as one piece); the build contract keeps every long seam inside one transverse compartment, and the spire line overlaps the gun deck stations on this hull')
     K.change('B-3 peels the belly plating below the gun deck, the liner is relieved along that seam and at both joints, frames between the breaks stop above it, and the keel deck and ballast tanks are gone',
              'the first peel sat on the sloped lower hull and tore through the liner and the rooms behind it, so the death check found 411 inside faces on the outer hull; the S8 liner relief and a clear belly bring that to 0')
+    K.change('The battery ports are open bores: a longer thick-lipped tube lined dark to its foot, a small dark ball well down it with a faint ember ring, the barrel stub short (the kit broadside variant=1)',
+             'in game the first build\'s ports read as capped discs (the ball filled the throat); the concept draws deep dark tube mouths and the Board asked for dark open bores (Nov 20)')
     K.open_item('The belly is designed here; the concept shows no underside')
     K.open_item('Frost-white markings and the half-sun crest are paint (the Sunward stack), not modelled')
 

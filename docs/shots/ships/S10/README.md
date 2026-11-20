@@ -8,3 +8,5 @@
 - `S10_r1_blockout_vs_concept.jpg`, `S10_r2_blockout_vs_concept.jpg`: the blockout rounds the Board looked at before stage 5.
 - `S10_break_*.jpg`: one render per break line, cut at the break from the stage 4 build of e511d6d5 (cloud, Cycles): B-1 and
   B-2 both faces, B-3 the belly peel from below, B-4 the spire root from above. Decks, frames and rooms show, never a hollow.
+- `S10_r3_ports_before_after.jpg`: the Board's Nov 20 follow-up, cloud build before painting. The battery ports were capped
+  discs (the ball filled the throat); they are now open dark bores (the kit broadside's variant=1), beside the concept.
