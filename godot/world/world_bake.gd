@@ -232,8 +232,9 @@ static func touch(folder: String, key: String, now: float = -1.0) -> void:
 	used[key] = Time.get_unix_time_from_system() if now < 0.0 else now
 	_write_used(folder, used)
 
-# Removes stale .tmp files, then least recently used maps until the folder is under cap. `keep` (keys the running
-# game holds) and `fresh` (the map just saved) are never removed. Returns what it did, for logs and the check.
+# Removes stale .tmp files, then least recently used maps until the folder is under cap. Only names the game writes
+# (<64 hex>.png, its .tmp, used.json's .tmp) are ever removed. `keep` (keys the running game holds) and `fresh` (the
+# map just saved) are never removed. Returns what it did, for logs and the check.
 static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now: float = -1.0) -> Dictionary:
 	if now < 0.0: now = Time.get_unix_time_from_system()
 	var used := _read_used(folder)
@@ -242,6 +243,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 	var total := 0
 	var removed: Array = []
 	for name in DirAccess.get_files_at(folder):
+		if not _bake_name(name): continue   # only names the game writes, never a stranger's file
 		var path := folder.path_join(name)
 		if name.ends_with(".tmp"):
 			if now - FileAccess.get_modified_time(path) > TMP_MAX_AGE and DirAccess.remove_absolute(path) == OK:
@@ -262,7 +264,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if DirAccess.remove_absolute(m.path) == OK:
 				total -= int(m.size)
 				removed.append(m.key + ".png")
-	removed.append_array(_sweep_old_versions(folder))
+	removed.append_array(_sweep_old_versions(folder, folder == CACHE_DIR))
 	var live := {}
 	for m in maps:
 		if FileAccess.file_exists(m.path) and used.has(m.key): live[m.key] = used[m.key]
@@ -271,22 +273,31 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 		print("[world] bake cache %d -> %d MB (cap %d MB), removed %d files" % [before >> 20, total >> 20, cap >> 20, removed.size()])
 	return {"before": before, "after": total, "removed": removed}
 
-# Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions, next to a
-# v<N> folder, are removed once per run. Only <key>.png, *.tmp and used.json inside v1..v<N-1> go, then the empty folder.
+# Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions under
+# the game's own cache root (user://world_bakes/v1 .. v<N-1>) are cleared once per run. Never for a VS_WORLD_CACHE
+# override (Artoo on PR 1295: its neighbours are not the game's). Only names the game writes go: <64 hex>.png, that
+# plus .tmp, and used.json; then the folder if it is empty. Anything else stays.
 static var _old_swept := false
 
-static func _sweep_old_versions(folder: String) -> Array:
+static func _bake_name(f: String) -> bool:
+	if f == USED_INDEX or f == USED_INDEX + ".tmp": return true
+	var key := f.trim_suffix(".tmp").trim_suffix(".png")
+	if key.length() != 64 or not (f.ends_with(".png") or f.ends_with(".png.tmp")): return false
+	for c in key:
+		if not c in "0123456789abcdef": return false
+	return true
+
+static func _sweep_old_versions(folder: String, owned: bool) -> Array:
 	var removed: Array = []
 	var name := folder.get_file()
-	if _old_swept or not name.begins_with("v") or not name.substr(1).is_valid_int(): return removed
+	if not owned or _old_swept or not name.begins_with("v") or not name.substr(1).is_valid_int(): return removed
 	_old_swept = true
 	var parent := folder.get_base_dir()
 	for n in range(1, int(name.substr(1))):
 		var old := parent.path_join("v%d" % n)
 		if not DirAccess.dir_exists_absolute(old): continue
 		for f in DirAccess.get_files_at(old):
-			if f.ends_with(".png") or f.ends_with(".tmp") or f == USED_INDEX:
-				if DirAccess.remove_absolute(old.path_join(f)) == OK: removed.append("v%d/%s" % [n, f])
+			if _bake_name(f) and DirAccess.remove_absolute(old.path_join(f)) == OK: removed.append("v%d/%s" % [n, f])
 		if DirAccess.get_files_at(old).is_empty() and DirAccess.get_directories_at(old).is_empty():
 			DirAccess.remove_absolute(old)
 	return removed
