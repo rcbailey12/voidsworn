@@ -41,7 +41,10 @@ static func scan_names() -> Array:
 			return []
 		for entry in manifest.rocks:
 			for suffix in ["", "_lo"]:
-				if not FileAccess.file_exists(LIB_DIR + str(entry.name) + suffix + ".glb"):
+				# An exported game packs only the imported scene and its remap, not the .glb itself, so a plain
+				# file check fails there; ResourceLoader.exists sees the remap (mesh() loads the same way).
+				var glb: String = LIB_DIR + str(entry.name) + str(suffix) + ".glb"
+				if not (ResourceLoader.exists(glb) or FileAccess.file_exists(glb)):
 					push_error("Missing scanned rock: " + str(entry.name) + suffix)
 					return []
 		for entry in manifest.rocks: _scans.append(str(entry.name))
