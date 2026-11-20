@@ -536,7 +536,9 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         p.add('tooth%d' % k, 'body' if style == 'folded' else 'mount', 'chitin', tube([b0, b1, b2], [r * 0.07, r * 0.04, r * 0.005], n=5))
     # the bore and the gland: the gland sits deep in the throat; its light falls on the bore's wet wall, brightest at the
     # back and fading to dark tissue at the lip (the glow is down inside, never a disc at the mouth; R228 item 5 in spirit)
-    ga = gland_at; gr = 0.32 if style == 'knoll' else 0.62   # a knoll's bore reads dark bow-on: a small gland far down it
+    ga = gland_at; gr = 0.32 if style == 'knoll' else 0.45   # a knoll's bore reads dark bow-on: a small gland far down it
+    # issue 1291: a gland filling the bore read in game as a flat lit slab behind the teeth (C11's orange "PLA" sign); a
+    # smaller gland leaves a dark ring of bore wall round it, so the light reads as deep in the throat
     xg = L * ga
     p.add('bore', 'mount', 'maw', revolve([(xg + r * 0.05, r * 0.7), (xg - r * 0.3, r * 0.6), (0.0, r * 0.5)], seg, cap1=True))
     xl = L * 0.9; bands = (('gland', 0.0, 0.3), ('bilewet', 0.3, 0.62), ('tissue', 0.62, 1.0))

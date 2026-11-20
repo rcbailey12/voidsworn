@@ -76,7 +76,7 @@ def build(K):
 
     HP = _k.HP
     _k.MATS.update(plates.MATERIALS)
-    _k.MATS.update(maw_amber=((0.99, 0.53, 0.11), 2.7),
+    _k.MATS.update(maw_amber=((0.99, 0.53, 0.11), 1.5),   # issue 1291: dimmer (the flat orange "sign")
                    maw_amber_wet=((0.64, 0.25, 0.038), 0.51))
 
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)

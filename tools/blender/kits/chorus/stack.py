@@ -40,7 +40,7 @@ GLOW = {
     'membrane': ((.16, .06, .02), .12),
     # round 3 (Neon): a restrained yellow-green glow at the veils' roots and main ribs, the torn tips stay dark
     'veilroot': ((.45, .68, .06), 1.0),
-    'maw_amber': ((.99, .53, .11), 2.7),
+    'maw_amber': ((.99, .53, .11), 1.5),   # issue 1291: dimmer, so the throat's glow is not a flat orange sign
     'maw_amber_wet': ((.64, .25, .038), .51),
 }
 GLOW_HULL = ('bile', 'bilewet', 'membrane', 'veilroot')
