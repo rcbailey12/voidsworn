@@ -1,0 +1,54 @@
+{
+  "source_commit": "52ea6d8fa84742a3abc352f943b25ca29687898d",
+  "source_dirty": true,
+  "source_diff_sha256": "6e125b12d7c40c840c8c1b7e174e6c7d7d9113a976a7592df6d8e9dc7fb9b740",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_turret.jpg",
+  "date": "2026-11-20T22:10:04Z",
+  "sources": [
+    {
+      "source_commit": "52ea6d8fa84742a3abc352f943b25ca29687898d",
+      "source_dirty": true,
+      "source_diff_sha256": "6e125b12d7c40c840c8c1b7e174e6c7d7d9113a976a7592df6d8e9dc7fb9b740",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_turret.png",
+      "source_commit": "52ea6d8fa84742a3abc352f943b25ca29687898d",
+      "source_dirty": true,
+      "source_diff_sha256": "6e125b12d7c40c840c8c1b7e174e6c7d7d9113a976a7592df6d8e9dc7fb9b740",
+      "stage": "sheet built",
+      "date": "2026-11-20T22:09:51Z",
+      "image_sha256": "5b2bb49c329a3862258776413b8759495a85740b6a957036a924ff1920677a80",
+      "sources": [
+        {
+          "source_commit": "52ea6d8fa84742a3abc352f943b25ca29687898d",
+          "source_dirty": true,
+          "source_diff_sha256": "6e125b12d7c40c840c8c1b7e174e6c7d7d9113a976a7592df6d8e9dc7fb9b740",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    282,
+    560
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "8a49b0eccc53c80001324f372f14ef6ce9725301760572b3c7a987914e1241a1"
+  ],
+  "stamp_template_sha256": "b61982744f98568411562bb4b9a7d545c6eabfab80be6b518d8ec38754e5b702",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "7e7404739214aa3959282f337172b13dfa32c593c4df2d4bab920ba8d54057a5"
+}

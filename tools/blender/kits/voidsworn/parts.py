@@ -56,6 +56,7 @@ SUBPARTS = {
     'engine': ['housing', 'band', 'collar', 'bell', 'lining', 'throat', 'plug', 'bellring'],
     'gun': ['ring|port', 'mantlet', 'barrel', 'jacket', 'muzzle', 'bore'],
     'lance': ['breech', 'housing', 'band', 'collar', 'lip', 'bore', 'focus', 'lens'],   # the Oath lance (issue 1157)
+    'launcher': ['housing', 'surround', 'collar', 'bore', 'nose'],   # the Cinder torpedo tube (issue 1414)
     'radiator': ['root', 'column', 'cap', 'fin', 'bar', 'brace'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
     'hatchbox': ['frame', 'lid', 'rib'],
@@ -370,6 +371,69 @@ WEAPONS = {
                 'three barrels round a spindle (a heat jacket over the roots, clamp bands, a muzzle ring), dark bores with an '
                 'ember lens. All three barrels fire each volley (issue 1156, the Warden).')),
 }
+
+
+WEAPONS['torp'] = dict(
+    name='Cinder torpedo', rules='data.js torp: 1 shot, 42 damage, range 6, pierce 0.3, crit 15, cooldown 2 (k torp); FAC_WTRAIT hellfire',
+    lore='The Harrow is the delivery system for one heavy salvo (designs.md, Harrow): twin tubes in the bow cheeks. Battle look: torp (Voidsworn hellfire: armoured bodies, short plumes).',
+    design=('A forged tube house set into each cheek of the spearhead like a gun port, never a loose cylinder (issue 1414, R369): '
+            'an armoured sponson with a riveted square surround, a heavy round collar with a rolled lip standing out of its '
+            'face, a deep dark bore with two loading rings, and the next torpedo\'s armoured nose seated deep inside with an '
+            'ember fuse band. Fixed forward: the destroyer turns to aim the salvo. The pair is the one salvo slot.'))
+
+
+def torpedo_tube(r, depth, s=1.0):
+    """the Cinder torpedo tube (data.js torp, issue 1414, the Harrow destroyer): local +X the aim (the mouth at x 0), +Z up. An
+    armoured sponson block running back from the mouth (role mount: it sits into the cheek plates), a square riveted surround
+    on its face, a forged collar with a rolled lip, a deep dark bore with loading rings, and the next torpedo's nose deep in
+    the bore with an ember fuse band. Returns the part; fit: exits (the mouth), reach (how far the collar stands out)."""
+    p = Part('bow_launcher')   # weapon_match's kind for a torp mount (bow_launcher or rack)
+    R = r
+    hw = R * 1.55
+    # the sponson: an armoured block behind the mouth, its sides sloping in toward the back (it sinks into the cheek)
+    p.add('housing', 'mount', 'siron', block(-depth, -0.02 * s, hw, hw * 0.92, hw * 0.3, taper=1.0, ztaper=1.0))
+    p.add('housingback', 'mount', 'siron2', block(-depth - 0.06 * s, -depth + 0.02 * s, hw * 0.86, hw * 0.8, hw * 0.25))
+    # the surround: a square riveted plate on the sponson's face round the collar
+    p.add('surround', 'mount', 'siron2', block(-0.05 * s, 0.0, hw * 1.04, hw * 0.98, hw * 0.32))
+    st = []
+    for k in range(4):
+        for (yy, zz) in ((hw * 0.82, (k - 1.5) * hw * 0.48), (-hw * 0.82, (k - 1.5) * hw * 0.48), ((k - 1.5) * hw * 0.48, hw * 0.78), ((k - 1.5) * hw * 0.48, -hw * 0.78)):
+            st.append(_stud((0.002 * s, yy, zz), (1, 0, 0), 0.05 * R))
+    p.add('surroundstud', 'mount', 'sworn', _join(st))
+    # the collar: a heavy forged ring standing out of the face, a rolled lip, a dark bore deep inside it
+    reach = R * 0.55
+    # the collar's lip stands out of the face (body); its sleeve runs back inside the tube house (mount: it is the house's bore)
+    p.add('collar', 'body', 'siron2', revolve([(0.0, R * 1.25), (reach * 0.7, R * 1.25), (reach, R * 1.12), (reach, R * 0.95), (reach * 0.6, R * 0.86),
+                                               (0.0, R * 0.86)], 20, closed=True, phase=math.pi / 20))
+    p.add('collarsleeve', 'mount', 'siron2', revolve([(0.0, R * 0.95), (0.0, R * 0.86), (-depth * 0.85, R * 0.86), (-depth * 0.85, R * 0.95)], 20, closed=True,
+                                                      phase=math.pi / 20))
+    p.add('collarband', 'body', 'sworn', ring_band(reach * 0.35, R * 1.25, reach * 0.2, R * 0.06, 20))
+    p.add('collarstud', 'body', 'sworn', _x_studs(reach * 0.55, R * 1.2, 10, 0.045 * R, phase=math.pi / 10))
+    for i, f in enumerate((0.25, 0.55)):
+        p.add('loadring%d' % i, 'mount', 'sworn', revolve([(-depth * f - R * 0.08, R * 0.86), (-depth * f - R * 0.08, R * 0.74), (-depth * f + R * 0.08, R * 0.74),
+                                                         (-depth * f + R * 0.08, R * 0.86)], 20, closed=True))
+    p.add('bore', 'mount', 'dark', revolve([(-depth * 0.85, R * 0.86), (-depth * 0.85, 0.001)], 20))
+    # the next torpedo's armoured nose seated deep in the bore, an ember fuse band behind its tip
+    nx = -depth * 0.45
+    p.add('noseshell', 'mount', 'siron', revolve([(nx - R * 0.9, R * 0.66), (nx - R * 0.2, R * 0.66), (nx + R * 0.15, R * 0.48), (nx + R * 0.32, R * 0.2),
+                                                 (nx + R * 0.36, 0.001)], 16, cap0=True))
+    p.add('fuse', 'mount', 'embar', ring_band(nx - R * 0.35, R * 0.66, R * 0.12, R * 0.02, 16))
+    p.fit = dict(exits=[dict(pos=P((reach, 0, 0)), axis=D((1, 0, 0)), radius=R * 0.86)], reach=reach, radius=hw * 1.04)
+    return p
+
+
+def torpedo_pair(r, depth, gap, s=1.0):
+    """twin Cinder tubes as ONE launcher (the Harrow's salvo slot, issue 1414): two tube houses `gap` apart across the bow, the
+    spearhead between them; one salvo fires out of either bore in turn, so the one mount fires every volley (weapon_match SPLIT)"""
+    one = torpedo_tube(r, depth, s)
+    p = Part('bow_launcher')
+    for sg, tag in ((1, 'p'), (-1, 's')):
+        M = Matrix.Translation((0, sg * gap / 2, 0))
+        for c in one.comps:
+            p.add(c['name'] + '_' + tag, c['role'], c['mat'], ([tuple(M @ Vector(v)) for v in c['verts']], c['faces']))
+    p.fit = dict(exits=[dict(pos=P((one.fit['reach'], sg * gap / 2, 0)), axis=D((1, 0, 0)), radius=one.fit['exits'][0]['radius']) for sg in (1, -1)],
+                 reach=one.fit['reach'], radius=gap / 2 + one.fit['radius'])
+    return p
 
 
 def _barrel(p, tag, x0, L, cal, E, seg=14, jacket=0.5, fins=None, lens=True, brake=False):
@@ -687,7 +751,7 @@ def spinal(length, r=0.2, seg=8, depth=None, point=None, **kw):
     # the bore: a dark liner stepping in, two focusing rings, the small ember lens at the back
     xb = length - dp
     q = 1.2 if point else 1.0   # the pointed muzzle's bore fills its forged ring
-    p.add('bore', 'body', 'dark', revolve([(length + 0.01 * r, r * 0.6 * q), (xb, r * 0.6 * q), (xb, 0.001)], 16, phase=ph))
+    p.add('bore', 'mount', 'dark', revolve([(length + 0.01 * r, r * 0.6 * q), (xb, r * 0.6 * q), (xb, 0.001)], 16, phase=ph))
     for i, f in enumerate((0.35, 0.7)):
         x = length - dp * f
         p.add('focus%d' % i, 'body', 'embar' if i == 0 else 'sworn', revolve([(x - 0.05 * r, r * 0.6 * q), (x - 0.05 * r, r * 0.46 * q), (x + 0.05 * r, r * 0.46 * q),
