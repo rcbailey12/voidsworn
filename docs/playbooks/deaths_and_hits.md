@@ -196,7 +196,7 @@ keeps the shared orange fire (since round 2 every metal faction has one; the Cho
   soft lift with reduce flashing or a full budget). Ryan's look 2 pick for round 1, "more punch and more violet".
   The smoke a styled death keeps loses the baked fire's warm cast (grey soot, not rose).
 Built (issue 1399, round 2), at the same punch level:
-- Sunward Crusade (drumbeat): ember-gold fire, smoke kept at about a third; during the tell its magazines go off as an even
+- Sunward Crusade (drumbeat): ember-gold fire, smoke kept at a tenth (the split puff cut, Ryan round 2 clips); during the tell its magazines go off as an even
   row of ember pops down the broadside facing the camera, nose to stern, at most a quarter second apart (three, five or
   seven by class); ember rims.
 - Hegemony Navy (arc): blue-white fire, smoke kept at a quarter; as the pieces part, blue-white lightning (the shared
