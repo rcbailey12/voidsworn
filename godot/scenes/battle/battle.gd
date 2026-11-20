@@ -353,7 +353,7 @@ func _build_world() -> void:
 	_build_arrow()
 
 
-# the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
+# the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
 	vp.msaa_3d = LOOK.msaa_for_quality(q)
