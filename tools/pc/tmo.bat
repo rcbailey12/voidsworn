@@ -34,6 +34,7 @@ if /i "%~dp0"=="%TMO_LIVE%\%TMO_VER%\pc\" goto run
 if not exist "%TMO_LIVE%\%TMO_VER%\pc\run_timeout.ps1" goto broken
 set "TMO_PS=%TMO_LIVE%\%TMO_VER%\pc\run_timeout.ps1"
 :run
+if "%TMO_SAY_WATCHDOG%"=="1" echo tmo: watchdog %TMO_PS%
 powershell -NoProfile -ExecutionPolicy Bypass -File "%TMO_PS%"
 exit /b %ERRORLEVEL%
 :broken

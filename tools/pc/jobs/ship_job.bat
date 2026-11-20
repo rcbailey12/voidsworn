@@ -135,8 +135,23 @@ if defined FAILED goto collect
 git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: could not save the clone's change list or patch, nothing was reset"
 if defined FAILED goto collect
+rem (1194, Artoo on PR 1254) a staged change is not in the patch above when the worktree matches HEAD, and the restores
+rem below would erase it: stop before any reset.
+git -C "%C%" diff --cached --quiet HEAD >> "%O%\log_clone_status.txt" 2>&1
+if errorlevel 1 set "FAILED=checkout: the clone has staged changes (git diff --cached); nothing was reset"
+if defined FAILED goto collect
+rem (1194) tools\pc\tmo.bat is restored only when it is byte for byte the hand-off copy the last run made (its hash is in
+rem .git\ship_job_tmo_handoff.txt); any other change to it is a hand edit and stops the job like one anywhere else.
+set "TMO_GEN="
+set "TMO_LEFT="
+set "TMO_REC="
+for /f %%H in ('git -C "%C%" hash-object -- tools/pc/tmo.bat 2^>nul') do set "TMO_LEFT=%%H"
+if exist "%C%\.git\ship_job_tmo_handoff.txt" set /p TMO_REC=<"%C%\.git\ship_job_tmo_handoff.txt"
+if defined TMO_LEFT if defined TMO_REC if /i "%TMO_LEFT%"=="%TMO_REC%" set "TMO_GEN=1"
+set "TMO_EXCL=:(exclude)godot/assets/ships"
+if defined TMO_GEN set "TMO_EXCL=:(exclude)tools/pc/tmo.bat"
 rem git filters the list itself (findstr $ needs a CR and git writes LF only; Fable on PR 1190)
-git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" ":(exclude)tools/pc/tmo.bat" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
+git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" "%TMO_EXCL%" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: git status of the clone failed, nothing was reset"
 if defined FAILED goto collect
 for %%Z in ("%O%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 set "FAILED=checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset"
@@ -150,8 +165,8 @@ rem files); they are saved in the patch above and restored from the clone's own 
 git -C "%C%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout: could not restore the godot *.import files in the clone"
 if defined FAILED goto collect
-rem (1194) the tools_live hand-off copied over the clone's tmo.bat by the last run (below); restored like the install files
-git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1
+rem (1194) the tools_live hand-off copy the last run made (below, checked above); restored like the install files
+if defined TMO_GEN git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout: could not restore tools\pc\tmo.bat in the clone"
 if defined FAILED goto collect
 git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 2>&1
@@ -165,11 +180,14 @@ if defined FAILED goto collect
 echo merged %PAINT_BASE%: the pictures of this run are a PREVIEW of that paint stack >> "%RES%"
 :based
 git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
-rem (1194, Artoo on PR 1254) The recipe stages of a pinned commit call the clone's own tools\pc\tmo.bat. Copy the
+rem (1194, Artoo on PR 1254) The recipe stages of a pinned commit run the clone's own tools\pc\tmo.bat. Copy the
 rem tools_live tmo.bat over it, so every nested Blender and Godot step hands off to the canonical watchdog too. The next
-rem run restores the file from the clone's commit before its checkout (above).
+rem run restores the file from the clone's commit before its checkout (above), only if its hash still matches the record.
 if defined TMO_OK copy /y "%TMO%" "%C%\tools\pc\tmo.bat" > nul
 if defined TMO_OK if errorlevel 1 set "FAILED=could not route the clone's tmo.bat to tools_live"
+if defined FAILED goto collect
+if defined TMO_OK git -C "%C%" hash-object -- tools/pc/tmo.bat > "%C%\.git\ship_job_tmo_handoff.txt" 2>> "%RES%"
+if defined TMO_OK if errorlevel 1 set "FAILED=could not record the hash of the clone's tmo.bat hand-off copy"
 if defined FAILED goto collect
 if defined TMO_OK echo the clone's tools\pc\tmo.bat hands off to %TMO% >> "%RES%"
 
