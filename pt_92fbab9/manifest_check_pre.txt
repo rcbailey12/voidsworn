@@ -1,0 +1,45 @@
+MANIFEST MISMATCH: 43 of 292
+size B19_11/B19_11.glb 9058024 vs 4941792
+size B19_11/B19_11_base.jpg 879727 vs 1201554
+missing B19_11/B19_11_damage.glb
+missing B19_11/B19_11_emissive.jpg
+missing B19_11/B19_11_normal.jpg
+missing B19_11/B19_11_orm.jpg
+missing B19_11/B19_11_wreck.glb
+size B20_11/B20_11.glb 11961596 vs 5036572
+size B20_11/B20_11_base.jpg 845489 vs 1257844
+missing B20_11/B20_11_damage.glb
+missing B20_11/B20_11_emissive.jpg
+missing B20_11/B20_11_normal.jpg
+missing B20_11/B20_11_orm.jpg
+missing B20_11/B20_11_wreck.glb
+size B21_11/B21_11.glb 11067500 vs 5974212
+size B21_11/B21_11_base.jpg 941841 vs 1304126
+missing B21_11/B21_11_damage.glb
+missing B21_11/B21_11_emissive.jpg
+missing B21_11/B21_11_normal.jpg
+missing B21_11/B21_11_orm.jpg
+missing B21_11/B21_11_wreck.glb
+size H4_11/H4_11.glb 12608852 vs 12609092
+size H4_11/H4_11_base.jpg 1551438 vs 1550851
+size H4_11/H4_11_glow_emission.jpg 712622 vs 712318
+size H4_11/H4_11_normal.jpg 377202 vs 377436
+size H4_11/H4_11_orm.jpg 1778646 vs 1774976
+size H4_11/H4_11_parts_base.jpg 1149586 vs 1149449
+size H4_11/H4_11_parts_normal.jpg 426315 vs 426402
+size H4_11/H4_11_parts_orm.jpg 1495344 vs 1495199
+size I8_37/I8_37.glb 20768712 vs 1027980
+size I8_37/I8_37_base.jpg 1768514 vs 2013851
+missing I8_37/I8_37_damage.glb
+missing I8_37/I8_37_emissive.jpg
+missing I8_37/I8_37_normal.jpg
+missing I8_37/I8_37_orm.jpg
+missing I8_37/I8_37_wreck.glb
+size V14_23/V14_23.glb 6003028 vs 5261576
+size V14_23/V14_23_base.jpg 1224643 vs 1278949
+missing V14_23/V14_23_damage.glb
+missing V14_23/V14_23_emissive.jpg
+size V14_23/V14_23_normal.jpg 583392 vs 2295707
+size V14_23/V14_23_orm.jpg 1613564 vs 1900870
+missing V14_23/V14_23_wreck.glb
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)

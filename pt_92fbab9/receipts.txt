@@ -1,0 +1,6 @@
+Receipts found in Downloads\voidsworn_test\publish for the PC installs (glb sha256 in the receipt = installed glb):
+B20_11 chorus_C13 round G: publish\B20_11_20261120_082313, commit f77b4246, glb deffb21e (matches)
+I8_37 ithar_CD5: publish\I8_37_20261120_030204, commit 6b69276a, glb 01b16b32 (matches)
+V14_23 voidsworn_S9: publish\V14_23_20261120_024709, commit 2c2e86da, glb a70eda91 (matches)
+No publish_ship receipt in publish\ for B19_11 (glb written 2026-11-19 21:11), B21_11 (2026-11-19 21:02) or H4_11 (2026-11-19 07:56); they were installed some other way (ship job install or an older lane).
+Layout note: the new-pipeline installs carry no _damage.glb or _wreck.glb and use *_parts_* maps; main's manifest still lists the older 7-file layout (glb, base, damage, emissive, normal, orm, wreck).

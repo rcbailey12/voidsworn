@@ -1,0 +1,315 @@
+{
+    "note":  "Read-only report from Ryan\u0027s PC, 2026-11-20T09:52:34 CST: files installed in Downloads\\voidsworn_test\\build\\godot\\assets\\ships for each ship whose files differ from main\u0027s godot/assets/ships/manifest.json at 92fbab9417ea3367474ffb29fc6c3c0aaf87aa8c. Same shape as main\u0027s files blocks (bytes, sha256). Godot *.import and *.uid sidecars are left out. main_only lists files main\u0027s manifest has that the PC install lacks.",
+    "ships":  {
+                  "B19_11":  {
+                                 "files":  {
+                                               "B19_11.glb":  {
+                                                                  "bytes":  9058024,
+                                                                  "sha256":  "6ecf8039886b5918f77ae3d156a9b7c2488a3b7309eabba6eb77711b0601c2c8"
+                                                              },
+                                               "B19_11_base.jpg":  {
+                                                                       "bytes":  879727,
+                                                                       "sha256":  "7124aea64f562721c85693f0725c622d826ab6ee6cb2185b1477b9cc96eb7648"
+                                                                   },
+                                               "B19_11_normal.png":  {
+                                                                         "bytes":  3845384,
+                                                                         "sha256":  "272a8ccc9bf0608f247f0250f87c7580a7757d3b7c038223afc5505c0f660712"
+                                                                     },
+                                               "B19_11_orm.png":  {
+                                                                      "bytes":  4793201,
+                                                                      "sha256":  "2dc1882caae49e10d7b3882d62c4d743d22e3d6646e54dd9c17c73884e0cbb33"
+                                                                  },
+                                               "B19_11_parts_base.jpg":  {
+                                                                             "bytes":  916462,
+                                                                             "sha256":  "29ee6aae65c26437ea5915aa25e0da82f1d253dab8afe9ba6d417e8d7c87c7c9"
+                                                                         },
+                                               "B19_11_parts_normal.png":  {
+                                                                               "bytes":  3016901,
+                                                                               "sha256":  "c349f8b39815675481059bb6ef127762a24b54517345d7829f51b447a9c792f8"
+                                                                           },
+                                               "B19_11_parts_orm.png":  {
+                                                                            "bytes":  4900574,
+                                                                            "sha256":  "75cec21aebcec786323c832d99f7fe82247ce2116f95bab26b6679ad76619e32"
+                                                                        }
+                                           },
+                                 "main_only":  [
+                                                   "B19_11_damage.glb",
+                                                   "B19_11_emissive.jpg",
+                                                   "B19_11_normal.jpg",
+                                                   "B19_11_orm.jpg",
+                                                   "B19_11_wreck.glb"
+                                               ],
+                                 "differs_from_main":  [
+                                                           "B19_11.glb",
+                                                           "B19_11_base.jpg"
+                                                       ],
+                                 "pc_extra":  [
+                                                  "B19_11_normal.png",
+                                                  "B19_11_orm.png",
+                                                  "B19_11_parts_base.jpg",
+                                                  "B19_11_parts_normal.png",
+                                                  "B19_11_parts_orm.png"
+                                              ]
+                             },
+                  "B20_11":  {
+                                 "files":  {
+                                               "B20_11.glb":  {
+                                                                  "bytes":  11961596,
+                                                                  "sha256":  "deffb21eb6e557861cdf64befe1beb50ae6f982f269f4355a2cc879ed103dd0c"
+                                                              },
+                                               "B20_11_base.jpg":  {
+                                                                       "bytes":  845489,
+                                                                       "sha256":  "53bd49a02d9ffeb39afa3af2a2d8f4d6f9050f14b5ac87b8a7e2c3f5b96fa524"
+                                                                   },
+                                               "B20_11_normal.png":  {
+                                                                         "bytes":  6628475,
+                                                                         "sha256":  "0faf0d32c5aeb5dc6072a62aecf780ae72c797b25a604f452b940bd1979d39d2"
+                                                                     },
+                                               "B20_11_orm.png":  {
+                                                                      "bytes":  4864222,
+                                                                      "sha256":  "3c6a8cb206f06e70491916be3ed592bc6780656eb412a9a529da4300a7f2b844"
+                                                                  },
+                                               "B20_11_parts_base.jpg":  {
+                                                                             "bytes":  1038557,
+                                                                             "sha256":  "147e73bb1fcf4c5fdfb114c5fac82d07f530a0bb1b2eccd08138c8f50b53c492"
+                                                                         },
+                                               "B20_11_parts_normal.png":  {
+                                                                               "bytes":  6253650,
+                                                                               "sha256":  "f4403e3041286f90666c458b074221b918f4448a98847cc0c92cdba36d1e0a57"
+                                                                           },
+                                               "B20_11_parts_orm.png":  {
+                                                                            "bytes":  5544775,
+                                                                            "sha256":  "24e1d8b3307121eaa09f87649d89105b3885c98eb53897551441b07ae6602b69"
+                                                                        }
+                                           },
+                                 "main_only":  [
+                                                   "B20_11_damage.glb",
+                                                   "B20_11_emissive.jpg",
+                                                   "B20_11_normal.jpg",
+                                                   "B20_11_orm.jpg",
+                                                   "B20_11_wreck.glb"
+                                               ],
+                                 "differs_from_main":  [
+                                                           "B20_11.glb",
+                                                           "B20_11_base.jpg"
+                                                       ],
+                                 "pc_extra":  [
+                                                  "B20_11_normal.png",
+                                                  "B20_11_orm.png",
+                                                  "B20_11_parts_base.jpg",
+                                                  "B20_11_parts_normal.png",
+                                                  "B20_11_parts_orm.png"
+                                              ]
+                             },
+                  "B21_11":  {
+                                 "files":  {
+                                               "B21_11.glb":  {
+                                                                  "bytes":  11067500,
+                                                                  "sha256":  "29d40b47be87bb86d57fcdfd9b8598d6769dc9b4c131114d11cee047699e16be"
+                                                              },
+                                               "B21_11_base.jpg":  {
+                                                                       "bytes":  941841,
+                                                                       "sha256":  "6446b3b776ea07ca6c24f948b7ee881d57b1a76e14793a40173707d7833a5eab"
+                                                                   },
+                                               "B21_11_normal.png":  {
+                                                                         "bytes":  3863273,
+                                                                         "sha256":  "bb560313f761fe99fd258e490837c320417a6dff5303f72f691f7536e88fcd2f"
+                                                                     },
+                                               "B21_11_orm.png":  {
+                                                                      "bytes":  4936624,
+                                                                      "sha256":  "b0a9f4dd5c6d4b9d3d636554a35f3454f67b03ca9bbf2bab37a1a24ef738f3be"
+                                                                  },
+                                               "B21_11_parts_base.jpg":  {
+                                                                             "bytes":  896599,
+                                                                             "sha256":  "5d1af637ccd48d8e77a14a8ba7af4a8f680c42cf14023e520ca6e940fe165f35"
+                                                                         },
+                                               "B21_11_parts_normal.png":  {
+                                                                               "bytes":  2831002,
+                                                                               "sha256":  "bc0666cfc37bd38d224a73b280a56cfc878261736770ef4e9bae56f049962e3c"
+                                                                           },
+                                               "B21_11_parts_orm.png":  {
+                                                                            "bytes":  4888660,
+                                                                            "sha256":  "42c5eb7bb6e3f8c3a6af605ff8ab95f6bab84baccacc9aae97d49cf0c36bd084"
+                                                                        }
+                                           },
+                                 "main_only":  [
+                                                   "B21_11_damage.glb",
+                                                   "B21_11_emissive.jpg",
+                                                   "B21_11_normal.jpg",
+                                                   "B21_11_orm.jpg",
+                                                   "B21_11_wreck.glb"
+                                               ],
+                                 "differs_from_main":  [
+                                                           "B21_11.glb",
+                                                           "B21_11_base.jpg"
+                                                       ],
+                                 "pc_extra":  [
+                                                  "B21_11_normal.png",
+                                                  "B21_11_orm.png",
+                                                  "B21_11_parts_base.jpg",
+                                                  "B21_11_parts_normal.png",
+                                                  "B21_11_parts_orm.png"
+                                              ]
+                             },
+                  "I8_37":  {
+                                "files":  {
+                                              "I8_37.glb":  {
+                                                                "bytes":  20768712,
+                                                                "sha256":  "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc"
+                                                            },
+                                              "I8_37_base.jpg":  {
+                                                                     "bytes":  1768514,
+                                                                     "sha256":  "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd"
+                                                                 },
+                                              "I8_37_emission.jpg":  {
+                                                                         "bytes":  355238,
+                                                                         "sha256":  "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13"
+                                                                     },
+                                              "I8_37_normal.png":  {
+                                                                       "bytes":  2349042,
+                                                                       "sha256":  "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee"
+                                                                   },
+                                              "I8_37_orm.png":  {
+                                                                    "bytes":  4717114,
+                                                                    "sha256":  "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9"
+                                                                },
+                                              "I8_37_parts_base.jpg":  {
+                                                                           "bytes":  803073,
+                                                                           "sha256":  "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc"
+                                                                       },
+                                              "I8_37_parts_normal.png":  {
+                                                                             "bytes":  702729,
+                                                                             "sha256":  "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f"
+                                                                         },
+                                              "I8_37_parts_orm.png":  {
+                                                                          "bytes":  2316719,
+                                                                          "sha256":  "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
+                                                                      }
+                                          },
+                                "main_only":  [
+                                                  "I8_37_damage.glb",
+                                                  "I8_37_emissive.jpg",
+                                                  "I8_37_normal.jpg",
+                                                  "I8_37_orm.jpg",
+                                                  "I8_37_wreck.glb"
+                                              ],
+                                "differs_from_main":  [
+                                                          "I8_37.glb",
+                                                          "I8_37_base.jpg"
+                                                      ],
+                                "pc_extra":  [
+                                                 "I8_37_emission.jpg",
+                                                 "I8_37_normal.png",
+                                                 "I8_37_orm.png",
+                                                 "I8_37_parts_base.jpg",
+                                                 "I8_37_parts_normal.png",
+                                                 "I8_37_parts_orm.png"
+                                             ]
+                            },
+                  "V14_23":  {
+                                 "files":  {
+                                               "V14_23.glb":  {
+                                                                  "bytes":  6003028,
+                                                                  "sha256":  "a70eda919be78dab96caa2a9a3cb7ff23ed93dd980e21432b5c76592a07e67f5"
+                                                              },
+                                               "V14_23_base.jpg":  {
+                                                                       "bytes":  1224643,
+                                                                       "sha256":  "8812e9c041a3c84d92d9c0db89339a61a83ffc5ac6c8d9d80e569856ffb70eb2"
+                                                                   },
+                                               "V14_23_glow_emission.jpg":  {
+                                                                                "bytes":  446930,
+                                                                                "sha256":  "8c7434dd835b57042676789558c4494995f2ffdaebafa2e5b0b89533a8ef2f7f"
+                                                                            },
+                                               "V14_23_normal.jpg":  {
+                                                                         "bytes":  583392,
+                                                                         "sha256":  "e001cde167e58b673425a87fc3568c049719f7f9aa6721e5efa62734737d4255"
+                                                                     },
+                                               "V14_23_orm.jpg":  {
+                                                                      "bytes":  1613564,
+                                                                      "sha256":  "f7361adc232366221d5ac25097835b0f22ef12f0458b46289f8d69d00488418a"
+                                                                  },
+                                               "V14_23_parts_base.jpg":  {
+                                                                             "bytes":  1061485,
+                                                                             "sha256":  "46205800f20c5926112f125c78bc9e5c337a6f15e5d1d54d5cf061248b0f85b0"
+                                                                         },
+                                               "V14_23_parts_normal.jpg":  {
+                                                                               "bytes":  344748,
+                                                                               "sha256":  "0cafdc650c63b32dc694f840ac059df9cd2550a135993c9f1a089405ea451703"
+                                                                           },
+                                               "V14_23_parts_orm.jpg":  {
+                                                                            "bytes":  1637186,
+                                                                            "sha256":  "910e0f5f2dce29f25b587645bf2dd66ff9ec199a5ed6ca3859165ff91027c814"
+                                                                        }
+                                           },
+                                 "main_only":  [
+                                                   "V14_23_damage.glb",
+                                                   "V14_23_emissive.jpg",
+                                                   "V14_23_wreck.glb"
+                                               ],
+                                 "differs_from_main":  [
+                                                           "V14_23.glb",
+                                                           "V14_23_base.jpg",
+                                                           "V14_23_normal.jpg",
+                                                           "V14_23_orm.jpg"
+                                                       ],
+                                 "pc_extra":  [
+                                                  "V14_23_glow_emission.jpg",
+                                                  "V14_23_parts_base.jpg",
+                                                  "V14_23_parts_normal.jpg",
+                                                  "V14_23_parts_orm.jpg"
+                                              ]
+                             },
+                  "H4_11":  {
+                                "files":  {
+                                              "H4_11.glb":  {
+                                                                "bytes":  12608852,
+                                                                "sha256":  "33f1ef3062d7d42a3ae935d063e3d6a944a98a1c2dc253de8655d0ec46c321d2"
+                                                            },
+                                              "H4_11_base.jpg":  {
+                                                                     "bytes":  1551438,
+                                                                     "sha256":  "f5a31af1e56f08119f59ea021854fbfe28dcbdccc8f3235e87ac9bec583cf548"
+                                                                 },
+                                              "H4_11_glow_emission.jpg":  {
+                                                                              "bytes":  712622,
+                                                                              "sha256":  "1fe347f47ef0006ec02b376049faf63183b9a4d6a03bb93904f4a23d921149dc"
+                                                                          },
+                                              "H4_11_normal.jpg":  {
+                                                                       "bytes":  377202,
+                                                                       "sha256":  "b11e0ba7667d6f3484a3e44fc79183378551f45c8e9897cfdfc750bb08f778d1"
+                                                                   },
+                                              "H4_11_orm.jpg":  {
+                                                                    "bytes":  1778646,
+                                                                    "sha256":  "87ade02158a4284aa943ffd9629b91f2ee33a0593116b95c08581835259fc57c"
+                                                                },
+                                              "H4_11_parts_base.jpg":  {
+                                                                           "bytes":  1149586,
+                                                                           "sha256":  "ade32a3da3730f4ac443639ccb3b1563eccf50c6695d0dc1a3fd57b34d4189e5"
+                                                                       },
+                                              "H4_11_parts_normal.jpg":  {
+                                                                             "bytes":  426315,
+                                                                             "sha256":  "402ec563e5509f051023f5602ad7c26962dfa57359491e51f1b249c36560d119"
+                                                                         },
+                                              "H4_11_parts_orm.jpg":  {
+                                                                          "bytes":  1495344,
+                                                                          "sha256":  "a36deba47153e14e8075f728493ff6d6306435a71a5a84c0bbface342f754001"
+                                                                      }
+                                          },
+                                "main_only":  [
+
+                                              ],
+                                "differs_from_main":  [
+                                                          "H4_11.glb",
+                                                          "H4_11_base.jpg",
+                                                          "H4_11_glow_emission.jpg",
+                                                          "H4_11_normal.jpg",
+                                                          "H4_11_orm.jpg",
+                                                          "H4_11_parts_base.jpg",
+                                                          "H4_11_parts_normal.jpg",
+                                                          "H4_11_parts_orm.jpg"
+                                                      ],
+                                "pc_extra":  [
+
+                                             ]
+                            }
+              }
+}
