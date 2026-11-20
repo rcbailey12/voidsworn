@@ -1,0 +1,6 @@
+OPUS1379_BODY_RUN2 waiter start Fri 11/20/2026 15:59:24.73 
+OPUS1379_BODY_RUN2 start 15:59:24.73 
+OPUS1379_BODY_RUN2 exit 0 at 16:24:05.19 
+run folder out_20261120_155925_15122
+result: done PASS
+all done Fri 11/20/2026 16:24:05.74 
