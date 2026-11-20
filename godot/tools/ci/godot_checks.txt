@@ -158,6 +158,7 @@ gpu|fx/test/fx_proj_probe.gd|envpng:PROBE_OUT|-|rocket and torpedo flight betwee
 gpu|fx/test/fx_range_probe.gd|env:PROBE_OUT|-|every weapon at the battle camera's range: needs the GPU and the ship files
 gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, stills: needs the GPU and the ship files
 gpu|fx/test/shield_fail_probe.gd|env:PROBE_OUT|--quick|issue 1078: the shield failure looks side by side on a real ship at camera 170 (the full sheets, clips and cost run is tools/pc/jobs/shield_looks_1078.bat): needs the GPU and the ship files
+gpu|fx/test/shield_handoff_probe.gd|env:PROBE_OUT|-|issue 1239: before and after sheets of the clean collapse hand-off (shoulder break, lethal break, torpedo salvo) on real ships; same file on main and the branch
 gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside, guns and gun smoke together (issue 209): needs the GPU and the ship built from its recipe export
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files

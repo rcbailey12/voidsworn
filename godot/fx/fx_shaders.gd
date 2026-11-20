@@ -1247,6 +1247,9 @@ uniform float regen_t = -100.0;
 // for dev comparisons; brk_low gives the shear its cheaper crack network
 uniform int brk_look = 2;
 uniform bool brk_low = false;
+// issue 1239: the collapse's close time (COLLAPSE_CLOSE, fx_ship.gd) and how long the break plays in all (1.6 s, longer for a slower close)
+uniform float brk_close = 0.7;
+uniform float brk_win = 1.6;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
@@ -1370,7 +1373,7 @@ void fragment() {
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
 	float ba = scene_t - brk_t;
-	bool breaking = ba > 0.0 && ba < 1.6;
+	bool breaking = ba > 0.0 && ba < brk_win;
 	// issue 1078, shear: one connected crack network over the whole shield (cell borders join up, so a crack never
 	// ends in open field), coarser than any faction's pattern so it reads as a tear, not as the pattern lighting up
 	// (r1: the Navy's tear along its own hex lattice looked like today's look). x = distance to the crack, y = plate.
@@ -1401,7 +1404,7 @@ void fragment() {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
-		float life = 1.0 - ba / 1.6;
+		float life = 1.0 - ba / brk_win;
 		float calm = mix(1.0, 0.3, fx_calm);
 		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.4 * calm;
 		float alive = 1.0;
@@ -1434,12 +1437,12 @@ void fragment() {
 			// knot) is dropped (their wider band and knot stay); Artoo on PR 1170: the band is not a sprite flash, so the flash budget never saw it
 			float gw = style == 3 ? 1.0 : 0.0;
 			float flash = exp(-ba * 12.0) * 0.3 * calm;
-			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
+			float bp = 1.0 - clamp((ba - 0.08) / max(brk_close - 0.08, 0.05), 0.0, 1.0);
 			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
 			float bd = (dist - bp) / bw;
 			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
 			alive = smoothstep(bp + bw, bp - bw, dist);
-			float kt = ba - 0.7;
+			float kt = ba - brk_close;
 			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
 			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
 			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
@@ -1451,7 +1454,7 @@ void fragment() {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
-		float life = 1.0 - ba / 1.6;
+		float life = 1.0 - ba / brk_win;
 		float calm = mix(1.0, 0.3, fx_calm);
 		// a local flare where it gave way (not the whole hemisphere)
 		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.6 * calm;
