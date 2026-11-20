@@ -1,0 +1,14 @@
+started Thu 11/19/2026 18:40:10.21 
+code eace9e2cc53e0f9ebcd7fdd1f20dd96633c49a10 
+dry run started Thu 11/19/2026 18:40:13.25 
+dry run exit code 0 
+dry run would remove rows: 11 
+live run started Thu 11/19/2026 18:41:40.27 
+live run exit code 0 (0 is clean, also when some folders were in use) 
+janitor log janitor_20261119-1841.txt 
+removed rows: 11 
+salvage files verified: 18 
+free space before: 107351994368 bytes
+free space after: 138575233024 bytes
+all done
+all done Thu 11/19/2026 18:43:47.46 
