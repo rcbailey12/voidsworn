@@ -1,0 +1,5 @@
+waiting for chain_1119af all done Fri 11/20/2026  0:48:15.22 
+chain start Fri 11/20/2026  1:27:16.17 
+1282 CD5 W3 start  1:27:16.17 
+1282 CD5 W3 exit 0 at  1:45:18.37 
+all done Fri 11/20/2026  1:45:18.37 

@@ -1,0 +1,22 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+01:41:24 | INFO: Starting glTF 2.0 export
+01:41:24 | INFO: Extracting primitive: I8_37
+01:41:25 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+01:41:27 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+01:41:28 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+01:41:30 | INFO: Primitives created: 11
+01:41:30 | INFO: Extracting primitive: turret_0_turn
+01:41:30 | INFO: Primitives created: 2
+01:41:30 | INFO: Extracting primitive: turret_1_turn
+01:41:30 | INFO: Primitives created: 2
+01:41:30 | INFO: Extracting primitive: turret_2_turn
+01:41:30 | INFO: Primitives created: 2
+01:41:30 | INFO: Finished glTF 2.0 export in 6.240051746368408 s
+
+[export7] I8_37 triangles 481680 hard points {"gun": 5, "engine": 3, "bay": 0, "breach": 7, "core": 1, "rcs": 4, "board": 2} turrets 3 (2418 triangles) files ['I8_37.glb', 'I8_37_base.jpg', 'I8_37_emission.jpg', 'I8_37_normal.png', 'I8_37_orm.png', 'I8_37_parts_base.jpg', 'I8_37_parts_normal.png', 'I8_37_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\CD5.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-01a7018bc03f4dd49ab094946c827382

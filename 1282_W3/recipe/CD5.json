@@ -1,0 +1,127 @@
+{
+ "cell": "CD5",
+ "route": "build sheet ithar_CD5 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 83.1,
+ "geometry_seconds": 3.2,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 61,
+  "part_objects": 53,
+  "glow_objects": 14,
+  "interior_objects": 45,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 8.9,
+  "bake_H_albedo_s": 7.5,
+  "bake_H_orm_s": 7.8,
+  "bake_H_emission_s": 7.9,
+  "bake_H_normal_s": 6.1,
+  "zones_H": [
+   "gw_mosaic",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "bake_P_masks_s": 8.4,
+  "bake_P_albedo_s": 6.0,
+  "bake_P_orm_s": 6.0,
+  "bake_P_normal_s": 5.9,
+  "zones_P": [
+   "cd5_amber",
+   "cd5_green",
+   "cd5_violet",
+   "gw_lance",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "glow_materials": [
+   "ithar_glow_gw_drive",
+   "ithar_glow_gw_drive_core",
+   "ithar_glow_gw_drive_cut",
+   "ithar_glow_gw_gem_amber",
+   "ithar_glow_gw_gem_green",
+   "ithar_glow_gw_gem_violet",
+   "ithar_glow_gw_tip"
+  ],
+  "inside_materials": [
+   "ithar_inside_cd5_amber",
+   "ithar_inside_cd5_frame",
+   "ithar_inside_cd5_green",
+   "ithar_inside_cd5_violet"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.1661,
+    "area": 1.8731,
+    "texels_per_unit2": 1488073.0
+   },
+   "parts": {
+    "uv_share": 0.2402,
+    "area": 0.1501,
+    "texels_per_unit2": 26844657.0
+   }
+  },
+  "stack_seconds": 76.8
+ },
+ "density": {
+  "paint_flags": [
+   "gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [],
+  "hull": {
+   "area": 1.8731,
+   "triangles": 355776,
+   "tris_per_unit2": 189939.3,
+   "edges_per_unit2": 37402.6,
+   "texels_per_unit2": 1488073.0,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 71.93,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "ithar_CD5",
+  "game_ship": "i_boss",
+  "variant": "",
+  "model_length": 25.88274,
+  "scale": 0.03863578155405395,
+  "length_world": 26.0,
+  "t_lines": [
+   -0.42306,
+   -0.28784,
+   -0.17579,
+   -0.05602,
+   0.05602
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 5,
+  "guns": 5,
+  "engines": 3,
+  "bays": 0,
+  "points": 14,
+  "turrets": [
+   "O1_turret",
+   "O2_turret",
+   "O3_turret"
+  ],
+  "interior_objects": 45,
+  "slots": [
+   "0 pulsar F",
+   "1 pulsar F",
+   "2 pulsar T",
+   "3 turret T",
+   "4 flak T"
+  ]
+ },
+ "triangles": 452994,
+ "objects": 128,
+ "surfaces": 9,
+ "draw_calls_merged": 9
+}
