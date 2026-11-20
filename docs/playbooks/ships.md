@@ -520,4 +520,6 @@ nose, x -1.15 to 1.15) and writes `godot/fx/munitions/<faction>_<look>.glb` (sma
 `fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
 code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
 the Hullbreaker stack at its craft sizes) into small 512 atlases, so it wears the same paint as the hulls (Ryan, Nov 20:
-"are we going to paint it and add more detail after?").
+"are we going to paint it and add more detail after?"). A munition is a few pixels on the board, so it carries detail at
+the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo may be lifted per faction (`LIFT` in
+munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten").

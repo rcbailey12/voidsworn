@@ -42,7 +42,7 @@ BASE_MATS = {
 }
 MATS = dict(BASE_MATS)
 MATS.update(VS.MATS)
-MATS['oath'] = ((0.42, 0.45, 0.47), 0)   # the frost-white oath band as paint (Sunward markings), not a light
+MATS['oath'] = ((0.62, 0.65, 0.68), 0)   # the frost-white oath band as paint (Sunward markings), not a light
 METAL = ('steel', 'iron', 'brass', 'sworn')
 
 
@@ -50,6 +50,31 @@ def _move(p, M):
     for c in p.comps:
         c['verts'] = [M @ v for v in c['verts']]
     return p
+
+
+def _on_surface(p, tag, part, x, a, rad, mats=None):
+    """place a kit part built local +Z out (vent, slit, lamp, hatch) on the body's surface at station x, angle a round the X
+    axis (0 = +Y, pi/2 = +Z), radius rad"""
+    nv = Vector((0, math.cos(a), math.sin(a)))
+    M = Matrix.Translation(Vector((x, 0, 0)) + nv * rad) @ Matrix(((1, 0, 0), (0, -nv.z, nv.y), (0, nv.y, nv.z))).to_4x4()
+    for c in part.comps:
+        p.add('%s_%s' % (tag, c['name']), 'body', (mats or {}).get(c['mat'], c['mat']), ([M @ Vector(q) for q in c['verts']], c['faces']))
+
+
+def _scaled(part, k):
+    for c in part.comps:
+        c['verts'] = [Vector(q) * k for q in c['verts']]
+    return part
+
+
+def _fin(x0, x1, a, r0, h, t, sweep=0.6):
+    """a flat stabiliser blade standing out of the body at angle a: root x0..x1 at radius r0, height h, the tip swept back"""
+    nv = Vector((0, math.cos(a), math.sin(a))); tv = Vector((0, -math.sin(a), math.cos(a)))
+    L = x1 - x0
+    q = [Vector((x0, 0, 0)) + nv * r0, Vector((x1, 0, 0)) + nv * r0, Vector((x1 - L * sweep, 0, 0)) + nv * (r0 + h), Vector((x0 - L * 0.15, 0, 0)) + nv * (r0 + h * 0.9)]
+    V = [v + tv * t for v in q] + [v - tv * t for v in q]
+    F = [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
+    return [tuple(v) for v in V], F
 
 
 def _flip_x(vf):
@@ -69,7 +94,7 @@ def sunward_torpedo(variant='A'):
         # band, the SB4 cassette's seated warhead), a frost-white oath band, rivet rings, the craft drive in its armoured cowl
         xb0, xb1 = -0.78, 0.55
         p.add('body', 'body', 'siron', revolve([(xb0, r * 0.9), (xb0 + 0.06, r), (xb1, r), (xb1 + 0.05, r * 0.94)], n, phase=ph))
-        VS.panels(p, 'body', 'body', ['siron', 'siron2'], xb0 + 0.08, xb1 - 0.04, r, n, ph, th=0.016, size=(0.15, 0.32), seed=3)
+        VS.panels(p, 'body', 'body', ['siron', 'siron2'], xb0 + 0.08, xb1 - 0.04, r, n, ph, th=0.016, size=(0.09, 0.17), seed=3)
         p.add('nose', 'body', 'siron2', revolve([(xb1 + 0.04, r * 0.95), (0.80, r * 0.92), (1.0, r * 0.62), (1.12, r * 0.22), (1.15, 0.0001)], 16, phase=ph / 2))
         p.add('noseband', 'body', 'sworn', ring_band(0.70, r * 0.93, 0.07, 0.022, 16))
         p.add('collar', 'body', 'sworn', revolve([(xb1 - 0.02, r * 0.98), (xb1 - 0.02, r * 1.09), (xb1 + 0.07, r * 1.09), (xb1 + 0.07, r * 0.96)], n, closed=True, phase=ph))
@@ -96,6 +121,27 @@ def sunward_torpedo(variant='A'):
         for c in v.comps:
             p.add('vent_top_%s' % c['name'], 'body', c['mat'], ([Mt @ Vector(q) for q in c['verts']], c['faces']))
         p.add('nosestuds', 'body', 'sworn', VS._x_studs(xb1 + 0.035, r * 1.09, 12, 0.014, phase=0.1))
+        # fine detail to the ships' density (Ryan, Nov 20, after the PC run: "a bit more fine detail to match the ships"):
+        # seam rings worked into the warhead, a frost-white tip band, four forged stabiliser blades at the stern with worked
+        # edges, a conduit with clamps down each flank, ember sight slits and frost running points forward, a second oath band
+        p.add('noseseam1', 'body', 'sworn', ring_band(0.88, r * 0.84, 0.025, 0.012, 16))
+        p.add('noseseam2', 'body', 'sworn', ring_band(1.00, r * 0.63, 0.022, 0.010, 16))
+        p.add('nosefrost', 'body', 'oath', ring_band(0.62, r * 0.955, 0.035, 0.008, 16))
+        p.add('oath2', 'body', 'oath', ring_band(-0.66, r * 1.03, 0.035, 0.008, n))
+        for k in range(4):
+            a = 2 * math.pi * k / 4 + math.pi / 4 + ph
+            p.add('fin%d' % k, 'body', 'siron2', _fin(-0.86, -0.56, a, r * 0.95, 0.15, 0.012))
+            p.add('finedge%d' % k, 'body', 'sworn', _fin(-0.88, -0.84, a, r * 0.95 + 0.15 * 0.9, 0.025, 0.016, sweep=0))
+        for sgn in (1, -1):
+            a = math.pi / 2 - sgn * math.pi / 2      # the two side flats (+Y, -Y)
+            nv = Vector((0, math.cos(a), math.sin(a)))
+            c0, c1 = Vector((-0.30, 0, 0)) + nv * (ap + 0.02), Vector((0.42, 0, 0)) + nv * (ap + 0.02)
+            p.add('conduit%d' % (sgn > 0), 'body', 'sworn', HB.rod(c0, c1, 0.012, 6))
+            cl = [HB.rod(c0.lerp(c1, t) - Vector((0.012, 0, 0)), c0.lerp(c1, t) + Vector((0.012, 0, 0)), 0.02, 6) for t in (0.0, 0.33, 0.66, 1.0)]
+            p.add('clamps%d' % (sgn > 0), 'body', 'siron2', VS._join(cl))
+            _on_surface(p, 'lamp%d' % (sgn > 0), _scaled(VS.lamp(0.05), 0.5), 0.48, a + sgn * 0.6, ap + 0.002)
+        for a in (math.pi / 4 + ph, 3 * math.pi / 4 + ph):
+            _on_surface(p, 'slit%.1f' % a, VS.slit(0.06, 0.016, depth=0.012, fr=0.008), 0.30, a, r * math.cos(math.pi / n) + 0.002)
         d = VS.craft_drive(0.17, 0.32, cowl_r=0.25)
         _move(d, Matrix.Translation((X0 + 0.03, 0, 0)))
         p.extend(d, 'drive_')
@@ -177,6 +223,33 @@ def hullbreaker_rocket(variant='A'):
         p.add('patch', 'body', 'iron', (V_, F_))
         if RV:
             p.add('patchrivets', 'body', 'steel', (RV, RF))
+        # fine detail to the ships' density (Ryan, Nov 20, after the PC run): a feed pipe with collars along the top of the tube,
+        # three mismatched welded fins (one cut from other plate), a long weld seam with a rivet line along the belly, a bolted
+        # access plate, a small vent and two bands on the booster, a scorched bracket where the booster meets the tube
+        pa, pb = Vector((-0.50, r * 1.08 * math.cos(2.55), r * 1.08 * math.sin(2.55))), Vector((0.36, r * 1.08 * math.cos(2.55), r * 1.08 * math.sin(2.55)))
+        p.add('pipe', 'body', 'steel', HB.rod(pa, pb, 0.018, 8))
+        p.add('pipecollars', 'body', 'iron', VS._join([HB.rod(pa.lerp(pb, t) - Vector((0.012, 0, 0)), pa.lerp(pb, t) + Vector((0.012, 0, 0)), 0.028, 8) for t in (0.05, 0.4, 0.75, 0.97)]))
+        for k, (a, h, mat) in enumerate(((1.1, 0.16, 'iron'), (2.9, 0.12, 'rust'), (3.9, 0.14, 'steel'))):
+            p.add('fin%d' % k, 'body', mat, _fin(-0.58, -0.30, a, r * 0.95, h, 0.011, sweep=0.4 + 0.1 * k))
+        bolts = [HB.rod((x, r * 1.0 * math.cos(a), r * 1.0 * math.sin(a)), (x, r * 1.05 * math.cos(a), r * 1.05 * math.sin(a)), 0.012, 6)
+                 for a in (1.1, 2.9, 3.9) for x in (-0.54, -0.44, -0.34)]
+        p.add('finbolts', 'body', 'steel', VS._join(bolts))
+        p.add('seam', 'body', 'steel', HB.rod((-0.54, r * 1.0 * math.cos(3.4), r * 1.0 * math.sin(3.4)), (0.38, r * 1.0 * math.cos(3.4), r * 1.0 * math.sin(3.4)), 0.009, 5))
+        rv = [VS._stud((x, r * 1.01 * math.cos(3.25), r * 1.01 * math.sin(3.25)), (0, math.cos(3.25), math.sin(3.25)), 0.011) for x in [-0.5 + 0.09 * i for i in range(10)]]
+        p.add('seamrivets', 'body', 'steel', VS._join(rv))
+        acc = [(x, r * 1.004 * math.cos(a), r * 1.004 * math.sin(a)) for (x, a) in ((0.02, 0.35), (0.28, 0.35), (0.28, 0.95), (0.02, 0.95))]
+        (V_, F_), (RV, RF) = HB.plate_slab(acc, (0, math.cos(0.65), math.sin(0.65)), 0.012, rr=0.011)
+        p.add('access', 'body', 'steel', (V_, F_))
+        if RV:
+            p.add('accessrivets', 'body', 'iron', (RV, RF))
+        for x in (0.05, -0.38):
+            p.add('bband%.2f' % x, 'body', 'iron', moved(ring_band(x, rb * 1.0, 0.035, 0.015, 10), B))
+        bv = _scaled(HB.vent(0.40, 0.22, slats=3, depth=0.05), 0.3)
+        _on_surface(p, 'boostvent', bv, -0.16, -math.pi / 2, rb * 0.98)
+        for c in p.comps:
+            if c['name'].startswith('boostvent_'):
+                c['verts'] = [Vector((v.x, v.y + yb, v.z - 0.03)) for v in c['verts']]
+        p.add('bracket', 'body', 'rust', block(-0.12, 0.02, 0.03, 0.03, 0.01, yo=-(r + 0.01), zo=-0.02))
         d = HBC.craft_drive(0.19, 0.36)
         _move(d, Matrix.Translation((X0 + 0.04, 0, 0)))
         p.extend(d, 'drive_')
@@ -267,7 +340,26 @@ def to_blender(bpy, part, name, at=(0, 0, 0)):
 
 
 STACKS = {'voidsworn': 'voidsworn', 'corsair': 'hullbreakers'}
+# Ryan, Nov 20 (PC run 1379c): the Sunward torpedo read near black in game ("Brighten"). A torpedo is a few pixels on the board,
+# so the black-iron hull finish is lifted on its baked albedo (the ships keep theirs). 1.0 = the ship finish as baked.
+LIFT = {'voidsworn': 2.3, 'corsair': 1.15}
 KEEP = ('oath',)      # painted marks the stack has no zone for: kept as their own flat material (the frost-white oath band)
+
+
+def lift(bpy, cell, k):
+    """brighten the baked albedo atlases of one munition by k (alpha kept), in place, so the glb export carries it"""
+    if abs(k - 1.0) < 1e-6:
+        return
+    import numpy as np
+    for im in bpy.data.images:
+        if im.name.startswith(cell) and 'albedo' in im.name:
+            a = np.empty(len(im.pixels), np.float32); im.pixels.foreach_get(a)
+            a = a.reshape(-1, 4); a[:, :3] = np.clip(a[:, :3] * k, 0, 1)
+            im.pixels.foreach_set(a.ravel()); im.update()
+            if im.filepath_raw:
+                im.save()
+            im.pack()          # the stack packs its atlases; the glb export writes the packed copy, so pack the lifted pixels
+            print('[munitions] lifted', im.name, k)
 
 
 def paint(bpy, root, fac, cell, out, res=512, samples=8):
@@ -291,6 +383,7 @@ def paint(bpy, root, fac, cell, out, res=512, samples=8):
     for o in kept:
         bpy.context.scene.collection.objects.unlink(o)
     info = PS.run(S, out, cell, res, res, samples)
+    lift(bpy, cell, LIFT.get(fac, 1.0))
     for o in kept:
         bpy.context.scene.collection.objects.link(o)
     return info
