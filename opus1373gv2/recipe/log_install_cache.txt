@@ -1,0 +1,8 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8913edbf5db84391bee513d112d61281\godot-profile-44687702295e436c8f08e8d06ed1c934
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[assets] A4 ship ithar_GV2
+[assets] check ithar_GV2 loads=true skins=0 heavy_skins=0 hardpoints=3 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check: 1 A4 ships in the manifest
+[assets] ships refreshed: 1 A4 ships in res://gen/manifest.json
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-c99c676cc39942eebcdea0931013e637

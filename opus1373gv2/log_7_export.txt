@@ -1,0 +1,35 @@
+  outline GV2: bow 38.6, midship 54.6, stern 13.4, whole 42.5 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 82.9, midship 70.5, stern 61.2
+  REPORT bow overlap 38.6 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 54.6 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 13.4 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 42.5 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera GV2: game bow 58.4 midship 63.2 stern 42.0 whole 57.8, studio bow 35.8 midship 68.3 stern 29.8 whole 49.4
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] ithar_GV2 triangles 20372 hard points {"gun": 1, "engine": 1, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 1 (38 triangles) files ['ithar_GV2.glb', 'ithar_GV2_base.jpg', 'ithar_GV2_emission.jpg', 'ithar_GV2_normal.png', 'ithar_GV2_orm.png', 'ithar_GV2_parts_base.jpg', 'ithar_GV2_parts_normal.png', 'ithar_GV2_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2
+[check] 20410 triangles (810 on part surfaces), box x -0.500 to 0.500, y -0.139 to 0.152, z -0.158 to 0.159
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 1 written (turret_0 G1); marked by the kit: ['G1']
+[check] slot 0 guns T: 1 hard points
+[check] hard points: {"core": 1, "engine": 1, "gun": 1}
+PASS ithar_GV2 game export: every required point is there and every hard point passes the mesh checks
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 0 (guns T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_guns_T_0 is 0.0640 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w0_guns_T_0 rests aimed backward (x -1.00)
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_socket: the check failed as it must | hp_w0_guns_T_0 has no extras.socket
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   turret_merged: the check failed as it must | turret G1 is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+PASS the export check fails when it should
+INSTALL READBACK PASS code=ithar_GV2 nodes=5
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2\repo\godot\assets\ships\ithar_GV2; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2\repo\godot\.stage7-replaced-mgj9vrm9\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2
