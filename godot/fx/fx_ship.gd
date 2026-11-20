@@ -153,6 +153,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
 	hull.formation = squadron
+	hull.shared = fx.get("hull_shared")
 	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
 	t_a = fx.pend("add:analyse", t_a)
@@ -555,11 +556,27 @@ func _shield_skin(fx = null) -> ArrayMesh:
 		var bounds: AABB = frame * mi.mesh.get_aabb()
 		box = bounds if frames.is_empty() else box.merge(bounds)
 		frames[mi] = frame
-	var faces := HULL.faces_of(root, meshes, null, frames)
-	if faces.is_empty():
-		return null
-	var key := SHIELD_CACHE.key_for(box, faces)
+	# Issue 1289: the skin's cache key needs every hull triangle (about 55 ms for A16 on the PC); the battle's effects keep
+	# it per mesh set and frames (fx.shield_keys), so a later ship of the same hull skips the triangles when it is cached.
+	var keys = fx.get("shield_keys") if fx != null else null
+	var fkey := ""
+	if keys is Dictionary:
+		var parts := PackedStringArray()
+		for mi in frames:
+			parts.append("%d@%s" % [(mi as MeshInstance3D).mesh.get_instance_id(), str(frames[mi])])
+		fkey = "|".join(parts)
+	var key: String = (keys as Dictionary).get(fkey, "") if fkey != "" else ""
+	var faces := PackedVector3Array()
+	if key == "":
+		faces = HULL.faces_of(root, meshes, null, frames)
+		if faces.is_empty():
+			return null
+		key = SHIELD_CACHE.key_for(box, faces)
+		if fkey != "":
+			keys[fkey] = key
 	var arrays: Array = _shield_skin_arrays.get(key, [])
+	if arrays.is_empty() and faces.is_empty():
+		faces = HULL.faces_of(root, meshes, null, frames)
 	if arrays.is_empty():
 		arrays = SHIELD_CACHE.read_skin(key)
 		if not arrays.is_empty():
