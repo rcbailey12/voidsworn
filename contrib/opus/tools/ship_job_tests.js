@@ -9,11 +9,13 @@
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
 //   both jobs refresh and clone from the local mirror under the runner's lock;
 //   the ship job collects only deliverables and lists backups older than the newest two for the janitor;
-//   no delete or move commands, and output only under the job folder;
+//   no delete or move commands, and output only under the job folder and the helper's own TEMP;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 const JOB = path.join(ROOT, 'tools/pc/jobs/ship_job.bat');
 const LOOK = path.join(ROOT, 'tools/pc/jobs/look_bench.bat');
@@ -35,7 +37,9 @@ const shots = main.filter(l => /a4_shots\.tscn/.test(l.s));
 assert.equal(shots.length, 1, 'exactly one shots command in the main job');
 const before = main[main.indexOf(shots[0]) - 1];
 assert(guard.test(before.s), `line ${before.n} before the shots must be the FAILED guard, is: ${before.s}`);
-const firstFail = main.findIndex(l => mayFail(l.s));
+// Issue 1180: the private TEMP setup runs before :run_tools and may fail on its own; the build steps start inside :run_tools.
+const runTools = main.findIndex(l => l.s === ':run_tools');
+const firstFail = main.findIndex((l, i) => i > runTools && mayFail(l.s));
 assert(firstFail > 0, 'the job sets FAILED somewhere');
 for (let i = firstFail; i < main.indexOf(shots[0]); i++) {
   if (!mayFail(main[i].s)) continue;
@@ -66,12 +70,19 @@ assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- godot\/ass
 const pre = main.slice(0, co).map(l => l.s);
 assert(co > 0 && pre.some(s => /status --porcelain/.test(s)) && pre.some(s => /diff --binary HEAD > "%O%\\clone_changes_before_checkout\.patch"/.test(s)),
   'every tracked change in the clone is listed and saved before the checkout');
-const unexpected = pre.findIndex(s => /status --porcelain --untracked-files=no -- \. ":\(exclude\)godot\/assets\/ships" ":\(glob,exclude\)godot\/\*\*\/\*\.import" > "%O%\\clone_changes_unexpected\.txt"/.test(s));
+const unexpected = pre.findIndex(s => /status --porcelain --untracked-files=no -- \. ":\(exclude\)godot\/assets\/ships" ":\(glob,exclude\)godot\/\*\*\/\*\.import" ":\(exclude\)tools\/pc\/tmo\.bat" > "%O%\\clone_changes_unexpected\.txt"/.test(s));
 assert(unexpected > 0 && /set "FAILED=checkout: git status/.test(pre[unexpected + 1]) && guard.test(pre[unexpected + 2])
   && /set "FAILED=checkout: the clone has local changes outside/.test(pre[unexpected + 3]) && guard.test(pre[unexpected + 4]),
   'a change outside godot/assets/ships and the rewritten *.import files stops the job before the checkout (git filters, not findstr: PR 1190)');
 assert(!pre.some(s => /findstr/.test(s)), 'no findstr filter on the git status list (its $ needs a CR)');
 assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- ":\(glob\)godot\/\*\*\/\*\.import" /.test(l.s)), 'the rewritten *.import files are restored after the patch is saved');
+// Issue 1194 (Artoo on PR 1254): a pinned commit's recipe stages call the clone's own tmo.bat, so the job copies the
+// tools_live tmo.bat over it after the checkout, and restores the committed file before the next checkout.
+assert(main.slice(0, co).some(l => l.s === 'git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1'), 'the hand-off copy is restored before the checkout');
+const based = main.findIndex(l => l.s === ':based');
+const overlay = main.findIndex(l => l.s === 'if defined TMO_OK copy /y "%TMO%" "%C%\\tools\\pc\\tmo.bat" > nul');
+const stagesAt = main.findIndex(l => /cmd \/c ""%~f0" ship"/.test(l.s));
+assert(based > 0 && overlay > based && overlay < stagesAt, 'the clone tmo.bat hands off to tools_live before any stage runs');
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default
@@ -113,6 +124,7 @@ for (const l of code) {
   for (const m of l.s.matchAll(/>>?\s*("[^"]*"|\S+)/g)) {
     const target = m[1].replace(/"/g, '');
     if (target === 'nul' || target === '&1') continue;
+    if (l.s.startsWith('call :run_tools 9>') && target === '%TEMP%\\.voidsworn-run-active') continue;
     assert(/^%(O|RES)%/.test(target), `line ${l.n} writes outside the job's out folder: ${target}`);
   }
 }
@@ -161,6 +173,53 @@ assert(janitor > start && janitor < firstFail + 1 &&
   main[janitor].s.includes("Get-ChildItem -LiteralPath $env:J -Directory -Filter 'out_before_*' | Sort-Object Name -Descending | Select-Object -Skip 2 -ExpandProperty FullName") &&
   main[janitor].s.includes('> "%O%\\out_before_for_janitor.txt"'), 'list only backup folders older than the newest two for the janitor before any build step');
 pass('the newest two backups stay off the janitor list');
+
+const bench = fs.readFileSync(path.join(ROOT, 'tools/pc/jobs/look_bench.bat'), 'utf8');
+function tempSetup(script) {
+  const start = script.indexOf('powershell -NoProfile -Command "$ErrorActionPreference=\'Stop\'; $id=');
+  const end = script.indexOf(':run_tools', script.indexOf('exit /b %ERRORLEVEL%', start));
+  assert(start >= 0 && end > start, 'sets the helper temp before its tools run');
+  return script.slice(start, end);
+}
+const setups = [tempSetup(text), tempSetup(bench)];
+for (const setup of setups) {
+  assert.match(setup, /voidsworn-run-.*\.voidsworn-run-owner/);
+  assert.match(setup, /set \/p TEMP=.*\r?\nset "TMP=%TEMP%"\r?\nset "TMPDIR=%TEMP%"/);
+  assert.match(setup, /call :run_tools 9>"%TEMP%\\\.voidsworn-run-active"/);
+}
+if (process.platform === 'win32') {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helper-temp-proof-'));
+  try {
+    for (const [number, setup] of setups.entries()) {
+      const probe = path.join(tmp, `helper${number}.bat`);
+      const lines = ['@echo off', 'setlocal', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
+        'set "RES=%PROOF_HOME%\\setup.log"', 'set "ST=%RES%"', setup,
+        ':run_tools', 'powershell -NoProfile -Command "try { [IO.File]::Open((Join-Path $env:TEMP \'.voidsworn-run-active\'),\'Open\',\'Read\',\'None\').Dispose(); exit 1 } catch [IO.IOException] { exit 0 }"',
+        'if errorlevel 1 exit /b 1', 'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%',
+        'exit /b 0', ':collect', ':finish', 'exit /b 1'];
+      fs.writeFileSync(probe, lines.map(line => line.replace(/\r?\n/g, '\r\n')).join('\r\n') + '\r\n');
+      const run = spawnSync('cmd.exe', ['/d', '/c', probe], { env: { ...process.env, TEMP: tmp, PROOF_HOME: tmp }, encoding: 'utf8', timeout: 15000 });
+      assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}\n${fs.readFileSync(path.join(tmp, 'setup.log'), 'utf8')}`);
+      const fromEnv = run.stdout.trim().split(/\r?\n/).map(line => line.split('=')[1]);
+      assert.equal(fromEnv.length, 3);
+      const [dir] = fromEnv;
+      assert(fromEnv.every(value => value === dir));
+      assert.equal(path.dirname(dir), tmp);
+      assert.equal(fs.readFileSync(path.join(dir, '.voidsworn-run-owner'), 'utf8'), path.basename(dir).slice('voidsworn-run-'.length));
+      assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')));
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+pass('both helper launchers give their tools separate owned TEMP folders');
+
+const stage7 = spawnSync(process.env.PYTHON || 'python', ['-B', path.join(ROOT, 'tools/recipe/manifest_merge_selftest.py')],
+  { encoding: 'utf8', timeout: 20000 });
+assert.equal(stage7.status, 0, `${stage7.error || ''}\n${stage7.stdout}\n${stage7.stderr}`);
+assert.match(stage7.stdout, /PASS stage 7 scratch removed after successful install/);
+assert.match(stage7.stdout, /PASS stage 7 scratch kept after failed install/);
+pass('stage 7 removes the checked export scratch after success and keeps it after a failure');
 
 // the wrappers
 const wrappers = fs.existsSync(WRAPPERS) ? fs.readdirSync(WRAPPERS).filter(f => /\.bat$/i.test(f)) : [];

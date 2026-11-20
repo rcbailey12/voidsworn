@@ -37,6 +37,20 @@ set "JW=%~dp0..\job_wrap.bat"
 call "%JW%" init "%LB_HOME%" "%PC_GPU_ISSUE%" "godot pil"
 if errorlevel 1 exit /b %ERRORLEVEL%
 set "G=%JW_GODOT%"
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%LB_HOME%\scratch_path.txt" 2>> "%ST%"
+if errorlevel 1 (
+  echo FAILED: private TEMP setup >> "%ST%"
+  call "%JW%" fail "private TEMP setup"
+  goto finish
+)
+set /p TEMP=<"%LB_HOME%\scratch_path.txt"
+set "TMP=%TEMP%"
+set "TMPDIR=%TEMP%"
+rem The redirection holds the marker open until the tools finish (every step below, through job_wrap end).
+call :run_tools 9>"%TEMP%\.voidsworn-run-active"
+exit /b %ERRORLEVEL%
+
+:run_tools
 
 if /i not "%GOWAIT%"=="go" goto gook
 echo waiting for %VT%\look_bench\go.txt >> "%ST%"
@@ -120,7 +134,7 @@ if not "%LB_QUIET%"=="1" start "" explorer "%S%"
 echo look bench done %date% %time% >> "%ST%"
 rem done PASS or done FAILED: <steps>, then all done, in status.txt and done.txt; the exit code follows.
 call "%JW%" end
-endlocal & exit /b %ERRORLEVEL%
+exit /b %ERRORLEVEL%
 
 rem ---------------------------------------------------------------- one bench run: :bench REF [RUNNAME] [PRE_RUN]
 :bench

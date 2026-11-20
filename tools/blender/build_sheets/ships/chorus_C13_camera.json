@@ -1,0 +1,21 @@
+{
+ "az": 49.130778266745985,
+ "el": 15.892691517367398,
+ "roll": -11.078735532470613,
+ "dist": 22.992628244348275,
+ "mm": 112.88655203828799,
+ "target": [
+  0,
+  0,
+  0
+ ],
+ "sx": 0.07451188921178445,
+ "sy": 0.01646295096328039,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.824,
+ "body_iou": 0.8222,
+ "note": "C13 sheet: started from the first layout's fitted camera (itself from az 30 el 20), on the 25,000 largest triangles of the mesh (thinned for speed); fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 13, closed, holes filled, largest shape"
+}

@@ -66,6 +66,29 @@ for (const name of ['jobs/ui344_briefing_shots.bat', 'jobs/ui344_rollout_shots.b
 }
 pass('the five job bats and run_smoke run through job_wrap: preflight first, no polling, honest end');
 
+{
+  // Look bench after 1252: the run-active marker is held by one redirection around every step, so it stays open for the
+  // whole bench, and a failed bench reaches job_wrap end (done FAILED, exit 1) so the watcher files it under failed.
+  const lb = read(path.join(PC, 'jobs/look_bench.bat'));
+  const lines = lb.split('\n').filter(l => !/^\s*rem\b/i.test(l)).join('\n');
+  const init = lines.indexOf('call "%JW%" init ');
+  const marker = lines.indexOf('call :run_tools 9>"%TEMP%\\.voidsworn-run-active"');
+  const tools = lines.indexOf('\n:run_tools');
+  assert(init > 0 && marker > init, 'look bench: the preflight runs before the marker is taken');
+  assert(/^exit \/b %ERRORLEVEL%$/m.test(lines.slice(marker).split('\n')[1]), 'look bench: the exit code of the marked block is the job exit code');
+  assert(tools > marker, 'look bench: the marked block follows the marker call');
+  const top = lines.slice(0, tools);
+  assert(!/call "%JW%" run|\bgit\b|call :bench/.test(top), 'look bench: no step runs outside the marked block');
+  const body = lines.slice(tools);
+  assert(body.indexOf('\n:finish') > 0 && body.indexOf('call "%JW%" end') > body.indexOf('\n:finish'), 'look bench: end runs inside the marked block');
+  assert(body.indexOf('call :bench') > 0 && body.indexOf('call :bench') < body.indexOf('\n:finish'), 'look bench: the bench runs inside the marked block');
+  for (const m of body.matchAll(/call :bench [^\n]*\n([^\n]*)/g)) assert.equal(m[1].trim(), 'if errorlevel 1 goto finish', 'look bench: a failed bench goes to end');
+  const bench = body.slice(body.indexOf('\n:bench'));
+  assert(/call "%JW%" fail "bench %SHA% did not finish"\s*\n\s*exit \/b 1/.test(bench), 'look bench: a bench that did not finish is marked failed');
+  assert(/FAILED: private TEMP setup >> "%ST%"\s*\n\s*call "%JW%" fail "private TEMP setup"\s*\n\s*goto finish/.test(lines), 'look bench: a failed TEMP setup still ends through job_wrap');
+}
+pass('look bench: the marker stays open for every step, and a failed bench ends FAILED with a non-zero exit');
+
 for (const [name, q, dir] of [['watcher.bat', 'queue', 'build'], ['watcher_b.bat', 'queue_b', 'build_b']]) {
   const w = read(path.join(PC, name)).replace(/\r\n/g, '\n');
   assert(w.includes(`if not exist ${q}\\failed mkdir ${q}\\failed`), name + ' makes the failed folder');
@@ -126,8 +149,8 @@ pass('PC_DOCTOR.bat is read only and shows owner, child, age and health for ever
 const hasPwsh = process.platform !== 'win32' && !spawnSync('pwsh', ['-v'], { encoding: 'utf8' }).error;
 if (hasPwsh) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'pc1194-pwsh-'));
-  const parse = spawnSync('pwsh', ['-NoProfile', '-Command', `$bad = 0; foreach ($f in $args) { $e = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$e); foreach ($x in $e) { Write-Output "$f $($x.Extent.StartLineNumber): $($x.Message)"; $bad++ } }; exit $bad`,
-    ...['lane_tools_refresh.ps1', 'pc_doctor.ps1', 'runner_common.ps1', 'run_timeout.ps1'].map(n => path.join(PC, n))], { encoding: 'utf8' });
+  const parse = spawnSync('pwsh', ['-NoProfile', '-Command', `$bad = 0; foreach ($f in ($env:PARSE_FILES -split '\|')) { $e = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$e); foreach ($x in $e) { Write-Output "$f $($x.Extent.StartLineNumber): $($x.Message)"; $bad++ } }; exit $bad`,
+    ], { encoding: 'utf8', env: { ...process.env, PARSE_FILES: ['lane_tools_refresh.ps1', 'pc_doctor.ps1', 'runner_common.ps1', 'run_timeout.ps1'].map(n => path.join(PC, n)).join('|') } });
   assert.equal(parse.status, 0, parse.stdout + parse.stderr);
   const ps = (args, env = {}) => spawnSync('pwsh', ['-NoProfile', '-File', ...args], { encoding: 'utf8', env: { ...process.env, USERPROFILE: temp, ...env } });
   const out = path.join(temp, 'out');
@@ -263,6 +286,37 @@ const partialRun = job('partial', ['call "%JW%" init "%OUT%" "test1194" ""', 'ex
 assert.equal(partialRun.code, 1, partialRun.text + partialRun.st);
 assert.equal(partialRun.done, 'FAILED: tools hashcheck');
 assert(partialRun.st.includes('leaves out: run_timeout.ps1, gpu_slots.js'), partialRun.st);
+// The look bench shape: init, then one marked call around every step; a failed bench inside it ends FAILED, exit 1.
+const bench = job('bench', [
+  'call "%JW%" init "%OUT%" "test1194" "godot"',
+  'if errorlevel 1 exit /b %ERRORLEVEL%',
+  'call :run_tools 9>"%OUT%\\.run-active"',
+  'exit /b %ERRORLEVEL%',
+  ':run_tools',
+  'set "JW_STEP=checkout" & call "%JW%" run 10 "%STEP%" 0',
+  'if errorlevel 1 goto finish',
+  'call :bench',
+  'if errorlevel 1 goto finish',
+  'echo not reached> "%OUT%\\after_bench.txt"',
+  ':finish',
+  'del "%OUT%\\.run-active" > nul 2>&1',
+  'if exist "%OUT%\\.run-active" echo held> "%OUT%\\held_at_end.txt"',
+  'call "%JW%" end',
+  'exit /b %ERRORLEVEL%',
+  ':bench',
+  'del "%OUT%\\.run-active" > nul 2>&1',
+  'if exist "%OUT%\\.run-active" echo held> "%OUT%\\held_in_bench.txt"',
+  'set "JW_STEP=capture" & set "JW_CONTINUE=1" & call "%JW%" run 10 "%STEP%" 3',
+  'call "%JW%" fail "bench abc did not finish"',
+  'exit /b 1'].join('\n'));
+assert.equal(bench.code, 1, bench.text + bench.st);
+assert(/^FAILED: .*bench abc did not finish/.test(bench.done), bench.done);
+assert(fs.existsSync(path.join(bench.out, 'held_in_bench.txt')), 'the marker is held during the bench');
+assert(fs.existsSync(path.join(bench.out, 'held_at_end.txt')), 'the marker is still held when job_wrap end runs');
+assert(!fs.existsSync(path.join(bench.out, 'after_bench.txt')), 'nothing runs after a failed bench');
+fs.unlinkSync(path.join(bench.out, '.run-active'));
+pass('Windows: the look bench marker stays held through end, and a failed bench exits 1 (the watcher files it under failed)');
+
 fs.appendFileSync(path.join(tools, 'tmo.bat'), 'rem changed\r\n');
 const tampered = job('tampered', ['call "%JW%" init "%OUT%" "test1194" ""', 'exit /b %ERRORLEVEL%'].join('\n'));
 assert.equal(tampered.code, 1, tampered.text + tampered.st);

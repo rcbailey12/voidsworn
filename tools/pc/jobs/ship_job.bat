@@ -69,10 +69,22 @@ if exist "%O%" (
 mkdir "%O%" || exit /b 1
 set "RES=%O%\result.txt"
 for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"`) do set "START_TICKS=%%T"
+set FAILED=
+rem The installed copy runs on its own. Keep its inherited tool scratch under a named, owned TEMP directory.
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%O%\scratch_path.txt" 2>> "%RES%"
+if errorlevel 1 set "FAILED=private TEMP setup"
+if defined FAILED goto collect
+set /p TEMP=<"%O%\scratch_path.txt"
+set "TMP=%TEMP%"
+set "TMPDIR=%TEMP%"
+rem The redirection holds the marker open until the tools finish.
+call :run_tools 9>"%TEMP%\.voidsworn-run-active"
+exit /b %ERRORLEVEL%
+
+:run_tools
 echo start %SHIP% %CODE% %BRANCH% %DATE% %TIME% > "%RES%"
 echo inputs STAGES=%STAGES% SETS=%SETS% FACS=%FACS% PAINT_BASE=%PAINT_BASE% PC_GPU_WAIT_SECONDS=%PC_GPU_WAIT_SECONDS% >> "%RES%"
 if exist "%J%\out_before_%STAMP%" echo the earlier run's out folder is now out_before_%STAMP% >> "%RES%"
-set FAILED=
 set "GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe"
 rem (1194) The installed main watchdog in tools_live, never the job clone's own copy. Once tools_live is installed, a
 rem blank pointer or a version without a watchdog fails the job before any step (fail closed, Artoo on PR 1254).
@@ -124,7 +136,7 @@ git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> 
 if errorlevel 1 set "FAILED=checkout: could not save the clone's change list or patch, nothing was reset"
 if defined FAILED goto collect
 rem git filters the list itself (findstr $ needs a CR and git writes LF only; Fable on PR 1190)
-git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
+git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" ":(exclude)tools/pc/tmo.bat" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: git status of the clone failed, nothing was reset"
 if defined FAILED goto collect
 for %%Z in ("%O%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 set "FAILED=checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset"
@@ -138,6 +150,10 @@ rem files); they are saved in the patch above and restored from the clone's own 
 git -C "%C%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout: could not restore the godot *.import files in the clone"
 if defined FAILED goto collect
+rem (1194) the tools_live hand-off copied over the clone's tmo.bat by the last run (below); restored like the install files
+git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1
+if errorlevel 1 set "FAILED=checkout: could not restore tools\pc\tmo.bat in the clone"
+if defined FAILED goto collect
 git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
 if defined FAILED goto collect
@@ -149,6 +165,13 @@ if defined FAILED goto collect
 echo merged %PAINT_BASE%: the pictures of this run are a PREVIEW of that paint stack >> "%RES%"
 :based
 git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
+rem (1194, Artoo on PR 1254) The recipe stages of a pinned commit call the clone's own tools\pc\tmo.bat. Copy the
+rem tools_live tmo.bat over it, so every nested Blender and Godot step hands off to the canonical watchdog too. The next
+rem run restores the file from the clone's commit before its checkout (above).
+if defined TMO_OK copy /y "%TMO%" "%C%\tools\pc\tmo.bat" > nul
+if defined TMO_OK if errorlevel 1 set "FAILED=could not route the clone's tmo.bat to tools_live"
+if defined FAILED goto collect
+if defined TMO_OK echo the clone's tools\pc\tmo.bat hands off to %TMO% >> "%RES%"
 
 rem 3. import, then the stages, each in a fresh cmd so the variables the stages set end with them
 cd /d "%C%"
