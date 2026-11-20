@@ -1,0 +1,22 @@
+start Fri 11/20/2026  8:59:32.28 attempt 1 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+commit ce9e7b617b154ca8b656c7e308f1152e41005675 
+import exit 0 
+plain exit 0 
+STOP_TIMING prime plain load_ms 23825 worst_frame_ms 15.1
+STOP_TIMING plain load_ms 10255 worst_frame_ms 13.9 mood plain
+boss exit 0 
+STOP_TIMING prime plain load_ms 22271 worst_frame_ms 12.2
+STOP_TIMING boss load_ms 13907 worst_frame_ms 13.8 mood boss
+salvage exit 0 
+STOP_TIMING prime plain load_ms 22383 worst_frame_ms 14.3
+STOP_TIMING salvage load_ms 14792 worst_frame_ms 14.0 mood salvage
+rival exit 0 
+STOP_TIMING prime plain load_ms 22165 worst_frame_ms 14.8
+STOP_TIMING rival load_ms 16346 worst_frame_ms 13.4 mood rival
+timings collected 4 of 4 
+PASSED 
+all done Fri 11/20/2026  9:15:57.87 

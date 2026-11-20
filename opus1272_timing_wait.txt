@@ -1,0 +1,7 @@
+waiting for all done in opus1239_pics2b_wait.txt Fri 11/20/2026  8:34:30.07 
+mirror refresh  8:59:31.18 
+mirror fetch exit 0
+ce9e7b617b154ca8b656c7e308f1152e41005675 reachable in the mirror
+OPUS1272_TIMING start  8:59:32.26 
+OPUS1272_TIMING exit 0 at  9:15:57.87 
+all done Fri 11/20/2026  9:15:57.87 
