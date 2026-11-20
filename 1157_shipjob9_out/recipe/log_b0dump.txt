@@ -1,0 +1,50 @@
+GPU: waiting for shared claim, weight 2 (1157)
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: acquired shared claim 46187d22-1faa-4c94-adf0-3a7ea5e58f47
+10:31:48 | INFO: Data are loaded, start creating Blender stuff
+10:31:48 | INFO: Blender create Mesh node geometry_0
+10:31:48 | INFO: glTF import finished in 0.54s
+[ai_align] measured shape_ref_yaw 180.0 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\b0.npz (574171, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim 46187d22-1faa-4c94-adf0-3a7ea5e58f47

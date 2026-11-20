@@ -1,0 +1,8 @@
+chain start Fri 11/20/2026  9:50:40.55 
+mirror refresh  9:50:40.55 
+mirror fetch exit 0
+eef9fd8149d43ffadebebe62fa9b725d49415416 reachable in the mirror
+1157 shipjob 9 start  9:50:41.63 
+1157 shipjob 9 exit 0 at 10:45:24.35 
+after-job janitor ran, output in janitor_after_1119aw.txt 10:45:24.89 
+all done Fri 11/20/2026 10:45:24.89 

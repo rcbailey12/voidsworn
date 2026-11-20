@@ -1,0 +1,31 @@
+start voidsworn_S10 V16_37 opus/issue-1157 Fri 11/20/2026  9:50:42.59 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261120_095041_9345335 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=eef9fd8149d43ffadebebe62fa9b725d49415416
+import exit 0 
+1_concept_in start  9:51:18.77 
+1_concept_in exit 0 at  9:51:21.11 
+2_shape_ref start  9:51:21.12 
+2_shape_ref exit 0 at  9:51:21.82 
+3_trace_hull start  9:51:21.82 
+3_trace_hull exit 0 at 10:33:57.94 
+4_parts_kit start 10:33:57.94 
+4_parts_kit exit 0 at 10:34:39.51 
+5_paint_bake start 10:34:39.51 
+5_paint_bake exit 0 at 10:42:50.67 
+6_lod start 10:42:50.67 
+6_lod exit 0 at 10:43:52.56 
+7_export start 10:43:52.57 
+7_export exit 0 at 10:44:59.01 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1157\repo\godot\assets\ships\V16_37\V16_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 10:45:23.80 
+all done 
+pin ok eef9fd8149d43ffadebebe62fa9b725d49415416 

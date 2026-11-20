@@ -1,0 +1,2 @@
+[battle] S10 {"game": {"bow": 52.1, "midship": 59.2, "stern": 37.5, "whole": 49.7}, "studio": {"bow": 56.6, "midship": 82.1, "stern": 70.8, "whole": 71.0}}
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-74db28719f294d599da73ce4b06b19b9

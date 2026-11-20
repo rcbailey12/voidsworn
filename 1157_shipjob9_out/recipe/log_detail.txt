@@ -1,0 +1,7 @@
+GPU: waiting for shared claim, weight 2 (1157)
+GPU: still waiting for shared claim
+GPU: acquired shared claim b927a703-0218-4ae6-a6f1-ef345c4d73d4
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\S10.blend"
+detail check (reported, this ship has no surface_detail floor): normal relief 2.55 deg (floor 3.50), albedo contrast 0.371 (floor 0.040), roughness spread 0.114 (floor 0.080), 8528 texels
+GPU: released shared claim b927a703-0218-4ae6-a6f1-ef345c4d73d4
