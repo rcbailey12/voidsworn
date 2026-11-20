@@ -1,0 +1,16 @@
+scn receipt, read-only, 2026-11-20T15:29:36 CST (Board, Nov 20 21:29 UTC): gen\ships\<code>.scn in opus1373probe11\repo\godot vs its source job clone
+chorus_CS1BA2 : MATCH
+  probe  40c56386bee1cc3d73bcb41469bf715d83b05f639332637ed1afce51145f6051  C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo\godot\gen\ships\chorus_CS1BA2.scn
+  source 40c56386bee1cc3d73bcb41469bf715d83b05f639332637ed1afce51145f6051  C:\Users\rcbai\Downloads\voidsworn_test\opus1373n\repo\godot\gen\ships\chorus_CS1BA2.scn
+ithar_GF1 : MATCH
+  probe  22c2859b982d9d56702895dec309cae543f60ec396dc99f9b4c218c902eacc39  C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo\godot\gen\ships\ithar_GF1.scn
+  source 22c2859b982d9d56702895dec309cae543f60ec396dc99f9b4c218c902eacc39  C:\Users\rcbai\Downloads\voidsworn_test\opus1373o\repo\godot\gen\ships\ithar_GF1.scn
+ithar_GB1 : MATCH
+  probe  7f6e7d0a8e927771b8269e4c2b2701391d6ea5cb2a2680dd1bf5d9d0fce0c2aa  C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo\godot\gen\ships\ithar_GB1.scn
+  source 7f6e7d0a8e927771b8269e4c2b2701391d6ea5cb2a2680dd1bf5d9d0fce0c2aa  C:\Users\rcbai\Downloads\voidsworn_test\opus1373p\repo\godot\gen\ships\ithar_GB1.scn
+hegemony_HB1 : MATCH
+  probe  4144d51ddd5d363a604876c21d907da6dcfc1ccae2190725b3e9303ca7a6dfb0  C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo\godot\gen\ships\hegemony_HB1.scn
+  source 4144d51ddd5d363a604876c21d907da6dcfc1ccae2190725b3e9303ca7a6dfb0  C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo\godot\gen\ships\hegemony_HB1.scn
+corsair_KF1 : MATCH
+  probe  c2f360b65d21cf85e94d45c0aa29003db0b3da2b08757cd201a40b55087599ac  C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo\godot\gen\ships\corsair_KF1.scn
+  source c2f360b65d21cf85e94d45c0aa29003db0b3da2b08757cd201a40b55087599ac  C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\repo\godot\gen\ships\corsair_KF1.scn

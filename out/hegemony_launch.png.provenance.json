@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-20T21:30:43Z",
+	"image_sha256": "77fd0dc5711f4aace0a450da63c4d46c80fe1c8eea5188adb624de5c44107f61",
+	"inputs": [],
+	"picture_name": "hegemony_launch.png",
+	"schema": 1,
+	"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "6ace61e6351fff29c2fc1abf19afbc20ba7af197336e8f830dcacdf99266f61d",
+	"strip_sha256": [
+		"6ace61e6351fff29c2fc1abf19afbc20ba7af197336e8f830dcacdf99266f61d"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

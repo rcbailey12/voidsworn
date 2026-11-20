@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-20T21:30:28Z",
+	"image_sha256": "20bf10a76dd3206692dbcbc7fada59af34f94e369488c5ab1ece937b9685896e",
+	"inputs": [],
+	"picture_name": "voidsworn_motion_11.png",
+	"schema": 1,
+	"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "eee706bfccb9759cd23a233a0d07f365b9aca3b2f97db3eb0d39531cad1ee91c",
+	"strip_sha256": [
+		"eee706bfccb9759cd23a233a0d07f365b9aca3b2f97db3eb0d39531cad1ee91c"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

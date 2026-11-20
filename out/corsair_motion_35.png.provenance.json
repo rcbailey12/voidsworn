@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-20T21:30:53Z",
+	"image_sha256": "e874bfbc33ae546edf94514dfa3c1475fbae765bccddbb7246bea607c5cb4515",
+	"inputs": [],
+	"picture_name": "corsair_motion_35.png",
+	"schema": 1,
+	"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "93381cfebc1dbfa4737d8db0978e96d2c0bd6ad6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "42d935e32fa8a8bcd4edf1fc0932b3a7a9d1437da91e541d50ffdf037b05bfb8",
+	"strip_sha256": [
+		"42d935e32fa8a8bcd4edf1fc0932b3a7a9d1437da91e541d50ffdf037b05bfb8"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

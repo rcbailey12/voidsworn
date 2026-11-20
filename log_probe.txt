@@ -1,0 +1,86 @@
+GPU: waiting for solo claim, weight 1 (1373)
+GPU: acquired solo claim 7e57404b-a73c-44ea-9645-d9703d103c65
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-246107013b7f4fd3a8ae3c7442d8f950\godot-profile-35dafecfa3154d3d9be9a3d849a3cce4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+SQUADRON_ENTRIES verified chorus_CS1BA2 glb sha256 7b5c4dfaff8979ce9fc8dfc6d8ac5ba75b4204571acfd27da0052d8bc8f28ec7, scene res://gen/ships/chorus_CS1BA2.scn imported after it
+SQUADRON_ENTRIES added chorus_CS1BA2 (chorus|spore)
+SQUADRON_ENTRIES verified ithar_GF1 glb sha256 56e691b1b0674d161e80418b7d4499a122a79a6ae0be07c8c9385d881f20b1d0, scene res://gen/ships/ithar_GF1.scn imported after it
+SQUADRON_ENTRIES added ithar_GF1 (ithar|fighter)
+SQUADRON_ENTRIES verified ithar_GB1 glb sha256 93fdea7ec729845c098d46f09e494ce99029887a6af27f219ad2360ee2a0cbca, scene res://gen/ships/ithar_GB1.scn imported after it
+SQUADRON_ENTRIES added ithar_GB1 (ithar|bomber)
+SQUADRON_ENTRIES verified hegemony_HB1 glb sha256 0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470, scene res://gen/ships/hegemony_HB1.scn imported after it
+SQUADRON_ENTRIES added hegemony_HB1 (hegemony|bomber)
+SQUADRON_ENTRIES verified corsair_KF1 glb sha256 7ec502e9d04411d14b6fd86fecde6737372d1acb59a6b4f174a28d6154ee2afc, scene res://gen/ships/corsair_KF1.scn imported after it
+SQUADRON_ENTRIES added corsair_KF1 (corsair|fighter)
+SQUADRON_EXPECT ok voidsworn|bomber voidsworn_SB4
+SQUADRON_EXPECT ok voidsworn|fighter voidsworn_SF3
+[attach] battle voidsworn_carrier V18_51: skipped 0; bay hp 1 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+SQUADRON_EXPECT ok hegemony|fighter hegemony_HF1D
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+SQUADRON_EXPECT ok hegemony|bomber hegemony_HB1
+[attach] battle hegemony_carrier H10_23: skipped 0; bay hp 1 ray 0 centre 0 skip 0
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SQUADRON_EXPECT ok corsair|bomber corsair_KB1CC
+SQUADRON_EXPECT ok corsair|fighter corsair_KF1
+[attach] battle corsair_carrier C16s_23: skipped 0; bay hp 1 ray 0 centre 0 skip 0
+SQUADRON_EXPECT ok chorus|spore chorus_CS1BA2
+[attach] battle chorus_carrier B22_11: skipped 0; bay hp 1 ray 0 centre 0 skip 0
+SQUADRON_EXPECT ok ithar|fighter ithar_GF1
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+SQUADRON_EXPECT ok ithar|bomber ithar_GB1
+[attach] battle ithar_carrier I16_11: skipped 0; bay hp 1 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on D22_23: arc -180 to 180, trains all round
+[turret] turret_1 (T1) on D22_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D22_23: arc -180 to 180, trains all round
+SQUADRON_EXPECT ok voidsworn|bomber code-built
+SQUADRON_EXPECT ok voidsworn|fighter code-built
+SQUADRON_EXPECT ok hegemony|fighter code-built
+SQUADRON_EXPECT ok hegemony|bomber code-built
+SQUADRON_EXPECT ok corsair|bomber code-built
+SQUADRON_EXPECT ok corsair|fighter code-built
+SQUADRON_EXPECT ok chorus|spore code-built
+SQUADRON_EXPECT ok chorus|spore code-built
+SQUADRON_EXPECT ok ithar|fighter code-built
+SQUADRON_EXPECT ok ithar|bomber code-built
+SQUADRON_TIMING before: 10 wings, wall mean 1.53 ms, p95 2.30 ms, gpu 0.43 ms, cpu 0.27 ms
+[attach] battle t_voidsworn_carrier V18_51: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_hegemony_carrier H10_23: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_corsair_carrier C16s_23: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_chorus_carrier B22_11: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_ithar_carrier I16_11: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+SQUADRON_EXPECT ok voidsworn|bomber voidsworn_SB4
+SQUADRON_EXPECT ok voidsworn|fighter voidsworn_SF3
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+SQUADRON_EXPECT ok hegemony|fighter hegemony_HF1D
+SQUADRON_EXPECT ok hegemony|bomber hegemony_HB1
+SQUADRON_EXPECT ok corsair|bomber corsair_KB1CC
+SQUADRON_EXPECT ok corsair|fighter corsair_KF1
+[turret] turret_0 (G1) on corsair|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on corsair|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on corsair|fighter: arc -180 to 180, trains all round
+SQUADRON_EXPECT ok chorus|spore chorus_CS1BA2
+SQUADRON_EXPECT ok chorus|spore chorus_CS1BA2
+SQUADRON_EXPECT ok ithar|fighter ithar_GF1
+SQUADRON_EXPECT ok ithar|bomber ithar_GB1
+SQUADRON_TIMING after: 10 wings, wall mean 1.77 ms, p95 2.82 ms, gpu 0.61 ms, cpu 0.29 ms
+[attach] battle t_voidsworn_carrier V18_51: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_hegemony_carrier H10_23: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_corsair_carrier C16s_23: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_chorus_carrier B22_11: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+[attach] battle t_ithar_carrier I16_11: skipped 0; bay hp 2 ray 0 centre 0 skip 0
+SQUADRON_CAPTURE_COMPLETE C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe13\out
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-246107013b7f4fd3a8ae3c7442d8f950\godot-profile-35dafecfa3154d3d9be9a3d849a3cce4
+GPU: released solo claim 7e57404b-a73c-44ea-9645-d9703d103c65
