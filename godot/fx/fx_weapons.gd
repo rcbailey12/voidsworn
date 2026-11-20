@@ -640,7 +640,7 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
 			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
-		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
+		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small", null, false, false, null, "weapon") as MeshInstance3D
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
 		var mat: ShaderMaterial = node.material_override
@@ -690,14 +690,9 @@ static func _weapon_gas(fx, p: Vector3, axis: Vector3, T: float, size: float, ki
 	var seed: float = fx.rng.randf()
 	fx.record_spawn(src, p, true)
 	fx.later(T, func l_wgas() -> void:
-		var mi := MeshInstance3D.new()
-		mi.name = "fx_weapon_" + kind
-		var quad := QuadMesh.new()
-		quad.size = Vector2.ONE
-		mi.mesh = quad
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var mi: MeshInstance3D = fx.picture("wgas|" + kind, func() -> ShaderMaterial: return _weapon_gas_material(fx, kind), "fx_weapon_" + kind)
 		mi.extra_cull_margin = size * 3.0 + velocity.length() * life
-		var m := _weapon_gas_material(fx, kind)
+		var m := mi.material_override as ShaderMaterial
 		m.set_shader_parameter("born", T)
 		m.set_shader_parameter("lifetime", life)
 		m.set_shader_parameter("extent", size * fx.unit)
@@ -715,10 +710,8 @@ static func _weapon_gas(fx, p: Vector3, axis: Vector3, T: float, size: float, ki
 		m.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
 		m.set_shader_parameter("opacity", opacity)
 		m.set_shader_parameter("spin", seed * TAU)
-		mi.material_override = m
-		fx.add_child(mi)
 		mi.global_position = p + axis * size * 0.42 * directional
-		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(mi)))
+		fx.later(T + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	)
 
 
@@ -1396,7 +1389,9 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 		var b := POOLS.Batch.new()
 		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
 			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
-		var node: MeshInstance3D = b.build(fx.mat(SH.SPRITE, 1), src._dmg_root, "fx_hit_heat")
+		# Issue 1237 (Neon F7.2): one shared sprite material for every hull heat spot (the data is in the vertices).
+		if not fx.dstate.has("heat_spot_mat"): fx.dstate["heat_spot_mat"] = fx.mat(SH.SPRITE, 1)
+		var node: MeshInstance3D = b.build(fx.dstate["heat_spot_mat"], src._dmg_root, "fx_hit_heat")
 		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(node))))
 
 
@@ -1737,6 +1732,9 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 # The impact primitive samples the existing baked fire and flow. Its heat map rejects the cold outer lobes, so smoke
 # can be a short directional plume instead of three opaque balls. No extra screen pass or new texture is involved.
 static func hull_impact_material(fx, rel: String) -> ShaderMaterial:
+	# Issue 1237 (Neon F7.2): the shader text is put together once per fx node, not with five replaces on every hit.
+	if fx.dstate.has("hull_impact_code"):
+		return DEATH.route_material(fx, fx.dstate["hull_impact_code"], rel, true, 0)
 	var code: String = SH.DEATH_FLIPBOOK.replace("uniform float smoke_tone = 1.0;", """uniform float smoke_tone = 1.0;
 uniform float impact_body = 0.0;
 uniform float impact_tinted = 0.0;
@@ -1753,6 +1751,7 @@ uniform vec3 impact_tint = vec3(1.0);""")
 	ALBEDO = mix(ALBEDO, coloured, impact_tinted);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);""")
 	code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * smoothstep(0.035, 0.18, thick.b) * fade * soft")
+	fx.dstate["hull_impact_code"] = code
 	return DEATH.route_material(fx, code, rel, true, 0)
 
 
@@ -1785,16 +1784,12 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 			var soft: bool = permit.soft or fx.reduce_flashing
 			var lift: bool = permit.lift
 			var duration: float = (0.30 if energy else (0.65 if torpedo else 0.46)) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
-			var mi := MeshInstance3D.new()
-			mi.name = "fx_staged_body" if body else "fx_staged_flash"
+			var mi: MeshInstance3D = fx.picture("impact|" + rel, func() -> ShaderMaterial: return hull_impact_material(fx, rel),
+				"fx_staged_body" if body else "fx_staged_flash")
 			mi.set_meta("fx_picture_kind", "impact" if body else "flash")
 			mi.set_meta("gas_root", p)
-			var quad := QuadMesh.new()
-			quad.size = Vector2.ONE
-			mi.mesh = quad
 			mi.extra_cull_margin = 100.0
-			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			var mat := hull_impact_material(fx, rel)
+			var mat := mi.material_override as ShaderMaterial
 			mat.set_shader_parameter("pic_spin", spin + (0.7 if body else 0.0))
 			mat.set_shader_parameter("pic_shape", shape if body else Vector2.ONE)
 			mat.set_shader_parameter("born", at)
@@ -1814,12 +1809,10 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 			mat.set_shader_parameter("calm_intensity", calm_power)
 			mat.set_shader_parameter("intensity", (FLASH_LIFT_POWER if lift and not body else calm_power) if soft else (3.8 if body else 5.2))
 			mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
-			mi.material_override = mat
-			fx.add_child(mi)
 			# The fire expands out of the actual impact face. Keep its recorded root on that face.
 			mi.global_position = centre
 			fx.record_spawn(src, p)
-			fx.later(at + duration + 0.1, fx.free_effect.bind(weakref(mi)))
+			fx.later(at + duration + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 		)
 
 
