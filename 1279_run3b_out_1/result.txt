@@ -1,0 +1,33 @@
+start Fri 11/20/2026  6:24:47.21 attempt 1 
+drive bytes free 192310931456 
+made the sparse clone 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_1\checkout_838 
+after commit=ef0c138dd22ecbe10f48433ebe07f92907bb8aab 
+copy ships robocopy 1 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+after no tracked .gd changed by the copy 
+after import exit 0 
+jolt jobs check exit 0 
+JOLT_JOBS lanes: threads 16, low-priority cap 4, cut lanes 10
+JOLT_JOBS PASS (0 failures)
+after s1 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1012.8 kill_call=33.9 kill_worst=10.9 kill_p95=2.6 gpu_worst=1.70 pipes_arrive=132 pipes_kill=1 late=0
+after s2 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1005.9 kill_call=34.3 kill_worst=11.1 kill_p95=2.1 gpu_worst=1.63 pipes_arrive=132 pipes_kill=1 late=0
+after s3 arrival exit 0 
+CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=992.1 kill_call=34.9 kill_worst=9.2 kill_p95=2.1 gpu_worst=1.50 pipes_arrive=132 pipes_kill=1 late=0
+after s4 arrival exit 0 
+CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=998.6 kill_call=42.2 kill_worst=9.4 kill_p95=2.0 gpu_worst=1.74 pipes_arrive=132 pipes_kill=1 late=0
+after s5 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=984.5 kill_call=33.5 kill_worst=9.6 kill_p95=2.0 gpu_worst=1.38 pipes_arrive=132 pipes_kill=1 late=0
+FAILED: checkout FETCH_HEAD: changes are listed but the patch is empty, nothing was touched 
+real options unchanged 
+all done Fri 11/20/2026  6:42:48.30 

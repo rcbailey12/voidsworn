@@ -1,0 +1,31 @@
+GPU: waiting for solo claim, weight 1 (1279)
+GPU: acquired solo claim 91b19ecd-7aea-45cd-b264-fbece8dc2393
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9abfc557b4464600a6b8009d64c36e01\godot-profile-ccf3788a148f4f99a251f6b0ec588f1a
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 4406 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7263 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 7737 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 8102 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2208 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2137 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 2067 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1012.8 kill_call=33.9 kill_worst=10.9 kill_p95=2.6 gpu_worst=1.70 pipes_arrive=132 pipes_kill=1 late=0
+[attach] battle C0 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+CAPTURE1232 DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9abfc557b4464600a6b8009d64c36e01\godot-profile-ccf3788a148f4f99a251f6b0ec588f1a
+GPU: released solo claim 91b19ecd-7aea-45cd-b264-fbece8dc2393

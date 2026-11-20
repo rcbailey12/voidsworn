@@ -1,0 +1,19 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b83c30ebe3674874bf00b344a209a152\godot-profile-21a165fc17954a96b01acb85c878f16f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+JOLT_JOBS lanes: threads 16, low-priority cap 4, cut lanes 10
+  ok   a cut always has a lane
+  ok   a cut leaves two lanes free beyond the low-priority cap
+  ok   a cut never asks for more lanes than it has work
+  ok   physics is on at high quality
+  ok   moving hull colliders alone leave the physics space asleep
+  starve 2.0 s on 16 lanes: frames ran 2.5 s, job table warnings 0
+  ok   no job table warning while the space sleeps and every lane is held for 2 s
+  ok   debris wakes the physics space at once
+  ok   drifting debris keeps the space awake
+  ok   every plate is asleep by DEBRIS_REST_S
+  ok   the space sleeps again once nothing loose is awake
+  ok   a moving wreck section keeps the space awake
+  ok   a moving wreck section still knocks a resting plate awake
+JOLT_JOBS PASS (0 failures)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b83c30ebe3674874bf00b344a209a152\godot-profile-21a165fc17954a96b01acb85c878f16f
