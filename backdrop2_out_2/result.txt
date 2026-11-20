@@ -1,0 +1,15 @@
+start Fri 11/20/2026  2:23:14.78 attempt 2 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opusbackdrop\out_2\backdrop_shots.gd:
+04bc08a330de25891ffd9fd580d4a7f9fffd8ada80bdf9b14a9188fdcf480986
+CertUtil: -hashfile command completed successfully.
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\38b6e26aa163\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\38b6e26aa163\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+diag_1263 commit 3d13f0f067e8a01455f02276d28e790318bfb508  
+diag_1263 import exit 0 
+diag_1263 densediag nebula high exit 0 
+diag_1263 densediag nebula max exit 0 
+sets finished 2 of 2 
+PASSED 
+all done Fri 11/20/2026  2:25:14.97 

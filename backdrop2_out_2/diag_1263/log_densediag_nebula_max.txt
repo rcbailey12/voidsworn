@@ -1,0 +1,35 @@
+GPU: waiting for shared claim, weight 1 (1263)
+GPU: acquired shared claim 3550bfa3-bc18-4ddb-b0f4-3f4b263db7a9
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b0adb3f3a24c4166b84dad67ebfc6ae2\godot-profile-42cb8af0031c4dbfb1555f72f0b73b38
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 357 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[world] baked 6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf 4096x2048 in 6759 ms (worker)
+[world] baked 269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db 4096x2048 in 9169 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 9529 ms (worker)
+[world] baked 04a596a828fed691583b58022709b95f3d020e6d603ddcf6fedc3df1c6c4a941 1024x512 in 9957 ms (worker)
+[attach] hp_rcs missing on I14_23; using the surface ray
+[world] baked 1cc730ea14ee372aa5f25d7a79f468a83be64cdc653280721129e8bbe9e1ad33 4096x2048 in 2020 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2067 ms (worker)
+[world] baked 5216a2b099522b47e00358f3fbfd1bdf4dbd70ae7f38841c71baff49e061ff35 1024x512 in 1800 ms (worker)
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+backdrop shots: BD1263_diag_hide_none_c170_max.png
+[attach] hp_rcs missing on V15_37; using the surface ray
+backdrop shots: BD1263_diag_hide_board_c170_max.png
+backdrop shots: BD1263_diag_hide_cards_c170_max.png
+backdrop shots: BD1263_diag_hide_fog_c170_max.png
+backdrop shots: BD1263_diag_side_c170_max.png
+backdrop shots: done densediag
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b0adb3f3a24c4166b84dad67ebfc6ae2\godot-profile-42cb8af0031c4dbfb1555f72f0b73b38
+GPU: released shared claim 3550bfa3-bc18-4ddb-b0f4-3f4b263db7a9
