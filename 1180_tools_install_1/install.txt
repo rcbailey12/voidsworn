@@ -1,0 +1,6 @@
+2026-11-20T03:01:05Z tools_live checking for running jobs
+2026-11-20T03:01:06Z tools_live fetched origin/main 4f9dbabdc70a4ed8f1a68bdabf10c7c1249cb5bf
+2026-11-20T03:01:08Z tools_live saved tools snapshot 72366b168801bf1159be4ebababfd21abfb8145f
+2026-11-20T03:01:08Z tools_live copied main tools to the tools_live stage
+2026-11-20T03:01:16Z tools_live installed tools_live\72366b168801 from origin/main 4f9dbabdc70a4ed8f1a68bdabf10c7c1249cb5bf
+2026-11-20T03:01:16Z tools_live FAILED: Exception calling "Replace" with "3" argument(s): "The path is not of a legal form."
