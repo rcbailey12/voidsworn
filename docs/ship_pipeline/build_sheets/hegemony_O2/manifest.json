@@ -1,0 +1,605 @@
+{
+ "code": "hegemony_O2",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "D1",
+   "kind": "latch",
+   "what": "docking clamp row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "docking_clamps"
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "latch",
+   "what": "docking clamp row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "docking_clamps"
+   ]
+  },
+  {
+   "id": "C1",
+   "kind": "container",
+   "what": "cargo module 0.86 x 1.86 x 1.00",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "cargo"
+   ]
+  },
+  {
+   "id": "C2",
+   "kind": "container",
+   "what": "cargo module 0.86 x 1.86 x 1.00",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "cargo"
+   ]
+  },
+  {
+   "id": "C3",
+   "kind": "container",
+   "what": "cargo module 0.86 x 1.86 x 1.00",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "cargo"
+   ]
+  },
+  {
+   "id": "C4",
+   "kind": "container",
+   "what": "cargo module 0.86 x 1.86 x 1.00",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "cargo"
+   ]
+  },
+  {
+   "id": "LM1p",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM1s",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM2p",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM2s",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM3p",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM3s",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM4p",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "LM4s",
+   "kind": "latch",
+   "what": "mooring clamp pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "A1",
+   "kind": "antenna",
+   "what": "sensor fin, 0.3 tall, 1.3 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "sensor_fin"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 0.5 x 0.66",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 0.5 x 0.66",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 0.5 x 0.66",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 0.5 x 0.66",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "retro thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "W1p",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W2p",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W3p",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "H10p",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H11p",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H12p",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H13p",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2p",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V3p",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V4p",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V5p",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "retro thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "W1s",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W2s",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W3s",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "H10s",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H11s",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H12s",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H13s",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2s",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V3s",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V4s",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V5s",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "H1",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H2",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H3",
+   "kind": "hatch",
+   "what": "square hatch 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the wedge and the rails",
+   "route": "hand-built"
+  },
+  {
+   "name": "Belly armour step",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 29.3 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "29.3 to 50.8 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 2",
+   "stations": "50.8 to 72.4 percent",
+   "bounded_by": [
+    "B-2",
+    "B-3"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "72.4 to 100.0 percent",
+   "bounded_by": [
+    "B-3"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

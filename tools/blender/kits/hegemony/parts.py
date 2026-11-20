@@ -88,6 +88,8 @@ SUBPARTS = {
     'pipe': ['trunk', 'collar', 'flange', 'saddle'],
     'capbank': ['base', 'cell', 'cap', 'bus', 'strip'],
     'exchanger': ['base', 'housing', 'fin', 'frame', 'port'],
+    # issue 1413 (hegemony_O2, the Convoy transport): a cargo module locked in the cargo well
+    'container': ['frame', 'lid', 'seam', 'rib', 'clamp'],
 }
 
 
@@ -578,6 +580,30 @@ def hatchbox(w, l, h, fins=0):
     p.add('lid', 'body', 'hpanel', block(-l * 0.4, l * 0.36, w * 0.38, 0.03, 0.02, zo=h * 0.93))
     p.add('seam', 'body', 'dark', block(-l * 0.42, l * 0.38, w * 0.4, 0.012, 0.0, zo=h * 0.9))
     p.add('lidstrip', 'body', 'hblue', block(l * 0.37, l * 0.39, w * 0.3, 0.012, 0.0, zo=h * 0.92))
+    return p
+
+
+def container(l, w, h, ribs=3):
+    """a cargo module (issue 1413, the Convoy transport: designs.md "FOUR identical container modules ... plain slab sides,
+    mooring clamps"): origin at the middle of its floor, +X along the ship (l), +Y across (w), +Z up (h). A plain chamfered slab
+    box sitting in the cargo well (the mount), an inset lid with a seam round it, flat stiffener ribs up the fore and aft faces,
+    corner castings, and mooring clamps at the foot of each face that lock it to the well floor."""
+    p = Part('container')
+    p.add('frame', 'mount', 'hgrey', _zblock(-l / 2, l / 2, -w / 2, w / 2, 0.0, h, ch=0.04))
+    p.add('seam', 'body', 'dark', _zblock(-l / 2 + 0.045, l / 2 - 0.045, -w / 2 + 0.045, w / 2 - 0.045, h - 0.01, h + 0.006))
+    p.add('lid', 'body', 'hpanel', _zblock(-l / 2 + 0.06, l / 2 - 0.06, -w / 2 + 0.06, w / 2 - 0.06, h - 0.01, h + 0.016, ch=0.008))
+    for k in range(ribs):
+        y = -w / 2 + w * (k + 1) / (ribs + 1)
+        for sx in (1, -1):
+            x0, x1 = (l / 2 - 0.01, l / 2 + 0.022) if sx > 0 else (-l / 2 - 0.022, -l / 2 + 0.01)
+            p.add('rib%d%s' % (k, 'f' if sx > 0 else 'a'), 'body', 'hgrey2', _zblock(x0, x1, y - 0.03, y + 0.03, 0.07, h - 0.07))
+    for sy in (1, -1):
+        for sx in (1, -1):
+            cx, cy = sx * (l / 2 - 0.035), sy * (w / 2 - 0.035)
+            p.add('clampc%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'htrim', _zblock(cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, h - 0.02, h + 0.03))
+            x0, x1 = (l / 2, l / 2 + 0.07) if sx > 0 else (-l / 2 - 0.07, -l / 2)
+            yc = sy * (w / 2 - 0.22)
+            p.add('clamp%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'hmetal', _zblock(x0, x1, yc - 0.08, yc + 0.08, 0.0, 0.16, ch=0.02))
     return p
 
 
