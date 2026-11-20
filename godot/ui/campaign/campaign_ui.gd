@@ -331,6 +331,7 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 		if kk != "": row.add_child(keycap(kk))
 	b.add_child(row)
 	var aa = found[1]
+	b.set_meta("act", act); b.set_meta("arg", aa)   # its key for keeping focus across a re-render (_focus_key)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
 func add(parent: Node, child) -> void:
@@ -367,10 +368,11 @@ func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 
 	var tw = create_tween(); tw.tween_interval(clamp(msg.length() * 0.06, 2.2, 9.0)); tw.tween_property(p, "modulate:a", 0.0, 0.4); tw.tween_callback(p.queue_free)
 # ---------------- render ----------------
 func render() -> void:
+	_refocus_key = _focus_key(get_viewport().gui_get_focus_owner()) if desk_opts_open else ""
 	for ch in page_box.get_children(): ch.queue_free()
 	for ch in modal_box.get_children(): ch.queue_free()
 	var pg = C.page; _acts = pg["acts"]
-	if pg["kind"] != "admiral": desk_opts_open = false; _drawer_shown = false
+	if pg["kind"] != "admiral": desk_opts_open = false; _drawer_shown = false; _focus_opener = false
 	if pg["kind"] != "aspect": aspect_pick = ""; podium = null
 	var battle = pg["kind"] == "battle"
 	root.visible = not (battle and hide_on_battle and (C.modal_d == null or C.modal_d["kind"] == "retreat"))   # rewards after a fight show over the battle scene
@@ -431,6 +433,20 @@ func _focus_first() -> void:
 		else: get_viewport().gui_release_focus()   # a slide-over: Esc or Close shuts it, Tab walks its buttons
 		return
 	var host = modal_box if modal_box.get_child_count() > 0 else page_box
+	# issue 1261: the Run options drawer holds keyboard and controller focus while it is open (the control that was
+	# focused before a re-render keeps it), and closing it gives focus back to Run options
+	if host == page_box and C.page.get("kind") == "admiral":
+		var dr = _live_child("RunOptionsDrawer")
+		if dr != null and desk_opts_open:
+			_trap_focus(page_box, dr)
+			var keep = _find_focus_key(dr, _refocus_key) if _refocus_key != "" else null
+			var fb = keep if keep != null else _first_button(dr)
+			if fb != null: fb.grab_focus()
+			return
+		if _focus_opener:
+			_focus_opener = false
+			var ro = _live_child("RunOptionsButton")
+			if ro != null: ro.grab_focus(); return
 	if C.page.get("kind") == "end" and host == page_box:
 		var exit = _end_primary(host)
 		if exit != null:
@@ -441,6 +457,32 @@ func _focus_first() -> void:
 			return
 	var b = _first_button(host)
 	if b != null: b.grab_focus()
+# a node of the current page by name: the last render's nodes are still in page_box until the frame ends (queue_free)
+func _live_child(nm: String) -> Control:
+	for ch in page_box.get_children():
+		if ch.is_queued_for_deletion(): continue
+		var f = ch if str(ch.name) == nm else ch.find_child(nm, true, false)
+		if f != null: return f
+	return null
+var _refocus_key := ""      # the focused control's key before the last render, while the Run options drawer is open
+var _focus_opener := false  # set when the drawer closes: focus goes back to Run options
+func _focus_key(n) -> String:
+	if not (n is Control) or not is_instance_valid(n): return ""
+	if n.has_meta("act"): return "act:" + str(n.get_meta("act")) + "|" + str(n.get_meta("arg", ""))
+	return "name:" + str(n.name)
+func _find_focus_key(n: Node, key: String) -> Control:
+	for ch in n.get_children():
+		if ch is Control and ch.focus_mode != Control.FOCUS_NONE and _focus_key(ch) == key and ch.is_visible_in_tree(): return ch
+		var r = _find_focus_key(ch, key)
+		if r != null: return r
+	return null
+# every focusable control under root but outside keep stops taking focus, so Tab, the arrows and a controller stay in keep
+# (the page is rebuilt when keep closes, which brings the focus modes back)
+func _trap_focus(root_n: Node, keep: Node) -> void:
+	for ch in root_n.get_children():
+		if ch == keep: continue
+		if ch is Control and ch.focus_mode != Control.FOCUS_NONE: ch.focus_mode = Control.FOCUS_NONE
+		_trap_focus(ch, keep)
 func _end_primary(n: Node) -> Button:
 	if n is Button and n.get_meta("end_primary", false): return n
 	for ch in n.get_children():
@@ -774,7 +816,7 @@ func _desk_drawer(host: Control) -> void:
 var _drawer_shown := false
 func close_run_options() -> void:
 	if not desk_opts_open: return
-	desk_opts_open = false; _drawer_shown = false; _dirty = true
+	desk_opts_open = false; _drawer_shown = false; _dirty = true; _focus_opener = true
 	Kit.play("ui_cancel")
 func _reduce_motion() -> bool:
 	var m = get_node_or_null("/root/Main")
