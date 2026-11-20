@@ -4,11 +4,11 @@ Stage: installed in game (opus/issue-1272), cloud render (Godot 4.7.2 Forward+ o
 because the cloud copy has no built hulls. Ruling: R352 (keep rival, boss and salvage moods; salvage dust stronger than the
 r1 preview).
 
-- `SKY1272_stops_r2.jpg`: one Hegemony frontier sector, four stops at camera 420, made by `godot/world/stop_sky_shots.gd`
+- `SKY1272_stops_r3.jpg`: one Hegemony frontier sector, four stops at camera 420, made by `godot/world/stop_sky_shots.gd`
   through the game's own path (main.gd stop_of, world.gd sector_setting, world_sky.gd stop_mood). The plain, rival and boss
   stops use a storm map, the salvage stop a wreck-field (graveyard) map, as the game decides salvage by map.
 - `stop_<kind>_c420.jpg` with the provenance record of each source PNG.
-- The nebula is still violet here: this branch is cut from main before PR 1304 (rose) merged.
+- r3 is drawn after PR 1304 merged, so the battle nebula is rose. The hazard gas stays rose at every stop (RULEBOOK 10.9, R353); only the far sky (panorama, lamp stars, backdrop wisps) takes the rival tint.
 
 What changed: one STOP_MOOD table and one STOP_FRAMES table in world_sky.gd; 8 remixed planet looks (PLANETS_ALT, RULEBOOK
 10.3), chosen per sector. A stop against another faction than the sector's is rival, a boss fight is boss, a fight on a
