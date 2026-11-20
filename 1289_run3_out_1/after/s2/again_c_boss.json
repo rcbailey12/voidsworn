@@ -1,0 +1,167 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "commit": "52f7d10b0cb647b468b55c5b0075806d19d136c3",
+  "cores": 16,
+  "godot": "4.7.2-stable (official)",
+  "mode": "again",
+  "renderer": "forward_plus",
+  "result": {
+    "arrival": {
+      "code": "C19_51",
+      "frame0": {
+        "fx_add": 320.971,
+        "gpu": 1.02199995517731,
+        "long_steps": {
+          "add:analyse": 261.1,
+          "add:shield": 56.4,
+          "warm_arrival": 3.9
+        },
+        "pipelines": {
+          "mesh": 30
+        },
+        "render": 7.324,
+        "rs_cpu": 0.277999997138977,
+        "step": 0.173,
+        "sync": 0.035,
+        "total": 1207.152,
+        "view": 878.646
+      },
+      "next6": {
+        "frames": 6,
+        "gpu": {
+          "p50": 1.13900005817413,
+          "p95": 1.37899994850159,
+          "worst": 1.37899994850159
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 2.326,
+          "p95": 28.414,
+          "worst": 28.414
+        },
+        "wall_ms": [
+          9.94,
+          1.21,
+          2.33,
+          1.13,
+          1.52,
+          28.41
+        ]
+      },
+      "next6_pipelines": {},
+      "worst_ms": 1207.152
+    },
+    "first_arrival": {
+      "code": "C19_51",
+      "frame0": {
+        "fx_add": 4218.225,
+        "gpu": 1.01699995994568,
+        "long_steps": {
+          "add:analyse": 456.2,
+          "add:engines": 107.1,
+          "add:shield": 3653.0,
+          "warm_arrival": 269.3
+        },
+        "pipelines": {
+          "mesh": 36,
+          "specialization": 30,
+          "surface": 60
+        },
+        "render": 921.513,
+        "rs_cpu": 0.266000002622604,
+        "step": 0.189,
+        "sync": 0.04,
+        "total": 5533.953,
+        "view": 393.983
+      },
+      "next6": {
+        "frames": 6,
+        "gpu": {
+          "p50": 1.13900005817413,
+          "p95": 1.82299995422363,
+          "worst": 1.82299995422363
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 5.864,
+          "p95": 27.482,
+          "worst": 27.482
+        },
+        "wall_ms": [
+          19.39,
+          2.1,
+          5.86,
+          1.63,
+          1.12,
+          27.48
+        ]
+      },
+      "next6_pipelines": {
+        "specialization": 6
+      },
+      "worst_ms": 5533.953
+    },
+    "kill": {
+      "cut_ready_at_kill": false,
+      "hidden_after_s": 2.01666666666666,
+      "hull_pieces": 4,
+      "kill_call_ms": 13.367,
+      "outcome": "fractured",
+      "pipelines": {
+        "specialization": 1
+      },
+      "window": {
+        "frames": 540,
+        "gpu": {
+          "p50": 1.31200003623962,
+          "p95": 1.35300004482269,
+          "worst": 1.62199997901917
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.431,
+          "p95": 2.192,
+          "worst": 9.798
+        },
+        "wall_ms": [
+          2.8,
+          1.37,
+          1.64,
+          1.38,
+          1.83,
+          1.34,
+          2.13,
+          1.57,
+          1.5,
+          1.56,
+          1.8,
+          1.35,
+          1.51,
+          1.25,
+          1.3,
+          1.41,
+          1.42,
+          2.01,
+          1.7,
+          2.07,
+          1.8,
+          1.5,
+          1.46,
+          1.4,
+          1.42,
+          1.28,
+          1.32,
+          1.7,
+          1.28,
+          1.3
+        ]
+      }
+    },
+    "late_shaders": [],
+    "load_ms": 7689.365,
+    "load_prepare_frames": 38,
+    "mode": "again",
+    "worst_frame_ms": 1207.152
+  },
+  "tpl": "c_boss"
+}

@@ -1,0 +1,122 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "commit": "52f7d10b0cb647b468b55c5b0075806d19d136c3",
+  "cores": 16,
+  "godot": "4.7.2-stable (official)",
+  "mode": "arrival",
+  "renderer": "forward_plus",
+  "result": {
+    "arrival": {
+      "code": "C19_51",
+      "frame0": {
+        "fx_add": 4297.06,
+        "gpu": 1.14699995517731,
+        "long_steps": {
+          "add:analyse": 453.1,
+          "add:engines": 76.1,
+          "add:shield": 3766.0,
+          "warm_arrival": 266.1
+        },
+        "pipelines": {
+          "mesh": 36,
+          "specialization": 30,
+          "surface": 60
+        },
+        "render": 919.154,
+        "rs_cpu": 0.310000002384186,
+        "step": 0.165,
+        "sync": 0.037,
+        "total": 5633.228,
+        "view": 416.81
+      },
+      "next6": {
+        "frames": 6,
+        "gpu": {
+          "p50": 1.14600002765656,
+          "p95": 1.58800005912781,
+          "worst": 1.58800005912781
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 2.952,
+          "p95": 28.913,
+          "worst": 28.913
+        },
+        "wall_ms": [
+          19.83,
+          2.49,
+          1.86,
+          2.95,
+          1.45,
+          28.91
+        ]
+      },
+      "next6_pipelines": {
+        "specialization": 6
+      },
+      "worst_ms": 5633.228
+    },
+    "kill": {
+      "cut_ready_at_kill": false,
+      "hidden_after_s": 2.01666666666666,
+      "hull_pieces": 4,
+      "kill_call_ms": 13.236,
+      "outcome": "fractured",
+      "pipelines": {
+        "specialization": 1
+      },
+      "window": {
+        "frames": 540,
+        "gpu": {
+          "p50": 1.31599998474121,
+          "p95": 1.35500001907349,
+          "worst": 1.72399997711182
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.454,
+          "p95": 2.105,
+          "worst": 9.862
+        },
+        "wall_ms": [
+          3.11,
+          1.91,
+          1.48,
+          2.04,
+          1.7,
+          1.21,
+          1.4,
+          1.57,
+          1.24,
+          1.32,
+          1.32,
+          1.61,
+          1.26,
+          1.29,
+          1.15,
+          1.54,
+          1.56,
+          1.53,
+          1.32,
+          1.33,
+          1.24,
+          1.42,
+          1.31,
+          1.29,
+          1.54,
+          1.47,
+          1.27,
+          1.39,
+          1.22,
+          1.09
+        ]
+      }
+    },
+    "late_shaders": [],
+    "load_ms": 7947.137,
+    "load_prepare_frames": 37,
+    "mode": "arrival",
+    "worst_frame_ms": 5633.228
+  },
+  "tpl": "c_boss"
+}

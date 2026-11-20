@@ -1,0 +1,115 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "commit": "52f7d10b0cb647b468b55c5b0075806d19d136c3",
+  "cores": 16,
+  "godot": "4.7.2-stable (official)",
+  "mode": "prewarmed",
+  "renderer": "forward_plus",
+  "result": {
+    "arrival": {
+      "code": "V14_23",
+      "frame0": {
+        "fx_add": 114.428,
+        "gpu": 1.01699995994568,
+        "long_steps": {
+          "add:analyse": 85.3,
+          "add:collider": 2.5,
+          "add:shield": 25.5
+        },
+        "pipelines": {},
+        "render": 2.197,
+        "rs_cpu": 0.351000010967255,
+        "step": 0.17,
+        "sync": 0.045,
+        "total": 118.05,
+        "view": 1.207
+      },
+      "next6": {
+        "frames": 6,
+        "gpu": {
+          "p50": 1.05900001525879,
+          "p95": 1.06500005722046,
+          "worst": 1.06500005722046
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.277,
+          "p95": 1.524,
+          "worst": 1.524
+        },
+        "wall_ms": [
+          1.52,
+          1.28,
+          1.25,
+          1.22,
+          1.17,
+          1.32
+        ]
+      },
+      "next6_pipelines": {},
+      "worst_ms": 118.05
+    },
+    "kill": {
+      "cut_ready_at_kill": false,
+      "hidden_after_s": 0.733333333333331,
+      "hull_pieces": 2,
+      "kill_call_ms": 5.967,
+      "outcome": "fractured",
+      "pipelines": {
+        "specialization": 1
+      },
+      "window": {
+        "frames": 540,
+        "gpu": {
+          "p50": 1.25199997425079,
+          "p95": 1.26800000667572,
+          "worst": 1.43099999427795
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.174,
+          "p95": 1.564,
+          "worst": 4.93
+        },
+        "wall_ms": [
+          2.14,
+          1.42,
+          1.46,
+          1.38,
+          1.04,
+          0.98,
+          1.7,
+          1.6,
+          1.4,
+          1.09,
+          1.51,
+          1.16,
+          1.36,
+          1.52,
+          1.12,
+          1.37,
+          1.07,
+          1.37,
+          1.56,
+          1.31,
+          2.04,
+          1.57,
+          1.19,
+          1.18,
+          1.52,
+          1.29,
+          1.1,
+          1.63,
+          1.15,
+          1.44
+        ]
+      }
+    },
+    "late_shaders": [],
+    "load_ms": 9207.562,
+    "load_prepare_frames": 53,
+    "mode": "prewarmed",
+    "worst_frame_ms": 118.05
+  },
+  "tpl": "warden"
+}
