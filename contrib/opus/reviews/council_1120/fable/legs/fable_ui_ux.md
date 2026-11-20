@@ -230,3 +230,123 @@ Not judged, and why:
    t018, s121 t040).
 5. **The title screen after the kit rebuild.** Left column, one ember box, quiet links, the scene left open, and a
    two-line promise of what the game is (title still). Neon's main complaint there is fixed.
+
+## Addendum: front-end screens (evidence only)
+
+Added after the blind leg, which is unchanged above. Source: pack/frontend/, all 39 pictures viewed (35 screens and the
+four F2 to F5 sheets). These are a Godot checkout capture at b557adc85, not the packaged 25adec31 build, so a fault here
+is "true at b557adc85". Picture names are short: "F3_setup_larger" is pack/frontend/FE_b557adc85_F3_setup_larger.jpg.
+The capture stamp covers the bottom left of every picture, so I make no claim about Back buttons or anything in that
+corner. Neon's audit is taken as read; each item says what it adds.
+
+### What these pictures do to the leg above
+
+- **"Not judged: larger text" is now partly judged.** Title, Settings, the desk, the flagship page, Lineage and
+  Progression hold at Larger with no overlap and no clipped button (F2_title_larger, F2_settings_larger,
+  F3_setup_larger, F4_flagship_larger, F5_lineage_larger, F5_progression_larger). Neon's larger-text breaks (1.2.4,
+  1.3.1, 1.4.1 orphan card, 1.6.4 lineage wrap) are not in these pictures. The one cost is finding A3 below.
+- **Finding 13 confirmed and narrowed.** Confirmed: Bulwark still ends "...that can fire on it must."
+  (F4_flagship_hegemony), and the four-colour "Cores in range" line is on every faction's page (F4_flagship_chorus,
+  F4_flagship_ithar). Weakened: the picked state is clear (F4_flagship_picked: outline, "PICKED", and the button becomes
+  "Launch with Aspect of the Ram"). So "the cards do not look clickable" shrinks to "nothing invites the first click".
+- **Finding 14 confirmed.** Gold wide wordmark over the ember box at both sizes (F2_title_normal, F2_title_larger);
+  Credits still list seven font families (F2_credits_normal).
+- **Finding 8 strengthened.** The start screens are now one kit: square cards, hairlines, one ember box
+  (F3_desk_voidsworn, F5_progression_legacy). That makes the chamfered Victory and Promotions cards (s10 t022, s10 t038)
+  the odd ones out in the whole run, not one of several.
+- Nothing here touches findings 1 to 7, 9 to 12 or 15.
+
+### A1. How to play tells the player rules the battle screen does not follow
+
+- Screen: How to play. Pictures: F5_help, F5_help_larger. Text: campaign_ui.gd:1869 to 1872.
+- What is wrong: three statements disagree with the battle as built.
+  - "Click an enemy to fire everything that can reach it". In battle the first click only targets and the box says
+    "Click again or Enter to fire" (s10 t012; teaching text battle.gd:72).
+  - "Every ship can move, turn and fire each of its weapons once per turn, in any order". The battle hint says "(ships
+    move, then fire)" (battle.gd:4565).
+  - "see the Helm panel". The KEEL shelf has no Helm panel; ledger.gd and hud.gd do not use the word, and screens.md
+    moved those facts to the ship name's hover.
+  Check, not a claim: "amber for the prow, teal for broadsides" for gun reach; the arcs in still 01 are one pale colour.
+  The page is also one grey column of prose with no picture, and the section list on the left does not mark where you
+  are. At Larger the last line is cut through the middle with no scroll cue (F5_help_larger).
+- Who feels it, when: the new player who does the right thing and reads the help first, then finds the first click does
+  not fire.
+- Fix: correct the three sentences from the battle's own strings so they cannot drift (one source for both). One small
+  picture per section. Mark the current section. Neon covered this page's layout only (1.6.1), not its words.
+
+### A2. Lineage shows six live ember boxes while saying "0 branch picks ready"
+
+- Screen: Lineage of Vex on a fresh profile. Pictures: F5_lineage, F5_lineage_larger. Code: campaign_ui.gd:2182 to
+  2183, 2192.
+- What is wrong: at Mastery 0/8 the page says "0 branch picks ready" and "One pick at each of levels 5, 6 and 7", yet
+  every tier 1 skill carries an ember-outlined "Choose this skill" button that looks live. Six ember boxes on one page
+  also breaks "one box per screen". The column heads read like debug text: "[+] Command: The Inherited Line", "[=]
+  Fleet: Fleet", "[*] Flagship and line: Flagship and line".
+- Who feels it, when: any player who opens Lineage from an admiral card before level 5, which is every new player.
+- Fix: until a pick is ready, the button reads "Opens at level 5" in the quiet style. When a pick is ready, only the
+  skills it can buy are ember. Heads become "Command", "Fleet", "Flagship".
+
+### A3. Larger text removes the Command description from the admiral cards
+
+- Screen: faction and admiral desk at Larger. Pictures: F3_setup_larger against F3_setup_normal. Code:
+  campaign_ui.gd:654, 759 to 760.
+- What is wrong: at Larger each card shows only "Command: Fire for effect"; the sentence that says what it does moves to
+  an engine hover tip. The same pictures show a third of each card empty below the fleet row, so the words would fit.
+  The players who ask for bigger text get less of it, and a keyboard or controller player cannot hover.
+- Who feels it, when: anyone on Larger, at the main choice of the run.
+- Fix: keep the sentence when it fits the card's height (it does here); only fall back to the hover when it does not,
+  and make that fallback reachable by focus.
+
+### A4. The 24 admiral cards are hard to tell apart, and each carries a meter a new player cannot read
+
+- Screen: the six faction desks. Pictures: F3_desk_voidsworn, F3_desk_hegemony, F3_desk_corsair, F3_desk_chorus,
+  F3_desk_ithar, F3_desk_deathless.
+- What is wrong:
+  - Every card shows "Mastery 0/8 0/6: next alternate fleet" and an empty bar. On a first run that is 24 empty meters
+    and a phrase nobody has met.
+  - The Command line is long and often the same words under a new name. "Every ship fires a free extra volley right now
+    at the best target in range. Its normal shots this round still happen." appears as Fire for effect, Synchronized
+    broadside, Spitting volley, Noon volley and Burning glass. The eye has to read 24 paragraphs to find the few real
+    differences.
+  - The line that does differ, the passive ("Broadside weapons deal +15% damage"), is the same size and weight as the
+    rest.
+  - Small things: the admiral quote under the cards is teal, a colour the orders sheet does not have; "SELECTED" takes
+    the faction colour, which for the Hegemony is a pale blue next to glacier's shields-only blue (F3_desk_hegemony);
+    the Sunward rule ends in designer wording, "Carrier base prices have a 10% premium before rounding".
+- Who feels it, when: every new player at the first screen with a real choice. Neon asked for crests, portraits and
+  blurbs (now in); this is what is left once they are there.
+- Fix: hide the mastery row until the admiral has any mastery. Make the passive the card's one bright line. Shorten the
+  Command to its name plus five or six words, full text on hover and focus. Quote in the second text strength.
+
+### A5. Run options opens on a test switch with a checkbox that can barely be seen
+
+- Screen: Run options drawer. Pictures: F3_run_options, F3_run_options_keys. Code: campaign_ui.gd:877 to 879.
+- What is wrong: on a first run the drawer holds two things. The first is "Test new battle maps, faster ships and
+  longer gun ranges", a trial switch that changes the rules of the whole run, shown to a player who has not seen the
+  normal rules. Its box is a dark square on a dark panel: I cannot tell on from off in either picture. It is still the
+  raw engine CheckBox Neon flagged (1.4.5) and the only control here not built from the kit. The second, Heat, is locked
+  and its sentence is the dimmest text in the set.
+- Who feels it, when: any new player who opens the drawer; the risk is switching the trial on without knowing.
+- Fix: a kit row with an On/Off button like Settings uses (F2_settings_normal), labelled as a trial, and off the first
+  run's path until one run is finished. Whether the trial is offered to new players at all: Ryan's call.
+
+### A6. Leftovers: card title face, Credits noise, and six patron colours
+
+- Card titles on Progression and Lineage ("Carrier hulls", "Ledger of Arcs", "Level 1: Alternate fleet") and the stat
+  heads ("RUNS LAUNCHED") are in a squarer face than the Barlow names on the desk cards (F5_progression_legacy,
+  F5_lineage, against F3_desk_voidsworn). The primary button uses a third, wide face ("New run", "LAUNCH THE CRUSADE",
+  "Done"). RULEBOOK 9.15 names one font set. Check on the PC which faces these are; I am reading them from pictures.
+- Credits print every track twice, once as a headed line and again as a quoted line with two full web addresses
+  (F2_credits_normal). At Larger the list is cut through a line at the bottom with no scroll cue (F2_credits_larger).
+- Core sync shows six patrons in six text colours, with a "Listening 0 / 4" in each colour (F5_progression_favour). With
+  the cores line on the flagship page that is the same many-colour habit on two screens. If the patron colours are
+  Ryan's pick: "reopen: Ryan's call".
+- Who feels it, when: everyone, lightly. These are polish, ranked last on purpose.
+
+### Good here, keep
+
+- Settings: four plain groups, one control column, one ember Done, nothing cut at Larger (F2_settings_normal,
+  F2_settings_larger). Neon's 17-row wall is gone.
+- The desk: equal cards, buttons on one line, ship silhouettes for the starting fleet, the faction's rule in two
+  sentences, one launch box named for the faction (F3_desk_corsair).
+- The flagship page: the ship is the picture, and the button names what you picked (F4_flagship_picked).
