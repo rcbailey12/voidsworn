@@ -1,0 +1,29 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 11:07:32 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\build\godot\.godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run7\repo\godot\.godot\
+
+    Files : *.*
+	    
+  Options : *.* /NDL /NFL /S /E /DCOPY:DA /COPY:DAT /NP /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         5         5         0         0         0         0
+   Files :      3381      3381         0         0         0         0
+   Bytes :   2.794 g   2.794 g         0         0         0         0
+   Times :   0:00:04   0:00:04                       0:00:00   0:00:00
+
+
+   Speed :           609168970 Bytes/sec.
+   Speed :           34856.928 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 11:07:37 PM
+
