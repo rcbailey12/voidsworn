@@ -1,14 +1,14 @@
 {
-  "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+  "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "bow.jpg",
-  "date": "2026-11-19T17:14:19Z",
+  "date": "2026-11-20T00:35:52Z",
   "sources": [
     {
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "bow.png",
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T17:14:13Z",
-      "image_sha256": "5b821e08da0718a5eaf69991564e60d8aa5b879505863a0b6957920de5e120a4",
+      "date": "2026-11-20T00:35:46Z",
+      "image_sha256": "9a6b21ff99b99cdf8b848263921255cbf80196fb519131c5895ebe0f4dc3ff02",
       "sources": [
         {
-          "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+          "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -35,20 +35,20 @@
   ],
   "stamp_box": [
     0,
-    1096,
+    1095,
     432,
-    1194
+    1193
   ],
   "strip_size": [
     432,
     98
   ],
   "strip_sha256": [
-    "2ec68edbdd9c47a1bfd58fbf2d8f97bc808cabc3ef928cfe589a06e25a802708"
+    "c37bfc6f614f05e23d51e249d16d8c9d90988dbbe18655940d2ef1f6dda4d794"
   ],
-  "stamp_template_sha256": "419d1935d61a95d32f0853115a5d17d6cc91e0fa0ab8f361a035f1c90798124b",
+  "stamp_template_sha256": "52a1e23cc64dc2878c3b2edc2730442cd6dc14c9f46eae6f60ccdeb8feed4d48",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPElEQVR4nO3UMRHAMAzAQLewfOWPq4s4JMM/Ak16dr8BYOY9HQBwC0MEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIkB95fwF0Wpp7TwAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "d8cc93d9f84a8f7995d3b4d9f13092432e808e254274bd19e799023527d513ff"
+  "image_sha256": "52ed2daa658452444a6e931e9c825975c3e461f16375cabce9f4632654894fec"
 }

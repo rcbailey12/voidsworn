@@ -1,6 +1,6 @@
 # chorus_C14: The brood-sac (Chorus carrier), build sheet
 
-The Chorus (chorus) | class Carrier | version 4 (blockout v4, the Board's notes on v3 (issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
+The Chorus (chorus) | class Carrier | version 5 (blockout v5, the armour shell (R341, issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
 
 **Length 16.5 world units** (data.js b_brood (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -22,8 +22,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | beam top | 12.212 |
 | beam bow | 12.213 |
 | beam disagreement percent | 0.0 |
-| height side | 10.2 |
-| height bow | 10.2 |
+| height side | 10.188 |
+| height bow | 10.188 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 26.8 |
 | hull beam | 9.4 |
@@ -31,8 +31,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L to B hull | 1.76 |
 | L to H hull | 2.41 |
 | prow overhang | 0.65 |
-| outline iou percent | 73.8 |
-| mass outline iou percent | 74.1 |
+| outline iou percent | 73.9 |
+| mass outline iou percent | 74.3 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
@@ -62,8 +62,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | S7s | teardrop sac, 1.0 across | 1 | 53.5 | -2.04 | -2.43 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
 | S8p | teardrop sac, 0.9 across | 1 | 59.8 | 1.68 | -1.72 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
 | S8s | teardrop sac, 0.9 across | 1 | 59.8 | -1.84 | -1.91 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
-| S9p | teardrop sac, 0.8 across | 1 | 65.6 | 0.99 | -1.24 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
-| S9s | teardrop sac, 0.8 across | 1 | 65.6 | -1.01 | -1.26 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
+| S9p | teardrop sac, 0.8 across | 1 | 65.5 | 0.99 | -1.24 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
+| S9s | teardrop sac, 0.8 across | 1 | 65.5 | -1.01 | -1.26 | - | - | picture | spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly |
 | Q1p | attitude thruster quad | 1 | 35.2 | 3.92 | -1.88 | - | - | designed | siphon forward: swings the front |
 | Q1s | attitude thruster quad | 1 | 35.2 | -3.71 | -1.77 | - | - | designed | siphon forward: swings the front |
 | Q2p | attitude thruster quad | 1 | 57.5 | 3.05 | -1.08 | - | - | designed | siphon aft: swings the stern |
@@ -80,7 +80,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Zone | From % | To % | Where | Note |
 |---|---:|---:|---|---|
-| dark olive flesh, hard chitin hide in grown irregular plates (paint stage, R325) | 1.2 | 70.0 | whole body |  |
+| warm brown flesh (paint stage) | 1.2 | 70.0 | whole body |  |
+| brown keratin scutes over warm brown hide (R341) | 12.7 | 69.1 | the armour shell, belly to back |  |
 | raw transition tissue | 20.6 | 54.0 | the lips of the five openings and the spore patch walls |  |
 | wet dark maw, dim bile at the floor | 20.6 | 54.0 | inside the five openings |  |
 | bile yellow-green light | 1.2 | 6.1 | the spine pore's gland |  |
@@ -95,13 +96,15 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Front: the puckered face | 2.3 to 4.2 | -1.54 to 1.54 | -1.24 to 1.34 | flesh | a low dome of flesh closing the front, the spine pore flush in it |
 | Front folds | 0.2 to 16.8 | -4.01 to 3.95 | -3.32 to 2.94 | skin folds parted by deep creases | creases from the rim sinking in to the spine pore |
 | Spore field and patch | 14.8 to 26.5 | -1.27 to 0.44 | 3.24 to 3.69 | a sunk honeycomb of pores, the turning cluster at its front | over the upper front, off the centre line |
-| Launch opening L1 | 47.6 to 69.5 | -2.01 to 2.03 | 0.22 to 4.04 | flesh neck and lip | thick fleshy rim, drawn empty |
+| Launch opening L1 | 47.4 to 69.7 | -2.01 to 2.03 | 0.24 to 4.02 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Launch opening L2 | 35.5 to 59.5 | 1.87 to 5.45 | -1.07 to 2.95 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Launch opening L3 | 35.5 to 59.3 | -5.53 to -1.92 | -0.96 to 2.97 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Launch opening L4 | 11.8 to 35.7 | 2.30 to 5.57 | -1.83 to 2.27 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Launch opening L5 | 11.7 to 35.5 | -5.59 to -2.33 | -1.83 to 2.26 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Teardrop sacs | 25.4 to 30.8 | 1.88 to 2.92 | -5.04 to -2.53 | flesh sacs | a fringe of teardrops under the belly |
 | Vents | 66.3 to 72.4 | -0.28 to 0.28 | 0.33 to 0.91 | flesh | four pulse vents at the stern, the membranes streaming aft |
+| Armour shell (port) | 12.8 to 72.3 | -0.03 to 5.14 | -3.77 to 3.96 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear |
+| Armour shell (starboard) | 12.8 to 72.4 | -5.02 to 0.03 | -3.65 to 3.89 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear |
 
 ## INSIDE (R98, R209): what each break reveals
 
@@ -163,7 +166,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 | hp_rcs_1 | 35.2 | -3.75 | -1.81 | stbd |  |  |
 | hp_rcs_2 | 57.7 | 3.08 | -1.10 | port |  |  |
 | hp_rcs_3 | 57.7 | -3.30 | -1.19 | stbd |  |  |
-| hp_bay_0 | 50.2 | 0.00 | 1.05 | top |  | launch opening L1 floor |
+| hp_bay_0 | 50.6 | 0.00 | 0.97 | top |  | launch opening L1 floor |
 | hp_bay_1 | 42.5 | 2.26 | 0.51 | port |  | launch opening L2 floor |
 | hp_bay_2 | 42.5 | -2.33 | 0.53 | stbd |  | launch opening L3 floor |
 | hp_bay_3 | 27.9 | 2.28 | 0.14 | port |  | launch opening L4 floor |
@@ -173,7 +176,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 270 objects, 33 parts, 490 close pairs, 215 rays, 2 guns, 0 sensor pairs, 1 turrets swept, 8 cones, 5 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 252 objects, 33 parts, 397 close pairs, 217 rays, 2 guns, 0 sensor pairs, 1 turrets swept, 8 cones, 5 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -181,6 +184,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Changed from the picture (R207)
 
+- **An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field, the launch necks and the pale sacs stay bare.** Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13. The sacs stay pale and smooth (the Board on v2, note 4).
 - **No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide's grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor.** R204 and the lore: the colour is fixed in the build; the picture renders the family's grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety.
 - **Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners.** designs.md: five openings round the rim, evenly dispersed with wide stretches of plain flesh; the front view draws them round the axis, the plan round the disc; placed so each launches clear of every other part (fit check EXIT) and none sits in the vents' jets. The job text said two openings; designs.md, the beauty and the sheet all draw five, so five are built (flagged to the Board).
 - **The openings are drawn empty: a deep dark chamber 2.2 deep, a dim glow at its floor, nothing in it; 2.1 across, fat round lips on short necks 0.6 tall close to the rim (the Board on v1 note 3 and v2 note 5).** Ryan, Nov 13: no pods shown; squadron capacity (hangar 3) is an internal fact, a brood chamber under each opening.

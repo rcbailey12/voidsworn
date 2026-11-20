@@ -1,14 +1,14 @@
 {
-  "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+  "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "threequarter.jpg",
-  "date": "2026-11-19T17:14:20Z",
+  "date": "2026-11-20T00:35:53Z",
   "sources": [
     {
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "threequarter.png",
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T17:14:13Z",
-      "image_sha256": "0cee5d6909aeb485f03877806e47573637d040386dedc1cc8ddd876156848c33",
+      "date": "2026-11-20T00:35:46Z",
+      "image_sha256": "7411037fe0a62583cd897568609a62de44684e33ab49578b706833c2072c8e85",
       "sources": [
         {
-          "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+          "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -44,11 +44,11 @@
     98
   ],
   "strip_sha256": [
-    "7a8b0a0a0a5555215026cdfc8c82d866c70fcb9594b456f4cbb05237b41d81f2"
+    "0705db92c8d279f7438c805689c7aebae17af505e86659739602c1dada764dfd"
   ],
-  "stamp_template_sha256": "0e3d89b96df88067df513f7194a266859156fe4b957b32950e4870e75b22b5e2",
+  "stamp_template_sha256": "ffa827b497dee992ebb064625fda5bd3f9e153908bf922e236c68a8b3ca2b25d",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPElEQVR4nO3UMRHAMAzAQLewfOWPq4s4JMM/Ak16dr8BYOY9HQBwC0MEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIkB95fwF0Wpp7TwAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "29fd38ccf3b710dd89f651cf20f569126eb0e2e98ea334eb70af567abf588015"
+  "image_sha256": "a8da424f9909b44192fe013c94aa8aae7b29247999627ec5df9941e6772f7fd3"
 }

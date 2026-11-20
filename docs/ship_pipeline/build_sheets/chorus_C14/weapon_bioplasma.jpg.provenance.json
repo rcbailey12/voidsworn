@@ -1,14 +1,14 @@
 {
-  "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+  "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_bioplasma.jpg",
-  "date": "2026-11-19T17:14:24Z",
+  "date": "2026-11-20T00:35:57Z",
   "sources": [
     {
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "weapon_bioplasma.png",
-      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T17:14:10Z",
-      "image_sha256": "071c5e7cd0595a9b8c7bb8b313df2c546f63c6cfbc0d646da640b23257ae97cc",
+      "date": "2026-11-20T00:35:43Z",
+      "image_sha256": "14291d049e9fd30bf528e9597c6e135de495cdb01d8b12fcb9cbe244d74c27bf",
       "sources": [
         {
-          "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
+          "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "8fd23be7669eead936b93b588df174c52a59eeab48fef8115fdf802e63316d62"
+    "55b2c5519e025d0f52372abeba6b8f96c64206fe786768903bb5a26093a05c2c"
   ],
-  "stamp_template_sha256": "7d46977e0e5c4ea2b8079f37a1b29f527fa5db59186a346f25ff2b3df6d58ed0",
+  "stamp_template_sha256": "82b6e8e8981cc18ce451777aa4be6e17990eff66cd339dd56406aa21170b23ef",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAC4klEQVR4nO3Zy2okRxCF4YjIunVLPZLHGGbhJxn8/o/ijb2zpVFXRpzjRUuCMR6QBtrkwPkWtakioOAnsy7++fNvJvKCxJ9//E4gIlrzqTVzErZn7XsneHu6v7v/+JZRbnaazoeW2zLNLVoLd3c3gAD3nk97Pj71L5253E3XvjH5sWQmABRIuk9w0EhaZpJG2uFwfPs0gHBejhF0d9LMrIACs5hgsZmFQpSvkMRLOSRBM7PMqgJp87JM8/yuaTQrsAUBmvGyIpIEmVVZgK/urhDlK26eCSPcHYBbwFCXBdJi2w4R7Y2jSBaZhRZesAgnEO4AAOtZPbFnYWnNLK56V/LDmZfl06dfj8eTmRdQBGEAI6bteLy5/fCOWe5F64UsZDETVSggC5cKe6GXRZvMTCui/Ns8Lz99/OX89Pjw8Ffm3qJth+14vF3WLeJ9K1cWnDW5h1m4mQeLWehVe9bTnmCYhylE+U8RsR1ulnV7fPh73Q7Lspj5d8wBLYEsRFiUm5m7F7h3nPfae9k8u7spRPkWd29tOn24/+4JJAqsni0iwi7BmVkW9qxzz6xcD+slcYUo1+IeACvRIsMnd3M3I3viae/nngAvD4imEOWqaJZZPbxFNH/e3c+9zntWgRZtev4YpBDlWi4fEQFWsQrZ3Isgz716AmS02V72a4Uo13L5j5JVrUWvauVGgrZn9Sojp2Vzf34NV4hyRet2RD8h9541tXCLKvReYe7LYdluXq9UiHJF0abj3c/V9zw/ZO3ulmUxreuH0zRvr/uyKUS5NveYlm1aturnzHMcl21aXnfkVwpR/idtXtu8fuus/jXLEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhD+AZwprIU12TqMAAAAAElFTkSuQmCC"
   ],
-  "image_sha256": "023ef854614df8f3560d435802356bf5123832662f7e7a40741300460349a10b"
+  "image_sha256": "f44c1f3ad9ddbdc38c701c5aa135272c66f46322fca36141415a93608ae3e964"
 }
