@@ -24,9 +24,13 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
   `repo-mirror.git`; HEAD must equal the pin.
-- `ships`: built hulls from `build\godot` with `/E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test
-  previews`; robocopy 8 or more fails; then any tracked file that differs from the pin fails the job (a stale
-  `a4_props.gd` broke 1236 RUN3).
+- `ships`: built hulls from `build\godot`: `gen` whole with plain `/E`, no skip flags, so the source wins (its
+  `manifest.json` is how the game finds the hulls, and the job fails without it), `assets\ships` with `/E /XC /XN /XO /XF
+  manifest.json README.md a4_props.gd *.uid /XD test previews`; robocopy 8 or more fails; then any tracked file that
+  differs from the pin fails the job (a stale `a4_props.gd` broke 1236 RUN3), and so does any copied ship whose glb time
+  and size differ from its cache's `src` stamp (a publish between the two copies). The measured hulls are listed in
+  `<checkout>_ships_identity.txt`, and every later checkout in the job must list the same hulls as the first (so OLD and
+  NEW arms measure one fleet). Set `OJ_NEED_HULLS` to the codes your fixtures draw and each must be a matching ship.
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS.
 
