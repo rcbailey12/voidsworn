@@ -1,0 +1,2 @@
+﻿PASS: export, check, smoke report (missing, stale, short, errors, softlocks, parse error) and promotion failures keep the live build; a clean run promotes all companions together
+PASS: Play launches the promoted export in a path with spaces
