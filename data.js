@@ -1037,7 +1037,9 @@ const MORE_SHIP_NAMES={
 // prices its big hulls up; Corsairs go cheap small and dear heavy; Ithar tax everything (elite glass); Deathless pay most for few, durable hulls;
 // Sunward carriers have a 10% premium before rounding. Shipyard prices, ransom, strip and scrap values all follow h.cost.
 // Enemy fleets are still built by command points, so battle difficulty does not move with this table.
-const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.1},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
+// Issue 1354 (Nov 20): Navy hulls 20% and Crusade hulls 5% cheaper in the shop, to lift both back above 30% at Veteran after the
+// Glasswright hull rise (PR 1353). Player-only: enemy copies are unchanged.
+const FAC_PRICE={hegemony:{Frigate:.8,Destroyer:.8,Cruiser:.8,Battleship:.8,Dreadnought:.8},voidsworn:{Frigate:.95,Destroyer:.95,Cruiser:.95,Battleship:.95,Dreadnought:.95,Carrier:1.045},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
   ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.55,Destroyer:1.6,Cruiser:1.65,Battleship:1.6}}; // R1 (FS-2): a future Eclipse battleship never prices below the Eclipse cruiser
 // B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
 const FAC_GATES={corsair:{noKind:['lance'],d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Glasswright hulls cannot Brace for impact: they live by shields and speed.'}};
