@@ -99,7 +99,7 @@ function finishBattle(result){
   RUN.stats.kills+=summary.kills;
   for(const u of B.units){
     if(!u.ship) continue; const ship=u.ship; if(u.side==='player'){ const c=ship.car=ship.car||{dealt:0,kills:0,battles:0}; c.dealt+=Math.round(u.dealt||0); c.kills+=u.kills||0; c.battles++; }
-    if(u.dead&&!u.exited){ summary.lost.push({ship:ship.name,cap:ship.cap.name}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
+    if(u.dead&&!u.exited){ summary.lost.push({ship:ship.name,cap:ship.cap.name,tpl:ship.tpl}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
       if(rnd()<.6){ (RUN.reserve=RUN.reserve||[]).push({cap:ship.cap,from:ship.name}); (summary.escaped=summary.escaped||[]).push(ship.cap.name); } else RUN.fallen.push({name:ship.cap.name,rank:ship.cap.rank,fac:ship.cap.fac,ship:ship.name,sector:RUN.sector}); continue; }
     ship.hp=clamp(Math.round(u.hp),1,derive(ship).maxHp);
     if(result==='retreat'){ ship.hp=Math.max(1,ship.hp-Math.round(u.maxHp*.1)); continue; }

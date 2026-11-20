@@ -97,6 +97,7 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
   if(!Number.isFinite(r.credits)){ rep.push('credits'); r.credits=0; } // B1 (B-5): a save whose credits went NaN from selling a captured flagship
+  if(r.fac==='chorus'&&!Number.isFinite(r.bio)){ r.bio=r.credits; r.credits=0; } // issue 1178: a Chorus run saved before biomass moves its purse to biomass, as a new run starts
   if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
     if(!['prize','salvage','victory','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
     R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];
@@ -229,6 +230,16 @@ function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eaten
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
 function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
+// issue 1178 (R335, the 1085 sim pick): the Chorus pay for hull work (repairs, new hulls, Marks) in biomass, earned flat per win
+// plus 2 per kill (at most 12 a battle); credits still buy refits, class refits, events and the late market. Every other faction: credits.
+function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
+function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
+function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
+function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
+const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+// Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 60 a battle
+const CULLET={Frigate:15,Destroyer:30,Cruiser:45,Carrier:50,Battleship:60,cap:60};
 function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
@@ -479,6 +490,7 @@ function newRun(admiralId,fac,opt){
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null, eatenCore:null, eatCoreSeen:false};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+  if(fac==='chorus'){ RUN.bio=RUN.credits; RUN.credits=0; } // issue 1178: the Chorus start with their purse as biomass
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
