@@ -83,9 +83,12 @@ func _run() -> void:
 	_trail_check()
 	_parked_fleet_check("max")
 	_parked_fleet_check("low")
+	_moved_then_parked_check("max")
+	_moved_then_parked_check("low")
+	_hitch_check()
 	_restart_check()
 	if failed == 0:
-		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip; a parked fleet never starves a mover; a restart never moves the old trail)")
+		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip; a parked fleet never starves a mover, even after it moved; a hitch never restarts a trail; a restart never moves the old trail)")
 	quit(1 if failed > 0 else 0)
 
 
@@ -165,7 +168,8 @@ func _parked_fleet_check(quality: String) -> void:
 
 
 # Artoo on PR 1181: a ship that moves, pauses briefly and moves on must leave its old trail exactly as it was (its push
-# and its distance behind the bow); the restart used to drop them to defaults, a jump of 0.9 to 21 in the packed push.
+# and its distance behind the bow) through the stop and the restart; the restart used to drop them to defaults, a jump
+# of 0.9 to 21 in the packed push.
 func _restart_check() -> void:
 	var src := GDScript.new()
 	src.source_code = "extends Node3D\nvar L := 40.0\nvar dead := false\n"
@@ -182,13 +186,13 @@ func _restart_check() -> void:
 		ship.position = Vector3(x, 0.0, 0.0)
 		w.update(1.0 / 30.0, [ship])
 		var u: PackedFloat32Array = w.uniforms()
-		if k == 11:
+		if k == 5:   # the last frame it moves; the 0.2 s stop then gives its piece back
 			var hd: Dictionary = w._ring[w._head[ship.get_instance_id()]]
 			old = [hd.a, hd.b]
 		for i in w.points:
 			var o: int = i * WAKE.FLOATS
 			if old.size() >= 2 and Vector3(u[o], u[o + 1], u[o + 2]).distance_to(old[0]) < 0.001 and Vector3(u[o + 3], u[o + 4], u[o + 5]).distance_to(old[1]) < 0.001:
-				if k == 11:
+				if k == 5:
 					old.append_array([u[o + 8], u[o + 11]])
 				elif k == 13:
 					after = [u[o + 8], u[o + 11]]
@@ -213,3 +217,68 @@ func _glsl_check() -> void:
 	}
 	for k in want:
 		check(g.contains(k), "glsl: %s is in its place (%s)" % [want[k], k])
+
+
+# Fable on PR 1181: a ship that moved once and then parked kept its newest piece, so once a fleet had each moved, every
+# slot was held and a later mover's trail was wiped at every 12 unit seam (about 11 units long instead of 80). A fleet
+# bigger than the slot count moves 30 units each, one after another, sits 10 s, then one ship flies 96 units.
+func _moved_then_parked_check(quality: String) -> void:
+	var src := GDScript.new()
+	src.source_code = "extends Node3D\nvar L := 30.0\nvar dead := false\n"
+	src.reload()
+	var w = WAKE.new(quality)
+	var dt := 1.0 / 30.0
+	var ships := []
+	for i in w.points + 4:
+		var p: Node3D = src.new()
+		root.add_child(p)
+		p.position = Vector3(float(i) * 40.0, 0.0, 200.0)
+		ships.append(p)
+	var mover: Node3D = src.new()
+	root.add_child(mover)
+	ships.append(mover)
+	w.update(dt, ships)
+	for p in ships:
+		if p == mover:
+			continue
+		var start: Vector3 = p.position
+		for k in 38:
+			p.position = start + Vector3(0.0, 0.0, float(k + 1) * 0.8)
+			w.update(dt, ships)
+	for k in 300:
+		w.update(dt, ships)
+	var held := 0
+	for e in w._ring:
+		if int(e.owner) >= 0:
+			held += 1
+	check(held == 0, "%s: ships that moved and parked hold no slot after 10 s (%d held)" % [quality, held])
+	for k in 120:
+		mover.position = Vector3(float(k + 1) * 0.8, 0.0, 0.0)
+		w.update(dt, ships)
+		if k == 59:
+			var key: int = mover.get_instance_id()
+			var length := 0.0
+			for e in w._ring:
+				if int(e.ship) == key and w.clock - float(e.tb) < WAKE.FADE_S:
+					length += Vector2(e.b.x - e.a.x, e.b.z - e.a.z).length()
+			check(length >= 40.0, "%s: after the fleet moved and parked, a mover's trail is %.1f units long after 48 units (needs 40)" % [quality, length])
+	for p in ships: p.queue_free()
+
+
+# Fable on PR 1181: one long frame (a hitch, or under 10 fps) used to restart a moving ship's trail with a fresh ease-in.
+func _hitch_check() -> void:
+	var src := GDScript.new()
+	src.source_code = "extends Node3D\nvar L := 40.0\nvar dead := false\n"
+	src.reload()
+	var ship: Node3D = src.new()
+	root.add_child(ship)
+	var w = WAKE.new("max")
+	var x := 0.0
+	for k in 60:
+		var dt := 0.25 if k == 30 else 1.0 / 30.0
+		x += dt * 24.0
+		ship.position = Vector3(x, 0.0, 0.0)
+		w.update(dt, [ship])
+	var trails := int(w._trails.get(ship.get_instance_id(), 0))
+	check(trails == 1, "hitch: a 0.25 s frame keeps a moving ship on one trail (%d trails)" % trails)
+	ship.queue_free()

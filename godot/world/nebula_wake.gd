@@ -168,7 +168,12 @@ func update(dt: float, ships: Array) -> void:
 			_close(key)
 			_last[key] = {"p": at, "t": -100.0, "dir": Vector2.ZERO}
 			continue
-		if step.length() < 0.01:   # still: the trail behind it fades on its own, and it holds no slot it does not need
+		if step.length() < 0.01:   # still: the trail behind it fades on its own
+			# Stopped for good: give the newest piece back, so ships that moved once and parked never hold every
+			# slot (Fable on PR 1181: a later mover's trail was then cut to one 12 unit piece at every seam).
+			if _head.has(key) and clock - float(last.t) > PAUSE_S:
+				_freeze(key)
+				_close(key)
 			continue
 		var length := float(sv.get("L")) if sv.get("L") != null else 10.0
 		var r := clampf(length * R_PER_L, R_MIN, R_MAX)
@@ -176,7 +181,9 @@ func update(dt: float, ships: Array) -> void:
 		var reach := Vector3(dir.x, 0.0, dir.y) * length * BOW
 		var bow := at + reach
 		var h: int = _head.get(key, -1)
-		if h < 0 or int(_ring[h].owner) != key or clock - float(last.t) > PAUSE_S:
+		# The pause counts only frames the ship stood still, so one long frame (a hitch) never restarts a moving
+		# ship's trail (Fable on PR 1181).
+		if h < 0 or int(_ring[h].owner) != key or clock - dt - float(last.t) > PAUSE_S:
 			# Starting to move, or moving again after a stop: a fresh trail from where the bow was, easing in.
 			_freeze(key)   # before _close, which forgets the head the freeze reads (Artoo on PR 1181)
 			_close(key)
@@ -248,6 +255,7 @@ func _free_slot() -> int:
 			break
 	var was := int(_ring[best].owner)
 	if was >= 0:
+		_freeze(was)   # the trail it cuts keeps its values (Fable on PR 1181)
 		_head.erase(was)
 	return best
 
