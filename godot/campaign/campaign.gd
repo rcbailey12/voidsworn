@@ -3608,7 +3608,7 @@ func teachingBattle(cfg: Dictionary) -> Dictionary:
 	cfg = cfg.duplicate(); cfg["runBattle"] = n; cfg["teachingGate"] = true
 	if float(RUN["sector"]) != 1.0 or n > 2 or cfg.get("kind") == "boss": return cfg
 	cfg["teachingBattle"] = n; cfg["fac"] = "hegemony" if n == 1 else "corsair"
-	if n == 1: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)
+	if n == 1 or n == 2: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)   # R366 (issue 1393): Battle 2 gets Battle 1's open strip; Corsairs and reinforcements stay
 	return cfg
 func saveTeachingHistory() -> void:
 	if RUN == null or RUN.get("teachingGate") != true: return

@@ -95,12 +95,8 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
 - Issue 461 (the hits, upgraded; docs/playbooks/deaths_and_hits.md): each weapon family has its own hull-hit recipe (`fx_weapons.family_of`: shell, energy, lance, torpedo, bio), sized by `LADDER_PX` times the firing hull's band (`GUN_K`) times the hit hull's band (`TARGET_K`). What a hit throws lives its own life (`SPARK_LIFE`, `DEBRIS_LIFE`, `GAS_LIFE`, `EMBER_LIFE`; flame keeps the 0.70 s cap, `FLAME_CAP`) and leaves the plate along its outward side. `fx.light(p, t, life, peak, col, shape, reach)`: `reach` (world units) carries a light further and with a slower falloff (`REACH_ATTEN`); torpedo hits (36) and death core flashes (26, 35, 52 by class) use it. Tests: set `fx.dstate["hit_logging"] = true` and read `fx.dstate["hit_log"]` (`fx/test/hit_recipe_check.gd`).
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
 
-Travelling torpedoes (B3; ready now, for when the rules change lands):
-- `fx.torp_lane(lane_id, attacker_id, to_point, turns)`: a lane on the board from the attacker's bow to `to_point` (world), chevrons running toward an impact marker that pulses, in the attacker's weapon colour;
-- `fx.torp_launch(lane_id)`: the torpedo vents, runs out along the lane and holds there, engine burning, until the next turn;
-- `var r = fx.torp_strike(lane_id, target_id, hit)`: the two-stage warning (a dim pulse, then a ramp to white, about 0.8 s, K2 pin), then the torpedo closes and strikes (`hit` as in `volley` hits, or `{}` for a miss); returns `{impacts, done}` like `volley`;
-- `fx.torp_lane_clear(lane_id)`: the target got out of the lane; the torpedo runs on past the marker and burns out.
-Today's rules still resolve torpedoes at once: `volley(..., "torp", ...)` plays launch, flight and impact in one go.
+Torpedoes (R364, Nov 20 2026): they fire now. `volley(..., "torp", ...)` plays launch, flight and impact in one go; the B3 lane,
+parked torpedo and next-turn strike (`torp_lane`, `torp_launch`, `torp_strike`, `torp_lane_clear` and the lane shader) are retired.
 
 ## 4. Shields
 
@@ -375,7 +371,6 @@ Checks: the Forward+ `fx_inside_probe.gd` with `PROBE_BOX=1`; `destruction_steps
 - Homeworld 3's scar-to-breach grading now follows each section's own remaining hull. Low total ship HP no longer promotes healthy sections to damaged geometry. Weapon marks scale with that section's damage, regrade after later hits, and shrink or clear on repair. Repeat gauss hits retain their original entry frame when rebuilding the exit wound.
 - Breach throats are deeper, with opaque recessed backs, internal structure and a continuous lit torn rim. Persistent square chip sprites are replaced by a few soft embers; the plate ejecta use irregular solid shard meshes. Section shard and spark counts are reduced and the shared shard pool holds at most 768 particles on max quality, 384 otherwise.
 - Chorus wounds use wet green membranes, curved tissue strands, pulsing faction glow, ichor and spores. Their deaths rupture the skin 0.35 seconds in and spill real hull fragments and spores, with no metal fire, sparks or core flash. Whole hulks retain the independent cavity and scar meshes after the live ship is removed. Glasswright impact chips use the crystal shard tint and spectral light.
-- The lane shader's chevrons point and travel from shooter to target. Player torpedo lanes and enemy intent lanes share this shader and UV direction.
 - `board.show_blockers(hexes)` outlines the intermediate blockers returned by `api.line_blockers(shooter, target)`. Unreachable-hex tips use `api.entry_reason(id, q, r)`. These calls only explain existing rules. Set-piece hole cells now have solid props; planet, station and Hollow Sun exclusion rims show their exact rule footprints. The planet and station models are retained. Missing station assets and uncovered station edge cells get solid fallback docking hardware.
 - World bakes persist as RGBA PNGs under `user://world_bakes/v3/`. Keys include seed/settings, shader source and dimensions; parameter order does not cause rebakes. The memory cache holds 24 images. Cold starts draw a 512x256 sky and 256x128 planet first, then refine after three seconds in serialized GPU strips. Full-resolution cache hits load directly without the preview delay. GPU work stays on the render thread; no gameplay waits for a full-resolution bake. Issue 1265: the disk folder is capped at 500 MB (`CACHE_CAP_BYTES`); after each save the least recently used maps go first (last use is kept in `used.json`, refreshed on every disk load), maps the running game holds and the map just saved never go, and `.tmp` files older than a day go; bakes in older version folders (v1, v2) are removed once per run. Checked by `world/test/bake_cache_cap_check.gd`.
 - After creating the ship views, call `world.use_ship_debris(views.values())`. It reads one loaded hull per faction, cuts four sealed chunks per hull on a worker, preserves UVs and source paint/PBR materials, adds scorch weathering, and installs up to four instances per debris hex. Geometry stays inside the old footprint. No GLB paths are required. Empty source lists retain the existing debris; battles without debris skip the cutting work. Worker shutdown is joined when the world leaves the tree.
@@ -461,10 +456,9 @@ prism flight, muzzle and impact glints. No shield recipe or shard count changes.
 
 Rockets and torpedoes retain the real closed casings, fins and sampled baked
 exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing
-pulse motion, a short rise off the rail and a fade before impact. Parked lane
-torpedoes keep their running motor. The smoke history still cools separately.
+pulse motion, a short rise off the rail and a fade before impact. The smoke history still cools separately.
 Bay flashes, interceptions and all eight shared-helper regression rows are
-included in the capture adapter. Lane chevrons remain tactical indicators.
+included in the capture adapter.
 
 Attack-run craft and live squadron wings use their real stern history with
 the same textured core and sheath. The luminous centreline ends within 24
