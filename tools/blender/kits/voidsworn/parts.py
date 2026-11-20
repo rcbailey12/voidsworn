@@ -516,7 +516,7 @@ def _sear_repeater(p, barrels, cal, blen, s, pitch, variant):
             st.append(_stud((x, sg * 0.44 * s, 0.035 * s), (0, sg, 0), 0.02 * s))
     p.add('footingstud', 'mount', 'sworn', _join(st))
     # the housing: an armoured block, its front end narrower and lower (the sloped glacis over the port), a stepped roof plate
-    p.add('housing', 'mount', 'siron', block(-0.64 * s, 0.32 * s, 0.38 * s, 0.25 * s, 0.09 * s, zo=0.3 * s, taper=0.86, ztaper=0.78))
+    p.add('housing', 'mount', 'siron', block(-0.64 * s, 0.32 * s, 0.38 * s, 0.25 * s, 0.09 * s, zo=0.3 * s, taper=0.74, ztaper=0.62))
     p.add('housingband', 'mount', 'sworn', block(-0.4 * s, -0.34 * s, 0.395 * s, 0.24 * s, 0.085 * s, zo=0.3 * s))
     p.add('roof', 'mount', 'siron2', block(-0.52 * s, 0.1 * s, 0.29 * s, 0.035 * s, 0.015 * s, zo=0.56 * s))
     p.add('roofstep', 'mount', 'siron', block(-0.44 * s, -0.06 * s, 0.2 * s, 0.03 * s, 0.01 * s, zo=0.61 * s))
@@ -601,9 +601,10 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
     narrower upper tier on a shoulder), 2 twin (two columns sharing one fin stack), 3 raked (the leading edge raked back).
     h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side.
     glow: 'fins' (the first S8 build: fins packed 0.17 apart, so the glowing stack reads as one whole lit tower) or 'slats'
-    (R331, Nov 19 2026: the ember in the fin slats, the one Sunward spire treatment, R333: the glowing fins stand at least 0.26
-    apart, three or more of them, and reach 60 percent as far out, so the dark iron core shows between every pair and the spire
-    reads as lit stripes on iron, about half the lit area of the old towers; call it with glow='slats' and no other setting).
+    (R331, Nov 19 2026: the ember in the fin slats, the one Sunward spire treatment, R333; Ryan, Nov 20 on the Warden: "fix
+    ember glow", like the concept: the heat core glows ember the full height of the column and the fins are dark iron ribs
+    over it, 0.15 apart and reaching 45 percent as far out, so the glow shows in the slats between the ribs, never on fin
+    tips or as a whole lit tower; call it with glow='slats' and no other setting).
     scale (issue 1156, the Warden frigate): build the spire at h / scale and shrink the whole part by scale, so a small hull's
     spire keeps the flagship's proportions of root, fins and cap (their sizes below are flagship world sizes) instead of a tall
     root under a few fins; h, L and spread stay world sizes."""
@@ -612,8 +613,9 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
         part = radiator(h / scale, L / scale, spread / scale, profile, fins, pitch, t, seed, lean, bars, glow=glow)
         return part.transform(Matrix.Scale(scale, 4))
     if glow == 'slats':
-        pitch = max(pitch, 0.26)
-        spread *= 0.6
+        pitch = 0.15
+        spread *= 0.45
+    core_mat, fin_mat = ('embar', 'siron2') if glow == 'slats' else ('siron2', 'embar')
     p = Part('radiator')
     p.type = 'radiator'
     zr = 0.26
@@ -671,7 +673,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
                     F.append((a, b, b + 4, a + 4))
             F.append((3, 2, 1, 0)); o = (len(rs) - 1) * 4; F.append((o, o + 1, o + 2, o + 3))
             return V, F
-        p.add('bar%d' % ci, 'body', 'siron2', stack(secs_core))
+        p.add('bar%d' % ci, 'body', core_mat, stack(secs_core))
         p.add('column%d' % ci, 'body', 'siron', _join([stack(post_a), stack(post_b)]))
         xa, xb, th = edge(h, 0)
         zc = [cap_z(x, xa, xb) for x in (xa, xb)]
@@ -707,7 +709,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             V = [(xa + e, y0, z - 0.018), (xb - e, y0, z - 0.018), (xb - e, y1, z - 0.018), (xa + e, y1, z - 0.018),
                  (xa + e + 0.025, y0, z + 0.018), (xb - e - 0.025, y0, z + 0.018), (xb - e - 0.025, y1 - sg * 0.025, z + 0.018), (xa + e + 0.025, y1 - sg * 0.025, z + 0.018)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-    p.add('fin', 'body', 'embar', _join(fv))
+    p.add('fin', 'body', fin_mat, _join(fv))
     # gusset braces at the root, fore and aft on both faces (they carry the column's weight into the root socket)
     gz = []
     for sg in (1, -1):
@@ -1014,7 +1016,7 @@ def craft_spire(h, L, t, spread, fins=4):
             V = [(-L * 0.3, y0, z - th), (L * 0.3, y0, z - th), (L * 0.3, y1, z - th), (-L * 0.3, y1, z - th),
                  (-L * 0.26, y0, z + th), (L * 0.26, y0, z + th), (L * 0.26, y1 - sg * th, z + th), (-L * 0.26, y1 - sg * th, z + th)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-    p.add('fin', 'body', 'embar', _join(fv))
+    p.add('fin', 'body', fin_mat, _join(fv))
     gz = []
     for sg in (1, -1):
         for x in (-L * 0.35, L * 0.35):

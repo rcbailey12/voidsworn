@@ -108,9 +108,9 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Flak tub, port | 57.9 to 62.1 | 0.30 to 0.58 | 0.10 to 0.34 | darker iron | an octagonal forged tub at the deck edge, its skirt running down onto the upper facet |
 | Flak tub, starboard | 57.9 to 62.1 | -0.58 to -0.30 | 0.10 to 0.34 | darker iron | an octagonal forged tub at the deck edge, its skirt running down onto the upper facet |
 | Spine block (the spire line's base) | 56.9 to 90.0 | -0.17 to 0.17 | 0.29 to 0.46 | darker iron | a forged block along the centreline aft; the spires stand on it, and it snaps off with them (B-3) |
-| Radiator spire R1 (raked, 0.47 tall) | 67.0 to 69.3 | -0.15 to 0.15 | 0.65 to 0.85 | ember fin slats on iron | one of the three spires of the spire line |
-| Radiator spire R2 (stepped, 0.65 tall) | 74.5 to 77.5 | -0.17 to 0.17 | 0.65 to 1.03 | ember fin slats on iron | one of the three spires of the spire line |
-| Radiator spire R3 (blade, 0.52 tall) | 82.7 to 85.3 | -0.15 to 0.15 | 0.65 to 0.90 | ember fin slats on iron | one of the three spires of the spire line |
+| Radiator spire R1 (raked, 0.47 tall) | 66.7 to 69.3 | -0.04 to 0.04 | 0.57 to 0.93 | ember fin slats on iron | one of the three spires of the spire line |
+| Radiator spire R2 (stepped, 0.65 tall) | 74.5 to 77.5 | -0.04 to 0.04 | 0.57 to 1.11 | ember fin slats on iron | one of the three spires of the spire line |
+| Radiator spire R3 (blade, 0.52 tall) | 82.7 to 85.3 | -0.04 to 0.04 | 0.57 to 0.98 | ember fin slats on iron | one of the three spires of the spire line |
 | Belly armour step | 20.8 to 83.8 | -0.32 to 0.32 | -0.44 to -0.31 | darker iron | a second forged layer under the magazines and the reactor |
 | Dorsal power trunk | 20.0 to 53.1 | -0.05 to 0.05 | 0.22 to 0.37 | darker iron | armoured conduits from the reactor to the repeater (the concept's long centre rail) |
 
@@ -169,7 +169,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 209 objects, 41 parts, 397 close pairs, 358 rays, 3 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 29 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 209 objects, 41 parts, 405 close pairs, 356 rays, 3 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 29 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -180,6 +180,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Three radiator spires, not the beauty's four, at 0.47, 0.65 and 0.52 over the spine block (tallest in the middle).** designs.md's table (3 spires, tallest 0.9) outranks the picture; Ryan, Nov 19 2026 (R331): "can we scale down the giant radiator/orange towers on each ship a bit too?", so about 70 percent of the table's heights.
 - **The spires' fins stand further apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower.** R331: the ember shows in the slats, not as a whole lit tower (factions.md Sunward silhouette line).
 - **One flak pair (two twin tubs at the deck edges, station 60 percent), not the beauty's four tubs.** designs.md's table and data.js warden carry one flak slot (3 shots); four tubs would be silent or extra mounts (R241).
+- **Round 3 (Ryan, Nov 20, on the in-game pictures: "fix ember glow and the boxy gun"): the casemate is about a quarter smaller (size 0.38, was 0.5) with a steeper glacis and narrower roof, and the three barrels reach further out of it.** the concept's bow gun is a compact sloped house with its barrels well out front; ours read as a big box on the spearhead. The spires' heat core now glows under iron ribs (the shared radiator glow='slats', so S8, Vigil and every Sunward build get it).
 - **The bow gun is a fixed casemate (the Sear repeater: three barrels round a spindle in a forged housing with a sloped glacis), not a turning turret with a cupola.** data.js autocannon is arc F; a fixed forward mount matches the game, and the frigate turns to bring it to bear (R241); the concept's cupola read as a second gun, so the sight is a slit in the glacis.
 - **The broadside band is plated and louvred, with no ports and no lit gallery slits.** designs.md: no broadside slot in data, so no ports (R241: no decorative guns).
 - **The command deck looks out through three ember slits in the spine block's forward face at station 61 percent (the table's 58).** the spine block (and with it the spire line) must sit wholly aft of B-1, which runs ahead of it on the centreline and behind the flak tubs at the flanks.

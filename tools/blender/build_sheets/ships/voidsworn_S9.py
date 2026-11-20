@@ -191,7 +191,7 @@ def build(K):
     # ---------------- the bow gun: the Sear repeater in its forged casemate at the spearhead's root ----------------
     gz = deck_z(GUN_X, 0.0) - 0.005
     gpos = Vector((GUN_X, 0.0, gz))
-    part = HP.gun(3, 0.019, 0.34, 0.5, 'casemate', pitch=0.0, weapon='autocannon')
+    part = HP.gun(3, 0.019, 0.4, 0.38, 'casemate', pitch=0.0, weapon='autocannon')   # Ryan, Nov 20: smaller, less boxy, the barrels out front as on the concept
     part = K.emit('A1', part, HP.frame(gpos, (1, 0, 0), (0, 0, 1)), 'bow_gun')
     for ob in K.coll.objects:
         if ob.get('grp') == 'A1' and ob.get('role') != 'mount':
@@ -485,6 +485,8 @@ def build(K):
              'designs.md\'s table (3 spires, tallest 0.9) outranks the picture; Ryan, Nov 19 2026 (R331): "can we scale down the giant radiator/orange towers on each ship a bit too?", so about 70 percent of the table\'s heights')
     K.change('The spires\' fins stand further apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower', 'R331: the ember shows in the slats, not as a whole lit tower (factions.md Sunward silhouette line)')
     K.change('One flak pair (two twin tubs at the deck edges, station 60 percent), not the beauty\'s four tubs', 'designs.md\'s table and data.js warden carry one flak slot (3 shots); four tubs would be silent or extra mounts (R241)')
+    K.change('Round 3 (Ryan, Nov 20, on the in-game pictures: "fix ember glow and the boxy gun"): the casemate is about a quarter smaller (size 0.38, was 0.5) with a steeper glacis and narrower roof, and the three barrels reach further out of it',
+             'the concept\'s bow gun is a compact sloped house with its barrels well out front; ours read as a big box on the spearhead. The spires\' heat core now glows under iron ribs (the shared radiator glow=\'slats\', so S8, Vigil and every Sunward build get it)')
     K.change('The bow gun is a fixed casemate (the Sear repeater: three barrels round a spindle in a forged housing with a sloped glacis), not a turning turret with a cupola',
              'data.js autocannon is arc F; a fixed forward mount matches the game, and the frigate turns to bring it to bear (R241); the concept\'s cupola read as a second gun, so the sight is a slit in the glacis')
     K.change('The broadside band is plated and louvred, with no ports and no lit gallery slits', 'designs.md: no broadside slot in data, so no ports (R241: no decorative guns)')
