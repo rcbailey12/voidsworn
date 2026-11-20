@@ -1243,6 +1243,10 @@ uniform vec4 hitw[6];
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
+// issue 1078, R340: the failure look is 2, the clean collapse; 0 the old per-faction break and 1 energy shear stay only
+// for dev comparisons; brk_low gives the shear its cheaper crack network
+uniform int brk_look = 2;
+uniform bool brk_low = false;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
@@ -1285,6 +1289,7 @@ void fragment() {
 	vec3 lp = vL * rad;
 	float I = 0.0;
 	float maxR = length(rad);
+	float web = 0.0;
 	// F3: hits read at distance and on small ships: the hot core, the ripple and its spread never shrink below a few
 	// pixels (wpx = world units per pixel here), and every hit lights the whole bubble faintly in the faction's colour
 	// and pattern for half a second (more when the camera is far out), so a shield hit reads as that ship's shield
@@ -1316,6 +1321,8 @@ void fragment() {
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
 		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
 		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
+		// shear look: each hit briefly lights the crack network round it, so the hit already shows how this shield fails
+		web += mask * (1.0 - f) * (1.0 - f) * S;
 	}
 	// regen shimmer: a band sweeping the bubble from stern to bow
 	float ra = scene_t - regen_t;
@@ -1362,6 +1369,25 @@ void fragment() {
 		C = mix(C, clamp(abs(fract(eh + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * length(col) * 0.7, smoothstep(0.15, 0.7, fres));
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
+	float ba = scene_t - brk_t;
+	bool breaking = ba > 0.0 && ba < 1.6;
+	// issue 1078, shear: one connected crack network over the whole shield (cell borders join up, so a crack never
+	// ends in open field), coarser than any faction's pattern so it reads as a tear, not as the pattern lighting up
+	// (r1: the Navy's tear along its own hex lattice looked like today's look). x = distance to the crack, y = plate.
+	vec2 net = vec2(1.0, 0.0);
+	float hot = 0.0;
+	if (brk_look == 1 && (breaking || web > 0.002)) {
+		if (brk_low) {
+			// the cheaper network: ridge lines of one noise field (one 2D lookup set against 27 cell tests)
+			float rn = fbm(lp.xy * 0.32 + lp.zx * 0.24 + vec2(4.1, 2.7));
+			net = vec2(abs(rn * 2.0 - 1.0) * 0.22, floor(rn * 7.0) / 7.0);
+		} else {
+			net = vor3(normalize(vL) * 2.6 + vec3(4.3, 1.7, 8.2));
+		}
+		float wl = smoothstep(0.05, 0.0, net.x) * min(web, 1.5);
+		total += wl * 1.4 * (0.7 + 0.3 * pat);
+		hot += wl * 0.4;
+	}
 	// break (r4 review: three factions tore the same noise holes in a bright, nearly opaque bubble). Each faction now
 	// breaks in its own way, spreading from the struck facing over the bubble, and the bubble stays see-through:
 	//   0 Voidsworn: the gold veil cracks into sheets; cracks run white-gold ahead of the front, each sheet flares as it
@@ -1371,8 +1397,57 @@ void fragment() {
 	//   2 Corsair: it sputters out in patches; each patch stutters on and off (slow breathing with reduce flashing) and
 	//     dies, dirty red, until nothing is left;
 	//   3 Ithar: the veil sheets away from the struck side (left as it was: the Ithar look is changing).
-	float ba = scene_t - brk_t;
-	if (ba > 0.0 && ba < 1.6) {
+	if (breaking && brk_look != 0) {
+		vec3 un = normalize(vL);
+		float facing = dot(un, normalize(brk_dir));
+		float dist = (1.0 - facing) * 0.5;
+		float life = 1.0 - ba / 1.6;
+		float calm = mix(1.0, 0.3, fx_calm);
+		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.4 * calm;
+		float alive = 1.0;
+		// the Hullbreakers' field stutters (low contrast and slow, flash rules), whichever look plays
+		// (per patch: the shear's plates, or coarse patches for the collapse, so the whole field never strobes)
+		float pid = brk_look == 1 ? net.y : h21(floor(un.xy * 2.5) + floor(un.z * 2.5) * 7.0);
+		float stut = style == 2 ? mix(mix(0.45, 1.0, step(0.45, h21(vec2(pid * 31.0 + 1.0, floor(scene_t * 4.5))))), 0.8, fx_calm) : 1.0;
+		if (brk_look == 1) {
+			// the crack front leaves the struck facing and crosses to the far side in 0.55 s (SHEAR_FRONT)
+			float ct = ba - (dist * 0.55 + net.y * 0.05);
+			float line = smoothstep(0.06, 0.0, net.x);
+			// white-hot where the front is running along the cracks, faction colour behind it, then cooling
+			float lead = line * exp(-ct * ct * 160.0) * 3.0 * calm;
+			float glow = line * step(0.0, ct) * exp(-ct * 2.6) * 1.7;
+			// each plate the crack frees flares, then shears away along the front and is gone (staggered per plate)
+			float pt = ct - net.y * 0.12;
+			alive = pt < 0.0 ? 1.0 : exp(-pt * 8.0);
+			vec3 along = cross(un, normalize(brk_dir));
+			float sh = pt > 0.0 ? exp(-pt * 4.0) * (0.5 + 0.5 * sin(dot(un, along) * 34.0 + net.y * 20.0 - ba * 16.0)) * 0.6 * calm : 0.0;
+			float flare = smoothstep(-0.05, 0.0, pt) * exp(-max(pt, 0.0) * 9.0) * 0.9 * calm;
+			add += ((lead + glow) * (0.65 + 0.35 * pat) + (sh + flare) * pat) * stut;
+			hot += lead * 0.5;
+		} else {
+			// collapse: one even flash, then a single clean band closes from the far side into the breach in 0.7 s
+			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
+			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
+			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band
+			// and knot are brighter and a little wider, and keep the prismatic colour instead of burning toward white
+			// Under reduce flashing the band softens for every faction and the Glasswrights' extra brightness (band and
+			// knot) is dropped (their wider band and knot stay); Artoo on PR 1170: the band is not a sprite flash, so the flash budget never saw it
+			float gw = style == 3 ? 1.0 : 0.0;
+			float flash = exp(-ba * 12.0) * 0.3 * calm;
+			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
+			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
+			float bd = (dist - bp) / bw;
+			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
+			alive = smoothstep(bp + bw, bp - bw, dist);
+			float kt = ba - 0.7;
+			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
+			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
+			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
+		}
+		// what is left of the field stays faintly visible until the failure reaches it
+		add += alive * 0.28 * pat * (0.3 + 0.7 * fres);
+		total = total * alive + add * life * (0.55 + 0.45 * fres);
+	} else if (breaking) {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
@@ -1419,6 +1494,8 @@ void fragment() {
 		total = total * alive + add * life * (0.55 + 0.45 * fres);
 	}
 	if (total < 0.002) { discard; }
+	// the shear's running crack and the collapse's band burn toward white (zero in today's look)
+	C = mix(C, vec3(length(col)) * 0.62, clamp(hot, 0.0, 0.75));
 	ALBEDO = clamp(C * total * fx_gain, 0.0, 512.0);
 }
 """
