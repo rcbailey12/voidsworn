@@ -240,10 +240,17 @@ func _layers(name: String, cue: Dictionary, variant := "") -> Array:
 	if not sy.is_empty() and (not sampled or sl != null):
 		out.append({"st": _pick(sy, name), "g": float(sl["g"]) if sampled else 1.0, "r": 1.0, "d": 0.0, "pj": 0.0 if legacy else float(cue["pj"])})
 	if cue.get("variants", {}).has(variant):
+		var vd: Dictionary = cue["variants"][variant]
 		var vc: Dictionary = cue.duplicate()
-		vc.merge(cue["variants"][variant], true)
+		vc.merge(vd, true)
 		vc.erase("variants")
-		out.append_array(_layers(name + ":" + variant, vc))
+		vc.erase("replace")
+		var vl := _layers(name + ":" + variant, vc)
+		# Issue 1238 (F5.4): a variant marked "replace" is the faction's whole sound (no steel groan under the glass);
+		# otherwise it adds its layers to the base cue. A replace variant with nothing playable falls back to the base.
+		if bool(vd.get("replace", false)) and not vl.is_empty():
+			return vl
+		out.append_array(vl)
 	return out
 
 
@@ -256,9 +263,14 @@ func play(name: String, o := {}) -> void:
 	if not on or not cues.has(name):
 		return
 	var cue: Dictionary = cues[name]
-	var lay := _layers(name, cue, str(o.get("variant", "")))
+	var variant := str(o.get("variant", ""))
+	var lay := _layers(name, cue, variant)
 	if lay.is_empty():
 		return
+	# a faction variant may set its own voice length (its clips differ from the base cue's)
+	if variant != "" and not o.has("duration") and cue.get("variants", {}).get(variant, {}).has("duration"):
+		o = o.duplicate()
+		o["duration"] = float(cue["variants"][variant]["duration"])
 	var now := _now()
 	var t := now + float(o.get("delay", 0.0)) + 0.004
 	var gap := float(cue["gap"])
@@ -519,8 +531,8 @@ func death_bed(seconds: float, pos = null) -> void:
 	play("death_bed", {"pos": pos, "duration": seconds, "death": true})
 
 
-func death_tail(pos = null) -> void:
-	play("death_tail", {"pos": pos, "death": true})
+func death_tail(pos = null, variant := "") -> void:
+	play("death_tail", {"pos": pos, "death": true, "variant": variant})
 
 
 func hit(pos = null, heavy := false) -> void:
@@ -548,7 +560,8 @@ func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
 func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) -> void:
 	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
 	if heavy and HIT_BY_TARGET.has(target_fac):
-		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55}))
+		# Issue 1238 (F5.4): the heavy tail under a Chorus or Glasswright hit keeps the target's material (its variant)
+		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))
 
 
 func shield(pos = null, big := false) -> void:

@@ -162,6 +162,10 @@ body and the wreck.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.
   A pale bloom, never a hard white. The pieces twitch for about a second. The glow in the sacs fades last.
+  Timing today (issue 1238): a Chorus hull holds for its class's tell before it ruptures (frigate and destroyer 0.35 s,
+  cruiser 1.38 s, capital and Bio-Titan 2.0 s, the same as the shared rows), bleeding spores faster as it nears the burst,
+  with no metal beats (no vent, chain blasts, fireball or secondaries). The kill slow-motion beat lands 0.1 s after the
+  burst. Check: godot/audio/test/faction_death_check.gd.
 
 Faction deaths need the new hulls' authored break lines, so they are built on the two fleets of the finished battle first.
 Until a faction's hulls are rebuilt it uses the shared cruiser, capital and frigate deaths above.
