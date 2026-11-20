@@ -50,9 +50,15 @@ func _run() -> void:
 	var g = C.RUN["fleet"][C.RUN["fleet"].size() - 1]
 	check(g.get("regrown") == true and g.get("corePaid") != null and float(g["corePaid"]) == cost, "regrow records its cost (" + str(g.get("corePaid")) + " vs " + str(cost) + ")")
 	check(C.sellValue(g) == 0.0, "before a fight a regrown ship sells for 0")
-	g.erase("regrown")   # what rewardFlow does after a battle
+	C.settleRegrown()   # what rewardFlow does after a battle
+	check(g.get("regrown") == null, "the regrown mark is cleared after a battle")
 	check(C.sellValue(g) <= cost, "after a fight it sells for " + str(C.sellValue(g)) + ", at most the regrow cost " + str(cost))
 	check(C.sellValue({"tpl": tpl}) == C.prizeScrap(tpl), "a ship that was never regrown still sells for the full 35%")
+
+	# 2b. a ship regrown in an older save (no corePaid) keeps a cap through its next win
+	var old = C.RUN["fleet"][0]; old["regrown"] = true; old.erase("corePaid")
+	C.settleRegrown()
+	check(old.get("corePaid") != null and float(old["corePaid"]) == C.coreCost(old["tpl"]) and C.sellValue(old) < C.prizeScrap(old["tpl"]), "an older save's regrown ship is capped at " + str(old.get("corePaid")) + " after its next win")
 
 	# 3. the Daybreak dreadnought carries the Crusade shop discount, its ladder value stays
 	var asc = C.HULLS["ascendant"]

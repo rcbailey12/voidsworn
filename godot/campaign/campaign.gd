@@ -2022,6 +2022,12 @@ func ACT_lateBuy(id: String) -> void:
 	tel("shop", {"k": "late", "id": id, "cost": o["cost"]}); shipyardScreen(yard_node)
 # issue 1178: Eclipse core recovery (twin of campaign_run.js coreCost / ACT.restoreCore)
 func coreCost(tpl) -> float: return jsround(shipValue(tpl) * float(TB["LATE_SHOP"]["core"]) * priceMult())
+# issue 1384: after a battle a regrown ship loses its sell-for-0 mark but keeps the cap; a ship regrown in a save from before
+# issue 1384 has no corePaid, so it takes today's regrow price as its cap before the mark is cleared (campaign_run.js settleRegrown)
+func settleRegrown() -> void:
+	for sh in RUN["fleet"]:
+		if sh.get("regrown") and sh.get("corePaid") == null: sh["corePaid"] = coreCost(sh["tpl"])
+		sh.erase("regrown")
 func ACT_restoreCore(a: String) -> void:
 	var cs = or_(RUN.get("cores"), []); var i = int(a)
 	if i < 0 or i >= cs.size() or not HULLS.has(cs[i]): return
@@ -3212,7 +3218,7 @@ func factionWinEcon(credits: float, summary: Dictionary) -> Dictionary:
 func rewardFlow(summary: Dictionary) -> void:
 	var cfg = summary["cfg"]; var s = float(RUN["sector"]); var rf = runFx()
 	RUN["stats"]["battles"] = float(RUN["stats"]["battles"]) + 1
-	for sh in RUN["fleet"]: sh.erase("regrown")   # issue 1290: a regrown ship that has fought decommissions like any other
+	settleRegrown()   # issue 1290: a regrown ship that has fought decommissions like any other (capped since issue 1384)
 	if cfg["kind"] == "elite": RUN["stats"]["elites"] = float(RUN["stats"]["elites"]) + 1
 	if cfg["kind"] == "boss": RUN["stats"]["bosses"] = float(RUN["stats"]["bosses"]) + 1
 	var kindMult = 3.0 if cfg["kind"] == "boss" else (1.6 if cfg["kind"] == "elite" else 1.0)

@@ -21,7 +21,7 @@ function check(name, fn) { try { const r = fn(); if (r === false) throw new Erro
 eval(src + `
 function log(){} function tel(){} function toast(){} function shipyardScreen(n){ yardNode=n; } function closeModal(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, setYard(n){ yardNode=n; }, newRun, ACT, HULLS, SHOP_DISCOUNT, ASPECTS,
-  flagshipOf, derive, sellValue, prizeScrap, coreCost, capturedHullPrice, META };
+  flagshipOf, derive, sellValue, prizeScrap, coreCost, capturedHullPrice, settleRegrown, saveRun, migrateRun, META };
 `);
 const yard = () => { const n = { id: 'y', col: 0, type: 'shipyard' }; T.setYard(n); return n; };
 
@@ -52,10 +52,18 @@ check('a regrown Eclipse ship never decommissions for more than its regrow cost'
   const g = T.RUN.fleet[T.RUN.fleet.length - 1];
   if (!g.regrown || g.corePaid !== c) throw new Error('regrow did not record its cost: ' + g.corePaid + ' vs ' + c);
   if (T.sellValue(g) !== 0) throw new Error('before a fight it sells for ' + T.sellValue(g));
-  delete g.regrown; // what rewardFlow does after a battle
+  T.settleRegrown(); // what rewardFlow does after a battle
+  if (g.regrown) throw new Error('the regrown mark survived settleRegrown');
   if (T.sellValue(g) > c) throw new Error('after a fight it sells for ' + T.sellValue(g) + ', the regrow cost ' + c);
   const c0 = T.RUN.credits; T.ACT.sellConfirm(g.uid);
   return T.RUN.credits - c0 <= c && T.sellValue({ tpl }) === T.prizeScrap(tpl);
+});
+check('a ship regrown in an older save (no corePaid) keeps a cap through its next win', () => {
+  T.newRun('nekhet', 'deathless', {}); yard();
+  const g = T.RUN.fleet[T.RUN.fleet.length - 1]; g.regrown = true; delete g.corePaid; // the shape a pre-1384 save loads with
+  const old = JSON.parse(JSON.stringify(T.RUN)); T.RUN = old; const h = T.RUN.fleet[T.RUN.fleet.length - 1];
+  T.settleRegrown();
+  return !h.regrown && h.corePaid === T.coreCost(h.tpl) && T.sellValue(h) === Math.min(T.coreCost(h.tpl), T.prizeScrap(h.tpl)) && T.sellValue(h) < T.prizeScrap(h.tpl);
 });
 check('the Daybreak dreadnought carries the Crusade shop discount, its ladder value stays', () => {
   const h = T.HULLS.ascendant;

@@ -215,6 +215,9 @@ ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) ret
 // issue 1178: Eclipse core recovery (1086 E-B). A win recovers the core of the most valuable ship you lost (one a battle); at a
 // shipyard the core and 20% of the hull's value regrow it at Mk I with no refits and full hull.
 function coreCost(tpl){ return Math.round(shipValue(tpl)*LATE_SHOP.core*priceMult()); }
+// issue 1384: after a battle a regrown ship loses its sell-for-0 mark but keeps the cap. A ship regrown in a save from before
+// issue 1384 has no corePaid, so it takes today's regrow price as its cap before the mark is cleared.
+function settleRegrown(){ RUN.fleet.forEach(sh=>{ if(sh.regrown&&sh.corePaid==null) sh.corePaid=coreCost(sh.tpl); delete sh.regrown; }); }
 ACT.restoreCore=i=>{ const cs=RUN.cores||[], tpl=cs[+i]; if(!tpl||!HULLS[tpl]) return; const c=coreCost(tpl); if(RUN.credits<c||fleetCP()+(HULLS[tpl].cp||1)>RUN.cpCap) return;
   RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); s.regrown=true; s.corePaid=c; RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
 let yardNode=null;
@@ -659,7 +662,7 @@ function factionWinEcon(credits,summary){
 function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
-  RUN.fleet.forEach(sh=>{ delete sh.regrown; }); // issue 1290: a regrown ship that has fought decommissions like any other
+  settleRegrown(); // issue 1290: a regrown ship that has fought decommissions like any other (capped since issue 1384)
   const kindMult=cfg.kind==='boss'?3:cfg.kind==='elite'?1.6:1;
   const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay
