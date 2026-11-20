@@ -1,0 +1,1 @@
+[score] S9 {'overlap': 57.1, 'concept_covered': 76.5, 'cell_outside': 30.8, 'triangles': 42394}
