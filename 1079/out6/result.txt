@@ -1,0 +1,9 @@
+start run 6 Thu 11/19/2026 19:10:17.83 
+run folder C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run4 
+commit 93050fcdaa7ff6cc86d80bbf5c77f77ed91725ce 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1079\profile_4\appdata 
+copied ships, gen and import cache from build\godot 19:11:22.42 
+import ok 19:20:51.88 
+clip frames ok (c170 and c120) 19:24:24.01 
+real options unchanged 
+all done 
