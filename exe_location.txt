@@ -1,0 +1,1 @@
+Exe location (not relayed): no new exe was published. The live export is unchanged: Downloads\voidsworn_test\build\export\Voidsworn.exe (Nov 17 build, main 7ef495e). The 3c615257 candidate failed the export's bot smoke and was not promoted.

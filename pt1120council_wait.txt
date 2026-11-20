@@ -1,0 +1,9 @@
+waiting for OPUS1272_TIMING2 exit in opus1272_timing2_wait.txt Fri 11/20/2026 10:14:09.84 
+mirror refresh 10:43:09.21 
+mirror fetch exit 0
+3c615257786435138395f99af634e41dc66b8b0b reachable in the mirror
+PT1120 build start Fri 11/20/2026 10:43:10.62 
+PT1120 build exit 1 at 10:58:00.83 
+after-job janitor ran, output in janitor_after_pt1120.txt 10:58:01.38 
+PT1120 waiter exit at 10:58:01.38 
+all done Fri 11/20/2026 10:58:01.39 

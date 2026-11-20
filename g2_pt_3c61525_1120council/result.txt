@@ -1,0 +1,25 @@
+[Fri 11/20/2026 10:43:10.63] start, main 3c615257786435138395f99af634e41dc66b8b0b 
+manifest check before sync exit 0 
+MANIFEST OK: 294 files match main's ship manifest (size and sha256)
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)
+manifest check on the packaged ship files exit 0 
+MANIFEST OK: 294 files match main's ship manifest (size and sha256)
+manifest.json on the PC is identical to main's
+[Fri 11/20/2026 10:43:20.88] prepare exit 0 
+{"commit_date":"2026-11-20T16:10:45Z","commit":"3c615257786435138395f99af634e41dc66b8b0b"}
+ 
+[Fri 11/20/2026 10:43:20.89] synced, export start 
+[Fri 11/20/2026 10:58:00.81] export exit code 1 
+ Volume in drive C has no label.
+ Volume Serial Number is 866D-799D
+
+ Directory of C:\Users\rcbai\Downloads\voidsworn_test\build\export
+
+11/20/2026  10:43 AM    <DIR>          .
+11/20/2026  10:43 AM    <DIR>          ..
+11/17/2026  10:30 PM           188,928 Voidsworn.console.exe
+11/17/2026  10:30 PM       109,268,480 Voidsworn.exe
+11/17/2026  10:31 PM     5,712,630,756 Voidsworn.pck
+               3 File(s)  5,822,088,164 bytes
+               2 Dir(s)  203,054,755,840 bytes free
+[Fri 11/20/2026 10:58:00.82] build bat done, exit 1 
