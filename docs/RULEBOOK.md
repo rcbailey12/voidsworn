@@ -350,7 +350,7 @@ own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, 
 other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
 lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and is archived like any other
-(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
+(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).

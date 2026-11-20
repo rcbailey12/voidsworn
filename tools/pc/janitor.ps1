@@ -245,6 +245,8 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     $size = "$($stats.Bytes) bytes"
     if ($stats.Links.Count) { $size += ", $($stats.Links.Count) links not followed" }
     if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns left in place" }
+    $listed = Get-BoardKeepReason $dir.FullName
+    if ($listed) { throw $listed }
     foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
     foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
     if ($leaseBusy) { throw 'a helper run holds this folder''s lease' }
@@ -343,6 +345,8 @@ try {
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
   Log "free space before: $($drive.AvailableFreeSpace) bytes"
+  $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
+  Log "Board keep list: $($script:boardKeep.Count) paths"
   $mirror = Repo-Mirror
   foreach ($lane in @('board','board_b','board_c','board_d')) {
     $board = Join-Path $root $lane

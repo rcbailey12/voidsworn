@@ -138,6 +138,9 @@ try {
   const linked = makeCopy('repo-kept-linked', 5);
   fs.symlinkSync(other, path.join(linked, 'external'), windows ? 'junction' : 'dir');
   const newest = makeCopy('repo-kept-newest', 28);
+  // The Board keep list also binds the runner's end-of-job cleanup, not only the janitor (Artoo on PR 1277).
+  const listedClean = makeCopy('repo-kept-listed', 2);
+  write(path.join(path.dirname(flag), 'janitor_keep.txt'), `# held by the Board\n${listedClean}\n`);
   const noncandidate = makeCopy('repo-clone-failed-older', 1);
   // Files created at the top of a kept checkout also change its directory timestamp.
   fs.utimesSync(newest, new Date(2030, 0, 1), new Date(2030, 0, 1));
@@ -159,12 +162,13 @@ try {
   assert.match(log, /repo-kept-staged.*working tree needs keeping/);
   assert.match(log, /repo-kept-invalid.*not a standalone checkout/);
   assert.match(log, /repo-kept-linked.*linked path/);
+  assert.match(log, /repo-kept-listed.*kept: on the Board keep list/);
   assert.equal(git(['-C', history, 'rev-parse', 'HEAD']), local);
   assert.equal(read(path.join(dirty, 'work.txt')), 'local work');
   assert.equal(read(path.join(staged, 'staged.txt')), 'staged work');
   assert.equal(read(path.join(invalid, 'proof.txt')), 'same name, no Git checkout');
   assert.equal(read(path.join(other, 'proof.txt')), 'unrelated scratch');
-  for (const dir of [repo, newest, noncandidate, linked]) assert(fs.existsSync(dir), dir);
+  for (const dir of [repo, newest, noncandidate, linked, listedClean]) assert(fs.existsSync(dir), dir);
   const firstFail = start('first-fail', '201');
   assert.match(finish(firstFail, { code: '6' }), /kept for a retry for one day/);
   keep(firstFail);
@@ -301,6 +305,10 @@ try {
     dated(dir, hours);
   }
   const tokenOnly = scratch(temp, 'owned-tool-output', 4);
+  // The Board keep list (issue 1180, Nov 20): an owned scratch that would otherwise go stays when listed by exact path.
+  const boardKept = scratch(temp, ownerName(309, 'a'), 26);
+  markOwned(boardKept, 26);
+  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n\r\n`);
   for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, tokenOnly]) markOwned(dir, 26);
   for (const [dir, hours] of [[oldRetry, 25], [freshRetry, 4]]) {
     const marker = path.join(dir, '.voidsworn-run-failed');
@@ -479,7 +487,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, ...recover];
-  const preserve = [worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -535,6 +543,8 @@ try {
   assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
+  assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
+  assert.match(dry, /Board keep list: 1 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder \(process 0 fixture\)/);
