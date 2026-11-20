@@ -1,0 +1,237 @@
+{
+ "ship": "hegemony_HB1",
+ "code": "hegemony_HB1",
+ "cell": "HB1",
+ "game_ship": "bomber",
+ "faction": "hegemony",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 15660,
+ "turret_triangles": 0,
+ "turrets": [],
+ "surfaces": 4,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_bombs_T_0",
+    "hp_w0_bombs_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 2,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "hegemony_HB1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_bombs_T_0",
+   "p": [
+    0.36305,
+    -0.01703,
+    0.04365
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.010216919099463553,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_w0_bombs_T_1",
+   "p": [
+    0.36305,
+    0.01703,
+    0.04365
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.010216919099463553,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49782,
+    0.0,
+    0.01603
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.05426486198170962,
+   "engine": "E1",
+   "aperture": [
+    0.16527369131485162,
+    0.032053079527728796
+   ]
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.22036,
+    0.0,
+    0.01002
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "Navy bomber, the Hegemony bomber wing craft (Hegemony Navy)",
+  "faction": "hegemony",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "bomber",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 2,
+   "engine": 1,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 0,
+  "files": {
+   "hegemony_HB1.glb": {
+    "bytes": 1838088,
+    "sha256": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470"
+   },
+   "hegemony_HB1_base.jpg": {
+    "bytes": 1235704,
+    "sha256": "90eb8af7b65be83be0bb83b063223d4551090dbe86bcfb7b933b5a4945a6674e"
+   },
+   "hegemony_HB1_glow_emission.jpg": {
+    "bytes": 152856,
+    "sha256": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1"
+   },
+   "hegemony_HB1_normal.png": {
+    "bytes": 4524157,
+    "sha256": "d5cb64cd1fed0c62536bacb4b4cfab0f90c0c8efc98629da177f0337eef0dded"
+   },
+   "hegemony_HB1_orm.png": {
+    "bytes": 6307791,
+    "sha256": "2c613b5464b2a657c4817275074bb4589e6f1b7e9492c8a6888088213c5d8c19"
+   },
+   "hegemony_HB1_parts_base.jpg": {
+    "bytes": 350225,
+    "sha256": "a290588688f5ee0171b222ef82247d2f2f3ff05c6334c9dd6bdb353420a3efe5"
+   },
+   "hegemony_HB1_parts_normal.png": {
+    "bytes": 3657766,
+    "sha256": "612793f4a4c592ee4747b85b7f6c8f9c4bb50a624da837a2353d5ccc48ed4b31"
+   },
+   "hegemony_HB1_parts_orm.png": {
+    "bytes": 3180638,
+    "sha256": "1455bd7b5bbf0e681d0b2b2875e0fe310f8a6d709b945c7d4b927a9b73bb6adf"
+   }
+  },
+  "pc_path": "godot/assets/ships/hegemony_HB1/",
+  "wing_role": "bomber"
+ },
+ "files": {
+  "hegemony_HB1.glb": {
+   "bytes": 1838088,
+   "sha256": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470"
+  },
+  "hegemony_HB1_base.jpg": {
+   "bytes": 1235704,
+   "sha256": "90eb8af7b65be83be0bb83b063223d4551090dbe86bcfb7b933b5a4945a6674e"
+  },
+  "hegemony_HB1_glow_emission.jpg": {
+   "bytes": 152856,
+   "sha256": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1"
+  },
+  "hegemony_HB1_normal.png": {
+   "bytes": 4524157,
+   "sha256": "d5cb64cd1fed0c62536bacb4b4cfab0f90c0c8efc98629da177f0337eef0dded"
+  },
+  "hegemony_HB1_orm.png": {
+   "bytes": 6307791,
+   "sha256": "2c613b5464b2a657c4817275074bb4589e6f1b7e9492c8a6888088213c5d8c19"
+  },
+  "hegemony_HB1_parts_base.jpg": {
+   "bytes": 350225,
+   "sha256": "a290588688f5ee0171b222ef82247d2f2f3ff05c6334c9dd6bdb353420a3efe5"
+  },
+  "hegemony_HB1_parts_normal.png": {
+   "bytes": 3657766,
+   "sha256": "612793f4a4c592ee4747b85b7f6c8f9c4bb50a624da837a2353d5ccc48ed4b31"
+  },
+  "hegemony_HB1_parts_orm.png": {
+   "bytes": 3180638,
+   "sha256": "1455bd7b5bbf0e681d0b2b2875e0fe310f8a6d709b945c7d4b927a9b73bb6adf"
+  }
+ },
+ "seconds": 12.3,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

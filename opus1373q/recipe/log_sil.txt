@@ -1,0 +1,1 @@
+[score] HB1 {'overlap': 49.2, 'concept_covered': 61.8, 'cell_outside': 29.3, 'triangles': 16916}

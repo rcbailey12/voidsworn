@@ -1,0 +1,38 @@
+start hegemony_HB1 hegemony_HB1 board/pin-1373d Fri 11/20/2026 14:26:53.04 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                 -> refs/pull/1398/merge
+   a523d3ece..990534715  board/pc-in-1119       -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119zzs3o -> board/pc-out-1119zzs3o
+   c105c0849..a1e980c2d  main                   -> main
+ * [new branch]          opus/issue-1399        -> opus/issue-1399
+ * [new ref]             refs/pull/1400/head    -> refs/pull/1400/head
+ * [new ref]             refs/pull/1400/merge   -> refs/pull/1400/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo
+commit=9c0acd29c9fe5da9a652517f4fbf2382bfc8c7f3
+import exit 0 
+1_concept_in start 14:30:58.43 
+1_concept_in exit 0 at 14:31:00.51 
+2_shape_ref start 14:31:00.51 
+2_shape_ref exit 0 at 14:31:01.21 
+3_trace_hull start 14:31:01.21 
+3_trace_hull exit 0 at 14:32:04.26 
+4_parts_kit start 14:32:04.26 
+4_parts_kit exit 0 at 14:32:20.74 
+5_paint_bake start 14:32:20.74 
+5_paint_bake exit 0 at 14:36:14.56 
+6_lod start 14:36:14.56 
+6_lod exit 0 at 14:37:01.60 
+7_export start 14:37:01.60 
+7_export exit 0 at 14:37:35.97 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo\godot\assets\ships\hegemony_HB1\hegemony_HB1.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 14:37:48.75 
+all done 
+pin ok 9c0acd29c9fe5da9a652517f4fbf2382bfc8c7f3 

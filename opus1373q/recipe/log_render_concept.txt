@@ -1,0 +1,257 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 02ec4e9f-22da-4d6a-9430-0b01e3de7120
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\HB1.blend"
+Fra:1 Mem:140.58M (Peak 140.58M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:140.58M (Peak 140.58M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_bandseam_mid
+Fra:1 Mem:140.61M (Peak 140.61M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:140.69M (Peak 140.69M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:140.79M (Peak 140.79M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:140.82M (Peak 140.82M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:140.90M (Peak 140.90M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | rim
+Fra:1 Mem:140.95M (Peak 140.95M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_flank_panels_hgrey
+Fra:1 Mem:140.97M (Peak 140.97M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_belly_panels_hgrey
+Fra:1 Mem:141.19M (Peak 141.19M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_belly_panels_hpanel
+Fra:1 Mem:141.22M (Peak 141.22M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_ridge_panels_hgrey
+Fra:1 Mem:141.24M (Peak 141.24M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:141.34M (Peak 141.34M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_block_panels_hgrey
+Fra:1 Mem:141.46M (Peak 141.46M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_block_panels_hpanel
+Fra:1 Mem:141.56M (Peak 141.56M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_hmetal
+Fra:1 Mem:141.57M (Peak 141.57M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_hgrey2
+Fra:1 Mem:141.61M (Peak 141.61M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_dark
+Fra:1 Mem:141.77M (Peak 141.77M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gun_feed
+Fra:1 Mem:141.81M (Peak 141.81M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pilot
+Fra:1 Mem:141.81M (Peak 141.81M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:141.81M (Peak 141.81M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | key
+Fra:1 Mem:142.38M (Peak 142.38M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:141.99M (Peak 142.38M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading HB1_hull_albedo
+Fra:1 Mem:141.99M (Peak 142.38M) | Time:00:00.21 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading HB1_parts_orm
+Fra:1 Mem:540.29M (Peak 734.04M) | Time:00:00.51 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:540.29M (Peak 734.04M) | Time:00:00.51 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:540.29M (Peak 734.04M) | Time:00:00.51 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:540.29M (Peak 734.04M) | Time:00:00.51 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:540.37M (Peak 734.04M) | Time:00:00.59 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:540.38M (Peak 734.04M) | Time:00:00.59 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:540.38M (Peak 734.04M) | Time:00:00.59 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:540.38M (Peak 734.04M) | Time:00:00.59 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:541.27M (Peak 734.04M) | Time:00:00.60 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:541.27M (Peak 734.04M) | Time:00:00.60 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:542.51M (Peak 734.04M) | Time:00:00.60 | Mem:400.04M, Peak:400.04M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH light 44/43 | Building BVH
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH E1_body_hnozzle 16/43 | Building BVH
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH W1_body_hwin 13/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH rim 43/43 | Building BVH
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH rim 43/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH fill 42/43 | Building BVH
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.26M, Peak:401.26M | Scene, ViewLayer | Updating Geometry BVH fill 42/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.27M, Peak:401.27M | Scene, ViewLayer | Updating Geometry BVH key 41/43 | Building BVH
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.27M, Peak:401.27M | Scene, ViewLayer | Updating Geometry BVH key 41/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.27M, Peak:401.27M | Scene, ViewLayer | Updating Geometry BVH in_drive_room 40/43 | Building BVH
+Fra:1 Mem:542.59M (Peak 734.04M) | Time:00:00.60 | Mem:401.27M, Peak:401.27M | Scene, ViewLayer | Updating Geometry BVH in_drive_room 40/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.35M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_body_hmetal 17/43 | Building BVH
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.35M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_body_hmetal 17/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.35M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_mount_hgrey2 18/43 | Building BVH
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.36M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_mount_hgrey2 18/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.36M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_mount_htrim 19/43 | Building BVH
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.36M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH E1_mount_htrim 19/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.36M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hgrey 20/43 | Building BVH
+Fra:1 Mem:542.58M (Peak 734.04M) | Time:00:00.60 | Mem:401.37M, Peak:401.38M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hgrey 20/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.60M (Peak 734.04M) | Time:00:00.60 | Mem:401.38M, Peak:401.39M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hpanel 21/43 | Building BVH
+Fra:1 Mem:542.60M (Peak 734.04M) | Time:00:00.60 | Mem:401.38M, Peak:401.39M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hpanel 21/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.62M (Peak 734.04M) | Time:00:00.60 | Mem:401.40M, Peak:401.41M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hgrey 22/43 | Building BVH
+Fra:1 Mem:542.62M (Peak 734.04M) | Time:00:00.60 | Mem:401.41M, Peak:401.41M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hgrey 22/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.65M (Peak 734.04M) | Time:00:00.60 | Mem:401.43M, Peak:401.44M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hpanel 23/43 | Building BVH
+Fra:1 Mem:542.65M (Peak 734.04M) | Time:00:00.60 | Mem:401.44M, Peak:401.44M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hpanel 23/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.71M (Peak 734.04M) | Time:00:00.61 | Mem:401.50M, Peak:401.51M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hgrey 24/43 | Building BVH
+Fra:1 Mem:542.71M (Peak 734.04M) | Time:00:00.61 | Mem:401.52M, Peak:401.52M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hgrey 24/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.69M (Peak 734.04M) | Time:00:00.61 | Mem:401.55M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hpanel 25/43 | Building BVH
+Fra:1 Mem:542.69M (Peak 734.04M) | Time:00:00.61 | Mem:401.55M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hpanel 25/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.72M (Peak 734.04M) | Time:00:00.61 | Mem:401.58M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hgrey 26/43 | Building BVH
+Fra:1 Mem:542.72M (Peak 734.04M) | Time:00:00.61 | Mem:401.58M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hgrey 26/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.73M (Peak 734.04M) | Time:00:00.61 | Mem:401.59M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hpanel 27/43 | Building BVH
+Fra:1 Mem:542.73M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hpanel 27/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.62M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hgrey 28/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.62M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hgrey 28/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.62M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hpanel 29/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.62M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hpanel 29/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey 30/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey 30/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.64M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_htrim 31/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.64M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_htrim 31/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH in_reactor 39/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH in_reactor 39/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.63M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hmetal 32/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hmetal 32/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.64M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey2 33/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey2 33/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.64M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hblue 34/43 | Building BVH
+Fra:1 Mem:542.75M (Peak 734.04M) | Time:00:00.61 | Mem:401.64M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hblue 34/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.74M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_dark 35/43 | Building BVH
+Fra:1 Mem:542.74M (Peak 734.04M) | Time:00:00.61 | Mem:401.69M, Peak:401.73M | Scene, ViewLayer | Updating Geometry BVH BT_mount_dark 35/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.72M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.75M | Scene, ViewLayer | Updating Geometry BVH HB1_cassette_fairing 36/43 | Building BVH
+Fra:1 Mem:542.72M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.75M | Scene, ViewLayer | Updating Geometry BVH HB1_cassette_fairing 36/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.69M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.80M | Scene, ViewLayer | Updating Geometry BVH in_gun_feed 37/43 | Building BVH
+Fra:1 Mem:542.69M (Peak 734.04M) | Time:00:00.61 | Mem:401.78M, Peak:401.80M | Scene, ViewLayer | Updating Geometry BVH in_gun_feed 37/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.63M (Peak 734.04M) | Time:00:00.61 | Mem:401.65M, Peak:401.93M | Scene, ViewLayer | Updating Geometry BVH in_pilot 38/43 | Building BVH
+Fra:1 Mem:542.63M (Peak 734.04M) | Time:00:00.61 | Mem:401.72M, Peak:401.93M | Scene, ViewLayer | Updating Geometry BVH in_pilot 38/43 | Building OptiX acceleration structure
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.62 | Mem:401.67M, Peak:401.93M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.62 | Mem:401.67M, Peak:401.93M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.62 | Mem:401.68M, Peak:401.93M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:542.50M (Peak 734.04M) | Time:00:00.62 | Mem:401.68M, Peak:401.93M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:401.68M, Peak:401.93M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.18M, Peak:402.18M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.18M, Peak:402.18M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.18M, Peak:402.18M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.18M, Peak:402.18M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.18M, Peak:402.18M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.26M, Peak:402.26M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:543.00M (Peak 734.04M) | Time:00:00.62 | Mem:402.26M, Peak:402.26M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:543.26M (Peak 734.04M) | Time:00:00.62 | Mem:402.52M, Peak:402.52M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:543.26M (Peak 734.04M) | Time:00:00.62 | Mem:402.52M, Peak:402.52M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:543.26M (Peak 734.04M) | Time:00:00.62 | Mem:402.44M, Peak:402.52M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:543.26M (Peak 734.04M) | Time:00:00.62 | Mem:402.52M, Peak:402.52M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:543.26M (Peak 734.04M) | Time:00:00.62 | Mem:402.52M, Peak:402.52M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:543.27M (Peak 734.04M) | Time:00:00.62 | Mem:402.52M, Peak:402.52M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:551.14M (Peak 734.04M) | Time:00:00.63 | Mem:1095.52M, Peak:1095.52M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:627.15M (Peak 734.04M) | Time:00:00.64 | Remaining:00:00.80 | Mem:1171.52M, Peak:1171.52M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:627.16M (Peak 734.04M) | Time:00:00.83 | Remaining:00:00.03 | Mem:1171.53M, Peak:1171.53M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:659.16M (Peak 734.04M) | Time:00:03.04 | Mem:1171.53M, Peak:1171.53M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:659.16M (Peak 734.04M) | Time:00:03.04 | Mem:1171.53M, Peak:1171.53M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\r\HB1_concept_cl.png'
+Time: 00:03.28 (Saving: 00:00.15)
+
+[209] shot concept
+Fra:1 Mem:141.22M (Peak 141.22M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:141.22M (Peak 141.22M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:141.28M (Peak 141.28M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:141.34M (Peak 141.34M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:141.37M (Peak 141.37M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:141.41M (Peak 141.41M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:141.41M (Peak 141.41M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:141.41M (Peak 141.41M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_deck_panels_hgrey
+Fra:1 Mem:141.42M (Peak 141.42M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_deck_panels_hpanel
+Fra:1 Mem:141.48M (Peak 141.48M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_flank_panels_hgrey
+Fra:1 Mem:141.55M (Peak 141.55M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_flank_panels_hpanel
+Fra:1 Mem:141.60M (Peak 141.60M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_belly_panels_hpanel
+Fra:1 Mem:141.63M (Peak 141.63M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_block_panels_hgrey
+Fra:1 Mem:141.67M (Peak 141.67M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HF1D_block_panels_hpanel
+Fra:1 Mem:141.68M (Peak 141.68M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_htrim
+Fra:1 Mem:141.68M (Peak 141.68M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_hmetal
+Fra:1 Mem:141.70M (Peak 141.70M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_hgrey2
+Fra:1 Mem:141.70M (Peak 141.70M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | BT_mount_dark
+Fra:1 Mem:141.72M (Peak 141.72M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | HB1_cassette_fairing
+Fra:1 Mem:141.83M (Peak 141.83M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gun_feed
+Fra:1 Mem:141.95M (Peak 141.95M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pilot
+Fra:1 Mem:142.00M (Peak 142.00M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_drive_room
+Fra:1 Mem:142.01M (Peak 142.01M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | fill
+Fra:1 Mem:142.08M (Peak 142.08M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:141.69M (Peak 142.08M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading HB1_hull_orm
+Fra:1 Mem:141.69M (Peak 142.08M) | Time:00:00.13 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading HB1_parts_orm
+Fra:1 Mem:539.94M (Peak 669.72M) | Time:00:00.43 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:539.94M (Peak 669.72M) | Time:00:00.43 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:539.94M (Peak 669.72M) | Time:00:00.43 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:539.94M (Peak 669.72M) | Time:00:00.43 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:540.03M (Peak 669.72M) | Time:00:00.51 | Mem:400.02M, Peak:400.02M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:540.04M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:540.04M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:540.04M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:540.04M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:540.04M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.51 | Mem:400.03M, Peak:400.03M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.51 | Mem:400.15M, Peak:400.15M | Scene, ViewLayer | Updating Geometry BVH HF1D_bandseam_mid 6/43 | Building BVH
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.51 | Mem:400.15M, Peak:400.15M | Scene, ViewLayer | Updating Geometry BVH W1_body_hwin 13/43 | Building BVH
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.51 | Mem:400.15M, Peak:400.15M | Scene, ViewLayer | Updating Geometry BVH E1_body_hnozzle 16/43 | Building BVH
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.51 | Mem:400.15M, Peak:400.15M | Scene, ViewLayer | Updating Geometry BVH E1_body_hnozzle 16/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.18M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH rim 43/43 | Building BVH
+Fra:1 Mem:540.18M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH rim 43/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.19M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH fill 42/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH key 41/43 | Building BVH
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH key 41/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.16M, Peak:400.16M | Scene, ViewLayer | Updating Geometry BVH in_drive_room 40/43 | Building BVH
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.17M, Peak:400.17M | Scene, ViewLayer | Updating Geometry BVH in_drive_room 40/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.24M, Peak:400.25M | Scene, ViewLayer | Updating Geometry BVH E1_body_hmetal 17/43 | Building BVH
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.24M, Peak:400.25M | Scene, ViewLayer | Updating Geometry BVH E1_body_hmetal 17/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.25M, Peak:400.26M | Scene, ViewLayer | Updating Geometry BVH E1_mount_hgrey2 18/43 | Building BVH
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.27M, Peak:400.27M | Scene, ViewLayer | Updating Geometry BVH E1_mount_hgrey2 18/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.25M, Peak:400.27M | Scene, ViewLayer | Updating Geometry BVH E1_mount_htrim 19/43 | Building BVH
+Fra:1 Mem:540.25M (Peak 669.72M) | Time:00:00.51 | Mem:400.25M, Peak:400.27M | Scene, ViewLayer | Updating Geometry BVH E1_mount_htrim 19/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.24M (Peak 669.72M) | Time:00:00.51 | Mem:400.25M, Peak:400.29M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hgrey 20/43 | Building BVH
+Fra:1 Mem:540.24M (Peak 669.72M) | Time:00:00.51 | Mem:400.28M, Peak:400.29M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hgrey 20/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.26M (Peak 669.72M) | Time:00:00.51 | Mem:400.27M, Peak:400.30M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hpanel 21/43 | Building BVH
+Fra:1 Mem:540.26M (Peak 669.72M) | Time:00:00.51 | Mem:400.28M, Peak:400.30M | Scene, ViewLayer | Updating Geometry BVH HF1D_deck_panels_hpanel 21/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.28M (Peak 669.72M) | Time:00:00.51 | Mem:400.31M, Peak:400.31M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hgrey 22/43 | Building BVH
+Fra:1 Mem:540.28M (Peak 669.72M) | Time:00:00.51 | Mem:400.31M, Peak:400.31M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hgrey 22/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.31M (Peak 669.72M) | Time:00:00.51 | Mem:400.33M, Peak:400.33M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hpanel 23/43 | Building BVH
+Fra:1 Mem:540.31M (Peak 669.72M) | Time:00:00.51 | Mem:400.34M, Peak:400.34M | Scene, ViewLayer | Updating Geometry BVH HF1D_flank_panels_hpanel 23/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.37M (Peak 669.72M) | Time:00:00.51 | Mem:400.39M, Peak:400.42M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hgrey 24/43 | Building BVH
+Fra:1 Mem:540.37M (Peak 669.72M) | Time:00:00.51 | Mem:400.39M, Peak:400.42M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hgrey 24/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.39M (Peak 669.72M) | Time:00:00.51 | Mem:400.42M, Peak:400.44M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hpanel 25/43 | Building BVH
+Fra:1 Mem:540.39M (Peak 669.72M) | Time:00:00.51 | Mem:400.44M, Peak:400.44M | Scene, ViewLayer | Updating Geometry BVH HF1D_belly_panels_hpanel 25/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.43M (Peak 669.72M) | Time:00:00.51 | Mem:400.46M, Peak:400.48M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hgrey 26/43 | Building BVH
+Fra:1 Mem:540.43M (Peak 669.72M) | Time:00:00.51 | Mem:400.46M, Peak:400.48M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hgrey 26/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.44M (Peak 669.72M) | Time:00:00.51 | Mem:400.47M, Peak:400.50M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hpanel 27/43 | Building BVH
+Fra:1 Mem:540.44M (Peak 669.72M) | Time:00:00.51 | Mem:400.51M, Peak:400.51M | Scene, ViewLayer | Updating Geometry BVH HF1D_ridge_panels_hpanel 27/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.45M (Peak 669.72M) | Time:00:00.51 | Mem:400.50M, Peak:400.53M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hgrey 28/43 | Building BVH
+Fra:1 Mem:540.45M (Peak 669.72M) | Time:00:00.51 | Mem:400.50M, Peak:400.53M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hgrey 28/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.46M (Peak 669.72M) | Time:00:00.51 | Mem:400.50M, Peak:400.53M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hpanel 29/43 | Building BVH
+Fra:1 Mem:540.46M (Peak 669.72M) | Time:00:00.51 | Mem:400.52M, Peak:400.53M | Scene, ViewLayer | Updating Geometry BVH HF1D_block_panels_hpanel 29/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.46M (Peak 669.72M) | Time:00:00.51 | Mem:400.66M, Peak:400.66M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey 30/43 | Building BVH
+Fra:1 Mem:540.46M (Peak 669.72M) | Time:00:00.51 | Mem:400.66M, Peak:400.66M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey 30/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.52M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_htrim 31/43 | Building BVH
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.53M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_htrim 31/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.52M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH in_reactor 39/43 | Building BVH
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.53M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH in_reactor 39/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.52M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hmetal 32/43 | Building BVH
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.51 | Mem:400.52M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hmetal 32/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey2 33/43 | Building BVH
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.52 | Mem:400.55M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hgrey2 33/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.52 | Mem:400.62M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hblue 34/43 | Building BVH
+Fra:1 Mem:540.41M (Peak 669.72M) | Time:00:00.52 | Mem:400.62M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_hblue 34/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.40M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_dark 35/43 | Building BVH
+Fra:1 Mem:540.40M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH BT_mount_dark 35/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.38M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH HB1_cassette_fairing 36/43 | Building BVH
+Fra:1 Mem:540.38M (Peak 669.72M) | Time:00:00.52 | Mem:400.61M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH HB1_cassette_fairing 36/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.35M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH in_gun_feed 37/43 | Building BVH
+Fra:1 Mem:540.35M (Peak 669.72M) | Time:00:00.52 | Mem:400.54M, Peak:400.70M | Scene, ViewLayer | Updating Geometry BVH in_gun_feed 37/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.29M (Peak 669.72M) | Time:00:00.52 | Mem:400.55M, Peak:400.82M | Scene, ViewLayer | Updating Geometry BVH in_pilot 38/43 | Building BVH
+Fra:1 Mem:540.29M (Peak 669.72M) | Time:00:00.52 | Mem:400.61M, Peak:400.82M | Scene, ViewLayer | Updating Geometry BVH in_pilot 38/43 | Building OptiX acceleration structure
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.52 | Mem:400.56M, Peak:400.82M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.52 | Mem:400.56M, Peak:400.82M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.52 | Mem:400.57M, Peak:400.82M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:540.16M (Peak 669.72M) | Time:00:00.52 | Mem:400.57M, Peak:400.82M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:400.57M, Peak:400.82M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.07M, Peak:401.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.07M, Peak:401.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.07M, Peak:401.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.07M, Peak:401.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.07M, Peak:401.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:540.66M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:540.67M (Peak 669.72M) | Time:00:00.52 | Mem:401.08M, Peak:401.16M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:540.67M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:540.67M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:540.67M (Peak 669.72M) | Time:00:00.52 | Mem:401.16M, Peak:401.16M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:548.55M (Peak 669.72M) | Time:00:00.53 | Mem:1094.16M, Peak:1094.16M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:624.55M (Peak 669.72M) | Time:00:00.54 | Remaining:00:00.71 | Mem:1170.16M, Peak:1170.16M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:624.56M (Peak 669.72M) | Time:00:00.68 | Remaining:00:00.02 | Mem:1170.17M, Peak:1170.17M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:656.57M (Peak 704.57M) | Time:00:02.87 | Mem:1170.17M, Peak:1170.17M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:656.57M (Peak 704.57M) | Time:00:02.87 | Mem:1170.17M, Peak:1170.17M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\r\HB1_concept_clay_cl.png'
+Time: 00:03.02 (Saving: 00:00.07)
+
+[209] shot concept_clay
+[209] RENDER DONE HB1
+GPU: released shared claim 02ec4e9f-22da-4d6a-9430-0b01e3de7120

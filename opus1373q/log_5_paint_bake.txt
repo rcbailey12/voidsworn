@@ -1,0 +1,11 @@
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+detail check (reported, this ship has no surface_detail floor): normal relief 1.43 deg (floor 3.50), albedo contrast 0.232 (floor 0.040), roughness spread 0.125 (floor 0.080), 4933 texels
+Stage 5 R224 density (reported, not a pass bar): paint flags 0 mesh flags 2
+   engine: tris_per_unit2 4822.2 is 0.69 of the hull's 6988.8
+   engine: edges_per_unit2 3986.7 is 0.61 of the hull's 6505.4
+Stage 5: skipped C15s close-ups for sheet ship hegemony_HB1. 
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\r

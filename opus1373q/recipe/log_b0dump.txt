@@ -1,0 +1,11 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 390d02ea-0922-4971-bdd8-b25f7e5c69e0
+14:31:04 | INFO: Data are loaded, start creating Blender stuff
+14:31:04 | INFO: Blender create Mesh node geometry_0
+14:31:05 | INFO: glTF import finished in 0.52s
+[ai_align] measured shape_ref_yaw 172.7 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\b0.npz (584256, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim 390d02ea-0922-4971-bdd8-b25f7e5c69e0

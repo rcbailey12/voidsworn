@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1b482e29f47849d3ac60f072256e059b\godot-profile-5a82af07087349e982c0afb361e5aa97
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUTHORED_INTERIORS skipped: C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo\godot\assets\ships\hegemony_HB1\hegemony_HB1.glb is a strike craft (cls Squadron): no rooms, its death is a hidden spark (fx_death.gd _wing_death)
+AUTHORED_INTERIORS failures=0 interior_triangles=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1b482e29f47849d3ac60f072256e059b\godot-profile-5a82af07087349e982c0afb361e5aa97

@@ -1,0 +1,208 @@
+{
+ "cell": "HB1",
+ "route": "build sheet hegemony_HB1 + the hegemony paint stack (kits/hegemony/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 121.7,
+ "geometry_seconds": 0.3,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 17,
+  "part_objects": 11,
+  "glow_objects": 7,
+  "interior_objects": 4,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [
+   {
+    "file": "hegemony_trim.png",
+    "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "trim sheet: machining and handling marks (rows: scuffs)"
+   },
+   {
+    "file": "hegemony_decals.png",
+    "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "decal atlas: hull number, module corner tick, module index bars, registry plate"
+   }
+  ],
+  "decals": [
+   {
+    "rule": "hull number",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.3286,
+     0.0515,
+     0.004
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "hull number",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.3286,
+     -0.0515,
+     0.004
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.0608,
+     0.1145,
+     -0.0044
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.0608,
+     -0.1145,
+     -0.0044
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick port",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2712,
+     0.04,
+     0.0418
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick starboard",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2712,
+     -0.04,
+     0.0418
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "registry plate",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.1182,
+     0.0,
+     0.0739
+    ],
+    "room": 1.0
+   }
+  ],
+  "bake_H_masks_s": 9.5,
+  "bake_H_albedo_s": 11.8,
+  "bake_H_orm_s": 11.4,
+  "bake_H_normal_s": 38.6,
+  "zones_H": [
+   "hgrey",
+   "hpanel",
+   "htrim"
+  ],
+  "bake_P_masks_s": 9.6,
+  "bake_P_albedo_s": 6.6,
+  "bake_P_orm_s": 6.2,
+  "bake_P_normal_s": 12.6,
+  "zones_P": [
+   "dark",
+   "hgrey",
+   "hgrey2",
+   "hmetal",
+   "htrim",
+   "nozzle_hgrey2",
+   "nozzle_hmetal",
+   "nozzle_htrim"
+  ],
+  "bake_engine_glow_s": 1.0,
+  "engine_glow": {
+   "engines": 1,
+   "map": "HB1_engine_emission.png",
+   "res": 2048
+  },
+  "glow_materials": [
+   "p3_glow",
+   "p3_glow_hull"
+  ],
+  "inside_materials": [
+   "ps_inside_core",
+   "ps_inside_crew",
+   "ps_inside_engroom",
+   "ps_inside_magazine"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.5687,
+    "area": 1.88014,
+    "texels_per_unit2": 5074947.3
+   },
+   "parts": {
+    "uv_share": 0.8765,
+    "area": 0.13174,
+    "texels_per_unit2": 111622085.9
+   }
+  },
+  "stack_seconds": 120.6
+ },
+ "density": {
+  "paint_flags": [],
+  "mesh_flags": [
+   "engine: tris_per_unit2 4822.2 is 0.69 of the hull's 6988.8",
+   "engine: edges_per_unit2 3986.7 is 0.61 of the hull's 6505.4"
+  ],
+  "hull": {
+   "area": 1.88014,
+   "triangles": 13140,
+   "tris_per_unit2": 6988.8,
+   "edges_per_unit2": 6505.4,
+   "texels_per_unit2": 5074947.3,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 82.48,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "hegemony_HB1",
+  "game_ship": "bomber",
+  "variant": "",
+  "model_length": 1.59735,
+  "scale": 0.626036709525953,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.10017
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 1,
+  "engines": 1,
+  "bays": 0,
+  "points": 1,
+  "turrets": [],
+  "interior_objects": 4,
+  "slots": [
+   "0 bombs T"
+  ]
+ },
+ "triangles": 16916,
+ "objects": 35,
+ "surfaces": 4,
+ "draw_calls_merged": 4
+}

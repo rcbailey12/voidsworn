@@ -1,0 +1,4 @@
+Info: Saved as "HB1.blend"
+[209] {"cell": "HB1", "hull_objects": 21, "parts": 14, "interiors": 4, "seconds": 0.2, "notes": [{"route": "build sheet hegemony_HB1", "contract": {"sheet": "hegemony_HB1", "game_ship": "bomber", "variant": "", "model_length": 1.59735, "scale": 0.626036709525953, "length_world": 1.6, "t_lines": [-0.10017], "l_line": [], "l_lines": [], "muzzles": 2, "guns": 1, "engines": 1, "bays": 0, "points": 1, "turrets": [], "interior_objects": 4, "slots": ["0 bombs T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-2f08e5ded561417faa577ab3c324e2d2

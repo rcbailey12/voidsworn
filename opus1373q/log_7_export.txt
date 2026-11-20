@@ -1,0 +1,36 @@
+  outline HB1: bow 19.2, midship 77.5, stern 24.3, whole 49.2 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 29.6, midship 30.8, stern 64.5
+  REPORT bow overlap 19.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 77.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 24.3 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 49.2 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera HB1: game bow 38.5 midship 67.9 stern 65.7 whole 58.3, studio bow 31.4 midship 54.2 stern 71.9 whole 54.9
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] hegemony_HB1 triangles 15660 hard points {"gun": 2, "engine": 1, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 0 (0 triangles) files ['hegemony_HB1.glb', 'hegemony_HB1_base.jpg', 'hegemony_HB1_glow_emission.jpg', 'hegemony_HB1_normal.png', 'hegemony_HB1_orm.png', 'hegemony_HB1_parts_base.jpg', 'hegemony_HB1_parts_normal.png', 'hegemony_HB1_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\export\hegemony_HB1
+[check] 15660 triangles (1464 on part surfaces), box x -0.499 to 0.501, y -0.057 to 0.093, z -0.205 to 0.205
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] slot 0 bombs T: 2 hard points
+[check] hard points: {"core": 1, "engine": 1, "gun": 2}
+PASS hegemony_HB1 game export: every required point is there and every hard point passes the mesh checks
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 0 (bombs T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_bombs_T_0 is 0.0881 off the mesh (limit 0.0120) and is not the centre of an open bomb tube: its rim at radius 0.0102 on the exit plane covers 0 of 12 sectors; no throat upstream of the exit
+ok   backward: the check failed as it must | hp_w0_bombs_T_0 rests aimed backward (x -1.00)
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_socket: the check failed as it must | hp_w0_bombs_T_0 has no extras.socket
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   exhaust_width_hp_eng_0: the check failed as it must | hp_eng_0 is not the centre of an open rectangular exhaust: its rectangular rim covers 0 of 4 corners on the exit plane
+ok   exhaust_height_hp_eng_0: the check failed as it must | hp_eng_0 is not the centre of an open rectangular exhaust: its rectangular rim covers 0 of 4 corners on the exit plane
+ok   exhaust_plane_hp_eng_0: the check failed as it must | hp_eng_0 is not the centre of an open rectangular exhaust: its rectangular rim covers 0 of 4 corners on the exit plane; no throat upstream of the exit
+PASS the export check fails when it should
+INSTALL READBACK PASS code=hegemony_HB1 nodes=4
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo\godot\assets\ships\hegemony_HB1; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1373q\repo\godot\.stage7-replaced-qmibp_mp\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_HB1\export\hegemony_HB1

@@ -1,0 +1,134 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 5c41603d-3085-4d6d-a526-1028727ce77a
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Fra:1 Mem:916.69M (Peak 916.69M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:916.69M (Peak 916.69M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edges
+Fra:1 Mem:916.71M (Peak 916.71M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | W1_body_hwin
+Fra:1 Mem:916.72M (Peak 916.72M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:916.73M (Peak 916.73M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hgrey
+Fra:1 Mem:916.74M (Peak 916.74M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_H_bake
+Fra:1 Mem:917.80M (Peak 917.93M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:917.80M (Peak 917.93M) | Time:38:54:54.21 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_H_masks
+Fra:1 Mem:1033.97M (Peak 3101.12M) | Time:38:55:08.12 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1033.97M (Peak 3101.12M) | Time:38:55:08.12 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:1033.98M (Peak 3101.12M) | Time:38:55:08.12 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hlining
+Fra:1 Mem:1033.99M (Peak 3101.12M) | Time:38:55:08.12 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:1034.00M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hgrey
+Fra:1 Mem:1034.00M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_htrim
+Fra:1 Mem:1034.00M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hgrey2
+Fra:1 Mem:1034.00M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_H_bake
+Fra:1 Mem:1034.93M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1034.93M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_hull_albedo
+Fra:1 Mem:1034.93M (Peak 3101.12M) | Time:38:55:08.13 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_decals
+Fra:1 Mem:1111.14M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1111.14M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edges
+Fra:1 Mem:1111.16M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | W1_mount_htrim
+Fra:1 Mem:1111.17M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:1111.18M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:1111.18M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hgrey
+Fra:1 Mem:1111.18M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_htrim
+Fra:1 Mem:1111.19M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hblue
+Fra:1 Mem:1111.20M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_H_bake
+Fra:1 Mem:1112.06M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1112.05M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_H_masks
+Fra:1 Mem:1112.05M (Peak 3217.78M) | Time:38:55:20.68 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_decals
+Fra:1 Mem:1195.18M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1195.18M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:1195.20M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:1195.21M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hmetal
+Fra:1 Mem:1195.22M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hblue
+Fra:1 Mem:1195.24M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_H_bake
+Fra:1 Mem:1196.28M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1196.27M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_hull_normal
+Fra:1 Mem:1196.27M (Peak 3294.96M) | Time:38:55:35.41 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_decals
+Fra:1 Mem:1254.97M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:1254.97M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:1255.00M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_stern
+Fra:1 Mem:1255.07M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:1255.12M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:1255.16M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_flank_panels_hpanel
+Fra:1 Mem:1255.16M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_belly_panels_hpanel
+Fra:1 Mem:1255.18M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hgrey
+Fra:1 Mem:1255.22M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_P_bake
+Fra:1 Mem:1255.39M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:1255.41M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_block_panels_hpanel
+Fra:1 Mem:1255.46M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_cassette_fairing
+Fra:1 Mem:1256.30M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1256.30M (Peak 3378.83M) | Time:38:56:12.52 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_P_masks
+Fra:1 Mem:1349.49M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:1349.49M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_sternblock
+Fra:1 Mem:1349.54M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:1349.60M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_stern
+Fra:1 Mem:1349.65M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1349.68M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edges
+Fra:1 Mem:1349.68M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hlining
+Fra:1 Mem:1349.69M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_deck_panels_hgrey
+Fra:1 Mem:1349.72M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_flank_panels_hpanel
+Fra:1 Mem:1349.73M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hgrey
+Fra:1 Mem:1349.82M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:1349.90M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_P_bake
+Fra:1 Mem:1350.36M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1350.36M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_P_masks
+Fra:1 Mem:1350.36M (Peak 3439.46M) | Time:38:56:23.15 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_trim_scuffs
+Fra:1 Mem:1420.16M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:1420.16M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:1420.22M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_mid
+Fra:1 Mem:1420.30M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1420.31M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edges
+Fra:1 Mem:1420.34M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:1420.35M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_hlining
+Fra:1 Mem:1420.36M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_deck_panels_hgrey
+Fra:1 Mem:1420.37M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_flank_panels_hgrey
+Fra:1 Mem:1420.41M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_belly_panels_hgrey
+Fra:1 Mem:1420.43M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:1420.42M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_block_panels_hpanel
+Fra:1 Mem:1420.48M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_P_bake
+Fra:1 Mem:1421.03M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1421.02M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_parts_orm
+Fra:1 Mem:1421.02M (Peak 3533.45M) | Time:38:56:30.30 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_trim_scuffs
+Fra:1 Mem:1494.33M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:1494.33M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:1494.39M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_edgep
+Fra:1 Mem:1494.48M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_blue_ridges
+Fra:1 Mem:1494.51M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_deck_panels_hgrey
+Fra:1 Mem:1494.51M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_flank_panels_hgrey
+Fra:1 Mem:1494.52M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hgrey
+Fra:1 Mem:1494.55M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:1494.56M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_P_bake
+Fra:1 Mem:1494.61M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_block_panels_hgrey
+Fra:1 Mem:1494.65M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hblue
+Fra:1 Mem:1494.79M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_cassette_fairing
+Fra:1 Mem:1495.21M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1495.21M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_parts_normal
+Fra:1 Mem:1495.21M (Peak 3604.12M) | Time:38:56:37.31 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_P_masks
+Fra:1 Mem:887.70M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | hegemony_HB1_hull
+Fra:1 Mem:887.70M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_bow
+Fra:1 Mem:887.73M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_bandseam_stern
+Fra:1 Mem:887.75M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_body_htrim
+Fra:1 Mem:887.85M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:887.85M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_flank_panels_hpanel
+Fra:1 Mem:887.92M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_belly_panels_hgrey
+Fra:1 Mem:887.99M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hgrey
+Fra:1 Mem:888.26M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HF1D_ridge_panels_hpanel
+Fra:1 Mem:888.26M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_htrim
+Fra:1 Mem:888.30M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_hgrey2
+Fra:1 Mem:888.49M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | BT_mount_dark
+Fra:1 Mem:888.51M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | HB1_cassette_fairing
+Fra:1 Mem:888.97M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:888.97M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_hull_albedo
+Fra:1 Mem:888.97M (Peak 3678.25M) | Time:38:56:50.42 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading HB1_parts_albedo
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Saved as "HB1.blend"
+[209] HB1 {"cell": "HB1", "route": "build sheet hegemony_HB1 + the hegemony paint stack (kits/hegemony/stack.py, kits/shared/paint_stack.py)", "build_seconds": 121.7, "geometry_seconds": 0.3, "res": 4096, "parts_res": 4096, "samples": 64, "paint": {"hull_objects": 17, "part_objects": 11, "glow_objects": 7, "interior_objects": 4, "device": "OPTIX", "samples": 64, "textures": [{"file": "hegemony_trim.png", "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)", "licence": "CC0", "used": "trim sheet: machining and handling marks (rows: scuffs)"}, {"file": "hegemony_decals.png", "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)", "licence": "CC0", "used": "decal atlas: hull number, module corner tick, module index bars, registry plate"}], "decals": [{"rule": "hull number", "side": "port", "placed": true, "pos": [0.3286, 0.0515, 0.004], "room": 1.0}, {"rule": "hull number", "side": "stbd", "placed": true, "pos": [0.3286, -0.0515, 0.004], "room": 1.0}, {"rule": "module index bars", "side": "port", "placed": true, "pos": [0.0608, 0.1145, -0.0044], "room": 1.0}, {"rule": "module index bars", "side": "stbd", "placed": true, "pos": [0.0608, -0.1145, -0.0044], "room": 1.0}, {"rule": "corner tick port", "side": "top", "placed": true, "pos": [0.2712, 0.04, 0.0418], "room": 1.0}, {"rule": "corner tick starboard", "side": "top", "placed": true, "pos": [0.2712, -0.04, 0.0418], "room": 1.0}, {"rule": "registry plate", "side": "top", "placed": true, "pos": [0.1182, 0.0, 0.0739], "room": 1.0}], "bake_H_masks_s": 9.5, "bake_H_albedo_s": 11.8, "bake_H_orm_s": 11.4, "bake_H_normal_s": 38.6, "zones_H": ["hgrey", "hpanel", "htrim"], "bake_P_masks_s": 9.6, "bake_P_albedo_s": 6.6, "bake_P_orm_s": 6.2, "bake_P_normal_s": 12.6, "zones_P": ["dark", "hgrey", "hgrey2", "hmetal", "htrim", "nozzle_hgrey2", "nozzle_hmetal", "nozzle_htrim"], "bake_engine_glow_s": 1.0, "engine_glow": {"engines": 1, "map
+
+Blender quit
+GPU: released shared claim 5c41603d-3085-4d6d-a526-1028727ce77a
