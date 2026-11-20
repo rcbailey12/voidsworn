@@ -1,0 +1,9 @@
+GPU: waiting for solo claim, weight 1 (1289)
+GPU: acquired solo claim 4a2bfa32-abfd-4f18-a444-ea630749cf1b
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fc5fe259421043d486e546f9f999d67b\godot-profile-27e4f8815e40475b884f3282861f24ea
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+CAPTURE1289 prewarmed warden skipped (no kit on this commit)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fc5fe259421043d486e546f9f999d67b\godot-profile-27e4f8815e40475b884f3282861f24ea
+GPU: released solo claim 4a2bfa32-abfd-4f18-a444-ea630749cf1b

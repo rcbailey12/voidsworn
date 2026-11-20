@@ -1,0 +1,35 @@
+after  s1  again      c_boss   first 5,607  arrival 36 (view 2 fx 33 sync 0 step 0 render 2; pipes ) | kill call 13 worst after 10 fractured pieces 4 | worst 36 ms
+after  s1  arrival    c_boss   first -      arrival 7,820 (view 414 fx 6,323 sync 0 step 0 render 1,083; pipes mesh 36, specialization 30, surface 60) | kill call 16 worst after 11 fractured pieces 4 | worst 7,820 ms
+after  s1  arrival    warden   first -      arrival 1,124 (view 37 fx 972 sync 0 step 0 render 114; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,124 ms
+after  s1  cold       c_boss   first -      arrival 4,278 (view 213 fx 3,823 sync 0 step 0 render 243; pipes mesh 30, specialization 30, surface 53) | kill call 141 worst after 4,016 fractured pieces 4 | worst 4,278 ms
+after  s1  firstkill  c_boss   first -      arrival - | kill call 8 worst after 5 fractured pieces 4 | worst 13 ms
+after  s1  prewarmed  c_boss   first -      arrival 35 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 9 worst after 9 fractured pieces 4 | worst 35 ms
+after  s1  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 7 worst after 3 fractured pieces 2 | worst 24 ms
+after  s2  again      c_boss   first 5,386  arrival 38 (view 2 fx 34 sync 0 step 0 render 2; pipes ) | kill call 14 worst after 10 fractured pieces 4 | worst 38 ms
+after  s2  arrival    c_boss   first -      arrival 5,355 (view 405 fx 4,066 sync 0 step 0 render 884; pipes mesh 36, specialization 30, surface 60) | kill call 13 worst after 10 fractured pieces 4 | worst 5,355 ms
+after  s2  arrival    warden   first -      arrival 1,248 (view 40 fx 1,093 sync 0 step 0 render 115; pipes mesh 1, specialization 6, surface 12) | kill call 12 worst after 6 fractured pieces 2 | worst 1,248 ms
+after  s2  cold       c_boss   first -      arrival 4,810 (view 240 fx 4,287 sync 0 step 0 render 282; pipes mesh 30, specialization 30, surface 53) | kill call 155 worst after 4,491 fractured pieces 4 | worst 4,810 ms
+after  s2  firstkill  c_boss   first -      arrival - | kill call 10 worst after 6 fractured pieces 4 | worst 16 ms
+after  s2  prewarmed  c_boss   first -      arrival 36 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 11 worst after 11 fractured pieces 4 | worst 36 ms
+after  s2  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 13 worst after 5 fractured pieces 2 | worst 24 ms
+MISSING before s1 arrival_c_boss (see its log_arrival_c_boss.txt)
+MISSING before s1 again_c_boss (see its log_again_c_boss.txt)
+MISSING before s1 prewarmed_c_boss (see its log_prewarmed_c_boss.txt)
+MISSING before s1 firstkill_c_boss (see its log_firstkill_c_boss.txt)
+MISSING before s1 cold_c_boss (see its log_cold_c_boss.txt)
+MISSING before s1 arrival_warden (see its log_arrival_warden.txt)
+MISSING before s1 prewarmed_warden (see its log_prewarmed_warden.txt)
+MISSING before s2 arrival_c_boss (see its log_arrival_c_boss.txt)
+MISSING before s2 again_c_boss (see its log_again_c_boss.txt)
+MISSING before s2 prewarmed_c_boss (see its log_prewarmed_c_boss.txt)
+MISSING before s2 firstkill_c_boss (see its log_firstkill_c_boss.txt)
+MISSING before s2 cold_c_boss (see its log_cold_c_boss.txt)
+MISSING before s2 arrival_warden (see its log_arrival_warden.txt)
+MISSING before s2 prewarmed_warden (see its log_prewarmed_warden.txt)
+gate after s1\firstkill_c_boss : pass
+gate after s1\prewarmed_c_boss : pass
+gate after s1\prewarmed_warden : pass
+gate after s2\firstkill_c_boss : pass
+gate after s2\prewarmed_c_boss : pass
+gate after s2\prewarmed_warden : pass
+ACCEPT 6 of 6 (after prewarmed c_boss, prewarmed warden, firstkill c_boss, two sessions: no frame over 100 ms, kill broke into pieces)

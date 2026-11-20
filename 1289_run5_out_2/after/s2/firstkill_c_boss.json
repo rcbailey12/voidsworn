@@ -1,0 +1,72 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "commit": "63222da06c258a03b0eb9eb02a38838a7ff74453",
+  "cores": 16,
+  "godot": "4.7.2-stable (official)",
+  "mode": "firstkill",
+  "renderer": "forward_plus",
+  "result": {
+    "kill": {
+      "cut_ready_at_kill": true,
+      "hidden_after_s": 2.01666666666666,
+      "hull_pieces": 4,
+      "kill_call_ms": 9.992,
+      "outcome": "fractured",
+      "pipelines": {
+        "specialization": 1
+      },
+      "window": {
+        "frames": 540,
+        "gpu": {
+          "p50": 1.30599999427795,
+          "p95": 1.34399998188019,
+          "worst": 1.39400005340576
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.708,
+          "p95": 2.417,
+          "worst": 5.754
+        },
+        "wall_ms": [
+          2.64,
+          1.46,
+          1.26,
+          1.42,
+          1.32,
+          1.12,
+          1.21,
+          1.23,
+          1.43,
+          1.73,
+          1.33,
+          1.4,
+          1.81,
+          2.04,
+          1.48,
+          1.37,
+          1.55,
+          1.63,
+          1.55,
+          1.58,
+          1.52,
+          1.75,
+          1.5,
+          1.58,
+          1.8,
+          1.78,
+          1.74,
+          1.87,
+          1.38,
+          1.39
+        ]
+      }
+    },
+    "late_shaders": [],
+    "load_ms": 12074.217,
+    "load_prepare_frames": 195,
+    "mode": "firstkill",
+    "worst_frame_ms": 15.746
+  },
+  "tpl": "c_boss"
+}

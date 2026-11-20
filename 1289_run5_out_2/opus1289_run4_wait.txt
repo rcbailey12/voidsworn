@@ -1,0 +1,8 @@
+waiting for all done in opusbackdrop_wait.txt Fri 11/20/2026  0:51:39.03 
+OPUS1289_RUN4_WAIT stopped by the Board before it launched anything (11/20 00:54:02); replaced by OPUS1289_RUN5_WAIT.bat (same log). RUN4 files left unrun.
+waiting for all done in opusbackdrop_wait.txt (RUN5 waiter) Fri 11/20/2026  0:54:03.16 
+OPUS1289_RUN5_WAIT stopped by the Board before it launched anything (11/20 01:25:25); replaced by OPUS1289_RUN5_WAIT_B.bat (after 1315 probe 3, same log)
+waiting for all done in opus1315_probe3_wait.txt (RUN5 waiter B) Fri 11/20/2026  1:25:25.53 
+OPUS1289_RUN5 start through opus1289\q_opus1289_run5.bat Fri 11/20/2026  1:48:28.18, expecting out_2 
+OPUS1289_RUN5 PASSED at  2:22:28.41 
+all done  2:22:28.54 

@@ -1,0 +1,123 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "commit": "ab6b3258965d05f745e8897fc7219c9775580ace",
+  "cores": 16,
+  "godot": "4.7.2-stable (official)",
+  "mode": "cold",
+  "renderer": "forward_plus",
+  "result": {
+    "arrival": {
+      "code": "C19_51",
+      "frame0": {
+        "fx_add": 4018.155,
+        "gpu": 0.0,
+        "long_steps": {},
+        "pipelines": {
+          "mesh": 30,
+          "specialization": 30,
+          "surface": 53
+        },
+        "render": 245.357,
+        "rs_cpu": 0.0,
+        "step": 0.185,
+        "sync": 0.04,
+        "total": 4488.156,
+        "view": 224.415
+      },
+      "next6": {
+        "frames": 6,
+        "gpu": {
+          "p50": 1.125,
+          "p95": 1.55799996852875,
+          "worst": 1.55799996852875
+        },
+        "over_100ms": 0,
+        "wall": {
+          "p50": 1.636,
+          "p95": 15.632,
+          "worst": 15.632
+        },
+        "wall_ms": [
+          11.31,
+          1.64,
+          1.53,
+          1.53,
+          1.53,
+          15.63
+        ]
+      },
+      "next6_pipelines": {},
+      "worst_ms": 4488.156
+    },
+    "kill": {
+      "cut_ready_at_kill": false,
+      "hidden_after_s": 2.01666666666666,
+      "hull_pieces": 4,
+      "kill_call_ms": 142.818,
+      "outcome": "fractured",
+      "pipelines": {
+        "specialization": 30,
+        "surface": 67
+      },
+      "window": {
+        "frames": 540,
+        "gpu": {
+          "p50": 1.30599999427795,
+          "p95": 1.34300005435944,
+          "worst": 1.80299997329712
+        },
+        "over_100ms": 5,
+        "wall": {
+          "p50": 1.518,
+          "p95": 2.379,
+          "worst": 4132.145
+        },
+        "wall_ms": [
+          112.4,
+          25.78,
+          25.93,
+          4132.15,
+          2.98,
+          2.32,
+          1.94,
+          1.93,
+          1.74,
+          1.8,
+          1.93,
+          1.88,
+          1.96,
+          1.64,
+          1.38,
+          1.17,
+          1.37,
+          1.47,
+          2.02,
+          1.47,
+          1.52,
+          1.42,
+          1.33,
+          1.36,
+          1.14,
+          1.07,
+          1.06,
+          89.46,
+          3.49,
+          320.57
+        ]
+      }
+    },
+    "late_shaders": [
+      "exterior frame 7326 20900.5 ms",
+      "damage 3607499356 frame 7326 20905.5 ms",
+      "death power down 2956913195 frame 7326 20994.5 ms",
+      "mat DEATH_PARTICLES frame 7353 25693.3 ms",
+      "route weapons/impact/flash_ frame 7355 25800.2 ms",
+      "death piece slag frame 7355 26049.6 ms",
+      "flipbook capital/cool frame 7446 28005.6 ms"
+    ],
+    "load_ms": 754.069,
+    "mode": "cold",
+    "worst_frame_ms": 4488.156
+  },
+  "tpl": "c_boss"
+}

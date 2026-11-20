@@ -1,0 +1,158 @@
+start Fri 11/20/2026  1:48:28.29 attempt 2 
+drive bytes free 310285209600 
+made the sparse clone 
+clone core.autocrlf=false 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1289\out_2\checkout_12234 
+after commit=63222da06c258a03b0eb9eb02a38838a7ff74453 
+copy ships robocopy 1 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+after tracked .gd files unchanged after the copies 
+after import exit 0 
+arrival warm check exit 0 
+arrival preview test exit 0 
+after s1 arrival c_boss exit 0 
+CAPTURE1289 arrival c_boss arrive_worst=7820.5 [view=414.3 fx_add=6322.5 sync=0.0 step=0.2 render=1083.3 rs_cpu=0.3 pipes={ "mesh": 36, "surface": 60, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=16.0 kill_worst=11.4 outcome=fractured pieces=4 late=0 worst=7820.5
+after s1 again c_boss exit 0 
+CAPTURE1289 again c_boss arrive_worst=36.5 [view=1.9 fx_add=32.8 sync=0.0 step=0.1 render=1.6 rs_cpu=0.4 pipes={  }] first_arrival_worst=5607.5 kill_call=13.1 kill_worst=9.8 outcome=fractured pieces=4 late=0 worst=36.5
+after s1 prewarmed c_boss exit 0 
+CAPTURE1289 prewarmed c_boss arrive_worst=35.2 [view=1.8 fx_add=31.8 sync=0.0 step=0.1 render=1.5 rs_cpu=0.2 pipes={  }] first_arrival_worst=-1.0 kill_call=8.7 kill_worst=9.4 outcome=fractured pieces=4 late=0 worst=35.2
+after s1 firstkill c_boss exit 0 
+CAPTURE1289 firstkill c_boss arrive_worst=0.0 [view=0.0 fx_add=0.0 sync=0.0 step=0.0 render=0.0 rs_cpu=0.0 pipes={  }] first_arrival_worst=-1.0 kill_call=7.8 kill_worst=5.1 outcome=fractured pieces=4 late=0 worst=13.0
+after s1 cold c_boss exit 0 
+CAPTURE1289 cold c_boss arrive_worst=4278.5 [view=212.8 fx_add=3822.9 sync=0.0 step=0.2 render=242.7 rs_cpu=0.0 pipes={ "mesh": 30, "surface": 53, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=141.3 kill_worst=4015.6 outcome=fractured pieces=4 late=7 worst=4278.5
+after s1 arrival warden exit 0 
+CAPTURE1289 arrival warden arrive_worst=1124.0 [view=37.4 fx_add=972.4 sync=0.0 step=0.2 render=114.0 rs_cpu=0.2 pipes={ "mesh": 1, "surface": 12, "specialization": 6 }] first_arrival_worst=-1.0 kill_call=7.3 kill_worst=3.2 outcome=fractured pieces=2 late=0 worst=1124.0
+after s1 prewarmed warden exit 0 
+CAPTURE1289 prewarmed warden arrive_worst=24.5 [view=1.4 fx_add=21.7 sync=0.0 step=0.1 render=1.3 rs_cpu=0.2 pipes={  }] first_arrival_worst=-1.0 kill_call=7.2 kill_worst=3.0 outcome=fractured pieces=2 late=0 worst=24.5
+after s2 arrival c_boss exit 0 
+CAPTURE1289 arrival c_boss arrive_worst=5355.3 [view=405.1 fx_add=4066.4 sync=0.0 step=0.2 render=883.6 rs_cpu=0.3 pipes={ "mesh": 36, "surface": 60, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=13.5 kill_worst=10.1 outcome=fractured pieces=4 late=0 worst=5355.3
+after s2 again c_boss exit 0 
+CAPTURE1289 again c_boss arrive_worst=38.1 [view=2.0 fx_add=34.2 sync=0.0 step=0.1 render=1.6 rs_cpu=0.2 pipes={  }] first_arrival_worst=5386.1 kill_call=13.6 kill_worst=10.5 outcome=fractured pieces=4 late=0 worst=38.1
+after s2 prewarmed c_boss exit 0 
+CAPTURE1289 prewarmed c_boss arrive_worst=35.7 [view=1.8 fx_add=32.2 sync=0.0 step=0.1 render=1.6 rs_cpu=0.3 pipes={  }] first_arrival_worst=-1.0 kill_call=11.5 kill_worst=10.7 outcome=fractured pieces=4 late=0 worst=35.7
+after s2 firstkill c_boss exit 0 
+CAPTURE1289 firstkill c_boss arrive_worst=0.0 [view=0.0 fx_add=0.0 sync=0.0 step=0.0 render=0.0 rs_cpu=0.0 pipes={  }] first_arrival_worst=-1.0 kill_call=10.0 kill_worst=5.8 outcome=fractured pieces=4 late=0 worst=15.7
+after s2 cold c_boss exit 0 
+CAPTURE1289 cold c_boss arrive_worst=4810.4 [view=240.4 fx_add=4287.2 sync=0.0 step=0.2 render=282.5 rs_cpu=0.0 pipes={ "mesh": 30, "surface": 53, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=155.0 kill_worst=4491.1 outcome=fractured pieces=4 late=7 worst=4810.4
+after s2 arrival warden exit 0 
+CAPTURE1289 arrival warden arrive_worst=1248.2 [view=40.3 fx_add=1093.1 sync=0.0 step=0.1 render=114.7 rs_cpu=0.3 pipes={ "mesh": 1, "surface": 12, "specialization": 6 }] first_arrival_worst=-1.0 kill_call=12.1 kill_worst=5.5 outcome=fractured pieces=2 late=0 worst=1248.2
+after s2 prewarmed warden exit 0 
+CAPTURE1289 prewarmed warden arrive_worst=24.2 [view=1.2 fx_add=21.7 sync=0.0 step=0.1 render=1.2 rs_cpu=0.2 pipes={  }] first_arrival_worst=-1.0 kill_call=13.2 kill_worst=5.0 outcome=fractured pieces=2 late=0 worst=24.2
+after  s1  again      c_boss   first 5,607  arrival 36 (view 2 fx 33 sync 0 step 0 render 2; pipes ) | kill call 13 worst after 10 fractured pieces 4 | worst 36 ms
+after  s1  arrival    c_boss   first -      arrival 7,820 (view 414 fx 6,323 sync 0 step 0 render 1,083; pipes mesh 36, specialization 30, surface 60) | kill call 16 worst after 11 fractured pieces 4 | worst 7,820 ms
+after  s1  arrival    warden   first -      arrival 1,124 (view 37 fx 972 sync 0 step 0 render 114; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,124 ms
+after  s1  cold       c_boss   first -      arrival 4,278 (view 213 fx 3,823 sync 0 step 0 render 243; pipes mesh 30, specialization 30, surface 53) | kill call 141 worst after 4,016 fractured pieces 4 | worst 4,278 ms
+after  s1  firstkill  c_boss   first -      arrival - | kill call 8 worst after 5 fractured pieces 4 | worst 13 ms
+after  s1  prewarmed  c_boss   first -      arrival 35 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 9 worst after 9 fractured pieces 4 | worst 35 ms
+after  s1  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 7 worst after 3 fractured pieces 2 | worst 24 ms
+after  s2  again      c_boss   first 5,386  arrival 38 (view 2 fx 34 sync 0 step 0 render 2; pipes ) | kill call 14 worst after 10 fractured pieces 4 | worst 38 ms
+after  s2  arrival    c_boss   first -      arrival 5,355 (view 405 fx 4,066 sync 0 step 0 render 884; pipes mesh 36, specialization 30, surface 60) | kill call 13 worst after 10 fractured pieces 4 | worst 5,355 ms
+after  s2  arrival    warden   first -      arrival 1,248 (view 40 fx 1,093 sync 0 step 0 render 115; pipes mesh 1, specialization 6, surface 12) | kill call 12 worst after 6 fractured pieces 2 | worst 1,248 ms
+after  s2  cold       c_boss   first -      arrival 4,810 (view 240 fx 4,287 sync 0 step 0 render 282; pipes mesh 30, specialization 30, surface 53) | kill call 155 worst after 4,491 fractured pieces 4 | worst 4,810 ms
+after  s2  firstkill  c_boss   first -      arrival - | kill call 10 worst after 6 fractured pieces 4 | worst 16 ms
+after  s2  prewarmed  c_boss   first -      arrival 36 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 11 worst after 11 fractured pieces 4 | worst 36 ms
+after  s2  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 13 worst after 5 fractured pieces 2 | worst 24 ms
+MISSING before s1 arrival_c_boss (see its log_arrival_c_boss.txt)
+MISSING before s1 again_c_boss (see its log_again_c_boss.txt)
+MISSING before s1 prewarmed_c_boss (see its log_prewarmed_c_boss.txt)
+MISSING before s1 firstkill_c_boss (see its log_firstkill_c_boss.txt)
+MISSING before s1 cold_c_boss (see its log_cold_c_boss.txt)
+MISSING before s1 arrival_warden (see its log_arrival_warden.txt)
+MISSING before s1 prewarmed_warden (see its log_prewarmed_warden.txt)
+MISSING before s2 arrival_c_boss (see its log_arrival_c_boss.txt)
+MISSING before s2 again_c_boss (see its log_again_c_boss.txt)
+MISSING before s2 prewarmed_c_boss (see its log_prewarmed_c_boss.txt)
+MISSING before s2 firstkill_c_boss (see its log_firstkill_c_boss.txt)
+MISSING before s2 cold_c_boss (see its log_cold_c_boss.txt)
+MISSING before s2 arrival_warden (see its log_arrival_warden.txt)
+MISSING before s2 prewarmed_warden (see its log_prewarmed_warden.txt)
+gate after s1\firstkill_c_boss : pass
+gate after s1\prewarmed_c_boss : pass
+gate after s1\prewarmed_warden : pass
+gate after s2\firstkill_c_boss : pass
+gate after s2\prewarmed_c_boss : pass
+gate after s2\prewarmed_warden : pass
+ACCEPT 6 of 6 (after prewarmed c_boss, prewarmed warden, firstkill c_boss, two sessions: no frame over 100 ms, kill broke into pieces)
+AFTER VERDICT: PASSED, all six gated after rows under 100 ms with pieces; real options unchanged 
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1289\out_2\checkout_27150 
+before commit=ab6b3258965d05f745e8897fc7219c9775580ace 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 0 (0 to 7 is success) 
+before tracked .gd files unchanged after the copies 
+before import exit 0 
+before s1 arrival c_boss exit 0 
+CAPTURE1289 arrival c_boss arrive_worst=6192.0 [view=449.5 fx_add=4721.4 sync=0.0 step=0.2 render=1020.9 rs_cpu=0.2 pipes={ "mesh": 36, "surface": 60, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=25.5 kill_worst=10.3 outcome=fractured pieces=4 late=0 worst=6192.0
+before s1 again c_boss exit 0 
+CAPTURE1289 again c_boss arrive_worst=1444.9 [view=942.8 fx_add=494.5 sync=0.0 step=0.2 render=7.4 rs_cpu=0.2 pipes={ "mesh": 30 }] first_arrival_worst=6154.8 kill_call=19.6 kill_worst=9.6 outcome=fractured pieces=4 late=0 worst=1444.9
+before s1 prewarmed c_boss exit 0 
+CAPTURE1289 prewarmed c_boss skipped (no kit on this commit)
+before s1 firstkill c_boss exit 0 
+CAPTURE1289 firstkill c_boss arrive_worst=0.0 [view=0.0 fx_add=0.0 sync=0.0 step=0.0 render=0.0 rs_cpu=0.0 pipes={  }] first_arrival_worst=-1.0 kill_call=17.7 kill_worst=5.8 outcome=fractured pieces=4 late=0 worst=23.5
+before s1 cold c_boss exit 0 
+CAPTURE1289 cold c_boss arrive_worst=4370.3 [view=212.8 fx_add=3913.4 sync=0.0 step=0.2 render=243.9 rs_cpu=0.0 pipes={ "mesh": 30, "surface": 53, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=140.1 kill_worst=4107.2 outcome=fractured pieces=4 late=7 worst=4370.3
+before s1 arrival warden exit 0 
+CAPTURE1289 arrival warden arrive_worst=1231.4 [view=45.8 fx_add=1062.9 sync=0.0 step=0.1 render=122.5 rs_cpu=0.4 pipes={ "mesh": 1, "surface": 12, "specialization": 6 }] first_arrival_worst=-1.0 kill_call=10.5 kill_worst=5.9 outcome=fractured pieces=2 late=0 worst=1231.4
+before s1 prewarmed warden exit 0 
+CAPTURE1289 prewarmed warden skipped (no kit on this commit)
+before s2 arrival c_boss exit 0 
+CAPTURE1289 arrival c_boss arrive_worst=5517.8 [view=414.7 fx_add=4176.4 sync=0.0 step=0.2 render=926.6 rs_cpu=0.3 pipes={ "mesh": 36, "surface": 60, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=16.7 kill_worst=9.8 outcome=fractured pieces=4 late=0 worst=5517.8
+before s2 again c_boss exit 0 
+CAPTURE1289 again c_boss arrive_worst=1308.3 [view=867.4 fx_add=433.5 sync=0.0 step=0.2 render=7.2 rs_cpu=0.3 pipes={ "mesh": 30 }] first_arrival_worst=5732.5 kill_call=16.0 kill_worst=10.4 outcome=fractured pieces=4 late=0 worst=1308.3
+before s2 prewarmed c_boss exit 0 
+CAPTURE1289 prewarmed c_boss skipped (no kit on this commit)
+before s2 firstkill c_boss exit 0 
+CAPTURE1289 firstkill c_boss arrive_worst=0.0 [view=0.0 fx_add=0.0 sync=0.0 step=0.0 render=0.0 rs_cpu=0.0 pipes={  }] first_arrival_worst=-1.0 kill_call=10.7 kill_worst=5.4 outcome=fractured pieces=4 late=0 worst=16.0
+before s2 cold c_boss exit 0 
+CAPTURE1289 cold c_boss arrive_worst=4488.2 [view=224.4 fx_add=4018.2 sync=0.0 step=0.2 render=245.4 rs_cpu=0.0 pipes={ "mesh": 30, "surface": 53, "specialization": 30 }] first_arrival_worst=-1.0 kill_call=142.8 kill_worst=4132.1 outcome=fractured pieces=4 late=7 worst=4488.2
+before s2 arrival warden exit 0 
+CAPTURE1289 arrival warden arrive_worst=1142.0 [view=38.0 fx_add=992.8 sync=0.0 step=0.1 render=111.1 rs_cpu=0.2 pipes={ "mesh": 1, "surface": 12, "specialization": 6 }] first_arrival_worst=-1.0 kill_call=6.9 kill_worst=3.2 outcome=fractured pieces=2 late=0 worst=1142.0
+before s2 prewarmed warden exit 0 
+CAPTURE1289 prewarmed warden skipped (no kit on this commit)
+rows collected 28 of 28 (diagnostic rows may be missing; only the six gated after rows must pass); baseline complete 
+after  s1  again      c_boss   first 5,607  arrival 36 (view 2 fx 33 sync 0 step 0 render 2; pipes ) | kill call 13 worst after 10 fractured pieces 4 | worst 36 ms
+after  s1  arrival    c_boss   first -      arrival 7,820 (view 414 fx 6,323 sync 0 step 0 render 1,083; pipes mesh 36, specialization 30, surface 60) | kill call 16 worst after 11 fractured pieces 4 | worst 7,820 ms
+after  s1  arrival    warden   first -      arrival 1,124 (view 37 fx 972 sync 0 step 0 render 114; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,124 ms
+after  s1  cold       c_boss   first -      arrival 4,278 (view 213 fx 3,823 sync 0 step 0 render 243; pipes mesh 30, specialization 30, surface 53) | kill call 141 worst after 4,016 fractured pieces 4 | worst 4,278 ms
+after  s1  firstkill  c_boss   first -      arrival - | kill call 8 worst after 5 fractured pieces 4 | worst 13 ms
+after  s1  prewarmed  c_boss   first -      arrival 35 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 9 worst after 9 fractured pieces 4 | worst 35 ms
+after  s1  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 7 worst after 3 fractured pieces 2 | worst 24 ms
+after  s2  again      c_boss   first 5,386  arrival 38 (view 2 fx 34 sync 0 step 0 render 2; pipes ) | kill call 14 worst after 10 fractured pieces 4 | worst 38 ms
+after  s2  arrival    c_boss   first -      arrival 5,355 (view 405 fx 4,066 sync 0 step 0 render 884; pipes mesh 36, specialization 30, surface 60) | kill call 13 worst after 10 fractured pieces 4 | worst 5,355 ms
+after  s2  arrival    warden   first -      arrival 1,248 (view 40 fx 1,093 sync 0 step 0 render 115; pipes mesh 1, specialization 6, surface 12) | kill call 12 worst after 6 fractured pieces 2 | worst 1,248 ms
+after  s2  cold       c_boss   first -      arrival 4,810 (view 240 fx 4,287 sync 0 step 0 render 282; pipes mesh 30, specialization 30, surface 53) | kill call 155 worst after 4,491 fractured pieces 4 | worst 4,810 ms
+after  s2  firstkill  c_boss   first -      arrival - | kill call 10 worst after 6 fractured pieces 4 | worst 16 ms
+after  s2  prewarmed  c_boss   first -      arrival 36 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 11 worst after 11 fractured pieces 4 | worst 36 ms
+after  s2  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 13 worst after 5 fractured pieces 2 | worst 24 ms
+before s1  again      c_boss   first 6,155  arrival 1,445 (view 943 fx 495 sync 0 step 0 render 7; pipes mesh 30) | kill call 20 worst after 10 fractured pieces 4 | worst 1,445 ms
+before s1  arrival    c_boss   first -      arrival 6,192 (view 450 fx 4,721 sync 0 step 0 render 1,021; pipes mesh 36, specialization 30, surface 60) | kill call 26 worst after 10 fractured pieces 4 | worst 6,192 ms
+before s1  arrival    warden   first -      arrival 1,231 (view 46 fx 1,063 sync 0 step 0 render 122; pipes mesh 1, specialization 6, surface 12) | kill call 10 worst after 6 fractured pieces 2 | worst 1,231 ms
+before s1  cold       c_boss   first -      arrival 4,370 (view 213 fx 3,913 sync 0 step 0 render 244; pipes mesh 30, specialization 30, surface 53) | kill call 140 worst after 4,107 fractured pieces 4 | worst 4,370 ms
+before s1  firstkill  c_boss   first -      arrival - | kill call 18 worst after 6 fractured pieces 4 | worst 24 ms
+before s1  prewarmed  c_boss   skipped: no render/arrival_warm.gd on this commit
+before s1  prewarmed  warden   skipped: no render/arrival_warm.gd on this commit
+before s2  again      c_boss   first 5,732  arrival 1,308 (view 867 fx 434 sync 0 step 0 render 7; pipes mesh 30) | kill call 16 worst after 10 fractured pieces 4 | worst 1,308 ms
+before s2  arrival    c_boss   first -      arrival 5,518 (view 415 fx 4,176 sync 0 step 0 render 927; pipes mesh 36, specialization 30, surface 60) | kill call 17 worst after 10 fractured pieces 4 | worst 5,518 ms
+before s2  arrival    warden   first -      arrival 1,142 (view 38 fx 993 sync 0 step 0 render 111; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,142 ms
+before s2  cold       c_boss   first -      arrival 4,488 (view 224 fx 4,018 sync 0 step 0 render 245; pipes mesh 30, specialization 30, surface 53) | kill call 143 worst after 4,132 fractured pieces 4 | worst 4,488 ms
+before s2  firstkill  c_boss   first -      arrival - | kill call 11 worst after 5 fractured pieces 4 | worst 16 ms
+before s2  prewarmed  c_boss   skipped: no render/arrival_warm.gd on this commit
+before s2  prewarmed  warden   skipped: no render/arrival_warm.gd on this commit
+gate after s1\firstkill_c_boss : pass
+gate after s1\prewarmed_c_boss : pass
+gate after s1\prewarmed_warden : pass
+gate after s2\firstkill_c_boss : pass
+gate after s2\prewarmed_c_boss : pass
+gate after s2\prewarmed_warden : pass
+ACCEPT 6 of 6 (after prewarmed c_boss, prewarmed warden, firstkill c_boss, two sessions: no frame over 100 ms, kill broke into pieces)
+drive bytes free 296792678400 
+real options unchanged 
+PASSED 
+all done Fri 11/20/2026  2:22:11.09 

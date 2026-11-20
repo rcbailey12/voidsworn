@@ -1,0 +1,7 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9bf851dada284590b1b267fb34a85e02\godot-profile-02446fdad77f41908a81c6be42f1033b
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ARRIVAL_PREVIEW reinf_enemy: h_picket (hegemony Frigate) arrived as previewed
+ARRIVAL_PREVIEW reinf_ally: warden (voidsworn Frigate) arrived as previewed
+ARRIVAL_PREVIEW PASS
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-626c041368ea47d2b0d21017558ccf22

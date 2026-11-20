@@ -1,0 +1,27 @@
+GPU: waiting for solo claim, weight 1 (1289)
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: acquired solo claim 36554914-660c-4296-a52e-4f01d1b877f6
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7e56b79aad7e4469bb6acb4a7d6792d2\godot-profile-32af37113b33410d97cee1d32da6cdc6
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 4449 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7145 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 7585 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 7954 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2137 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2063 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 2045 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] death on V14_23: placed on the plating (a surface sample; not a hard point type)
+CAPTURE1289 arrival warden arrive_worst=1142.0 [view=38.0 fx_add=992.8 sync=0.0 step=0.1 render=111.1 rs_cpu=0.2 pipes={ "mesh": 1, "surface": 12, "specialization": 6 }] first_arrival_worst=-1.0 kill_call=6.9 kill_worst=3.2 outcome=fractured pieces=2 late=0 worst=1142.0
+[attach] battle C0 V14_23: skipped 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+CAPTURE1289 DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7e56b79aad7e4469bb6acb4a7d6792d2\godot-profile-32af37113b33410d97cee1d32da6cdc6
+GPU: released solo claim 36554914-660c-4296-a52e-4f01d1b877f6
