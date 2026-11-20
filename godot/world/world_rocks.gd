@@ -43,7 +43,7 @@ static func scan_names() -> Array:
 			for suffix in ["", "_lo"]:
 				# An exported game packs only the imported scene and its remap, not the .glb itself, so a plain
 				# file check fails there; ResourceLoader.exists sees the remap (mesh() loads the same way).
-				var glb := LIB_DIR + str(entry.name) + suffix + ".glb"
+				var glb: String = LIB_DIR + str(entry.name) + str(suffix) + ".glb"
 				if not (ResourceLoader.exists(glb) or FileAccess.file_exists(glb)):
 					push_error("Missing scanned rock: " + str(entry.name) + suffix)
 					return []
