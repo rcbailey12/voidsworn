@@ -17,6 +17,7 @@ audit did not: how the game feels to a new player, the screens, the art, the lor
 | Graphic design and art | seats/art.md | Fable and Rey, blind of each other |
 | Sci-fi lore | seats/lore.md | Fable and Rey, blind of each other |
 | Godot game dev | seats/godot_dev.md | Fable (reads the code); Astra later goes deeper |
+| Whole game, all five lenses | issue 1387 | Neon, blind (Ryan, Nov 20), then referee |
 
 Free models sit only the first-time player seat: on code and art they add noise the Board has to sift.
 
