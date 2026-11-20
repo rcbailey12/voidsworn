@@ -1,0 +1,5 @@
+[title] rebuilt for 3840 x 2160 (scale 2.000, title size 138)
+[title-layout] window 3840x2160 title 138px text 1235 wide, fits, playtest line on screen, menu on screen (bottom 1633), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (3840, 2160) viewport (3840.0, 2160.0)
+[title-layout] window 3840x2160 title 138px text 1235 wide, fits, playtest line on screen, menu on screen (bottom 1633), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[title] shot saved C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_25adec3_1120council\title_3840x2160.png

@@ -1,0 +1,9 @@
+GPU: waiting for shared claim, weight 1 (front_end_shots.gd)
+GPU: acquired shared claim 15b3ee09-a782-455a-982b-97c4221226df
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e68f8cdcab8d424ea084364360a6cb83\godot-profile-b842cb3b50704f15b78a4eb543efec4d
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[front-end-shots] FAIL user:// (C:/Users/rcbai/AppData/Local/Temp/voidsworn-run-e68f8cdcab8d424ea084364360a6cb83/godot-profile-b842cb3b50704f15b78a4eb543efec4d/Godot/app_userdata/Voidsworn) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e68f8cdcab8d424ea084364360a6cb83\godot-profile-b842cb3b50704f15b78a4eb543efec4d
+GPU: released shared claim 15b3ee09-a782-455a-982b-97c4221226df

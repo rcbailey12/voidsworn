@@ -1,0 +1,87 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+WARNING: 'res://main/main.tscn': In external resource #0, invalid UID: 'uid://b787qdi4tc7i8' - using text path instead: 'res://main/main.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+WARNING: 'res://scenes/battle/battle.tscn': In external resource #0, invalid UID: 'uid://jccjx4ygpwge' - using text path instead: 'res://scenes/battle/battle.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 11 cues, 10 clip sets, loaded in 13 ms
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[sfx] 71 cues, 67 clip sets, loaded in 160 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.303, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 86c28074aa42f37db6d07693c9678ffae19ea50ab3b5f230a91b77407f197c78 4096x2048 in 7162 ms (worker)
+[world] baked 50baa21d40c150a16b32eb21ec5f0766b8f02f497ecf00f78ede01ae755d0ca1 4096x2048 in 10074 ms (worker)
+[world] baked 7c1c0f86f068b732990096ddd2e1297319420aad83442c26b26b261c66eff30d 1024x512 in 10486 ms (worker)
+[world] baked 74b58c4cbf8bc9e69d1df62af3399a8240372a21df5d71f70a974fe0623d970e 4096x2048 in 6915 ms (worker)
+[world] baked a64aaed48d7abf41daa26b2a5116fd042da68af0ed207ddda7da54fffc753eba 4096x2048 in 9258 ms (worker)
+[world] baked fa4bf12c6fb501c2e74d2b8e603988b86b946bf808f1c4dce96dafe6cfb4baf3 4096x2048 in 1251 ms (worker)
+[sfx] 71 cues, 67 clip sets, loaded in 126 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 8.019, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked cd6ddd465646b2152de2f78a45afb6a93a66c5f70a5384d46a8e23e4ac364724 1024x512 in 1426 ms (worker)
+[world] baked aa2020c7fc3dfb471dbe4f71d1e3d373198bdf8c43d21aa42dd4368c27751619 1024x512 in 1902 ms (worker)
+[world] baked d489ee7a674498fe99aafdaacc6ebe478d27f3132ea4d8f9e0349b92fb675f30 1024x512 in 714 ms (worker)
+[world] baked 6f6a02e7cc3679dcb70e92fed95cef8dd487d0c6ebad8ad6acd43877fe9de2ba 1024x512 in 616 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on H7_23: no authored point fits this request; using the surface ray
+[attach] battle x01 V16_37: skipped 0; rcs hp 88 ray 0 centre 0 skip 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle x02 V15_37: skipped 0; rcs hp 0 ray 48 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0
+[attach] battle x03 V14_23: skipped 0; rcs hp 194 ray 0 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0
+[attach] battle x04 H8_23: skipped 0; rcs hp 0 ray 82 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x05 H7_23: skipped 0; rcs hp 0 ray 182 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 4 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[attach] battle x06 H7_23: skipped 0; rcs hp 0 ray 192 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 4449 156853.4 ms
+[fx] late shader: mat STREAK frame 4449 156945.1 ms
+[fx] late shader: mat RING frame 4449 157010.1 ms
+[fx] late shader: mat RIBBON frame 4449 157056.3 ms
+[fx] late shader: mat ECLIPSE_ARC frame 4449 157111.6 ms
+[fx] late shader: mat NULL_SLUG frame 4449 157150.4 ms
+[fx] late shader: mat SHARD frame 4449 157179.6 ms
+[fx] late shader: hit fragments frame 4449 157295.6 ms
+[fx] late shader: mat DISTORT frame 4449 157415.4 ms
+[fx] late shader: death debris body frame 4449 157444.1 ms
+[fx] late shader: mat TEAR frame 4449 157543.9 ms
+[fx] late shader: death strain tear frame 4449 157572.7 ms
+[sfx] 71 cues, 67 clip sets, loaded in 119 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 7.160, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 4451 159724.0 ms
+[fx] late shader: mat SHIELD frame 4451 159841.1 ms
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[fx] late shader: exterior frame 4452 162956.7 ms
+[fx] late shader: damage 4048950944 frame 4452 163062.1 ms
+[fx] late shader: death piece slag frame 4452 164190.1 ms
+[attach] flare on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] death on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[player-path] FAIL the route lost Battle 2
+[attach] battle x01 V16_37: skipped 0; rcs hp 514 ray 0 centre 0 skip 0; gun hp 32 ray 0 centre 0 skip 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x02 V15_37: skipped 0; flare hp 0 ray 1 centre 0 skip 0; rcs hp 0 ray 208 centre 0 skip 0; gun hp 13 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x03 C14s_23: skipped 0; rcs hp 237 ray 125 centre 0 skip 0; gun hp 41 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x04 C13s_23: skipped 0; rcs hp 185 ray 97 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0
+[attach] battle x05 C13s_23: skipped 0; rcs hp 75 ray 31 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle x06 C13s_23: skipped 0; rcs hp 182 ray 88 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 20 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0

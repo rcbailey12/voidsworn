@@ -1,0 +1,30 @@
+GPU: waiting for shared claim, weight 1 (1363)
+GPU: acquired shared claim 32ecf4ec-47e4-4f2b-88de-ee46d5f6b9a7
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1a5b6f76515a4e1cb4e337322de479c5\godot-profile-76f5a61358424b10b2ba304343bd0dfc
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+WARNING: 'res://main/main.tscn': In external resource #0, invalid UID: 'uid://b787qdi4tc7i8' - using text path instead: 'res://main/main.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+WARNING: 'res://scenes/battle/battle.tscn': In external resource #0, invalid UID: 'uid://jccjx4ygpwge' - using text path instead: 'res://scenes/battle/battle.gd'.
+   at: open (core/io/resource_format_binary.cpp:1028)
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[title] rebuilt for 3840 x 2160 (scale 2.000, title size 138)
+[title-layout] window 3840x2160 title 138px text 1235 wide, fits, playtest line on screen, menu on screen (bottom 1633), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (3840, 2160) viewport (3840.0, 2160.0)
+[title-layout] window 3840x2160 title 138px text 1235 wide, fits, playtest line on screen, menu on screen (bottom 1633), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[sfx] 71 cues, 67 clip sets, loaded in 152 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.197, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[world] baked 91e89c212e4f8275db8377e694cb32b5495136ad04daa2c7a4ed4ee2132cf1f0 4096x2048 in 8646 ms (worker)
+[world] baked 8a88fa9d9363f509e5f7af26691b5fc4af25e5d22ee5f05a602887cafc8d9327 4096x2048 in 17892 ms (worker)
+[world] baked cd6ddd465646b2152de2f78a45afb6a93a66c5f70a5384d46a8e23e4ac364724 1024x512 in 18395 ms (worker)
+[world] baked a35395e9402fcb9e025ddbbcc9b7985df7dc658dcbfaedf8b43e10ffab2542b4 4096x2048 in 1558 ms (worker)
+[world] baked d489ee7a674498fe99aafdaacc6ebe478d27f3132ea4d8f9e0349b92fb675f30 1024x512 in 1539 ms (worker)
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[title] shot saved C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_25adec3_1120council\title_3840x2160.png
+[attach] battle x010 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1a5b6f76515a4e1cb4e337322de479c5\godot-profile-76f5a61358424b10b2ba304343bd0dfc
+GPU: released shared claim 32ecf4ec-47e4-4f2b-88de-ee46d5f6b9a7

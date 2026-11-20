@@ -1,0 +1,19 @@
+Recording seed 121 to C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_25adec3_1120council\player_path_b\seed-121.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_25adec3_1120council\player_path_b\seed-10.avi
+Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1cea50d\seed-
+121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1ce
+a50d\seed-121-attempt-1\game.log
+Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1cea50d\seed-1
+0-attempt-1\launcher.log and 
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1cea50d\seed-10-attempt-1\game.log
+At C:\Users\rcbai\Downloads\voidsworn_test\pt1120c\repo\contrib\codex\player_path_1119\run.ps1:99 char:24
++ ...  ($failures.Count) { throw ($failures -join [Environment]::NewLine) }
++                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Seed 121 failed...empt-1\game.log:String) [], RuntimeException
+    + FullyQualifiedErrorId : Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd 
+   8b-4204-8815-ce2bf1cea50d\seed-121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-p  
+  ath-9215059e-dd8b-4204-8815-ce2bf1cea50d\seed-121-attempt-1\game.log
+    Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1cea50d\s 
+   eed-10-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-9215059e-dd8b-4204-8815-  
+  ce2bf1cea50d\seed-10-attempt-1\game.log
+ 

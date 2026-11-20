@@ -1,0 +1,5 @@
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[title] shot saved C:\Users\rcbai\Downloads\voidsworn_test\shots\g2_pt_25adec3_1120council\title_credits_1920x1080.png

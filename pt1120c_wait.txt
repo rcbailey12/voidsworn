@@ -1,0 +1,14 @@
+PT1120C waiter start Fri 11/20/2026 11:28:09.78 
+mirror refresh 11:28:09.78 
+mirror fetch exit 0
+25adec313dd8370fa2007032939378eec2d29097 reachable in the mirror
+PT1120C build start Fri 11/20/2026 11:28:10.84 
+PT1120C build exit 0 at 11:41:20.93 
+clone at 25adec313dd8370fa2007032939378eec2d29097 
+PT1120C player_path start 11:41:39.53 
+PT1120C player_path exit 1 at 11:41:50.07 
+PT1120C frontend_ui_check start 11:41:50.07 
+PT1120C frontend_ui_check exit 1 at 11:42:09.46 
+after-job janitor ran, output in janitor_after_pt1120c.txt 11:42:09.91 
+PT1120C waiter exit at 11:42:09.91 
+all done Fri 11/20/2026 11:42:09.91 

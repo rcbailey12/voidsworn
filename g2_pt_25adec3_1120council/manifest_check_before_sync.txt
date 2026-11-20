@@ -1,0 +1,2 @@
+MANIFEST OK: 295 files match main's ship manifest (size and sha256)
+note: manifest.json on the PC differs from main's (main's is unpacked with the code)
