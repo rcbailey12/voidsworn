@@ -116,15 +116,15 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): main deck 0.00 (12% to 55%); lower deck -0.20 (20% to 55%); main deck 0.00 (65% to 94%); lower deck -0.22 (65% to 94%).
+Deck levels (height): main deck 0.00 (12% to 23%); main deck 0.00 (26% to 55%); lower deck -0.20 (26% to 55%); main deck 0.00 (65% to 94%); lower deck -0.22 (65% to 94%).
 
-Bulkhead and frame stations: F0 7.7%, F1 16.2%, F2 23.8%, F3 31.5%, F4 39.2%, F5 46.9%, F6 53.8%, F7 65.4%, F8 72.3%, F9 80.0%, F10 87.7%, F11 93.8%.
+Bulkhead and frame stations: F0 10.0%, F1 16.2%, F2 27.2%, F3 31.5%, F4 39.2%, F5 46.9%, F6 53.8%, F7 65.4%, F8 72.3%, F9 80.0%, F10 87.7%, F11 93.8%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
 | repeater magazine (magazine) | 13.1 to 19.2 | -0.05 to 0.05 | 0.03 to 0.07 | the Sear repeater's magazine and feed, under the casemate |
-| bow stores (hold) | 19.2 to 25.4 | 0.01 to -0.01 | -0.25 to -0.18 | bow stores and the bow thrusters' feeds |
-| crew deck (crew) | 23.8 to 41.5 | -0.11 to 0.11 | 0.03 to 0.16 | the crew deck: berths and the mess, the chalk wall where the names go up before launch |
+| bow stores (hold) | 19.2 to 23.1 | 0.01 to -0.01 | -0.25 to -0.18 | bow stores and the bow thrusters' feeds |
+| crew deck (crew) | 26.3 to 41.5 | -0.19 to 0.19 | 0.03 to 0.16 | the crew deck: berths and the mess, the chalk wall where the names go up before launch |
 | fire plot (bridge) | 43.1 to 53.8 | -0.26 to 0.26 | 0.03 to 0.20 | the plotting room (no AI: plotted by hand) |
 | flak magazine p (magazine) | 48.5 to 54.6 | 0.30 to 0.30 | 0.03 to 0.20 | the spark flak magazines, under the tubs |
 | flak magazine s (magazine) | 48.5 to 54.6 | -0.30 to -0.30 | 0.03 to 0.20 | the spark flak magazines, under the tubs |
@@ -146,7 +146,8 @@ Bulkhead and frame stations: F0 7.7%, F1 16.2%, F2 23.8%, F3 31.5%, F4 39.2%, F5
 | Break line | Station % | What it opens |
 |---|---|---|
 | B-1 | 56.2 (seam wanders 56.2 to 63.8) | the bow and gun section tears from the reactor section: aft of the flak tubs at the flanks, ahead of the spine block on the centreline |
-| B-2 | 8.5 to 55.4 (along) | along the band: the lower hull peels away under the crew deck, the magazines and the stores |
+| B-2 | 26.2 to 55.4 (along) | along the band: the lower hull peels away under the crew deck, the magazines and the stores |
+| B-4 | 24.8 (seam wanders 24.8 to 24.8) | the spearhead snaps off whole at the casemate's back, so the peel along the band (B-2) stays aft of it, where the band is tall enough for its torn edge |
 | B-3 | 56.9 to 89.7 (along) | the spire line snaps off as one piece, the spine block tearing along its root |
 
 Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit crew spaces, frames, the repeater magazine, the reactor and its machinery. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly, a ragged bite where the reactor goes (R186).
@@ -185,6 +186,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Two ember bells 0.55 across at plus and minus 0.4 on riveted drums, the stern widened to 1.2 to carry them.** designs.md's table; the stern face must hold both drums (factions.md: two to four bells, deep-set).
 - **The beam is 1.36 at the knuckle (1.47 over the band lips), not the table's 1.5.** the concept's own top view measures about 1.2 over the hull; the lips and louvres bring the envelope near the table, the hull stays a narrow knife.
 - **Attitude thrusters, deck and belly hatches, heat louvres, frost running points, a belly armour step added.** a ship in space needs thrusters and access; the reactor needs louvres; the concept shows no underside; every part has a job (R221).
+- **A second transverse break, B-4 at x 1.64: the spearhead snaps off whole, and the band peel (B-2) runs only between B-1 and B-4.** the death seam check (stage 7 run, Nov 19): the peel plane tilts and waves across the beam, and in the shallow bow its torn edge reached the knuckle, leaving 154 inside triangles (the hull liner and the bow stores) outside their piece; the bow piece has no peel, so 0 remain.
 - **The concept's long centre rail is the dorsal power trunk, banded, from the casemate back to the spine block.** the rail needs a job (R221): it feeds the repeater from the reactor.
 
 ## Designed here, not shown in the picture
