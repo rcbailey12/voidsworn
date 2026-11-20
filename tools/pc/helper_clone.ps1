@@ -27,8 +27,7 @@ $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $sep = [IO.Path]::DirectorySeparatorChar
 $unix = $PSVersionTable.Platform -eq 'Unix'
-$vt = Join-Path (Join-Path $env:USERPROFILE 'Downloads') 'voidsworn_test'
-if ($test) { $vt = $env:PC_TEST_HELPER_VT }
+if ($test) { $vt = $env:PC_TEST_HELPER_VT } else { $vt = Join-Path (Join-Path $env:USERPROFILE 'Downloads') 'voidsworn_test' }
 $vt = [IO.Path]::GetFullPath($vt).TrimEnd('\', '/')
 $mirror = Join-Path $vt 'repo-mirror.git'
 $source = 'https://github.com/rcbailey12/voidsworn'
