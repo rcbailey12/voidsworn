@@ -1,0 +1,32 @@
+{
+  "actual_quality": "max",
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "camera_r": 170.0,
+  "capital": [
+    "Dreadnought",
+    "V1b_r_23",
+    43.2
+  ],
+  "draft": false,
+  "focus": [
+    142.894195556641,
+    22.5
+  ],
+  "fps": 30,
+  "frames": 330,
+  "frigate": [
+    "Frigate",
+    "V14_23",
+    10.4
+  ],
+  "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+  "renderer": "forward_plus",
+  "size": [
+    1280,
+    720
+  ],
+  "tier": "max",
+  "wake": true,
+  "wake_materials": 8,
+  "wake_sha256": "b8e0207135c91a31c040c8e045894de3b957ac1e34bcaa603d2945c37ac9924d"
+}
