@@ -552,6 +552,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		m.set_shader_parameter("c_lit", body * 0.65)
 		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), faction_end_weight))
 		m.set_shader_parameter("dens", 0.5)
+		_sheet_colour_override(m)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
 	gas_mats.append([m, g])
@@ -1429,3 +1430,19 @@ func _exit_tree() -> void:
 	if _chunk_task >= 0:
 		WorkerThreadPool.wait_for_task_completion(_chunk_task)
 		_chunk_task = -1
+
+
+# Issue 1268: capture-only colour options for Ryan's sky sheet. Off unless a capture sets the env vars;
+# the game never sets them, so defaults and faction_looks.json stay as they are.
+static func _sheet_colour(name: String) -> Variant:
+	var raw := OS.get_environment(name)
+	if raw == "": return null
+	var parts := raw.split(",")
+	if parts.size() != 3: return null
+	return Vector3(float(parts[0]), float(parts[1]), float(parts[2]))
+
+
+func _sheet_colour_override(m: ShaderMaterial) -> void:
+	for pair in [["VS_NEBULA_LIT", "c_lit"], ["VS_NEBULA_GLOW", "c_glow"], ["VS_NEBULA_SHADOW", "c_shadow"]]:
+		var c = _sheet_colour(pair[0])
+		if c != null: m.set_shader_parameter(pair[1], c)
