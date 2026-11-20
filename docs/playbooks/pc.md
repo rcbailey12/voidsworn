@@ -35,7 +35,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   then `all done`, and exit 0 only on PASS. After that result is written, a PASS removes the job's own pinned
   checkouts (rebuildable from their pins, up to 16 GB each): only folders the head's `checkout` listed in the attempt's
   `checkouts.txt` whose `.git\HEAD` still names the pin and that hold no work (no tracked change; every untracked or
-  ignored file is the import cache, a ships copy whose size and time still match the recorded `build\godot` source, a
+  ignored file is the import cache, a ships copy whose sha256 still matches the recorded `build\godot` source, a
   byte copy of a tracked file, or a `.import`/`.uid` sidecar of one of those; anything else, such as a new or re-exported
   ship file, keeps the checkout and is logged). Links go as links, nothing goes during the Board's PC pause, a failed
   job keeps everything, `out_*`, the logs and the ship records stay, and `OJ_KEEP_CHECKOUTS=1` keeps them. Known and

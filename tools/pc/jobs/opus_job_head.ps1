@@ -66,7 +66,7 @@ function Get-KeptWork($repo, $src) {
   # Every tracked change (staged or not) and every untracked or ignored path that is not proven rebuildable:
   #  - godot/.godot/ (Godot's import cache and editor state);
   #  - a file under godot/gen/ or godot/assets/ships/ whose ships source copy ($src, the LB_SHIPS the ships step
-  #    recorded) has the same size and modified time (what robocopy copied and left alone);
+  #    recorded) has the same sha256 (what robocopy copied and left alone);
   #  - a byte copy of a file the pin tracks (the probe copies in godot/bench);
   #  - a .import or .uid sidecar whose own file is tracked or proven above.
   # Anything else, such as a new or changed ship file a job wrote, keeps the checkout (Artoo, PR 1326).
@@ -89,7 +89,13 @@ function Get-KeptWork($repo, $src) {
       $mine = Get-Item -LiteralPath (Join-Path $repo $rel.Replace('/', $sep)) -Force -ErrorAction SilentlyContinue
       $theirs = Get-Item -LiteralPath $from -Force -ErrorAction SilentlyContinue
       if ($mine -is [IO.FileInfo] -and $theirs -is [IO.FileInfo] -and -not ($mine.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
-          $mine.Length -eq $theirs.Length -and $mine.LastWriteTimeUtc -eq $theirs.LastWriteTimeUtc) { $proven[$rel] = $true; continue }
+          $mine.Length -eq $theirs.Length) {
+        # Size alone never proves it: the bytes must match (a same-size, same-time replacement is work). A hash that
+        # cannot be read keeps the checkout.
+        $same = $false
+        try { $same = (Hash $mine.FullName) -eq (Hash $theirs.FullName) } catch { $same = $false }
+        if ($same) { $proven[$rel] = $true; continue }
+      }
     }
     if ($code -eq '??') { $copies += $rel } else { $keep += "new: $rel" }
   }
