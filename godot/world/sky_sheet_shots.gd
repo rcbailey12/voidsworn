@@ -148,6 +148,9 @@ func _run() -> void:
 	if light_share > 0.0:
 		# Value-matched region tint, so the light changes hue, not brightness. The rim light (R227) is left alone.
 		var t: Vector3 = SKY.REGION[region]["tint"]
+		if "--light-from-sky" in OS.get_cmdline_user_args():
+			# the sky colour actually on screen (the sector faction's gas times the region), not the region table alone
+			t = (b.world.setting["c1"] as Vector3) * 0.7 + (b.world.setting["c3"] as Vector3) * 0.3
 		t = t / maxf(t.x, maxf(t.y, t.z))
 		var tc := Color(t.x, t.y, t.z)
 		b.key_light.light_color = b.key_light.light_color.lerp(tc, light_share)
