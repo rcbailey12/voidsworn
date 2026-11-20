@@ -1,0 +1,8 @@
+waiting for all done in opus1211_run3_wait.txt Thu 11/19/2026 19:33:48.59 
+OPUS1154_GATE_C_WAIT stopped by the Board before it ran anything (11/20 04:54:23); replaced by OPUS1154_GATE_C_WAIT_B.bat (after 1262 RUN1262E, same log)
+waiting for all done in opus1262e_wait.txt (GATE_C waiter B) Fri 11/20/2026  4:54:23.64 
+OPUS1154_GATE_C_WAIT_B stopped by the Board before it ran anything (11/20 04:54:48); replaced by OPUS1154_GATE_C_WAIT_C.bat (after 1262 RUN1262F, same log)
+waiting for all done in opus1262f_wait.txt (GATE_C waiter C) Fri 11/20/2026  4:54:48.33 
+OPUS1154_GATE_C_w3600 start Fri 11/20/2026  5:49:48.14 
+OPUS1154_GATE_C_w3600 exit 0 at  6:15:16.78 
+all done  6:15:16.78 

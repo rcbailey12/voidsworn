@@ -1,0 +1,25 @@
+start scene gate C Fri 11/20/2026  5:49:49.13 
+hi= env= 
+commit=3b8b52b79962b1fa283a39c3a3b1f54eefce77d3
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\opus1154\profile\Roaming 
+ship copy done 
+import done 
+build_assets pass 1 exit 0 
+B20_11 readback exit 0 
+scene gate 1 exit 1 
+scene gate 2 exit 0 
+[scene_gate] DONE
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] battle x025 B20_11: skipped 0; rcs hp 22 ray 0 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] battle x025 B20_11: skipped 0; rcs hp 26 ray 0 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] battle x025 B20_11: skipped 0; rcs hp 26 ray 0 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] battle x025 B20_11: skipped 0; rcs hp 52 ray 0 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 18 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 18 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 22 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 18 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 26 ray 0 centre 0 skip 0
+all done PASS Fri 11/20/2026  6:15:16.77 

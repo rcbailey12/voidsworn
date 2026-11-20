@@ -1,0 +1,652 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:49:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1154\repo\godot\assets\ships\
+
+    Files : *.*
+	    
+Exc Files : manifest.json
+	    README.md
+	    a4_props.gd
+	    *.uid
+	    
+ Exc Dirs : test
+	    previews
+	    B20_11
+	    
+  Options : *.* /NDL /S /E /DCOPY:DA /COPY:DAT /NP /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	    New File  		   52390	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_151131
+	    New File  		   52362	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_151811
+	    New File  		   52362	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_160008
+	    New File  		   52343	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_161733
+	    New File  		   52322	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_163550
+	    New File  		   52305	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_165324
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_225634
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_231542
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261116_235238
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_000508
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_001724
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_003243
+	    New File  		   52291	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_011012
+	    New File  		   52601	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_150619
+	    New File  		   52749	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_174152
+	    New File  		   52749	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261117_174153
+	    New File  		   51002	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_100448
+	    New File  		   52873	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_100517
+	    New File  		   52994	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_100550
+	    New File  		   53118	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_100621
+	    New File  		   51474	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_132500
+	    New File  		   53239	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_132541
+	    New File  		   53239	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_132609
+	    New File  		   53239	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\manifest.json.bak_20261118_132638
+	    New File  		   7.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23.glb.import
+	    New File  		   4.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_base.jpg.import
+	    New File  		   9.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_damage.glb.import
+	    New File  		  255083	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_emissive.jpg.import
+	    New File  		   5.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_normal.jpg.import
+	    New File  		   2.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_orm.jpg.import
+	    New File  		   4.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B16_23\B16_23_wreck.glb.import
+	    New File  		   8.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11.glb
+	    New File  		    1152	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11.glb.import
+	    New File  		  879727	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_base.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_damage.glb.import
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_emissive.jpg.import
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_normal.jpg.import
+	    New File  		   3.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_normal.png
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_orm.jpg.import
+	    New File  		   4.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_orm.png
+	    New File  		  916462	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_parts_base.jpg
+	    New File  		   2.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_parts_normal.png
+	    New File  		   4.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_parts_orm.png
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B19_11\B19_11_wreck.glb.import
+	    New File  		  10.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11.glb.import
+	    New File  		  941841	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_base.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_damage.glb.import
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_emissive.jpg.import
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_normal.jpg.import
+	    New File  		   3.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_normal.png
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_orm.jpg.import
+	    New File  		   4.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_orm.png
+	    New File  		  896599	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_parts_base.jpg
+	    New File  		   2.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_parts_normal.png
+	    New File  		   4.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_parts_orm.png
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B21_11\B21_11_wreck.glb.import
+	    New File  		   6.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11.glb
+	    New File  		    1152	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11.glb.import
+	    New File  		   4.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_base.jpg.import
+	    New File  		  21.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_damage.glb
+	    New File  		    1173	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_damage.glb.import
+	    New File  		  269154	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_emissive.jpg.import
+	    New File  		   6.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_normal.jpg.import
+	    New File  		   2.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_orm.jpg.import
+	    New File  		   3.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B22_11\B22_11_wreck.glb.import
+	    New File  		   2.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51.glb.import
+	    New File  		  460351	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_base.jpg.import
+	    New File  		  286812	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_damage.glb.import
+	    New File  		  100612	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_emissive.jpg.import
+	    New File  		  493545	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_normal.jpg
+	    New File  		    1010	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_normal.jpg.import
+	    New File  		  783342	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_orm.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_orm.jpg.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\B23_51\B23_51_wreck.glb.import
+	    New File  		  19.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23.glb
+	    New File  		    1156	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23.glb.import
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_base.jpg
+	    New File  		    1008	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_base.jpg.import
+	    New File  		    1178	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_damage.glb.import
+	    New File  		  146778	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_emissive.jpg
+	    New File  		    1020	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_emissive.jpg.import
+	    New File  		  196598	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_glow_emission.jpg
+	    New File  		    1035	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_glow_emission.jpg.import
+	    New File  		  491624	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_normal.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_normal.jpg.import
+	    New File  		   2.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_orm.jpg
+	    New File  		    1005	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_orm.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_parts_base.jpg
+	    New File  		    1025	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_parts_base.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_parts_orm.jpg
+	    New File  		    1023	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_parts_orm.jpg.import
+	    New File  		    1175	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C13s_23\C13s_23_wreck.glb.import
+	    New File  		  22.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23.glb
+	    New File  		    1157	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23.glb.import
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_base.jpg
+	    New File  		    1008	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_base.jpg.import
+	    New File  		    1177	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_damage.glb.import
+	    New File  		  156220	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_emissive.jpg
+	    New File  		    1019	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_emissive.jpg.import
+	    New File  		  202199	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_glow_emission.jpg
+	    New File  		    1034	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_glow_emission.jpg.import
+	    New File  		  479673	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_normal.jpg
+	    New File  		    1014	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_normal.jpg.import
+	    New File  		   2.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_orm.jpg
+	    New File  		    1005	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_orm.jpg.import
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_parts_base.jpg
+	    New File  		    1026	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_parts_base.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_parts_orm.jpg
+	    New File  		    1023	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_parts_orm.jpg.import
+	    New File  		    1175	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C14s_23\C14s_23_wreck.glb.import
+	    New File  		   7.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23.glb
+	    New File  		    1156	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23.glb.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_base.jpg
+	    New File  		    1008	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_base.jpg.import
+	    New File  		    1178	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_damage.glb.import
+	    New File  		  164520	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_emissive.jpg
+	    New File  		    1020	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_emissive.jpg.import
+	    New File  		  252265	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_glow_emission.jpg
+	    New File  		    1035	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_glow_emission.jpg.import
+	    New File  		  651469	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_normal.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_orm.jpg
+	    New File  		    1005	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_orm.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_parts_base.jpg
+	    New File  		    1025	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_parts_base.jpg.import
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_parts_orm.jpg
+	    New File  		    1023	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_parts_orm.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C15s_23\C15s_23_wreck.glb.import
+	    New File  		  23.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23.glb
+	    New File  		    1157	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23.glb.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_base.jpg
+	    New File  		    1008	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_base.jpg.import
+	    New File  		    1177	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_damage.glb.import
+	    New File  		  159565	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_emissive.jpg
+	    New File  		    1019	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_emissive.jpg.import
+	    New File  		  240906	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_glow_emission.jpg
+	    New File  		    1035	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_glow_emission.jpg.import
+	    New File  		  466596	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_normal.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_normal.jpg.import
+	    New File  		   2.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_orm.jpg
+	    New File  		    1005	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_orm.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_parts_base.jpg
+	    New File  		    1026	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_parts_base.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_parts_orm.jpg
+	    New File  		    1023	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_parts_orm.jpg.import
+	    New File  		    1175	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C16s_23\C16s_23_wreck.glb.import
+	    New File  		  14.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51.glb.import
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_base.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_damage.glb.import
+	    New File  		  168692	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_emissive.jpg.import
+	    New File  		  236839	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_glow_emission.jpg
+	    New File  		    1031	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_glow_emission.jpg.import
+	    New File  		  610712	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_normal.jpg.import
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_orm.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_base.jpg
+	    New File  		    1022	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_base.jpg.import
+	    New File  		  446662	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_normal.jpg
+	    New File  		    1028	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_normal.jpg.import
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_orm.jpg
+	    New File  		    1018	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_parts_orm.jpg.import
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\C19_51\C19_51_wreck.glb.import
+	    New File  		   5.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC.glb
+	    New File  		  966878	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_base.jpg
+	    New File  		  264837	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_glow_emission.jpg
+	    New File  		  409385	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_normal.jpg
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_orm.jpg
+	    New File  		  835409	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_parts_base.jpg
+	    New File  		  388189	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_parts_normal.jpg
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\corsair_KB1CC\corsair_KB1CC_parts_orm.jpg
+	    New File  		   4.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23.glb
+	    New File  		  884853	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_base.jpg
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_glow_emission.jpg
+	    New File  		  427647	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_normal.jpg
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_orm.jpg
+	    New File  		  902941	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_parts_base.jpg
+	    New File  		  186026	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_parts_normal.jpg
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D20_23\D20_23_parts_orm.jpg
+	    New File  		   5.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23.glb
+	    New File  		 1018598	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_base.jpg
+	    New File  		  901212	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_glow_emission.jpg
+	    New File  		  382893	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_normal.jpg
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_orm.jpg
+	    New File  		  897762	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_parts_base.jpg
+	    New File  		  188173	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_parts_normal.jpg
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D21_23\D21_23_parts_orm.jpg
+	    New File  		  12.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23.glb
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_base.jpg
+	    New File  		  538513	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_glow_emission.jpg
+	    New File  		  351390	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_normal.jpg
+	    New File  		   2.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_orm.jpg
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_parts_base.jpg
+	    New File  		  216213	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_parts_normal.jpg
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D22_23\D22_23_parts_orm.jpg
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23.glb
+	    New File  		  690309	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_base.jpg
+	    New File  		  819613	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_glow_emission.jpg
+	    New File  		  409473	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_normal.jpg
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_orm.jpg
+	    New File  		  694253	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_parts_base.jpg
+	    New File  		  187288	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_parts_normal.jpg
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\D9_23\D9_23_parts_orm.jpg
+	    New File  		   5.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23.glb.import
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_base.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_damage.glb.import
+	    New File  		  170502	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_emissive.jpg
+	    New File  		    1014	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_emissive.jpg.import
+	    New File  		  596229	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_glow_emission.jpg
+	    New File  		    1031	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_glow_emission.jpg.import
+	    New File  		  463808	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_normal.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_orm.jpg.import
+	    New File  		  939070	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_base.jpg
+	    New File  		    1022	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_base.jpg.import
+	    New File  		  435095	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_normal.jpg
+	    New File  		    1027	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_normal.jpg.import
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_orm.jpg
+	    New File  		    1018	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_parts_orm.jpg.import
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H10_23\H10_23_wreck.glb.import
+	    New File  		  12.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11.glb
+	    New File  		    1148	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11.glb.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_base.jpg
+	    New File  		     999	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_base.jpg.import
+	    New File  		    1169	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_damage.glb.import
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_emissive.jpg.import
+	    New File  		  712622	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_glow_emission.jpg
+	    New File  		    1027	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_glow_emission.jpg.import
+	    New File  		  377202	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_normal.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_orm.jpg
+	    New File  		     996	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_orm.jpg.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_base.jpg
+	    New File  		    1017	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_base.jpg.import
+	    New File  		  426315	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_normal.jpg
+	    New File  		    1023	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_orm.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_parts_orm.jpg.import
+	    New File  		    1166	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H4_11\H4_11_wreck.glb.import
+	    New File  		   4.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23.glb.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_base.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_base.jpg.import
+	    New File  		  14.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_damage.glb.import
+	    New File  		  160716	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_emissive.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_emissive.jpg.import
+	    New File  		   2.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_normal.jpg
+	    New File  		    1006	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_normal.jpg.import
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_orm.jpg
+	    New File  		     997	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_orm.jpg.import
+	    New File  		   2.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H7_23\H7_23_wreck.glb.import
+	    New File  		   3.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23.glb
+	    New File  		    1148	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23.glb.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_base.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_base.jpg.import
+	    New File  		  17.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_damage.glb
+	    New File  		    1169	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_damage.glb.import
+	    New File  		  161332	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_emissive.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_emissive.jpg.import
+	    New File  		   2.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_normal.jpg
+	    New File  		    1006	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_normal.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_orm.jpg
+	    New File  		     997	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_orm.jpg.import
+	    New File  		   2.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H8_23\H8_23_wreck.glb.import
+	    New File  		   5.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23.glb.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_base.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_base.jpg.import
+	    New File  		  26.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_damage.glb.import
+	    New File  		  167972	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_emissive.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_emissive.jpg.import
+	    New File  		   2.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_normal.jpg
+	    New File  		    1006	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_normal.jpg.import
+	    New File  		   1.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_orm.jpg
+	    New File  		     996	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_orm.jpg.import
+	    New File  		   3.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\H9_23\H9_23_wreck.glb.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D.glb
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_base.jpg
+	    New File  		  133985	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_glow_emission.jpg
+	    New File  		  486141	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_normal.jpg
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_orm.jpg
+	    New File  		  372229	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_parts_base.jpg
+	    New File  		  432820	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_parts_normal.jpg
+	    New File  		  556875	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\hegemony_HF1D\hegemony_HF1D_parts_orm.jpg
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37.glb.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_base.jpg.import
+	    New File  		   8.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_damage.glb
+	    New File  		    1173	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_damage.glb.import
+	    New File  		  966321	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_emissive.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_emissive.jpg.import
+	    New File  		  160553	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_normal.jpg
+	    New File  		    1010	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_orm.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_orm.jpg.import
+	    New File  		  956168	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I11_37\I11_37_wreck.glb.import
+	    New File  		   2.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23.glb.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_base.jpg.import
+	    New File  		  11.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_damage.glb.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_emissive.jpg.import
+	    New File  		  367111	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_orm.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_wreck.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I14_23\I14_23_wreck.glb.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11.glb.import
+	    New File  		 1046838	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_base.jpg.import
+	    New File  		   8.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_damage.glb.import
+	    New File  		  565928	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_emissive.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_emissive.jpg.import
+	    New File  		  158726	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_normal.jpg.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_orm.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_orm.jpg.import
+	    New File  		  874688	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I15_11\I15_11_wreck.glb.import
+	    New File  		   4.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11.glb.import
+	    New File  		   3.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_base.jpg.import
+	    New File  		  13.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_damage.glb
+	    New File  		    1173	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_damage.glb.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_emissive.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_orm.jpg.import
+	    New File  		   2.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I16_11\I16_11_wreck.glb.import
+	    New File  		  19.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37.glb.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_base.jpg
+	    New File  		     999	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_base.jpg.import
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_damage.glb.import
+	    New File  		  355238	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_emission.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_emissive.jpg.import
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_normal.jpg.import
+	    New File  		   2.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_normal.png
+	    New File  		     997	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_orm.jpg.import
+	    New File  		   4.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_orm.png
+	    New File  		  803073	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_parts_base.jpg
+	    New File  		  702729	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_parts_normal.png
+	    New File  		   2.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_parts_orm.png
+	    New File  		    1166	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\I8_37\I8_37_wreck.glb.import
+	    New File  		   5.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37.glb.import
+	    New File  		   1.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_base.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_base.jpg.import
+	    New File  		  10.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_damage.glb.import
+	    New File  		  143905	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_emissive.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_emissive.jpg.import
+	    New File  		   2.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_normal.jpg.import
+	    New File  		   2.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_orm.jpg
+	    New File  		     997	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_orm.jpg.import
+	    New File  		   3.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O1_37\O1_37_wreck.glb.import
+	    New File  		   5.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37.glb.import
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_base.jpg
+	    New File  		     999	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_base.jpg.import
+	    New File  		  21.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_damage.glb.import
+	    New File  		  144058	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_emissive.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_emissive.jpg.import
+	    New File  		   2.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_normal.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_orm.jpg
+	    New File  		     996	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_orm.jpg.import
+	    New File  		   2.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_wreck.glb
+	    New File  		    1166	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37\O2_37_wreck.glb.import
+	    New File  		   2.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11.glb.import
+	    New File  		  977518	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_base.jpg
+	    New File  		    1000	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_base.jpg.import
+	    New File  		   7.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_damage.glb
+	    New File  		    1169	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_damage.glb.import
+	    New File  		  145069	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_emissive.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_emissive.jpg.import
+	    New File  		   2.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_normal.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_orm.jpg
+	    New File  		     997	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_orm.jpg.import
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O3_11\O3_11_wreck.glb.import
+	    New File  		   3.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51.glb
+	    New File  		    1149	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51.glb.import
+	    New File  		  311386	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_base.jpg
+	    New File  		     999	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_base.jpg.import
+	    New File  		  129152	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_damage.glb.import
+	    New File  		   36494	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_emissive.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_emissive.jpg.import
+	    New File  		  519835	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_normal.jpg.import
+	    New File  		  553299	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_orm.jpg
+	    New File  		     996	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_orm.jpg.import
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_wreck.glb
+	    New File  		    1167	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S1_51\S1_51_wreck.glb.import
+	    New File  		   3.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23.glb
+	    New File  		    1148	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23.glb.import
+	    New File  		  295244	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_base.jpg
+	    New File  		     999	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_base.jpg.import
+	    New File  		  377796	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_damage.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_damage.glb.import
+	    New File  		   40005	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_emissive.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_emissive.jpg.import
+	    New File  		  532835	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_normal.jpg
+	    New File  		    1007	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_normal.jpg.import
+	    New File  		  563417	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_orm.jpg
+	    New File  		     996	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_orm.jpg.import
+	    New File  		   1.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_wreck.glb
+	    New File  		    1166	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\S2_23\S2_23_wreck.glb.import
+	    New File  		  75.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2.glb
+	    New File  		    1169	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2.glb.import
+	    New File  		   60656	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_albedo.png
+	    New File  		    1142	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_albedo.png.import
+	    New File  		   60413	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_emission.png
+	    New File  		    1150	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_emission.png.import
+	    New File  		   62812	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_normal.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_normal.png.import
+	    New File  		   62413	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_orm.png
+	    New File  		    1135	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_battery_strip_orm.png.import
+	    New File  		  818805	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_albedo.png
+	    New File  		    1138	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_albedo.png.import
+	    New File  		  109517	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_normal.png
+	    New File  		    1138	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_normal.png.import
+	    New File  		  794393	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_orm.png
+	    New File  		    1129	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_dark_orm.png.import
+	    New File  		  960791	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_albedo.png
+	    New File  		    1141	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_albedo.png.import
+	    New File  		  171669	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_normal.png
+	    New File  		    1141	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_normal.png.import
+	    New File  		  812529	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_orm.png
+	    New File  		    1132	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hgrey_orm.png.import
+	    New File  		  924003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_albedo.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_albedo.png.import
+	    New File  		  170168	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_normal.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_normal.png.import
+	    New File  		  796433	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_orm.png
+	    New File  		    1135	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hmetal_orm.png.import
+	    New File  		  954199	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_albedo.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_albedo.png.import
+	    New File  		  171684	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_normal.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_normal.png.import
+	    New File  		  812514	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_orm.png
+	    New File  		    1135	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_hpanel_orm.png.import
+	    New File  		  905559	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_albedo.png
+	    New File  		    1141	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_albedo.png.import
+	    New File  		  170158	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_normal.png
+	    New File  		    1141	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_normal.png.import
+	    New File  		  796131	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_orm.png
+	    New File  		    1131	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_detail_htrim_orm.png.import
+	    New File  		  247594	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_albedo.png
+	    New File  		    1120	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_albedo.png.import
+	    New File  		   62146	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_emission.png
+	    New File  		    1126	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_emission.png.import
+	    New File  		   63943	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_normal.png
+	    New File  		    1120	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_normal.png.import
+	    New File  		  352265	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_orm.png
+	    New File  		    1111	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_glass_orm.png.import
+	    New File  		   62713	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_albedo.png
+	    New File  		    1138	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_albedo.png.import
+	    New File  		   60838	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_emission.png
+	    New File  		    1144	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_emission.png.import
+	    New File  		   62812	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_normal.png
+	    New File  		    1138	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_normal.png.import
+	    New File  		   62413	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_orm.png
+	    New File  		    1128	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\station_T2\station_T2_T2_marker_lens_orm.png.import
+	    New File  		   5.7 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23.glb.import
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_base.jpg.import
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_damage.glb.import
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_emissive.jpg.import
+	    New File  		  446930	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_glow_emission.jpg
+	    New File  		  583392	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_normal.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_orm.jpg.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_parts_base.jpg
+	    New File  		  344748	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_parts_normal.jpg
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_parts_orm.jpg
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V14_23\V14_23_wreck.glb.import
+	    New File  		   3.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37.glb.import
+	    New File  		 1017243	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_base.jpg.import
+	    New File  		  18.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_damage.glb.import
+	    New File  		  138361	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_emissive.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_emissive.jpg.import
+	    New File  		   2.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_normal.jpg.import
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_orm.jpg.import
+	    New File  		   1.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V15_37\V15_37_wreck.glb.import
+	    New File  		   4.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37.glb
+	    New File  		    1152	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37.glb.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_base.jpg.import
+	    New File  		  36.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_damage.glb.import
+	    New File  		  132888	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_emissive.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_emissive.jpg.import
+	    New File  		   2.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_normal.jpg
+	    New File  		    1010	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_normal.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_orm.jpg.import
+	    New File  		   2.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V16_37\V16_37_wreck.glb.import
+	    New File  		   5.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37.glb.import
+	    New File  		   3.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_base.jpg
+	    New File  		    1003	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_base.jpg.import
+	    New File  		  30.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_damage.glb
+	    New File  		    1174	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_damage.glb.import
+	    New File  		  149888	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_emissive.jpg
+	    New File  		    1016	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_emissive.jpg.import
+	    New File  		   9.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_normal.jpg.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_orm.jpg.import
+	    New File  		   3.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_wreck.glb
+	    New File  		    1171	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V17_37\V17_37_wreck.glb.import
+	    New File  		   7.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51.glb
+	    New File  		    1153	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51.glb.import
+	    New File  		   3.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_base.jpg
+	    New File  		    1004	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_base.jpg.import
+	    New File  		  28.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_damage.glb
+	    New File  		    1173	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_damage.glb.import
+	    New File  		  156064	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_emissive.jpg
+	    New File  		    1015	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_emissive.jpg.import
+	    New File  		   8.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_normal.jpg
+	    New File  		    1011	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_normal.jpg.import
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_orm.jpg
+	    New File  		    1001	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_orm.jpg.import
+	    New File  		   4.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_wreck.glb
+	    New File  		    1170	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V18_51\V18_51_wreck.glb.import
+	    New File  		  12.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23.glb
+	    New File  		    1161	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23.glb.import
+	    New File  		   1.5 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_base.jpg
+	    New File  		    1012	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_base.jpg.import
+	    New File  		    1182	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_damage.glb.import
+	    New File  		    1024	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_emissive.jpg.import
+	    New File  		  938731	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_glow_emission.jpg
+	    New File  		  527520	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_normal.jpg
+	    New File  		    1019	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_normal.jpg.import
+	    New File  		   1.9 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_orm.jpg
+	    New File  		    1009	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_orm.jpg.import
+	    New File  		   1.0 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_parts_base.jpg
+	    New File  		  292006	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_parts_normal.jpg
+	    New File  		   1.6 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_parts_orm.jpg
+	    New File  		    1179	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\V1b_r_23\V1b_r_23_wreck.glb.import
+	    New File  		   2.2 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4.glb
+	    New File  		 1028040	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_base.jpg
+	    New File  		  517753	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_glow_emission.jpg
+	    New File  		  459947	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_normal.jpg
+	    New File  		   1.3 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_orm.jpg
+	    New File  		  707826	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_parts_base.jpg
+	    New File  		  251438	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_parts_normal.jpg
+	    New File  		 1030829	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SB4\voidsworn_SB4_parts_orm.jpg
+	    New File  		   1.8 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3.glb
+	    New File  		   1.1 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_base.jpg
+	    New File  		  434604	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_glow_emission.jpg
+	    New File  		  570725	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_normal.jpg
+	    New File  		   1.4 m	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_orm.jpg
+	    New File  		  639993	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_parts_base.jpg
+	    New File  		  349491	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_parts_normal.jpg
+	    New File  		  894042	C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\voidsworn_SF3\voidsworn_SF3_parts_orm.jpg
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        44        40         4         0         0         0
+   Files :       618       614         4         0         0         0
+   Bytes :  980.32 m  980.26 m    70.1 k         0         0         0
+   Times :   0:00:01   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1127059324 Bytes/sec.
+   Speed :            64490.851 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:49:50 AM
+
