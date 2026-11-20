@@ -1,0 +1,16 @@
+wrote C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\concept.png (1920, 1920)
+[fit] 128 0.8427 {'az': 50.651, 'el': 22.4, 'roll': 0.61, 'dist': 2.347, 'focal': 1804.146, 'cx': 501.968, 'cy': 471.758}
+[fit] 256 0.8467 {'az': 50.329, 'el': 21.433, 'roll': 0.196, 'dist': 2.337, 'focal': 1835.543, 'cx': 505.047, 'cy': 470.838}
+[fit] 512 0.8425 {'az': 53.442, 'el': 18.771, 'roll': -1.032, 'dist': 2.318, 'focal': 1862.68, 'cx': 510.86, 'cy': 471.905}
+[fit] B0 overlap at the fitted camera 0.8332 at round 3 hero camera framed 0.8162
+The hull is the build sheet chorus_C14: no tune. 
+  outline C14: bow 69.6, midship 78.2, stern 45.2, whole 66.9 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 61.4, midship 40.7, stern 63.6
+  REPORT bow overlap 69.6 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 78.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 45.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 66.9 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+REPORT C14 outline overlap 66.9 percent, outline_gate 90 is context only (not a pass bar)
+The overlay is C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\sil\sil_C14.png (green both, red concept only, yellow ship only).
+Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)

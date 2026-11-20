@@ -1,0 +1,399 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         40	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\
+	    New File  		     443	audit.json100%  
+	    New File  		   38453	bow_blink.gif.provenance.json100%  
+	    New File  		    2623	C14.json100%  
+	    New File  		     509	concept_camera.json100%  
+	    New File  		    2989	density.json100%  
+	    New File  		     267	detail_check.json100%  
+	    New File  		     656	log_audit.txt100%  
+	    New File  		    4204	log_audit_selftest.txt100%  
+	    New File  		     604	log_b0dump.txt100%  
+	    New File  		  100620	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     125	log_blink.txt100%  
+	    New File  		     674	log_build.txt100%  
+	    New File  		      66	log_clay.txt100%  
+	    New File  		      61	log_close.txt100%  
+	    New File  		     471	log_detail.txt100%  
+	    New File  		    1353	log_export.txt100%  
+	    New File  		     640	log_export_check.txt100%  
+	    New File  		    2145	log_export_selftest.txt100%  
+	    New File  		    4646	log_godot.txt100%  
+	    New File  		     648	log_install_cache.txt100%  
+	    New File  		     577	log_install_readback.txt100%  
+	    New File  		    1573	log_lod.txt100%  
+	    New File  		   1.1 m	log_render.txt 20%   41%   62%   83%  100%  
+	    New File  		  228808	log_render_concept.txt 57%  100%  
+	    New File  		  471348	log_render_far.txt 27%   55%   83%  100%  
+	    New File  		    1430	log_sheet_contract.txt100%  
+	    New File  		      98	log_sil.txt100%  
+	    New File  		     234	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		  163501	log_surface.txt 80%  100%  
+	    New File  		     689	log_thirds.txt100%  
+	    New File  		     689	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     504	audit_into_ship.json100%  
+	    New File  		     454	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     443	audit_no_longitudinal.json100%  
+	    New File  		     228	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	    New File  		     443	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\build\
+	    New File  		     694	C14_build.json100%  
+	    New File  		    1691	sheet_contract_selftest.json100%  
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\clay\
+	    New File  		   58240	C14_aft_clay.png.provenance.json100%  
+	    New File  		   61483	C14_aft_concept.png.provenance.json100%  
+	    New File  		   64806	C14_aft_studio.png.provenance.json100%  
+	    New File  		   71484	C14_bow_clay.png.provenance.json100%  
+	    New File  		   69343	C14_bow_concept.png.provenance.json100%  
+	    New File  		   74118	C14_bow_studio.png.provenance.json100%  
+	    New File  		   69628	C14_cas_clay.png.provenance.json100%  
+	    New File  		   62979	C14_cas_concept.png.provenance.json100%  
+	    New File  		   71578	C14_cas_studio.png.provenance.json100%  
+	    New File  		   51226	C14_drums_clay.png.provenance.json100%  
+	    New File  		   56493	C14_drums_concept.png.provenance.json100%  
+	    New File  		   58412	C14_drums_studio.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\glb\
+	    New File  		     315	C14_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\
+	    New File  		   23818	bench209.json100%  
+	    New File  		    6142	C14_auto_20.png.provenance.json100%  
+	    New File  		    6144	C14_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	C14_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	C14_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	C14_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	C14_hand_20.png.provenance.json100%  
+	    New File  		    6144	C14_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	C14_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	C14_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	C14_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	C14_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	C14_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	C14_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	C14_off_20.png.provenance.json100%  
+	    New File  		    6143	C14_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	C14_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	C14_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	C14_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\r\
+	    New File  		   11508	C14_battle.png.provenance.json100%  
+	    New File  		   41765	C14_below.png.provenance.json100%  
+	    New File  		   41634	C14_below_clay.png.provenance.json100%  
+	    New File  		   41678	C14_concept.png.provenance.json100%  
+	    New File  		   41801	C14_concept_cl.png.provenance.json100%  
+	    New File  		   41623	C14_concept_clay.png.provenance.json100%  
+	    New File  		   41774	C14_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41686	C14_hero.png.provenance.json100%  
+	    New File  		   41603	C14_hero_clay.png.provenance.json100%  
+	    New File  		   41688	C14_hero_s.png.provenance.json100%  
+	    New File  		   41745	C14_hero_s_clay.png.provenance.json100%  
+	    New File  		   41688	C14_side.png.provenance.json100%  
+	    New File  		   41637	C14_side_clay.png.provenance.json100%  
+	    New File  		   41610	C14_side_s.png.provenance.json100%  
+	    New File  		   41683	C14_side_s_clay.png.provenance.json100%  
+	    New File  		   41647	C14_top.png.provenance.json100%  
+	    New File  		   41668	C14_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\surface\
+	    New File  		     811	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        12         9         3         0         0         0
+   Files :       101       101         0         0         0         0
+   Bytes :    3.69 m    3.69 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            56966397 Bytes/sec.
+   Speed :            3259.643 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\clay\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\clay\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\clay\
+	    New File  		  926312	C14_aft_clay.png 28%   56%   84%  100%  
+	    New File  		 1044102	C14_aft_concept.png 25%   50%   75%  100%  
+	    New File  		 1045726	C14_aft_studio.png 25%   50%   75%  100%  
+	    New File  		  526137	C14_bow_clay.png 49%   99%  100%  
+	    New File  		  525227	C14_bow_concept.png 49%   99%  100%  
+	    New File  		  552190	C14_bow_studio.png 47%   94%  100%  
+	    New File  		 1039105	C14_cas_clay.png 25%   50%   75%  100%  
+	    New File  		  975362	C14_cas_concept.png 26%   53%   80%  100%  
+	    New File  		 1039299	C14_cas_studio.png 25%   50%   75%  100%  
+	    New File  		  982971	C14_drums_clay.png 26%   53%   80%  100%  
+	    New File  		   1.1 m	C14_drums_concept.png 22%   45%   67%   90%  100%  
+	    New File  		   1.1 m	C14_drums_studio.png 22%   44%   66%   89%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   10.48 m   10.48 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           523469333 Bytes/sec.
+   Speed :           29953.155 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\r\
+	    New File  		  102453	C14_battle.png100%  
+	    New File  		   3.0 m	C14_below.png 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   2.5 m	C14_below_clay.png 19%   39%   58%   78%   97%  100%  
+	    New File  		   1.0 m	C14_concept.png 24%   49%   73%   98%  100%  
+	    New File  		 1026094	C14_concept_cl.png 25%   51%   76%  100%  
+	    New File  		  870194	C14_concept_clay.png 30%   60%   90%  100%  
+	    New File  		  881561	C14_concept_clay_cl.png 29%   59%   89%  100%  
+	    New File  		   1.4 m	C14_hero.png 17%   34%   51%   68%   85%  100%  
+	    New File  		   1.1 m	C14_hero_clay.png 21%   43%   64%   86%  100%  
+	    New File  		   1.4 m	C14_hero_s.png 17%   34%   51%   68%   85%  100%  
+	    New File  		   1.2 m	C14_hero_s_clay.png 20%   40%   61%   81%  100%  
+	    New File  		   3.1 m	C14_side.png 15%   31%   47%   63%   78%   94%  100%  
+	    New File  		   2.4 m	C14_side_clay.png 20%   40%   60%   81%  100%  
+	    New File  		   3.0 m	C14_side_s.png 16%   32%   48%   64%   80%   97%  100%  
+	    New File  		   2.5 m	C14_side_s_clay.png 19%   39%   59%   79%   98%  100%  
+	    New File  		   3.4 m	C14_top.png 14%   29%   43%   58%   72%   87%  100%  
+	    New File  		   2.4 m	C14_top_clay.png 20%   40%   60%   80%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   31.89 m   31.89 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1592518476 Bytes/sec.
+   Speed :            91124.638 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\surface\
+	    New File  		   94131	surface_below.png100%  
+	    New File  		   83956	surface_bow.png100%  
+	    New File  		   91667	surface_port.png100%  
+	    New File  		   92032	surface_starboard.png100%  
+	    New File  		   88329	surface_stern.png100%  
+	    New File  		   94178	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   531.5 k   531.5 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           108858600 Bytes/sec.
+   Speed :            6228.939 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\godot\
+	    New File  		  823768	C14_auto_20.png 31%   63%   95%  100%  
+	    New File  		   1.0 m	C14_auto_d1.2.png 23%   46%   69%   92%  100%  
+	    New File  		  209929	C14_auto_d16.0.png 62%  100%  
+	    New File  		  384465	C14_auto_d3.0.png 34%   68%  100%  
+	    New File  		  234804	C14_auto_d8.0.png 55%  100%  
+	    New File  		  822993	C14_hand_20.png 31%   63%   95%  100%  
+	    New File  		   1.0 m	C14_hand_d1.2.png 23%   46%   69%   92%  100%  
+	    New File  		  208036	C14_hand_d17.4.png 63%  100%  
+	    New File  		  206943	C14_hand_d18.6.png 63%  100%  
+	    New File  		  394190	C14_hand_d2.9.png 33%   66%   99%  100%  
+	    New File  		  373484	C14_hand_d3.1.png 35%   70%  100%  
+	    New File  		  237101	C14_hand_d7.75.png 55%  100%  
+	    New File  		  233061	C14_hand_d8.25.png 56%  100%  
+	    New File  		  823301	C14_off_20.png 31%   63%   95%  100%  
+	    New File  		   1.0 m	C14_off_d1.2.png 23%   46%   69%   92%  100%  
+	    New File  		  209862	C14_off_d16.0.png 62%  100%  
+	    New File  		  383974	C14_off_d3.0.png 34%   68%  100%  
+	    New File  		  234845	C14_off_d8.0.png 55%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    8.76 m    8.76 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           612586400 Bytes/sec.
+   Speed :           35052.474 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 5:17:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1155c14h\out\recipe\export\B22_11\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11\
+	    New File  		  17.7 m	B22_11.glb  5.6% 11.2% 16.9% 22.5% 28.2% 33.8% 39.5% 45.1% 50.7% 56.4% 62.0% 67.7% 73.3% 79.0% 84.6% 90.2% 95.9%100%  
+	    New File  		  922766	B22_11_base.jpg 28%   56%   85%  100%  
+	    New File  		    6821	B22_11_check.json100%  
+	    New File  		   17516	B22_11_export.json100%  
+	    New File  		   6.4 m	B22_11_normal.png  7.7% 15.4% 23.1% 30.9% 38.6% 46.3% 54.0% 61.8% 69.5% 77.2% 84.9% 92.7%100%  
+	    New File  		   5.2 m	B22_11_orm.png  9%   19%   28%   38%   47%   57%   67%   76%   86%   95%  100%  
+	    New File  		 1047578	B22_11_parts_base.jpg 25%   50%   75%  100%  
+	    New File  		   5.9 m	B22_11_parts_normal.png  8.3% 16.6% 25.0% 33.3% 41.6% 50.0% 58.3% 66.7% 75.0% 83.3% 91.7%100%  
+	    New File  		   5.7 m	B22_11_parts_orm.png  8.6% 17.3% 25.9% 34.6% 43.2% 51.9% 60.5% 69.2% 77.8% 86.5% 95.1%100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1332	manifest_entry.json100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11\_gltf_source\
+	    New File  		  17.6 m	B22_11.bin  5.6% 11.3% 16.9% 22.6% 28.2% 33.9% 39.5% 45.2% 50.8% 56.5% 62.1% 67.8% 73.5% 79.1% 84.8% 90.4% 96.1%100%  
+	    New File  		   46480	B22_11.gltf100%  
+	    New File  		   4.2 m	C14_hull_albedo.png 11%   23%   35%   47%   59%   71%   82%   94%  100%  
+	    New File  		   6.4 m	C14_hull_normal.png  7.7% 15.4% 23.1% 30.9% 38.6% 46.3% 54.0% 61.8% 69.5% 77.2% 84.9% 92.7%100%  
+	    New File  		   5.2 m	C14_hull_orm.png  9%   19%   28%   38%   47%   57%   67%   76%   86%   95%  100%  
+	    New File  		   4.7 m	C14_parts_albedo.png 10%   21%   31%   42%   52%   63%   74%   84%   95%  100%  
+	    New File  		   5.9 m	C14_parts_normal.png  8.3% 16.6% 25.0% 33.3% 41.6% 50.0% 58.3% 66.7% 75.0% 83.3% 91.7%100%  
+	    New File  		   5.7 m	C14_parts_orm.png  8.6% 17.3% 25.9% 34.6% 43.2% 51.9% 60.5% 69.2% 77.8% 86.5% 95.1%100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        19        19         0         0         0         0
+   Bytes :   93.21 m   93.21 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           2715085388 Bytes/sec.
+   Speed :           155358.432 MegaBytes/min.
+   Ended : Friday, November 20, 2026 5:17:05 PM
+

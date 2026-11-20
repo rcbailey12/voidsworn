@@ -1,0 +1,2 @@
+recipe\export\B22_11\B22_11.glb 17.7 MB
+recipe\export\B22_11\_gltf_source\B22_11.bin 17.7 MB
