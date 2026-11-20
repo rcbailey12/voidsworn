@@ -1,0 +1,315 @@
+{
+  "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_before_after_2.png",
+  "date": "2026-11-19T23:06:49Z",
+  "sources": [
+    {
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "corsair_scatter_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "7d977aaa228f31d1f52c331c4f1682f6a5afdd01d0e8ad52509fcb82b906e099",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_scatter_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "f67fb9b23a6e9c9c2f9b9d4938070a6403e63c5316ea182c65dd68e74ab28d76",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_turret_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "be526b2727afe8abbcbf9f09473d1fc91d4feeacd203c215d2ff97ceca25130c",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_turret_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "c0c7588a4900f955ddd71163c0ee6a9f5696604ac621178869c44b7eaf127c73",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_torp_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "ef3051e672b07d7a3cf1dd22c63588a3856c9e078f17c27ec315a06bade5754f",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_torp_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "4bf4ff44c3b41e1001f3143072dfcbe5b9f90d33b539a11e4a61c5672ca389ef",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_htorp_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "b22f217f947a0c82d497b9534f6da7c46d9d1bbf8fd19e3ee9238f30d539b092",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_htorp_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "fb0a644ee56d370385ae87ee529f3193235ab270f73f389004d1a6c8bddfb847",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_flak_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "e0b938afd911df8b91e0529129e356a287fa32bf128412c4d99893c518702a11",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_flak_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "9574d5822cadaa354c3451f8e6cd24790c53b426c9347b0bf00f8079bc74e066",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_shard_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "07cdb555cfa0a3cd0c3ade9b487e153a356c07e1b5ce98f37a75c276e8d3b6f9",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_shard_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "c61a6741f215cafba7dfc63edd96c772b0cd33dbbffc406c8da7ef21c8361b2f",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_pulsar_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "b50718a445961114b84e59d644dbf4644081cc83aa9d41fd3fbb184dbf021515",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_pulsar_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "05f3b4d6d1585fc3ad0152ccdbddeaaeff8711a14017db1daf594709b14dbfb2",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_startorp_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "ac5f781decd079999e13d841256779910620693b0417c4823d425e114351c425",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_startorp_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "661c45eb5c037043b47716e5db169d5a50f0e81291dacf0d6d457d9a425de448",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "517530f828b915e7d3209e2dd1ea42313132a93080af935771c6f58667dae481"
+  ],
+  "stamp_template_sha256": "517530f828b915e7d3209e2dd1ea42313132a93080af935771c6f58667dae481",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFdPT4F/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fVkkBQeGyWgcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "8d3e3beb9adb8e9fdd3eb9f9eaec149c3ece032e8208f5c13b7f21109280377e"
+}
