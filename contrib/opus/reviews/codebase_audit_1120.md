@@ -67,7 +67,7 @@ Everything else I checked held up: battle parity, save round trips under heavy r
 ## What I ran (all green apart from the three bugs)
 
 - Battle rules parity: `godot/rules/test/run_parity.sh`, all 284 scenarios PASS.
-- 400-battle sweep, seed 913 (`run_sweep.sh 400 913`): see the result line at the end of this section.
+- 400-battle sweep, seed 913 (`run_sweep.sh 400 913`): PASS, 400 of 400 battles identical at every record (77,153 records).
 - Campaign parity, extra seeds 25 to 200 at the normal reload rate: only seed 120 differs (F1).
 - Save and reload stress: `reload_stress/run.sh` (copies of the campaign parity pair with the reload rate raised to 30% per
   click). Seeds 1 to 120, 9,620 reloads, every run reached its end: only seed 91 differs (F1). The save encoder, float
