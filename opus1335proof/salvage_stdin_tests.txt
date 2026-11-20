@@ -1,0 +1,1 @@
+PASS salvage stdin: git gets BOM-free UTF-8 under a BOM page (65001) and a legacy page (437), non-ASCII included
