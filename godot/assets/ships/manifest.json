@@ -50,52 +50,53 @@
    "damage_preview": "previews/B16_23_damage.jpg"
   },
   "B19_11": {
-   "name": "Chorus drone-spawn",
+   "name": "The drone-spawn, the Chorus frigate (The Chorus)",
    "faction": "chorus",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "b_drone",
    "length_world": 6.5,
    "hardpoints": {
-    "gun": 1,
-    "engine": 2,
-    "breach": 4,
-    "core": 1
+    "gun": 3,
+    "engine": 4,
+    "breach": 2,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 2,
+   "turrets": 0,
    "files": {
     "B19_11.glb": {
-     "bytes": 9058024,
-     "sha256": "6ecf8039886b5918f77ae3d156a9b7c2488a3b7309eabba6eb77711b0601c2c8"
+     "bytes": 7801680,
+     "sha256": "16d785163cf7899128f966508929484904f4031051a321d86df746b72b9ba0c1"
     },
     "B19_11_base.jpg": {
-     "bytes": 879727,
-     "sha256": "7124aea64f562721c85693f0725c622d826ab6ee6cb2185b1477b9cc96eb7648"
+     "bytes": 794891,
+     "sha256": "1639d80b6ad653d81b5c0d7c90caf24470fdd67b402c527c395cf77b44023484"
     },
     "B19_11_normal.png": {
-     "bytes": 3845384,
-     "sha256": "272a8ccc9bf0608f247f0250f87c7580a7757d3b7c038223afc5505c0f660712"
+     "bytes": 6785731,
+     "sha256": "2a06a3fedb9fe931cb12c6550f8dcee974591829ace3da7c09041d114d8e9799"
     },
     "B19_11_orm.png": {
-     "bytes": 4793201,
-     "sha256": "2dc1882caae49e10d7b3882d62c4d743d22e3d6646e54dd9c17c73884e0cbb33"
+     "bytes": 4640641,
+     "sha256": "1a0620c6318f4f8d40e7c51592ff2511c7db15e0e0b552ab671c33b1a0246732"
     },
     "B19_11_parts_base.jpg": {
-     "bytes": 916462,
-     "sha256": "29ee6aae65c26437ea5915aa25e0da82f1d253dab8afe9ba6d417e8d7c87c7c9"
+     "bytes": 1018874,
+     "sha256": "91a4b1d2cef7c2be9e3802129ef7c3bc68ba45564d6a22b502085bf1535f8ddb"
     },
     "B19_11_parts_normal.png": {
-     "bytes": 3016901,
-     "sha256": "c349f8b39815675481059bb6ef127762a24b54517345d7829f51b447a9c792f8"
+     "bytes": 6204248,
+     "sha256": "6ba78b2c8b5d64cb7699e528f41741137a49a036df6013df2640ff2026fb005d"
     },
     "B19_11_parts_orm.png": {
-     "bytes": 4900574,
-     "sha256": "75cec21aebcec786323c832d99f7fe82247ce2116f95bab26b6679ad76619e32"
+     "bytes": 5552891,
+     "sha256": "1844bec50597729f558ba6a1a449722872530cc26ab3feafb7e06a12b53110b8"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\",
-   "preview": "previews/B19_11.jpg",
-   "damage_preview": "previews/B19_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\"
   },
   "B20_11": {
    "name": "Chorus spitter",
