@@ -1,5 +1,38 @@
 # Issue 1077: flagship death prototype, PC evidence
 
+## Pass 3C at 66e55036, Nov 19 2026 (PASSED)
+
+PC run OPUS1077_PASS3C.bat attempt 1: pinned commit checked out safely, throwaway profile (real options unchanged), import,
+both headless checks, clips, both side-by-sides and 12 of 12 timing results valid. Godot 4.7.2, forward_plus, RTX 5080,
+installed A16 (C19_51.glb sha256 6611595b...). Pictures and clips: /mnt/project-files/pc/1077/review/pass3/.
+
+- Wreck grouped at the end of the clip (from the pieces' middle): main pieces 0.57 L with strain against 1.35 L today;
+  fragments 0.55 L against 2.44 L (4 pieces, 12 fragments both). Headless on the installed hull: physics pieces 0.22 L
+  with strain against 0.99 L today, fragments 0.52 L against 2.58 L.
+- The tell now shows as a brighter glowing band and hairlines along the break at the close camera; at the battle camera
+  it is still a small difference.
+- Up close the grouped wreck keeps a piece's torn face in view, and some of those cut faces read as flat grey slabs
+  (c26 wreck picture). Today's wreck shows the same faces, but its pieces fly out of frame first. Fix before installing.
+- The side-by-side AVIs still render at about three quarters scale on the PC (left edge clipped by about 50 px); the
+  review mp4s are cropped to the drawn area.
+
+Frame times, solo GPU, three sessions (median of the session medians; worst is the worst of all three), ms:
+
+| deaths | path | frame p50 | p95 | worst | GPU p50 | p95 | worst |
+|---|---|---|---|---|---|---|---|
+| 1 (first in process) | off | 2.2 | 2.4 | 6.9 | 1.79 | 1.84 | 2.09 |
+| 1 (first in process) | strain | 2.2 | 2.5 | 10.5 | 1.81 | 1.85 | 2.12 |
+| 1 | off | 2.2 | 2.6 | 8.5 | 1.75 | 1.82 | 1.84 |
+| 1 | strain | 2.2 | 2.9 | 8.7 | 1.79 | 1.83 | 2.10 |
+| 2 | off | 2.4 | 3.6 | 11.2 | 1.67 | 1.76 | 1.78 |
+| 2 | strain | 2.4 | 3.4 | 12.0 | 1.73 | 1.83 | 1.85 |
+| 3 | off | 4.0 | 6.0 | 18.4 | 2.08 | 2.12 | 2.36 |
+| 3 | strain | 3.3 | 5.6 | 15.2 | 2.24 | 2.31 | 2.41 |
+
+The strain now costs about nothing: the rerun's extra 1 to 2.5 ms CPU went with the undamped, colliding physics pieces.
+The first-use fracture preparation (prepared path, before the first kill): worst frame 19 to 33 ms off, 15 to 26 ms strain,
+p95 2.2 ms both. Cold case: same as the finding below (5 of 6 fell back to no pieces, worst frame 2.3 to 4.3 s).
+
 ## Rerun at 1236bbc3 (main after PR 1171), Nov 19 2026
 
 PC run OPUS1077_RERUN.bat, RTX 5080, Godot 4.7.2, forward_plus, installed A16 (C19_51.glb sha256 6611595b...),
