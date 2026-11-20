@@ -1579,52 +1579,57 @@
    "damage_preview": "previews/V15_37_damage.jpg"
   },
   "V16_37": {
-   "name": "Vigil-class cruiser",
+   "name": "Vigil-class cruiser (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Cruiser",
    "band": "M",
+   "game_ship": "penitent",
    "length_world": 14.5,
    "hardpoints": {
-    "gun": 5,
+    "gun": 9,
     "engine": 2,
-    "breach": 6,
-    "core": 1
+    "breach": 4,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 4,
+   "turrets": 0,
    "files": {
     "V16_37.glb": {
-     "bytes": 4531504,
-     "sha256": "5079732110ead4fb74286a96520568d495120b351d9ec44943f6d9a984307061"
+     "bytes": 10443868,
+     "sha256": "dd2b04cc555989ff3d90eb91b49af65850238082c2d922616bdd478b1a6b567d"
     },
     "V16_37_base.jpg": {
-     "bytes": 1143387,
-     "sha256": "5f7b90ac4d818ab64a71d5e222870a6fb983f4f34a7c85c9bb4b64489fa3710d"
+     "bytes": 1663959,
+     "sha256": "8e73334600fc8053eb9a00aa54d4df9ce54f8fcc98e838734c869443d1d6c1c1"
     },
-    "V16_37_damage.glb": {
-     "bytes": 38386448,
-     "sha256": "78f2c37ff2cc1f48de8fdb290c080f94b62262f9d1d056b869a956532bb18d44"
+    "V16_37_glow_emission.jpg": {
+     "bytes": 514774,
+     "sha256": "4e7c68647522b3aea55d38c35014362b2a0ecccf7008fa9a1f089646bd9d9b94"
     },
-    "V16_37_emissive.jpg": {
-     "bytes": 132888,
-     "sha256": "e26aad1a08d355b34f2f7381bfc79f54c31a86542ee6bb431054ddb2cbada733"
+    "V16_37_normal.png": {
+     "bytes": 4379124,
+     "sha256": "d4f06cd1ff75eb0be4872410a85663821de0abadb69f292cc48cc7ace70baaa4"
     },
-    "V16_37_normal.jpg": {
-     "bytes": 2313213,
-     "sha256": "534e48d6e38750fe3470fec83f86acb30749a2593bf737b11b2139132bae8a9c"
+    "V16_37_orm.png": {
+     "bytes": 8390764,
+     "sha256": "c2ab18f8676e47201d0dbc23daa079afd5cb4f52817df6065b49de4a4c3f3804"
     },
-    "V16_37_orm.jpg": {
-     "bytes": 1646267,
-     "sha256": "1f6d92edfbc3694164eb1fe11f4a2f6c36028008f63df21127c12bd074eb6154"
+    "V16_37_parts_base.jpg": {
+     "bytes": 1070987,
+     "sha256": "9e74f505000e685f54510f45e8cdadbfe273e4586fb6f0250e87fac3c8e66692"
     },
-    "V16_37_wreck.glb": {
-     "bytes": 2713952,
-     "sha256": "af43041171070cbe74ad914df15b230e15c1fd25870d9d1e684ded04614f03a0"
+    "V16_37_parts_normal.png": {
+     "bytes": 3044792,
+     "sha256": "5fdd138f317d0e208d859054b9b6bc8323efa028653825238f9d7faa9928cd33"
+    },
+    "V16_37_parts_orm.png": {
+     "bytes": 6352726,
+     "sha256": "566d8938e9575e3b5512df4f7b094c8eab2a9b2a5061a9b6ff0b16f2f0f97b90"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V16_37\\",
-   "preview": "previews/V16_37.jpg",
-   "damage_preview": "previews/V16_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V16_37\\"
   },
   "V17_37": {
    "name": "Bastion-class battleship",
