@@ -3,7 +3,8 @@
 // Loads <repo root>'s game files with Muse's unmodified Monte Carlo driver (contrib/muse/tools/montecarlo) and adds:
 //  - the repair-stop pick from issue 1177 (full service when its extra hull is worth more than the credits at the paid
 //    repair price, or when the fleet or flagship is below half hull);
-//  - the late shop pick (and, in Sector 3 with 300 or more credits, a preference for shipyard stops) when the tree has late shop sinks (lateShopOffers): buy the best offer it can afford while
+//  - in Sector 3 with 300 or more credits, a preference for shipyard stops (every tree, so both arms route alike);
+//  - the late shop pick when the tree has late shop sinks (lateShopOffers): buy the best offer it can afford while
 //    keeping a repair reserve;
 //  - per-run records: sector of the loss, credits on entering the final boss, faction economy counters.
 'use strict';
@@ -46,10 +47,13 @@ if(typeof hullKey==='function'){
     try{ _mc78Chorus(n,S); } finally { ACT.repairAll=ra; ACT.buyHull=bh; ACT.upgradeMk=um; }
   };
 }
-if(typeof lateShopOffers==='function'){
-  // A fleet with money to spend goes shopping in Sector 3 (only on trees with the late market, so the baseline route is untouched).
+{
+  // A fleet with money to spend goes shopping in Sector 3. One routing policy on every tree (main too), so the before and after
+  // arms differ only by the game (Artoo on PR 1276).
   const _mc78Score=mcNodeScore;
   mcNodeScore=function(n){ let sc=_mc78Score(n); if(n.type==='shipyard'&&RUN.sector>=3&&RUN.credits>=300) sc+=40; return sc; };
+}
+if(typeof lateShopOffers==='function'){
   const _mc78Yard=mcShipyard;
   mcShipyard=function(n,S){
     const r=_mc78Yard(n,S);

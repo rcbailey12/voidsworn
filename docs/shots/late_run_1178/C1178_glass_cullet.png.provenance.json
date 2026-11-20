@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAAAeZJREFUeJzt1sEJwCAAwMDan+D+6+oUIoS7CfLMmGvuDwCArP91AAAAdxk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxB20YwHhAdNgmAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T01:38:12Z",
+	"image_sha256": "3ec62339164aaeeace9c425fb4d2e872ed4edf01e33d56f77ceb616f5e07224f",
+	"inputs": [],
+	"picture_name": "C1178_glass_cullet.png",
+	"schema": 1,
+	"source_commit": "a07f4a2002a00ba263948650d48ffba370df6954",
+	"source_diff_sha256": "772111ced8c52b0a86a545b83bc56314b47ae68f793d3fce8ffce23491ee9276",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "a07f4a2002a00ba263948650d48ffba370df6954",
+			"source_diff_sha256": "772111ced8c52b0a86a545b83bc56314b47ae68f793d3fce8ffce23491ee9276",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		636,
+		720
+	],
+	"stamp_template_sha256": "101d86474421253ea50c62d64108270bdbf6b5786718d25f17bd2302d2c67f85",
+	"strip_sha256": [
+		"101d86474421253ea50c62d64108270bdbf6b5786718d25f17bd2302d2c67f85"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

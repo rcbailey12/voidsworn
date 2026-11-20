@@ -59,10 +59,10 @@
       "scenario_sha256": "d2c6b40837399e8f642a901ddba17e592a69c8891409ebbb301850e220467f93"
     },
     "s9": {
-      "sha256": "da197608e874640b42dd57d2df07df5251adc79ac952e2cc7fc1d9d56a16519a",
-      "bytes": 18048953,
+      "sha256": "77ded4ef0941e1fe59bfe3de7833c6850336d07da797c5066e35d37bdbf885a0",
+      "bytes": 17487292,
       "archive": "s9.jsonl.br",
-      "records": 402,
+      "records": 344,
       "scenario_sha256": "7dcace5e03c107adae42fc37fdbf9b0464bb66396f3ade34a957dc78cacdba9c"
     },
     "s10": {
@@ -164,10 +164,10 @@
       "scenario_sha256": "5d22e9b83b63bcff25beb386bafb894d01fd4245dd78dcf1fd7fc6b9c471d6ac"
     },
     "s24": {
-      "sha256": "898422c43ed346962950e8321733336bad6c43fb49101e418ecd8c2f44503f8b",
-      "bytes": 39526619,
+      "sha256": "6f9d822d2afa5eca86eb3f25ee9f31012bda3db40ab62dabeed3cc5bdde755a8",
+      "bytes": 54303583,
       "archive": "s24.jsonl.br",
-      "records": 499,
+      "records": 622,
       "scenario_sha256": "cc5b0cf00920ec92fcbfdb0d3ac5ee4e25a94648edab82ad1ffff51b3fd14336"
     },
     "s25": {
@@ -248,10 +248,10 @@
       "scenario_sha256": "4abaf105e12a68da8e2b7890328b22ec7b789af84f641ece033a1a08a1647022"
     },
     "s36": {
-      "sha256": "d0c76bcec86924fac4a4735d5b5013b3d8ec6617f02494283f3f3cd0e5885fb7",
-      "bytes": 9095472,
+      "sha256": "fea88bba0fc607268830388559a935b95965a962cd8256264f94b5adbc7cc3d0",
+      "bytes": 17239438,
       "archive": "s36.jsonl.br",
-      "records": 218,
+      "records": 358,
       "scenario_sha256": "1c3393515a541bf38b71d853f30d6dc5182f8bf300b100eefb820a11eaa2ce41"
     },
     "s37": {
@@ -269,10 +269,10 @@
       "scenario_sha256": "9520d5fed9e750c52bf6d0018182ce15a40912cc3a8aa08f6b25411279e2418a"
     },
     "s39": {
-      "sha256": "42870578c8b1dcd5ea8479a402574204d4b02781bdfe78099ae26a745dcd27b6",
-      "bytes": 20805057,
+      "sha256": "e57f3b5502543e15d2cddd4477c632462a0976b556f7323c9ea03d56d0336526",
+      "bytes": 21595954,
       "archive": "s39.jsonl.br",
-      "records": 385,
+      "records": 391,
       "scenario_sha256": "de29c0f7cd8540ee17ce7ed1e4a246fba4a3433ea927a6569fc00cbc6108a19b"
     },
     "s40": {
