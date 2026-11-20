@@ -1,6 +1,8 @@
 @echo off
-title Opus 1077 pass 4: sooted wreck insides, battle-camera tell, clips only - GPU job
-rem Issue 1077, pass 4 (Ryan chose the strain death as the direction, Nov 20). Pass 3's two open items, fixed on the
+title Opus 1077 pass 4B: sooted wreck insides, battle-camera tell, clips only - GPU job
+rem Issue 1077, pass 4B (4 plus Artoo on PR 1231: every Godot start goes through the canonical watchdog,
+rem tools_live\<current>\pc\tmo.bat, not the pinned checkout's tmo.bat; its resolved path and hashes are in the receipt).
+rem Pass 4 (Ryan chose the strain death as the direction, Nov 20). Pass 3's two open items, fixed on the
 rem pinned commit: up close the grouped wreck's insides read as flat grey slabs (now sooted), and the tell was too faint at
 rem the battle camera (the band now brightens far away). Also the side-by-side now fills the movie's width.
 rem Clips only, no timing (pass 3C's solo timing stands: the changes are one material per inside surface and one shader term).
@@ -8,7 +10,7 @@ rem Steps: the pinned commit by the 1078 safe checkout, both headless checks, th
 rem the two side-by-side AVIs, every step checked, nonzero unless all are present. The capture claims the GPU solo by itself.
 rem Every Godot start runs in a throwaway profile (opus1077\profile_<N>\appdata); Ryan's real battle_opts.json and
 rem board_look.cfg are hashed before the first Godot start and at the end (and on any stop); a difference is FAILED.
-rem Writes only under opus1077\ (out_pass4_<A> and scratch_pass4_<A>, A the first unused attempt number). Never deletes
+rem Writes only under opus1077\ (out_pass4b_<A> and scratch_pass4b_<A>, A the first unused attempt number). Never deletes
 rem anything. Logs to that folder's result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set EXPECT=8216f98308a5d9483870b827fbf647ceba45f7a7
@@ -17,9 +19,9 @@ set W=%V%\opus1077
 set C=%W%\repo
 set A=1
 :findattempt
-if exist "%W%\out_pass4_%A%" (set /a A+=1 & goto findattempt)
-set O=%W%\out_pass4_%A%
-set S=%W%\scratch_pass4_%A%
+if exist "%W%\out_pass4b_%A%" (set /a A+=1 & goto findattempt)
+set O=%W%\out_pass4b_%A%
+set S=%W%\scratch_pass4b_%A%
 mkdir "%O%"
 mkdir "%S%"
 set RES=%O%\result.txt
@@ -62,7 +64,16 @@ set "APPDATA=%PROF%\appdata"
 set "LOCALAPPDATA=%PROF%\appdata"
 echo throwaway profile %PROF%\appdata >> "%RES%"
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
-set TM=%C%\tools\pc\tmo.bat
+rem the canonical watchdog: tools_live's current version (named in tools_live\current.txt), never the pinned clone's own
+set "TLV="
+if exist "%V%\tools_live\current.txt" set /p TLV=<"%V%\tools_live\current.txt"
+if not defined TLV (set "FAILMSG=tools_live\current.txt is missing or empty" & goto fail)
+set "TM=%V%\tools_live\%TLV%\pc\tmo.bat"
+if not exist "%TM%" (set "FAILMSG=no watchdog at %TM%" & goto fail)
+if not exist "%V%\tools_live\%TLV%\pc\run_timeout.ps1" (set "FAILMSG=no run_timeout.ps1 beside %TM%" & goto fail)
+echo watchdog %TM% >> "%RES%"
+certutil -hashfile "%TM%" SHA256 >> "%RES%" 2>&1
+certutil -hashfile "%V%\tools_live\%TLV%\pc\run_timeout.ps1" SHA256 >> "%RES%" 2>&1
 set PC_GPU_WAIT_SECONDS=3600
 set PC_GPU_ISSUE=1077
 cd /d "%C%"
