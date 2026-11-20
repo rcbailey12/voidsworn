@@ -2906,11 +2906,19 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 
 
 # R367 (issue 1399, Ryan's look pass): a styled faction's small hull has no smoke body, so its pop needs its own light: a
-# short flash in the faction's light colour with a white star, and a ring of sparks in its spark colour. fx.spr runs it
-# through the flash budget, so reduce flashing and a crowded frame soften it like any other flash.
+# short flash in the faction's light colour with a white star, and a ring of sparks in its spark colour. Its intensity
+# (2.4) is under fx.FLASH_I, so fx.spr would not book it: it books itself (Artoo on PR 1400), and with reduce flashing or
+# a full flash budget it becomes the same soft lift fx.spr gives a refused flash.
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	fx.spr(p, fx.now, 0.32, dcol(s, "light", Color(0.9, 0.9, 1.0)), 2.4, L * 0.25, L * 1.1, 0, inherited, 0.0, 0.0, 0.0, 64.0)
+	var life := 0.32
+	var kind := 0
+	var i := 2.4
+	if fx.reduce_flashing or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
+		kind = 18
+		i *= 0.4
+		life = 0.96
+	fx._emit_spr(p, fx.now, life, dcol(s, "light", Color(0.9, 0.9, 1.0)), i, L * 0.25, L * 1.1, kind, inherited, 0.0, 0.0, 0.0, 64.0)
 	if fx.quality == "low": return
 	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
 	for j in 18:
