@@ -22,6 +22,7 @@ extends "res://fx/test/shield_fail_probe.gd"
 
 const HREV := "r1"
 const HCELL := Vector2i(400, 225)
+const STILL_MARGIN := 120   # room under each still for its picture stamp
 const STORIES := {
 	"shoulder": {"name": "Shield breaks on the bow shoulder", "at": [0.1, 0.3, 0.55, 0.85]},
 	"lethal": {"name": "The breaking volley kills the ship", "at": [0.1, 0.3, 0.55, 0.85]},
@@ -189,8 +190,12 @@ func _hstory(sid: String, story: String, radius: float, dir: String) -> void:
 			return
 		img = bench._crop(img, CROP.get(int(radius), Vector2i(1152, 648)), HCELL)
 		var name := "%s_%s_%.2f.png" % [sid, story, float(k)]
-		# (a plain still: only the finished sheet carries the picture stamp, so no stamp covers a cell)
-		if img.save_png(dir.path_join(name)) != OK:
+		# the shared stamp goes in a margin under the picture, so the sheet takes the picture without it (_hsheet)
+		img.convert(Image.FORMAT_RGB8)
+		var padded := Image.create(HCELL.x, HCELL.y + STILL_MARGIN, false, Image.FORMAT_RGB8)
+		padded.fill(Color(0.05, 0.05, 0.07))
+		padded.blit_rect(img, Rect2i(Vector2i.ZERO, HCELL), Vector2i.ZERO)
+		if preload("res://tools/picture_provenance.gd").save_png(padded, dir.path_join(name)) != OK:
 			_fail("could not save " + name)
 			return
 		row["moments"]["%.2f" % float(k)] = fx.now
@@ -280,6 +285,10 @@ func _hsheet(sid: String, story: String, code: String, runs: Array) -> void:
 				_fail("missing still " + p)
 				continue
 			var img := Image.load_from_file(p)
+			if img == null or img.get_width() < HCELL.x or img.get_height() < HCELL.y:
+				_fail("unreadable still " + p)
+				continue
+			img = img.get_region(Rect2i(Vector2i.ZERO, HCELL))   # (the picture above its stamp margin)
 			var tr := TextureRect.new()
 			tr.texture = ImageTexture.create_from_image(img)
 			tr.position = Vector2(lw + c * HCELL.x, y)
