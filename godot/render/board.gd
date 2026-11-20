@@ -492,6 +492,11 @@ var _toast_t := 0.0
 var _edge_gain := 0.0
 var gas_edges: MeshInstance3D
 var _gas_edge_gain := 0.0
+# Issue 1267 (Ryan's pick 1, Nov 20): the normal (cine) view keeps its big soft clouds but adds a faint line on the
+# outer edge of nebula (cover) and ion storm (shield drain) patches, so where they stop reads without Z
+var hazard_edges: MeshInstance3D
+var _hazard_edge_gain := 0.0
+const HAZARD_EDGE := ["neb", "storm"]
 
 
 func _well_info() -> void:
@@ -570,6 +575,18 @@ func _terrain_edges() -> void:
 			n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
 	edges.mesh = st.commit() if n > 0 else null
 	gas_edges.mesh = sg.commit() if ng > 0 else null
+	hazard_edges = MeshInstance3D.new()
+	hazard_edges.name = "HazardEdges"
+	hazard_edges.material_override = em.duplicate()
+	hazard_edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(hazard_edges)
+	var sz := SurfaceTool.new()
+	sz.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var nz := 0
+	for g in HAZARD_EDGE:
+		if groups.has(g):
+			nz += _edge_into(sz, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+	hazard_edges.mesh = sz.commit() if nz > 0 else null
 
 
 # the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
@@ -628,6 +645,10 @@ func _edge_gains(sp: Dictionary) -> void:
 		_gas_edge_gain = float(sp.get("gas_edge", sp["terrain_edge"]))
 		(gas_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _gas_edge_gain)
 		gas_edges.visible = _gas_edge_gain > 0.0
+	if hazard_edges != null:
+		_hazard_edge_gain = float(sp.get("hazard_edge", 0.0))
+		(hazard_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _hazard_edge_gain)
+		hazard_edges.visible = _hazard_edge_gain > 0.0
 
 
 func _look_ui(toast: bool) -> void:
@@ -685,6 +706,8 @@ func _process(dt: float) -> void:
 			edges.visible = fills.visible and _edge_gain > 0.0
 		if gas_edges != null:
 			gas_edges.visible = fills.visible and _gas_edge_gain > 0.0
+		if hazard_edges != null:
+			hazard_edges.visible = fills.visible and _hazard_edge_gain > 0.0
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 
@@ -950,7 +973,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 
 
 func _rebuild_edges() -> void:
-	for n in [edges, gas_edges]:
+	for n in [edges, gas_edges, hazard_edges]:
 		if is_instance_valid(n):
 			remove_child(n)
 			n.queue_free()
