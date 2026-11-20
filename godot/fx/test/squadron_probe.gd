@@ -3,6 +3,7 @@ extends SceneTree
 const SV := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const WING := preload("res://render/squadron_wing.gd")
 const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Hegemony Navy", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
 var vp: SubViewport
 var world: Node3D
@@ -65,6 +66,8 @@ func _run() -> void:
 	fx.manual = true
 	fx.setup({"camera": cam, "quality": "low", "shake": 0.0})
 	for c in CASES: await _capture(c)
+	if OS.get_environment("SQUADRON_TIMING") != "0":
+		await _timing()
 	fx.release()
 	world.queue_free()
 	await process_frame
@@ -126,8 +129,12 @@ func _capture(c: Array) -> void:
 	detail.text = "Battle camera | 170 units | unchanged craft scale | launch hull for context"
 	cam.look_at_from_position(Vector3(5, 0, 0) + Vector3(0.0, 0.557, 0.831) * 170.0, Vector3(5, 0, 0))
 	await _still(fac + "_battle")
+	# Issue 1373: the near battle camera too, the craft beside their carrier
+	detail.text = "Battle camera | 100 units | unchanged craft scale | beside the carrier"
+	cam.look_at_from_position(Vector3(5, 0, 0) + Vector3(0.0, 0.557, 0.831) * 100.0, Vector3(5, 0, 0))
+	await _still(fac + "_c100")
 	# Both adaptive roles get a close capture for the factions that can use them.
-	if fac in ["voidsworn", "hegemony", "ithar"]:
+	if fac in ["voidsworn", "hegemony", "ithar", "corsair"]:
 		var alt: String = "fighter" if c[2] == "bomber" else "bomber"
 		var extra = _view(fac, "Squadron", alt, wing.position)
 		wing.visible = false
@@ -165,3 +172,78 @@ func _capture(c: Array) -> void:
 	carrier.queue_free()
 	wing.queue_free()
 	await process_frame
+
+
+# Issue 1373: frame cost of a full launch, the code-built craft against the kit-built ones. Every faction with craft launches
+# two wings from its carrier at once (both roles where the faction has both), the wings fly, and the probe times 300 frames
+# at the 170 battle camera. "before" forces the code-built craft (no installed manifest), "after" uses the installed models.
+# Writes timing.txt beside the shots: wall ms per frame (mean, p95) and the viewport's measured GPU and CPU render ms.
+func _timing() -> void:
+	var lines: Array = ["squadron launch frame time (issue 1373), %dx%d, MSAA 4x, 300 frames each, vsync off" % [vp.size.x, vp.size.y]]
+	var keep_path: String = WING.ship_manifest_path
+	for mode in ["before", "after"]:
+		WING.ship_manifest_path = "res://__no_manifest__.json" if mode == "before" else keep_path
+		var nodes: Array = []
+		var wings: Array = []
+		var k := 0
+		for c in CASES:
+			var fac: String = c[0]
+			if c[2] == "":
+				continue
+			var base := Vector3(-60 + 30 * k, 0, 10)
+			k += 1
+			var carrier = _view(fac, c[3], "", base)
+			fx.add_ship("t_%s_carrier" % fac, carrier, {"faction": fac, "cls": c[3], "meshes": carrier.meshes, "shielded": false})
+			nodes.append(carrier)
+			var roles: Array = [c[2]]
+			if fac in ["voidsworn", "hegemony", "ithar", "corsair"]:
+				roles.append("fighter" if c[2] == "bomber" else "bomber")
+			else:
+				roles.append(c[2])
+			for j in roles.size():
+				var w = _view(fac, "Squadron", roles[j], base + Vector3(-8, 2, -10 - 6 * j))
+				var wid := "t_%s_w%d" % [fac, j]
+				fx.add_ship(wid, w, {"faction": fac, "squadron": true, "meshes": w.meshes})
+				fx.launch("t_%s_carrier" % fac, wid)
+				nodes.append(w)
+				wings.append(w)
+		fx._later.clear()
+		title.text = "Full launch timing: " + mode
+		detail.text = "%d wings | %s" % [wings.size(), "code-built craft" if mode == "before" else "kit-built craft, hull finish"]
+		cam.look_at_from_position(Vector3(0, 0, 0) + Vector3(0.0, 0.557, 0.831) * 170.0, Vector3(0, 0, 0))
+		var rid := vp.get_viewport_rid()
+		RenderingServer.viewport_set_measure_render_time(rid, true)
+		for i in 30:
+			for w in wings: w.hull.step(1.0 / 60.0)
+			fx.step(1.0 / 60.0)
+			await RenderingServer.frame_post_draw
+		var wall: Array = []
+		var gpu := 0.0
+		var cpu := 0.0
+		var t0 := Time.get_ticks_usec()
+		for i in 300:
+			for w in wings: w.hull.step(1.0 / 60.0)
+			fx.step(1.0 / 60.0)
+			await RenderingServer.frame_post_draw
+			var t1 := Time.get_ticks_usec()
+			wall.append((t1 - t0) / 1000.0)
+			t0 = t1
+			gpu += RenderingServer.viewport_get_measured_render_time_gpu(rid)
+			cpu += RenderingServer.viewport_get_measured_render_time_cpu(rid)
+		await _still("timing_" + mode)
+		RenderingServer.viewport_set_measure_render_time(rid, false)
+		wall.sort()
+		var mean := 0.0
+		for v in wall: mean += v
+		mean /= wall.size()
+		lines.append("%s: %d wings, wall mean %.2f ms, p95 %.2f ms, gpu %.2f ms, cpu %.2f ms" % [mode, wings.size(), mean, wall[int(wall.size() * 0.95)], gpu / 300.0, cpu / 300.0])
+		print("SQUADRON_TIMING " + lines[-1])
+		for c in CASES:
+			fx.remove_ship("t_%s_carrier" % c[0])
+			for j in 2: fx.remove_ship("t_%s_w%d" % [c[0], j])
+		for n in nodes: n.queue_free()
+		for i in 3: await process_frame
+	WING.ship_manifest_path = keep_path
+	var f := FileAccess.open(out.path_join("timing.txt"), FileAccess.WRITE)
+	f.store_string("\n".join(lines) + "\n")
+	f.close()
