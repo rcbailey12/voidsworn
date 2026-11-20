@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T12:19:35Z",
+	"image_sha256": "258a991d5057f45e42762837420e6aa481bfea1fde233494d6cd91a17435791e",
+	"inputs": [],
+	"picture_name": "rimsoft_noglow.jpg",
+	"schema": 1,
+	"source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+	"source_diff_sha256": "619c73fedc4a6030725ee689f50b424273009906c7d0f612101f9fdaeb0e945c",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+			"source_diff_sha256": "619c73fedc4a6030725ee689f50b424273009906c7d0f612101f9fdaeb0e945c",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "db241d2b5764b8ff55cd8981d04b00acbbca350d43dbfae8b48eb623463442d6",
+	"strip_sha256": [
+		"33436a6afda96e6858a3814d07468993a3ba121de18bfc87a881ce7749d6193c"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

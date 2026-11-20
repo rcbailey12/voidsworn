@@ -1,0 +1,23 @@
+start Fri 11/20/2026  6:19:28.63 attempt 4 probe4 pin 9a756ee52da2457b7998e823104889365203fbc4 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1282w2\repo\godot\assets\ships\I8_37\I8_37.glb:
+3606295ff65f4c04cf02dea1020e5c30cd4f8c905b658360fb91310dc90b162c
+CertUtil: -hashfile command completed successfully.
+fetched 9a756ee52da2457b7998e823104889365203fbc4 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat 
+probe exit 0 
+BLOOM_PROBE glb C:/Users/rcbai/Downloads/voidsworn_test/opus1282w2/repo/godot/assets/ships/I8_37/I8_37.glb sha256 3606295ff65f4c04cf02dea1020e5c30cd4f8c905b658360fb91310dc90b162c renderer forward_plus adapter NVIDIA GeForce RTX 5080 stern box [P: (1050, 100), S: (500, 400)]
+BLOOM_PROBE scene C:/Users/rcbai/Downloads/voidsworn_test/opus1282w2/repo/godot/gen/ships/I8_37.scn sha256 75ae1bb62e1dd50431ae79d9c6019ef5651083ed66d0872b9c264dd87c9ba6f2 built from glb stamp 1795156401:20768564;
+BLOOM_PROBE light @DirectionalLight3D@3 energy 2.00 specular 1.00
+BLOOM_PROBE light @DirectionalLight3D@4 energy 0.50 specular 1.00
+BLOOM_PROBE light LookRim energy 0.35 specular 8.00
+BLOOM_PROBE light LookRimSoft energy 0.35 specular 2.00
+BLOOM_PROBE base stern over245=1290 over200=8086 of 200000 (raw png over245=1295)
+BLOOM_PROBE rimoff stern over245=118 over200=806 of 200000 (raw png over245=123)
+BLOOM_PROBE rimsoft stern over245=655 over200=3924 of 200000 (raw png over245=672)
+BLOOM_PROBE noglow stern over245=1119 over200=3071 of 200000 (raw png over245=1233)
+BLOOM_PROBE rimsoft_noglow stern over245=595 over200=2235 of 200000 (raw png over245=650)
+BLOOM_PROBE rimsoft_metal_0.5 stern over245=532 over200=4389 of 200000 (raw png over245=559)
+BLOOM_PROBE rimsoft_nofill stern over245=508 over200=2995 of 200000 (raw png over245=549)
+BLOOM_PROBE done
+PASSED 
+all done Fri 11/20/2026  6:19:36.67 

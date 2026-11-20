@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAAAeRJREFUeJzt1kENACAQwDAO/55BBSFZWgV7bmb2WQAAZO3fAQAAvGX4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEHcBvBUBx74Wc7sAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-20T12:19:35Z",
+	"image_sha256": "a91a5d8c9c8b5dcfe876d17ae7e8066fa9c908f6a1688b0b089fd440473d3ea4",
+	"inputs": [],
+	"picture_name": "rimsoft_metal_0.5.png",
+	"schema": 1,
+	"source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+	"source_diff_sha256": "619c73fedc4a6030725ee689f50b424273009906c7d0f612101f9fdaeb0e945c",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "0074f95f1cbe41cd3b9def3a72820b2d8cf67d62",
+			"source_diff_sha256": "619c73fedc4a6030725ee689f50b424273009906c7d0f612101f9fdaeb0e945c",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "1da2f1567c15b1505a00e60f8f35e63422e2d68d1969acd51c4c33a80f0f9408",
+	"strip_sha256": [
+		"1da2f1567c15b1505a00e60f8f35e63422e2d68d1969acd51c4c33a80f0f9408"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}
