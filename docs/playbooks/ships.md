@@ -82,7 +82,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
    hulls (`godot/render/look.gd` READ ithar rim_light 0, issue 1315): its specular flared white on the pearl lips.
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
-   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of violet-white fire at its edge; all violet, no green on the hull (Ryan, Nov 20 2026,
+   issue 1419, replacing the green corona of Nov 10 and R237; the installed E11 to E14 keep the green until the stack is
+   repainted and rebaked, contrib/opus/plans/eclipse_1419.md). (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
    lift, divided by it (read from look.gd), never lavender or grey; (2) separation by structure, not noise (Ryan, Nov 13 2026
    11:06 CST, on the first E11 picture: "Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of
@@ -93,12 +95,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
    and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
    accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
-   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
-   and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
-   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
-   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
-   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
-   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   (3) the corona is light, not paint (Ryan, same message: "that green looks so plain
+   and stark, just like neon paint"; still binding in violet): the corona line on every shade rim is a faint ring of light, thin at rest,
+   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold violet-white at
+   its hottest (white-gold on the brightest arcs) and deeper violet where dim, in faction_looks.json's Eclipse colours. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows violet-white, white-hot
+   only at its very centre, reading at camera 170; never light pooled in hollows, ribs or sockets, and no green anywhere on the hull. Every light is drawn on one
    emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
    (4) engines are an eclipse ring of pale light round a
    black shade disc, in the game's Eclipse engine colour paled toward white, with shared brightness, tint, hot spots and
