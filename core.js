@@ -236,7 +236,7 @@ function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
 function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
 function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
-const LATE_SHOP={relic:150,cp:160,cpMax:2,core:.2}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
 // Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 60 a battle
 const CULLET={Frigate:15,Destroyer:30,Cruiser:45,Carrier:50,Battleship:60,cap:60};
 function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
