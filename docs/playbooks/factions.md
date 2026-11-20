@@ -185,36 +185,40 @@ ships catch, store and release light.
 
 ## Eclipse (`deathless`)
 
-Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships. I like the green
-glow but it should be on brand with eclipse". This overrides the lore bible's colour line for ships (white-gold and
-violet-white): the green stays, as the light of an eclipse.
+Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships." His colour
+line that day ("I like the green glow but it should be on brand with eclipse") kept a green corona on the hulls. **Superseded
+Nov 20 2026 (issue 1419):** asked "the rim is written as green and the weapons as violet ... my pick is all violet, to match
+the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse is all violet: no green on the hulls.
 
-**In one line:** a black shade with a thin ring of green-white fire at its edge.
+**In one line:** a black shade with a thin ring of violet-white fire at its edge.
 
 - **Who they are (lore 7.1):** the Starwrights who uploaded. Machine bodies in a system they made dark, each with a small core
   of trapped light, all that is left of their sun.
-- **The green, on brand:** a real total eclipse shows a faint green ring in the sun's corona. That is the Eclipse green: a
-  thin, cold green-white line along the rim of every shade plate, and the trapped light core seen through gaps. Never a
-  pooled glow inside ribs or sockets, which reads as undead.
+- **The corona:** a thin, cold violet-white line along the rim of every shade plate, white-gold at its hottest arcs, and the
+  trapped light core seen through gaps, violet-white grading to violet. Never a pooled glow inside ribs or sockets, which
+  reads as undead.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring. The shade sits over the ship
   as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
   slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
-- **Colours:** dark violet-black plates, the green-white corona line, a small bright core. Engines and weapon bolts are
-  violet with a green weapon core, as godot/fx/faction_looks.json sets them (issue 1205 removed the all-green hull_table
-  FAC3D override; faction_looks.json is the one source).
+- **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
+  Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
+  file (issue 1205 removed the all-green hull_table FAC3D override). The only green left there is the Doom gun's
+  `weapon_core` (R263), a weapon ruling of its own, kept until Ryan says otherwise. The hull paint lives in
+  tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
+  the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
-  green like the concept, white-hot only at its very centre, and reads at camera 170.
+  violet-white (Nov 20, all violet), white-hot only at its very centre, and reads at camera 170.
 - **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
   or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
 - **Engines:** no flaming bells. An eclipse ring of pale violet light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
-  skulls, green pooled in hollows, flame.
+  skulls, any green on the hull, glow pooled in hollows, flame.
 - **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
