@@ -36,6 +36,22 @@ if ($mode -eq 'run') {
   } catch { Write-Host "job refused: could not hold the issue lock and run work_issue.bat ($($_.Exception.Message))"; exit 14 }
 }
 
+function Start-Utf8InputProcess($start) {
+  # Issue 1335: PowerShell 5.1 (.NET Framework) writes redirected stdin in [Console]::InputEncoding and emits its
+  # preamble when the process starts. Under code page 65001 that is a UTF-8 BOM, so git read '<BOM>create ...' and
+  # every salvage on Nov 20 was kept. Newer .NET takes StandardInputEncoding; 5.1 needs the console encoding swapped
+  # around the start. A preamble that is still there stops the call rather than corrupting the input.
+  $noBom = New-Object Text.UTF8Encoding($false)
+  if ($start.PSObject.Properties['StandardInputEncoding']) { $start.StandardInputEncoding = $noBom; return [Diagnostics.Process]::Start($start) }
+  $saved = $null
+  try { $saved = [Console]::InputEncoding; if ($saved.GetPreamble().Length) { [Console]::InputEncoding = $noBom } } catch { }
+  try {
+    if ([Console]::InputEncoding.GetPreamble().Length) { throw 'stdin encoding still writes a byte order mark; nothing started' }
+    return [Diagnostics.Process]::Start($start)
+  } finally {
+    if ($saved -and $saved -ne [Console]::InputEncoding) { try { [Console]::InputEncoding = $saved } catch { } }
+  }
+}
 # Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
 # GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
 # %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
@@ -141,7 +157,8 @@ function OpenAI-Agent($out, $repo, $exe, $model, $variant, [int]$cap) {
       $start.RedirectStandardInput = $true
       $start.RedirectStandardOutput = $true
       $start.StandardOutputEncoding = $utf8
-      $process = [Diagnostics.Process]::Start($start)
+      # OpenCode reads the prompt as UTF-8; no byte order mark in front of it (issue 1335).
+      $process = Start-Utf8InputProcess $start
       try {
         # OpenCode reads the message from stdin. The watchdog can record its command line on a timeout.
         try { $process.StandardInput.Write($prompt); $process.StandardInput.Close() } catch [IO.IOException] { }

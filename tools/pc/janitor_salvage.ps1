@@ -1,4 +1,20 @@
 # R339. Build and read back a backup before the janitor can remove a checkout with local work.
+function Start-Utf8InputProcess($start) {
+  # Issue 1335: PowerShell 5.1 (.NET Framework) writes redirected stdin in [Console]::InputEncoding and emits its
+  # preamble when the process starts. Under code page 65001 that is a UTF-8 BOM, so git read '<BOM>create ...' and
+  # every salvage on Nov 20 was kept. Newer .NET takes StandardInputEncoding; 5.1 needs the console encoding swapped
+  # around the start. A preamble that is still there stops the call rather than corrupting the input.
+  $noBom = New-Object Text.UTF8Encoding($false)
+  if ($start.PSObject.Properties['StandardInputEncoding']) { $start.StandardInputEncoding = $noBom; return [Diagnostics.Process]::Start($start) }
+  $saved = $null
+  try { $saved = [Console]::InputEncoding; if ($saved.GetPreamble().Length) { [Console]::InputEncoding = $noBom } } catch { }
+  try {
+    if ([Console]::InputEncoding.GetPreamble().Length) { throw 'stdin encoding still writes a byte order mark; nothing started' }
+    return [Diagnostics.Process]::Start($start)
+  } finally {
+    if ($saved -and $saved -ne [Console]::InputEncoding) { try { [Console]::InputEncoding = $saved } catch { } }
+  }
+}
 function Salvage-Git([string[]]$words, [string[]]$inputLines) {
   $words = @('-c','core.longpaths=true') + $words
   if (-not $inputLines.Count) {
@@ -14,7 +30,7 @@ function Salvage-Git([string[]]$words, [string[]]$inputLines) {
   $start.RedirectStandardInput = $true
   $start.RedirectStandardOutput = $true
   $start.RedirectStandardError = $true
-  $child = [Diagnostics.Process]::Start($start)
+  $child = Start-Utf8InputProcess $start
   try {
     $output = $child.StandardOutput.ReadToEndAsync()
     $errors = $child.StandardError.ReadToEndAsync()
