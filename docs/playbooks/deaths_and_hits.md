@@ -194,11 +194,14 @@ keeps the shared orange fire (since round 2 every metal faction has one; the Cho
 - Every styled faction, small hulls (frigates and destroyers): the pop gets its own short flash in the faction's light
   colour with a white star, and a ring of sparks (fx_death.gd _fac_pop; it books the flash budget itself and turns into a
   soft lift with reduce flashing or a full budget). Ryan's look 2 pick for round 1, "more punch and more violet".
+  The smoke a styled death keeps loses the baked fire's warm cast (grey soot, not rose).
 Built (issue 1399, round 2), at the same punch level:
 - Sunward Crusade (drumbeat): ember-gold fire, smoke kept at about a third; during the tell its magazines go off as an even
-  row of small ember pops down one broadside, at most a quarter second apart (three, five or seven by class); ember rims.
+  row of ember pops down the broadside facing the camera, nose to stern, at most a quarter second apart (three, five or
+  seven by class); ember rims.
 - Hegemony Navy (arc): blue-white fire, smoke kept at a quarter; as the pieces part, blue-white lightning (the shared
-  lightning ribbon) jumps the gap for a third of a second (three, six or eight arcs by class); steel-blue rims.
+  lightning ribbon) jumps the gap for a third of a second, each bolt from a point on one piece's torn face to a point on the other's (four,
+  ten or fourteen by class); steel-blue rims.
 - Ashfall Hullbreakers (patch): dirty red fire, smoke kept at about half (soot is theirs); during the tell patch plates tear
   loose from scattered spots and spin off (two, four or six by class); red rims.
 Not built yet: the Glasswrights' white fracture lines across the optics in the tell, whole rings shearing off, and the

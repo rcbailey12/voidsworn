@@ -2937,7 +2937,9 @@ static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
 static func _drumbeat(fx, s, T: float, tl: DeathTimeline) -> void:
 	var n := 7 if s.death_tier == "capital" else (5 if s.death_big else 3)
 	var step: float = minf(0.25, maxf(float(tl.cut) * 0.9, 0.3) / float(n))
-	var side := 1.0 if fx.rng.randf() < 0.5 else -1.0
+	# the broadside that faces the camera, so the row reads (Ryan's clip review, round 2)
+	var side := 1.0
+	if is_instance_valid(fx.camera): side = 1.0 if (s.xf().affine_inverse() * fx.camera.global_position).z >= s.hull.c.z else -1.0
 	for b in n:
 		fx.later(T + step * float(b), _drum_pop.bind(fx, s, b, n, side))
 
@@ -2945,16 +2947,16 @@ static func _drumbeat(fx, s, T: float, tl: DeathTimeline) -> void:
 static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
 	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.ships.get(s.id) != s: return
 	var h = s.hull
-	var x: float = h.box.position.x + h.L * (0.15 + 0.7 * (float(b) + 0.5) / float(n))
+	var x: float = h.box.position.x + h.L * (0.08 + 0.84 * (float(b) + 0.5) / float(n))
 	var hit: Dictionary = h.ray(Vector3(x, h.c.y, h.c.z + side * h.W * 2.0), Vector3(0.0, 0.0, -side))
 	if hit.is_empty(): return
 	var pw: Vector3 = s.to_world(hit["p"])
 	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3(0.0, 0.0, side)) as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	fx.spr(pw + nw * h.L * 0.01, fx.now, 0.22, dcol(s, "light", Color(1.0, 0.78, 0.5)), 2.6, h.L * 0.02, h.L * 0.07, 0, inherited, 0.0, 0.0, 0.0, 10.0)
+	fx.spr(pw + nw * h.L * 0.015, fx.now, 0.3, dcol(s, "light", Color(1.0, 0.78, 0.5)), 3.6, h.L * 0.04, h.L * 0.13, 0, inherited, 0.0, 0.0, 0.0, 24.0)
 	var col := dcol(s, "spark", Color(1.0, 0.62, 0.3))
-	for j in 4:
-		fx.stk(pw, fx.now, 0.4, col, 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, inherited + (nw + fx.rdir() * 0.5).normalized() * h.L * 0.2, 0.8, 0.0, 1.5, 5.0)
+	for j in 8:
+		fx.stk(pw, fx.now, 0.5, col, 4.0, 0.05, maxf(h.L * 0.004, 0.04), 1, inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 0.0, 1.5, 6.0)
 
 
 # R367 round 2: the Hullbreakers' patch plates tear loose during the tell, four to six of them spinning off from scattered
@@ -2995,10 +2997,10 @@ static func _arcs(fx, s, tries := 0) -> void:
 	if nodes.size() < 2:
 		if tries < 20: fx.later(fx.now + 0.05, _arcs.bind(fx, s, tries + 1))
 		return
-	var n := 8 if s.death_tier == "capital" else (6 if s.death_big else 3)
+	var n := 14 if s.death_tier == "capital" else (10 if s.death_big else 4)
 	s.set_meta("death_arcs", [])
 	for j in n:
-		fx.later(fx.now + 0.33 * float(j) / float(n), _arc_strike.bind(fx, s, weakref(nodes[0]), weakref(nodes[1])))
+		fx.later(fx.now + 0.36 * float(j) / float(n), _arc_strike.bind(fx, s, weakref(nodes[0]), weakref(nodes[1])))
 
 
 static func _arc_strike(fx, s, ra: WeakRef, rb: WeakRef) -> void:
@@ -3008,15 +3010,16 @@ static func _arc_strike(fx, s, ra: WeakRef, rb: WeakRef) -> void:
 	var sa: PackedVector3Array = (na as Node3D).get_meta("arc_sites")
 	var sb: PackedVector3Array = (nb as Node3D).get_meta("arc_sites")
 	if sa.is_empty() or sb.is_empty(): return
+	# from a point on one face to one of the other face's points (not always the nearest), so the bolts cross the gap at
+	# angles and read as lightning, not as cracks along the seam (Ryan's clip review, round 2)
 	var a: Vector3 = (na as Node3D).to_global(sa[fx.rng.randi() % sa.size()])
-	var b: Vector3 = (nb as Node3D).to_global(sb[0])
-	for q in sb:
-		var w: Vector3 = (nb as Node3D).to_global(q)
-		if w.distance_to(a) < b.distance_to(a): b = w
+	var b: Vector3 = (nb as Node3D).to_global(sb[fx.rng.randi() % sb.size()])
 	var d: float = a.distance_to(b)
 	if d < 1e-3: return
 	var L: float = s.hull.L
-	fx.rib(a, (b - a) / d, d, fx.now, 0.12, dcol(s, "spark", Color(0.7, 0.88, 1.0)), 2.2, maxf(L * 0.004, 0.04), maxf(L * 0.003, 0.03), 6)
+	var col := dcol(s, "spark", Color(0.7, 0.88, 1.0))
+	fx.rib(a, (b - a) / d, d, fx.now, 0.2, col, 3.4, maxf(L * 0.008, 0.08), maxf(L * 0.006, 0.06), 6)
+	fx.spr(a, fx.now, 0.12, col, 2.4, L * 0.01, L * 0.03, 0, Vector3.ZERO, 0.0, 0.0, 0.0, 8.0)
 	(s.get_meta("death_arcs", []) as Array).append([a, b, na, nb])
 
 

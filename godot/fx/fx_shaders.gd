@@ -177,13 +177,15 @@ void fragment() {
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
 	keep = clamp(thick.b, 0.0, 1.0);
 	if (fac_fire.a > 0.0) {
-		// the baked heat keeps its shape and brightness and takes the faction's colours; its smoke stays as baked
+		// the baked heat keeps its shape and brightness and takes the faction's colours; its smoke keeps its shading but
+		// loses the baked fire's warm cast (issue 1399 round 2: a Hegemony break bloomed rose-pink), so it reads as soot
 		float lum = dot(ALBEDO, vec3(0.3, 0.55, 0.15));
 		vec3 ramp = mix(fac_mid, fac_fire.rgb, smoothstep(0.12, 1.1, lum)) * lum * 1.5;
 		vec2 c = UV - 0.5;
 		vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
 		ramp = mix(ramp, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
-		ALBEDO = mix(ALBEDO, ramp, fac_fire.a * keep);
+		vec3 soot = mix(ALBEDO, vec3(lum), 0.85);
+		ALBEDO = mix(ALBEDO, mix(soot, ramp, keep), fac_fire.a);
 	}
 #endif
 	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
