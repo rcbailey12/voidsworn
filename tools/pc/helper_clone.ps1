@@ -15,7 +15,8 @@
 #     hardlinked, because stage 7 and other tools rewrite those files in place. ships_copied.txt records what was copied.
 #   - Runs the job steps (cmd /c "<steps>" steps) inside the lease and exits with their exit code.
 # Release mode (the Board runs it after relaying the results; R326, a job's own leftovers):
-#   - Only when out\result.txt says PASS and no FAILED, and every file in the out folders is committed on a
+#   - Only when the latest attempt (attempt.txt) ended with exit 0 (out\attempt_result.txt), out\result.txt says PASS
+#     and no FAILED, and every file in the out folders is committed on a
 #     board/pc-out-* relay branch in the mirror. Then removes the ship and gen copies this folder made (only files whose
 #     bytes still match ships_copied.txt; any other file is listed and kept) and repo\godot\.godot (the import cache).
 #     The clone itself stays for reuse. On FAILED nothing is removed, so the Board can read it.
@@ -139,6 +140,14 @@ function Copy-Ships {
 }
 function Assert-Relayed {
   $outDirs = @(Get-ChildItem -LiteralPath $job -Directory -Force | Where-Object { $_.Name -like 'out*' })
+  # Bound to the latest attempt (Artoo on PR 1275): attempt.txt names it, and out\attempt_result.txt must carry that ID
+  # with exit 0. A retry that failed early has a new ID without a matching exit 0, so an older PASS never counts.
+  $attemptFile = Join-Path $job 'attempt.txt'
+  $attempt = if (Test-Path -LiteralPath $attemptFile) { [IO.File]::ReadAllText($attemptFile).Trim() } else { '' }
+  if ($attempt -notmatch '\A[0-9a-f]{32}\z') { throw 'no attempt.txt from helper_clone; nothing removed' }
+  $attemptResult = Join-Path (Join-Path $job 'out') 'attempt_result.txt'
+  $last = if (Test-Path -LiteralPath $attemptResult) { [IO.File]::ReadAllText($attemptResult).Trim() } else { '' }
+  if ($last -cne "$attempt exit 0") { throw "the latest attempt $attempt did not end with exit 0 (out\attempt_result.txt: '$last'); nothing removed" }
   $result = Join-Path (Join-Path $job 'out') 'result.txt'
   if (-not (Test-Path -LiteralPath $result)) { throw 'no out\result.txt; nothing removed' }
   $text = [IO.File]::ReadAllLines($result)
@@ -186,6 +195,7 @@ $null = [IO.Directory]::CreateDirectory($job)
 Assert-NotLinked $job
 try { $lease = [IO.File]::Open((Join-Path $job '.voidsworn-run-active'), 'OpenOrCreate', 'ReadWrite', 'None') }
 catch [IO.IOException] { throw "another run is using $job right now; nothing changed" }
+$attempt = $null; $code = 1
 try {
   if ($release) {
     if (-not (Test-Path -LiteralPath (Join-Path $repo '.git'))) { throw "no clone in $job; nothing to release" }
@@ -194,6 +204,13 @@ try {
     Write-Output "release done; the clone stays for reuse: $repo"
     exit 0
   }
+  # Each run is one attempt with its own ID; release accepts only the latest attempt's exit 0, relayed exactly.
+  $attempt = [guid]::NewGuid().ToString('N')
+  $null = [IO.Directory]::CreateDirectory((Join-Path $job 'out'))
+  $attemptResult = Join-Path (Join-Path $job 'out') 'attempt_result.txt'
+  if (Test-Path -LiteralPath $attemptResult) { [IO.File]::Delete($attemptResult) }
+  [IO.File]::WriteAllText((Join-Path $job 'attempt.txt'), "$attempt`n")
+  Write-Output "attempt $attempt"
   $script:fresh = $false
   Refresh-Mirror {
     $script:fresh = -not (Test-Path -LiteralPath (Join-Path $repo '.git'))
@@ -223,4 +240,8 @@ try {
     Write-Output "job steps exit $code"
     exit $code
   }
-} finally { $lease.Dispose() }
+  $code = 0
+} finally {
+  if ($attempt) { [IO.File]::WriteAllText((Join-Path (Join-Path $job 'out') 'attempt_result.txt'), "$attempt exit $code`n") }
+  $lease.Dispose()
+}

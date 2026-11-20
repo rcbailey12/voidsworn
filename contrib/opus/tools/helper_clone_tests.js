@@ -138,6 +138,25 @@ try {
     assert.match(r.out, /kept \(changed since it was copied\): gen.manifest\.json/);
     assert(fs.existsSync(path.join(job, 'repo', '.git')), 'the clone stays for reuse');
     assert.equal(read(path.join(out, 'shot.png')), 'result bytes', 'results are never removed');
+
+    // Artoo on PR 1275: a relayed PASS, then a retry that fails before writing any output. Release must refuse.
+    write(path.join(job, 'repo', 'godot', 'gen', 'manifest.json'), '{"gen":1}');
+    r = run(steps);
+    assert.equal(r.status, 0, r.out);
+    assert.match(read(path.join(out, 'attempt_result.txt')), /^[0-9a-f]{32} exit 0\n$/);
+    fs.rmSync(path.join(relay, 'opus901'), { recursive: true });
+    fs.cpSync(out, path.join(relay, 'opus901'), { recursive: true });
+    git(['add', '-A'], relay);
+    git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-q', '-m', 'relay 2'], relay);
+    git(['push', '-q', source, 'HEAD:refs/heads/board/pc-out-fixture2'], relay);
+    const retry = helper(['-JobDir', job, '-Branch', 'opus/issue-404', '-Ships', 'ships', '-Steps', steps]);
+    assert.notEqual(retry.status, 0, 'the retry fails early (no such branch)');
+    assert.match(read(path.join(out, 'attempt_result.txt')), /^[0-9a-f]{32} exit 1\n$/);
+    assert.match(read(path.join(out, 'result.txt')), /PASS/, 'the older PASS is still in result.txt');
+    r = release();
+    assert.notEqual(r.status, 0);
+    assert.match(r.out, /did not end with exit 0/);
+    assert.equal(read(cloneShip), 'build v4', 'the retry left the copies in place and release removed nothing');
     console.log('PASS helper clone: shared mirror under its lock, job lease held through the steps, unique local ships kept, release only after a relayed PASS');
   })().catch(error => { console.error(error); process.exitCode = 1; first.kill(); })
     .finally(() => fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 }));
