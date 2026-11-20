@@ -127,6 +127,91 @@ Standard the same with `standard 240 1` or `standard 80 1`):
 The sim's Chorus shipyard shim skips its biomass pass when hullKey() is not 'bio', so the biomass-off arm runs the plain
 credits shipyard.
 
+## Issue 1290: fixes from the outside review of PR 1276
+
+Evidence: /mnt/project-files/reviews/1276_late_balance/findings.md (review read at 1888a1b3). Both twins, tables re-exported.
+
+| Fix | Where | What changes for the player |
+| --- | --- | --- |
+| Dead late relics out | LATE_SHOP.skip in core.js; lateStock and lateShopOffers (both twins) | The late market never offers the Smuggler's ledger, the logbook or the Scrap rig, so both relic slots are combat relics. A yard saved before this change still lists them in its stock; they are filtered when listed and bought, and a skipped relic already bought stays shown as bought (Artoo on PR 1294; fixture godot/campaign/test/fixtures/issue_1290/old_yard.json, checked by contrib/opus/tools/late_stock_1290_tests.js and late_fixes_1290.gd) |
+| Regrown ships sell for 0 until they fight | sellValue in core.js and campaign.gd; restoreCore marks the ship, rewardFlow clears it | Regrow for 20% then decommission for 35% no longer makes credits (Zenith +62, Flare +32 before) |
+| Chorus decommission pays biomass | ACT.sellConfirm and its twin use the hull purse | No more biomass-to-credits side door; the button and the dialog say biomass |
+| Bigger Glasswright cullet | CULLET: Frigate 25, Destroyer 45, Cruiser 70, Carrier 85, Battleship 100, cap 100 | About 25% of a lost hull's price back, still under the 35% decommission value |
+
+Scrap rig check (the Board asked): it pays 15 credits and repairs 8% hull per win. The mean fleet at the final boss holds 707
+hull, so 8% is 57 hull, worth 28 credits at the repair price of 1 per 2 hull, about 43 a battle at most. A Sector 3 run has 4.1
+battles counting the boss, so a relic bought at a Sector 3 yard has 2 or 3 fights left that still matter: about 85 to 130 at
+best, usually less because the fleet is not always damaged. It does not reliably earn back 120, so it is out too.
+
+Pictures (installed in game, 1280x720): [D1290_regrown_decommission](D1290_regrown_decommission.png) (a regrown Eclipse flare:
+"You receive 0 credits. A regrown ship has nothing to strip until it has fought.") and
+[B1290_chorus_decommission](B1290_chorus_decommission.png) (Chorus: "You receive 16 biomass", buttons say biomass). Check:
+`godot --headless --path godot --script res://campaign/test/late_fixes_1290.gd` (in godot_checks.txt).
+
+### Measured (Veteran, 240 paired seeds per faction)
+
+Seeds 1 to 240 for each faction, admirals rotated, same bot and harness as above. Before = main ab6b3258 (PR 1276 merged),
+after = a04bff21. The bot never decommissions, so the sell fixes cannot show here; the market and cullet changes can.
+
+| Faction | Win before | Win after | Change | Seeds flipped win to loss / loss to win | Losses S1 / S2 / S3 before | after | Credits at the boss, paired (change, 95%) |
+| --- | ---: | ---: | ---: | --- | --- | --- | --- |
+| Crusade | 32.9% (79) | 33.3% (80) | +0.4 | 2 / 3 | 95 / 41 / 25 | 95 / 41 / 24 | 175 to 176 (0, -5 to 6) |
+| Hegemony | 30.0% (72) | 30.0% (72) | 0.0 | 1 / 1 | 92 / 48 / 28 | 92 / 48 / 28 | 135 to 138 (+3, -2 to 8) |
+| Hullbreakers | 38.3% (92) | 38.3% (92) | 0.0 | 1 / 1 | 94 / 38 / 16 | 94 / 38 / 16 | 145 to 153 (+8, -13 to 28) |
+| Chorus | 47.5% (114) | 44.2% (106) | -3.3 | 9 / 1 | 66 / 41 / 19 | 66 / 41 / 27 | 109 to 118 (+10, 2 to 18) |
+| Glasswrights | 27.5% (66) | 26.7% (64) | -0.8 | 14 / 12 | 102 / 55 / 17 | 100 / 58 / 18 | 144 to 133 (-11, -42 to 20) |
+| Eclipse | 52.1% (125) | 52.9% (127) | +0.8 | 1 / 3 | 71 / 28 / 16 | 71 / 28 / 14 | 160 to 155 (-5, -15 to 6) |
+
+No driver errors; timeouts 26 before, 29 after. Late market buys: 905 relics and 20 command points before, 894 and 22
+after; ledger, logbook and Scrap rig went from 119 buys to 0, and armourweave, martyr, compass, coils and banner took them.
+
+- **Five factions do not move** beyond 1 point, which is what the fixes intend.
+- **Chorus: -3.3 points**, all of it in Sector 3 (losses 19 to 27; 9 seeds flip to a loss, 1 the other way). It is about one
+  standard error of a 240-run rate, but the flips lean one way, so treat it as probably real and small. The likely cause:
+  Chorus buy the most late relics (1.8 a Sector 3 run) and the Scrap rig was their heal. A first after arm that kept the Scrap
+  rig gave -1.7 (5 / 1 flips). Chorus still sit second of six, with Eclipse, so no further fix is proposed; the 5-point line
+  is retired (Board, issue 1290).
+- **Glasswrights: the cullet does not move the win rate.** Cullet paid rises from about 72 to 118 credits a run, the win rate
+  is flat (27.5% to 26.7%), and the flips nearly cancel (14 wins became losses, 12 losses became wins), which is noise. The
+  Board's keep rule is "no win-rate change beyond noise" (issue 1290 body), so it stays. The cullet does not fix the
+  Glasswright win rate; their 27.5% before this change is a separate question, below.
+
+### Evidence only: what holds the Glasswrights back at Veteran (no change proposed here)
+
+Read from the same 240-seed "before" arm (main ab6b3258) and the hull tables in data.js. Bot rates, not player rates.
+
+| | Crusade | Hegemony | Hullbreakers | Chorus | Glasswrights | Eclipse |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Run losses S1 / S2 / S3 (of 240) | 95 / 41 / 25 | 92 / 48 / 28 | 94 / 38 / 16 | 66 / 41 / 19 | 102 / 55 / 17 | 71 / 28 / 16 |
+| Fight loss rate: S1 boss | 13% | 8% | 11% | 5% | **18%** | 10% |
+| Fight loss rate: S2 elite / S2 boss | 19% / 7% | 20% / 9% | 11% / 6% | 15% / 4% | **24% / 14%** | 15% / 3% |
+| Fight loss rate: ordinary S1 / S2 battles | 5% / 7% | 5% / 12% | 4% / 5% | 3% / 6% | 5% / 10% | 5% / 6% |
+| Fleet max hull at the final boss | 703 | 595 | 684 | 830 | **433** | 825 |
+| Ships at the final boss | 5.4 | 4.8 | 6.3 | 5.8 | 5.2 | 7.2 |
+| Own vs enemy CP in S1 fights | 5.9 / 8.4 | 5.9 / 8.4 | 6.2 / 8.7 | 6.0 / 8.6 | 5.9 / 8.4 | 6.1 / 8.2 |
+| Shop hulls: hull per command point | 42.8 | 37.6 | 40.6 | 42.0 | **27.6** | 47.4 |
+| Shop hulls: armour | 18% | 17% | 13% | 14% | **3%** | 25% |
+| Shop hulls: evasion | 7 | 8 | 12 | 7 | **20** | 7 |
+| Shop hulls: price per command point | 68 | 65 | 62 | 58 | **79** | 106 |
+| Shop hulls: hull plus shields per 100 credits | 73 | 70 | 75 | 76 | 45 | 44 |
+| Shop hulls: expected damage a turn per 100 credits | 22.2 | 18.4 | 27.2 | 32.1 | 16.4 | 14.5 |
+
+What it shows:
+- **Not the fleet budget.** Enemy fleets in Sector 1 are the same size against every faction (8.2 to 8.7 enemy CP against
+  5.9 to 6.2 of their own), so the Glasswrights are not drawing bigger fights.
+- **They lose the big fights, not the ordinary ones.** Ordinary battles go about like everyone else's. The gap is the
+  Sector 1 boss (18% lost, next worst 13%), the Sector 2 elites (24%, next 20%) and the Sector 2 boss (14%, next 9%): long
+  fights against heavy hitters.
+- **Glass hulls.** Their ships carry the least hull per command point (27.6, against 37.6 to 47.4), almost no armour (3%),
+  and lean on evasion 20 instead. They also cost the most per command point after the Eclipse. They reach the final boss
+  with 433 total hull, against 595 to 830 for everyone else. Evasion does not stop the big single shots and area damage that
+  bosses and elites bring (likely, not measured per weapon).
+- **Not only Veteran.** At Standard they were also last (60.0% against 75 to 90%, PR 1276 before arm), so this is the faction's
+  build, not the Veteran AI edge.
+
+Levers for a later issue, cheapest first (untested): Glasswright hull prices nearer the field (79 a CP to about 68), a little
+more hull on the wisp and blade, or an evasion rule that also softens area hits. Which one is a design call.
+
 ## Checks run (cloud, Godot 4.7.2, Node 22)
 
 - Campaign parity: PASS on 30 seeds plus the cross-twin hand-off (both twins play the late market and the core regrow).
