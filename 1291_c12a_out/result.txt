@@ -1,0 +1,23 @@
+start chorus_C12 B19_11 work/issue-1291-c12 Fri 11/20/2026  8:52:56.07 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                 -> refs/pull/1340/merge
+ * [new branch]          board/pc-out-1119zzx7  -> board/pc-out-1119zzx7
+ * [new branch]          board/pc-out-1119zzzs7 -> board/pc-out-1119zzzs7
+   8da59e490..1c7d1a755  claude/project-thread-r8cctm -> claude/project-thread-r8cctm
+   6d746217d..75ab0c625  main                   -> main
+   553659bad..67709f3d7  opus/issue-1157        -> opus/issue-1157
+ * [new branch]          opus/issue-1316        -> opus/issue-1316
+ * [new branch]          work/issue-1291-kit    -> work/issue-1291-kit
+   553659bad..67709f3d7  refs/pull/1166/head    -> refs/pull/1166/head
+   8da59e490..1c7d1a755  refs/pull/1339/head    -> refs/pull/1339/head
+ + 9ce7b8542...d55fc413c refs/pull/1339/merge   -> refs/pull/1339/merge  (forced update)
+ * [new ref]             refs/pull/1347/head    -> refs/pull/1347/head
+ * [new ref]             refs/pull/1347/merge   -> refs/pull/1347/merge
+ * [new ref]             refs/pull/1348/head    -> refs/pull/1348/head
+ * [new ref]             refs/pull/1348/merge   -> refs/pull/1348/merge
+ * [new ref]             refs/pull/1349/head    -> refs/pull/1349/head
+ * [new ref]             refs/pull/1349/merge   -> refs/pull/1349/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12a\repo
+commit=e912ab090ec7a4d59634c3cebcf5ff62336578d3
