@@ -167,6 +167,32 @@ Neon's five. At most 12.
     player-path captures intact; InputMap actions for the battle keys (needed for rebinding or a controller). Not felt
     by a player; costs the team. (Godot finding 12, Neon Q4, Neon blind 15.)
 
+## Astra results (PR 1432, Nov 20)
+
+Astra (gpt-6.2-astra, high effort, about $18.58 of the $30 stop) answered all 12 items above at main 34834f97 and added
+a shipping pass (W1 to W5). Report: `contrib/openai/astra_council_1120/report.md`. Its lead: fix hover first. The three
+stalls a player feels are three different waits, so a faster shader or a better average frame rate fixes none of them.
+
+| Astra item | What it found (real hulls, PC CPU, headless) | Job issue |
+|---|---|---|
+| 1 Hover freeze (#17) | Every move blocks one mouse event on the threat map join: worst frames 330, 327, 201, 203 ms | 1433 (run first) |
+| 2 Battle load (#34) | 6.1 s in one call building 24 ships under the cover, 83% in ship views | 1434 |
+| 3 Cold first launch | The exported PCK holds zero baked shader payloads; rendered cold time not measured | 1439 (PC, GPU solo) |
+| 4 Other GPUs | A failed compute sky bake never falls back to raster, so the sky stays plain | 1436 |
+| 5 Battle-end join | fx.release with one cut outstanding: 5.7 to 6.5 s on 4 threads | 1435 |
+| 6 VRAM at 4K Max | World map cache is capped by count, not bytes (up to about 2 GiB); no 8 GB spill shown | 1439 |
+| 7 Leaving mid enemy turn | Did not reproduce; _threat_busy never cleared on exit is a real risk | 1433 |
+| 8 Display defaults | AA state not always fully written; Low keeps costly shadows; no frame cap if V-Sync is forced off | 1437 (Ryan picks defaults) |
+| 9 Idle cost | Wings 0.9 ms and FX 0.6 ms lead; the HUD guard saves far less than 4 ms | 1437 |
+| 10 Title showcase (#32) | 8.5 s synchronous build before the title is usable | 1434 |
+| 11 Long-run leaks | Churn only, no growing leak over three sectors | None |
+| 12 Splitting battle.gd | Real upkeep risk, no rewrite; split behind the item 1 rules client first | 1433 (step 1 only) |
+| W1 | The hidden campaign map keeps animating during battles | 1437 |
+| W2 | 371 MB of source GLBs ship beside the generated ship scenes | 1438 |
+| W3 | Closing the window skips quit_clean | 1435 |
+| W4 | The title showcase overrides the player's SFX volume each frame | 1434 |
+| W5 | The safe-mode launcher only works from a source checkout | 1436 |
+
 ## Already tracked
 
 Cited, not re-listed as new.
