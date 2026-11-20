@@ -20,7 +20,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # their list and a canonical extract of A16's own data.js entry (c_boss); when the check runs on the fixture it hashes the
 # same files and the extract and fails when they differ.
 const FX := preload("res://fx/fx.gd")
-const ROOT := preload("res://fx/test/world_root.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const FIXTURE_RECORD := "res://fx/test/fixtures/C19_51_unbaked.sheet.txt"
@@ -113,7 +113,7 @@ func _run() -> void:
 	if ship == null:
 		quit(1)
 		return
-	# Issue 1309: rooted the way the game roots it (fx/test/world_root.gd), at world size
+	# Issue 1309: rooted the way the game roots it (tools/ci/world_root.gd), at world size
 	var holder := ROOT.hold(world, ship)
 	var fx = FX.new()
 	world.add_child(fx)

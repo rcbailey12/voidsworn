@@ -2,7 +2,7 @@ extends SceneTree
 # Issue 557. Args: authored export folder, legacy folder, moved folder, output folder.
 # Uses the production ShipView loader and FX damage/death paths. Saves each installed scene beside its GLB.
 const FX = preload("res://fx/fx.gd")
-const ROOT = preload("res://fx/test/world_root.gd")
+const ROOT = preload("res://tools/ci/world_root.gd")
 const SV = preload("res://render/ship_view.gd")
 const LOOK = preload("res://render/look.gd")
 const BREACH = preload("res://fx/fx_breach.gd")

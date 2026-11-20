@@ -7,7 +7,7 @@ const DEATH = preload("res://fx/fx_death.gd")
 const BREACH = preload("res://fx/fx_breach.gd")
 const FX = preload("res://fx/fx.gd")
 const GUARD = preload("res://tools/ci/check_guard.gd")
-const ROOT = preload("res://fx/test/world_root.gd")
+const ROOT = preload("res://tools/ci/world_root.gd")
 var failures := 0
 
 func _init() -> void:
@@ -69,7 +69,7 @@ func _run() -> void:
 		ship.set_meta("voidsworn_destruct", {"version": 1, "interior_materials": ["fixture_inside_0"],
 			"seams": [{"p": [-7, 0, 0], "n": [1, 0, 0]}, {"p": [5, 0, 0], "n": [1, 0, 0]},
 				{"p": [0, 0, 0], "n": [0, 1, 0], "span": [-7, 5]}]})
-	# Issues 1309 and 1355: rooted the way the game roots it (fx/test/world_root.gd): an unscaled node at world size, the
+	# Issues 1309 and 1355: rooted the way the game roots it (tools/ci/world_root.gd): an unscaled node at world size, the
 	# ship scaled under it (scaling the root left a written GLB, about one unit long, analysed at file size)
 	# A written GLB is held at the length the game draws it (its code and class); only the built fixture keeps a fixed scale.
 	var holder := ROOT.hold(world, ship, -1.0, 1.7 if args.is_empty() else -1.0)

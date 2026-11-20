@@ -14,7 +14,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same choice as death_seam_check.gd, which also guards the fixture's freshness).
 const FX := preload("res://fx/fx.gd")
-const ROOT := preload("res://fx/test/world_root.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
@@ -114,7 +114,7 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	var ship := _load_ship()
 	check(ship != null, "A16 loads")
 	if ship == null: return {}
-	# as ShipView draws it (fx/test/world_root.gd): the hull scaled to its game length under an unscaled root, so the hull's
+	# as ShipView draws it (tools/ci/world_root.gd): the hull scaled to its game length under an unscaled root, so the hull's
 	# numbers are world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
 	ship = ROOT.hold(world, ship)
 	var fx = FX.new()

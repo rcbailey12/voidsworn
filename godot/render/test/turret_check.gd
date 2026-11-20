@@ -24,7 +24,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   godot --headless --path godot --script res://render/test/turret_check.gd [-- --out FILE.json]
 
 const FX := preload("res://fx/fx.gd")
-const ROOT := preload("res://fx/test/world_root.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const FIX := "res://render/test/fixtures/T560_fx/T560_fx.glb"
 const K := 23.2          # the Cruiser class length 14.5 times SHIP_K 1.6 (render/hull_table.gd): the size ShipView draws it at
