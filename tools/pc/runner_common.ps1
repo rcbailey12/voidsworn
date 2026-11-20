@@ -236,11 +236,48 @@ function Warn-KeptRepos($repo) {
     } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
   }
 }
+function Get-BuildShipLatest($build, $code) {
+  # Newest file time in the shared build's folder for one ship code, or $null when the build has no such ship.
+  if (-not $script:buildShipLatest) { $script:buildShipLatest = @{} }
+  if ($script:buildShipLatest.ContainsKey($code)) { return $script:buildShipLatest[$code] }
+  $latest = $null
+  $dir = Get-Item -LiteralPath (Join-Path $build "godot/assets/ships/$code") -Force -ErrorAction SilentlyContinue
+  if ($dir -is [IO.DirectoryInfo] -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    try {
+      foreach ($file in $dir.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) {
+        if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) { $latest = $null; break }
+        if (-not $latest -or $file.LastWriteTimeUtc -gt $latest) { $latest = $file.LastWriteTimeUtc }
+      }
+    } catch { $latest = $null }
+  }
+  $script:buildShipLatest[$code] = $latest
+  return $latest
+}
 function Test-SharedBuildCopy($repo, $path, $allowSuperseded = $false) {
   # Use the same default shared build as get_ship_files.bat.
   $build = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build'
   $local = Get-Item -LiteralPath (Join-Path $repo $path) -Force -ErrorAction SilentlyContinue
   $shared = Get-Item -LiteralPath (Join-Path $build $path) -Force -ErrorAction SilentlyContinue
+  if (-not $shared -and $allowSuperseded -and $path -match '\Agodot/assets/ships/([A-Za-z0-9_][A-Za-z0-9_-]*)/' -and
+      $local -is [IO.FileInfo] -and -not ($local.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    # Issue 1180 run 8 (Board, Nov 20): a ship file with no build twin (an old damage glb) is a candidate when the build
+    # holds the same ship code installed later. Like any superseded file it is archived and read back before removal.
+    $code = $Matches[1]
+    $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+    for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+    }
+    $installed = Get-BuildShipLatest $build $code
+    $floor = [DateTime]::new(2000, 1, 1, 0, 0, 0, [DateTimeKind]::Utc); $ceiling = [DateTime]::UtcNow.AddMinutes(5)
+    $copyTime = $local.LastWriteTimeUtc
+    $detail = "copy $($copyTime.ToString('o')), $($local.Length) bytes; no build twin; ship $code installed $(if ($installed) { $installed.ToString('o') } else { 'never' })"
+    if (-not $installed) { return $false }
+    if ($copyTime -lt $floor -or $copyTime -gt $ceiling -or $installed -gt $ceiling) { Log "shared copy time not trusted, kept: $path ($detail)"; return $false }
+    if ($copyTime -ge $installed) { Log "copy is not older than the shared build, kept: $path ($detail)"; return $false }
+    Log "superseded by the shared build: $path ($detail)"
+    $script:cleanupSuperseded += ,$path
+    return $true
+  }
   foreach ($file in @($local, $shared)) {
     if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
   }
@@ -467,16 +504,21 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks) {
   Assert-PlainDirectory $directory
-  $bytes = 0L; $latest = $directory.LastWriteTimeUtc
+  $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @()
   $worktreeLatest = [DateTime]::MinValue
   $gitPrefix = (Join-Path $directory.FullName '.git') + [IO.Path]::DirectorySeparatorChar
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push($directory)
   while ($pending.Count) {
     foreach ($item in $pending.Pop().EnumerateFileSystemInfos()) {
-      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "linked path: $($item.FullName)" }
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        # Links are listed, never followed or counted (legacy selftest fixtures hold junctions to shared ships).
+        if (-not $allowLinks) { throw "linked path: $($item.FullName)" }
+        $links += ,$item
+        continue
+      }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
       if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
       $bytes += $item.Length
@@ -486,7 +528,18 @@ function Measure-CleanupDirectory($directory, [switch]$checkout) {
       }
     }
   }
-  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; WorktreeLatest = $worktreeLatest }
+  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; WorktreeLatest = $worktreeLatest; Links = $links }
+}
+function Remove-CleanupLinks($links) {
+  # Remove each link itself, never its target. PowerShell 5.1's Remove-Item -Recurse can follow a junction.
+  foreach ($link in $links) {
+    $item = Get-Item -LiteralPath $link.FullName -Force -ErrorAction SilentlyContinue
+    if (-not $item) { continue }
+    if (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "link was replaced: $($link.FullName)" }
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    if ($item -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($item.FullName, $false) } else { [IO.File]::Delete($item.FullName) }
+    if (Test-Path -LiteralPath $item.FullName) { throw "link could not be removed: $($item.FullName)" }
+  }
 }
 function Open-CleanupLock($path, $existingOnly = $false) {
   $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue

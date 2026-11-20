@@ -21,7 +21,9 @@ function write(file, value) {
 }
 function read(file) { return fs.readFileSync(file, 'utf8'); }
 function execute(exe, args, input, extra = {}) {
-  const r = spawnSync(exe, args, { input, cwd: root, env: { ...env, ...extra }, encoding: 'utf8', windowsHide: true, timeout: 30000 });
+  const merged = { ...env, ...extra };
+  for (const key of Object.keys(merged)) if (merged[key] === null) delete merged[key];
+  const r = spawnSync(exe, args, { input, cwd: root, env: merged, encoding: 'utf8', windowsHide: true, timeout: 30000 });
   if (r.error) throw r.error;
   assert.equal(r.status, 0, `${exe} ${args.join(' ')}: ${r.stdout}\n${r.stderr}`);
   return r.stdout.trim();
@@ -322,8 +324,37 @@ try {
   recordScratch(311, replaced, { token: 'e'.repeat(32), created: createdTicks(replaced) });
   const recent = scratch(temp, 'issue-306-recent', 2);
   markOwned(recent, 2);
+  // Issue 1180 run 8: a helper folder goes after a day only when every out file is a blob in the mirror (relayed on a
+  // board/pc-out branch). Unrelayed files are listed and keep the folder; no out folder keeps it too.
+  const relay = file => git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', file]);
   const opus = scratch(pc, 'opus901out1', 73);
+  relay(path.join(opus, 'nested', 'proof.txt'));
+  dateTree(opus, 73);
   const recentOpus = scratch(pc, 'opus902', 71);
+  const helperRelayed = scratch(pc, 'opus905', 30);
+  write(path.join(helperRelayed, 'out', 'result.txt'), 'opus905 result relayed');
+  relay(path.join(helperRelayed, 'out', 'result.txt'));
+  dateTree(helperRelayed, 30);
+  const helperUnrelayed = scratch(pc, 'opus903', 30);
+  write(path.join(helperUnrelayed, 'out', 'result.txt'), 'opus903 result relayed');
+  relay(path.join(helperUnrelayed, 'out', 'result.txt'));
+  write(path.join(helperUnrelayed, 'out', 'shot.png'), 'opus903 picture too big to relay');
+  dateTree(helperUnrelayed, 30);
+  const helperNoOut = scratch(pc, 'opus904', 30);
+  // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
+  const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
+  const legacyIssue = scratch(temp, `voidsworn-run-320-${'b2'.repeat(16)}`, 30);
+  const legacyParity = scratch(temp, 'voidsworn-parity-Ab3dE9', 30);
+  const legacyStage7 = scratch(temp, 'stage7-checked-D20_23-abc_1234', 30);
+  const legacyRecent = scratch(temp, `voidsworn-run-${'c3'.repeat(16)}`, 20);
+  const legacyLocked = scratch(temp, `voidsworn-run-302-${'d4'.repeat(16)}`, 30);
+  const legacyProcess = scratch(temp, `voidsworn-run-${'e5'.repeat(16)}`, 30);
+  const legacyLookalike = scratch(temp, 'voidsworn-run-notahexname', 30);
+  const linkTarget = path.join(root, 'shared-ships-target');
+  write(path.join(linkTarget, 'B16_23.glb'), 'shared ship the link points at');
+  const legacyLinked = scratch(temp, `voidsworn-run-${'f6'.repeat(16)}`, 30);
+  fs.symlinkSync(linkTarget, path.join(legacyLinked, 'nested', 'ships-link'), 'junction');
+  dateTree(legacyLinked, 30);
   const oldStage7 = scratch(temp, 'stage7-checked-old', 4);
   markOwned(oldStage7, 4);
   const liveHelper = scratch(temp, `voidsworn-run-${'f'.repeat(32)}`, 5);
@@ -371,11 +402,13 @@ try {
     return execute(windows ? 'powershell.exe' : 'pwsh',
       ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command], undefined,
       { JANITOR_PROOF_SCRIPT: janitor, JANITOR_PROOF_LOCK: heldPath, PC_RUN_SCRATCH: '', PC_TEST_GH_DB: '',
-        JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(), ...extra });
+        JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(),
+        PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"`, ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, oldOwned, oldRetry, tokenOnly, recordedFull, opus, oldStage7, workClean, ...recover];
-  const preserve = [edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
+    legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, oldStage7, workClean, ...recover];
+  const preserve = [helperUnrelayed, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -399,7 +432,7 @@ try {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
   for (const dir of remove) decision(dry, dir, 'would remove');
-  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || dir === recentOpus ? 'would keep' : 'kept');
+  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/]opus\d+[^\\/]*$/.test(dir) ? 'would keep' : 'kept');
   for (const dir of lookalikes) {
     assert.match(decision(dry, dir, 'would keep'), /name match without owner record/);
   }
@@ -419,6 +452,19 @@ try {
   assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
+  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not in the mirror/);
+  assert(dry.includes(`helper file not in the mirror: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
+  assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
+  assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
+  assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
+  assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder/);
+  assert.match(decision(dry, legacyLookalike, 'would keep'), /name match without owner record/);
+  assert.match(decision(dry, legacyLinked, 'would remove'), /1 links not followed; scratch named by our tools/);
+  if (!windows) {
+    // With no process list (and no test list), older scratch is kept.
+    assert.match(decision(runJanitor('--dry-run', lockPath, { PC_TEST_COMMAND_LINES: null }), legacyOld, 'would keep'),
+      /running processes could not be checked/);
+  }
   assert.match(decision(dry, pathOnly, 'would keep'), /runner status record lacks token or creation time/);
   assert.match(decision(dry, survivorBare, 'would keep'), /runner status record names a folder without its ownership token/);
   if (windows) assert.match(decision(dry, survivorCopied, 'would keep'), /recorded directory was replaced/);
@@ -441,6 +487,7 @@ try {
     assert(!fs.existsSync(dir), `janitor left ${dir}`);
   }
   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
+  assert.equal(read(path.join(linkTarget, 'B16_23.glb')), 'shared ship the link points at', 'a removed link never touches its target');
   const store = path.join(salvageRoot, 'superseded_store');
   const stored = {};
   for (const [dir, file, bytes] of [[shipSuperseded, 'godot/assets/ships/T1_11/T1_11.glb', 'ship-superseded copy bake'],
