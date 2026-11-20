@@ -1,0 +1,65 @@
+[Fri 11/20/2026  7:10:52.86] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T13:10:53Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Fri 11/20/2026  7:10:53.98] ready: GPU label 1279
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1 (tools_live version 5b6fdb65e676)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new ef0c138dd22ecbe10f48433ebe07f92907bb8aab C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\new
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\new_ships_identity.txt
+[Fri 11/20/2026  7:11:15.01] step new import start
+[Fri 11/20/2026  7:25:19.73] step new import ok
+[Fri 11/20/2026  7:25:19.76] step new jolt_jobs_check start
+[Fri 11/20/2026  7:25:33.44] step new jolt_jobs_check ok
+[Fri 11/20/2026  7:25:33.46] step new arrival s1 start
+[Fri 11/20/2026  7:26:14.05] step new arrival s1 ok
+[Fri 11/20/2026  7:26:14.10] new s1 CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=993.3 kill_call=37.0 kill_worst=11.4 kill_p95=2.1 gpu_worst=6.12 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:26:14.11] step new arrival s2 start
+[Fri 11/20/2026  7:28:39.52] step new arrival s2 ok
+[Fri 11/20/2026  7:28:39.57] new s2 CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=985.8 kill_call=34.3 kill_worst=11.4 kill_p95=2.2 gpu_worst=1.43 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:28:39.58] step new arrival s3 start
+[Fri 11/20/2026  7:29:24.70] step new arrival s3 ok
+[Fri 11/20/2026  7:29:24.74] new s3 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=990.2 kill_call=34.4 kill_worst=10.1 kill_p95=2.1 gpu_worst=1.37 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:29:24.76] step new arrival s4 start
+[Fri 11/20/2026  7:30:08.06] step new arrival s4 ok
+[Fri 11/20/2026  7:30:08.10] new s4 CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1003.9 kill_call=36.2 kill_worst=10.8 kill_p95=2.0 gpu_worst=6.32 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:30:08.12] step new arrival s5 start
+[Fri 11/20/2026  7:31:56.80] step new arrival s5 ok
+[Fri 11/20/2026  7:31:56.85] new s5 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=996.3 kill_call=34.2 kill_worst=9.5 kill_p95=2.0 gpu_worst=1.73 pipes_arrive=132 pipes_kill=1 late=0
+checkout old eb23594d290d1a7d7e32281b94f6545394ef2a90 C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\old
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\old_ships_identity.txt
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1279\out_20261120_071052_9864\old are the same fleet as the first checkout
+[Fri 11/20/2026  7:32:17.60] step old import start
+[Fri 11/20/2026  7:44:35.38] step old import ok
+[Fri 11/20/2026  7:44:35.41] step old arrival s1 start
+[Fri 11/20/2026  7:45:14.50] step old arrival s1 ok
+[Fri 11/20/2026  7:45:14.54] old s1 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=981.3 kill_call=44.4 kill_worst=9.5 kill_p95=1.8 gpu_worst=6.61 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:45:14.55] step old arrival s2 start
+[Fri 11/20/2026  7:45:53.57] step old arrival s2 ok
+[Fri 11/20/2026  7:45:53.61] old s2 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1015.8 kill_call=37.8 kill_worst=9.3 kill_p95=2.0 gpu_worst=6.09 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:45:53.62] step old arrival s3 start
+[Fri 11/20/2026  7:46:32.47] step old arrival s3 ok
+[Fri 11/20/2026  7:46:32.51] old s3 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=979.9 kill_call=36.1 kill_worst=9.8 kill_p95=2.0 gpu_worst=1.37 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:46:32.53] step old arrival s4 start
+[Fri 11/20/2026  7:47:12.04] step old arrival s4 ok
+[Fri 11/20/2026  7:47:12.08] old s4 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=1033.6 kill_call=37.0 kill_worst=9.5 kill_p95=2.1 gpu_worst=1.44 pipes_arrive=132 pipes_kill=1 late=0
+[Fri 11/20/2026  7:47:12.09] step old arrival s5 start
+[Fri 11/20/2026  7:47:51.38] step old arrival s5 ok
+[Fri 11/20/2026  7:47:51.42] old s5 CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=981.3 kill_call=35.3 kill_worst=9.2 kill_p95=2.1 gpu_worst=1.71 pipes_arrive=132 pipes_kill=1 late=0
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+checkouts kept: OJ_KEEP_CHECKOUTS=1
+done PASS
+all done Fri 11/20/2026  7:47:51.93

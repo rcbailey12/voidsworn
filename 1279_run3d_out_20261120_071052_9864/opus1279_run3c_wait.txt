@@ -1,0 +1,12 @@
+waiting for all done in opus1079_run12_wait.txt Fri 11/20/2026  6:47:04.29 
+OPUS1279_RUN3C_WAIT stopped by the Board before it ran anything (11/20 06:51:47); replaced by OPUS1279_RUN3D_WAIT.bat (RUN3D, same log). RUN3C left unrun. Nothing deleted.
+waiting for all done in opus1079_run12_wait.txt (RUN3D waiter, OJ_KEEP_CHECKOUTS=1) Fri 11/20/2026  6:51:48.67 
+mirror refresh  7:10:48.17 
+mirror fetch exit 0
+ef0c138dd22ecbe10f48433ebe07f92907bb8aab reachable in the mirror
+eb23594d290d1a7d7e32281b94f6545394ef2a90 reachable in the mirror
+OPUS1279_RUN3D start through wait1279\q_opus1279_run3d.bat Fri 11/20/2026  7:10:51.78 
+run folder out_20261120_071052_9864
+result: done PASS
+OPUS1279_RUN3D waiter end at  7:47:52.81 
+all done  7:47:52.81 
