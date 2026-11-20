@@ -106,10 +106,10 @@ const HULLS = {
   b_brood:{n:'Chorus brood-sac',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:180,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:6},
   b_boss:{n:'The Ninefold Maw',cls:'Bio-titan',fac:'chorus',size:1.3,cp:12,hp:650,sh:0,rg:0,ar:.25,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['bioplasma','F'],['tendril','T'],['spores','T']],ab:'launch',hangar:3,regen:20,boss:true},
   // ---- The Ithar (elder race)
-  i_wisp:{n:'Glasswright sliver',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:42,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
-  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:78,sh:15,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
-  i_song:{n:'Glasswright prism',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:90,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
-  i_carrier:{n:'Glasswright aperture',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:140,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
+  i_wisp:{n:'Glasswright sliver',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:36,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
+  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:68,sh:15,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
+  i_song:{n:'Glasswright prism',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:108,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
+  i_carrier:{n:'Glasswright aperture',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:168,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
   i_boss:{n:'The Unfinished',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
   d_scythe:{n:'Eclipse mote',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:2,reanimate:true},
