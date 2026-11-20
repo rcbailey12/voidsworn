@@ -898,7 +898,7 @@ const MUNITIONS_DIR := "res://fx/munitions/"
 
 
 static func _kit_body(fx, lk: String, faction: String) -> Node3D:
-	if faction.is_empty() or lk == "star":
+	if faction.is_empty() or lk == "star" or OS.get_environment("VS_1379_OLD") == "1":   # VS_1379_OLD: the code casing, for before shots
 		return null
 	var key := "munition_%s_%s" % [faction, lk]
 	if not fx.dstate.has(key):
