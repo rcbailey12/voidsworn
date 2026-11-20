@@ -80,8 +80,10 @@ func _run() -> void:
 		off.queue_free()
 		on.queue_free()
 	_trail_check()
+	_parked_fleet_check("max")
+	_parked_fleet_check("low")
 	if failed == 0:
-		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip)")
+		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip; a parked fleet never starves a mover)")
 	quit(1 if failed > 0 else 0)
 
 
@@ -98,18 +100,22 @@ func _trail_check() -> void:
 	var dt := 1.0 / 30.0
 	var broken := 0
 	var tip_off := 0
+	var stop_at := Vector3(INF, 0.0, 0.0)
 	for k in 300:
-		var t := float(k) * dt
 		var moving := k < 120 or k >= 160
+		var t := float(k if k < 120 else (119 if k < 160 else k - 41)) * dt   # stopped for 40 frames, then on from there
 		if moving:
 			ship.position = Vector3(cos(t * 0.6) * 60.0, 0.0, sin(t * 0.6) * 60.0)
+		if k == 119:
+			stop_at = ship.position
 		w.update(dt, [ship])
 		var h: int = w._head.get(ship.get_instance_id(), -1)
 		if moving and k > 0 and (h < 0 or (w._ring[h].b as Vector3).distance_to(ship.position) > 0.001):
 			tip_off += 1
-		# chain: every closed segment of this ship whose b is some other segment's a must agree in time there
+		# chain: every closed segment of this ship whose b is some other segment's a must agree in time there (except
+		# where it stopped: moving on starts a fresh trail from that spot, as the gas there has been settling meanwhile)
 		for e in w._ring:
-			if (e.a as Vector3).distance_to(e.b) < 0.01:
+			if (e.a as Vector3).distance_to(e.b) < 0.01 or (e.a as Vector3).distance_to(stop_at) < 0.001:
 				continue
 			for f in w._ring:
 				if f != e and (f.b as Vector3).distance_to(e.a) < 0.001 and absf(float(f.tb) - float(e.ta)) > 0.0001:
@@ -122,3 +128,33 @@ func _trail_check() -> void:
 			live += 1
 	check(live >= 3, "trail: a moving capital keeps several live segments (%d)" % live)
 	ship.queue_free()
+
+
+# Artoo on PR 1181: parked ships used to take every trail slot, so one moving ship got no trail at all. A full board of
+# parked ships (more than there are slots) plus one mover: the mover's trail is live once it has moved a little.
+func _parked_fleet_check(quality: String) -> void:
+	var src := GDScript.new()
+	src.source_code = "extends Node3D\nvar L := 30.0\nvar dead := false\n"
+	src.reload()
+	var w = WAKE.new(quality)
+	var ships := []
+	for i in w.points + 4:
+		var p: Node3D = src.new()
+		root.add_child(p)
+		p.position = Vector3(float(i) * 20.0, 0.0, 60.0)
+		ships.append(p)
+	var mover: Node3D = src.new()
+	root.add_child(mover)
+	ships.append(mover)
+	var live_frames := 0
+	for k in 40:
+		mover.position = Vector3(float(k) * 0.8, 0.0, 0.0)
+		w.update(1.0 / 30.0, ships)
+		var u: PackedFloat32Array = w.uniforms()
+		for i in w.points:
+			var o: int = i * WAKE.FLOATS
+			if minf(u[o + 9], u[o + 10]) < WAKE.FADE_S and Vector3(u[o], u[o + 1], u[o + 2]).distance_to(Vector3(u[o + 3], u[o + 4], u[o + 5])) > 0.01:
+				live_frames += 1
+				break
+	check(live_frames >= 38, "%s: with %d parked ships a moving ship still has a trail (%d of 40 frames)" % [quality, w.points + 4, live_frames])
+	for p in ships: p.queue_free()

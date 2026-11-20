@@ -24,7 +24,8 @@ var points := HIGH_POINTS
 # Each slot: a, b (ends, world), ta, tb (clock when the ship was at each end), r, m (push, sign = swirl side), ship (the
 # ship that left it), owner (ship key while it is that ship's growing newest segment, else -1).
 var _ring: Array = []
-var _head := {}             # ship key -> slot index of its newest segment
+var _head := {}             # ship key -> slot index of its newest segment (moving ships only)
+var _last := {}             # ship key -> {p: where it was last frame, t: clock when it last moved}
 var clock := 0.0
 var held := false           # benches only (hold_full): every segment stays at full strength
 var _laid := 0              # benches only: trails laid by lay_trail, each its own ship
@@ -128,7 +129,9 @@ static func into_fog(code: String, n: int) -> String:
 	return _inject(code, n, "void fog() {", "WORLD_POSITION|0.012", "\tDENSITY *= 1.0 - 0.7 * wk.w;")
 
 
-# Called every frame with the battle's ship views; stretches each moving ship's newest segment to it.
+# Called every frame with the battle's ship views; stretches each moving ship's newest segment to it. A ship only takes a
+# trail slot once it moves (Artoo on PR 1181: a parked fleet used to fill every slot, so a moving ship got no trail);
+# where every ship was last is kept apart from the slots.
 func update(dt: float, ships: Array) -> void:
 	clock += dt
 	var seen := {}
@@ -140,43 +143,45 @@ func update(dt: float, ships: Array) -> void:
 		var at: Vector3 = sv.visual_position() if sv.has_method("visual_position") else (sv as Node3D).position
 		var key: int = sv.get_instance_id()
 		seen[key] = true
+		if not _last.has(key):
+			_last[key] = {"p": at, "t": -100.0}
+			continue
+		var last: Dictionary = _last[key]
+		var was: Vector3 = last.p
+		var step := Vector2(at.x - was.x, at.z - was.z)
+		if step.length() > 40.0:   # a snap or a revive, not a move
+			_close(key)
+			_last[key] = {"p": at, "t": -100.0}
+			continue
+		if step.length() < 0.01:   # still: the trail behind it fades on its own, and it holds no slot it does not need
+			continue
 		var length := float(sv.get("L")) if sv.get("L") != null else 10.0
 		var r := clampf(length * R_PER_L, R_MIN, R_MAX)
 		var h: int = _head.get(key, -1)
-		if h < 0 or int(_ring[h].owner) != key:
-			_head[key] = _start(key, at, r, -1.0)
-			continue
-		var e: Dictionary = _ring[h]
-		var step := Vector2(at.x - e.b.x, at.z - e.b.z)
-		if step.length() > 40.0:   # a snap or a revive, not a move
+		if h < 0 or int(_ring[h].owner) != key or clock - float(last.t) > PAUSE_S:
+			# Starting to move, or moving again after a stop: a fresh trail from where it was, at zero strength.
 			_close(key)
-			_head[key] = _start(key, at, r, -1.0)
-			continue
-		if step.length() < 0.01:   # still: the trail behind it fades on its own
-			continue
-		if clock - float(e.tb) > PAUSE_S:
-			# Moving again after a stop: a fresh trail from here, starting at zero strength.
-			_close(key)
-			h = _start(key, e.b, r, clock - dt)
+			h = _start(key, was, r, clock - dt)
 			_head[key] = h
-			e = _ring[h]
+		var e: Dictionary = _ring[h]
 		e.b = at
 		e.tb = clock
+		_last[key] = {"p": at, "t": clock}
 		var run := Vector2(e.b.x - e.a.x, e.b.z - e.a.z)
 		if run.length() >= SEG:
 			_close(key)
 			_head[key] = _start(key, at, r, clock)
-	for key in _head.keys():
+	for key in _last.keys():
 		if not seen.has(key):
 			_close(key)
+			_last.erase(key)
 
 
-# A new newest segment for a ship, starting (and for now ending) at `at`. t < 0: not yet moving.
+# A new newest segment for a ship, starting (and for now ending) at `at`, the ship there at time t.
 func _start(key: int, at: Vector3, r: float, t: float) -> int:
 	var i := _free_slot()
 	var side := 1.0 if key % 2 == 0 else -1.0   # one swirl side per ship
-	_ring[i] = {"a": at, "b": at, "ta": t if t >= 0.0 else clock, "tb": t if t >= 0.0 else -100.0, "r": r,
-		"m": side * push(r), "ship": key, "owner": key}
+	_ring[i] = {"a": at, "b": at, "ta": t, "tb": t, "r": r, "m": side * push(r), "ship": key, "owner": key}
 	return i
 
 
@@ -212,6 +217,7 @@ static func push(r: float) -> float:
 func forget() -> void:
 	held = false
 	_head.clear()
+	_last.clear()
 	for i in points:
 		_ring[i] = _empty()
 
