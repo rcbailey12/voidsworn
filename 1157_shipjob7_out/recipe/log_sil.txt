@@ -1,0 +1,1 @@
+[score] S10 {'overlap': 44.0, 'concept_covered': 59.4, 'cell_outside': 37.0, 'triangles': 79820}

@@ -1,0 +1,14 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+08:49:35 | INFO: Starting glTF 2.0 export
+08:49:35 | INFO: Extracting primitive: V16_37
+08:49:36 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+08:49:40 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+08:49:42 | INFO: Primitives created: 17
+08:49:42 | INFO: Finished glTF 2.0 export in 7.156834602355957 s
+
+[export7] V16_37 triangles 89904 hard points {"gun": 9, "engine": 2, "bay": 0, "breach": 4, "core": 1, "rcs": 4, "board": 2} turrets 0 (0 triangles) files ['V16_37.glb', 'V16_37_base.jpg', 'V16_37_glow_emission.jpg', 'V16_37_normal.png', 'V16_37_orm.png', 'V16_37_parts_base.jpg', 'V16_37_parts_normal.png', 'V16_37_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\export\V16_37
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\S10.blend"
+
+Blender quit

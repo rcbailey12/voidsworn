@@ -1,0 +1,53 @@
+{
+ "name": "Vigil-class cruiser (Sunward Crusade)",
+ "faction": "voidsworn",
+ "cls": "Cruiser",
+ "band": "M",
+ "game_ship": "penitent",
+ "length_world": 14.5,
+ "hardpoints": {
+  "gun": 9,
+  "engine": 2,
+  "breach": 4,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 4,
+ "turrets": 0,
+ "files": {
+  "V16_37.glb": {
+   "bytes": 10564344,
+   "sha256": "8c6e7265abb04a90386b6cbb989cbe08bcb746561f097f973966d73ffdffc799"
+  },
+  "V16_37_base.jpg": {
+   "bytes": 1688090,
+   "sha256": "5d36fc3333374019a510dcf83d9d183e7525aba9d2afca1613276b3292865a15"
+  },
+  "V16_37_glow_emission.jpg": {
+   "bytes": 516823,
+   "sha256": "d1b42ff5a799f149c81d1143ac99e3d67b8df3ed10631bca5d99d9144694e4f2"
+  },
+  "V16_37_normal.png": {
+   "bytes": 4370947,
+   "sha256": "329355dc83ab774d6901facb84ee1dff16cce78f8360d27d7e743a53f7886e3c"
+  },
+  "V16_37_orm.png": {
+   "bytes": 8495389,
+   "sha256": "ceb803e4e8335210a80c0764996ec0c78f9b30105e10ae6f5c0beb12be0fb318"
+  },
+  "V16_37_parts_base.jpg": {
+   "bytes": 1037101,
+   "sha256": "54b7f5247b3eb12a74c2a5ecb45e94eb5c57360df7e6c40959a0afbdae1c1f8f"
+  },
+  "V16_37_parts_normal.png": {
+   "bytes": 3010372,
+   "sha256": "32d6070cb08655bedbb5e9bfb0c1f562d712cd524e533231ddabd2d4050b0698"
+  },
+  "V16_37_parts_orm.png": {
+   "bytes": 6247453,
+   "sha256": "429a83742580d10661dc81912f985a50505fe9dd7a0316353e2388ac3607a093"
+  }
+ },
+ "pc_path": "godot/assets/ships/V16_37/"
+}

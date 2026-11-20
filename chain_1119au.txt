@@ -1,0 +1,67 @@
+chain start Fri 11/20/2026  8:39:23.64 
+mirror refresh  8:39:23.64 
+mirror fetch exit 0
+553659bad845df79b7a1481145ed1d238c0a7d5b reachable in the mirror
+e912ab090ec7a4d59634c3cebcf5ff62336578d3 reachable in the mirror
+1157 shipjob 7 start  8:39:27.70 
+1157 shipjob 7 exit 0 at  8:50:52.24 
+janitor --after-job at 2026-11-20T14:50:52.5867130Z
+free space before: 237405327360 bytes
+Board keep list: 1 paths
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-836469265b074cdd9b34aa7964afd780 (4822014707 bytes)
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-1ff71d6a04814dadba964d1032d78f1f (6087653660 bytes)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-b1d569e806a544d2aa7541b503ffb351 (5038478624 bytes; salvage Git failed (-c core.longpaths=true -C C:\Users\rcbai\Downloads\voidsworn_test\salvage\.checking-c9c5a28943c549c29516d9605a31d87d\scratch update-ref --stdin): fatal: unknown command: ﻿create refs/salvage/3381020c05701ea250d2a3fecc8b5a3b72d4ebb1 3381020c05701ea250d2a3fecc8b5a3b72d4ebb1)
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-ff7ceba4a37440d3adafaabf9aaddff3 (5051920694 bytes)
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-2cbac755feda40f694e1e33fa0b6a4e8 (5084575954 bytes)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1117-deepseek\20261118_162424\repo (3826 bytes; not a standalone checkout)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1118-openai\20261118_232711\repo (5668419363 bytes; run ending could not be verified or issue is active)
+kept C:\Users\rcbai\AppData\Local\Temp\issue557-editor-imports-zul_rtk_ (size unavailable; Exception calling "EnumerateFileSystemInfos" with "0" argument(s): "Access to the path 'C:\Users\rcbai\AppData\Local\Temp\issue557-editor-imports-zul_rtk_' is denied.")
+kept C:\Users\rcbai\AppData\Local\Temp\issue990-launcher-fixture-87270a73420a4d658a4c971df2ee36b9 (80511640 bytes; name match without owner record)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B19_11-30_nfukr (400107794 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B19_11-spin720v (49007481 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B19_11-tikew9ed (575728565 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B20_11-n08i8dge (864587796 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B20_11-ro1ge6sd (271006749 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B21_11-dpfwgl94 (618073855 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B22_11-eousyhdu (604231529 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-5fn3nk4e (777147828 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-f85_udqo (799002842 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-os8v33h3 (777147828 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-r_wmfer6 (778104446 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-wswvnmdz (767000843 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V14_23-036o4n8b (297199061 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V14_23-4oidgg9i (12764274 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V14_23-f_2dnetz (293573526 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V14_23-g4scam0x (297199061 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V14_23-v6yz6yft (295976828 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V16_37-urvqn5ws (35005470 bytes; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\stage7-checked-V1b_r_23-dgz0my5i (486681489 bytes; touched in the last 24 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1059-r2\wreck-relief4-check\assets\ships\V1b_r_23
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1059-r2\wreck-relief4-check\.stage7-replaced-a283exaj
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1059-r2\wreck-godot\assets\ships\V1b_r_23
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1059-r2\wreck-godot\.stage7-replaced-vjrt6y7y
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-1059-r2 (0 bytes, 4 folders another account owns left in place; name match without owner record)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065\fixture-project\assets\ships\voidsworn_SF3
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065\fixture-project\assets\ships\voidsworn_SB4
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065\fixture-project\assets\ships\hegemony_HF1D
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065\fixture-project\assets\ships\corsair_KB1CC
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065\fixture-project\.stage7-replaced-xs6zlx72
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-1065 (0 bytes, 13 folders another account owns left in place; name match without owner record)
+removed C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-00c57ffe0dbc461a82217be7307825e6 (10369368 bytes; owned TEMP scratch, untouched for at least 3 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0220c88ac3b04c7c9da85d3dd7fe9d2c (3272464 bytes; touched in the last 3 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b\picture889-4fresrad
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b (0 bytes, 1 folders another account owns left in place; touched in the last 24 hours)
+removed C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-067d53f1f0a9404cadf3fdfd5f823df3 (98114979 bytes; owned TEMP scratch, untouched for at least 3 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-096fcda062c04820b365672a12e1e725\close1076-tErDDR\encoder\imageio_ffmpeg-0.6.0.dist-info
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-096fcda062c04820b365672a12e1e725\close1076-tErDDR\encoder\imageio_ffmpeg
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-096fcda062c04820b365672a12e1e725 (483069840 bytes, 2 folders another account owns left in place; touched in the last 24 hours)
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-097fde5e02f043b1aaaa9fec12e96c55 (483069840 bytes; touched in the last 24 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0a5ba3f8cc3b4936baa4722685fd6d89\picture889-rc7w_p77
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0a5ba3f8cc3b4936baa4722685fd6d89\picture889-n94xf9c1
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0a5ba3f8cc3b4936baa4722685fd6d89 (241534920 bytes, 2 folders another account owns left in place; touched in the last 24 hours)
+removed C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0d3ea656496d4502b797c2c70cc9ce69 (71340633 bytes; owned TEMP scratch, untouched for at least 3 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d\picture889-8gh4zwhl
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d (0 bytes, 1 folders another account owns left in place; touched in the last 24 hours)
+removed C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1372b7630c1447fb8863cdf59558fc2f (3290449 bytes; owned TEMP scratch, untouched for at least 3 hours)
+folder not readable by this account, left in place: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1cd66982941249fc8cf002ed52bccdec\picture889-mawn30fk
+kept C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1cd66982941249fc8cf002ed52bccdec (0 bytes, 1 folders another account owns left in place; touched in the last 24 hours)

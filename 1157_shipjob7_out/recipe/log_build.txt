@@ -1,0 +1,5 @@
+Info: Saved as "S10.blend"
+[209] {"cell": "S10", "hull_objects": 51, "parts": 284, "interiors": 32, "seconds": 0.6, "notes": [{"route": "build sheet voidsworn_S10", "contract": {"sheet": "voidsworn_S10", "game_ship": "penitent", "variant": "", "model_length": 14.48, "scale": 0.06906077338969407, "length_world": 14.5, "t_lines": [-0.41782, 0.20373], "l_line": [0.06067930680103577, -0.4074585629991951, -0.0966850827455717], "l_lines": [[0.06067930680103577, -0.4074585629991951, -0.0966850827455717], [-0.051657458495491165, -0.22790055218599042, 0.1795580108132046]], "muzzles": 9, "guns": 9, "engines": 2, "bays": 0, "points": 11, "turrets": [], "interior_objects": 32, "slots": ["0 battery P", "1 battery S", "2 lance F"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
