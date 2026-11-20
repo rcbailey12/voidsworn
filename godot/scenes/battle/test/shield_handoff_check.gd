@@ -14,6 +14,7 @@ const API := preload("res://rules/battle_api.gd")
 const LOOK := preload("res://world/board_look.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
+const FX := preload("res://fx/fx.gd")
 
 class Probe extends "res://scenes/battle/battle.gd":
 	var downs: Array = []   # [effect time, the land's hit points, its break hit]
@@ -213,7 +214,71 @@ func _run() -> void:
 	for shape in ["fitted", "egg"]:
 		await _case(shape)
 	await _torps()
+	await _rockets()
 	OS.set_environment("VS_SHIELD_SHAPE", "")
 	if failures == 0:
 		print("shield handoff: PASS (the collapse aims at the breaking shot, no ripple on its flash, a kill lets it finish, every torpedo warhead lands, a storm drop plays it, ripples keep their slots; fitted and egg)")
 	quit(0 if failures == 0 else 1)
+
+
+# Artoo (PR 1329): the battle case above launches one visible torpedo (the s1 shooter is Hegemony), so it cannot catch
+# every torpedo flying to warhead 1 again. A Hullbreaker rocket salvo shows four: torpedo i must end at warhead i's point
+# and time (the fourth at the last of three warheads). Box ships on the effects library alone, as fx_smoke.
+func _box(name: String, pos: Vector3, L: float) -> Node3D:
+	var r := Node3D.new()
+	r.name = name
+	var model := Node3D.new()
+	model.scale = Vector3(1, 1, -1)
+	r.add_child(model)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(L, L * 0.18, L * 0.3)
+	mi.mesh = bm
+	model.add_child(mi)
+	r.position = pos
+	return r
+
+
+func _rockets() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	cam.position = Vector3(0, 80, 120)
+	var fx = FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"camera": cam, "quality": "high"})
+	var a := _box("corsair_0", Vector3(-40, 0, 0), 16.0)
+	var t := _box("hegemony_1", Vector3(40, 0, 0), 24.0)
+	world.add_child(a)
+	world.add_child(t)
+	fx.add_ship("corsair_0", a, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
+	fx.add_ship("hegemony_1", t, {"faction": "hegemony", "cls": "Cruiser", "size": 1.2})
+	for i in 30:
+		fx.step(1.0 / 60.0)
+	var T = fx.ship("hegemony_1")
+	fx.torp_lane("R1239", "corsair_0", T.to_world(T.hull.c), 1)
+	fx.torp_launch("R1239")
+	for i in 90:
+		fx.step(1.0 / 60.0)
+	var hits := [{"shield": 6, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
+		{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
+	var ts: float = fx.now
+	var r: Dictionary = fx.torp_strike("R1239", "hegemony_1", hits[0], hits.slice(1), 0)
+	var projs: Array = fx.dstate.get("lanes", {}).get("R1239", {}).get("projectiles", [])
+	var pts: Array = r.get("points", [])
+	var imp: Array = r.get("impacts", [])
+	_check(projs.size() >= 2, "F2.4 rockets: a Hullbreaker salvo shows at least two torpedoes (got %d)" % projs.size())
+	_check(pts.size() == 3 and imp.size() == 3, "F2.4 rockets: three landing records (%s, %s)" % [str(pts), str(imp)])
+	if projs.size() >= 2 and pts.size() == 3 and imp.size() == 3:
+		_check(not (pts[1] as Vector3).is_equal_approx(pts[0]), "F2.4 rockets: warheads 1 and 2 land on different points")
+		for i in projs.size():
+			var w := mini(i, 2)
+			var pr: Dictionary = projs[i]
+			_check((pr["c"] as Vector3).is_equal_approx(pts[w]) and absf(float(pr["t1"]) - (ts + float(imp[w]))) < 1e-4,
+				"F2.4 rockets: torpedo %d ends at warhead %d's point and time (%s at %.3f; warhead %s at %.3f)" % [i, w, str(pr["c"]), float(pr["t1"]), str(pts[w]), ts + float(imp[w])])
+	for i in 60:
+		fx.step(1.0 / 60.0)
+	world.free()
+	await _frames(3)
