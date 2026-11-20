@@ -79,6 +79,7 @@ func _run() -> void:
 		check(u.size() == WAKE.FLOATS * (WAKE.LOW_POINTS if quality == "low" else WAKE.HIGH_POINTS), "%s: bounded point count" % quality)
 		off.queue_free()
 		on.queue_free()
+	_glsl_check()
 	_trail_check()
 	_parked_fleet_check("max")
 	_parked_fleet_check("low")
@@ -196,3 +197,19 @@ func _restart_check() -> void:
 		check(absf(float(after[0]) - float(old[2])) < 0.001 and absf(float(after[1]) - float(old[3])) < 0.001,
 			"restart: the old trail keeps its bow distance and push (%.3f, %.3f before; %.3f, %.3f after)" % [old[2], old[3], after[0], after[1]])
 	ship.queue_free()
+
+
+# Run 9 lesson: the shader's numbers are filled in by position, and a reordered line once put the bow-wave reach where
+# the fade time belongs (the trail faded in 0.35 s). Every number must land in its own place.
+func _glsl_check() -> void:
+	var g: String = WAKE.glsl(WAKE.HIGH_POINTS)
+	var want := {
+		"uniform float wake_d[%d];" % (WAKE.HIGH_POINTS * WAKE.FLOATS): "the uniform size",
+		"if (min(age_a, age_b) >= %.3f)" % WAKE.FADE_S: "the skip of faded pieces",
+		"mix(%.3f, 1.0, smoothstep(0.0, 0.6 * r, behind)) * (1.0 - smoothstep(0.0, %.3f, age))" % [WAKE.BOW_MIN, WAKE.FADE_S]: "the bow ease and the fade time",
+		"da * da / (%.3f * %.3f)" % [WAKE.CAP, WAKE.CAP]: "the bow-wave reach",
+		"exp((d2 - dmin) / (2.0 * %.3f))" % (WAKE.NEAR * WAKE.NEAR): "the nearest-place blend",
+		"(1.0 - smoothstep(%.3f, %.3f, age))" % [WAKE.FADE_S * 0.4, WAKE.FADE_S]: "the hand-over of faded trails",
+	}
+	for k in want:
+		check(g.contains(k), "glsl: %s is in its place (%s)" % [want[k], k])

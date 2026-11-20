@@ -111,7 +111,7 @@ vec4 wake_at(vec3 w) {
 	if (ws > 0.0) { tot += acc / ws; tthin = max(tthin, thin / ws); }
 	return vec4(tot.x, 0.0, tot.y, tthin);
 }
-""" % [n * FLOATS, n, FADE_S, CAP, CAP, BOW_MIN, FADE_S, NEAR * NEAR, NEAR * NEAR, FADE_S * 0.4, FADE_S]
+""" % [n * FLOATS, n, FADE_S, BOW_MIN, FADE_S, CAP, CAP, NEAR * NEAR, NEAR * NEAR, FADE_S * 0.4, FADE_S]
 
 
 const SHIFT := "// WAKE_SHIFT"
