@@ -1,0 +1,1 @@
+built 82c3e30cfc3d6322c7faa89098257187b05fbab2, accepted by Board (Nov 20 19:17 UTC): the wrapper's PIN was 8ba7c27b, but ship_job builds the branch tip and opus/issue-1373 had moved to 82c3e30c, the commit the Board wants.

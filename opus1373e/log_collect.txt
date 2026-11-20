@@ -1,0 +1,33 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 1:25:06 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373e\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         1         0         0         0         0
+   Files :         0         0         0         0         0         0
+   Bytes :         0         0         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+   Ended : Friday, November 20, 2026 1:25:06 PM
+
