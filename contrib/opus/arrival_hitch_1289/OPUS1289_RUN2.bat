@@ -26,7 +26,8 @@ rem in the table, a missing or aborted one listed (MISSING lines), never failing
 setlocal EnableDelayedExpansion
 set AFTER=52f7d10b0cb647b468b55c5b0075806d19d136c3
 set BEFORE=ab6b3258965d05f745e8897fc7219c9775580ace
-set CAPREF=%AFTER%
+rem the capture is unchanged since AFTER; CAPREF also carries run 2's summary gate (game code identical to AFTER)
+set CAPREF=1dfa85a773d11d33643a40d00086faabecb5065f
 set ROWS=28
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1289
