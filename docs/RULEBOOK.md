@@ -323,10 +323,16 @@ verifies and the zip entries match before it removes the copy. An unreadable che
 keeps the copy. Salvage folders are kept. Why: old job copies can be large and still hold work worth saving. Set: Ryan,
 Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
 
-Helper PC jobs get their checkout from `tools\pc\helper_clone.bat <job folder> <branch> [ships]`: one `git clone --local`
+Helper PC jobs get their checkout from `tools\pc\helper_clone.bat <job folder> <branch> [ships] [job steps]`: one `git clone --local`
 of the shared `repo-mirror.git` per helper folder (objects shared, no new download), reused on later runs without ever
 resetting local work, and ship files copied and checked by get_ship_files.bat, never hardlinked, because tools rewrite
-them in place. A helper .bat never clones from GitHub itself (issue 1180, Board Nov 20). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+them in place. A helper .bat never clones from GitHub itself (issue 1180, Board Nov 20). The helper runs its job steps
+through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease until they end, so no second run can
+switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
+and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
+Board relays a PASS, `helper_clone.bat <job folder> release` checks that every out file is on a board/pc-out branch, then
+removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
 token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
 a folder that no longer matches it, is report-only). Name matches alone are report-only, including `voidsworn-parity-*`
