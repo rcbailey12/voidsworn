@@ -1,0 +1,6 @@
+waiting for all done in opus1078\cost5_wait.txt Thu 11/19/2026 21:30:46.14 
+OPUS1079_RUN8_WAIT stopped by the Board before RUN8 ran (11/19 21:34:55); replaced by OPUS1079_RUN8B_WAIT.bat (same log). RUN8 left unrun.
+waiting for all done in opus1078\cost5_wait.txt (RUN8B waiter) Thu 11/19/2026 21:34:55.80 
+OPUS1079_RUN8B start Thu 11/19/2026 21:50:59.07 
+OPUS1079_RUN8B exit 0 at 22:26:17.52 
+all done 22:26:17.52 

@@ -1,0 +1,2033 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "api_version": "1.4.351",
+  "camera": "engagement",
+  "driver": [
+    "NVIDIA",
+    "32.0.16.1742"
+  ],
+  "enemies": [
+    "c_boss",
+    "c_raider",
+    "h_interdictor",
+    "h_picket",
+    "b_spitter",
+    "b_drone",
+    "i_blade",
+    "i_wisp",
+    "d_harvester",
+    "d_jackal"
+  ],
+  "fleet": [
+    "ascendant",
+    "cathedral",
+    "penitent",
+    "reliquary",
+    "harrow",
+    "harrow",
+    "warden",
+    "warden",
+    "warden",
+    "warden"
+  ],
+  "godot": {
+    "build": "official",
+    "hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "hex": 263938,
+    "major": 4,
+    "minor": 7,
+    "patch": 2,
+    "status": "stable",
+    "string": "4.7.2-stable (official)",
+    "timestamp": 0
+  },
+  "look": "cine",
+  "map": "storm",
+  "measured_frames": 720,
+  "modes": {
+    "base": [
+      {
+        "buffer_mb": 456.633220672607,
+        "build_ms": 66020.184,
+        "cap_k": 1.0,
+        "cpu_mean": 0.782461112489303,
+        "cpu_median": 0.737999975681305,
+        "cpu_p99": 1.29799997806549,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 305.0,
+        "dc_sh_median": 305,
+        "dc_sh_p99": 305,
+        "dc_vis_mean": 465.206944444444,
+        "dc_vis_median": 463,
+        "dc_vis_p99": 485,
+        "flash": {
+          "counted": 4,
+          "counted_log": 4,
+          "gun_hits_yielded": 2,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 42
+        },
+        "flash_events": [
+          [
+            0.748,
+            156,
+            1,
+            1,
+            0
+          ],
+          [
+            0.898,
+            164,
+            1,
+            1,
+            0
+          ],
+          [
+            1.337,
+            56,
+            0,
+            0,
+            1
+          ],
+          [
+            1.433,
+            34,
+            0,
+            0,
+            1
+          ],
+          [
+            2.215,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.365,
+            148,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.47919583333334,
+        "frame_median": 3.282,
+        "frame_p99": 5.46,
+        "frames": 720,
+        "gpu_mean": 2.77001944184303,
+        "gpu_median": 2.79200005531311,
+        "gpu_p99": 2.99499988555908,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "base",
+        "msaa_3d": 2,
+        "obj_sh_mean": 377.0,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 537.206944444444,
+        "obj_vis_median": 535,
+        "obj_vis_p99": 557,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 55,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 12,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 209,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 89,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 8,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 295,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 1077,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1169,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479838.05277778,
+        "prim_sh_median": 4479537,
+        "prim_sh_p99": 4480891,
+        "prim_vis_mean": 7878083.91805556,
+        "prim_vis_median": 7886985,
+        "prim_vis_p99": 7973192,
+        "proc_mean": 38.1743416666668,
+        "proc_median": 28.564,
+        "proc_p99": 60.781,
+        "scaling_3d": 1.0,
+        "seconds": 2.508346,
+        "session": 1,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2736.50860595703,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 474.645038604736,
+        "build_ms": 26457.491,
+        "cap_k": 1.0,
+        "cpu_mean": 0.907287500136428,
+        "cpu_median": 0.825999975204468,
+        "cpu_p99": 1.83800005912781,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 317.068055555556,
+        "dc_sh_median": 315,
+        "dc_sh_p99": 326,
+        "dc_vis_mean": 497.7375,
+        "dc_vis_median": 492,
+        "dc_vis_p99": 525,
+        "flash": {
+          "counted": 5,
+          "counted_log": 5,
+          "gun_hits_yielded": 4,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 40
+        },
+        "flash_events": [
+          [
+            0.0,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            0.051,
+            35,
+            0,
+            0,
+            1
+          ],
+          [
+            1.064,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.214,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.407,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            1.598,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            2.178,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.328,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.46,
+            51,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.66762916666667,
+        "frame_median": 3.316,
+        "frame_p99": 7.666,
+        "frames": 720,
+        "gpu_mean": 2.75234027471807,
+        "gpu_median": 2.75500011444092,
+        "gpu_p99": 3.01900005340576,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "base",
+        "msaa_3d": 2,
+        "obj_sh_mean": 378.0,
+        "obj_sh_median": 378,
+        "obj_sh_p99": 378,
+        "obj_vis_mean": 570.052777777778,
+        "obj_vis_median": 571,
+        "obj_vis_p99": 579,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 1067,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 6,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 64,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 72,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 235,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 831,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 958,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479518.43333333,
+        "prim_sh_median": 4479065,
+        "prim_sh_p99": 4481301,
+        "prim_vis_mean": 7828676.09722222,
+        "prim_vis_median": 7838694,
+        "prim_vis_p99": 7877770,
+        "proc_mean": 9.98828888888875,
+        "proc_median": 8.965,
+        "proc_p99": 15.865,
+        "scaling_3d": 1.0,
+        "seconds": 2.643878,
+        "session": 2,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2754.52586364746,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 484.267648696899,
+        "build_ms": 26661.718,
+        "cap_k": 1.0,
+        "cpu_mean": 0.843981944521268,
+        "cpu_median": 0.782000005245209,
+        "cpu_p99": 1.6360000371933,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 303.7375,
+        "dc_sh_median": 304,
+        "dc_sh_p99": 304,
+        "dc_vis_mean": 454.865277777778,
+        "dc_vis_median": 453,
+        "dc_vis_p99": 478,
+        "flash": {
+          "counted": 5,
+          "counted_log": 5,
+          "gun_hits_yielded": 1,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 53
+        },
+        "flash_events": [
+          [
+            1.076,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.226,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.352,
+            39,
+            0,
+            0,
+            1
+          ],
+          [
+            2.204,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.354,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.518,
+            30,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.42780138888889,
+        "frame_median": 3.283,
+        "frame_p99": 6.27,
+        "frames": 720,
+        "gpu_mean": 2.7527375029193,
+        "gpu_median": 2.7720000743866,
+        "gpu_p99": 2.97499990463257,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "base",
+        "msaa_3d": 2,
+        "obj_sh_mean": 376.7375,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 540.865277777778,
+        "obj_vis_median": 539,
+        "obj_vis_p99": 564,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 113,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 2,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 102,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 86,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 228,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 997,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1131,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4481723.65277778,
+        "prim_sh_median": 4481041,
+        "prim_sh_p99": 4484379,
+        "prim_vis_mean": 7821226.95,
+        "prim_vis_median": 7809640,
+        "prim_vis_p99": 7908456,
+        "proc_mean": 11.6444541666666,
+        "proc_median": 11.05,
+        "proc_p99": 13.351,
+        "scaling_3d": 1.0,
+        "seconds": 2.47086,
+        "session": 3,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2764.15284729004,
+        "warmup": 180
+      }
+    ],
+    "wake_full": [
+      {
+        "buffer_mb": 457.257555007935,
+        "build_ms": 26494.203,
+        "cap_k": 1.0,
+        "cpu_mean": 0.814666667166683,
+        "cpu_median": 0.773999989032745,
+        "cpu_p99": 1.2960000038147,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 305.0,
+        "dc_sh_median": 305,
+        "dc_sh_p99": 305,
+        "dc_vis_mean": 464.988888888889,
+        "dc_vis_median": 463,
+        "dc_vis_p99": 487,
+        "flash": {
+          "counted": 4,
+          "counted_log": 4,
+          "gun_hits_yielded": 5,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 43
+        },
+        "flash_events": [
+          [
+            0.0,
+            62,
+            0,
+            0,
+            1
+          ],
+          [
+            0.966,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.116,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.377,
+            56,
+            0,
+            0,
+            1
+          ],
+          [
+            1.474,
+            34,
+            0,
+            0,
+            1
+          ],
+          [
+            2.113,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.263,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.505,
+            67,
+            0,
+            0,
+            1
+          ],
+          [
+            2.507,
+            67,
+            0,
+            0,
+            1
+          ]
+        ],
+        "frame_mean": 3.54283888888889,
+        "frame_median": 3.301,
+        "frame_p99": 6.272,
+        "frames": 720,
+        "gpu_mean": 2.7827861107058,
+        "gpu_median": 2.80299997329712,
+        "gpu_p99": 3.0090000629425,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_full",
+        "msaa_3d": 2,
+        "obj_sh_mean": 377.0,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 536.988888888889,
+        "obj_vis_median": 535,
+        "obj_vis_p99": 559,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 55,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 12,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 209,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 89,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 8,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 303,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 1085,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1169,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479892.95277778,
+        "prim_sh_median": 4479541,
+        "prim_sh_p99": 4481015,
+        "prim_vis_mean": 7879544.86527778,
+        "prim_vis_median": 7887002,
+        "prim_vis_p99": 7973448,
+        "proc_mean": 40.6747166666662,
+        "proc_median": 29.127,
+        "proc_p99": 59.769,
+        "scaling_3d": 1.0,
+        "seconds": 2.555496,
+        "session": 1,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2737.13545227051,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 474.287002563477,
+        "build_ms": 26379.246,
+        "cap_k": 1.0,
+        "cpu_mean": 0.876691666742166,
+        "cpu_median": 0.801999986171722,
+        "cpu_p99": 1.54700005054474,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 317.0,
+        "dc_sh_median": 315,
+        "dc_sh_p99": 326,
+        "dc_vis_mean": 498.630555555556,
+        "dc_vis_median": 492,
+        "dc_vis_p99": 535,
+        "flash": {
+          "counted": 4,
+          "counted_log": 4,
+          "gun_hits_yielded": 6,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 41
+        },
+        "flash_events": [
+          [
+            0.0,
+            62,
+            0,
+            0,
+            1
+          ],
+          [
+            0.037,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            0.091,
+            35,
+            0,
+            0,
+            1
+          ],
+          [
+            0.216,
+            55,
+            0,
+            0,
+            1
+          ],
+          [
+            1.248,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.398,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.636,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            1.828,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            2.364,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.514,
+            148,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.6041,
+        "frame_median": 3.321,
+        "frame_p99": 6.112,
+        "frames": 720,
+        "gpu_mean": 2.77075417174233,
+        "gpu_median": 2.78200006484985,
+        "gpu_p99": 3.03600001335144,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_full",
+        "msaa_3d": 2,
+        "obj_sh_mean": 378.0,
+        "obj_sh_median": 378,
+        "obj_sh_p99": 378,
+        "obj_vis_mean": 571.227777777778,
+        "obj_vis_median": 570,
+        "obj_vis_p99": 588,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 1058,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 6,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 64,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 72,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 233,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 829,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 958,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479470.75,
+        "prim_sh_median": 4479067,
+        "prim_sh_p99": 4481159,
+        "prim_vis_mean": 7826658.775,
+        "prim_vis_median": 7838707,
+        "prim_vis_p99": 7877278,
+        "proc_mean": 9.16574999999995,
+        "proc_median": 6.335,
+        "proc_p99": 16.627,
+        "scaling_3d": 1.0,
+        "seconds": 2.598087,
+        "session": 2,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2754.16529846191,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 484.403339385986,
+        "build_ms": 27060.361,
+        "cap_k": 1.0,
+        "cpu_mean": 0.871462500260936,
+        "cpu_median": 0.814999997615814,
+        "cpu_p99": 1.567999958992,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 303.7125,
+        "dc_sh_median": 304,
+        "dc_sh_p99": 304,
+        "dc_vis_mean": 453.702777777778,
+        "dc_vis_median": 450,
+        "dc_vis_p99": 477,
+        "flash": {
+          "counted": 5,
+          "counted_log": 5,
+          "gun_hits_yielded": 1,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 51
+        },
+        "flash_events": [
+          [
+            0.736,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            0.886,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.269,
+            39,
+            0,
+            0,
+            1
+          ],
+          [
+            1.852,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.002,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.435,
+            30,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.55135555555555,
+        "frame_median": 3.33,
+        "frame_p99": 7.122,
+        "frames": 720,
+        "gpu_mean": 2.79082916544543,
+        "gpu_median": 2.81299996376038,
+        "gpu_p99": 3.01099991798401,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_full",
+        "msaa_3d": 2,
+        "obj_sh_mean": 376.7125,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 539.702777777778,
+        "obj_vis_median": 536,
+        "obj_vis_p99": 563,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 119,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 2,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 102,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 86,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 236,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 1005,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1131,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4481801.59444444,
+        "prim_sh_median": 4481041,
+        "prim_sh_p99": 4484327,
+        "prim_vis_mean": 7823260.28055556,
+        "prim_vis_median": 7813232,
+        "prim_vis_p99": 7908451,
+        "proc_mean": 12.4291333333332,
+        "proc_median": 11.572,
+        "proc_p99": 14.686,
+        "scaling_3d": 1.0,
+        "seconds": 2.559928,
+        "session": 3,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2764.29103088379,
+        "warmup": 180
+      }
+    ],
+    "wake_idle": [
+      {
+        "buffer_mb": 456.966186523438,
+        "build_ms": 27273.21,
+        "cap_k": 1.0,
+        "cpu_mean": 0.772906940844324,
+        "cpu_median": 0.736000001430511,
+        "cpu_p99": 1.21599996089935,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 305.0,
+        "dc_sh_median": 305,
+        "dc_sh_p99": 305,
+        "dc_vis_mean": 463.488888888889,
+        "dc_vis_median": 464,
+        "dc_vis_p99": 479,
+        "flash": {
+          "counted": 4,
+          "counted_log": 4,
+          "gun_hits_yielded": 4,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 37
+        },
+        "flash_events": [
+          [
+            0.66,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            0.81,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.817,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            1.967,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.115,
+            67,
+            0,
+            0,
+            1
+          ],
+          [
+            2.124,
+            67,
+            0,
+            0,
+            1
+          ],
+          [
+            2.306,
+            67,
+            0,
+            0,
+            1
+          ],
+          [
+            2.316,
+            67,
+            0,
+            0,
+            1
+          ]
+        ],
+        "frame_mean": 3.45815277777778,
+        "frame_median": 3.295,
+        "frame_p99": 5.044,
+        "frames": 720,
+        "gpu_mean": 2.771448611882,
+        "gpu_median": 2.79500007629395,
+        "gpu_p99": 2.99900007247925,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_idle",
+        "msaa_3d": 2,
+        "obj_sh_mean": 377.0,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 535.488888888889,
+        "obj_vis_median": 536,
+        "obj_vis_p99": 551,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 55,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 12,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 209,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 74,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 8,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 290,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 1021,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1070,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479842.06944444,
+        "prim_sh_median": 4479541,
+        "prim_sh_p99": 4480961,
+        "prim_vis_mean": 7876128.4125,
+        "prim_vis_median": 7886963,
+        "prim_vis_p99": 7912302,
+        "proc_mean": 38.9208833333338,
+        "proc_median": 29.61,
+        "proc_p99": 59.539,
+        "scaling_3d": 1.0,
+        "seconds": 2.492874,
+        "session": 1,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 15,
+        "vram_mb": 2736.84237670898,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 467.626407623291,
+        "build_ms": 26666.136,
+        "cap_k": 1.0,
+        "cpu_mean": 0.847448610017697,
+        "cpu_median": 0.796999990940094,
+        "cpu_p99": 1.46800005435944,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 316.838888888889,
+        "dc_sh_median": 315,
+        "dc_sh_p99": 326,
+        "dc_vis_mean": 496.906944444444,
+        "dc_vis_median": 493,
+        "dc_vis_p99": 523,
+        "flash": {
+          "counted": 5,
+          "counted_log": 5,
+          "gun_hits_yielded": 4,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 40
+        },
+        "flash_events": [
+          [
+            0.0,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            0.998,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.148,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.272,
+            44,
+            0,
+            0,
+            1
+          ],
+          [
+            1.305,
+            44,
+            0,
+            0,
+            1
+          ],
+          [
+            1.406,
+            54,
+            0,
+            0,
+            1
+          ],
+          [
+            2.102,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.252,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.46,
+            51,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.50035833333333,
+        "frame_median": 3.314,
+        "frame_p99": 6.48,
+        "frames": 720,
+        "gpu_mean": 2.76537916428513,
+        "gpu_median": 2.78099989891052,
+        "gpu_p99": 3.01399993896484,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_idle",
+        "msaa_3d": 2,
+        "obj_sh_mean": 378.0,
+        "obj_sh_median": 378,
+        "obj_sh_p99": 378,
+        "obj_vis_mean": 569.770833333333,
+        "obj_vis_median": 570,
+        "obj_vis_p99": 581,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 1043,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 6,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 64,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 72,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 231,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 827,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 958,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4479583.00833333,
+        "prim_sh_median": 4479189,
+        "prim_sh_p99": 4481281,
+        "prim_vis_mean": 7826898.34861111,
+        "prim_vis_median": 7839052,
+        "prim_vis_p99": 7877917,
+        "proc_mean": 11.5883416666667,
+        "proc_median": 14.279,
+        "proc_p99": 17.642,
+        "scaling_3d": 1.0,
+        "seconds": 2.523521,
+        "session": 2,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2747.50576782227,
+        "warmup": 180
+      },
+      {
+        "buffer_mb": 484.176050186157,
+        "build_ms": 26775.559,
+        "cap_k": 1.0,
+        "cpu_mean": 0.879663888778951,
+        "cpu_median": 0.814999997615814,
+        "cpu_p99": 1.52999997138977,
+        "damage_counts": {
+          "fire": 0,
+          "particles": 0,
+          "smoke": 0,
+          "vent": 0
+        },
+        "dc_sh_mean": 303.697222222222,
+        "dc_sh_median": 304,
+        "dc_sh_p99": 304,
+        "dc_vis_mean": 452.641666666667,
+        "dc_vis_median": 454,
+        "dc_vis_p99": 473,
+        "flash": {
+          "counted": 5,
+          "counted_log": 5,
+          "gun_hits_yielded": 1,
+          "limit_px2": 15606.0,
+          "refused": 0,
+          "refused_px": [],
+          "requests": 54
+        },
+        "flash_events": [
+          [
+            0.96,
+            162,
+            1,
+            1,
+            0
+          ],
+          [
+            1.11,
+            163,
+            1,
+            1,
+            0
+          ],
+          [
+            1.267,
+            39,
+            0,
+            0,
+            1
+          ],
+          [
+            2.114,
+            152,
+            1,
+            1,
+            0
+          ],
+          [
+            2.264,
+            148,
+            1,
+            1,
+            0
+          ],
+          [
+            2.434,
+            30,
+            1,
+            1,
+            0
+          ]
+        ],
+        "frame_mean": 3.55933055555556,
+        "frame_median": 3.331,
+        "frame_p99": 6.86,
+        "frames": 720,
+        "gpu_mean": 2.787944445014,
+        "gpu_median": 2.80800008773804,
+        "gpu_p99": 3.00699996948242,
+        "late_shader_names": [],
+        "late_shaders": 0,
+        "mode": "wake_idle",
+        "msaa_3d": 2,
+        "obj_sh_mean": 376.697222222222,
+        "obj_sh_median": 377,
+        "obj_sh_p99": 377,
+        "obj_vis_mean": 538.641666666667,
+        "obj_vis_median": 540,
+        "obj_vis_p99": 559,
+        "particle_storage": {
+          "arc": {
+            "emitted_including_warmup": 1,
+            "slots": 64
+          },
+          "dst": {
+            "emitted_including_warmup": 119,
+            "slots": 256
+          },
+          "null": {
+            "emitted_including_warmup": 2,
+            "slots": 192
+          },
+          "plate": {
+            "emitted_including_warmup": 102,
+            "slots": 384
+          },
+          "rib": {
+            "emitted_including_warmup": 86,
+            "slots": 192
+          },
+          "rng": {
+            "emitted_including_warmup": 6,
+            "slots": 2048
+          },
+          "shd": {
+            "emitted_including_warmup": 1,
+            "slots": 768
+          },
+          "smk": {
+            "emitted_including_warmup": 234,
+            "slots": 12288
+          },
+          "spr": {
+            "emitted_including_warmup": 1003,
+            "slots": 16384
+          },
+          "stk": {
+            "emitted_including_warmup": 1131,
+            "slots": 16384
+          }
+        },
+        "prim_sh_mean": 4481749.23611111,
+        "prim_sh_median": 4480941,
+        "prim_sh_p99": 4484247,
+        "prim_vis_mean": 7824726.30138889,
+        "prim_vis_median": 7812842,
+        "prim_vis_p99": 7908080,
+        "proc_mean": 12.1074222222222,
+        "proc_median": 11.506,
+        "proc_p99": 14.275,
+        "scaling_3d": 1.0,
+        "seconds": 2.565728,
+        "session": 3,
+        "texture_mb": 1996.58544921875,
+        "viewport": [
+          1920.0,
+          1080.0
+        ],
+        "volleys": 16,
+        "vram_mb": 2764.06230163574,
+        "warmup": 180
+      }
+    ]
+  },
+  "order": [
+    "1:base",
+    "1:wake_idle",
+    "1:wake_full",
+    "2:wake_full",
+    "2:wake_idle",
+    "2:base",
+    "3:base",
+    "3:wake_idle",
+    "3:wake_full"
+  ],
+  "probe_sha256": "f764d9fffccc8a4a41a458afd9dc5e9fd1dee395ffc20ca0d5aca697fd4a66ce",
+  "renderer": "forward_plus",
+  "resolution_asked": [
+    1920,
+    1080
+  ],
+  "scene": {
+    "camera": {
+      "a": -1.5707963267949,
+      "b": 0.98,
+      "fov": 45.0,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "distinct_hulls": 19,
+    "distinct_materials": 271,
+    "env": {
+      "glow": true,
+      "sdfgi": false,
+      "ssao": true,
+      "ssil": true,
+      "ssr": false,
+      "volumetric_fog": true
+    },
+    "key_shadow": {
+      "atlas": 4096,
+      "enabled": true,
+      "mode": 2
+    },
+    "ship_count": 24,
+    "ships": [
+      {
+        "all_instances": 11,
+        "all_surfaces": 29,
+        "all_triangles": 116594,
+        "cls": "Dreadnought",
+        "code": "V1b_r_23",
+        "fac": "voidsworn",
+        "hull_instances": 7,
+        "hull_materials": 19,
+        "hull_surfaces": 25,
+        "hull_triangles": 115610,
+        "id": "x011",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "capital",
+        "tpl": "ascendant"
+      },
+      {
+        "all_instances": 21,
+        "all_surfaces": 21,
+        "all_triangles": 138106,
+        "cls": "Battleship",
+        "code": "V17_37",
+        "fac": "voidsworn",
+        "hull_instances": 20,
+        "hull_materials": 3,
+        "hull_surfaces": 20,
+        "hull_triangles": 138010,
+        "id": "x012",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "cruiser tier",
+        "tpl": "cathedral"
+      },
+      {
+        "all_instances": 17,
+        "all_surfaces": 17,
+        "all_triangles": 105886,
+        "cls": "Cruiser",
+        "code": "V16_37",
+        "fac": "voidsworn",
+        "hull_instances": 16,
+        "hull_materials": 3,
+        "hull_surfaces": 16,
+        "hull_triangles": 105790,
+        "id": "x013",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "cruiser tier",
+        "tpl": "penitent"
+      },
+      {
+        "all_instances": 21,
+        "all_surfaces": 21,
+        "all_triangles": 172015,
+        "cls": "Carrier",
+        "code": "V18_51",
+        "fac": "voidsworn",
+        "hull_instances": 20,
+        "hull_materials": 3,
+        "hull_surfaces": 20,
+        "hull_triangles": 171919,
+        "id": "x014",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "cruiser tier",
+        "tpl": "reliquary"
+      },
+      {
+        "all_instances": 28,
+        "all_surfaces": 28,
+        "all_triangles": 85377,
+        "cls": "Destroyer",
+        "code": "V15_37",
+        "fac": "voidsworn",
+        "hull_instances": 27,
+        "hull_materials": 27,
+        "hull_surfaces": 27,
+        "hull_triangles": 85281,
+        "id": "x015",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "harrow"
+      },
+      {
+        "all_instances": 17,
+        "all_surfaces": 17,
+        "all_triangles": 84000,
+        "cls": "Destroyer",
+        "code": "V15_37",
+        "fac": "voidsworn",
+        "hull_instances": 16,
+        "hull_materials": 3,
+        "hull_surfaces": 16,
+        "hull_triangles": 83904,
+        "id": "x016",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "harrow"
+      },
+      {
+        "all_instances": 13,
+        "all_surfaces": 13,
+        "all_triangles": 103596,
+        "cls": "Frigate",
+        "code": "V14_23",
+        "fac": "voidsworn",
+        "hull_instances": 12,
+        "hull_materials": 3,
+        "hull_surfaces": 12,
+        "hull_triangles": 103500,
+        "id": "x017",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "warden"
+      },
+      {
+        "all_instances": 14,
+        "all_surfaces": 14,
+        "all_triangles": 164636,
+        "cls": "Frigate",
+        "code": "V14_23",
+        "fac": "voidsworn",
+        "hull_instances": 12,
+        "hull_materials": 3,
+        "hull_surfaces": 12,
+        "hull_triangles": 103500,
+        "id": "x018",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "warden"
+      },
+      {
+        "all_instances": 13,
+        "all_surfaces": 13,
+        "all_triangles": 103596,
+        "cls": "Frigate",
+        "code": "V14_23",
+        "fac": "voidsworn",
+        "hull_instances": 12,
+        "hull_materials": 3,
+        "hull_surfaces": 12,
+        "hull_triangles": 103500,
+        "id": "x019",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "warden"
+      },
+      {
+        "all_instances": 14,
+        "all_surfaces": 14,
+        "all_triangles": 164636,
+        "cls": "Frigate",
+        "code": "V14_23",
+        "fac": "voidsworn",
+        "hull_instances": 12,
+        "hull_materials": 3,
+        "hull_surfaces": 12,
+        "hull_triangles": 103500,
+        "id": "x020",
+        "side": "player",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "warden"
+      },
+      {
+        "all_instances": 12,
+        "all_surfaces": 26,
+        "all_triangles": 153488,
+        "cls": "Battle-barge",
+        "code": "C19_51",
+        "fac": "corsair",
+        "hull_instances": 11,
+        "hull_materials": 17,
+        "hull_surfaces": 25,
+        "hull_triangles": 153464,
+        "id": "x021",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "capital",
+        "tpl": "c_boss"
+      },
+      {
+        "all_instances": 6,
+        "all_surfaces": 19,
+        "all_triangles": 188283,
+        "cls": "Frigate",
+        "code": "C13s_23",
+        "fac": "corsair",
+        "hull_instances": 5,
+        "hull_materials": 18,
+        "hull_surfaces": 18,
+        "hull_triangles": 188259,
+        "id": "x022",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "c_raider"
+      },
+      {
+        "all_instances": 17,
+        "all_surfaces": 17,
+        "all_triangles": 87731,
+        "cls": "Destroyer",
+        "code": "H8_23",
+        "fac": "hegemony",
+        "hull_instances": 16,
+        "hull_materials": 3,
+        "hull_surfaces": 16,
+        "hull_triangles": 87707,
+        "id": "x023",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "h_interdictor"
+      },
+      {
+        "all_instances": 13,
+        "all_surfaces": 13,
+        "all_triangles": 105826,
+        "cls": "Frigate",
+        "code": "H7_23",
+        "fac": "hegemony",
+        "hull_instances": 12,
+        "hull_materials": 3,
+        "hull_surfaces": 12,
+        "hull_triangles": 105802,
+        "id": "x024",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "h_picket"
+      },
+      {
+        "all_instances": 4,
+        "all_surfaces": 18,
+        "all_triangles": 586214,
+        "cls": "Destroyer",
+        "code": "B20_11",
+        "fac": "chorus",
+        "hull_instances": 3,
+        "hull_materials": 17,
+        "hull_surfaces": 17,
+        "hull_triangles": 586190,
+        "id": "x025",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "b_spitter"
+      },
+      {
+        "all_instances": 4,
+        "all_surfaces": 18,
+        "all_triangles": 261836,
+        "cls": "Frigate",
+        "code": "B19_11",
+        "fac": "chorus",
+        "hull_instances": 3,
+        "hull_materials": 17,
+        "hull_surfaces": 17,
+        "hull_triangles": 261812,
+        "id": "x026",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "b_drone"
+      },
+      {
+        "all_instances": 19,
+        "all_surfaces": 20,
+        "all_triangles": 118941,
+        "cls": "Destroyer",
+        "code": "I11_37",
+        "fac": "ithar",
+        "hull_instances": 17,
+        "hull_materials": 18,
+        "hull_surfaces": 18,
+        "hull_triangles": 30565,
+        "id": "x027",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "i_blade"
+      },
+      {
+        "all_instances": 11,
+        "all_surfaces": 12,
+        "all_triangles": 61604,
+        "cls": "Frigate",
+        "code": "I14_23",
+        "fac": "ithar",
+        "hull_instances": 10,
+        "hull_materials": 4,
+        "hull_surfaces": 11,
+        "hull_triangles": 61580,
+        "id": "x028",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "small (frigate)",
+        "tpl": "i_wisp"
+      },
+      {
+        "all_instances": 22,
+        "all_surfaces": 35,
+        "all_triangles": 57529,
+        "cls": "Cruiser",
+        "code": "D21_23",
+        "fac": "deathless",
+        "hull_instances": 21,
+        "hull_materials": 34,
+        "hull_surfaces": 34,
+        "hull_triangles": 57505,
+        "id": "x029",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "cruiser tier",
+        "tpl": "d_harvester"
+      },
+      {
+        "all_instances": 8,
+        "all_surfaces": 18,
+        "all_triangles": 49208,
+        "cls": "Destroyer",
+        "code": "D20_23",
+        "fac": "deathless",
+        "hull_instances": 7,
+        "hull_materials": 17,
+        "hull_surfaces": 17,
+        "hull_triangles": 49184,
+        "id": "x030",
+        "side": "enemy",
+        "source": "a4 kit ship",
+        "tier": "frigate tier (destroyer)",
+        "tpl": "d_jackal"
+      },
+      {
+        "all_instances": 7,
+        "all_surfaces": 19,
+        "all_triangles": 60615,
+        "cls": "Squadron",
+        "code": "voidsworn|bomber",
+        "fac": "voidsworn",
+        "hull_instances": 6,
+        "hull_materials": 8,
+        "hull_surfaces": 18,
+        "hull_triangles": 60519,
+        "id": "x031",
+        "side": "player",
+        "source": "game hull",
+        "tier": "strike craft",
+        "tpl": "bomber"
+      },
+      {
+        "all_instances": 10,
+        "all_surfaces": 22,
+        "all_triangles": 51261,
+        "cls": "Squadron",
+        "code": "voidsworn|fighter",
+        "fac": "voidsworn",
+        "hull_instances": 9,
+        "hull_materials": 8,
+        "hull_surfaces": 21,
+        "hull_triangles": 51165,
+        "id": "x032",
+        "side": "player",
+        "source": "game hull",
+        "tier": "strike craft",
+        "tpl": "fighter"
+      },
+      {
+        "all_instances": 7,
+        "all_surfaces": 16,
+        "all_triangles": 154839,
+        "cls": "Squadron",
+        "code": "corsair|bomber",
+        "fac": "corsair",
+        "hull_instances": 6,
+        "hull_materials": 7,
+        "hull_surfaces": 15,
+        "hull_triangles": 154815,
+        "id": "x033",
+        "side": "enemy",
+        "source": "game hull",
+        "tier": "strike craft",
+        "tpl": "bomber"
+      },
+      {
+        "all_instances": 7,
+        "all_surfaces": 16,
+        "all_triangles": 154839,
+        "cls": "Squadron",
+        "code": "corsair|bomber",
+        "fac": "corsair",
+        "hull_instances": 6,
+        "hull_materials": 7,
+        "hull_surfaces": 15,
+        "hull_triangles": 154815,
+        "id": "x034",
+        "side": "enemy",
+        "source": "game hull",
+        "tier": "strike craft",
+        "tpl": "bomber"
+      }
+    ],
+    "terrain": {
+      "neb": 4,
+      "rock": 4,
+      "storm": 23
+    },
+    "tiers": {
+      "capital": {
+        "max_surfaces": 25,
+        "max_triangles": 153464,
+        "ships": 2,
+        "surfaces": 50,
+        "triangles": 269074
+      },
+      "cruiser tier": {
+        "max_surfaces": 34,
+        "max_triangles": 171919,
+        "ships": 4,
+        "surfaces": 90,
+        "triangles": 473224
+      },
+      "frigate tier (destroyer)": {
+        "max_surfaces": 27,
+        "max_triangles": 586190,
+        "ships": 6,
+        "surfaces": 111,
+        "triangles": 922831
+      },
+      "small (frigate)": {
+        "max_surfaces": 18,
+        "max_triangles": 261812,
+        "ships": 8,
+        "surfaces": 106,
+        "triangles": 1031453
+      },
+      "strike craft": {
+        "max_surfaces": 21,
+        "max_triangles": 154815,
+        "ships": 4,
+        "surfaces": 69,
+        "triangles": 421314
+      }
+    },
+    "world_notes": "system: planet 7, 2 moons; fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains; wisps: 60 gas clouds at middle distance; setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for corsair; rocks: 165 in all (4 rock hexes, 0 debris hexes); clouds on 4 nebula and 23 storm hexes; built in 349 ms; living terrain built in 169 ms"
+  },
+  "sessions": 3,
+  "shape": "open",
+  "vendor": "NVIDIA",
+  "volley_every_s": 0.35,
+  "vsync": "disabled",
+  "warmup_frames": 180
+}

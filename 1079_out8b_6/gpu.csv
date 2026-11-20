@@ -1,0 +1,5 @@
+name, driver_version, utilization.gpu [%], clocks.current.graphics [MHz], clocks.current.memory [MHz], temperature.gpu, power.draw [W], pstate, memory.used [MiB]
+NVIDIA GeForce RTX 5080, 617.42, 0 %, 690 MHz, 7001 MHz, 37, 47.83 W, P3, 2238 MiB
+name, driver_version, utilization.gpu [%], clocks.current.graphics [MHz], clocks.current.memory [MHz], temperature.gpu, power.draw [W], pstate, memory.used [MiB]
+NVIDIA GeForce RTX 5080, 617.42, 0 %, 637 MHz, 7001 MHz, 43, 56.88 W, P3, 2002 MiB
+NVIDIA GeForce RTX 5080, 617.42, 0 %, 975 MHz, 7001 MHz, 42, 55.01 W, P3, 2052 MiB
