@@ -214,6 +214,19 @@ func _compose(spec: String) -> void:
 			_fail("no shield1239.json in " + p)
 			return
 		runs.append({"dir": p, "json": j})
+	# both arms must have drawn the same ship files (Artoo on PR 1329): the scene sha256 each recorded, per hull code
+	var sa: Dictionary = runs[0]["json"].get("scenes", {})
+	var sb: Dictionary = runs[1]["json"].get("scenes", {})
+	var blocks := str(runs[1]["json"].get("warning", "")) != ""   # (a cloud preview on stand-in blocks has no ship files)
+	if not blocks and (sa.is_empty() or sb.is_empty()):
+		_fail("a run recorded no ship scenes")
+		return
+	for code in ([] if blocks else sb.keys()):
+		var ha := str((sa.get(code, {}) as Dictionary).get("sha256", ""))
+		var hb := str((sb[code] as Dictionary).get("sha256", ""))
+		if hb == "" or ha != hb:
+			_fail("%s drew different ship files before (%s) and after (%s)" % [code, ha, hb])
+			return
 	var codes := {}
 	for row in runs[1]["json"]["rows"]:
 		codes[str(row["subject"])] = str(row["code"])
@@ -224,6 +237,13 @@ func _compose(spec: String) -> void:
 	for sid in subjects:
 		for story in STORY_ORDER:
 			await _hsheet(sid, story, str(codes.get(sid, sid)), runs)
+	if not failed:
+		var f := FileAccess.open(out.path_join("shield1239_compose_done.txt"), FileAccess.WRITE)
+		if f == null:
+			_fail("could not write shield1239_compose_done.txt")
+		else:
+			f.store_string("before and after sheets built; scenes match: %s\n" % JSON.stringify(sb))
+			f.close()
 
 
 func _hsheet(sid: String, story: String, code: String, runs: Array) -> void:

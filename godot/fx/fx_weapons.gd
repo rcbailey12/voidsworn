@@ -2075,45 +2075,57 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary, more:
 	var k: float = ln["k"]
 	var dist = start.distance_to(tg["p"])
 	var ti = T + warn_t + clampf(dist / (70.0 * fx.unit), 0.85, 1.25)
-	for projectile in ln.get("projectiles", []):
-		var at: Vector3 = projectile.get("pos", start)
-		projectile["park"] = false
-		projectile["a"] = at
-		projectile["b"] = at.lerp(tg["p"], 0.5) + Vector3(0, 1.5 * k, 0)
-		projectile["c"] = tg["p"]
-		projectile["t0"] = T + warn_t
-		projectile["t1"] = ti
-		projectile["last"] = T + warn_t
-
-	var impacts: Array = [ti - T]
-	var hit_pts: Array = [_shield_lp(tg)] if not hit.is_empty() else []
-	var last_t: float = ti
+	# one landing record per warhead (point, time, hit), the first from the old single strike; the visible torpedoes and
+	# the impacts both read these records (Artoo on PR 1329: the torpedoes all flew to warhead 1 while warheads 2 and 3
+	# went off elsewhere with nothing arriving)
+	var lands: Array = [{"tg": tg, "t": ti, "hd": hd}]
 	if not bool(tg.get("miss", false)):
-		# Faction lane visuals change here; the existing R80 lane wound stays torp.
-		tg["mark_look"] = "torp"
-		if break_k == 0:
-			tg["breaking"] = true
-		_impact(fx, ln["look"], 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
-		# the other warheads of the salvo, each on its own point (a shield soaks the first, the rest can reach the hull)
-		var j := 0
 		var rh: RandomNumberGenerator = _volley_rng(fx) if not more.is_empty() else null   # (scatter on real plating, as a volley's shots, so warheads do not stack on one point)
+		var j := 0
 		for h in more:
 			j += 1
 			if not (h is Dictionary) or (h as Dictionary).is_empty():
 				continue
-			var tj: float = ti + TORP_WARHEAD_GAP * j
 			var tgj = _target(fx, Tg, to_c, start, true, h, -1, kt, {"spread": 1.0}, rh)
-			tgj["mark_look"] = "torp"
-			if j == break_k:
-				tgj["breaking"] = true
-			_impact(fx, ln["look"], 3, Tg, tgj, tj, ln["fac"]["weapon"], (tgj["p"] - start).normalized(), h, kt, 0.0)
-			impacts.append(tj - T)
-			hit_pts.append(_shield_lp(tgj))
-			last_t = tj
+			lands.append({"tg": tgj, "t": ti + TORP_WARHEAD_GAP * j, "hd": h, "j": j})
+	# torpedo i flies to warhead i; a lane that shows fewer torpedoes than the salvo has warheads lands the rest as their
+	# own impacts, and a lane that shows more sends the extra ones to the last warhead
+	var qi := 0
+	for projectile in ln.get("projectiles", []):
+		var L: Dictionary = lands[mini(qi, lands.size() - 1)]
+		var lp_end: Vector3 = (L["tg"] as Dictionary)["p"]
+		var at: Vector3 = projectile.get("pos", start)
+		projectile["park"] = false
+		projectile["a"] = at
+		projectile["b"] = at.lerp(lp_end, 0.5) + Vector3(0, 1.5 * k, 0)
+		projectile["c"] = lp_end
+		projectile["t0"] = T + warn_t
+		projectile["t1"] = float(L["t"])
+		projectile["last"] = T + warn_t
+		qi += 1
+
+	var impacts: Array = []
+	var hit_pts: Array = []
+	var points: Array = []
+	var last_t: float = ti
+	for L in lands:
+		impacts.append(float(L["t"]) - T)
+		points.append((L["tg"] as Dictionary)["p"])
+		if not hit.is_empty():
+			hit_pts.append(_shield_lp(L["tg"]))
+	if not bool(tg.get("miss", false)):
+		for L in lands:
+			var tgl: Dictionary = L["tg"]
+			# Faction lane visuals change here; the existing R80 lane wound stays torp.
+			tgl["mark_look"] = "torp"
+			if int(L.get("j", 0)) == break_k:
+				tgl["breaking"] = true
+			_impact(fx, ln["look"], 3, Tg, tgl, float(L["t"]), ln["fac"]["weapon"], ((tgl["p"] as Vector3) - start).normalized(), L["hd"], kt, 0.0)
+			last_t = maxf(last_t, float(L["t"]))
 		if Tg != null:
 			Tg.busy_until = maxf(Tg.busy_until, last_t)
 	fx.later(last_t + 0.2, func l_lane_clear() -> void: torp_lane_clear(fx, lane_id, false))
-	return {"impacts": impacts, "done": last_t - T + 0.5, "at": tg["p"], "hit_pts": hit_pts}
+	return {"impacts": impacts, "done": last_t - T + 0.5, "at": tg["p"], "hit_pts": hit_pts, "points": points}
 
 
 static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:

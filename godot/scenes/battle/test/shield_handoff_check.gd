@@ -182,7 +182,19 @@ func _torps() -> void:
 	await _frames(20)
 	var hits := [{"shield": 6, "hull": 0, "section": "mid", "crit": false}, {"shield": 0, "hull": 9, "section": "prow", "crit": false},
 		{"shield": 0, "hull": 9, "section": "eng", "crit": true}]
+	var ts: float = fx.now
 	var r: Dictionary = fx.torp_strike("L1239", t, hits[0], hits.slice(1), 0)
+	# Artoo (PR 1329): each visible torpedo flies to its own warhead's landing point and lands at its time
+	var projs: Array = fx.dstate.get("lanes", {}).get("L1239", {}).get("projectiles", [])
+	var pts_w: Array = r.get("points", [])
+	_check(not projs.is_empty() and pts_w.size() == 3, "F2.4: the lane has torpedoes and three landing points (%d, %s)" % [projs.size(), str(pts_w)])
+	for i in projs.size():
+		var w := mini(i, pts_w.size() - 1)
+		if w < 0:
+			break
+		var pr: Dictionary = projs[i]
+		_check((pr["c"] as Vector3).is_equal_approx(pts_w[w]) and absf(float(pr["t1"]) - (ts + float((r["impacts"] as Array)[w]))) < 1e-4,
+			"F2.4: torpedo %d ends at warhead %d's point and time (%s at %.3f; warhead %s at %.3f)" % [i, w, str(pr["c"]), float(pr["t1"]), str(pts_w[w]), ts + float((r["impacts"] as Array)[w])])
 	var imp: Array = r.get("impacts", [])
 	_check(imp.size() == 3, "F2.4: three warheads give three impacts (got %s)" % str(imp))
 	if imp.size() == 3:
