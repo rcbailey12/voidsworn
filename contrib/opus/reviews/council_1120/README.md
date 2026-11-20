@@ -17,6 +17,7 @@ audit did not: how the game feels to a new player, the screens, the art, the lor
 | Graphic design and art | seats/art.md | Fable and Rey, blind of each other |
 | Sci-fi lore | seats/lore.md | Fable and Rey, blind of each other |
 | Godot game dev | seats/godot_dev.md | Fable (reads the code); Astra later goes deeper |
+| Whole game, all five lenses | issue 1387 | Neon, blind (Ryan, Nov 20), then referee |
 
 Free models sit only the first-time player seat: on code and art they add noise the Board has to sift.
 
@@ -27,9 +28,11 @@ Free models sit only the first-time player seat: on code and art they add noise 
 2. **Challenge round.** Fable reads Muse's findings and Muse reads Fable's (challenge.md). Each must try to knock findings down:
    wrong, already fixed on main, already ruled by Ryan, not something a player would feel, or a fix that breaks a ruling.
    A finding survives only if it stands up to that.
-3. **Ranked list.** The thread merges what survived into one list ordered by what a player would feel most (ranking below),
+3. **Draft ranked list.** The thread merges what survived into one list ordered by what a player would feel most (ranking below),
    checks each against live main and FINDINGS, and sends it to the Board to file.
-4. **Astra pass (held).** One gpt-6.2-astra deep engineering and Godot pass that reads the ranked list and goes after what the
+4. **Neon referee** (Ryan, Nov 20 18:36 UTC): Neon checks the top 25 of the draft list against the code and pictures and
+   adds what everyone missed (neon_brief.md). Then the final ranked list.
+5. **Astra pass (held).** One gpt-6.2-astra deep engineering and Godot pass that reads the ranked list and goes after what the
    council could only point at (astra_brief.md). Ryan gets one Astra shot in the next two days: the Board confirms before it
    is spent.
 
