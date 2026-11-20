@@ -390,7 +390,11 @@ func quick_battle() -> void:
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
-	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
+	# Issue 1079: on by default (Ryan, Nov 20). A capture that needs the old look passes --nebula_wake false (Artoo, PR 1330).
+	var wake := bool(settings.get("nebula_wake_on", true))
+	if args.has("nebula_wake"):
+		wake = str(args["nebula_wake"]) == "true"
+	b.args["nebula_wake"] = str(wake)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
