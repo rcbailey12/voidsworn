@@ -189,6 +189,8 @@ def body(K):
     nu, nv = 64, 40
     vf = grid(core, nu, nv, X0, X1)
     hull = K._obj(CODE + '_mosaic_core', *vf, 'gw_mosaic', smooth=True)
+    # the core's glass wall: a thin inward shell (stage 4's sheet contract reads the hull thickness from a shell modifier)
+    md = hull.modifiers.new('shell', 'SOLIDIFY'); md.thickness = U(0.004); md.offset = -1; md.use_rim = True
     hull.data.color_attributes.new('gw_tint', 'FLOAT_COLOR', 'POINT')
     hull.data.attributes.new('gw_glow', 'FLOAT', 'POINT')
     tint, glow = hull.data.attributes['gw_tint'], hull.data.attributes['gw_glow']   # fetch both after creating both
