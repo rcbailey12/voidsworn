@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 27b466c1-1a55-4589-8bc9-2b23dd335fdb
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\GV2.blend"
+detail check FAIL: no hull atlas to measure in C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2 (GV2_hull_normal.png)
+GPU: released shared claim 27b466c1-1a55-4589-8bc9-2b23dd335fdb

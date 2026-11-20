@@ -1,0 +1,1 @@
+[score] GV2 {'overlap': 42.5, 'concept_covered': 49.0, 'cell_outside': 23.9, 'triangles': 25690}

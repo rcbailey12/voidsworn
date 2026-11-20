@@ -1,0 +1,21 @@
+{
+ "problems": [
+  "part Ec floats 0.75 game units off the hull"
+ ],
+ "parts": 5,
+ "crossing_break_lines": [
+  "Ec"
+ ],
+ "structure_across_seams": [],
+ "guns_with_normals": 1,
+ "guns_into_ship": 0,
+ "guns": 1,
+ "break_lines": {
+  "t_lines": [
+   -0.04998061291374628
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "FAIL"
+}
