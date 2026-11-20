@@ -196,6 +196,18 @@ func _kill(story: bool, quality: String) -> Dictionary:
 				for nd in w["nodes"] + w.get("frags", []):
 					if is_instance_valid(nd): starts[nd] = (nd as Node3D).global_position
 	check(hidden_at > 0.0, "%s: A16 broke up (at %.2f s)" % [tag, hidden_at])
+	# the strained wreck's torn insides are sooted (pass 3: they read as flat grey slabs up close); today's are unchanged
+	var sooted := 0
+	for w in fx.dstate["wrecks"]:
+		if w["id"] != "a16": continue
+		for nd in w["nodes"]:
+			if not is_instance_valid(nd): continue
+			for mi in (nd as Node3D).find_children("*", "MeshInstance3D", true, false):
+				var m: Mesh = (mi as MeshInstance3D).mesh
+				for k in (m.get_surface_count() if m != null else 0):
+					if fx._wreck_interiors.values().has(m.surface_get_material(k)): sooted += 1
+	print("DEATH_STORY %s sooted_inside_surfaces=%d" % [tag, sooted])
+	check((sooted > 0) == story, "%s: the wreck's insides are %s" % [tag, "sooted" if story else "today's"])
 	var main_max := 0.0
 	var frag_max := 0.0
 	var frags := 0
