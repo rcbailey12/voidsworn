@@ -277,14 +277,16 @@ instance uniform float branch_flash = 0.0;
 varying vec4 vc;
 void vertex() { vc = COLOR; }
 void fragment() {
-	// Red marks branches, green the hot tube, blue the outer violet skirt.
-	// Keep the halo chromatic before the existing weapon bloom integrates it.
+	// Red marks branches, green the hot tube, blue the outer corona.
+	// Issue 1269 (Ryan's pick 4, Nov 20): the corona is cool cyan-white, not violet,
+	// so storm lightning (danger) never shares the nebula's violet (cover).
+	// Keep the halo blue-led before the existing weapon bloom integrates it.
 	if (vc.g > 0.5 && !FRONT_FACING) { discard; }
 	float pulse = mix(flash, branch_flash, vc.r);
-	vec3 halo = mix(vec3(0.005, 0.8, 2.0), vec3(1.6, 0.005, 3.2), vc.b);
+	vec3 halo = mix(vec3(0.005, 0.8, 2.0), vec3(0.40, 0.72, 1.10), vc.b);
 	vec3 radiance = mix(halo, vec3(2.2, 2.1, 2.4), vc.g);
-	// The violet corona peaks outside the cyan skirt, never on the hot tube.
-	// Stacking both hues at the center turned their bloom pale white.
+	// The cyan-white corona peaks outside the cyan skirt, never on the hot tube.
+	// Stacking it on the core at the center turned the bloom pale white.
 	float weight = vc.a;
 	if (vc.b > 0.5) { weight = sin(clamp(vc.a / 0.16, 0.0, 1.0) * 3.14159265) * 0.22; }
 	ALBEDO = radiance * weight * pulse;
@@ -825,8 +827,8 @@ func _ribbon(st: SurfaceTool, path: Array, w_core: float, w_glow: float, branch 
 	for i in path.size() - 1:
 		var p0: Vector3 = path[i]
 		var p1: Vector3 = path[i + 1]
-		var taper0 := lerpf(1.0, 0.06, float(i) / float(path.size() - 1)) if branch else (0.25 if i == 0 else 1.0)
-		var taper1 := lerpf(1.0, 0.06, float(i + 1) / float(path.size() - 1)) if branch else (0.25 if i == path.size() - 2 else 1.0)
+		var taper0 := lerpf(1.0, 0.06, float(i) / float(path.size() - 1)) if branch else _main_taper(i, path.size())
+		var taper1 := lerpf(1.0, 0.06, float(i + 1) / float(path.size() - 1)) if branch else _main_taper(i + 1, path.size())
 		for ring in 6:
 			var a := float(ring) * TAU / 6.0
 			var z := float(ring + 1) * TAU / 6.0
@@ -842,8 +844,15 @@ func _ribbon(st: SurfaceTool, path: Array, w_core: float, w_glow: float, branch 
 			_quad(st, p0, p1, frames[i][axis] * w_glow * 1.3 * taper0, frames[i+1][axis] * w_glow * 1.3 * taper1, 0.16, branch, true)
 
 
-func _quad(st: SurfaceTool, p0: Vector3, p1: Vector3, side0: Vector3, side1: Vector3, alpha: float, branch: bool, violet: bool) -> void:
-	var cm := Color(1.0 if branch else 0.0, 0.0, 1.0 if violet else 0.0, alpha)
+# Issue 1269: the main channel narrows over its last two rings at both ends,
+# so a close (c26) bolt ends in a point instead of a flat cut.
+static func _main_taper(ring: int, count: int) -> float:
+	var from_end := mini(ring, count - 1 - ring)
+	return 0.12 if from_end == 0 else (0.55 if from_end == 1 else 1.0)
+
+
+func _quad(st: SurfaceTool, p0: Vector3, p1: Vector3, side0: Vector3, side1: Vector3, alpha: float, branch: bool, corona: bool) -> void:
+	var cm := Color(1.0 if branch else 0.0, 0.0, 1.0 if corona else 0.0, alpha)
 	var ce := Color(cm.r, cm.g, cm.b, 0.0)
 	for sgn in [1.0, -1.0]:
 		var e0: Vector3 = p0 + side0 * sgn
