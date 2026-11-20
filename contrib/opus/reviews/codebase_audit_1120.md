@@ -10,7 +10,7 @@ Three confirmed bugs, one of them worth fixing soon:
 
 | # | Severity | What the player sees | Issue |
 |---|---|---|---|
-| F2 | High | On Standard, every campaign fight is rolled on the Veteran fleet budget (about 22% more enemy ships in Sectors 1 and 2). The map's danger bands also read as Veteran. | #1336 |
+| F2 | High | On Standard, every campaign fight is rolled on the Veteran fleet budget (a 22% bigger budget for generated fleets in Sectors 1 and 2, so more or heavier ships). The map's danger bands also read as Veteran. | #1336 |
 | F1 | Low to medium | A Chorus run that ate a patron's core can still get a protocol offer from that patron (a weaker offer); the two rules twins disagree. | #1337 |
 | F3 | Low | A Sector III fight resumed from a save gets the one-battle story buff (for example +25% flagship damage) a second time. | #1338 |
 
@@ -23,7 +23,7 @@ Everything else I checked held up: battle parity, save round trips under heavy r
   the enemy fleet in `genEnemyFleet`, reading `R.AI_LEVEL`, still the default "veteran"). The level is only set later, in
   `godot/scenes/battle/battle.gd:507-508` (`_api_set_ai(ai_level)`), after the fleet already exists. The settings default is
   Standard (`godot/main/main.gd:21`, `"ai": "standard"`).
-- Effect: fleets get `RAMP.vet` 1.1 instead of `RAMP.std` 0.9 (battle.js:160-172), a 22% bigger budget in Sectors 1 and 2;
+- Effect: fleets get `RAMP.vet` 1.1 instead of `RAMP.std` 0.9 (battle.js:160-172), a 22% bigger budget for generated fleets in Sectors 1 and 2 (more or heavier ships: seed 11 has 4 ships both ways, 5 CP against 4);
   Sector III gets 1.1 x 1.25 instead of 0.9 x 1.4 (+9%). The AI then plays at Standard with a Veteran fleet.
 - Map side: `godot/ui/campaign/campaign_ui.gd:57` `ai_level := "veteran"` is never set from the settings (the only writer is
   `map3d.gd:167`, which copies it), so the map's danger bands always read Veteran. Also `map_intel.gd:50-53` never applies
