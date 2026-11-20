@@ -115,6 +115,12 @@ each line bulges and ripples, hairline cracks light, and the hull groans between
 gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
 and a warm light sits in each gap. Chorus ruptures and burnt-out hulks are unchanged. Check: fx/test/death_story_check.gd.
 
+Many deaths at once (issue 1237, Neon's destruction audit F7): thrown plates fly two seconds as before, then slow and come
+to rest by five and a half, where they stay until the plate ring reuses them; wreck sections keep drifting and turning,
+but on the effect clock after four seconds instead of in Jolt. Death pictures are reused from a pool, the power-down
+budget is one per frame for every dying ship, and only the two strongest event lights light the fog. Done when three
+capitals at once keep p99 inside the 12.5 ms gate on the PC; check: fx/test/multi_death_check.gd (headless counts).
+
 ### Frigate, escort, destroyer
 
 Fast, because they die often and must not clutter the board:

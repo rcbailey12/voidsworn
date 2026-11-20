@@ -17,13 +17,14 @@ const DEBRIS_CAP := 360
 # Issue 1237 (Neon F7.1): a debris plate flies as before for DEBRIS_FREE_S, then takes DEBRIS_SETTLE_DAMP and slows to a
 # stop, and Jolt puts it to sleep; anything still moving at DEBRIS_REST_S is stopped and put to sleep there. A sleeping
 # plate stays where it came to rest and costs Jolt nothing until a hull knocks it. Plates no longer test each other
-# (hull contacts only), and a big wreck section leaves Jolt WRECK_PHYS_S after its release: it keeps its drift and turn
+# (hull and wreck contacts only), and a wreck section leaves Jolt WRECK_PHYS_S after its release: it keeps its drift and turn
 # on the effect clock, the way the kinematic tiers already drift. Seconds are effect-clock seconds.
-const DEBRIS_FREE_S := 2.5
+const DEBRIS_FREE_S := 2.0
 const DEBRIS_SETTLE_DAMP := 1.4
 const DEBRIS_SETTLE_ADAMP := 1.2
-const DEBRIS_REST_S := 7.0
-const WRECK_PHYS_S := 6.0
+const DEBRIS_REST_S := 5.5
+const WRECK_PHYS_S := 4.0
+const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
 
@@ -458,7 +459,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.linear_damp = 0.0
 			b.can_sleep = true
 			b.collision_layer = DEBRIS_LAYER
-			b.collision_mask = HULL_LAYER   # issue 1237: plates bounce off hulls, never test each other
+			b.collision_mask = HULL_LAYER   # issue 1237: plates never test each other (hulls and wreck sections still knock them)
 			b.physics_material_override = st["bounce"]
 			var vi: int = fx.rng.randi() % DEBRIS_VARIANTS
 			var cs = CollisionShape3D.new()
@@ -474,12 +475,13 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			fx.phys_root.add_child(b)
 			pool.append(b)
 		else:
-			b = pool[int(st["debris_next"])]
-			st["debris_next"] = (int(st["debris_next"]) + 1) % DEBRIS_CAP
+			var slot := int(st["debris_next"])
+			b = pool[slot]
+			st["debris_next"] = (slot + 1) % DEBRIS_CAP
 			# Issue 1237 (Neon F7.1): a recycled plate takes this throw's size (it kept the last one's, so a frigate
 			# could throw a capital's plate).
 			if int(b.get_meta("debris_sc", -1)) != sc:
-				var vi: int = fx.rng.randi() % DEBRIS_VARIANTS
+				var vi: int = slot % DEBRIS_VARIANTS   # no random draw: the effect seed's sequence is unchanged
 				(b.get_node("shape") as CollisionShape3D).shape = st["debris_shapes"][sc][vi]
 				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
 				b.mass = 0.3 + 0.4 * sc
@@ -504,9 +506,16 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 
 # Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
 # thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
-# hull that knocks a sleeping plate wakes it in Jolt, and the damping it kept brings it back to rest.
+# hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
 static func _settle_debris(fx) -> void:
 	var awake: Dictionary = fx.dstate.get("debris_awake", {})
+	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
+		fx.dstate["debris_scan"] = fx.now + 0.25
+		for b in fx.dstate.get("debris", []):
+			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
+				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+		fx.dstate["debris_awake"] = awake
 	if awake.is_empty(): return
 	var done: Array = []
 	for b in awake:
