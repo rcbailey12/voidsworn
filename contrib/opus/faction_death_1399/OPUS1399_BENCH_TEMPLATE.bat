@@ -30,7 +30,7 @@ echo start %DATE% %TIME% attempt %A% tag %TAG% > "%RES%"
 findstr /b /c:"GPU cleared" "%V%\gpu_go.txt" >nul 2>&1 || (echo gpu_go.txt is not GPU cleared: stopped >> "%RES%" & echo all done >> "%RES%" & exit /b 0)
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
 if not exist "%C%\.git" (
-  git clone -q --no-checkout https://github.com/rcbailey12/voidsworn.git "%C%" >> "%RES%" 2>&1
+  git clone -q https://github.com/rcbailey12/voidsworn.git "%C%" >> "%RES%" 2>&1
   if errorlevel 1 (set "FAILMSG=git clone into %C% failed" & goto fail)
 )
 git -C "%C%" fetch -q --depth 1 origin %EXPECT% >> "%RES%" 2>&1
