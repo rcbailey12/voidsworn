@@ -20,8 +20,9 @@ rem receipt), never the pinned clone's own. Ryan's real battle_opts.json and boa
 rem Godot start and at the end (and on any stop); a difference is FAILED. Start it after any frame-time job holding the
 rem GPU; it waits up to an hour per GPU claim. Its own sparse clone in opus1289\repo (godot, tools, contrib\opus\arrival_hitch_1289).
 rem Writes only under opus1289\ (out_<A>, A the first unused attempt number). Never deletes anything.
-rem PASSED needs every row collected AND every AFTER prewarmed and firstkill row with no frame over 100 ms and a kill that
-rem broke into pieces (summary1289.ps1 prints the table and ACCEPT n of m into result.txt). Ends with "all done".
+rem PASSED needs the six named AFTER rows (prewarmed c_boss, prewarmed warden, firstkill c_boss; two sessions each) present,
+rem with no frame over 100 ms and a kill that broke into pieces (Artoo on PR 1293). Every other row is a diagnostic: shown
+rem in the table, a missing or aborted one listed (MISSING lines), never failing the run. Ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=52f7d10b0cb647b468b55c5b0075806d19d136c3
 set BEFORE=ab6b3258965d05f745e8897fc7219c9775580ace
@@ -89,13 +90,13 @@ for %%K in (after before) do (
 set PC_GPU_MODE=
 set "APPDATA=%REAL_APPDATA%"
 set "LOCALAPPDATA=%REAL_LOCALAPPDATA%"
-echo rows collected !GOOD! of %ROWS% >> "%RES%"
+echo rows collected !GOOD! of %ROWS% (diagnostic rows may be missing; only the six gated after rows must pass) >> "%RES%"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%O%\summary1289.ps1" -Out "%O%" > "%O%\summary.txt" 2>&1
 set ACC=!ERRORLEVEL!
 type "%O%\summary.txt" >> "%RES%"
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
-if not "!GOOD!"=="%ROWS%" (set "FAILMSG=only !GOOD! of %ROWS% rows were collected" & goto fail)
-if not "!ACC!"=="0" (set "FAILMSG=an after prewarmed or firstkill row had a frame over 100 ms or no pieces (see the ACCEPT line)" & goto fail)
+rem Artoo on PR 1293: only the six named AFTER rows gate the run; a missing diagnostic row is listed above, not a failure
+if not "!ACC!"=="0" (set "FAILMSG=a gated after row (prewarmed c_boss, prewarmed warden, firstkill c_boss, both sessions) is missing, over 100 ms or without pieces (see the gate and ACCEPT lines)" & goto fail)
 call :realcheck
 if errorlevel 1 (set "FAILMSG=Ryan's real options changed during the run; see real_profile_*.txt" & goto fail)
 echo real options unchanged >> "%RES%"
