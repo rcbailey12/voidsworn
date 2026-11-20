@@ -1,0 +1,6 @@
+start scene gate Thu 11/19/2026 19:04:31.04 
+commit=3b8b52b79962b1fa283a39c3a3b1f54eefce77d3
+scene gate 1 exit 1 
+scene gate 2 exit 1 
+[attach] battle x025 B20_11: skipped 0; rcs hp 8 ray 0 centre 0 skip 0
+all done Thu 11/19/2026 19:09:52.65 
