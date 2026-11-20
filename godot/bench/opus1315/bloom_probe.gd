@@ -7,7 +7,10 @@ extends "res://assets/ships/test/a4_shots.gd"
 # (the PC bat copies it to an untracked folder of the W2 clone). Writes <out>/<variant>.png/.jpg and <out>/bloom_probe.txt.
 # Counts: pixels of the STERN box with channel mean over 245 (and over 200), on the jpg as a4 saves it (quality 0.9).
 # The bar on W2's own I8_37_q.jpg by this definition: r5c 1193, W1C 1139, W2 1290 over 245 (of 200,000).
-const VARIANTS := ["base", "noglow", "noemit", "metal_0.3", "metal_0", "rough_0.45", "noemit_metal_0.3", "nokey", "nofill", "nosky"]
+# Probe 3 (PC, Nov 20) found glow spreads the white and metal makes the hottest pixels, but never touched look.gd's rim
+# light (LookRim: specular 8, behind the ship as the camera sees it). The Glasswright kit opts out of the soft rim
+# (SOFT_RIM False), the surfaces issue 601 cut to a quarter of that specular. Probe 4 tests the rim light.
+const VARIANTS := ["base", "rimoff", "rimsoft", "noglow", "rimsoft_noglow", "rimsoft_metal_0.5", "rimsoft_nofill"]
 const STERN := Rect2i(1050, 100, 500, 400)     # the stern bloom in view q (W2 I8_37_q.jpg peak at 1235, 295)
 
 static func measure(img: Image, box: Rect2i) -> Dictionary:
@@ -50,6 +53,11 @@ func _run() -> void:
 		return
 	var lights: Array = find_children("*", "DirectionalLight3D", true, false)
 	var energies := lights.map(func(l): return (l as DirectionalLight3D).light_energy)
+	var specs := lights.map(func(l): return (l as DirectionalLight3D).light_specular)
+	for l in lights:
+		line = "BLOOM_PROBE light %s energy %.2f specular %.2f" % [(l as Node).name, (l as DirectionalLight3D).light_energy,
+			(l as DirectionalLight3D).light_specular]
+		print(line); rep.store_line(line)
 	var originals := {}
 	for m in sv.meshes:
 		var mi := m as MeshInstance3D
@@ -58,12 +66,15 @@ func _run() -> void:
 	var sky_src = env.reflected_light_source
 	var bg = env.background_mode
 	for v: String in VARIANTS:
-		env.glow_enabled = v != "noglow"
+		env.glow_enabled = not v.contains("noglow")
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED if v == "nosky" else sky_src
 		for i in lights.size():
-			(lights[i] as DirectionalLight3D).light_energy = energies[i]
+			var li := lights[i] as DirectionalLight3D
+			li.light_energy = energies[i]; li.light_specular = specs[i]
+			if li.name == "LookRim" and v.contains("rimoff"): li.light_energy = 0.0; li.light_specular = 0.0
+			if li.name == "LookRim" and v.contains("rimsoft"): li.light_specular = specs[i] * 0.25   # look.gd RIM soft
 		if v == "nokey" and lights.size() > 0: (lights[0] as DirectionalLight3D).light_energy = 0.0
-		if v == "nofill" and lights.size() > 1: (lights[1] as DirectionalLight3D).light_energy = 0.0
+		if v.contains("nofill") and lights.size() > 1: (lights[1] as DirectionalLight3D).light_energy = 0.0
 		for k in originals:
 			var src = originals[k]
 			var mat = src
