@@ -161,6 +161,20 @@ service keeps the previous free repair rate. The lighter service adds a credit s
 drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
 battle rewards. See [the seeded check and picture list](../shots/after_win_1177/README.md).
 
+### Late market and faction purses (issue 1178, R335)
+
+Sector 3 shipyards add a Late market: two relics (picked from the run's useful, unowned relics without touching the random
+stream) and one Command expansion (+1 command point, at most two a run), all paid in credits. Paid repair prices never
+change (Oct 29 ruling). Three factions show their own money on the shipyard, the map purse and the victory card:
+
+- Chorus: hull work (repairs, new hulls, Marks) is paid in biomass, earned flat per win like credits plus 8 per kill, at
+  most 50 a battle (BIO_KILL in core.js). Credits still buy refits, class refits, events and the late market. Every hull button names biomass.
+- Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (15, 30, 45, 50, 60), at most 60.
+- Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value.
+
+Check: godot --headless --path godot --script res://campaign/test/late_run_shots.gd builds all four pages; with a display
+and an output folder it saves L1178, B1178, E1178 and C1178. Numbers and pictures: [the late run README](../shots/late_run_1178/README.md).
+
 ### Career (CR4, issue 869)
 
 Ryan settled CR4, The Honours Board (R286). Its source notes and CR4.png are on the design branch muse/issue-794 at

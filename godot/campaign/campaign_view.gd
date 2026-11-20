@@ -49,7 +49,9 @@ static func header(C) -> Dictionary:
 static func purse(C) -> Dictionary:
 	var R = C.RUN
 	if R == null: return {}
-	return {"credits": float(R["credits"]), "cp": float(C.fleetCP()), "cp_cap": float(R["cpCap"])}
+	var out = {"credits": float(R["credits"]), "cp": float(C.fleetCP()), "cp_cap": float(R["cpCap"])}
+	if R.get("fac") == "chorus": out["bio"] = float(C.z0(R.get("bio")))   # issue 1178: the Chorus purse shows biomass too
+	return out
 
 
 # the admiral leading the run: id, doctrine

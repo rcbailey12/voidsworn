@@ -190,7 +190,7 @@ pass('the newest two backups stay off the janitor list');
 const bench = fs.readFileSync(path.join(ROOT, 'tools/pc/jobs/look_bench.bat'), 'utf8');
 function tempSetup(script) {
   const start = script.indexOf('powershell -NoProfile -Command "$ErrorActionPreference=\'Stop\'; $id=');
-  const end = script.indexOf(':run_tools', script.indexOf('exit /b %ERRORLEVEL%', start));
+  const end = script.indexOf(':run_tools', script.indexOf('exit /b %RUN_EL%', start));
   assert(start >= 0 && end > start, 'sets the helper temp before its tools run');
   return script.slice(start, end);
 }
@@ -198,7 +198,13 @@ const setups = [tempSetup(text), tempSetup(bench)];
 for (const setup of setups) {
   assert.match(setup, /voidsworn-run-.*\.voidsworn-run-owner/);
   assert.match(setup, /set \/p TEMP=.*\r?\nset "TMP=%TEMP%"\r?\nset "TMPDIR=%TEMP%"/);
-  assert.match(setup, /call :run_tools 9>"%TEMP%\\\.voidsworn-run-active"/);
+  assert.match(setup, /call :run_tools 9>"%TEMP%\\\.voidsworn-run-active"\r?\nset "RUN_EL=%ERRORLEVEL%"/);
+  // Issue 1180: after the marker is released, TEMP goes back to the base and scratch_done.ps1 ends the scratch with the
+  // job's exit code (removed on PASS, newest failure per job kept a day); the job still exits with the tools' code.
+  assert.match(setup, /set "BASE_TEMP=%TEMP%"\r?\nset \/p TEMP=/);
+  assert.match(setup, /set "TEMP=%BASE_TEMP%"\r?\nset "TMP=%BASE_TEMP%"\r?\nset "TMPDIR=%BASE_TEMP%"/);
+  assert.match(setup, /scratch_done\.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "/);
+  assert.match(setup, /\r?\nexit \/b %RUN_EL%\r?\n/);
 }
 if (process.platform === 'win32') {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helper-temp-proof-'));
