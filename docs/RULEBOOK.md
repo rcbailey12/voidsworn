@@ -294,7 +294,12 @@ Before setting aside an earlier checkout, the runner reuses it only when its wor
 `godot/campaign/test/`, regenerated `golden/`, `out/` and `parity_log.txt` under `godot/rules/test/`, ignored Godot `.uid`
 files including script UIDs and those under `godot/audio/build/`, and
 ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
-the shared build by size and SHA-256 (issue 1107). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+the shared build by size and SHA-256 (issue 1107). For removal only, never for reuse, a differing ship or `godot/gen/` file
+is a candidate when the shared build holds the same file written strictly later; a copy file with no trusted time (before
+2000 or in the future) is kept, and each such call logs both times and sizes. Times only nominate: the janitor copies
+those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
+`salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
+any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
 and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
@@ -321,9 +326,18 @@ Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
 Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
 token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
-a folder that no longer matches it, is report-only). Name matches alone are report-only, including `voidsworn-parity-*`
-and `stage7-checked-*`. The janitor checks `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time
-to relay their results. A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
+a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
+its whole name is one our tools generate (`voidsworn-run-[<issue>-]<32 hex>`, `voidsworn-parity-<6 characters>` from
+run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), its issue lock is free and no running
+process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
+older, are removed as links and never followed, and the log names each link's target; a folder another account owns
+(Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
+only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
+in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. A ship file with no twin in the shared build
+is a superseded candidate when the build holds that ship code installed later, and is archived like any other
+(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).
@@ -372,6 +386,22 @@ if it's timing out actual work?" He took up a stall check, a high backstop and a
 (G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
 PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
+
+PC jobs run one tools copy and report honestly (issue 1194, Board, Nov 20). `lane_tools_refresh.ps1 -Build tools_live`
+installs main's tools as a verified, never-edited version under `Downloads\voidsworn_test\tools_live\` with its own
+hashes, named by `tools_live\current.txt`; every `tmo.bat` outside it hands its step to that copy, so an old `build\tools`
+or branch checkout never runs its own watchdog or slot reader (self-tests set `TMO_OWN_COPY=1`). The main watcher refreshes
+tools_live and `build\tools` between jobs. Old lane backups and old tools_live versions rotate instead of stopping the
+refresh: a backup goes only when every file in it is kept in a newer copy or a saved main snapshot, a version only when it
+was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
+their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
+(exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
+declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. The
+watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
+read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
+failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
+the watcher filed every job as done, and a missing ffmpeg or Pillow showed only after an hour on the GPU (Neon's PC
+pipeline audit, checked by the Board, Nov 19).
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -802,6 +832,10 @@ of it.** Why: avoid a known film creature; the species is not made of glass (R66
 
 11.5 **The "Playtest: everything unlocked" switch stays on, with renown progression intact underneath, until Ryan says
 progression is ready to test.** Why: he tests the whole game, not the unlock path (R69). Set: Ryan (R69). Id: progression-01.
+
+11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
+Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
+20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
 
 ## 12. Automatic checks
 

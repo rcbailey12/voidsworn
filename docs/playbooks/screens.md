@@ -55,8 +55,11 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   (campaign_ui.gd ESC_BACK). The UI scale is never capped; each layout fits 831 design pixels tall. Progression, Lineage and How to play sit in the
   desk's frame (campaign_ui.gd _kit_page: ledger veil, one centred column, a fixed bar with Back) and their card rows are
   kit grids (Kit.card_grid: one width, one height per row, actions at the foot); tab strips use Kit.tab_button. Checked by
-  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group); contact sheets
-  by godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K.
+  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group, --expect=WxH
+  fails a frame of the wrong size: Godot hides --resolution from the script); contact sheets by
+  godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K. An open
+  drawer on a page (Run options) holds keyboard and controller focus (campaign_ui.gd _trap_focus) and closing it gives the
+  focus back to the button that opened it (issue 1261).
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 
@@ -146,6 +149,17 @@ read-only drawing, moved-content routes, progression returns and heir gates, and
 1080 and 1440 across all factions, the long flagship name and a 20-ship fleet. The optional --shots DIR arguments capture
 the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
 than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
+
+### Between-fight cards (issue 1177, R335)
+
+The victory card lists the wrecks and lets the player work one directly. If there are captured ships, deal with the batch
+of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
+perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
+
+Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
+service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
+drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
+battle rewards. See [the seeded check and picture list](../shots/after_win_1177/README.md).
 
 ### Career (CR4, issue 869)
 
