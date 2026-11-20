@@ -18,7 +18,9 @@ set "PIN_OLD="
 rem The head is the installed main copy in tools_live (fail closed). OPUS_JOB_HEAD may name another copy only for a
 rem pre-merge smoke, together with OPUS_JOB_HEAD_PREMERGE=1; the head logs that.
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
-set "HEAD=%OPUS_JOB_HEAD%"
+set "HEAD="
+if defined OPUS_JOB_HEAD if not "%OPUS_JOB_HEAD_PREMERGE%"=="1" (echo FAILED: OPUS_JOB_HEAD is only for a pre-merge smoke & exit /b 2)
+if "%OPUS_JOB_HEAD_PREMERGE%"=="1" set "HEAD=%OPUS_JOB_HEAD%"
 set "TLV="
 if not defined HEAD if exist "%VT%\tools_live\current.txt" set /p TLV=<"%VT%\tools_live\current.txt"
 if not defined HEAD if defined TLV set "HEAD=%VT%\tools_live\%TLV%\pc\jobs\opus_job_head.bat"

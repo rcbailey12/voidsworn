@@ -2,8 +2,11 @@
 rem Issue 1303: one shared head for helper (Opus) PC proof bats. Start from opus_job_template.bat; do not hand-roll these
 rem steps. It sits on job_wrap.bat (issue 1194: the canonical tools_live watchdog, a GPU label, preflight, honest done
 rem lines) and adds what seven sent-back bats missed on Nov 19 and 20:
-rem   init <job> <GPU label> <tools>  refuses unless this head runs from tools_live (OPUS_JOB_HEAD_PREMERGE=1 only for a
-rem                                   smoke before merge, logged); makes a new attempt folder
+rem   init <job> <GPU label> <tools>  refuses unless this head is tools_live\<current.txt>\pc\jobs, the current installed
+rem                                   copy (OPUS_JOB_HEAD_PREMERGE=1 only for a smoke before merge, logged; job_wrap then
+rem                                   still comes from the current tools_live); clears job_wrap's test settings; after
+rem                                   job_wrap init, verifies head and watchdog against that version's hashes.txt; makes a
+rem                                   new attempt folder
 rem                                   Downloads\voidsworn_test\<job>\out_<stamp>_<n> (never reused); job_wrap init; logs the
 rem                                   path and sha256 of tools_live tmo.bat and run_timeout.ps1 (fail closed if either is
 rem                                   missing); keeps the watchdog's throwaway Godot profile on (PC_REAL_PROFILE and
@@ -36,6 +39,9 @@ echo %OJ_JOB%| findstr /r /x "[A-Za-z0-9_-][A-Za-z0-9_-]*" > nul
 if errorlevel 1 (echo opus_job_head: job name not accepted: "%OJ_JOB%" & exit /b 2)
 rem The head itself must be the installed main copy, so every job runs the same reviewed steps.
 set "OJ_HERE=%~dp0"
+set "OJ_TLV="
+if exist "%OJ_VT%\tools_live\current.txt" set /p OJ_TLV=<"%OJ_VT%\tools_live\current.txt"
+if not defined OJ_TLV (echo opus_job_head: refused, no tools_live\current.txt & exit /b 2)
 set "OJ_LIVE="
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" live "%OJ_HERE%." > nul 2>&1
 if not errorlevel 1 set "OJ_LIVE=1"
@@ -45,17 +51,28 @@ set "OJ_OUT=%OJ_VT%\%OJ_JOB%\out_%OJ_STAMP%_%RANDOM%"
 if exist "%OJ_OUT%" (echo opus_job_head: attempt folder already exists: %OJ_OUT% & exit /b 2)
 set "PC_REAL_PROFILE="
 set "PC_KEEP_GODOT_PROFILE="
+rem job_wrap's test settings never pass through (Artoo on PR 1305): it resolves tools_live\current.txt itself and checks
+rem that version's hashes strictly. No refresh mid-job, so the watchdog stays the version this head was checked against.
+set "JW_TOOLS="
+set "JW_HASHES="
+set "JW_NO_REFRESH=1"
+set "JW_NO_JANITOR="
 if not "%OPUS_JOB_JANITOR%"=="1" set "JW_NO_JANITOR=1"
+set "OJ_PRE=0"
+if not defined OJ_LIVE set "OJ_PRE=1"
 set "JW=%~dp0..\job_wrap.bat"
+if "%OJ_PRE%"=="1" set "JW=%OJ_VT%\tools_live\%OJ_TLV%\pc\job_wrap.bat"
 call "%JW%" init "%OJ_OUT%" "%~3" "%~4"
 if errorlevel 1 exit /b %ERRORLEVEL%
 set "OJ_ST=%JW_ST%"
 >> "%OJ_ST%" echo head %~f0
-if not defined OJ_LIVE >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only)
+if "%OJ_PRE%"=="1" >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE% >> "%OJ_ST%" 2>&1
+if errorlevel 1 (call "%JW%" fail "the head and watchdog are not one verified current tools_live version" & call "%JW%" end & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" watchdog "%JW_TOOLS%" >> "%OJ_ST%" 2>&1
-if errorlevel 1 (call "%JW%" fail "watchdog files missing in %JW_TOOLS%" & exit /b 1)
+if errorlevel 1 (call "%JW%" fail "watchdog files missing in %JW_TOOLS%" & call "%JW%" end & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" hashes "%OJ_OUT%\real_options_before.txt" >> "%OJ_ST%" 2>&1
-if errorlevel 1 (call "%JW%" fail "could not hash Ryan's real options" & exit /b 1)
+if errorlevel 1 (call "%JW%" fail "could not hash Ryan's real options" & call "%JW%" end & exit /b 1)
 >> "%OJ_ST%" echo profile: every Godot start gets a throwaway profile from the watchdog
 exit /b 0
 

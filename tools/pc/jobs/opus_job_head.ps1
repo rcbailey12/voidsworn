@@ -1,6 +1,10 @@
 # Issue 1303: the PowerShell half of opus_job_head.bat (one shared head for helper PC proof bats). Actions:
-#   live <folder>                              exit 0 when the folder is inside voidsworn_test\tools_live\ (the head
-#                                              must run from the installed main copy)
+#   live <folder>                              exit 0 only when the folder is tools_live\<current.txt>\pc\jobs: the
+#                                              head must be the installed current main copy, never an older version
+#   bundle <head folder> <JW_TOOLS> <JW_HASHES> <premerge 0|1>
+#                                              after job_wrap init: JW_TOOLS and JW_HASHES must be the current
+#                                              version's pc folder and hashes.txt, and hashes.txt must match tmo.bat,
+#                                              run_timeout.ps1 and (unless premerge) this head's .bat and .ps1
 #   watchdog <tools pc folder>                 tmo.bat and run_timeout.ps1 must both exist; prints each path and sha256
 #   checkout <attempt folder> <name> <sha>     a fresh checkout of one exact commit in <attempt>\<name>, never reused:
 #                                              the shared repo-mirror.git (same lock as helper_clone.ps1 and the runners)
@@ -9,8 +13,8 @@
 #   tracked <repo>                             fails when any tracked file differs from the pinned commit
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
 # Deletes nothing. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'watchdog', 'checkout', 'tracked', 'hashes')][string]$Action,
-      [string]$A = '', [string]$B = '', [string]$C = '')
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'hashes')][string]$Action,
+      [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
@@ -27,13 +31,40 @@ function Run-Git {
   $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 function Hash($path) { (Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash.ToLowerInvariant() }
+function Current-Pc {
+  $live = Join-Path $vt 'tools_live'
+  $file = Join-Path $live 'current.txt'
+  if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "no $file" }
+  $version = ([IO.File]::ReadAllText($file)).Trim()
+  if ($version -notmatch '\A[A-Za-z0-9._-]+\z') { throw "tools_live\current.txt is not a version name: $version" }
+  return [IO.Path]::GetFullPath((Join-Path (Join-Path $live $version) 'pc')).TrimEnd('\', '/')
+}
 
 switch ($Action) {
   'live' {
     $here = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
-    $live = (Join-Path $vt 'tools_live') + $sep
-    if (-not $here.StartsWith($live, [StringComparison]::OrdinalIgnoreCase)) { throw "not a tools_live copy: $here" }
-    Write-Output "head runs from tools_live: $here"
+    $want = Current-Pc
+    if (-not $here.Equals((Join-Path $want 'jobs'), [StringComparison]::OrdinalIgnoreCase)) { throw "not the current tools_live head: $here (current is $want)" }
+    Write-Output "head runs from the current tools_live copy: $here"
+  }
+  'bundle' {
+    $pc = Current-Pc
+    $version = Split-Path -Parent $pc
+    $tools = [IO.Path]::GetFullPath($B).TrimEnd('\', '/')
+    $hashFile = [IO.Path]::GetFullPath($C)
+    if (-not $tools.Equals($pc, [StringComparison]::OrdinalIgnoreCase)) { throw "job_wrap tools are $tools, not the current $pc" }
+    if (-not $hashFile.Equals((Join-Path $version 'hashes.txt'), [StringComparison]::OrdinalIgnoreCase)) { throw "job_wrap hashes are $hashFile, not the current version's hashes.txt" }
+    $listed = @{}
+    foreach ($line in [IO.File]::ReadAllLines($hashFile)) { if ($line -match '\A([0-9a-f]{64})  (\S+)\z') { $listed[$Matches[2].Replace('/', '\')] = $Matches[1] } }
+    $names = @('tmo.bat', 'run_timeout.ps1')
+    if ($D -ne '1') { $names += @('jobs\opus_job_head.bat', 'jobs\opus_job_head.ps1') }
+    foreach ($name in $names) {
+      $file = Join-Path $pc $name.Replace('\', $sep)
+      if (-not $listed.ContainsKey($name)) { throw "hashes.txt does not list $name" }
+      if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "missing $file" }
+      if ((Hash $file) -ne $listed[$name]) { throw "$file differs from hashes.txt" }
+      Write-Output "verified $($listed[$name]) $file"
+    }
   }
   'watchdog' {
     foreach ($name in @('tmo.bat', 'run_timeout.ps1')) {

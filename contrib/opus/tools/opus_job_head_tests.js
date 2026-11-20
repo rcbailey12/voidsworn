@@ -19,9 +19,10 @@ const headCode = code(head), tplCode = code(tpl), psCode = code(ps);
 // ---------------------------------------------------------------- static contract: the head
 for (const label of ['oj_init', 'oj_checkout', 'oj_ships', 'oj_tail']) assert(head.includes('\n:' + label + '\n'), 'head has ' + label);
 const init = headCode.slice(headCode.indexOf(':oj_init'), headCode.indexOf(':oj_checkout'));
-const order = ['live "%OJ_HERE%."', 'OPUS_JOB_HEAD_PREMERGE', 'set "OJ_OUT=%OJ_VT%\\%OJ_JOB%\\out_%OJ_STAMP%_%RANDOM%"',
-  'if exist "%OJ_OUT%"', 'set "PC_REAL_PROFILE="', 'set "PC_KEEP_GODOT_PROFILE="', 'set "JW_NO_JANITOR=1"',
-  'call "%JW%" init "%OJ_OUT%" "%~3" "%~4"', 'watchdog "%JW_TOOLS%"', 'hashes "%OJ_OUT%\\real_options_before.txt"'];
+const order = ['tools_live\\current.txt', 'live "%OJ_HERE%."', 'OPUS_JOB_HEAD_PREMERGE', 'set "OJ_OUT=%OJ_VT%\\%OJ_JOB%\\out_%OJ_STAMP%_%RANDOM%"',
+  'if exist "%OJ_OUT%"', 'set "PC_REAL_PROFILE="', 'set "PC_KEEP_GODOT_PROFILE="', 'set "JW_TOOLS="', 'set "JW_HASHES="',
+  'set "JW_NO_REFRESH=1"', 'set "JW_NO_JANITOR=1"', 'call "%JW%" init "%OJ_OUT%" "%~3" "%~4"',
+  'bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE%', 'watchdog "%JW_TOOLS%"', 'hashes "%OJ_OUT%\\real_options_before.txt"'];
 order.reduce((at, needle) => { const i = init.indexOf(needle, at); assert(i >= at && i >= 0, 'init order: ' + needle); return i; }, 0);
 assert(init.includes('if not "%OPUS_JOB_JANITOR%"=="1" set "JW_NO_JANITOR=1"'), 'the after-job janitor is off unless switched on');
 assert(/if not defined OJ_LIVE if not "%OPUS_JOB_HEAD_PREMERGE%"=="1" \(echo [^\n]*refused[^\n]*& exit \/b 2\)/.test(init), 'a head outside tools_live refuses');
@@ -47,6 +48,7 @@ console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watc
 // ---------------------------------------------------------------- static contract: the template
 const fill = tpl.match(/^rem ---- FILL/gm) || [];
 assert.equal(fill.length, 4, 'the template marks its fill lines (FILL 1, 2, 3, and 4 and 5)');
+assert(/if defined OPUS_JOB_HEAD if not "%OPUS_JOB_HEAD_PREMERGE%"=="1" \(echo FAILED[^\n]*exit \/b 2\)/.test(tplCode), 'a head override outside a pre-merge smoke is refused');
 assert(tplCode.includes('set "HEAD=%VT%\\tools_live\\%TLV%\\pc\\jobs\\opus_job_head.bat"'), 'the template finds the head in tools_live');
 assert(tplCode.includes('call "%HEAD%" init "%JOB%" "%LABEL%" "%TOOLS%"') && tplCode.includes('call "%HEAD%" tail\nexit /b %ERRORLEVEL%'), 'template starts and ends through the head');
 const one = tplCode.slice(tplCode.indexOf(':one'));
@@ -98,12 +100,36 @@ git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'com
 const two = git(['rev-parse', 'HEAD'], work);
 git(['clone', '-q', '--bare', work, source]);
 
-let r = run('live', path.join(vt, 'tools_live', 'v1', 'pc', 'jobs') + path.sep + '.');
-assert.equal(r.status, 0, 'a head inside tools_live is accepted: ' + r.out);
-r = run('live', path.join(vt, 'opus1303', 'src', 'tools', 'pc', 'jobs'));
-assert.notEqual(r.status, 0, 'a head outside tools_live is refused');
+const live = path.join(vt, 'tools_live');
+assert.notEqual(run('live', path.join(live, 'v2', 'pc', 'jobs')).status, 0, 'no current.txt: refused');
+write(path.join(live, 'current.txt'), 'v2\r\n');
+let r = run('live', path.join(live, 'v2', 'pc', 'jobs') + path.sep + '.');
+assert.equal(r.status, 0, 'the current tools_live head is accepted: ' + r.out);
+assert.notEqual(run('live', path.join(live, 'v1', 'pc', 'jobs')).status, 0, 'an older installed head is refused');
+assert.notEqual(run('live', path.join(vt, 'opus1303', 'src', 'tools', 'pc', 'jobs')).status, 0, 'a head outside tools_live is refused');
 
-const tools = path.join(vt, 'tools_live', 'v1', 'pc');
+// One verified bundle: job_wrap's tools and hashes must be the current version's, and match the files.
+const sha = text => require('node:crypto').createHash('sha256').update(text).digest('hex');
+const files = { 'tmo.bat': 'rem watchdog\n', 'run_timeout.ps1': '# watchdog\n', 'jobs\\opus_job_head.bat': 'rem head\n', 'jobs\\opus_job_head.ps1': '# head\n' };
+for (const v of ['v1', 'v2']) {
+  for (const [name, text] of Object.entries(files)) write(path.join(live, v, 'pc', ...name.split('\\')), text);
+  write(path.join(live, v, 'hashes.txt'), Object.entries(files).map(([n, t]) => `${sha(t)}  ${n}`).join('\n') + '\n');
+}
+const v2 = path.join(live, 'v2');
+r = run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), path.join(v2, 'hashes.txt'), '0');
+assert.equal(r.status, 0, 'the current bundle verifies: ' + r.out);
+assert.equal((r.out.match(/^verified [0-9a-f]{64} /gm) || []).length, 4, 'head and watchdog files are all verified');
+assert.notEqual(run('bundle', path.join(v2, 'pc', 'jobs'), path.join(live, 'v1', 'pc'), path.join(v2, 'hashes.txt'), '0').status, 0, 'leftover JW_TOOLS from an older version is refused');
+assert.notEqual(run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), path.join(live, 'v1', 'hashes.txt'), '0').status, 0, 'leftover JW_HASHES from an older version is refused');
+assert.notEqual(run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), '', '0').status, 0, 'no hashes file is refused');
+write(path.join(v2, 'pc', 'jobs', 'opus_job_head.bat'), 'rem edited head\n');
+assert.notEqual(run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), path.join(v2, 'hashes.txt'), '0').status, 0, 'an edited head fails the hash check');
+r = run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), path.join(v2, 'hashes.txt'), '1');
+assert.equal(r.status, 0, 'a pre-merge smoke still verifies the watchdog: ' + r.out);
+write(path.join(v2, 'pc', 'tmo.bat'), 'rem edited watchdog\n');
+assert.notEqual(run('bundle', path.join(v2, 'pc', 'jobs'), path.join(v2, 'pc'), path.join(v2, 'hashes.txt'), '1').status, 0, 'an edited watchdog fails even in a smoke');
+
+const tools = path.join(vt, 'tools_live', 'v9', 'pc');
 write(path.join(tools, 'tmo.bat'), 'rem watchdog\n');
 r = run('watchdog', tools);
 assert.notEqual(r.status, 0, 'a missing run_timeout.ps1 fails closed');
@@ -141,4 +167,4 @@ assert.equal(run('hashes', after).status, 0);
 assert.match(fs.readFileSync(after, 'utf8'), /^[0-9a-f]{64} battle_opts\.json/m);
 assert.notEqual(fs.readFileSync(before, 'utf8'), fs.readFileSync(after, 'utf8'), 'a change to the options shows in the hash');
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS ps1 fixtures: tools_live gate, watchdog hashes, exact fresh checkouts, tracked check, options hash');
+console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, options hash');
