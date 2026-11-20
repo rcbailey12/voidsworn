@@ -1,0 +1,14 @@
+PASS job_wrap: GPU label, watchdog steps, optional and continue steps, outputs, done lines and exit codes
+PASS the five job bats and run_smoke run through job_wrap: preflight first, no polling, honest end
+PASS watchers log the exit code and move failed jobs to the failed folder; the main one refreshes tools between jobs
+PASS every tmo.bat outside tools_live hands its step to the canonical watchdog
+PASS tool preflight (godot, blender, ffmpeg, node, pil; exit 2) and the strict watchdog hash check in both runners
+PASS PC_DOCTOR.bat is read only and shows owner, child, age and health for every claim
+Evidence: C:\Users\rcbai\AppData\Local\Temp\pc1194 eWEU8C
+PASS Windows: a required failure stops later steps, continue and optional behave, empty outputs fail, exit 1
+PASS Windows: a clean job ends PASS with exit 0; a job without a GPU label stops at init
+PASS Windows: a missing tool stops the job with exit 2 before its first step
+PASS Windows: a changed watchdog file stops the job before any step
+PASS Windows: a checkout tmo.bat hands its step to the installed tools_live watchdog
+PASS Windows: the doctor shows owner, age and health, flags a damaged slot and changes nothing
+PASS PC jobs 1194 checks (12 groups)
