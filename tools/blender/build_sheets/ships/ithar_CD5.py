@@ -520,7 +520,7 @@ def build(K):
     K.change('Breaks bracket the lens bays; no upper peel (r5c: on the slim hull a peel opened the bow piece)',
              'Glasswrights shatter; each large optic remains a whole part. The forward lances cannot be cut by a new transverse seam.')
     K.open_item('Paint: the shared Glasswright stack (tools/blender/kits/ithar/stack.py), baked with EMISSIVE_ATLAS for the mosaic glow.')
-    K.open_item('Installed in game through the recipe (issue 1183 r5c, accepted Nov 20); the warming round is issue 1282.')
+    K.open_item('Built and checked in Windows job clones only (issue 1183 r5c, accepted Nov 20; issue 1282 W2). The shared game build keeps the old hull until issue 1311 publishes it.')
 
 
 def review(out):
