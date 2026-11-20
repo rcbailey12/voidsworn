@@ -7,9 +7,11 @@ Ships disturb the calm nebula as they pass. Visual only: no rule, move or terrai
 - `godot/world/nebula_wake.gd` keeps a small set of line segments along each ship's recent path (12 at Max and High, 6
   at Low). A ship's newest segment stretches with it every frame and is closed off every 12 units; the age runs smoothly
   along the trail, so the wake is one continuous strip with no steps (Ryan, Nov 19: the earlier point version, runs 3
-  and 6, showed stages). The strip pushes the gas aside, curls it and thins it a little, eases in over 0.6 s behind the
-  hull and fades out evenly over 3 seconds; each ship's trail acts as one line, so no segment end bubbles up (Ryan,
-  Nov 20: run 7 still looked sudden and jerky). No fluid simulation, nothing persistent.
+  and 6, showed stages). The strip pushes the gas aside, curls it and thins it a little, eases in over a trail's first 8 units and
+  fades out evenly over 3 seconds; each ship's trail acts as one line, so no segment end bubbles up (Ryan,
+  Nov 20: run 7 still looked sudden and jerky). Since run 9 the trail runs to the bow: the gas is already stirred
+  there, builds to full by mid-hull and only fades with age, so it no longer trails from the back or catches up after
+  a stop (Ryan, Nov 20, run 8). No fluid simulation, nothing persistent.
 - The radius comes from hull length: about 9 units for a frigate, up to 26 for a capital (a hex is 17.3 across).
 - It reads every ship the battle shows (`battle.gd` `views`, through `world_living.gd`), so every faction and class
   picks it up, squadrons included. Nothing is per hull.

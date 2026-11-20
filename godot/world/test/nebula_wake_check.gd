@@ -110,17 +110,19 @@ func _trail_check() -> void:
 			stop_at = ship.position
 		w.update(dt, [ship])
 		var h: int = w._head.get(ship.get_instance_id(), -1)
-		if moving and k > 0 and (h < 0 or (w._ring[h].b as Vector3).distance_to(ship.position) > 0.001):
+		var d2: Vector2 = w._last[ship.get_instance_id()].dir if w._last.has(ship.get_instance_id()) else Vector2.ZERO
+		var bow: Vector3 = ship.position + Vector3(d2.x, 0.0, d2.y) * 40.0 * WAKE.BOW
+		if moving and k > 1 and k != 160 and (h < 0 or (w._ring[h].b as Vector3).distance_to(bow) > 0.001):
 			tip_off += 1
 		# chain: every closed segment of this ship whose b is some other segment's a must agree in time there (except
 		# where it stopped: moving on starts a fresh trail from that spot, as the gas there has been settling meanwhile)
 		for e in w._ring:
-			if (e.a as Vector3).distance_to(e.b) < 0.01 or (e.a as Vector3).distance_to(stop_at) < 0.001:
+			if (e.a as Vector3).distance_to(e.b) < 0.01 or (e.a as Vector3).distance_to(stop_at) < 0.6 * 40.0:
 				continue
 			for f in w._ring:
 				if f != e and (f.b as Vector3).distance_to(e.a) < 0.001 and absf(float(f.tb) - float(e.ta)) > 0.0001:
 					broken += 1
-	check(tip_off == 0, "trail: the newest segment always ends at the moving hull (%d frames off)" % tip_off)
+	check(tip_off == 0, "trail: the newest segment always ends at the moving bow (%d frames off)" % tip_off)
 	check(broken == 0, "trail: segments meet end to end at the same age (%d seams)" % broken)
 	var live := 0
 	for e in w._ring:

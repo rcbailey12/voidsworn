@@ -234,8 +234,9 @@ func _still(tier: String, size: Vector2i) -> void:
 		var a: Vector3 = focus + leg[0]
 		var z: Vector3 = focus + leg[1]
 		var dir := Vector2(z.x - a.x, z.z - a.z).normalized()
-		# the trail each ship would leave: segments back from the hull, newest end 0.1 s old, each 0.45 s older
-		wake.lay_trail(sv.visual_position(), dir, r, wake.points / 2, 0.1, 0.45)
+		# the trail each ship would leave: segments back from the bow, newest end 0.1 s old, each 0.45 s older
+		var bow: Vector3 = sv.visual_position() + Vector3(dir.x, 0.0, dir.y) * float(sv.L) * wake.BOW
+		wake.lay_trail(bow, dir, r, wake.points / 2, 0.1, 0.45)
 	wake.held = false
 	var trail: Array = wake._ring.duplicate(true)
 	# Let the board and its look finish settling (its grid fades in after a build; run 3's Low pair caught that fade).
