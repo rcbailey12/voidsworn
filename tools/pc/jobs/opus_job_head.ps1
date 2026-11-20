@@ -18,8 +18,15 @@
 #                                              Writes the measured hull identity (code, stamp, scene; sorted) to <out
 #                                              file>. Every code in [codes] (spaces or commas) must be a matching ship.
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
-# Deletes nothing. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes')][string]$Action,
+#   dropcheckouts <attempt folder>             after the job (pass or fail): removes the job's own pinned checkouts, the
+#                                              rebuildable leftovers RULEBOOK 3.3 / R326 let a job remove. Only folders
+#                                              listed in <attempt>\checkouts.txt by this head's checkout step, directly in an
+#                                              attempt folder voidsworn_test\<job>\out_*, that are plain folders whose
+#                                              .git\HEAD still names the listed pin. Links inside are removed as links, never
+#                                              followed. out_*, the logs and every other file stay. The Board's PC pause
+#                                              (gpu_go.txt) removes nothing. A refusal is logged and never fails the job.
+# Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'dropcheckouts')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -44,6 +51,31 @@ function Current-Pc {
   $version = ([IO.File]::ReadAllText($file)).Trim()
   if ($version -notmatch '\A[A-Za-z0-9._-]+\z') { throw "tools_live\current.txt is not a version name: $version" }
   return [IO.Path]::GetFullPath((Join-Path (Join-Path $live $version) 'pc')).TrimEnd('\', '/')
+}
+
+function Test-Paused {
+  # The Board's PC pause line (RULEBOOK 3.11), as scratch_done.ps1 reads it. Tests point PC_CLEANUP_PAUSE_FILE at a fixture.
+  $flag = if ($test -and $env:PC_CLEANUP_PAUSE_FILE) { $env:PC_CLEANUP_PAUSE_FILE } else { Join-Path $vt 'gpu_go.txt' }
+  if (-not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
+  return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
+}
+function Remove-LinkSafeTree($root) {
+  # scratch_done.ps1's walk: a link is removed as a link and never followed; read-only files (git packs) are cleared first.
+  $bytes = [long]0
+  $dirs = New-Object 'Collections.Generic.List[string]'
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push((Get-Item -LiteralPath $root -Force))
+  while ($pending.Count) {
+    $next = $pending.Pop(); $dirs.Add($next.FullName)
+    foreach ($entry in @($next.EnumerateFileSystemInfos())) {
+      if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
+      } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
+      else { $bytes += $entry.Length; $entry.Attributes = [IO.FileAttributes]::Normal; [IO.File]::Delete($entry.FullName) }
+    }
+  }
+  for ($i = $dirs.Count - 1; $i -ge 0; $i--) { [IO.Directory]::Delete($dirs[$i], $false) }
+  return $bytes
 }
 
 switch ($Action) {
@@ -109,6 +141,7 @@ switch ($Action) {
     Run-Git -C $repo -c core.autocrlf=false -c advice.detachedHead=false checkout -q --detach $C | Out-Null
     $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
     if ($head -ne $C) { throw "checkout $repo is at $head, not the pin $C" }
+    [IO.File]::AppendAllText((Join-Path $attempt 'checkouts.txt'), "$B $C`r`n")
     Write-Output "checkout $B $C $repo"
   }
   'tracked' {
@@ -155,6 +188,35 @@ switch ($Action) {
     if ($bad.Count) { $bad | ForEach-Object { Write-Output "ship mismatch: $_" }; throw "$($bad.Count) ship problem(s); was a ship published during the copy?" }
     if (-not $matched.Count) { throw "no ship in $manPath has a copied glb that matches its cache" }
     Write-Output "ships match their cache: $($matched.Count) hull(s), $noGlb older entr(ies) with no ship folder listed unchecked; identity in $B"
+  }
+  'dropcheckouts' {
+    $attempt = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
+    $item = Get-Item -LiteralPath $attempt -Force -ErrorAction SilentlyContinue
+    $jobDir = Split-Path -Parent $attempt
+    if ($item -isnot [IO.DirectoryInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $item.Name -notmatch '\Aout_[A-Za-z0-9_-]+\z' -or
+        -not (Split-Path -Parent $jobDir).Equals($vt, [StringComparison]::OrdinalIgnoreCase) -or (Split-Path -Leaf $jobDir) -notmatch '\A[A-Za-z0-9_-]+\z' -or
+        ((Get-Item -LiteralPath $jobDir -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+      Write-Output "checkouts kept: $attempt is not a job attempt folder voidsworn_test\<job>\out_*"; break
+    }
+    $list = Join-Path $attempt 'checkouts.txt'
+    if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; break }
+    foreach ($line in [IO.File]::ReadAllLines($list)) {
+      if ($line -notmatch '\A([A-Za-z0-9_-]{1,40}) ([0-9a-f]{40})\z') { if ($line.Trim()) { Write-Output "checkouts.txt line not accepted, ignored: $line" }; continue }
+      $name = $Matches[1]; $pin = $Matches[2]
+      $repo = Join-Path $attempt $name
+      try {
+        $r = Get-Item -LiteralPath $repo -Force -ErrorAction SilentlyContinue
+        if ($null -eq $r) { Write-Output "checkout $name already gone: $repo"; continue }
+        if ($r -isnot [IO.DirectoryInfo] -or ($r.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'not a plain folder' }
+        $git = Get-Item -LiteralPath (Join-Path $repo '.git') -Force -ErrorAction SilentlyContinue
+        if ($git -isnot [IO.DirectoryInfo] -or ($git.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'no .git folder of its own' }
+        $headFile = Join-Path $git.FullName 'HEAD'
+        if (-not (Test-Path -LiteralPath $headFile -PathType Leaf) -or ([IO.File]::ReadAllText($headFile)).Trim() -ne $pin) { throw "HEAD is no longer the pin $pin" }
+        if (Test-Paused) { throw 'the Board PC pause is active' }
+        $freed = Remove-LinkSafeTree $repo
+        Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($freed / 1GB), $repo)
+      } catch { Write-Output "checkout $name kept: $repo ($($_.Exception.Message))" }
+    }
   }
   'hashes' {
     if ($test) { $realu = $env:PC_TEST_REALU } else { $realu = Join-Path $env:APPDATA 'Godot\app_userdata\Voidsworn' }

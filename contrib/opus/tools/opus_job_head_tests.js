@@ -52,6 +52,8 @@ for (const step of ['oj_checkout', 'oj_ships']) {
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
+assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*dropcheckouts "%OJ_OUT%"[^\n]*\ncall "%JW%" end/.test(tail), 'the tail removes the job\'s own checkouts after the options check, before job_wrap end');
+assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
 // ---------------------------------------------------------------- static contract: the template
@@ -70,8 +72,14 @@ console.log('PASS template: five fill lines, head from tools_live, every step th
 assert(psCode.includes("$mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None'"), 'takes the shared mirror lock');
 assert(psCode.includes("clone --local -q --no-checkout $mirror $repo"), 'clones from the shared mirror');
 assert(psCode.includes("'\\A[0-9a-f]{40}\\z'"), 'a pin must be a full commit');
-for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(psCode), 'ps1 must not use ' + banned);
-console.log('PASS ps1: shared mirror lock, full pins, nothing deleted');
+const walk = psCode.slice(psCode.indexOf('function Remove-LinkSafeTree'), psCode.indexOf('switch ($Action)'));
+const outsideWalk = psCode.replace(walk, '');
+for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(outsideWalk), 'ps1 must not use ' + banned + ' outside the link-safe walk');
+assert((psCode.match(/Remove-LinkSafeTree /g) || []).length === 1, 'the link-safe walk is called once, from dropcheckouts');
+const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'hashes' {"));
+assert(/HEAD is no longer the pin[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$repo/.test(drop), 'a checkout goes only after its pin and the pause are checked');
+assert(/\[IO\.File\]::AppendAllText\(\(Join-Path \$attempt 'checkouts\.txt'\)/.test(psCode), 'the checkout step lists what it made');
+console.log('PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts');
 
 // ---------------------------------------------------------------- live fixtures (pwsh)
 const windows = process.platform === 'win32';
@@ -196,6 +204,44 @@ assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing cached scene f
 fs.rmSync(path.join(sc, 'godot', 'gen', 'manifest.json'));
 assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest fails');
 
+// dropcheckouts: only the listed checkouts whose HEAD is still the pin go; links inside are not followed; out_* and
+// logs stay; the Board's pause and a folder outside voidsworn_test\<job>\out_* remove nothing.
+const listed = fs.readFileSync(path.join(attempt, 'checkouts.txt'), 'utf8');
+assert.match(listed, new RegExp(`^old ${one1}\\r?$`, 'm'), 'checkout lists old');
+assert.match(listed, new RegExp(`^new ${two}\\r?$`, 'm'), 'checkout lists new');
+const outside = path.join(tmp, 'outside');
+write(path.join(outside, 'keep.txt'), 'not ours');
+fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', 'linked'), 'dir');
+write(path.join(attempt, 'out_new', 'samples.jsonl'), '{}');
+write(path.join(attempt, 'new_ships_identity.txt'), 'S1');
+write(path.join(attempt, 'stray'), 'not a checkout');
+fs.appendFileSync(path.join(attempt, 'checkouts.txt'), `stray ${two}\r\n../escape ${two}\r\n`);
+const pause = path.join(tmp, 'gpu_go.txt');
+write(pause, 'GPU not cleared: paused by the Board for a check\n');
+env.PC_CLEANUP_PAUSE_FILE = pause;
+r = run('dropcheckouts', attempt);
+assert.equal(r.status, 0, r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && fs.existsSync(path.join(attempt, 'old')), 'the PC pause removes nothing: ' + r.out);
+assert.match(r.out, /checkout new kept: .*pause/);
+fs.writeFileSync(pause, 'GPU cleared\n');
+fs.writeFileSync(path.join(attempt, 'old', '.git', 'HEAD'), two + '\n');
+const elsewhere = path.join(tmp, 'notjob', 'out_1');
+write(path.join(elsewhere, 'checkouts.txt'), `x ${two}\r\n`);
+write(path.join(elsewhere, 'x', '.git', 'HEAD'), two + '\n');
+r = run('dropcheckouts', elsewhere);
+assert(fs.existsSync(path.join(elsewhere, 'x')) && /not a job attempt folder/.test(r.out), 'a folder outside voidsworn_test\\<job>\\out_* is refused');
+r = run('dropcheckouts', attempt);
+assert.equal(r.status, 0, r.out);
+assert(!fs.existsSync(path.join(attempt, 'new')), 'the pinned new checkout is removed: ' + r.out);
+assert.match(r.out, /checkout new removed after the job/);
+assert(fs.existsSync(path.join(outside, 'keep.txt')), 'a link inside a checkout is removed as a link, never followed');
+assert(fs.existsSync(path.join(attempt, 'old')) && /checkout old kept: .*no longer the pin/.test(r.out), 'a checkout whose HEAD moved is kept');
+assert(/checkout stray kept: .*not a plain folder/.test(r.out) && fs.existsSync(path.join(attempt, 'stray')), 'a listed name that is not a checkout folder is kept');
+assert(/line not accepted, ignored: \.\.\/escape/.test(r.out), 'a path in checkouts.txt is never followed');
+for (const keep of ['out_new/samples.jsonl', 'new_ships_identity.txt', 'checkouts.txt']) assert(fs.existsSync(path.join(attempt, keep)), keep + ' stays');
+r = run('dropcheckouts', attempt);
+assert.match(r.out, /checkout new already gone/);
+
 const before = path.join(tmp, 'before.txt'), after = path.join(tmp, 'after.txt');
 assert.equal(run('hashes', before).status, 0);
 assert.match(fs.readFileSync(before, 'utf8'), /absent battle_opts\.json/);
@@ -204,4 +250,4 @@ assert.equal(run('hashes', after).status, 0);
 assert.match(fs.readFileSync(after, 'utf8'), /^[0-9a-f]{64} battle_opts\.json/m);
 assert.notEqual(fs.readFileSync(before, 'utf8'), fs.readFileSync(after, 'utf8'), 'a change to the options shows in the hash');
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, ship cache stamps, options hash');
+console.log('PASS ps1 fixtures: current tools_live gate, one verified bundle, watchdog hashes, exact fresh checkouts, tracked check, ship cache stamps, own checkouts removed safely, options hash');
