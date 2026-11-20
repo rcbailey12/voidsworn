@@ -138,3 +138,11 @@ Ryan, Nov 20 01:11 UTC ("Picks ok", Board thread), on the backdrop audit check
 - **No dark scrim under the board.** The cine look keeps underlay 0.0 (godot/world/board_look.gd); readability over
   bright skies is solved by the hazard outline and the sky, not a mat under the hexes. Why: a scrim brings back the
   board-game plate RULEBOOK 10.1 rules out (R70).
+
+## 6. One line style (Ryan, Nov 20 2026, R362)
+
+Every line drawn on or over the battle board shares one style: one helper owns width by camera distance, glow and fade,
+and callers pass only a role (grid, move, terrain or hazard edge, torpedo lane, target marker); the role sets the colour
+from one table. Storm lightning follows the same family until its baked bolts land (issue 1360). The picks above still
+hold (faint grid near ships, hazard outline in cine, debris rims on hover). Why: the grid, terrain edges, torpedo lanes
+and lightning each chose their own width, glow and colour, so the board read as four different games. Job: issue 1374.

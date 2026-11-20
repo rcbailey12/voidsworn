@@ -502,3 +502,13 @@ An Opus worker builds every ship model and runs the recipe (R205, RULEBOOK 2.6);
 shape no ship. Muse draws. DeepSeek does well-specified tool repairs (a check, a table, a file format). The Board
 writes the fleet briefs, accepts sheets, looks at every sweep and puts one image in front of Ryan. Hand a picture back to the
 Board whenever a gate passes but the ship looks wrong: a pass on the numbers is not a pass on the look.
+
+## 9. Solid objects near ships share the hull finish (Ryan, Nov 20 2026, R362)
+
+Anything solid that flies or floats near a ship is built from the ship part kits and gets the hull finish: the faction's
+paint, the LOOK.hull brightness band (look.gd READ) and the rim light (look_rim.gd), at a detail level that holds up
+beside the hulls at c26. That covers torpedoes and rockets (the torpedo redesign thread), strike craft (fighters,
+bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new of the same kind. Glowing effects
+(beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
+sat beside fully painted hulls and made the whole scene look cheaper (inventory:
+/mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.
