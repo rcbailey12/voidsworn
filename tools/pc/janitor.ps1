@@ -100,7 +100,8 @@ function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
   $last = 0L; $lastNight = ''
   if ($line -match '^([0-9]{1,19}) (\d{8})$') { $last = [long]$Matches[1]; $lastNight = $Matches[2] }
   if ($trigger -eq '--nightly' -and $lastNight -eq $night) { return $false }
-  if ($trigger -eq '--low-space' -and $last -gt $now.AddHours(-1).Ticks) { return $false }
+  # --low-space and --after-job share one hourly allowance.
+  if ($trigger -ne '--nightly' -and $last -gt $now.AddHours(-1).Ticks) { return $false }
   if ($trigger -eq '--nightly') { $lastNight = $night } else { $last = $now.Ticks }
   if (-not $lastNight) { $lastNight = '00000000' }
   $lock.Position = 0
@@ -109,6 +110,20 @@ function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
   $lock.SetLength($buffer.Length)
   $lock.Flush()
   return $true
+}
+function Test-GpuClaimed($root) {
+  # A non-empty gpu_slot_N or gpu_solo file is a live GPU claim (gpu_slots.js empties it on release). The after-job run
+  # stays out of every GPU job so it never skews a timing; a file that cannot be read counts as claimed.
+  try {
+    foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles()) {
+      if ($file.Name -notmatch '^(gpu_slot_[1-9][0-9]*|gpu_solo)$') { continue }
+      if ([IO.File]::ReadAllText($file.FullName).Trim()) { return $true }
+    }
+    return $false
+  } catch { return $true }
+}
+function Assert-GpuQuiet {
+  if ($trigger -eq '--after-job' -and (Test-GpuClaimed $root)) { throw 'a GPU claim started; the after-job cleanup stops until a later job ends' }
 }
 function Open-JanitorLock($path, $wait) {
   $deadline = [DateTime]::UtcNow.AddMinutes(10)
@@ -158,6 +173,22 @@ function Get-RelayReceipts($mirror) {
   $script:relayReceipts = $set
   return $set
 }
+# helper_clone.ps1's own small files at the top of a helper folder (lease, attempt ID, commit, ship copy record): they
+# describe the folder and hold no results, so they never keep it (issue 1180, PR 1275).
+$helperBookkeeping = @('.voidsworn-run-active', 'attempt.txt', 'repo_commit.txt', 'ships_copied.txt')
+function Remove-HelperFolder($dir, $lease) {
+  # Everything but the lease goes while the janitor still holds it. Then the lease file and the empty folder go without
+  # recursion: if a new run took the lease or wrote anything in that moment, the delete fails and the folder is kept.
+  $leasePath = Join-Path $dir.FullName '.voidsworn-run-active'
+  foreach ($item in @($dir.EnumerateFileSystemInfos())) {
+    if ($item.FullName -eq $leasePath) { continue }
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    if ($item -is [IO.DirectoryInfo]) { Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction Stop }
+    else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
+  }
+  if ($lease) { $lease.Dispose(); [IO.File]::Delete($leasePath) }
+  [IO.Directory]::Delete($dir.FullName, $false)
+}
 function Test-RelayedResults($dir, $mirror) {
   # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
   # and (2) everything else in it is a checkout Git shows as rebuildable with all history pushed. Anything else keeps the
@@ -171,6 +202,7 @@ function Test-RelayedResults($dir, $mirror) {
     foreach ($item in $dir.EnumerateFileSystemInfos()) {
       if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @($item.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
       elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
+      elseif ($helperBookkeeping -contains $item.Name) { continue }
       else { $other += $item }
     }
     while ($pending.Count) {
@@ -207,8 +239,14 @@ function Assert-HelperScratchInactive($dir) {
   if ($lease) { $lease.Dispose() }
 }
 function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner, [switch]$legacy, [switch]$helper, $mirror) {
-  $size = 'size unavailable'; $issueLock = $null
+  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false
   try {
+    if ($helper) {
+      # Taken first and held through the decision and the deletion, so helper_clone cannot start a run here meanwhile
+      # (Artoo, PR 1275). A held lease keeps the folder once its size is logged.
+      try { $helperLease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
+      catch { $leaseBusy = $true }
+    }
     $busy = ''
     if ($issue -and $activeLegacy -contains $issue) { $busy = "issue #$issue has an active older runner" }
     elseif ($issue) {
@@ -226,6 +264,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($listed) { throw $listed }
     foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
     foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
+    if ($leaseBusy) { throw 'a helper run holds this folder''s lease' }
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
@@ -265,23 +304,27 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       if ($stats.Unreadable.Count) {
         Remove-CleanupReadable $dir $stats.Unreadable
         $action = "removed all but $($stats.Unreadable.Count) folders another account owns:"
-      } else { Remove-CleanupDirectory $dir; $action = 'removed' }
+      } elseif ($helper) { Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed' }
+      else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
     Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
   }
-  finally { if ($issueLock) { $issueLock.Dispose() } }
+  finally {
+    if ($issueLock) { $issueLock.Dispose() }
+    if ($helperLease) { $helperLease.Dispose() }
+  }
 }
 
 $trigger = $args[0]
-if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space')) {
-  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space]'
+if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
+  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
   exit 2
 }
 $dryRun = $trigger -eq '--dry-run'
-$automatic = $trigger -in @('--nightly','--low-space')
+$automatic = $trigger -in @('--nightly','--low-space','--after-job')
 $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
 $temp = [IO.Path]::GetFullPath((Runner-Temp)).TrimEnd('\','/')
 $now = [DateTime]::UtcNow
@@ -303,7 +346,13 @@ try {
       exit 0
     }
     try { $lock = Open-JanitorLock (Join-Path $root 'janitor.lock') ($trigger -eq '--low-space') }
-    catch { Write-Host "janitor lock in use or unavailable: $($_.Exception.Message)"; exit 0 }
+    catch {
+      # After a job, a busy lock means another cleanup is already running: skip without a word.
+      if ($trigger -ne '--after-job') { Write-Host "janitor lock in use or unavailable: $($_.Exception.Message)" }
+      exit 0
+    }
+    # Checked before the hourly allowance is spent, so a GPU job only delays the next after-job run.
+    if ($trigger -eq '--after-job' -and (Test-GpuClaimed $root)) { exit 0 }
     if ($automatic -and -not (Reserve-AutomaticRun $lock $trigger $now $night)) { exit 0 }
     $logPath = Join-Path $root "janitor_$((Get-Date).ToString('yyyyMMdd-HHmm')).txt"
     $logItem = Get-Item -LiteralPath $logPath -Force -ErrorAction SilentlyContinue
@@ -323,6 +372,7 @@ try {
   foreach ($lane in @('board','board_b','board_c','board_d')) {
     $board = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
+    Assert-GpuQuiet
     try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
     catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
   }
@@ -331,8 +381,10 @@ try {
   # Check old runners once, and take each current issue lock again immediately before making its decision.
   $activeLegacy = @(Get-ActiveLegacyIssues $runs)
   $script:commandLines = Get-CommandLines
+  Assert-GpuQuiet
   Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
   foreach ($dir in (Get-Item -LiteralPath $temp -Force).EnumerateDirectories()) {
+    Assert-GpuQuiet
     $records = $recordedScratch[$dir.FullName]
     $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
       (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile))
@@ -348,6 +400,7 @@ try {
   }
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
     if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
+    Assert-GpuQuiet
     Clear-ScratchFolder $dir $Matches[1] 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
   }
 } catch {

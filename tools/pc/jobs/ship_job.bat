@@ -74,12 +74,22 @@ rem The installed copy runs on its own. Keep its inherited tool scratch under a 
 powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%O%\scratch_path.txt" 2>> "%RES%"
 if errorlevel 1 set "FAILED=private TEMP setup"
 if defined FAILED goto collect
+set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%O%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
 rem The redirection holds the marker open until the tools finish.
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
-exit /b %ERRORLEVEL%
+set "RUN_EL=%ERRORLEVEL%"
+rem (1180) The scratch goes on PASS; on FAILED the newest one per job stays a day (tools_live scratch_done.ps1).
+set "RUN_SCRATCH=%TEMP%"
+set "TEMP=%BASE_TEMP%"
+set "TMP=%BASE_TEMP%"
+set "TMPDIR=%BASE_TEMP%"
+set "SD_TLV="
+if exist "%V%\tools_live\current.txt" set /p SD_TLV=<"%V%\tools_live\current.txt"
+if defined SD_TLV if exist "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "ship_job %J%" >> "%RES%" 2>&1
+exit /b %RUN_EL%
 
 :run_tools
 echo start %SHIP% %CODE% %BRANCH% %DATE% %TIME% > "%RES%"

@@ -1365,4 +1365,10 @@ finally {
     Object.entries(totals).map(([step, t]) => step + ': ' + t.calls + ' calls, ' + t.seconds.toFixed(2) + ' s').join('\n') + '\n';
   write(path.join(root, 'timings.txt'), timingNote);
   console.log(timingNote.trim());
+  // Issue 1180 (Board, Nov 20): a passing run removes its evidence root (several GB of clones per standing-checks run
+  // filled TEMP). A failure keeps it for reading. rmSync removes junctions as links and never follows them.
+  if (process.exitCode !== 1 && process.env.RUNNER_SELFTEST_KEEP !== '1') {
+    try { fs.rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); console.log('Evidence removed after PASS: ' + root); }
+    catch (e) { console.log('Evidence kept (could not remove: ' + e.message + '): ' + root); }
+  } else console.log('Evidence kept: ' + root);
 } })();

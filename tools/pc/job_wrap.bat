@@ -23,7 +23,8 @@ rem init moves an older done.txt to done_previous.txt (nothing is deleted), refr
 rem failed refresh keeps the installed version), stops when the watchdog or slot files differ from that version's hashes,
 rem and runs the tool preflight before the job clones or claims the GPU. Exit 2: a missing tool; exit 1: any other stop.
 rem The preflight sets JW_GODOT, JW_BLENDER, JW_FFMPEG, JW_NODE and JW_PIL (a Python with Pillow) to what it found.
-rem Test settings: JW_TOOLS (a pc folder) and JW_HASHES replace tools_live; JW_NO_REFRESH=1 skips the refresh.
+rem Test settings: JW_TOOLS (a pc folder) and JW_HASHES replace tools_live; JW_NO_REFRESH=1 skips the refresh;
+rem JW_NO_JANITOR=1 skips the after-job cleanup that end starts (janitor.ps1 --after-job, issue 1180).
 if /i "%~1"=="init" goto jw_init
 if /i "%~1"=="run" goto jw_run
 if /i "%~1"=="copy" goto jw_copy
@@ -210,6 +211,7 @@ rem ------------------------------------------------------------------ end
 :jw_end
 if not defined JW_ST echo job_wrap: end before init
 if not defined JW_ST exit /b 2
+call :jw_janitor
 if not defined JW_FAILED goto jw_pass
 >> "%JW_ST%" echo done FAILED: %JW_FAILED%
 >> "%JW_ST%" echo all done %date% %time%
@@ -219,4 +221,15 @@ exit /b 1
 >> "%JW_ST%" echo done PASS
 >> "%JW_ST%" echo all done %date% %time%
 > "%JW_OUT%\done.txt" echo PASS
+exit /b 0
+
+rem Issue 1180: start the janitor's after-job cleanup in its own hidden window, so the job ends now and the queue never
+rem waits on it. The janitor itself keeps it to once an hour and skips without a word while another cleanup runs, any GPU
+rem claim is held (so no timing is skewed) or the Board's pause is on. JW_NO_JANITOR=1 turns it off (tests).
+:jw_janitor
+if "%JW_NO_JANITOR%"=="1" exit /b 0
+if not exist "%JW_TOOLS%\janitor.ps1" exit /b 0
+set "JW_JANITOR=%JW_TOOLS%\janitor.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" --after-job' -f $env:JW_JANITOR)" > nul 2>&1
+set "JW_JANITOR="
 exit /b 0
