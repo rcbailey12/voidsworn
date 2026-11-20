@@ -1,0 +1,22 @@
+{
+ "ship": "hegemony_O3",
+ "name": "Relay beacon (Hegemony Navy objective)",
+ "faction": "hegemony",
+ "game_ship": "obj_beacon",
+ "game_code": "O3_11",
+ "sheet": "hegemony_O3",
+ "concept": "contrib/muse/design/class_family_hegemony_2026_11/relay_beauty.webp",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "O3",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/hegemony_O3/ (design file tools/blender/build_sheets/ships/hegemony_O3.py; issue 1413). The sheet is the one home of the design (RULEBOOK 0.9, R225); this file only names the sheet, the game ids, the concept and the recipe settings. game_ship obj_beacon is no data.js ship: tools/recipe/gamedata.py OBJECTIVES gives it class beacon (no weapons, no engines, no breach anchors; tools/blender/kits/shared/hardpoints.py required_points). game_code O3_11 is the obj|beacon mesh (godot/render/hull_table.gd AI_HULLS); an install replaces the old hull there, copied aside first. Length 7.5 is designs.md's proposal, for the Board to lock. bake stack: stage 5 paints it with the Hegemony kit's paint stack. Concept (PR 1168) accepted by Ryan Nov 20 2026 21:43 UTC (R369).",
+ "parts": []
+}

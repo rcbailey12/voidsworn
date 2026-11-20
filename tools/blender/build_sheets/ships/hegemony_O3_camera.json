@@ -1,0 +1,21 @@
+{
+ "az": 27.367425661168948,
+ "el": 20.507871399732064,
+ "roll": -2.8606151382800395,
+ "dist": 16.482233296597048,
+ "mm": 66.213039359894,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": 0.0407757163147252,
+ "sy": 0.02198470964085379,
+ "res": [
+  1920,
+  1200
+ ],
+ "iou": 0.8587,
+ "body_iou": 0.8591,
+ "note": "Relay beauty (issue 1413): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship) from a closer start (dist 16), since the beauty's strong perspective trapped the far start at IoU .80; concept mask: contrib/opus/tools/issue738/mask.py"
+}

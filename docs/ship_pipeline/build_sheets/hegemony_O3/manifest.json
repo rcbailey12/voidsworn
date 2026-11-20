@@ -1,0 +1,330 @@
+{
+ "code": "hegemony_O3",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "L1",
+   "kind": "relay_lens",
+   "what": "relay lens, 1.72 across, in a 0.55 deep face block",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "lens"
+   ]
+  },
+  {
+   "id": "Kpu",
+   "kind": "latch",
+   "what": "cradle latch pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "cradle_latches"
+   ]
+  },
+  {
+   "id": "Kpl",
+   "kind": "latch",
+   "what": "cradle latch pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "cradle_latches"
+   ]
+  },
+  {
+   "id": "Ksu",
+   "kind": "latch",
+   "what": "cradle latch pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "cradle_latches"
+   ]
+  },
+  {
+   "id": "Ksl",
+   "kind": "latch",
+   "what": "cradle latch pair",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "cradle_latches"
+   ]
+  },
+  {
+   "id": "Mpu",
+   "kind": "latch",
+   "what": "mooring collar latch",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "Mpl",
+   "kind": "latch",
+   "what": "mooring collar latch",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "Msu",
+   "kind": "latch",
+   "what": "mooring collar latch",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "Msl",
+   "kind": "latch",
+   "what": "mooring collar latch",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mooring"
+   ]
+  },
+  {
+   "id": "A1",
+   "kind": "antenna",
+   "what": "sensor fin, 0.42 tall, 0.7 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "sensor_fin"
+   ]
+  },
+  {
+   "id": "Q1pu",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q1pl",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q1su",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q1sl",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2pu",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2pl",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2su",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2sl",
+   "kind": "thruster",
+   "what": "station-keeping thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "H1",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H2",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2p",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2s",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Relay module",
+   "route": "hand-built"
+  },
+  {
+   "name": "Rail, port upper",
+   "route": "hand-built"
+  },
+  {
+   "name": "Rail, port lower",
+   "route": "hand-built"
+  },
+  {
+   "name": "Rail, starboard upper",
+   "route": "hand-built"
+  },
+  {
+   "name": "Rail, starboard lower",
+   "route": "hand-built"
+  },
+  {
+   "name": "Cradle, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Cradle, starboard",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 44.0 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "44.0 to 56.7 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "56.7 to 100.0 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

@@ -1,0 +1,54 @@
+{
+  "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+  "source_dirty": true,
+  "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "beauty_vs_blockout.jpg",
+  "date": "2026-11-20T23:08:55Z",
+  "sources": [
+    {
+      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_dirty": true,
+      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+      "source_dirty": true,
+      "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+      "stage": "sheet built",
+      "date": "2026-11-20T23:08:44Z",
+      "image_sha256": "25694d6bc7dd19bf3dabc558bcc0a4d9ed009c353f930fcc8d74bb70bdaee00e",
+      "sources": [
+        {
+          "source_commit": "ffecaa984f8aa203876d67ca8e0cbfb32ac5387e",
+          "source_dirty": true,
+          "source_diff_sha256": "3fd2dab7ad6ed0114705150fac2e710a5b28aee569d6f092c1d47facf0965c7e",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "9b0570f30e05bfeba551a57808c4767a7b03fbebac5373ceed62839872b27413"
+  ],
+  "stamp_template_sha256": "26266bc9cd0df78f65671d404ef81119ed57ef02ce53bd638b737c12c3d200c3",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "881b60205747337bdb772628991d926c878b2f7461d76e3b844349eadb92eb3f"
+}
