@@ -3,6 +3,7 @@ extends SceneTree
 # shows the least recently used maps removed, the newest kept, a map the running battle holds kept, a map a battle
 # just loaded from disk counted as fresh, and stray .tmp files older than a day removed (newer ones kept).
 
+const GUARD := preload("res://tools/ci/check_guard.gd")
 const BAKE := preload("res://world/world_bake.gd")
 const KB := 1024
 
@@ -22,6 +23,7 @@ func _blob(folder: String, name: String, bytes: int) -> void:
 	f.close()
 
 func _init() -> void:
+	GUARD.arm(self, "bake_cache_cap_check")
 	var folder := OS.get_user_data_dir().path_join("bake_cap_check_%d" % OS.get_process_id())
 	DirAccess.make_dir_recursive_absolute(folder)
 	OS.set_environment("VS_WORLD_CACHE", folder)
