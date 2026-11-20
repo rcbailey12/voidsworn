@@ -52,6 +52,13 @@ limits/cluster_builder/max_clustered_elements=1024
 
 3d/physics_engine="Jolt Physics"
 
+[shader_globals]
+
+cam_near={
+"type": "float",
+"value": 0.5
+}
+
 [importer_defaults]
 
 texture={

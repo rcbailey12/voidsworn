@@ -31,11 +31,26 @@ var shake := Vector3.ZERO
 var screen_shift := 0.0
 
 
+# Issue 1264: the far plane follows the zoom and pan, so the backdrop system is never cut off. The worst case from the
+# board centre is a giant planet's ring: world.gd DIST 3300 + 2.3 ring radii of 3300 * sin(0.18) = 4659 units (moons
+# reach 1.15 * 3300 * (1 + sin(0.04)) = 3947, mountains about 2620). A camera r units out, looking at t (inside bounds),
+# is at most r + |t| from the board origin, and the board centre is at most |bounds| from the origin; depth never
+# exceeds straight-line distance. godot/world/test/backdrop_clip_check.gd builds ringed giants and holds this to the
+# real meshes. Shadows (directional_shadow_max_distance 600) and volumetric fog (its own length) do not key off far.
+const BACKDROP_REACH := 4700.0
+const FAR_MARGIN := 100.0
+# Issue 1264: ROCK_SHADER fades a rock before this live near plane cuts it (global shader uniform, project.godot).
+const NEAR_GLOBAL := &"cam_near"
+
+
 func _ready() -> void:
 	fov = 45.0
 	near = 0.5
-	far = 5000.0
 	_apply()
+
+
+static func far_for(radius: float, target: Vector3, board_bounds: Vector2) -> float:
+	return BACKDROP_REACH + radius + target.length() + board_bounds.length() + FAR_MARGIN
 
 
 func reset_view() -> void:
@@ -194,6 +209,9 @@ func _apply() -> void:
 	# Issue 368: fixed zoom bands reserve froxels for the board.
 	if OS.get_environment("VS_NEBULA_ROUTE") != "today":
 		near = 15.0 if _cr >= 100.0 else (5.0 if _cr >= 45.0 else 1.0)
+	far = far_for(_cr, _ct + shake, bounds)
+	if current:
+		RenderingServer.global_shader_parameter_set(NEAR_GLOBAL, near)
 	# Keep the far side of a cloud in range as the player zooms out.
 	var env := get_world_3d().environment if is_inside_tree() else null
 	if env != null and env.volumetric_fog_enabled and OS.get_environment("VS_NEBULA_ROUTE") != "today":
