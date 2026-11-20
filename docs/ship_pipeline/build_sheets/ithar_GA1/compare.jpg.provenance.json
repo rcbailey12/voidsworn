@@ -1,0 +1,36 @@
+{
+  "source_commit": "63d54641536fa89240360c64ddb68094f12ea1ca",
+  "source_dirty": true,
+  "source_diff_sha256": "895723801e6e99101b3374ad06c16215a920867d1c6924c39162e5280631135f",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "compare.jpg",
+  "date": "2026-11-20T22:36:10Z",
+  "sources": [
+    {
+      "source_commit": "63d54641536fa89240360c64ddb68094f12ea1ca",
+      "source_dirty": true,
+      "source_diff_sha256": "895723801e6e99101b3374ad06c16215a920867d1c6924c39162e5280631135f",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "92fbb52ac8ec85bd4a9f9e27202188198817df4f0e86f6ff23dda5a04d4b6b71"
+  ],
+  "stamp_template_sha256": "3bceab27159d3733db680e684a8caf7824bb89312c68758fbf37e031026486c0",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAAB40lEQVR4nO3VMS5EAQBFUfNVuq+bQm8WI5OxBCQiFiJiD0QrEhWWY7q/iWn0GgX5c4tzFvDyurs4Oj45mNH9w904jjfXt3/cWa1OX99e1mfn26/tvxyjYDgcLq8uNpv1crmcpunj/fPp8Xm32+37FzC3xcxxAoBfDfs+AAA/iRMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZAjTgDkiBMAOeIEQI44AZDzDUKXFi91lcurAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "8a9b051483f3d623a49c4a80666b19f555f6c322bbfbe9a36b55188e3e15a563"
+}

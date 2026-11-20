@@ -272,6 +272,9 @@ review sheets in the job's shots folder. No test export is installed into the li
 ## 2. Inputs (what must exist before a hull is started)
 
 1. Ryan's picked direction for the faction (docs/playbooks/factions.md, "The concept redo"; FINDINGS has each pick).
+   Every concept or build brief names the folder of that faction's earlier accepted picks (for the Glasswrights,
+   contrib/muse/design/glasswright_family_2026_11/, Ryan's Nov 16 picks; search contrib/muse/design/ for the faction first),
+   so a new run cannot skip them (issue 1415: the 1146 clay redo ignored Ryan's Nov 16 Glasswright picks, Nov 20 2026).
 2. A fleet brief for the faction: one written feature table per ship (class, length, beam, weapon slots from data.js, engines,
    break lines, the three or four features that make it that ship). The table outranks every picture.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one

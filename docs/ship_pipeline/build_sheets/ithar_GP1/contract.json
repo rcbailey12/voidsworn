@@ -1,0 +1,28 @@
+{
+  "sheet": "ithar_GP1",
+  "game_ship": "i_song",
+  "variant": "",
+  "model_length": 13.76272,
+  "scale": 0.07266004241278855,
+  "length_world": 14.5,
+  "t_lines": [
+    -0.31607,
+    0.29427
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 3,
+  "guns": 3,
+  "engines": 2,
+  "bays": 0,
+  "points": 8,
+  "turrets": [
+    "O1_turret"
+  ],
+  "interior_objects": 44,
+  "slots": [
+    "0 pulsar F",
+    "1 pulsar F",
+    "2 turret T"
+  ]
+}

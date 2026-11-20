@@ -1,0 +1,36 @@
+{
+  "source_commit": "63d54641536fa89240360c64ddb68094f12ea1ca",
+  "source_dirty": true,
+  "source_diff_sha256": "895723801e6e99101b3374ad06c16215a920867d1c6924c39162e5280631135f",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "camera170.jpg",
+  "date": "2026-11-20T22:36:10Z",
+  "sources": [
+    {
+      "source_commit": "63d54641536fa89240360c64ddb68094f12ea1ca",
+      "source_dirty": true,
+      "source_diff_sha256": "895723801e6e99101b3374ad06c16215a920867d1c6924c39162e5280631135f",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "8377587913344c769e7665eedae171a5e518890f82d421a68135ec04792bf236"
+  ],
+  "stamp_template_sha256": "a89adcbc3c70aa2ba9f4f07e6ad658259b6e97b58a2a44df798a338d8cef178a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkElEQVR4nO3VoQHAIADAsDGHxPP/nXgeoCK5oK5jrv0BQMn/OgAAbuYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOQdtuAD6ke1SPAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "38475025142af21efc2d1438babfae3da1c92d1d5b3895dae88ec72e01abf98c"
+}

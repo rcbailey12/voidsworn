@@ -1,0 +1,353 @@
+{
+  "code": "ithar_GA1",
+  "sheet_version": 1,
+  "design": "tools/blender/build_sheets/ships/ithar_GA1.py",
+  "design_sha256": "a428266cfb48c1d23338a0226cec2ce04e4a5c1b4dfdf9fee89f21d13fb83cba",
+  "kit": "tools/blender/kits/ithar/hull.py",
+  "game_ship": "i_carrier",
+  "cls": "Carrier",
+  "length_world": 16.5,
+  "routes_note": "Every visible part is hand-built in the sheet on the shared Glasswright kit (tools/blender/kits/ithar).",
+  "parts": [
+    {
+      "id": "L1",
+      "kind": "gun",
+      "what": "drawn-glass bow lance on the centreline / pulsar",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "forward_lances"
+      ],
+      "weapon": "pulsar",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "O1",
+      "kind": "gun",
+      "what": "violet grown optic / turret",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "optics"
+      ],
+      "weapon": "turret",
+      "arc": "T",
+      "turret": true,
+      "pivot_object": "O1_turret",
+      "arc_lo": -180.0,
+      "arc_hi": 180.0
+    },
+    {
+      "id": "H1",
+      "kind": "bay",
+      "what": "hangar lens grown into the port flank, Starlings parked on stored light",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "hangar_lenses"
+      ],
+      "weapon": null,
+      "arc": null
+    },
+    {
+      "id": "H2",
+      "kind": "bay",
+      "what": "hangar lens grown into the starboard flank, Starlings parked on stored light",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "hangar_lenses"
+      ],
+      "weapon": null,
+      "arc": null
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "stern_drive"
+      ],
+      "weapon": null,
+      "arc": null
+    }
+  ],
+  "masses": [
+    {
+      "name": "Mosaic leaf core",
+      "route": "hand-built"
+    }
+  ],
+  "break_pieces": [
+    {
+      "name": "bow piece",
+      "stations": "0.000 to 31.515 percent",
+      "bounded_by": [
+        "B3"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "midships piece 1",
+      "stations": "31.515 to 75.152 percent",
+      "bounded_by": [
+        "B3",
+        "B2"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "midships piece 2",
+      "stations": "75.152 to 83.030 percent",
+      "bounded_by": [
+        "B2",
+        "B1"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "stern piece",
+      "stations": "83.030 to 100.000 percent",
+      "bounded_by": [
+        "B1"
+      ],
+      "full_interior": true
+    }
+  ],
+  "whole_optics": [
+    {
+      "name": "L1 whole part",
+      "part": "L1",
+      "objects": [
+        "L1_mount_gw_light",
+        "L1_mount_gw_pearl",
+        "L1_mount_gw_silver",
+        "L1_mount_gw_lance",
+        "L1_mount_gw_tip"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "O1 whole part",
+      "part": "O1",
+      "objects": [
+        "O1_mount_gw_pearl",
+        "O1_turn_gw_gem_violet"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "H1 whole part",
+      "part": "H1",
+      "objects": [
+        "H1_lip",
+        "H1_lip_silver",
+        "H1_starling_0",
+        "H1_starling_0_eye",
+        "H1_starling_1",
+        "H1_starling_1_eye",
+        "H1_starling_2",
+        "H1_starling_2_eye"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "H2 whole part",
+      "part": "H2",
+      "objects": [
+        "H2_lip",
+        "H2_lip_silver",
+        "H2_starling_0",
+        "H2_starling_0_eye",
+        "H2_starling_1",
+        "H2_starling_1_eye",
+        "H2_starling_2",
+        "H2_starling_2_eye"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "E1 whole part",
+      "part": "E1",
+      "objects": [
+        "E1_grown_stern",
+        "E1_deep_lens",
+        "E1_white_bloom",
+        "E1_cut_face",
+        "E1_silver_flow_00",
+        "E1_silver_flow_01",
+        "E1_silver_flow_02",
+        "E1_silver_flow_03",
+        "E1_silver_flow_04",
+        "E1_silver_flow_05",
+        "E1_silver_flow_06",
+        "E1_silver_flow_07",
+        "E1_silver_flow_08",
+        "E1_silver_flow_09",
+        "E1_silver_flow_10"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    }
+  ],
+  "hull_fractures": [
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -5.45,
+      "note": "ragged shatter path forward of the stern optic; the drive stays whole",
+      "path": [
+        [
+          -5.45,
+          -7.099999999999999
+        ],
+        [
+          -5.12,
+          -3.5499999999999994
+        ],
+        [
+          -5.754615384615385,
+          -1.6566666666666665
+        ],
+        [
+          -5.2215384615384615,
+          0.0
+        ],
+        [
+          -5.805384615384615,
+          1.5383333333333333
+        ],
+        [
+          -5.145384615384615,
+          3.5499999999999994
+        ],
+        [
+          -5.45,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": -4.15,
+      "note": "ragged shatter path aft of the hangar lenses, forward of the turret blister",
+      "path": [
+        [
+          -4.15,
+          -7.099999999999999
+        ],
+        [
+          -3.8200000000000003,
+          -3.5499999999999994
+        ],
+        [
+          -4.454615384615385,
+          -1.6566666666666665
+        ],
+        [
+          -3.921538461538462,
+          0.0
+        ],
+        [
+          -4.5053846153846155,
+          1.5383333333333333
+        ],
+        [
+          -3.845384615384616,
+          3.5499999999999994
+        ],
+        [
+          -4.15,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B3",
+      "x": 3.05,
+      "note": "ragged shatter path forward of the hangar lenses; the bow lance stays whole",
+      "path": [
+        [
+          3.05,
+          -7.099999999999999
+        ],
+        [
+          3.38,
+          -3.5499999999999994
+        ],
+        [
+          2.7453846153846153,
+          -1.6566666666666665
+        ],
+        [
+          3.278461538461538,
+          0.0
+        ],
+        [
+          2.6946153846153846,
+          1.5383333333333333
+        ],
+        [
+          3.3546153846153843,
+          3.5499999999999994
+        ],
+        [
+          3.05,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    }
+  ],
+  "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at all three break lines.",
+  "budget": {
+    "outside": {
+      "triangles": 359990,
+      "unjoined_surfaces": 87,
+      "material_surfaces": 11,
+      "materials": [
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_violet",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 4808,
+      "unjoined_surfaces": 20,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "stage": "sheet built",
+  "paint_stack": "tools/blender/kits/ithar/stack.py"
+}

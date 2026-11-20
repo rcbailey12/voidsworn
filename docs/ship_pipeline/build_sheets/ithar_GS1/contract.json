@@ -1,0 +1,23 @@
+{
+  "sheet": "ithar_GS1",
+  "game_ship": "i_wisp",
+  "variant": "",
+  "model_length": 6.26178,
+  "scale": 0.15969912033636882,
+  "length_world": 6.5,
+  "t_lines": [
+    -0.15171
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 3,
+  "guns": 1,
+  "engines": 1,
+  "bays": 0,
+  "points": 6,
+  "turrets": [],
+  "interior_objects": 14,
+  "slots": [
+    "0 shard F"
+  ]
+}

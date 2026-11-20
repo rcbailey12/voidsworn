@@ -1,0 +1,693 @@
+{
+  "code": "ithar_GP1",
+  "name": "Glasswright prism GP1",
+  "game_ship": "i_song",
+  "cls": "Cruiser",
+  "length": 14.5,
+  "camera": {
+    "az": 58.0,
+    "el": 42.0,
+    "roll": -8.0,
+    "scale": 33.0
+  },
+  "features": [
+    {
+      "id": "L1",
+      "kind": "gun",
+      "what": "grown lens point at the port bow / pulsar",
+      "count": 1,
+      "pos": [
+        5.650000095367432,
+        1.7200000286102295,
+        0.0
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "One pulsar lance per hull: a grown lens point at the bow on the hull's own axis; fixed forward, F arc.",
+      "muzzle": [
+        [
+          6.949999809265137,
+          1.7200000286102295,
+          1.2246467698671066e-17
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "forward_lances"
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -6.8024,
+        1.72,
+        0.0
+      ],
+      "exit": [
+        -6.8024,
+        1.72,
+        0.0
+      ],
+      "radius": 0.5332,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_drive"
+      ]
+    },
+    {
+      "id": "L2",
+      "kind": "gun",
+      "what": "grown lens point at the stbd bow / pulsar",
+      "count": 1,
+      "pos": [
+        5.650000095367432,
+        -1.7200000286102295,
+        0.0
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "One pulsar lance per hull: a grown lens point at the bow on the hull's own axis; fixed forward, F arc.",
+      "muzzle": [
+        [
+          6.949999809265137,
+          -1.7200000286102295,
+          1.2246467698671066e-17
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "forward_lances"
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -6.8024,
+        -1.72,
+        0.0
+      ],
+      "exit": [
+        -6.8024,
+        -1.72,
+        0.0
+      ],
+      "radius": 0.5332,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_drive"
+      ]
+    },
+    {
+      "id": "O1",
+      "kind": "gun",
+      "what": "violet grown optic / turret",
+      "count": 1,
+      "pos": [
+        2.200000047683716,
+        0.0,
+        1.3600000143051147
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "T",
+      "weapon": "turret",
+      "src": "picture",
+      "note": "The Needle beam: a violet lens blister grown on the crown of the forward bridge, 360 degrees.",
+      "muzzle": [
+        [
+          2.499000072479248,
+          0.0,
+          1.3600000143051147
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "optics"
+      ]
+    }
+  ],
+  "masses": [
+    {
+      "name": "Port pane hull",
+      "obj": "ithar_GP1_port_pane_hull",
+      "role": "opaque glowing stained-glass panes",
+      "src": "picture",
+      "note": "One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons."
+    },
+    {
+      "name": "Stbd pane hull",
+      "obj": "ithar_GP1_stbd_pane_hull",
+      "role": "opaque glowing stained-glass panes",
+      "src": "picture",
+      "note": "One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons."
+    },
+    {
+      "name": "Arched bridge aft",
+      "obj": "ithar_GP1_bridge_aft",
+      "role": "pearl glass bridge between the hulls",
+      "src": "picture",
+      "note": "Grows out of both hulls; carries a row of stored light under its arch."
+    },
+    {
+      "name": "Arched bridge fwd",
+      "obj": "ithar_GP1_bridge_fwd",
+      "role": "pearl glass bridge between the hulls",
+      "src": "picture",
+      "note": "Grows out of both hulls; carries a row of stored light under its arch."
+    }
+  ],
+  "inside": [
+    {
+      "kind": "deck",
+      "name": "_port deck at 32% height",
+      "z": -0.35,
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "deck",
+      "name": "_port deck at 62% height",
+      "z": 0.25,
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 01",
+      "x": -2.8899999999999997,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 02",
+      "x": -2.6222222222222222,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 03",
+      "x": -1.74,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 04",
+      "x": -1.74,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 05",
+      "x": 2.34,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 06",
+      "x": 2.34,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_port annealed frame 07",
+      "x": 2.59,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "space",
+      "name": "_port continuous light core",
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "y": [
+        1.42,
+        2.02
+      ],
+      "z": [
+        -0.3,
+        0.3
+      ],
+      "mat": "layered glass and light",
+      "note": "three braided waveguides of amber, violet and green light"
+    },
+    {
+      "kind": "deck",
+      "name": "_stbd deck at 32% height",
+      "z": -0.35,
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "deck",
+      "name": "_stbd deck at 62% height",
+      "z": 0.25,
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 01",
+      "x": -2.8899999999999997,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 02",
+      "x": -2.6222222222222222,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 03",
+      "x": -1.74,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 04",
+      "x": -1.74,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 05",
+      "x": 2.34,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 06",
+      "x": 2.34,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "_stbd annealed frame 07",
+      "x": 2.59,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "space",
+      "name": "_stbd continuous light core",
+      "x": [
+        -5.6499999999999995,
+        5.25
+      ],
+      "y": [
+        -2.02,
+        -1.42
+      ],
+      "z": [
+        -0.3,
+        0.3
+      ],
+      "mat": "layered glass and light",
+      "note": "three braided waveguides of amber, violet and green light"
+    },
+    {
+      "kind": "armour",
+      "name": "annealed outer glass",
+      "t": 0.04,
+      "note": "actual shell thickness; layered blown glass, no armour plates"
+    },
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -4.35,
+      "note": "ragged shatter path through both hulls aft of the aft bridge; the stern optics stay whole",
+      "path": [
+        [
+          -4.35,
+          -6.64
+        ],
+        [
+          -4.06,
+          -3.32
+        ],
+        [
+          -4.617692307692307,
+          -1.5493333333333332
+        ],
+        [
+          -4.149230769230769,
+          0.0
+        ],
+        [
+          -4.662307692307692,
+          1.4386666666666665
+        ],
+        [
+          -4.082307692307692,
+          3.32
+        ],
+        [
+          -4.35,
+          6.64
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": 4.05,
+      "note": "ragged shatter path through both hulls forward of the forward bridge; the bow lances stay whole",
+      "path": [
+        [
+          4.05,
+          -6.64
+        ],
+        [
+          4.34,
+          -3.32
+        ],
+        [
+          3.7823076923076924,
+          -1.5493333333333332
+        ],
+        [
+          4.25076923076923,
+          0.0
+        ],
+        [
+          3.7376923076923076,
+          1.4386666666666665
+        ],
+        [
+          4.317692307692307,
+          3.32
+        ],
+        [
+          4.05,
+          6.64
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "colour",
+      "name": "amber, violet, green panes",
+      "x": [
+        6.15,
+        -6.55
+      ],
+      "where": "most of each hull; glows from within",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "opaque pearl ribbons, silver edges",
+      "x": [
+        6.15,
+        -6.55
+      ],
+      "where": "nine narrow ribbons on each hull, the bridges",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "seafoam stored light",
+      "x": [
+        3.4000000000000004,
+        -3.9000000000000004
+      ],
+      "where": "the inner flanks facing the cleft and under each bridge",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "soft white bloom",
+      "x": [
+        -6.1499999999999995,
+        -6.95
+      ],
+      "where": "one stern drive optic per hull, no flame",
+      "note": ""
+    }
+  ],
+  "points": [
+    {
+      "kind": "core",
+      "name": "hp_core",
+      "pos": [
+        0.0,
+        1.72,
+        0.0
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_0",
+      "pos": [
+        4.9,
+        2.40268307768186,
+        0.21431094761147368
+      ],
+      "side": "port",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_1",
+      "pos": [
+        0.3,
+        -2.9386259125383534,
+        0.38255653704909603
+      ],
+      "side": "stbd",
+      "section": "mid",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_2",
+      "pos": [
+        -5.1,
+        2.6796850375649677,
+        0.30126865090531285
+      ],
+      "side": "port",
+      "section": "eng",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_0",
+      "pos": [
+        -3.2,
+        2.9200298525543222,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_0",
+      "pos": [
+        -4.2,
+        2.839011819908631,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_1",
+      "pos": [
+        3.0,
+        -2.905911154792363,
+        1.2489971778190637e-16
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_1",
+      "pos": [
+        2.0,
+        -2.966752814717217,
+        1.3130753857293976e-16
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    }
+  ],
+  "changes": [
+    [
+      "Opaque panes and pearl instead of the sketch's clear glass",
+      "R337 (Ryan, Nov 19): nothing see-through."
+    ],
+    [
+      "Two arched bridges, the turret blister on the crown of the forward one",
+      "The sketch's curved bridges; a blister on the bridge crown clears both hulls through a full turn (turret T, 360)."
+    ],
+    [
+      "Stored light on the hulls' inner flanks and under the bridges, not a pool in open space",
+      "The cleft is open space between two hulls; the glow sits on the glass that faces it."
+    ],
+    [
+      "Each bow lens point is a short drawn-glass lance with a glowing tip on the hull's axis",
+      "cruiser.md: keep them points, never tubes; one pulsar per hull."
+    ]
+  ],
+  "budget": {
+    "outside": {
+      "triangles": 408502,
+      "unjoined_surfaces": 108,
+      "material_surfaces": 10,
+      "materials": [
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_gem_violet",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 20280,
+      "unjoined_surfaces": 44,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "mesh_groups": {
+    "L1": [
+      "L1_mount_gw_lance",
+      "L1_mount_gw_silver",
+      "L1_mount_gw_tip"
+    ],
+    "E1": [
+      "E1_grown_stern",
+      "E1_deep_lens",
+      "E1_white_bloom",
+      "E1_cut_face",
+      "E1_silver_flow_00",
+      "E1_silver_flow_01",
+      "E1_silver_flow_02",
+      "E1_silver_flow_03",
+      "E1_silver_flow_04",
+      "E1_silver_flow_05",
+      "E1_silver_flow_06",
+      "E1_silver_flow_07",
+      "E1_silver_flow_08",
+      "E1_silver_flow_09",
+      "E1_silver_flow_10"
+    ],
+    "L2": [
+      "L2_mount_gw_lance",
+      "L2_mount_gw_silver",
+      "L2_mount_gw_tip"
+    ],
+    "E2": [
+      "E2_grown_stern",
+      "E2_deep_lens",
+      "E2_white_bloom",
+      "E2_cut_face",
+      "E2_silver_flow_00",
+      "E2_silver_flow_01",
+      "E2_silver_flow_02",
+      "E2_silver_flow_03",
+      "E2_silver_flow_04",
+      "E2_silver_flow_05",
+      "E2_silver_flow_06",
+      "E2_silver_flow_07",
+      "E2_silver_flow_08",
+      "E2_silver_flow_09",
+      "E2_silver_flow_10"
+    ],
+    "O1": [
+      "O1_mount_gw_pearl",
+      "O1_turn_gw_gem_violet"
+    ]
+  },
+  "dimensions": [
+    13.762722492218018,
+    6.2005157470703125,
+    2.6739702224731445
+  ],
+  "design_sha256": "9e0179f0ed5a008f198bab4c8cd8bf8a52c05b7f4fcb53308b969171d18b90ec",
+  "kit_sha256": "d29e574cb290f2d7aa0957590b67f0e19c525cf55e6368f1cbd6fa7bcf77b690"
+}

@@ -47,6 +47,8 @@ WEIGHTS = (55, 27, 18)
 PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10))
 # Round 5 (outside read, Nov 19: "flat orange, purple and lime gravel"): each panel is lit from behind, so its colour runs
 # from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
+# Stored light, the seafoam of the faction's data glow #9fffd2 (issue 1415: the fleet hulls' cleft, star torpedo, hangar floor).
+LIGHT = (0.35, 1.0, 0.64)
 TONES = dict(amber=((0.40, 0.035, 0.0), (1.0, 0.40, 0.015)),
              violet=((0.13, 0.0, 0.36), (0.62, 0.10, 1.0)),
              green=((0.0, 0.18, 0.03), (0.20, 0.78, 0.04)))
@@ -350,6 +352,8 @@ def setup(kit):
         'gw_drive': gem('gw_drive', (0.62, 0.42, 1.0), 0.45),
         'gw_drive_cut': gem('gw_drive_cut', (0.78, 0.62, 1.0), 0.25, metallic=0.4, cut=True),
         'gw_drive_core': gem('gw_drive_core', (0.88, 0.80, 1.0), 1.6),
+        # stored light (the data glow #9fffd2): a star torpedo's body, a hangar lens floor (issue 1415)
+        'gw_light': gem('gw_light', LIGHT, 1.4),
     }
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
@@ -375,6 +379,7 @@ GLOW = {
     'gw_gem_green': (PANEL['green'], LOOK['gem']['emission']),
     'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 1.2), 'gw_drive_core': ((0.88, 0.80, 1.0), 1.6),
     'gw_tip': (LOOK['tip']['base'], 4.0),
+    'gw_light': (LIGHT, 1.4),
 }
 
 

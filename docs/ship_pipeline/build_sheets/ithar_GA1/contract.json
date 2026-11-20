@@ -1,0 +1,28 @@
+{
+  "sheet": "ithar_GA1",
+  "game_ship": "i_carrier",
+  "variant": "",
+  "model_length": 16.71999,
+  "scale": 0.059808662655451324,
+  "length_world": 16.5,
+  "t_lines": [
+    -0.32596,
+    -0.24821,
+    0.18242
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 2,
+  "engines": 1,
+  "bays": 2,
+  "points": 10,
+  "turrets": [
+    "O1_turret"
+  ],
+  "interior_objects": 20,
+  "slots": [
+    "0 pulsar F",
+    "1 turret T"
+  ]
+}

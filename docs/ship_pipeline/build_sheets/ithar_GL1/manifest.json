@@ -1,0 +1,247 @@
+{
+  "code": "ithar_GL1",
+  "sheet_version": 1,
+  "design": "tools/blender/build_sheets/ships/ithar_GL1.py",
+  "design_sha256": "3c43706fa17726da936e9b14d60604f8214c24607a77af5271b78eac903e64eb",
+  "kit": "tools/blender/kits/ithar/hull.py",
+  "game_ship": "i_blade",
+  "cls": "Destroyer",
+  "length_world": 9.5,
+  "routes_note": "Every visible part is hand-built in the sheet on the shared Glasswright kit (tools/blender/kits/ithar).",
+  "parts": [
+    {
+      "id": "S1",
+      "kind": "gun",
+      "what": "three drawn-glass shard needles at the bow / shard",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "bow_shards"
+      ],
+      "weapon": "shard",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "T1",
+      "kind": "gun",
+      "what": "star torpedo carried in a grown keel cradle / startorp",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "star_torpedo"
+      ],
+      "weapon": "startorp",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "stern_drive"
+      ],
+      "weapon": null,
+      "arc": null
+    }
+  ],
+  "masses": [
+    {
+      "name": "Mosaic leaf core",
+      "route": "hand-built"
+    }
+  ],
+  "break_pieces": [
+    {
+      "name": "bow piece",
+      "stations": "0.000 to 25.789 percent",
+      "bounded_by": [
+        "B2"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "midships piece 1",
+      "stations": "25.789 to 71.579 percent",
+      "bounded_by": [
+        "B2",
+        "B1"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "stern piece",
+      "stations": "71.579 to 100.000 percent",
+      "bounded_by": [
+        "B1"
+      ],
+      "full_interior": true
+    }
+  ],
+  "whole_optics": [
+    {
+      "name": "S1 whole part",
+      "part": "S1",
+      "objects": [
+        "S1_mount_gw_lance",
+        "S1_mount_gw_silver",
+        "S1_mount_gw_tip",
+        "S1_mount_gw_pearl"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "T1 whole part",
+      "part": "T1",
+      "objects": [
+        "T1_mount_gw_light",
+        "T1_mount_gw_drive_core",
+        "T1_mount_gw_gem_violet",
+        "T1_mount_gw_silver",
+        "T1_mount_gw_pearl"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "E1 whole part",
+      "part": "E1",
+      "objects": [
+        "E1_grown_stern",
+        "E1_deep_lens",
+        "E1_white_bloom",
+        "E1_cut_face",
+        "E1_silver_flow_00",
+        "E1_silver_flow_01",
+        "E1_silver_flow_02",
+        "E1_silver_flow_03",
+        "E1_silver_flow_04",
+        "E1_silver_flow_05",
+        "E1_silver_flow_06",
+        "E1_silver_flow_07",
+        "E1_silver_flow_08",
+        "E1_silver_flow_09",
+        "E1_silver_flow_10"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    }
+  ],
+  "hull_fractures": [
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -2.05,
+      "note": "ragged shatter path aft of the waist; the stern optic stays whole",
+      "path": [
+        [
+          -2.05,
+          -2.6
+        ],
+        [
+          -1.8599999999999999,
+          -1.3
+        ],
+        [
+          -2.2253846153846153,
+          -0.6066666666666666
+        ],
+        [
+          -1.9184615384615382,
+          0.0
+        ],
+        [
+          -2.2546153846153842,
+          0.5633333333333334
+        ],
+        [
+          -1.8746153846153844,
+          1.3
+        ],
+        [
+          -2.05,
+          2.6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": 2.3,
+      "note": "ragged shatter path forward of the torpedo cradle; the shard optic stays whole on the bow piece",
+      "path": [
+        [
+          2.3,
+          -2.6
+        ],
+        [
+          2.4899999999999998,
+          -1.3
+        ],
+        [
+          2.1246153846153844,
+          -0.6066666666666666
+        ],
+        [
+          2.4315384615384614,
+          0.0
+        ],
+        [
+          2.0953846153846154,
+          0.5633333333333334
+        ],
+        [
+          2.4753846153846153,
+          1.3
+        ],
+        [
+          2.3,
+          2.6
+        ]
+      ],
+      "orient": "trans"
+    }
+  ],
+  "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
+  "budget": {
+    "outside": {
+      "triangles": 244192,
+      "unjoined_surfaces": 67,
+      "material_surfaces": 10,
+      "materials": [
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_gem_violet",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 8916,
+      "unjoined_surfaces": 21,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "stage": "sheet built",
+  "paint_stack": "tools/blender/kits/ithar/stack.py"
+}

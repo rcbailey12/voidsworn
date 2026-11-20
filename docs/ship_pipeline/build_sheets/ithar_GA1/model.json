@@ -1,0 +1,620 @@
+{
+  "code": "ithar_GA1",
+  "name": "Glasswright aperture GA1",
+  "game_ship": "i_carrier",
+  "cls": "Carrier",
+  "length": 16.5,
+  "camera": {
+    "az": 64.0,
+    "el": 36.0,
+    "roll": -10.0,
+    "scale": 32.0
+  },
+  "features": [
+    {
+      "id": "L1",
+      "kind": "gun",
+      "what": "drawn-glass bow lance on the centreline / pulsar",
+      "count": 1,
+      "pos": [
+        6.199999809265137,
+        0.0,
+        0.0
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "The bow lance: a drawn-glass waveguide grown from the bow optic on the centreline; fixed forward, F arc.",
+      "muzzle": [
+        [
+          8.25,
+          0.0,
+          1.469576190014977e-17
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "forward_lances"
+      ]
+    },
+    {
+      "id": "O1",
+      "kind": "gun",
+      "what": "violet grown optic / turret",
+      "count": 1,
+      "pos": [
+        -2.5999999046325684,
+        0.0,
+        1.6255111694335938
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "T",
+      "weapon": "turret",
+      "src": "picture",
+      "note": "The Needle beam: a violet lens blister grown on the crown, 360 degrees.",
+      "muzzle": [
+        [
+          -2.248999834060669,
+          0.0,
+          1.6255111694335938
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "optics"
+      ]
+    },
+    {
+      "id": "H1",
+      "kind": "bay",
+      "what": "hangar lens grown into the port flank, Starlings parked on stored light",
+      "count": 1,
+      "pos": [
+        -0.6,
+        2.187321818498905,
+        0.0
+      ],
+      "src": "picture",
+      "note": "data.js hangar: squadrons launch out of the flank lens",
+      "inv": [
+        "hangar_lenses"
+      ]
+    },
+    {
+      "id": "H2",
+      "kind": "bay",
+      "what": "hangar lens grown into the starboard flank, Starlings parked on stored light",
+      "count": 1,
+      "pos": [
+        -0.6,
+        -2.187321818498905,
+        0.0
+      ],
+      "src": "picture",
+      "note": "data.js hangar: squadrons launch out of the flank lens",
+      "inv": [
+        "hangar_lenses"
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -8.4576,
+        0.0,
+        0.0
+      ],
+      "exit": [
+        -8.4576,
+        0.0,
+        0.0
+      ],
+      "radius": 1.1867999999999999,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_drive"
+      ]
+    }
+  ],
+  "masses": [
+    {
+      "name": "Mosaic leaf core",
+      "obj": "ithar_GA1_mosaic_core",
+      "role": "opaque glowing stained-glass mosaic",
+      "src": "picture",
+      "note": "The CD5 leaf at carrier size; two shallow hangar wells floored with stored light; never see-through."
+    }
+  ],
+  "inside": [
+    {
+      "kind": "deck",
+      "name": "deck at 32% height",
+      "z": -0.35,
+      "x": [
+        -6.75,
+        6.05
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "deck",
+      "name": "deck at 62% height",
+      "z": 0.25,
+      "x": [
+        -6.75,
+        6.05
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "space",
+      "name": "continuous light core",
+      "x": [
+        -6.75,
+        6.05
+      ],
+      "y": [
+        -0.3,
+        0.3
+      ],
+      "z": [
+        -0.3,
+        0.3
+      ],
+      "mat": "layered glass and light",
+      "note": "three braided waveguides of amber, violet and green light"
+    },
+    {
+      "kind": "armour",
+      "name": "annealed outer glass",
+      "t": 0.05,
+      "note": "actual shell thickness; layered blown glass, no armour plates"
+    },
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -5.45,
+      "note": "ragged shatter path forward of the stern optic; the drive stays whole",
+      "path": [
+        [
+          -5.45,
+          -7.099999999999999
+        ],
+        [
+          -5.12,
+          -3.5499999999999994
+        ],
+        [
+          -5.754615384615385,
+          -1.6566666666666665
+        ],
+        [
+          -5.2215384615384615,
+          0.0
+        ],
+        [
+          -5.805384615384615,
+          1.5383333333333333
+        ],
+        [
+          -5.145384615384615,
+          3.5499999999999994
+        ],
+        [
+          -5.45,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": -4.15,
+      "note": "ragged shatter path aft of the hangar lenses, forward of the turret blister",
+      "path": [
+        [
+          -4.15,
+          -7.099999999999999
+        ],
+        [
+          -3.8200000000000003,
+          -3.5499999999999994
+        ],
+        [
+          -4.454615384615385,
+          -1.6566666666666665
+        ],
+        [
+          -3.921538461538462,
+          0.0
+        ],
+        [
+          -4.5053846153846155,
+          1.5383333333333333
+        ],
+        [
+          -3.845384615384616,
+          3.5499999999999994
+        ],
+        [
+          -4.15,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B3",
+      "x": 3.05,
+      "note": "ragged shatter path forward of the hangar lenses; the bow lance stays whole",
+      "path": [
+        [
+          3.05,
+          -7.099999999999999
+        ],
+        [
+          3.38,
+          -3.5499999999999994
+        ],
+        [
+          2.7453846153846153,
+          -1.6566666666666665
+        ],
+        [
+          3.278461538461538,
+          0.0
+        ],
+        [
+          2.6946153846153846,
+          1.5383333333333333
+        ],
+        [
+          3.3546153846153843,
+          3.5499999999999994
+        ],
+        [
+          3.05,
+          7.099999999999999
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "colour",
+      "name": "opaque pearl ribbons, silver edges",
+      "x": [
+        6.95,
+        -7.75
+      ],
+      "where": "thirteen long ribbons and three crest leaves sweep stern to bow",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "amber, violet, green mosaic panels",
+      "x": [
+        6.95,
+        -7.75
+      ],
+      "where": "the core between the ribbons; glows from within",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "seafoam stored light",
+      "x": [
+        2.1999999999999997,
+        -3.4
+      ],
+      "where": "the floor of each hangar lens",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "soft white bloom",
+      "x": [
+        -7.15,
+        -8.35
+      ],
+      "where": "the big stern drive optic, no flame",
+      "note": ""
+    }
+  ],
+  "points": [
+    {
+      "kind": "bay",
+      "name": "hp_bay_0",
+      "pos": [
+        -0.6,
+        2.277321818498905,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "flank hangar lens: Starlings launch outward",
+      "dir": [
+        0.5,
+        0.87,
+        0
+      ]
+    },
+    {
+      "kind": "bay",
+      "name": "hp_bay_1",
+      "pos": [
+        -0.6,
+        -2.277321818498905,
+        0.0
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "flank hangar lens: Starlings launch outward",
+      "dir": [
+        0.5,
+        -0.87,
+        0
+      ]
+    },
+    {
+      "kind": "core",
+      "name": "hp_core",
+      "pos": [
+        0.6,
+        0,
+        0.0
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_0",
+      "pos": [
+        4.6,
+        1.1158500112783536,
+        0.9996911548811818
+      ],
+      "side": "port",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_1",
+      "pos": [
+        3.6,
+        -1.41847957791036,
+        1.2253846482882549
+      ],
+      "side": "stbd",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_2",
+      "pos": [
+        1.6,
+        1.3804440357372556,
+        1.156093698429307
+      ],
+      "side": "port",
+      "section": "mid",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_3",
+      "pos": [
+        -2.2,
+        -1.6033680385112312,
+        1.3547012347938727
+      ],
+      "side": "stbd",
+      "section": "mid",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_4",
+      "pos": [
+        -6.0,
+        1.0599834555054874,
+        0.9262207521094563
+      ],
+      "side": "port",
+      "section": "eng",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_0",
+      "pos": [
+        -5.0,
+        1.707097863153927,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_0",
+      "pos": [
+        -4.2,
+        1.7929215125393596,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_1",
+      "pos": [
+        4.0,
+        -1.8503627144791994,
+        1.416659019396257e-16
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_1",
+      "pos": [
+        4.8,
+        -1.6498622637749456,
+        1.308329672727575e-16
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    }
+  ],
+  "changes": [
+    [
+      "Opaque pearl ribbons over a glowing mosaic core instead of the sketch's clear glass",
+      "R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through."
+    ],
+    [
+      "Each hangar lens is a shallow well in the mosaic skin with a pearl lip and a stored-light floor, three Starlings parked on it",
+      "carrier.md: lenses grown into the skin, not cut openings or pods; Starlings visible; opaque, so the floor is light, not a window."
+    ],
+    [
+      "The sketch's extra stern and flank lens rings are left out; one large stern optic carries the bloom",
+      "Weapon match (R241): only data.js weapons show as lenses (one pulsar F, one turret T); the rings read as more guns."
+    ],
+    [
+      "Ribbons slide above and below each hangar lens",
+      "So the lens stays clear and reads as grown into the skin."
+    ]
+  ],
+  "budget": {
+    "outside": {
+      "triangles": 359990,
+      "unjoined_surfaces": 87,
+      "material_surfaces": 11,
+      "materials": [
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_violet",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 4808,
+      "unjoined_surfaces": 20,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "mesh_groups": {
+    "L1": [
+      "L1_mount_gw_light",
+      "L1_mount_gw_pearl",
+      "L1_mount_gw_silver",
+      "L1_mount_gw_lance",
+      "L1_mount_gw_tip"
+    ],
+    "O1": [
+      "O1_mount_gw_pearl",
+      "O1_turn_gw_gem_violet"
+    ],
+    "H1": [
+      "H1_lip",
+      "H1_lip_silver",
+      "H1_starling_0",
+      "H1_starling_0_eye",
+      "H1_starling_1",
+      "H1_starling_1_eye",
+      "H1_starling_2",
+      "H1_starling_2_eye"
+    ],
+    "H2": [
+      "H2_lip",
+      "H2_lip_silver",
+      "H2_starling_0",
+      "H2_starling_0_eye",
+      "H2_starling_1",
+      "H2_starling_1_eye",
+      "H2_starling_2",
+      "H2_starling_2_eye"
+    ],
+    "E1": [
+      "E1_grown_stern",
+      "E1_deep_lens",
+      "E1_white_bloom",
+      "E1_cut_face",
+      "E1_silver_flow_00",
+      "E1_silver_flow_01",
+      "E1_silver_flow_02",
+      "E1_silver_flow_03",
+      "E1_silver_flow_04",
+      "E1_silver_flow_05",
+      "E1_silver_flow_06",
+      "E1_silver_flow_07",
+      "E1_silver_flow_08",
+      "E1_silver_flow_09",
+      "E1_silver_flow_10"
+    ]
+  },
+  "dimensions": [
+    16.719985961914062,
+    5.74176812171936,
+    4.090011715888977
+  ],
+  "design_sha256": "a428266cfb48c1d23338a0226cec2ce04e4a5c1b4dfdf9fee89f21d13fb83cba",
+  "kit_sha256": "5a44567d9e8b8f894b4eb562a71d5ba55c07b5e40a5be08eb8c43d0d7c4c2be9"
+}
