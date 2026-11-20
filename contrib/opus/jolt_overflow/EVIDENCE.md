@@ -38,18 +38,18 @@ So the count was not too many bodies or too many jobs per step: it was jobs neve
 2. A death cut runs side by side one at a time, and leaves two lanes free beyond every lane low-priority work can hold
    (`DEATH.cut_lanes`). On 4 lanes that is 1 lane; on a 24 lane PC, 15 (a capital has fewer surfaces than that).
 
-One visible difference, small: once every loose body in a battle is asleep (only damped story debris and slowed wreck
-pieces ever sleep; ordinary debris drifts forever), a ship flying through them no longer nudges them until a new death
-wakes the space.
+After main's issue 1237 (PR 1255, merged first), every debris plate is stopped and asleep by DEBRIS_REST_S (5.5 s), so
+the space also sleeps a few seconds after an ordinary death, not only before the first one. The only cover gap left is
+those seconds while debris or a wreck section still moves.
 
-Not covered: while debris drifts (after the first ordinary death), the engine's own compile work can still hold every
-lane. Our own cut no longer can.
+One visible difference, small: while the space sleeps, a ship's hull passing a resting plate no longer knocks it awake. A
+moving wreck section is itself a loose awake body, so it keeps the space awake and still knocks plates (checked).
 
 ## Checks
 
 - New headless check `godot/fx/test/jolt_jobs_check.gd` (in `godot/tools/ci/godot_checks.txt`): moving hull colliders
-  alone leave the space asleep; 2 s of every lane held raises no warning; debris wakes it; stopped debris sleeps it again;
-  the lane budget. `headless_check_with_control.txt` is the same check with `JOLT_JOBS_CONTROL=1`: the same 2 s starve with
+  alone leave the space asleep; 2 s of every lane held raises no warning; debris wakes it; settled debris sleeps it again;
+  a moving wreck section keeps it awake and knocks a resting plate; the lane budget. `headless_check_with_control.txt` is the same check with `JOLT_JOBS_CONTROL=1`: the same 2 s starve with
   the space awake (the old behaviour) raises the warning on this machine.
 - Run here, Godot 4.7.2 headless, all exit 0, no SCRIPT ERROR, no Jolt warning: load_all (263 scripts, 0 failed),
   jolt_jobs_check, cold_kill_check, death_leap_check, death_plane_check, multi_kill_pace_check, death_story_check,

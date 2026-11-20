@@ -754,6 +754,8 @@ func _pipe_count() -> int:
 
 
 var warming := false
+const ArrivalWarm := preload("res://render/arrival_warm.gd")
+var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
 func _warmup() -> void:
@@ -768,6 +770,12 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
+		if api != null and api.has_method("arrival_previews"):
+			arrival_warm = ArrivalWarm.new()
+			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
+			for i in 2:
+				await get_tree().process_frame
 		await gfx.prepare_battle_hulls()
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
@@ -778,6 +786,8 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
+		if arrival_warm != null:
+			arrival_warm.park()
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
@@ -1465,10 +1475,16 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
-			wrecked[e["unit"]] = true
+			# issue 1236: the wreck sits in the hex it blocks. Its death pieces are kept inside that hex from the start;
+			# the board marks the hex once the death has played ("death" below).
+			wrecked[e["unit"]] = Vector2i(int(e["q"]), int(e["r"]))
+			if gfx != null and gfx.has_method("anchor_wreck"):
+				gfx.anchor_wreck(str(e["unit"]), board.hex_world(int(e["q"]), int(e["r"])), board.HS * WRECK_LEASH_K)
 			_log("The wreck of %s drifts in place, blocking movement and fire." % _name(e["unit"]), "x")
 		"death":
 			await _play_death(e)
+			if wrecked.has(e["unit"]):
+				_lay_wreck(e["unit"])
 		"fled":
 			var sv = views.get(e["unit"])
 			if gfx != null and gfx.has_method("jump_out"):
@@ -1494,6 +1510,25 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				seen[kind] = true
 				set_meta("unknown_events", seen)
 				push_warning("battle: unknown event kind \"%s\" (no branch in battle.gd _play_event)" % kind)
+
+
+const WRECK_LEASH_K := 0.8      # issue 1236: a blocking wreck's pieces rest within this share of the hex radius
+const WRECK_CHECK_S := 4.0      # seconds after a wreck's death plays: no pieces on the board by then lays the burnt hulk
+
+
+# issue 1236: the board marks a wreck's hex, and lays the burnt hulk there if the death left nothing to see
+func _lay_wreck(unit) -> void:
+	var at: Vector2i = wrecked[unit]
+	var id := str(unit)
+	var fx_pieces: bool = gfx != null and gfx.has_method("wreck_pieces")
+	board.add_wreck(id, at.x, at.y)
+	if not fx_pieces:
+		return   # no effects: the ship view keeps its own darkened hull in place (ShipView.die)
+	var gen: int = board.built
+	get_tree().create_timer(WRECK_CHECK_S).timeout.connect(func() -> void:
+		if not is_instance_valid(board) or board.built != gen or board.wrecks.get(id, "") != board.key(at.x, at.y): return
+		if gfx == null or int(gfx.wreck_pieces(id)) > 0: return
+		board.add_wreck(id, at.x, at.y, true))
 
 
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:

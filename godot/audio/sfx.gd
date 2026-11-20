@@ -28,6 +28,7 @@ const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's b
 var cam: Camera3D
 var _pending_generation := 0
 var _cancelled_tags := {}
+var _loop_copies := {}   # issue 1237: source clip -> its looping copy
 var _beat := false
 var _ambient_duck_until := 0.0
 var _ambient_duck := 0.0
@@ -338,9 +339,12 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 		var rate := maxf(0.25, float(o.get("rate", 1.0)) * float(L.r) * (1.0 + u * float(L.pj)))
 		var st: AudioStream = L.st
 		if bool(cue.get("loop", false)) and st is AudioStreamOggVorbis:
-			var dup: AudioStreamOggVorbis = (st as AudioStreamOggVorbis).duplicate()
-			dup.loop = true
-			st = dup
+			# Issue 1237 (Neon F7.5): one looping copy per clip, made once, not a new copy on every death bed.
+			if not _loop_copies.has(st):
+				var dup: AudioStreamOggVorbis = (st as AudioStreamOggVorbis).duplicate()
+				dup.loop = true
+				_loop_copies[st] = dup
+			st = _loop_copies[st]
 		var p: Node
 		if pos is Vector3:
 			var p3 := AudioStreamPlayer3D.new()
@@ -457,6 +461,7 @@ func stop_all() -> void:
 	_quiet_db = 0.0
 	_quiet_until = 0.0
 	death_beat(false)
+	_cancelled_tags.clear()   # issue 1237 (Neon F7.5): the battle's cancelled death tags no longer pile up
 	for v in active.duplicate():
 		_steal(v)
 

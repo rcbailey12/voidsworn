@@ -1,0 +1,111 @@
+{
+  "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+  "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "S9_r3_bow_gun_before_after.jpg",
+  "date": "2026-11-20T04:46:50Z",
+  "sources": [
+    {
+      "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+      "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+      "source_dirty": true,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "V14_23_s.jpg",
+      "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+      "source_dirty": true,
+      "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+      "stage": "installed in game",
+      "date": "2026-11-20T01:56:06Z",
+      "image_sha256": "aa033cf9260673cbe790d3247a3b87d8fd45fe59ddb3d2d12a602cbc2239c532",
+      "sources": [
+        {
+          "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+          "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V14_23_s.jpg",
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_dirty": true,
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "stage": "installed in game",
+      "date": "2026-11-20T03:55:28Z",
+      "image_sha256": "89391654b818ced3d9ac6efb7e93af07823eb798f4499d1d6a8c1c780446fa61",
+      "sources": [
+        {
+          "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+          "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V14_23_q.jpg",
+      "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+      "source_dirty": true,
+      "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+      "stage": "installed in game",
+      "date": "2026-11-20T01:56:06Z",
+      "image_sha256": "ec660afc34cb82c0cc99208001fe061f72b015c8843f4fb50e1b79ea3f54be4c",
+      "sources": [
+        {
+          "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+          "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V14_23_q.jpg",
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_dirty": true,
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "stage": "installed in game",
+      "date": "2026-11-20T03:55:28Z",
+      "image_sha256": "87fa6155a7a30a1d7cd94f50690f2657c899a4bfd35828e319b1567fc250566b",
+      "sources": [
+        {
+          "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+          "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    645,
+    318,
+    707
+  ],
+  "strip_size": [
+    318,
+    62
+  ],
+  "strip_sha256": [
+    "33c90d73a1532c902f0b98db845cb1699d91870c3012671ecaf26c7f6a3ba751"
+  ],
+  "stamp_template_sha256": "8464e97d46da4670379c45e0d8e4ba74f42581803d7b02e056795d4bc6085693",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAT4AAAA+CAIAAAA9LeDTAAAA00lEQVR4nO3TMQ0AIADAMEABB/614oGHLGkV7Nnc+wygZv0OAF5YF5KsC0nWhSTrQpJ1Icm6kGRdSLIuJFkXkqwLSdaFJOtCknUhybqQZF1Isi4kWReSrAtJ1oUk60KSdSHJupBkXUiyLiRZF5KsC0nWhSTrQpJ1Icm6kGRdSLIuJFkXkqwLSdaFJOtCknUhybqQZF1Isi4kWReSrAtJ1oUk60KSdSHJupBkXUiyLiRZF5KsC0nWhSTrQpJ1Icm6kGRdSLIuJFkXkqwLSdaFJOtC0gXr2wCwk66fjAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "69d99d12be9accb406b7ab27a09446239a329922042c750ffd88e55fdb73fda8"
+}

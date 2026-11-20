@@ -210,6 +210,9 @@ func release() -> void:
 	hull_arrays.clear()
 	_damage_templates.clear()
 	_power_templates.clear()
+	shield_poses.clear()
+	hull_shared.clear()
+	shield_keys.clear()
 	_dark_interiors.clear()
 	_wreck_interiors.clear()
 	_piece_builds.clear()
@@ -363,7 +366,11 @@ func _process(delta: float) -> void:
 		step(delta)
 
 
+var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
+
+
 func step(delta: float) -> void:
+	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
 	var spd = 1.0
 	if now < _pause_until:
@@ -480,6 +487,27 @@ func later(t: float, f: Callable) -> void:
 func free_effect(ref: WeakRef) -> void:
 	var node = ref.get_ref()
 	if is_instance_valid(node): node.queue_free()
+
+
+# Issue 1237: one-shot pictures (death flipbooks, staged flashes and smoke, hull hit pictures) come from a reused pool
+# instead of a new node, quad and material each (fx_pool.gd Pictures). `make` builds the material only when the pool has
+# none free for `key`. Return it with free_picture, bound with the picture's pic_gen, never with free_effect.
+func picture(key: String, make: Callable, node_name: String) -> MeshInstance3D:
+	return pictures().take(self, key, make, node_name)
+
+
+func pictures() -> POOLS.Pictures:
+	if not dstate.has("pics"): dstate["pics"] = POOLS.Pictures.new()
+	return dstate["pics"]
+
+
+func free_picture(ref: WeakRef, gen: int) -> void:
+	var node = ref.get_ref()
+	if not is_instance_valid(node): return
+	if dstate.has("pics") and node.has_meta("pic_key"):
+		(dstate["pics"] as POOLS.Pictures).give(node, gen)
+	else:
+		node.queue_free()
 
 
 func _run_later() -> void:
@@ -986,6 +1014,9 @@ func _update_lights() -> void:
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
 			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
+			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
+			# each one a pass over the fog froxels); the rest light hulls only.
+			l.light_volumetric_fog_energy = 1.0 if k < 2 else 0.0
 			l.visible = true
 		else:
 			l.visible = false
@@ -1260,7 +1291,7 @@ func _finish_shield_skins() -> void:
 		if not arrays.is_empty():
 			SHIP.save_shield_skin(key, arrays)
 			for entry in job["ships"]:
-				entry[0].install_shield_skin(arrays, entry[1])
+				entry[0].install_shield_skin(arrays, entry[1], self, key)
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1328,6 +1359,11 @@ func prepare_battle_hulls() -> void:
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
 var _death_cut_tasks := {}
+# Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
+var shield_poses := {}
+# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
+var hull_shared := {}
+var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
 func submit_death_cut(work: Callable) -> int:
@@ -1367,7 +1403,9 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
+	var t_col := Time.get_ticks_usec()
 	DEATH.add_collider(self, s)
+	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
@@ -1548,6 +1586,15 @@ func death(id: String, cause := "blast") -> float:
 func clear_wreck(id: String) -> void:
 	DEATH.clear_wreck(self, id)
 	_core_at.erase(id)
+
+
+# issue 1236: the rules made this ship's hex a wreck that blocks; its death pieces stay inside that hex
+func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
+	DEATH.anchor_wreck(self, id, centre, radius)
+
+
+func wreck_pieces(id: String) -> int:
+	return DEATH.wreck_pieces(self, id)
 
 
 func jump_out(id: String) -> void:

@@ -8,7 +8,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   1. a death cut's side-by-side lanes leave two lanes free beyond what low-priority work can hold;
 #   2. with moving hull colliders and no loose debris the battle's physics space sleeps (Jolt makes no jobs);
 #   3. while it sleeps, every worker lane held by long high-priority work for 2 s raises no "exceeded" warning;
-#   4. debris wakes the space at once, and the space sleeps again once nothing loose is awake;
+#   4. debris wakes the space at once; once every plate has settled (issue 1237, DEBRIS_REST_S) the space sleeps again;
+#      a moving wreck section keeps it awake and still knocks a resting plate awake;
 #   5. with JOLT_JOBS_CONTROL=1 only, a control (printed, not checked: it depends on the machine's lane count): the same
 #      starve with the space awake, the old behaviour. Off by default: on Ryan's PC tools/pc/run_timeout.ps1 stops any
 #      Godot that logs the warning, so the standing check never provokes it.
@@ -125,15 +126,36 @@ func _run() -> void:
 	check(_space_awake(fx), "debris wakes the physics space at once")
 	await _run_for(fx, 0.6)
 	check(_space_awake(fx), "drifting debris keeps the space awake")
-	for b in fx.dstate["debris"]:
-		(b as RigidBody3D).linear_velocity = Vector3.ZERO
-		(b as RigidBody3D).angular_velocity = Vector3.ZERO
-	await _run_for(fx, 2.0)
+	# with issue 1237's settle (merged first), every plate is stopped and asleep by DEATH.DEBRIS_REST_S, and the space with it
+	await _run_for(fx, DEATH.DEBRIS_REST_S + 1.0)
 	var slept := true
 	for b in fx.dstate["debris"]:
 		slept = slept and (b as RigidBody3D).sleeping
-	check(slept, "stopped debris falls asleep in Jolt")
+	check(slept, "every plate is asleep by DEBRIS_REST_S")
 	check(not _space_awake(fx), "the space sleeps again once nothing loose is awake")
+	# a moving wreck section (a loose rigid body under phys_root) keeps the space awake and still knocks a resting plate awake
+	var plate := fx.dstate["debris"][0] as RigidBody3D
+	var section := RigidBody3D.new()
+	section.gravity_scale = 0.0
+	section.collision_layer = DEATH.DEBRIS_LAYER
+	section.collision_mask = DEATH.HULL_LAYER | DEATH.DEBRIS_LAYER
+	var scs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(3, 3, 3)
+	scs.shape = box
+	section.add_child(scs)
+	fx.wake_physics()
+	fx.phys_root.add_child(section)
+	section.global_position = plate.global_position + Vector3(-6, 0, 0)
+	section.linear_velocity = Vector3(8, 0, 0)
+	var knocked := false
+	var end := Time.get_ticks_msec() + 1500
+	while Time.get_ticks_msec() < end:
+		await _run_for(fx, 0.05)
+		knocked = knocked or not plate.sleeping
+	check(_space_awake(fx), "a moving wreck section keeps the space awake")
+	check(knocked, "a moving wreck section still knocks a resting plate awake")
+	section.queue_free()
 	# 5. control: the same starve with the space awake (the old behaviour), printed only
 	if OS.get_environment("JOLT_JOBS_CONTROL") == "1":
 		fx.wake_physics()
