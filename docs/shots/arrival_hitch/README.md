@@ -47,10 +47,23 @@ bench process that skips the warm-up. The one game path near it is a warm-up tha
 starts while the warm-up finishes behind it, and the arrival's hull was still built first (the kit runs before the cap's
 clock starts).
 
-## PC proof (queued through the Board)
+## PC proof: run 5 PASSED (Nov 20, 02:22 PC time)
 
-contrib/opus/arrival_hitch_1289/OPUS1289_RUN.bat: the fix (AFTER) against main (BEFORE), two sessions, every row a fresh
-process in an empty throwaway profile, solo on the GPU, frames paced to 60 a second. Modes: arrival, again, prewarmed and
-firstkill on A16, cold for the record, and arrival and prewarmed on warden (the Sunward garrison frigate a real
-reinforcement brings). PASSED needs every AFTER prewarmed and firstkill row with no frame over 100 ms and a kill that
-breaks into pieces. The table lands here when the run is back.
+contrib/opus/arrival_hitch_1289/OPUS1289_RUN5.bat on Ryan's PC (RTX 5080, solo GPU, frames paced to 60 a second, every row
+a fresh process in an empty throwaway profile, Ryan's real options unchanged). AFTER 63222da0 (the fix), BEFORE ab6b3258
+(main). ACCEPT 6 of 6; 28 of 28 rows collected. Full table: run5_summary.txt in this folder.
+
+Worst frame in ms (sessions 1 and 2):
+
+| case | before (main) | after (the fix) |
+|---|---|---|
+| A16 arrives mid-battle (as the game now does it: built at the load) | 5,518 and 6,192 (no warm-up existed) | **35 and 36** |
+| Warden (the real reinforcement frigate) arrives (built at the load) | 1,142 and 1,231 | **24 and 24** |
+| A16's second arrival in one process (shared analysis and shield) | 1,308 and 1,445 | 36 and 38 |
+| first A16 kill after a normal load | 16 and 24 | **13 and 16** |
+| A16 arrival with no load-time build (bench control) | 5,518 and 6,192 | 5,355 and 7,820 |
+| fully cold (out of scope) | 4,370 and 4,488 | 4,278 and 4,810 |
+
+Every kill broke into pieces (A16 4, warden 2) on both commits. Where the 5.4 s went without the fix (A16, after s2):
+shield skin bake and hull analysis 4.1 s (fx.add_ship), model load 0.4 s, first draw 0.9 s (126 pipelines). With the load-time
+build and the shared analysis the arrival frame is view 2 ms, fx.add_ship 32 to 34 ms, render 2 ms, no pipelines.
