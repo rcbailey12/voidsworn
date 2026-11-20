@@ -345,7 +345,10 @@ older, are removed as links and never followed, and the log names each link's ta
 names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
 only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
-all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. A ship file with no twin in the shared build
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
+own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
+other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and is archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
 repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
