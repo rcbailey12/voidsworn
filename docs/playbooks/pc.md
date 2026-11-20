@@ -31,10 +31,12 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   and size differ from its cache's `src` stamp (a publish between the two copies). The measured hulls are listed in
   `<checkout>_ships_identity.txt`, and every later checkout in the job must list the same hulls as the first (so OLD and
   NEW arms measure one fleet). Set `OJ_NEED_HULLS` to the codes your fixtures draw and each must be a matching ship.
-- `tail`: hashes Ryan's options again (a change fails the job), removes the job's own pinned checkouts (pass or fail:
-  they are rebuildable from their pins and run to 16 GB each; only folders the head's `checkout` listed in the attempt's
-  `checkouts.txt` whose `.git\HEAD` still names the pin, links removed as links, nothing during the Board's PC pause;
-  `out_*`, the logs and the ship records stay; `OJ_KEEP_CHECKOUTS=1` keeps them), then `job_wrap end`: `done PASS` or `done FAILED`,
+- `tail`: hashes Ryan's options again (a change fails the job), after a PASS removes the job's own pinned checkouts
+  (rebuildable from their pins, up to 16 GB each). It removes only folders the head's `checkout` listed in the attempt's
+  `checkouts.txt` whose `.git\HEAD` still names the pin and that hold no work: no tracked change, and every untracked or
+  ignored path is the ships copy, the import cache, a `.import` or `.uid` file, or a byte copy of a tracked file. Links
+  go as links; nothing goes during the Board's PC pause; a failed job keeps everything; `out_*`, the logs and the ship
+  records stay; `OJ_KEEP_CHECKOUTS=1` keeps them, then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS.
 
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.

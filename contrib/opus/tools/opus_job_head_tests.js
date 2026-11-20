@@ -52,7 +52,7 @@ for (const step of ['oj_checkout', 'oj_ships']) {
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
-assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*dropcheckouts "%OJ_OUT%"[^\n]*\ncall "%JW%" end/.test(tail), 'the tail removes the job\'s own checkouts after the options check, before job_wrap end');
+assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*if defined JW_FAILED \([^\n]*goto oj_tail_done\)\npowershell [^\n]*dropcheckouts "%OJ_OUT%"[^\n]*\n:oj_tail_done\ncall "%JW%" end/.test(tail), 'the tail removes the job\'s own checkouts only after a PASS, after the options check, before job_wrap end');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
@@ -77,7 +77,7 @@ const outsideWalk = psCode.replace(walk, '');
 for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(outsideWalk), 'ps1 must not use ' + banned + ' outside the link-safe walk');
 assert((psCode.match(/Remove-LinkSafeTree /g) || []).length === 1, 'the link-safe walk is called once, from dropcheckouts');
 const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'hashes' {"));
-assert(/HEAD is no longer the pin[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$repo/.test(drop), 'a checkout goes only after its pin and the pause are checked');
+assert(/HEAD is no longer the pin[\s\S]*Get-KeptWork \$repo[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$repo/.test(drop), 'a checkout goes only after its pin, its working files and the pause are checked');
 assert(/\[IO\.File\]::AppendAllText\(\(Join-Path \$attempt 'checkouts\.txt'\)/.test(psCode), 'the checkout step lists what it made');
 console.log('PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts');
 
@@ -211,7 +211,14 @@ assert.match(listed, new RegExp(`^old ${one1}\\r?$`, 'm'), 'checkout lists old')
 assert.match(listed, new RegExp(`^new ${two}\\r?$`, 'm'), 'checkout lists new');
 const outside = path.join(tmp, 'outside');
 write(path.join(outside, 'keep.txt'), 'not ours');
-fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', 'linked'), 'dir');
+git(['checkout', '--', '.'], path.join(attempt, 'new'));
+fs.symlinkSync(outside, path.join(attempt, 'new', 'godot', 'gen', 'linked'), 'dir');
+write(path.join(attempt, 'new', 'godot', '.godot', 'cache.bin'), 'import cache');
+write(path.join(attempt, 'new', 'godot', 'bench', 'copy.godot'), 'fixture two\n');
+r = run('checkout', attempt, 'work', two);
+assert.equal(r.status, 0, r.out);
+write(path.join(attempt, 'work', 'godot', 'project.godot'), 'an edit left by a step\n');
+write(path.join(attempt, 'work', 'godot', 'notes.txt'), 'a new output inside the checkout');
 write(path.join(attempt, 'out_new', 'samples.jsonl'), '{}');
 write(path.join(attempt, 'new_ships_identity.txt'), 'S1');
 write(path.join(attempt, 'stray'), 'not a checkout');
@@ -238,6 +245,9 @@ assert(fs.existsSync(path.join(outside, 'keep.txt')), 'a link inside a checkout 
 assert(fs.existsSync(path.join(attempt, 'old')) && /checkout old kept: .*no longer the pin/.test(r.out), 'a checkout whose HEAD moved is kept');
 assert(/checkout stray kept: .*not a plain folder/.test(r.out) && fs.existsSync(path.join(attempt, 'stray')), 'a listed name that is not a checkout folder is kept');
 assert(/line not accepted, ignored: \.\.\/escape/.test(r.out), 'a path in checkouts.txt is never followed');
+assert(/checkout work kept: .*not rebuildable leftovers.*changed: godot\/project\.godot.*new: godot\/notes\.txt/.test(r.out), 'an edit and a new file with HEAD unchanged keep the checkout: ' + r.out);
+assert.equal(fs.readFileSync(path.join(attempt, 'work', 'godot', 'project.godot'), 'utf8'), 'an edit left by a step\n', 'the edit survives');
+assert(fs.existsSync(path.join(attempt, 'work', 'godot', 'notes.txt')), 'the new file survives');
 for (const keep of ['out_new/samples.jsonl', 'new_ships_identity.txt', 'checkouts.txt']) assert(fs.existsSync(path.join(attempt, keep)), keep + ' stays');
 r = run('dropcheckouts', attempt);
 assert.match(r.out, /checkout new already gone/);

@@ -18,11 +18,13 @@
 #                                              Writes the measured hull identity (code, stamp, scene; sorted) to <out
 #                                              file>. Every code in [codes] (spaces or commas) must be a matching ship.
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
-#   dropcheckouts <attempt folder>             after the job (pass or fail): removes the job's own pinned checkouts, the
+#   dropcheckouts <attempt folder>             after a PASS (the tail never calls it after a failure): removes the job's own pinned checkouts, the
 #                                              rebuildable leftovers RULEBOOK 3.3 / R326 let a job remove. Only folders
 #                                              listed in <attempt>\checkouts.txt by this head's checkout step, directly in an
 #                                              attempt folder voidsworn_test\<job>\out_*, that are plain folders whose
-#                                              .git\HEAD still names the listed pin. Links inside are removed as links, never
+#                                              .git\HEAD still names the listed pin and whose files hold no work: no tracked
+#                                              change, and every untracked or ignored path is the ships copy, the import cache,
+#                                              a .import or .uid file, or a byte copy of a tracked file. Links are removed as links, never
 #                                              followed. out_*, the logs and every other file stay. The Board's PC pause
 #                                              (gpu_go.txt) removes nothing. A refusal is logged and never fails the job.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
@@ -58,6 +60,35 @@ function Test-Paused {
   $flag = if ($test -and $env:PC_CLEANUP_PAUSE_FILE) { $env:PC_CLEANUP_PAUSE_FILE } else { Join-Path $vt 'gpu_go.txt' }
   if (-not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
   return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
+}
+function Test-Rebuildable($rel) {
+  # What a proof job writes inside a pinned checkout that is rebuildable: the ships copy, the import cache, Godot's
+  # generated .import and .uid files. Anything else untracked must be a byte copy of a file the pin already tracks.
+  foreach ($pre in 'godot/.godot/', 'godot/gen/', 'godot/assets/ships/') { if ($rel.StartsWith($pre, [StringComparison]::Ordinal)) { return $true } }
+  return $rel.EndsWith('.import', [StringComparison]::Ordinal) -or $rel.EndsWith('.uid', [StringComparison]::Ordinal)
+}
+function Get-KeptWork($repo) {
+  # Every tracked change (staged or not) and every untracked or ignored path that is not a rebuildable leftover.
+  $ErrorActionPreference = 'Continue'
+  $raw = (& $gitExe -C $repo -c core.quotepath=false status --porcelain=v1 -z --untracked-files=all --ignored=matching 2>$null) -join "`n"
+  if ($LASTEXITCODE -ne 0) { return @('git status failed') }
+  $keep = @(); $copies = @()
+  foreach ($e in ($raw -split "`0")) {
+    if ($e.Length -lt 4) { continue }
+    $code = $e.Substring(0, 2); $rel = $e.Substring(3)
+    if ($code -ne '??' -and $code -ne '!!') { $keep += "changed: $rel"; continue }
+    if (Test-Rebuildable $rel) { continue }
+    if ($code -eq '??' -and -not $rel.EndsWith('/')) { $copies += $rel } else { $keep += "new: $rel" }
+  }
+  if ($copies.Count) {
+    $tracked = @{}
+    foreach ($l in (& $gitExe -C $repo ls-files -s 2>$null)) { if ("$l" -match '\A\d+ ([0-9a-f]{40}) ') { $tracked[$Matches[1]] = $true } }
+    $sums = @($copies | & $gitExe -C $repo hash-object --no-filters --stdin-paths 2>$null)
+    for ($i = 0; $i -lt $copies.Count; $i++) {
+      if ($i -ge $sums.Count -or -not $tracked.ContainsKey("$($sums[$i])".Trim())) { $keep += "new: $($copies[$i])" }
+    }
+  }
+  return $keep
 }
 function Remove-LinkSafeTree($root) {
   # scratch_done.ps1's walk: a link is removed as a link and never followed; read-only files (git packs) are cleared first.
@@ -212,6 +243,8 @@ switch ($Action) {
         if ($git -isnot [IO.DirectoryInfo] -or ($git.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'no .git folder of its own' }
         $headFile = Join-Path $git.FullName 'HEAD'
         if (-not (Test-Path -LiteralPath $headFile -PathType Leaf) -or ([IO.File]::ReadAllText($headFile)).Trim() -ne $pin) { throw "HEAD is no longer the pin $pin" }
+        $work = @(Get-KeptWork $repo)
+        if ($work.Count) { throw ("it holds {0} path(s) that are not rebuildable leftovers, e.g. {1}" -f $work.Count, (($work | Select-Object -First 5) -join '; ')) }
         if (Test-Paused) { throw 'the Board PC pause is active' }
         $freed = Remove-LinkSafeTree $repo
         Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($freed / 1GB), $repo)

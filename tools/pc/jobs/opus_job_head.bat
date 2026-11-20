@@ -23,8 +23,9 @@ rem                                   measured hulls are listed in <OJ_REPO>_shi
 rem                                   must list the same hulls as the first one. Optional OJ_NEED_HULLS: codes that
 rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
-rem   tail                            hashes Ryan's options again (a change fails the job), removes the job's own pinned
-rem                                   checkouts (pass or fail; out_* and logs stay; OJ_KEEP_CHECKOUTS=1 keeps them), then
+rem   tail                            hashes Ryan's options again (a change fails the job), after a PASS removes the job's
+rem                                   own pinned checkouts that hold no work (a failure keeps all; out_* and logs stay;
+rem                                   OJ_KEEP_CHECKOUTS=1 keeps them), then
 rem                                   job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
@@ -149,8 +150,12 @@ goto oj_tail_end
 :oj_tail_changed
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
-rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so they
-rem go now, pass or fail; out_*, the logs and the ship records stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
-if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1) else (powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1)
+rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so after a
+rem PASS they go, unless one holds work (dropcheckouts checks). A failed job keeps everything for the post-mortem (R326).
+rem out_*, the logs and the ship records always stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
+if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& goto oj_tail_done)
+if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& goto oj_tail_done)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+:oj_tail_done
 call "%JW%" end
 exit /b %ERRORLEVEL%
