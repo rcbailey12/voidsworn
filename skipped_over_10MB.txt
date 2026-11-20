@@ -1,0 +1,2 @@
+recipe\export\B20_11\B20_11.glb 11.4 MB
+recipe\export\B20_11\_gltf_source\B20_11.bin 11.4 MB

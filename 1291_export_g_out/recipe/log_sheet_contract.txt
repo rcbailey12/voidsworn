@@ -1,0 +1,44 @@
+[armadillo] 13 bands, 34 runs
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+ok   the outside is one ship length long (1.000000)
+ok   the class length is the sheet's (9.5 = LENGTH 9.5)
+ok   2 transverse seams at the sheet's stations
+ok   0 longitudinal seams at the sheet's heights and spans
+ok   3 muzzles are the kit's own, each in the data.js slot of its weapon and arc
+ok   every data.js slot (2) has muzzles of its own
+ok   0 turret pivots kept, each with its turning meshes and a data.js slot
+ok   3 engine exits and bell radii are the sheet's
+ok   25 inside objects are visible role interior
+ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers
+[armadillo] 13 bands, 34 runs
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+ok   a ship whose weapon list lacks a sheet weapon (bioplasma T) was refused: W2: weapon 'bioplasma' arc 'T' names 0 slots of the data.js list [('bioplasma', 'F')]
+[armadillo] 13 bands, 34 runs
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-1.8 to -0.8) runs across the transverse seam B-2: one compartment each
+[armadillo] 13 bands, 34 runs
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)
+PASS the build sheet contract keeps the sheet's data
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-5f3570ad51174d37939954bcaaa1e38d
