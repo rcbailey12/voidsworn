@@ -49,6 +49,6 @@
     {"ship": "Glasswright fighter (Starling Shard)", "concept": "contrib/muse/design/glasswright_family_2026_11/img/fighter_starling_v2d.webp", "ruling": "R370", "job": 1373, "note": "Ryan's Nov 16 pick V2d, confirmed Nov 20 over GF1."},
     {"ship": "Glasswright bomber (Heliograph Prism)", "concept": "contrib/muse/design/glasswright_family_2026_11/img/bomber_heliograph_w4b.webp", "ruling": "R370", "job": 1373, "note": "Ryan's Nov 16 pick W4b, confirmed Nov 20 over GB1."},
     {"ship": "Eclipse variants: Mote sentinel, Archive guard flare, Turreted zenith", "concept": null, "job": 1419, "note": "Parts built (issue 812) but not installed; each still draws its base ship."},
-    {"ship": "Eclipse battleship (Totality)", "concept": null, "ruling": "R63", "job": 1419, "note": "Ruled, not in the game data, no picture. Waits on Ryan: does he still want it."}
+    {"ship": "Eclipse battleship (Totality)", "concept": null, "ruling": "R63", "job": 1419, "note": "Ruled, not in the game data, no picture. Ryan, Nov 20 2026 22:17 UTC, project chat: \"yes on 2 and 3, agree with you\"; the coordinator relays that as yes, build it after the current ships land. The Board confirms and records the ruling (issue 1419)."}
   ]
 }
