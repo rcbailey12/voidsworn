@@ -1,0 +1,9 @@
+waiting for all done in opus1238_wait.txt Thu 11/19/2026 17:01:13.27 
+OPUS1236_WAIT stopped by the Board before it ran anything (Nov 19 19:02 CST); replaced by OPUS1236_RUN2_WAIT.bat (calls OPUS1236_RUN2.bat, same trigger, same log)
+waiting for all done in opus1238_wait.txt (RUN2 waiter) Thu 11/19/2026 19:00:39.46 
+OPUS1236_RUN2_WAIT stopped by the Board before it ran anything (Nov 19 19:25 CST); replaced by OPUS1236_RUN3_WAIT.bat (calls OPUS1236_RUN3.bat, same trigger, same log)
+waiting for all done in opus1238_wait.txt (RUN3 waiter) Thu 11/19/2026 19:23:20.19 
+prep: made the sparse clone and checked out main 21:30:46.40 
+OPUS1236_RUN3 start Thu 11/19/2026 21:30:46.40 
+OPUS1236_RUN3 exit 1 at 21:43:16.29 
+all done 21:43:16.29 

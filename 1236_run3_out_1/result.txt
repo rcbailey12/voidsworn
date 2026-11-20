@@ -1,0 +1,27 @@
+start Thu 11/19/2026 21:30:46.74 attempt 1 
+drive bytes free 458334097408 
+commit=8a48d60638ef932d2651702c202928e667828f5e 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+headless check exit 1 
+SCRIPT ERROR: Parse Error: Cannot find member "LARGE_STATION_SIZE" in base "res://assets/ships/a4_props.gd".
+SCRIPT ERROR: Parse Error: Assigned value for constant "STATION_BIG_LEN" isn't a constant expression.
+SCRIPT ERROR: Parse Error: Cannot infer the type of "STATION_BIG_LEN" constant because the value doesn't have a set type.
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+WRECK_HEX first step inside_thrown_out born_limit=8.00 end=4.64 (rest radius 8.0)
+WRECK_HEX first step born_past_on_purpose born_limit=12.00 end=4.87 (rest radius 8.0)
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+SCRIPT ERROR: Invalid assignment of property or key 'input_enabled' with value of type 'bool' on a base object of type 'Nil'.
+SCRIPT ERROR: Invalid call. Nonexistent function 'clear' in base 'Nil'.
+FAIL: low: the effects are on
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+WRECK_HEX failures=2
+SCRIPT ERROR: Invalid assignment of property or key 'input_enabled' with value of type 'bool' on a base object of type 'Nil'.
+SCRIPT ERROR: Invalid call. Nonexistent function 'clear' in base 'Nil'.
+FAIL: max: the effects are on
+FAILED: headless wreck check failed 
+real options unchanged 
+all done Thu 11/19/2026 21:43:16.28 
