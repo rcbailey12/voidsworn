@@ -1,0 +1,12 @@
+OPUS1373P17_WAIT.bat waiting for OPUS1399_SMALLAFTER exit in opus1399s_wait.txt Sat 11/21/2026  8:46:23.03 
+1373L PROBE17B start  9:19:25.21 
+PROBE17 prep  9:19:25.24 
+clone at 237fd5b260efe1be2df04aba5492ed7d41e505c6
+kit corsair_KF1 copied from opus1373kf1l
+kit ithar_GV2 copied from build\godot (published)
+GV2 entry from opus1373gv2i\out
+entries ok: 2
+import exit 0 at  9:20:10.14 
+PROBE17 start  9:20:10.14 
+1373L PROBE17 exit 0 at  9:21:12.21 
+all done Sat 11/21/2026  9:21:12.22 
