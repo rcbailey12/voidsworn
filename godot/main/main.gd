@@ -39,7 +39,11 @@ func quit_clean(code := 0, route := "menu") -> void:
 		return
 	quitting = true
 	quit_route = route
-	print("[main] quit (%s)" % route)
+	var t0 := Time.get_ticks_msec()
+	print("[main] quit (%s) at %d ms" % [route, t0])
+	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
+	if route == "window" and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 	for n in [battle, showcase]:
 		if n != null and is_instance_valid(n):
 			if "quitting" in n:
@@ -49,8 +53,11 @@ func quit_clean(code := 0, route := "menu") -> void:
 		campaign.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var t1 := Time.get_ticks_msec()
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
 	load("res://render/static_caches.gd").clear_all()
+	var t2 := Time.get_ticks_msec()
+	print("[main] quit stages: scenes freed + 2 frames %d ms, statics and fx drain %d ms, engine exit from %d ms" % [t1 - t0, t2 - t1, t2])
 	get_tree().quit(code)
 
 
