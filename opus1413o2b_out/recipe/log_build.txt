@@ -1,0 +1,5 @@
+Info: Saved as "O2.blend"
+[209] {"cell": "O2", "hull_objects": 33, "parts": 180, "interiors": 31, "seconds": 0.3, "notes": [{"route": "build sheet hegemony_O2", "contract": {"sheet": "hegemony_O2", "game_ship": "obj_transport", "variant": "", "model_length": 11.225, "scale": 0.08908686044507662, "length_world": 11.0, "t_lines": [-0.21559, 0.0, 0.21559], "l_line": [], "l_lines": [], "muzzles": 0, "guns": 0, "engines": 4, "bays": 0, "points": 9, "turrets": [], "interior_objects": 31, "slots": []}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

@@ -1,0 +1,16 @@
+wrote C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\concept.png (1920, 1920)
+[fit] 128 0.634 {'az': 47.749, 'el': 27.104, 'roll': -2.044, 'dist': 2.391, 'focal': 2269.193, 'cx': 503.078, 'cy': 522.342}
+[fit] 256 0.6328 {'az': 48.592, 'el': 27.823, 'roll': -2.454, 'dist': 2.391, 'focal': 2276.12, 'cx': 504.295, 'cy': 519.044}
+[fit] 512 0.6331 {'az': 48.782, 'el': 28.106, 'roll': -2.445, 'dist': 2.387, 'focal': 2280.707, 'cx': 504.315, 'cy': 518.339}
+[fit] B0 overlap at the fitted camera 0.6322 at round 3 hero camera framed 0.5362
+The hull is the build sheet hegemony_O2: no tune. 
+  outline O2: bow 52.8, midship 64.0, stern 54.7, whole 57.0 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 60.1, midship 55.4, stern 65.4
+  REPORT bow overlap 52.8 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 64.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 54.7 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 57.0 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+REPORT O2 outline overlap 57.0 percent, outline_gate 90 is context only (not a pass bar)
+The overlay is C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\sil\sil_O2.png (green both, red concept only, yellow ship only).
+Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)

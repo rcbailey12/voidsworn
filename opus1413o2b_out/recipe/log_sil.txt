@@ -1,0 +1,1 @@
+[score] O2 {'overlap': 57.0, 'concept_covered': 60.5, 'cell_outside': 9.1, 'triangles': 21960}

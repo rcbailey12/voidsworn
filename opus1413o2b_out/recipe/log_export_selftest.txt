@@ -1,0 +1,13 @@
+ok   pass: the check passed as it must | 
+WRONG no_slot: the check passed, and it must not | 
+Traceback (most recent call last):
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2b\repo\tools\recipe\check_export_selftest.py", line 259, in <module>
+    if fn: fn(g)
+           ^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2b\repo\tools\recipe\check_export_selftest.py", line 71, in off_mesh
+    if in_turret(g, n):     # issue 661: a turret's muzzle is in its turret's frame, so displace it in the ship (world) frame
+       ^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2b\repo\tools\recipe\check_export_selftest.py", line 81, in in_turret
+    return g['nodes'].index(n) not in set(g['nodes'][root].get('children', []))
+           ^^^^^^^^^^^^^^^^^^^
+ValueError: None is not in list
