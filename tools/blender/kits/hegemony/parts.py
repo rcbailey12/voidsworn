@@ -607,6 +607,31 @@ def container(l, w, h, ribs=3):
             x0, x1 = (l / 2, l / 2 + 0.07) if sx > 0 else (-l / 2 - 0.07, -l / 2)
             yc = sy * (w / 2 - 0.22)
             p.add('clamp%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'hmetal', _zblock(x0, x1, yc - 0.08, yc + 0.08, 0.0, 0.16, ch=0.02))
+    # issue 1413 round 2 (Ryan, Nov 21: the modules "look like clay"): the working detail of a Registry cargo module, still in
+    # the Navy's flush, even order. Each end face (+-Y, the face seen over the rails) carries a framed inset panel with three
+    # stiffeners, a registry data plate and a row of hand-holds; the lid carries two access hatches, three lifting eyes down
+    # its middle and a stencil plate.
+    for sy in (1, -1):
+        y0 = sy * w / 2; o = sy * 0.012; tag = 'p' if sy > 0 else 's'
+        fx, fz0, fz1 = l / 2 - 0.08, 0.12, h - 0.14
+        for nm, xa, xb, za, zb in (('t', -fx, fx, fz1 - 0.03, fz1), ('b', -fx, fx, fz0, fz0 + 0.03),
+                                   ('f', fx - 0.03, fx, fz0, fz1), ('a', -fx, -fx + 0.03, fz0, fz1)):
+            p.add('frame_end%s%s' % (tag, nm), 'body', 'hgrey2', _zblock(xa, xb, *sorted((y0, y0 + o)), za, zb))
+        for k in range(3):
+            xk = -fx + 2 * fx * (k + 1) / 4
+            p.add('rib_end%s%d' % (tag, k), 'body', 'hgrey2', _zblock(xk - 0.018, xk + 0.018, *sorted((y0, y0 + o * 1.6)), fz0 + 0.03, fz1 - 0.03))
+        p.add('plate_end%s' % tag, 'body', 'htrim', _zblock(-fx + 0.05, -fx + 0.21, *sorted((y0, y0 + o * 2.2)), fz1 - 0.16, fz1 - 0.07))
+        for k in range(4):
+            zk = fz0 + 0.06 + k * 0.1
+            p.add('grip_end%s%d' % (tag, k), 'body', 'hmetal', _zblock(fx - 0.11, fx - 0.06, *sorted((y0, y0 + o * 2.6)), zk, zk + 0.018))
+    for k, xh in enumerate((-l / 4, l / 4)):
+        for sy in (1, -1):
+            yh = sy * w * 0.28
+            p.add('lid_hatch%d%s' % (k, 'p' if sy > 0 else 's'), 'body', 'hgrey2', _zblock(xh - 0.11, xh + 0.11, yh - 0.15, yh + 0.15, h + 0.012, h + 0.026, ch=0.006))
+            p.add('lid_hatchrim%d%s' % (k, 'p' if sy > 0 else 's'), 'body', 'htrim', _zblock(xh - 0.03, xh + 0.03, yh - 0.12, yh - 0.08, h + 0.02, h + 0.034))
+    for k, yk in enumerate((-w * 0.08, 0.0, w * 0.08)):
+        p.add('lid_eye%d' % k, 'body', 'hmetal', _zblock(-0.035, 0.035, yk - 0.025, yk + 0.025, h + 0.012, h + 0.05, ch=0.01))
+    p.add('lid_plate', 'body', 'htrim', _zblock(-0.09, 0.09, -w * 0.44, -w * 0.44 + 0.08, h + 0.012, h + 0.022))
     return p
 
 
@@ -643,9 +668,14 @@ def relay_lens(half, r, depth, steps=5, ch=0.2, n=32):
     rlast = prof[-1][1]
     p.add('ring', 'mount', 'hmetal', revolve([(x1, r * 1.001)] + prof + [(prof[-1][0] - 0.03, rlast), (prof[-1][0] - 0.03, rlast + 0.06), (x1 - 0.002, r + 0.06)],
                                                n, closed=True, phase=math.pi / n))
+    # issue 1413 round 2 (Ryan's look sheet, Nov 21: the lens read as one flat white disc): a thin blue light ring on the
+    # face of every machined step, so the lens reads as the concept's nested blue rings, over a dark dish
+    for k in range(steps):
+        rr = r * (1.0 - 0.1 * k); xs = x1 - depth * 0.65 * (k + 1) / steps + 0.02
+        p.add('step_glow%d' % k, 'body', 'hblue', revolve([(xs + 0.004, rr * 0.995), (xs + 0.004, rr * 0.955)], n, phase=math.pi / n))
     xl = prof[-1][0] - 0.01
-    # the lens: a deep blue dish (the dimmer lining blue, so the rings read) round a small bright core
-    p.add('lens', 'body', 'hlining', revolve([(xl, rlast * 0.98), (xl + rlast * 0.08, rlast * 0.7), (xl + rlast * 0.1, rlast * 0.36), (xl + rlast * 0.1, 0.001)],
+    # the lens: a dark dish (so the step rings read) round a small bright core
+    p.add('lens', 'body', 'hgrey2', revolve([(xl, rlast * 0.98), (xl + rlast * 0.08, rlast * 0.7), (xl + rlast * 0.1, rlast * 0.36), (xl + rlast * 0.1, 0.001)],
                                              n, cap0=True, phase=math.pi / n))
     p.add('lens_core', 'body', 'hblue', revolve([(xl + rlast * 0.09, rlast * 0.34), (xl + rlast * 0.2, rlast * 0.26), (xl + rlast * 0.27, 0.001)], n, cap0=True, phase=math.pi / n))
     p.add('glow', 'body', 'hblue', ring_band(x1 - 0.03, r * 0.985, 0.03, r * 0.025, n))

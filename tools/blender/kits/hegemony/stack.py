@@ -135,6 +135,7 @@ LAYERS = dict(
     band_seam=3.0, band_dark=.96, band_ao=.35, band_grime=.40,
     cavity_pow=1.6, wear_lo=.26, wear_hi=.52,
     scuff=.24, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
+    colour_grain=.15, colour_grain_scale=180.0,                           # issue 1413: fine paint tone, kept modest (Board)
     rivets=0, rivet_pitch=.016, rivet_band=(.0012, .0040),               # hegemony.md 1: flush fasteners, no rivet lines
     trim_size=dict(), trim_aspect=dict(),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # never rust (every zone's rust is 0)
