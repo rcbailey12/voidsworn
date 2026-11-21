@@ -1,0 +1,57 @@
+[Sat 11/21/2026 11:59:13.87] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T17:59:14Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+found ffmpeg: C:\Users\rcbai\Downloads\voidsworn_test\ffmpeg\bin\ffmpeg.exe
+all tools found
+[Sat 11/21/2026 11:59:15.13] ready: GPU label 1524
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\run_timeout.ps1
+verified 4e3783d42a698614bf8467ddc4d839ef54e4713e5ff470aa2408d166bcd8c61f C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\jobs\opus_job_head.bat
+verified 4ac7794ef042cdbdf09fd39d809b01b677ef5cb10aa049ec98a06f9429d52094 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\run_timeout.ps1 (tools_live version 8c7e3743f9d5)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 3ea515ef72f7adc3e0839cf80871bb7f2858311a C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143\new_ships_identity.txt
+ships copy recorded: 950 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sat 11/21/2026 12:00:03.49] step new import start
+[Sat 11/21/2026 12:16:49.11] step new import ok
+[Sat 11/21/2026 12:16:49.13] step new strips start
+[Sat 11/21/2026 12:17:37.44] step new strips ok
+[Sat 11/21/2026 12:17:37.46] step new clip RAM start
+[Sat 11/21/2026 12:18:26.36] step new clip RAM ok
+[Sat 11/21/2026 12:18:26.37] step new mp4 RAM start
+[Sat 11/21/2026 12:18:28.73] step new mp4 RAM ok
+[Sat 11/21/2026 12:18:28.75] step new clip BRD start
+[Sat 11/21/2026 12:19:31.06] step new clip BRD ok
+[Sat 11/21/2026 12:19:31.07] step new mp4 BRD start
+[Sat 11/21/2026 12:19:33.69] step new mp4 BRD ok
+[Sat 11/21/2026 12:19:33.70] step new clip CMD start
+[Sat 11/21/2026 12:20:23.12] step new clip CMD ok
+[Sat 11/21/2026 12:20:23.14] step new mp4 CMD start
+[Sat 11/21/2026 12:20:25.02] step new mp4 CMD ok
+[Sat 11/21/2026 12:20:25.03] step new moments start
+[Sat 11/21/2026 12:20:36.35] step new moments exit 1
+FAILED: new moments
+skipped checkout old: an earlier step failed 
+skipped ships: an earlier step failed 
+[Sat 11/21/2026 12:20:36.38] skipped old import: an earlier step failed
+[Sat 11/21/2026 12:20:36.39] skipped old strips: an earlier step failed
+[Sat 11/21/2026 12:20:36.41] skipped old clip RAM: an earlier step failed
+[Sat 11/21/2026 12:20:36.41] skipped old mp4 RAM: an earlier step failed
+[Sat 11/21/2026 12:20:36.43] skipped old clip BRD: an earlier step failed
+[Sat 11/21/2026 12:20:36.44] skipped old mp4 BRD: an earlier step failed
+[Sat 11/21/2026 12:20:36.45] skipped old clip CMD: an earlier step failed
+[Sat 11/21/2026 12:20:36.46] skipped old mp4 CMD: an earlier step failed
+note: tools_live moved from 8c7e3743f9d5 to 2f6488efe90d during the job; every step stayed on 8c7e3743f9d5
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: new moments
+all done Sat 11/21/2026 12:20:36.97
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1524b\out_20261121_115913_15143 failed (the janitor handles old failures)
+disk: checkouts freed 0.0 GB in all, C: 439.4 GB free

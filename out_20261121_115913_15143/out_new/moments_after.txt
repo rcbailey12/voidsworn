@@ -1,0 +1,71 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8a54a75de2fa46c6a81c11de0f13ac68\godot-profile-e1bdfcf298db4994aa5500585eea4677
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[sfx] 71 cues, 67 clip sets, loaded in 310 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.487, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+PASS the battle scene reached the player's turn
+PASS test battle s1 has a player ship and an enemy ship
+INFO the player's flagship is x04
+[sfx] 71 cues, 67 clip sets, loaded in 123 ms
+-- ram (a one-hex charge, then the hit)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+PASS the ram plays volley(torp, weapon_id ram)
+PASS the ram's charge moved the ship (its drive was driven)
+PASS the hit lands after the charge (volley frame 91, last drive frame 91)
+PASS the ram's approved sound: boom at 0.8
+PASS the boom and the crumple land on the same frame
+PASS no placeholder pop
+PASS the ram keeps its 500 ms hold (110 ms at pace 0.25, want 125)
+PASS the ram plays only its boom (["boom"])
+-- board
+PASS the boarding plays board(unit, target, result)
+PASS the boarding's approved sound: board_grapple, the boarder's variant (voidsworn)
+PASS the grapple and the breach start on the same frame
+PASS no placeholder pop
+PASS the boarding keeps its 600 ms hold (154 ms, want 150)
+PASS the boarding plays only its grapple (["board_grapple"])
+-- command (the player's: names no unit)
+PASS the command pulses the player's flagship (["x04", "barrage"])
+PASS the command adds no sound of its own ([])
+FAIL the command keeps its banner hold (19 ms, want 130)
+CLOSE_ACTION_MOMENTS FAIL (1 failures)
+[fx] left with 2 jobs still running: retired, not waited for (0.1 ms)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+ERROR: the command keeps its banner hold (19 ms, want 130)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _check (res://fx/test/close_action_moments_check.gd:28)
+       [1] _run (res://fx/test/close_action_moments_check.gd:189)
+       [2] _play (res://fx/test/close_action_moments_check.gd:92)
+       [3] _play_event (res://scenes/battle/battle.gd:1582)
+       [4] wait (res://scenes/battle/battle.gd:1203)
+[fx] drained 2 retired jobs before quit in 213 ms
+WARNING: 16 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 8 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8a54a75de2fa46c6a81c11de0f13ac68\godot-profile-e1bdfcf298db4994aa5500585eea4677
