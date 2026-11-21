@@ -1,0 +1,5 @@
+OPUS1497_SELFTEST2 start Sat 11/21/2026  8:42:55.59 
+OPUS1497_SELFTEST2 exit 0 at  9:01:33.50 
+run folder out_20261121_084256_15138
+result: done PASS
+all done Sat 11/21/2026  9:01:33.93 
