@@ -84,6 +84,13 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Frame time on the bench is reported against the baseline. Costs are reported; a regression is the Board's call.
 - The standing checks pass, and any new script under godot/**/test/ has its line in godot/tools/ci/godot_checks.txt.
 - The reduce-flashing variant keeps the same sizes with the softer rise and fall the table gives per row.
+- An approved look is live only when the game plays it with no switch set and battle.gd calls it (Ryan, Nov 21 2026:
+  "make sure all of the damage, death, hit effects, etc are being appropriately brought in and used").
+  godot/fx/test/approved_effects_check.gd fails when an approved default is off, or when a rules event's fx call in
+  godot/fx/API.md section 11 is not made by battle.gd. The job that lands an approved effect adds its row to
+  godot/fx/test/approved_effects.json (a default to probe, or the API row it wires) in the same pull request; a call
+  built but not yet wired sits in that file's "unwired" list with its job, and the check fails once it is wired until the
+  row is deleted.
 
 ## 5. Traps
 
