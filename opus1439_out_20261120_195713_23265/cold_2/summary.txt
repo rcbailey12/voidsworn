@@ -1,0 +1,20 @@
+Run: C:\Users\rcbai\Downloads\voidsworn_test\opus1439\out_20261120_195713_23265\out_new\cold_2
+Note: route stopped: expected route 2-2 is missing after Battle 2  Battles reached: 2  Frames: 41100
+Adapter: NVIDIA GeForce RTX 5080  Viewport: (2560.0, 1440.0)  Quality: max  Fullscreen: True
+First drawn title: 2,933 ms after engine start; 5,888 ms after the bat launched the exe
+Battle 1 playable (cover lifted): 51,247 ms after engine start
+Battle 2 playable (cover lifted): 239,851 ms after engine start
+Windows GPU memory: game process 25260, 119 samples read, 0 unavailable, 141 from other processes ignored
+
+stage            seconds  worst ms  >100ms  compiles   vram MB    tex MB    buf MB   win ded   win shr
+title               13.0     5,687       5       306     1,805     1,361       183     2,024       394
+map                308.2     2,869      11      1499     3,222     2,453       581     3,308       427
+load1                7.9     1,777      12       350     2,986     2,423       293     3,052       427
+battle1_open        10.0        75       0        22     2,931     2,364       293     3,052       383
+battle1            155.0        43       0        12     3,222     2,367       581     3,308       383
+load2                9.0     1,987       7       379     3,102     2,517       311     3,308       383
+battle2_open        10.0        44       0        19     3,027     2,453       300     3,308       383
+battle2             64.8        35       0        12     3,159     2,453       431     3,308       383
+
+compiles = pipeline compilations during the stage (canvas, mesh, surface, draw, specialization); vram/tex/buf = Godot's
+monitors (peak); win ded/shr = Windows dedicated and shared GPU memory for the game process (peak, 1 s samples).

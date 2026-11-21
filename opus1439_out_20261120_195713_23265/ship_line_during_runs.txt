@@ -1,0 +1,5 @@
+PC relay note (Nov 20, PC time): ship-line steps running during each measured run (MEASURE3 holds GPU solo per run).
+cold_1 20:14:13 to 20:19:44: 1291 C13J (opus1291c13j) stage 7_export (20:14:11 to 20:16:09), then its readback, interiors, death seam and shots checks (until 20:25:26).
+cold_2 20:19:49 to 20:25:19: 1291 C13J post-export checks and shots (readback, interiors, death seam, shots), ended 20:25:26.
+battle24 20:25:23 to 20:42:11: 20:25:26 C13J ended; 20:26:05 1414D Harrow S11 (opus1414d) started: import, 1_concept_in 20:30:37 to 20:30:41, 2_shape_ref 20:30:41 to 20:45:49 (TRELLIS on the GPU when the solo claim allowed it).
+Also running on the GPU line: nothing else (1433 PP2 waited for MEASURE3's exit).

@@ -1,0 +1,8 @@
+waiting for OPUS1435_CLOSE3 exit in opus1435e_wait.txt Fri 11/20/2026 19:11:30.74 
+swapped out while only waiting 19:28:12: replaced by OPUS1439_WAIT4.bat (waits for OPUS1433_PP exit; Board Nov 21 01:27 UTC)
+OPUS1439_WAIT4.bat waiting for OPUS1433_PP exit in opus1433pp_wait.txt Fri 11/20/2026 19:28:12.30 
+OPUS1439_MEASURE3 start 19:57:13.18 
+OPUS1439_MEASURE3 exit 1 at 20:42:16.21 
+run folder out_20261120_195713_23265
+result: done FAILED: new battle24
+all done Fri 11/20/2026 20:42:16.62 
