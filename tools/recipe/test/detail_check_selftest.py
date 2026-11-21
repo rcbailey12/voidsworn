@@ -3,13 +3,14 @@ its PASS. No Blender: the fixtures are real PC bakes measured over the skin texe
 
   python tools/recipe/test/detail_check_selftest.py
 
-Fixtures (tools/recipe/test/detail_fixtures/, docs/ship_pipeline/detail_floors.md says how they were made):
-  O2   Navy Convoy transport O2 at board/pin-1413c (e031f492): the PC run opus1413o2c's own 4096 atlases, box-downsampled to
-       the check's 1024, every texel more than 3 away from the skin zeroed; the masks are the skin texels of the same build's
-       UVs. Ryan caught its clay look on Nov 21; it must fail.
-  C12  Chorus Drone-spawn C12, round G (PC run opus1291c12d, board/pin-1291-wrap1, 392b9468), accepted Nov 20 (R374): one
-       quarter of its skin texels (every other 128 px tile both ways), to keep the fixture small. It must pass.
-  S10  Sunward Vigil S10 (PC run 1157 shipjob9, eef9fd81), accepted Nov 20 (PR 1166): the same quarter. It must pass.
+Fixtures (tools/recipe/test/detail_fixtures/, docs/ship_pipeline/detail_floors.md says how they were made): each is the
+baked atlases read out of a stage 5 blend (bake_sheet.py at 1024 px, 8 samples, pip bpy 4.5.4), every texel more than 3 away
+from the measured skin zeroed, plus the skin mask detail_check.skin_texels took from that blend (visible outside skin of the
+hull and parts atlases, covered surfaces left out).
+  O2   Navy Convoy transport O2 at board/pin-1413c (e031f492): Ryan caught its clay look on Nov 21; it must fail.
+  C12  Chorus Drone-spawn C12, round G (392b9468, the commit of PC run opus1291c12d), accepted Nov 20 (R374): one quarter
+       of its skin texels (every other 128 px tile both ways), to keep the fixture small. It must pass.
+  S10  Sunward Vigil S10 (main, c2c6795e), accepted Nov 20 (PR 1166): the same quarter. It must pass.
 Every temporary file stays in TEMP.
 """
 import json

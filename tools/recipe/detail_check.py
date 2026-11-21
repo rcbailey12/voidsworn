@@ -1,11 +1,11 @@
 # Stage 5: the surface-detail check (issue 1291; Ryan, Nov 19 2026 on C13 in game: "the flesh just looks like red clay" with no
 # detail; issue 1517, Nov 21 2026: Navy O2 and O3 went to Ryan for a publish OK at normal relief 1.54 and 1.45 against the 3.5
 # floor, because only Chorus ships were gated: "Just make sure the level of detail is on both so they don't look like clay").
-# A flat clay finish passed every stage 5 check, because nothing measured the surface itself. This reads the baked atlases a
-# stage 5 bake writes (JOB/CELL_hull_normal.png, _albedo.png, _orm.png and the parts' set) and measures, over the texels of the
-# ship's outside skin (every hull-role object on the hull atlas: the skin and every plate, rib and armour shell painted there;
-# and the soft flesh on the parts atlas, objects whose zone is flesh, flesh2, hide, tissue, vein or scar; read from the painted
-# blend's UVs, so the dilated margins, guns, engines, glow and insides do not count):
+# A flat clay finish passed every stage 5 check, because nothing measured the surface itself. This reads the baked atlases
+# inside the painted blend (images CELL_hull_* and CELL_parts_* for normal, albedo and orm: the very bake stage 7 exports,
+# never a file on disk; outside Blender, the self-test's fixture files) and measures, over the texels of the visible outside
+# skin (every outside object on the hull and parts atlases, read from the blend's UVs; a surface covered by another within
+# 3 percent of the ship's length, such as the bare shell under authored panels, is left out, and so are glow and insides):
 #   normal   the relief in the detail normal map: the mean angle (degrees) between each texel's normal and the local average
 #            over a few texels round it (rivets, seams, wrinkles, pores and cracks; a smooth bump is not detail)
 #   albedo   the colour's local contrast: the mean absolute difference of luminance from its local average, over the mean
@@ -23,37 +23,60 @@ import os
 import re
 import sys
 
-# The floors per faction (issue 1517), set under the ships Ryan accepted in game, measured the way this file measures (PC 4096
-# bakes where a PC run kept its atlases, else a cloud 1024 bake of main); every ship's numbers are in
-# docs/ship_pipeline/detail_floors.md. The colour's local contrast is the number that tells a clay skin from an accepted one
-# on the hard-plate factions (Navy O2 0.18 and O3 0.14 against Dominion H10 0.27 and Iron Mandate IM5 0.24); their normal
-# relief is close to the accepted ships' and only guards a skin with no relief at all.
+# The floors per faction (issue 1517), each 80 percent of the least-detailed ship Ryan accepted in game, measured the way this
+# file measures on a cloud 1024 bake of that ship (docs/ship_pipeline/detail_floors.md has every ship's numbers). On the
+# hard-plate factions the colour's local contrast is the number that tells clay from finished: Navy O2 0.12 and O3 0.07
+# against Dominion H10 0.19 and Iron Mandate IM5 0.20.
 FLOORS = {
-    'chorus': dict(normal=3.5, albedo=0.04, rough=0.08),     # R341 C13 1.1/0.066/0.023 rejected; round G C10, C12 5.2/0.17/0.25
-    'voidsworn': dict(normal=1.3, albedo=0.30, rough=0.12),  # Sunward S8, S9, S10, S11: least 1.56/0.39/0.16
-    'hegemony': dict(normal=0.6, albedo=0.20, rough=0.10),   # Navy H10, IM5: 1.12/0.24/0.13 least; O2 0.18, O3 0.14, HB1 0.18 fail
-    'hullbreakers': dict(normal=0.6, albedo=0.30, rough=0.12),  # A18, A19: 1.00/0.51/0.28 least
-    'eclipse': dict(normal=0.6, albedo=0.30, rough=0.10),    # E11: 1.06/0.62/0.15
-    'ithar': dict(normal=0.1, albedo=0.15, rough=0.03),      # Glasswrights, smooth pearl glass by design: CD5, GV2, GW4 least
-                                                             # 0.19/0.19/0.04; the marble veins carry the detail
+    'chorus': dict(normal=3.5, albedo=0.04, rough=0.08),      # issue 1291 floors kept; round G C10, C12 least 7.0/0.065/0.158
+    'voidsworn': dict(normal=0.94, albedo=0.26, rough=0.13),  # Sunward S8, S9, S10, S11 least 1.18/0.328/0.165
+    'hegemony': dict(normal=0.95, albedo=0.15, rough=0.12),   # Navy H10, IM5 least 1.19/0.193/0.151
+    'hullbreakers': dict(normal=1.31, albedo=0.30, rough=0.17),  # A18, A19 least 1.64/0.375/0.223
+    'eclipse': dict(normal=0.62, albedo=0.37, rough=0.13),    # E11 0.78/0.466/0.162
+    'ithar': dict(normal=0.6, albedo=0.02, rough=0.01),       # Glasswrights, smooth pearl glass by design: CD5, GV2, GW4 least
+                                                              # 0.76/0.030/0.016
 }
-DEFAULT = dict(normal=0.6, albedo=0.20, rough=0.10)          # a faction with no accepted new-format ship: the Navy floor
+DEFAULT = dict(FLOORS['hegemony'])                            # a faction with no accepted new-format ship: the Navy floor
 KEYS = ('normal', 'albedo', 'rough')
 # Every atlas is measured at this size, whatever the bake's own (a box downsample), so the numbers and the floors mean the
 # same detail at any bake resolution. Nov 20: the same round 10 paint measured 0.063 albedo contrast at the cloud's 1024
 # bake and 0.021 at the PC's 4096, because a few texels of a 4096 atlas are a quarter of the skin a 1024 one covers.
 REF = 1024
-SOFT = ('flesh', 'flesh2', 'hide', 'tissue', 'vein', 'scar')
 VERDICT = re.compile(r'^(PASS detail check|detail check FAIL|OPT-OUT detail check)\b', re.M)
 
 
-def _load(path, mode):
+def _to_ref(im):
     from PIL import Image
     import numpy as np
-    im = Image.open(path).convert(mode)
+    im = im.convert('RGB')
     if im.size != (REF, REF):
         im = im.resize((REF, REF), Image.BOX)
     return np.asarray(im).astype(np.float32) / 255.0
+
+
+def _load(path, mode='RGB'):
+    from PIL import Image
+    return _to_ref(Image.open(path))
+
+
+def _blend_atlas(name):
+    """the baked atlas the open blend's materials sample (image `name`), at REF size, or None when the blend has no such
+    image or it holds no pixels. Issue 1517 (Artoo on PR 1521): stage 5 measures the bake it just made, inside the blend
+    stage 7 exports, never a file looked up on disk (the PC's Glasswright and KF1 runs had no atlas files in the job root,
+    and an older export's atlas must never stand in)."""
+    import numpy as np
+    import bpy
+    from PIL import Image
+    im = bpy.data.images.get(name)
+    if im is None:
+        return None
+    w, h = im.size
+    if w < 1 or h < 1:
+        return None
+    px = np.empty(w * h * im.channels, dtype=np.float32)
+    im.pixels.foreach_get(px)
+    a = px.reshape(h, w, im.channels)[::-1, :, :3]
+    return _to_ref(Image.fromarray(np.clip(np.round(a * 255.0), 0, 255).astype(np.uint8), 'RGB'))
 
 
 def _box(a, r):
@@ -82,18 +105,38 @@ def _atlas(o, cell):
     return found
 
 
-def skin_texels(cell, res):
-    """{atlas: (rows, cols)} of the texels the outside skin covers (every hull-role object on the hull atlas, and the soft
-    flesh zones on the parts atlas), sampled at four points in every UV triangle"""
+COVER = 0.03   # a skin point with any surface within this share of the ship's length straight out from it is covered
+
+
+def skin_texels(cell, res, info=None):
+    """{atlas: (rows, cols)} of the texels of the visible outside skin: every outside object on the hull atlas and the parts
+    atlas (Board on PR 1521: the cargo containers and other parts are what Ryan sees too), sampled at four points in every
+    UV triangle. A triangle whose centre has another surface straight out from it within COVER of the ship's length (the
+    bare hull shell under authored panels, Board on PR 1521: 28 percent of O2's old sample) is hidden in game and left out.
+    info, a dict, gets the counts."""
     import numpy as np
     import bpy
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+    outside = [o for o in bpy.data.objects if o.type == 'MESH' and o.get('role') != 'interior' and len(o.data.polygons)]
+    verts, polys = [], []
+    for o in outside:
+        mw = o.matrix_world
+        base = len(verts)
+        verts.extend(mw @ v.co for v in o.data.vertices)
+        polys.extend([base + i for i in p.vertices] for p in o.data.polygons)
+    if not verts:
+        return {}
+    tree = BVHTree.FromPolygons(verts, polys)
+    va = np.array([tuple(v) for v in verts], dtype=np.float64)
+    reach = COVER * float((va.max(0) - va.min(0)).max())
     out = {}
-    for o in bpy.data.objects:
-        if o.type != 'MESH' or not o.data.uv_layers or o.get('role') == 'interior' or o.get('emissive_zone'):
+    seen = hidden = 0
+    for o in outside:
+        if not o.data.uv_layers or o.get('emissive_zone'):
             continue
         atlas = _atlas(o, cell)
-        zone = o.name.rsplit('_', 1)[-1]
-        if not (atlas == 'hull' or (atlas == 'parts' and zone in SOFT)):
+        if atlas is None:
             continue
         me = o.data
         me.calc_loop_triangles()
@@ -102,15 +145,36 @@ def skin_texels(cell, res):
             continue
         li = np.zeros(nt * 3, dtype=np.int32)
         me.loop_triangles.foreach_get('loops', li)
+        vi = np.zeros(nt * 3, dtype=np.int32)
+        me.loop_triangles.foreach_get('vertices', vi)
+        co = np.zeros(len(me.vertices) * 3, dtype=np.float64)
+        me.vertices.foreach_get('co', co)
+        mw = np.array(o.matrix_world)
+        w = co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
+        tri = w[vi].reshape(nt, 3, 3)
+        cen = tri.mean(1)
+        nrm = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+        ln = np.linalg.norm(nrm, axis=1)
+        keep = np.zeros(nt, bool)
+        for i in np.nonzero(ln > 1e-12)[0]:
+            n = Vector(nrm[i] / ln[i])
+            hit = tree.ray_cast(Vector(cen[i]) + n * (reach * 0.02), n, reach)
+            keep[i] = hit[0] is None
+        seen += nt
+        hidden += int((~keep).sum())
+        if not keep.any():
+            continue
         uv = np.zeros(len(me.loops) * 2, dtype=np.float32)
         me.uv_layers.active.data.foreach_get('uv', uv)
-        t = uv.reshape(-1, 2)[li].reshape(nt, 3, 2)
+        t = uv.reshape(-1, 2)[li].reshape(nt, 3, 2)[keep]
         pts = [t.mean(1)] + [(t.mean(1) + t[:, k]) / 2 for k in range(3)]
         p = np.concatenate(pts)
         col = np.clip((p[:, 0] * res).astype(int), 0, res - 1)
         row = np.clip(((1.0 - p[:, 1]) * res).astype(int), 0, res - 1)
         a, b = out.get(atlas, (np.zeros(0, int), np.zeros(0, int)))
         out[atlas] = (np.concatenate([a, row]), np.concatenate([b, col]))
+    if info is not None:
+        info.update(triangles=seen, covered=hidden)
     return out
 
 
@@ -124,18 +188,23 @@ def measure(job, cell, r=3, masks=None):
             inside = True
         except ImportError:
             inside = False
-        texel_idx = skin_texels(cell, REF) if inside else None
+        cover = {}
+        texel_idx = skin_texels(cell, REF, cover) if inside else None
     else:
-        inside, texel_idx = 'mask', None
+        inside, texel_idx, cover = 'mask', None, {}
     sums = dict(normal=[], albedo=[], lum=[], rough=[])
     texels = 0
     for atlas in ('hull', 'parts'):
-        base = os.path.join(job, '%s_%s_' % (cell, atlas))
-        if not os.path.exists(base + 'normal.png'):
-            continue
-        nrm = _load(base + 'normal.png', 'RGB')
-        alb = _load(base + 'albedo.png', 'RGB')
-        orm = _load(base + 'orm.png', 'RGB')
+        if inside is True:      # inside Blender: the open blend's own baked images, the ones stage 7 exports
+            maps = [_blend_atlas('%s_%s_%s' % (cell, atlas, k)) for k in ('normal', 'albedo', 'orm')]
+            if any(m is None for m in maps):
+                continue
+            nrm, alb, orm = maps
+        else:                   # the self-test's fixtures, or a folder of atlas files outside Blender
+            base = os.path.join(job, '%s_%s_' % (cell, atlas))
+            if not os.path.exists(base + 'normal.png'):
+                continue
+            nrm, alb, orm = _load(base + 'normal.png'), _load(base + 'albedo.png'), _load(base + 'orm.png')
         res = nrm.shape[0]
         if masks is not None:
             if atlas not in masks:
@@ -163,7 +232,8 @@ def measure(job, cell, r=3, masks=None):
         return None
     cat = {k: np.concatenate(v) for k, v in sums.items()}
     return dict(normal=float(cat['normal'].mean()), albedo=float(cat['albedo'].mean() / max(1e-4, cat['lum'].mean())),
-                rough=float(cat['rough'].std()), texels=int(texels), from_uvs=inside)
+                rough=float(cat['rough'].std()), texels=int(texels), from_uvs=inside,
+                covered_share=round(cover['covered'] / max(1, cover['triangles']), 3) if cover else None)
 
 
 def floors_for(ship):
@@ -221,7 +291,7 @@ def main(job, cell, ship_json, masks=None):
     m = measure(job, cell, masks=masks)
     rec = dict(faction=ship.get('faction'), floors=floors, opt_out=opt, problem=problem, measured=m)
     if m is None:
-        line = 'no outside skin to measure in %s (%s_hull_normal.png and the blend\'s hull UVs)' % (job, cell)
+        line = 'no outside skin to measure: the blend has no baked %s_hull_normal, _albedo and _orm images over hull UVs' % cell
         low = list(KEYS)
     else:
         low = [k for k in KEYS if m[k] < floors[k]]

@@ -1,72 +1,85 @@
 # Surface-detail floors per faction (issue 1517, Nov 21 2026)
 
-Stage 5's detail check (tools/recipe/detail_check.py) measures three numbers over a ship's outside skin: every hull-role
-object on the hull atlas (the skin and every plate, rib and armour shell painted there) and the Chorus soft flesh on the parts
-atlas. Guns, engines, glow and insides do not count. Every atlas is read at 1024 px whatever the bake size.
+Stage 5's detail check (tools/recipe/detail_check.py) measures three numbers over a ship's visible outside skin. That means
+every outside object on the hull atlas and on the parts atlas: skin, plates, armour, cargo containers, guns and engines. Glow
+and insides are left out. So is any surface that has another surface straight out from it within 3 percent of the ship's
+length, such as the bare hull shell under authored panels or the touching faces of stacked containers. It reads the baked
+images inside the painted blend, the bake stage 7 exports, never a file on disk. Every atlas is read at 1024 px whatever the
+bake size.
 
 - **normal**: relief in the detail normal map (mean degrees from the local average): rivets, seams, wrinkles, pores.
 - **albedo**: the colour's local contrast (mean luminance difference from the local average, over mean luminance).
 - **rough**: the roughness map's spread (standard deviation).
 
-A ship fails when any number is under its faction's floor. Every faction is gated (until Nov 21 only Chorus was).
+A ship fails when any number is under its faction's floor. Every faction is gated; until Nov 21 only Chorus was.
 
 ## The floors
 
+Each floor is 80 percent of the least-detailed ship Ryan accepted in game, rounded down. Chorus keeps its issue 1291 floors,
+which are lower.
+
 | Faction | normal | albedo | rough | Set from |
 |---|---|---|---|---|
-| Chorus (`chorus`) | 3.5 | 0.04 | 0.08 | unchanged from issue 1291 (round G C10, C12 pass at 5.2 / 0.17 / 0.25) |
-| Sunward (`voidsworn`) | 1.3 | 0.30 | 0.12 | S8, S9, S10, S11 accepted: least 1.56 / 0.39 / 0.16 |
-| Navy (`hegemony`) | 0.6 | 0.20 | 0.10 | H10, IM5 accepted: least 1.12 / 0.24 / 0.13 (cloud bakes) |
-| Hullbreakers (`hullbreakers`) | 0.6 | 0.30 | 0.12 | A18, A19 accepted: least 1.00 / 0.51 / 0.28 (cloud bakes) |
-| Eclipse (`eclipse`) | 0.6 | 0.30 | 0.10 | E11: 1.06 / 0.62 / 0.15 (cloud bake) |
-| Glasswrights (`ithar`) | 0.1 | 0.15 | 0.03 | CD5, GV2, GW4 accepted: least 0.19 / 0.19 / 0.04; smooth pearl glass by design |
-| any other | 0.6 | 0.20 | 0.10 | the Navy floor |
+| Chorus (`chorus`) | 3.5 | 0.04 | 0.08 | issue 1291 floors, kept (C10, C12 least 7.02 / 0.065 / 0.158) |
+| Sunward (`voidsworn`) | 0.94 | 0.26 | 0.13 | S8, S9, S10, S11: least 1.18 / 0.328 / 0.165 |
+| Navy (`hegemony`) | 0.95 | 0.15 | 0.12 | H10, IM5: least 1.19 / 0.193 / 0.151 |
+| Hullbreakers (`hullbreakers`) | 1.31 | 0.30 | 0.17 | A18, A19: least 1.64 / 0.375 / 0.223 |
+| Eclipse (`eclipse`) | 0.62 | 0.37 | 0.13 | E11: 0.78 / 0.466 / 0.162 |
+| Glasswrights (`ithar`) | 0.6 | 0.02 | 0.01 | CD5, GV2, GW4: least 0.76 / 0.030 / 0.016 (smooth pearl glass by design) |
+| any other | 0.95 | 0.15 | 0.12 | the Navy floor |
 
-**What tells clay from finished.** On the hard-plate factions the colour contrast is the number that separates. Navy O2 and
-O3, the ships Ryan caught looking like clay, measure 0.18 and 0.14; the accepted Dominion and Iron Mandate 0.27 and 0.24. Their
-normal relief (1.25 and 1.43) is no lower than accepted ships' (IM5 1.12, A19 1.00), so the normal floor only catches a skin
-with no relief at all. The old check measured only the one `<ship>_hull` object (6695 texels of O2; 2288 of O3) and its 3.5
-normal floor was the Chorus number, which no hard-plate ship reaches (Sunward's accepted skins measure 1.6 to 1.9).
+**What tells clay from finished.** On the Navy, colour contrast is the number that separates. O2 and O3, the ships Ryan
+caught looking like clay, measure 0.120 and 0.074. The accepted Dominion and Iron Mandate measure 0.193 and 0.202. O2 and O3
+have as much relief (1.46, 1.52) as the accepted ships (1.19 to 1.47).
 
-## Every ship measured (with the floors above)
+## Every ship measured (Nov 21 2026, with the floors above)
 
-PC: the PC run's own 4096 atlases, measured over the skin texels of the same build's UVs rebuilt in the cloud at that run's
-commit. Cloud: a cloud bake of today's main at 1024 px, 8 samples (normal relief reads about 0.3 higher in the cloud than on
-the PC for O2 and the same for S10; colour contrast within 0.05).
+All numbers come from cloud bakes: stage 5's own bake_sheet.py at 1024 px and 8 samples (pip bpy 4.5.4), measured inside the
+blend. Ships that Ryan accepted were baked at the commit of their accepted run, where that run's commit is known. The others
+were baked at main (c2c6795e).
 
-| Ship | Faction | Source | normal | albedo | rough | Status in game | Verdict |
-|---|---|---|---|---|---|---|---|
-| S8 Daybreak | Sunward | PC opus1158e8 | 1.56 | 0.394 | 0.157 | accepted | PASS |
-| S9 Warden | Sunward | PC opus1158e9 | 1.80 | 0.466 | 0.178 | accepted | PASS |
-| S10 Vigil | Sunward | PC 1157 shipjob9 | 1.62 | 0.460 | 0.161 | accepted | PASS |
-| S11 Harrow | Sunward | PC opus1414d | 1.90 | 0.463 | 0.172 | accepted | PASS |
-| H10 Dominion | Navy | cloud main | 1.55 | 0.267 | 0.153 | accepted | PASS |
-| IM5 Iron Mandate | Navy | cloud main | 1.12 | 0.241 | 0.133 | accepted | PASS |
-| O2 Convoy | Navy | PC opus1413o2c (pin-1413c) | 1.25 | 0.178 | 0.165 | sent back as clay | FAIL |
-| O3 Relay | Navy | PC opus1413o3c (pin-1413c) | 1.43 | 0.140 | 0.184 | sent back as clay | FAIL |
-| HB1 bomber | Navy | PC opus1373q (pin-1373d) | 1.17 | 0.182 | 0.123 | published Nov 21 in a "rest are good" batch | FAIL |
-| A18 Raider | Hullbreakers | cloud main | 1.08 | 0.510 | 0.282 | accepted | PASS |
-| A19 Gutship | Hullbreakers | cloud main | 1.00 | 0.558 | 0.330 | accepted | PASS |
-| KF1 fighter | Hullbreakers | PC opus1373r (pin-1373d) | 1.12 | 0.426 | 0.151 | "looks unfinished" | PASS |
-| E11 | Eclipse | cloud main | 1.06 | 0.616 | 0.146 | in game | PASS |
-| CD5 Unfinished | Glasswrights | PC publish I8_37 | 0.73 | 0.477 | 0.043 | accepted | PASS |
-| GV2 fighter | Glasswrights | PC opus1373gv2i | 0.19 | 0.191 | 0.079 | accepted, published | PASS |
-| GW4 bomber | Glasswrights | PC opus1373gw4i | 0.25 | 0.276 | 0.068 | accepted, published | PASS |
-| GS1, GL1 | Glasswrights | PC pin-1415e | 0.37, 0.48 | 0.309, 0.197 | 0.078, 0.047 | waiting on changes | PASS |
-| C10 Ninefold Maw | Chorus | PC opus1291c10g | 5.15 | 0.166 | 0.251 | accepted | PASS |
-| C12 Drone-spawn | Chorus | PC opus1291c12d | 5.26 | 0.167 | 0.254 | accepted | PASS |
+The PC's own atlases were tried first and dropped. Matching them to a cloud rebuild's UVs held for the hard-plate ships but
+not for the Chorus or Glasswright ones, whose unwraps differ between the two builds (Artoo on PR 1521, second round).
 
-Known limits: HB1 measures like O2 and fails its next rebake until the Navy paint stack gives the plates more colour detail (a
-stack fix reaches O2, O3 and HB1 together, R333) or Ryan opts it out. KF1's "unfinished" look is not a flat skin by these
-numbers (its colour contrast is Sunward-level); the check does not judge shape. The Navy margin is thin: IM5 is 0.04 over
-the albedo floor, measured in the cloud. GP1 is left out: its pin-1415e relay failed at fetch and holds an
-earlier run's files (Artoo on PR 1521, issue 1516), so its numbers are not proved. Torpedo and rocket bodies have no stage 5 bake and are not measured.
+| Ship | Faction | Baked at | normal | albedo | rough | covered | Status in game | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| S8 Daybreak | Sunward | main | 1.18 | 0.328 | 0.181 | 0.55 | accepted | PASS |
+| S9 Warden | Sunward | main | 1.47 | 0.365 | 0.170 | 0.53 | accepted | PASS |
+| S10 Vigil | Sunward | main | 1.33 | 0.359 | 0.170 | 0.55 | accepted | PASS |
+| S11 Harrow | Sunward | main | 1.47 | 0.353 | 0.165 | 0.53 | accepted | PASS |
+| H10 Dominion | Navy | main | 1.46 | 0.193 | 0.159 | 0.55 | accepted | PASS |
+| IM5 Iron Mandate | Navy | main | 1.19 | 0.202 | 0.151 | 0.58 | accepted | PASS |
+| O2 Convoy | Navy | pin-1413c and main (same) | 1.46 | 0.120 | 0.154 | 0.62 | sent back as clay | FAIL (albedo) |
+| O3 Relay | Navy | main | 1.52 | 0.074 | 0.196 | 0.53 | sent back as clay | FAIL (albedo) |
+| HB1 bomber | Navy | main | 1.34 | 0.153 | 0.109 | 0.35 | published Nov 21 in a "rest are good" batch | FAIL (rough) |
+| A18 Raider | Hullbreakers | main | 1.64 | 0.387 | 0.223 | 0.76 | accepted | PASS |
+| A19 Gutship | Hullbreakers | main | 1.77 | 0.375 | 0.256 | 0.78 | accepted | PASS |
+| KF1 fighter | Hullbreakers | main | 1.52 | 0.301 | 0.127 | 0.71 | "looks unfinished" | FAIL (rough) |
+| E11 | Eclipse | main | 0.78 | 0.466 | 0.162 | 0.57 | in game | PASS |
+| CD5 Unfinished | Glasswrights | 6b69276a (published run) | 1.48 | 0.034 | 0.016 | 0.55 | accepted | PASS |
+| GV2 fighter | Glasswrights | 84b6e3f4 (pin-1373i) | 0.76 | 0.030 | 0.042 | 0.45 | accepted | PASS |
+| GW4 bomber | Glasswrights | 84b6e3f4 (pin-1373i) | 0.84 | 0.057 | 0.038 | 0.29 | accepted | PASS |
+| C10 Ninefold Maw | Chorus | de238779 (pc-out-1291c10g) | 7.02 | 0.065 | 0.169 | 0.52 | accepted | PASS |
+| C12 Drone-spawn | Chorus | 392b9468 (opus1291c12d) | 7.58 | 0.074 | 0.158 | 0.58 | accepted | PASS |
 
-## How the numbers and the self-test fixtures were made
+"covered" is the share of outside triangles left out as covered.
 
-tools/recipe/test/detail_fixtures/ holds three of these PC bakes for the standing self-test
-(tools/recipe/test/detail_check_selftest.py): O2 whole, C12 and S10 a quarter of their skin (every other 128 px tile both
-ways). Each is the PC atlas box-downsampled to 1024 with every texel more than 3 away from the skin zeroed (the measure only
-looks 3 texels round each skin texel, so the numbers are the full atlas's), plus the skin mask from the cloud rebuild's UVs.
-contrib/opus/tools/issue1517/blender_proof.sh repeats the O2, C12 and S10 checks inside Blender (pip bpy 4.5.4), the way
-stage 5 runs them.
+**Known limits:**
+- HB1 fails on roughness spread (0.109 against 0.12). A Navy stack fix reaches O2, O3 and HB1 together (R333); otherwise
+  Ryan can opt it out.
+- KF1 fails on roughness spread too. The check does not judge shape.
+- The Navy colour margin is thin: H10 is 0.04 over its floor.
+- Cloud and PC bakes of the same ship differ: normal relief read about 0.3 higher in the cloud on O2's old hull-only sample,
+  and colour contrast was within 0.05. A floor near a ship's number can therefore flip between the two.
+- Torpedo and rocket bodies have no stage 5 bake and are not measured.
+
+## How the self-test fixtures were made
+
+tools/recipe/test/detail_fixtures/ holds three of these bakes for the standing self-test
+(tools/recipe/test/detail_check_selftest.py): O2 at pin-1413c whole, and C12 and S10 each a quarter of their skin (every other
+128 px tile both ways). Each fixture holds the blend's baked images at 1024 px, with every texel more than 3 away from the skin
+zeroed. The measure only looks 3 texels round each skin texel, so the numbers equal the full atlas's. Each also holds the skin
+mask from `skin_texels`.
+
+contrib/opus/tools/issue1517/blender_proof.sh repeats O2, C12, S10, GV2 and KF1 inside Blender. It deletes every atlas file
+from the job folder first, so the check reads the bake inside the blend, as stage 5 does on the PC.
