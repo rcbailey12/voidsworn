@@ -14,9 +14,11 @@ extends SceneTree
 #   slice   the longest ship build stretch under 500 ms
 #   ready   the battle reached play (warming cleared) / the backdrop reached showcase_ready before its time limit
 #   cover   the worst frame from the cover to play under 500 ms (it includes the existing shader warm-up)
+#   frame   the title's longest wall-clock frame from the backdrop's start to showcase_ready under 500 ms
 #   click   the title's Settings link, clicked by a real mouse press and release while the backdrop is still building,
 #           opens its drawer within 500 ms
-#   bus     the title's shared sfx bus never moved
+#   bus     the title's shared sfx bus never moved (sound on at 0.25 here; the muted case and 0.25 both run in CI in
+#           main/test/showcase_quiet_check.gd)
 #   leave   New run clicked (real mouse) while the title backdrop has a load or kit instance pending: that backdrop's exit
 #           under 100 ms on the main thread, and the campaign painted; no try caught pending is INCONCLUSIVE, not PASS
 # Run: godot --path godot [--fullscreen] --script res://bench/load_1434.gd -- --out <folder>
@@ -53,6 +55,15 @@ func _pipes() -> int:
 		if ClassDB.class_has_integer_constant("Performance", m):
 			n += int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
 	return n
+
+
+# one line per recorded frame: where its wall-clock time went
+func _split(fs: Array) -> PackedStringArray:
+	var out := PackedStringArray()
+	for f in fs:
+		out.append("%d ms %s: render cpu %.0f ms, gpu %.0f ms, rest (scripts, waits) %.0f ms, %d pipelines compiled, %d world bakes pending" % [
+			f[0], f[1], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[4], f[5]])
+	return out
 
 
 func _bus() -> String:
@@ -93,11 +104,9 @@ func _battle(tag: String, args: Dictionary) -> void:
 		last = now
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	var top := PackedStringArray()
-	var split := PackedStringArray()
 	for f in frames.slice(0, 5):
 		top.append("%d ms %s" % [f[0], f[1]])
-		split.append("%d ms %s: render cpu %.0f ms, gpu %.0f ms, rest (scripts, waits) %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[4], f[5]])
+	var split := _split(frames.slice(0, 5))
 	var per := {}
 	for f in frames:
 		per[f[1]] = int(per.get(f[1], 0)) + int(f[0])
@@ -141,6 +150,10 @@ func _title() -> void:
 	var before := _bus()
 	var moved: Array = []
 	var worst := 0
+	var frames: Array = []   # as _battle: [ms, phase, render cpu ms, gpu ms, pipelines compiled, world bakes pending]
+	var vp_rid := root.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
+	var pipes0 := _pipes()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
 	var click_ms := -1        # -1: never clicked while building; -2: clicked, drawer never opened
@@ -151,9 +164,19 @@ func _title() -> void:
 			# the backdrop has its fleet and is building ships now: click the menu like a player
 			click_t = Time.get_ticks_msec()
 			_click(link.get_global_rect().get_center())
+		var sc0 = m.showcase
+		var ph0: String = sc0.load_phase if sc0 != null and is_instance_valid(sc0) else "none"
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
+		var sc1 = m.showcase
+		var ph1: String = sc1.load_phase if sc1 != null and is_instance_valid(sc1) else "none"
+		var pipes := _pipes()
+		var bakes: int = int(sc1.world.pending_bakes) if sc1 != null and is_instance_valid(sc1) and sc1.world != null and is_instance_valid(sc1.world) else -1
+		frames.append([(now - last) / 1000, ph0 if ph0 == ph1 else "%s->%s" % [ph0, ph1],
+			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
+			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes])
+		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
 		if click_t >= 0 and click_ms == -1 and m.title.settings_panel != null:
@@ -174,11 +197,16 @@ func _title() -> void:
 		if _bus() != before: moved.append(_bus())
 	var slice_ok: bool = not st.is_empty() and int(st["worst_stretch"]) / 1000 < LIMIT_MS
 	var click_ok: bool = click_ms >= 0 and click_ms < LIMIT_MS
-	var ok: bool = slice_ok and ready and click_ok and moved.is_empty()
+	# Artoo on PR 1445: a quick click does not prove the menu never froze (LOAD5: click 16 ms, one frame 7.9 s), so the
+	# longest wall-clock frame from the backdrop's start to showcase_ready is graded too, with its renderer split
+	var frame_ok: bool = worst / 1000 < LIMIT_MS
+	var ok: bool = slice_ok and ready and click_ok and frame_ok and moved.is_empty()
 	pass_all = pass_all and ok
-	_say("[load1434] title %s (slice %s, ready %s, click %s, bus %s)" % ["PASS" if ok else "FAIL", "PASS" if slice_ok else "FAIL",
+	_say("[load1434] title %s (slice %s, ready %s, click %s, frame %s, bus %s)" % ["PASS" if ok else "FAIL", "PASS" if slice_ok else "FAIL",
 		"PASS" if ready else "FAIL (timed out)", ("PASS (%d ms)" % click_ms) if click_ok else ("FAIL (%s)" % ("no click while building" if click_ms == -1 else "drawer never opened" if click_ms == -2 else "%d ms" % click_ms)),
-		"PASS" if moved.is_empty() else "FAIL"])
+		("PASS (%d ms)" % (worst / 1000)) if frame_ok else ("FAIL (%d ms)" % (worst / 1000)), "PASS" if moved.is_empty() else "FAIL"])
+	frames.sort_custom(func(x, y): return x[0] > y[0])
+	_say("[load1434] title worst frames split: %s" % "; ".join(_split(frames.slice(0, 5))))
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
 		"%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
 		worst / 1000, Time.get_ticks_msec() - w0, before, "never moved" if moved.is_empty() else "moved to %s" % [moved.slice(0, 3)]])
@@ -320,7 +348,7 @@ func _run() -> void:
 		if not c in finished:
 			pass_all = false
 			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
-	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, bus; leave exit limit 100 ms)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
+	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var f := FileAccess.open(out_dir.path_join("load_result.txt"), FileAccess.WRITE)
