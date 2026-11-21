@@ -153,10 +153,12 @@ def build(K):
     K.mark('deck_detail', 'tier', ['face', 'roof'])
 
     # ---------------- the drives: the bomber's thruster bank, three bells under a hood ----------------
-    BANK = [(0.062, 0.088, 0.019), (-0.004, 0.094, 0.025), (-0.066, 0.086, 0.017)]
-    XB = X_END - 0.036
+    # Ryan, Nov 21 2026: "make the engines a bit more prominent too? So it's not just a floating wedge": bigger bells on longer
+    # drums, hung out behind the stern past the hood (they were tucked inside it)
+    BANK = [(0.096, 0.090, 0.036), (-0.002, 0.096, 0.044), (-0.098, 0.088, 0.033)]
+    XB = X_END - 0.085
     for i, (y, z, r) in enumerate(BANK):
-        K.engine('E%d' % (i + 1), (U(XB), U(y), U(z)), U(r), U(0.07), bell=1.0, kw=dict(craft=True, craft_len=U(0.034), seed=i + 3), inv='drives',
+        K.engine('E%d' % (i + 1), (U(XB), U(y), U(z)), U(r), U(0.11), bell=1.0, kw=dict(craft=True, craft_len=U(0.05), seed=i + 3), inv='drives',
                  note='%s drive: a salvaged bell with a red-orange glow on a short drum%s' % (('port', 'centre', 'starboard')[i], ', the big one' if r > 0.02 else ''))
     zb_, zt_ = sec(BODY, X_END)[2], sec(BODY, X_END)[3]
     hw_ = sec(BODY, X_END)[1]
@@ -189,6 +191,8 @@ def build(K):
     K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
              'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
     K.change('The vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
+    K.change('Three drive bells about twice the size on longer drums, hung out behind the stern; deeper craft bump in the Hullbreaker stack (normal relief 5.65 against the 3.5 floor)',
+             'Ryan, Nov 21 2026: "make the engines a bit more prominent too? So it\'s not just a floating wedge"; issue 1517 detail floor')
     K.change('Two slim banded cannon booms past the bow (port longer and higher), the main guns, with muzzle brakes and armoured sponsons carrying their feed machinery; one centred twin turret on the ramp in place of the two uneven ones; no ram',
              'Ryan, Nov 21 2026: "a bit more dramatic ... clearly a fighting ship", "keep it distinct from the bomber but use that type of detailed approach"')
     K.change('An ammunition locker and a vent box on the deck, and smaller plates on the deck, flanks and chamfers so no bare hull shows',
