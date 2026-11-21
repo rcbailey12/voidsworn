@@ -116,6 +116,10 @@ func _ready() -> void:
 			return
 		player_path = recorder.new()
 		add_child(player_path)
+	elif args.has("perf-1439"):
+		# issue 1439: first-launch and per-stage memory measurement (bench/perf_1439.gd); drives like the recorder
+		player_path = load("res://bench/perf_1439.gd").new()
+		add_child(player_path)
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_title(load("res://ui/battle/brand.gd").TITLE)  # brand.gd: the one place to rename the game
 	bot_mode = player_path == null and args.has("bot-runs")
