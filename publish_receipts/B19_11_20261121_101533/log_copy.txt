@@ -1,0 +1,50 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:15:36 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\out\recipe\export\B19_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\B19_11_20261121_101533\export\B19_11\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\out\recipe\export\B19_11\
+	    New File  		   7.7 m	B19_11.glb  6.4% 12.9% 19.4% 25.9% 32.4% 38.8% 45.3% 51.8% 58.3% 64.8% 71.2% 77.7% 84.2% 90.7% 97.2%100%  
+	    New File  		  806429	B19_11_base.jpg 32%   65%   97%  100%  
+	    New File  		    4076	B19_11_check.json100%  
+	    New File  		   11726	B19_11_export.json100%  
+	    New File  		   6.4 m	B19_11_normal.png  7.7% 15.5% 23.3% 31.1% 38.8% 46.6% 54.4% 62.2% 69.9% 77.7% 85.5% 93.3%100%  
+	    New File  		   4.4 m	B19_11_orm.png 11%   22%   33%   45%   56%   67%   79%   90%  100%  
+	    New File  		 1031221	B19_11_parts_base.jpg 25%   50%   76%  100%  
+	    New File  		   5.8 m	B19_11_parts_normal.png  8.5% 17.1% 25.6% 34.2% 42.7% 51.3% 59.8% 68.4% 76.9% 85.5% 94.0%100%  
+	    New File  		   5.3 m	B19_11_parts_orm.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1319	manifest_entry.json100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\out\recipe\export\B19_11\_gltf_source\
+	    New File  		   7.6 m	B19_11.bin  6.5% 13.0% 19.5% 26.0% 32.5% 39.0% 45.5% 52.0% 58.5% 65.0% 71.5% 78.0% 84.5% 91.0% 97.5%100%  
+	    New File  		   34131	B19_11.gltf100%  
+	    New File  		   3.8 m	C12_hull_albedo.png 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   6.4 m	C12_hull_normal.png  7.7% 15.5% 23.3% 31.1% 38.8% 46.6% 54.4% 62.2% 69.9% 77.7% 85.5% 93.3%100%  
+	    New File  		   4.4 m	C12_hull_orm.png 11%   22%   33%   45%   56%   67%   79%   90%  100%  
+	    New File  		   4.3 m	C12_parts_albedo.png 11%   23%   34%   46%   57%   69%   80%   92%  100%  
+	    New File  		   5.8 m	C12_parts_normal.png  8.5% 17.1% 25.6% 34.2% 42.7% 51.3% 59.8% 68.4% 76.9% 85.5% 94.0%100%  
+	    New File  		   5.3 m	C12_parts_orm.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        19        19         0         0         0         0
+   Bytes :   69.40 m   69.40 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1732810833 Bytes/sec.
+   Speed :            99152.231 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:15:36 AM
+

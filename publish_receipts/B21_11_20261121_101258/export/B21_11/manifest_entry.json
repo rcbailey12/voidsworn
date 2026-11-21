@@ -1,0 +1,49 @@
+{
+ "name": "The bladeback, the Chorus cruiser (The Chorus)",
+ "faction": "chorus",
+ "cls": "Cruiser",
+ "band": "M",
+ "game_ship": "b_razor",
+ "length_world": 14.5,
+ "hardpoints": {
+  "gun": 5,
+  "engine": 6,
+  "breach": 4,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 4,
+ "turrets": 0,
+ "files": {
+  "B21_11.glb": {
+   "bytes": 11913328,
+   "sha256": "56c9f6be63bdbb9ca9a5be9596c20e3dc8e330c78fb1ddce23d147fc9aa72ae5"
+  },
+  "B21_11_base.jpg": {
+   "bytes": 840975,
+   "sha256": "2366e4367fc7942ae182e6186b36c9b6e0dcb8e0343b0d4bb515b69f96c66caa"
+  },
+  "B21_11_normal.png": {
+   "bytes": 6607470,
+   "sha256": "3005d87a78b3fa6faf9dbffb5c1f7206e4a53a90cb12b319038c260cd4d852f3"
+  },
+  "B21_11_orm.png": {
+   "bytes": 4817908,
+   "sha256": "7ca7b8b780295edc91536602386a1e570eff37bffd8e9b2b6485746584b96bfa"
+  },
+  "B21_11_parts_base.jpg": {
+   "bytes": 1038017,
+   "sha256": "0e0939e6821fce036cff76667b2e1b923cb72b3eca4e21619c2fa5f3fcbded90"
+  },
+  "B21_11_parts_normal.png": {
+   "bytes": 5870605,
+   "sha256": "4a75c82560d0e860ae96b3fb247f7e9c65601a34e52835ddaa1ce66c8922efe5"
+  },
+  "B21_11_parts_orm.png": {
+   "bytes": 5601169,
+   "sha256": "577d5a9d8bbe125cc144ffb7ebd767970272ee9c5df04e666bf3f377ad31b614"
+  }
+ },
+ "pc_path": "godot/assets/ships/B21_11/"
+}

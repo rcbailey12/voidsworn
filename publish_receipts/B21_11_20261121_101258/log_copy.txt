@@ -1,0 +1,147 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:13:00 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\B21_11_20261121_101258\export\B21_11\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\
+	    New File  		  11.3 m	B21_11.glb  8.8% 17.6% 26.4% 35.2% 44.0% 52.8% 61.6% 70.4% 79.2% 88.0% 96.8%100%  
+	    New File  		  840975	B21_11_base.jpg 31%   62%   93%  100%  
+	    New File  		    5301	B21_11_check.json100%  
+	    New File  		   15294	B21_11_export.json100%  
+	    New File  		   6.3 m	B21_11_normal.png  7.9% 15.8% 23.8% 31.7% 39.6% 47.6% 55.5% 63.4% 71.4% 79.3% 87.2% 95.2%100%  
+	    New File  		   4.5 m	B21_11_orm.png 10%   21%   32%   43%   54%   65%   76%   87%   97%  100%  
+	    New File  		 1038017	B21_11_parts_base.jpg 25%   50%   75%  100%  
+	    New File  		   5.5 m	B21_11_parts_normal.png  8%   17%   26%   35%   44%   53%   62%   71%   80%   89%   98%  100%  
+	    New File  		   5.3 m	B21_11_parts_orm.png  9%   18%   28%   37%   46%   56%   65%   74%   84%   93%  100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1319	manifest_entry.json100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_gltf_source\
+	    New File  		  11.3 m	B21_11.bin  8.8% 17.6% 26.4% 35.2% 44.1% 52.9% 61.7% 70.5% 79.4% 88.2% 97.0%100%  
+	    New File  		   41304	B21_11.gltf100%  
+	    New File  		   3.8 m	C11_hull_albedo.png 12%   25%   38%   51%   64%   77%   90%  100%  
+	    New File  		   6.3 m	C11_hull_normal.png  7.9% 15.8% 23.8% 31.7% 39.6% 47.6% 55.5% 63.4% 71.4% 79.3% 87.2% 95.2%100%  
+	    New File  		   4.5 m	C11_hull_orm.png 10%   21%   32%   43%   54%   65%   76%   87%   97%  100%  
+	    New File  		   4.3 m	C11_parts_albedo.png 11%   23%   34%   46%   57%   69%   80%   92%  100%  
+	    New File  		   5.5 m	C11_parts_normal.png  8%   17%   26%   35%   44%   53%   62%   71%   80%   89%   98%  100%  
+	    New File  		   5.3 m	C11_parts_orm.png  9%   18%   28%   37%   46%   56%   65%   74%   84%   93%  100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\backward\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5179	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\breach_count\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5047	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\breach_inward\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5211	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\breach_near\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5177	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\liner_only\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5207	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_board\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4826	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     460	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_core\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5014	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     461	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_engine\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4156	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     459	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_interior\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5246	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_rcs\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4503	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     462	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_seams\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5154	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_slot\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4769	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\no_socket\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5169	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\off_mesh\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5189	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\pass\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5121	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\recipe\export\B21_11\_selftest\wrong_side\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5201	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        19        19         0         0         0         0
+   Files :        99        99         0         0         0         0
+   Bytes :  155.72 m  155.72 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1126120282 Bytes/sec.
+   Speed :            64437.119 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:13:00 AM
+

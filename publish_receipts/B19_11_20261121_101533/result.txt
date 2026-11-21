@@ -1,0 +1,26 @@
+start publish opus1291c12g B19_11 d2a9acd26c3305641229d000d8890ba8a753dcfb 11da0fb7f016b4ea578b7bc554ba4b28c5ec39bcd2d1dd98a2be2fd365ec509a Sat 11/21/2026 10:15:34.08 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\B19_11_20261121_101533\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\recipe\publish_ship.py 
+[publish] receipt ok: chorus_C12 B19_11 commit d2a9acd26c3305641229d000d8890ba8a753dcfb, glb 11da0fb7f016b4ea578b7bc554ba4b28c5ec39bcd2d1dd98a2be2fd365ec509a, 7 listed and 7 checked files
+SHIP=chorus_C12
+[publish] kept B19_11 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\B19_11_20261121_101533
+undo: C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\B19_11_20261121_101533\UNDO_B19_11.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) 
+install exit 0 
+INSTALL READBACK PASS code=B19_11 nodes=16
+[publish] sealed what is now live for B19_11
+ships cache exit 0 
+[assets] ships refreshed: 46 A4 ships in res://gen/manifest.json
+readback exit 0 
+INSTALL READBACK PASS code=B19_11 nodes=16
+[publish] sealed what is now live for B19_11
+shots exit 0 
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+published B19_11 from opus1291c12g at d2a9acd26c3305641229d000d8890ba8a753dcfb into C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+all done PASS Sat 11/21/2026 10:17:23.08 

@@ -1,0 +1,23 @@
+{
+ "name": "The bladeback, the Chorus cruiser (The Chorus)",
+ "faction": "chorus",
+ "cls": "Cruiser",
+ "band": "M",
+ "length_world": 14.5,
+ "hardpoints": {
+  "board": 2,
+  "breach": 4,
+  "core": 1,
+  "engine": 6,
+  "gun": 5
+ },
+ "breaches": 4,
+ "turrets": 0,
+ "files": {
+  "B21_11.glb": {
+   "bytes": 5176916,
+   "sha256": "9ee2447217d1156fd89bb90673b899b33e0b2480cf517de9dc3bc25095cc12f0"
+  }
+ },
+ "pc_path": "godot/assets/ships/B21_11/"
+}
