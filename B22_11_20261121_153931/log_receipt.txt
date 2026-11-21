@@ -1,0 +1,1 @@
+[publish] FAILED: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\out\result.txt ends ['all done', 'job scratch removed after PASS: C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-188d61a7dde6409c999edde453a3ed66'], not "all done" or "all done" then "pin ok 4a73ba3abee5a62b3317a63030ca082a498e86d6"

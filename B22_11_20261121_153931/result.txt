@@ -1,0 +1,13 @@
+start publish opus1291c14k B22_11 4a73ba3abee5a62b3317a63030ca082a498e86d6 aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b Sat 11/21/2026 15:39:31.35 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\B22_11_20261121_153931\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\recipe\publish_ship.py 
+[publish] FAILED: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\out\result.txt ends ['all done', 'job scratch removed after PASS: C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-188d61a7dde6409c999edde453a3ed66'], not "all done" or "all done" then "pin ok 4a73ba3abee5a62b3317a63030ca082a498e86d6"
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+all done FAILED: refused: the receipt or export does not match (log_receipt.txt) Sat 11/21/2026 15:39:33.38 
