@@ -1,0 +1,109 @@
+{
+  "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+  "source_commit_date": "2026-11-21T03:13:42Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T04:32:48Z",
+  "seed": 10,
+  "build_sha256": "e9da64ac647e6a76c876043a8e6f7abb8e0c331b928a73b3fbc43f4cc7f95973",
+  "manifest_sha256": "52ffa8668e25ac5673025b3f0b5ba0a0c4e6314e8651d1eaf7adac2799429e66",
+  "fps": 30,
+  "battle": 3,
+  "enemy": "hegemony",
+  "objective": "flagship",
+  "picture_name": "navy-b3.jpg",
+  "sources": [
+    {
+      "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+      "source_commit_date": "2026-11-21T03:13:42Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T04:32:07Z",
+      "seed": 10,
+      "build_sha256": "e9da64ac647e6a76c876043a8e6f7abb8e0c331b928a73b3fbc43f4cc7f95973",
+      "manifest_sha256": "52ffa8668e25ac5673025b3f0b5ba0a0c4e6314e8651d1eaf7adac2799429e66",
+      "fps": 30,
+      "battle": 3,
+      "enemy": "hegemony",
+      "objective": "flagship"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T04:32:07Z",
+      "image_sha256": "f5592143e4ca99937cb70e94ef02d92dec554d863ee6f4cf72a5732b16ab0c72",
+      "sources": [
+        {
+          "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+          "source_commit_date": "2026-11-21T03:13:42Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "schema": 1,
+          "date": "2026-11-21T04:32:07Z",
+          "seed": 10,
+          "build_sha256": "e9da64ac647e6a76c876043a8e6f7abb8e0c331b928a73b3fbc43f4cc7f95973",
+          "manifest_sha256": "52ffa8668e25ac5673025b3f0b5ba0a0c4e6314e8651d1eaf7adac2799429e66",
+          "fps": 30,
+          "battle": 3,
+          "enemy": "hegemony",
+          "objective": "flagship"
+        }
+      ],
+      "source_commit_date": "2026-11-21T03:13:42Z"
+    }
+  ],
+  "stamp_box": [
+    0,
+    632,
+    498,
+    720
+  ],
+  "strip_size": [
+    498,
+    88
+  ],
+  "strip_sha256": [
+    "d0a77328954160ff77453a77f1793ca1397f2b9ea10fe8bc97fb311106f92d26"
+  ],
+  "stamp_template_sha256": "832f57d98c8e6dc5edbb2217ba6478cd409062957c2ef37c77a1252e0ed98e11",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfIAAABYCAIAAACBA+K7AAABV0lEQVR4nO3UMQ0AIQDAQHgFLKz4l/kmSEiaOwWdOtc+A4CK73UAADfZOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOMkh87IwDzR50e2AAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "06ca25d09e774160a9f3c1109fe16cef873813b6cc5f55cafa15574d3bf7d228",
+  "frames": [
+    {
+      "seconds": 4.6,
+      "label": "Opening board"
+    },
+    {
+      "seconds": 5.57,
+      "label": "Move preview"
+    },
+    {
+      "seconds": 6.1,
+      "label": "Card / resolve"
+    },
+    {
+      "seconds": 36.17,
+      "label": "Target preview"
+    },
+    {
+      "seconds": 53.4,
+      "label": "Reinforcements"
+    },
+    {
+      "seconds": 77.94,
+      "label": "Win"
+    }
+  ]
+}

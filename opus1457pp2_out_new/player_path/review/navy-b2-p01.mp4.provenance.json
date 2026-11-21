@@ -1,0 +1,60 @@
+{
+  "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+  "source_commit_date": "2026-11-21T03:13:42Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T04:32:07Z",
+  "seed": 10,
+  "build_sha256": "e9da64ac647e6a76c876043a8e6f7abb8e0c331b928a73b3fbc43f4cc7f95973",
+  "manifest_sha256": "52ffa8668e25ac5673025b3f0b5ba0a0c4e6314e8651d1eaf7adac2799429e66",
+  "fps": 30,
+  "battle": 2,
+  "enemy": "corsair",
+  "objective": "hold",
+  "picture_name": "navy-b2-p01.mp4",
+  "sources": [
+    {
+      "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+      "source_commit_date": "2026-11-21T03:13:42Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T04:32:07Z",
+      "seed": 10,
+      "build_sha256": "e9da64ac647e6a76c876043a8e6f7abb8e0c331b928a73b3fbc43f4cc7f95973",
+      "manifest_sha256": "52ffa8668e25ac5673025b3f0b5ba0a0c4e6314e8651d1eaf7adac2799429e66",
+      "fps": 30,
+      "battle": 2,
+      "enemy": "corsair",
+      "objective": "hold"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T04:32:07Z",
+      "image_sha256": "f5592143e4ca99937cb70e94ef02d92dec554d863ee6f4cf72a5732b16ab0c72",
+      "sources": [
+        {
+          "source_commit": "41642b05ba218ba57d9aa35f02aede0ab4dead94",
+          "source_commit_date": "2026-11-21T03:13:42Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-21T03:13:42Z"
+    }
+  ],
+  "seconds_in_battle": 0,
+  "duration_s": 48,
+  "stamp_template_sha256": "fa2de6f9b0bf3eb7de2f4c2f79494d5867557f478e9a6d426331d53f0d174e2e",
+  "image_sha256": "068c26b0fb72481f832b0ae64704daba3110fa98929308d6ce08bef8e6196c13"
+}
