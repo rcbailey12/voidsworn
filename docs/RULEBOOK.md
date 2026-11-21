@@ -912,6 +912,23 @@ its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 
 shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
 Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
 
+
+11.8 **Retreat returns the fleet to the stop it came from; the fight stays on the map, and the 10% hull cost stays.** A
+retreat never completes the node or clears a Nemesis meeting. Why: an independent audit (Nov 21, F-05) found a round-1
+retreat skipped any non-boss fight for 10% hull and could lock out Nemesis-held service stops. Both rules copies (3.1).
+Set: Ryan (R381, issue 1480).
+
+11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
+Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
+issue 1484).
+
+11.10 **Boarding and capturing the Nemesis flagship, a hunt target or a convoy transport counts as destroying it** for
+kills, loot and objectives. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+(R383, issue 1479).
+
+11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
+checked against issue 1271. Set: Ryan (R384).
+
 ## 12. Automatic checks
 
 12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
