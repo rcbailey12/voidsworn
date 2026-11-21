@@ -25,30 +25,64 @@ on:
       - '!work/**-partial'
       - '!opus/**-partial'
   workflow_dispatch:
+    inputs:
+      base:
+        description: 'Leave empty to run every check. Or a branch or commit: the Godot jobs then run only if this run changes non-docs files compared with it (issue 1487).'
+        required: false
+        default: ''
 concurrency:
   group: checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  # Issue 1487 (audit GH-03): a push that changes only writing and pictures (tools/ci/docs_only.js says exactly which files
+  # count) skips the four Godot jobs; the standing checks always run. Any other file, a failed lookup or a run started by
+  # hand runs every check. "All checks" at the end always reports one pass or fail mark, skipped jobs included.
+  changes:
+    name: What changed (docs-only pushes skip the Godot jobs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      godot: ${{ steps.classify.outputs.godot }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: tools/ci
+      - name: Docs only, or code too?
+        id: classify
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ inputs.base }}
+        run: |
+          node tools/ci/docs_only.js --self-test
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          if [ "$EVENT" = workflow_dispatch ] && [ -z "$BASE" ]; then
+            say "Started by hand with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base=${BASE:-main}
+          if git fetch -q --no-tags --filter=blob:none --unshallow origin "$base" \
+             && git diff --name-only --no-renames "$(git rev-parse FETCH_HEAD)...HEAD" > "$RUNNER_TEMP/changed.txt"; then
+            node tools/ci/docs_only.js "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/verdict.txt"
+          else
+            echo "docs_only=false" > "$RUNNER_TEMP/verdict.txt"; echo "could not compare with $base"
+          fi
+          if grep -qx 'docs_only=true' "$RUNNER_TEMP/verdict.txt"; then
+            say "Docs-only change compared with $base: the Godot jobs are skipped. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+            echo "godot=false" >> "$GITHUB_OUTPUT"
+          else
+            say "Code changed compared with $base (or the comparison failed): every check runs. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+            echo "godot=true" >> "$GITHUB_OUTPUT"
+          fi
   standing-checks:
     name: Standing checks (rules, text, saves)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
-      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
-      - name: Merge main in (test the branch as it would land)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
-          if git merge -q --no-edit origin/main; then
-            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
-          else
-            git merge --abort 2>/dev/null || true
-            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
-          fi
+          filter: blob:none
+      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -63,33 +97,28 @@ jobs:
         run: node contrib/opus/tools/run_all_checks.js
   godot-parity:
     name: Godot rules parity
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
-      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
-      - name: Merge main in (test the branch as it would land)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
-          if git merge -q --no-edit origin/main; then
-            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
-          else
-            git merge --abort 2>/dev/null || true
-            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
-          fi
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Get Godot 4.7.2 (headless)
+      - name: Get Godot 4.7.2 (headless, from main's cache)
         id: godot
-        run: |
-          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
-          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+        uses: ./.github/actions/setup-godot
       # The Godot checks below each run even when an earlier one fails, so one red run shows every failure.
       # Each script prints PASS or FAIL and exits 1 on any FAIL, which fails this job and the PR (issue #264).
       - name: Rules parity against the browser game
@@ -108,30 +137,27 @@ jobs:
   # byte for byte, plus the ruled numbers test. Uses no browser code. Its own job, so it adds no time to parity.
   rules-safety:
     name: Rules safety net (Godot only)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - name: Merge main in (test the branch as it would land)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
-          if git merge -q --no-edit origin/main; then
-            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
-          else
-            git merge --abort 2>/dev/null || true
-            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
-          fi
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Get Godot 4.7.2 (headless)
-        run: |
-          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
-          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        uses: ./.github/actions/setup-godot
       - name: Run Godot-only rules safety net
         run: sh godot/rules/test/safety/run_cache_check.sh
   # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
@@ -145,35 +171,30 @@ jobs:
   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
   godot-game:
     name: Godot game checks
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
-      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
-      - name: Merge main in (test the branch as it would land)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
-          if git merge -q --no-edit origin/main; then
-            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
-          else
-            git merge --abort 2>/dev/null || true
-            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
-          fi
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Get Godot 4.7.2 (headless)
+      - name: Get Godot 4.7.2 (headless, from main's cache)
         id: godot
-        run: |
-          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
-          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+        uses: ./.github/actions/setup-godot
       # (a) typo insurance: compiles every .gd file and loads every .tscn under godot/ (nothing runs). No asset import is
       # needed: no script or scene preloads a texture or sound. Fails on any file that does not load and on any SCRIPT ERROR.
       - name: Load every Godot script and scene (typo check)
@@ -229,31 +250,24 @@ jobs:
   # The record (tools/recipe/sheet_fixture_hash.py) hashes shared kit files (kit.py, export7.py, contract.py, variants.py,
   # gamedata.py, shared hardpoints.py and turrets.py), so every shared kit fix (R333) used to fail here until someone rebaked
   # on the PC: 6 of 8 failed runs on Nov 19 14:00 to 15:51 UTC. Now: a fresh record runs the seam check on the committed
-  # fixture, as before. A stale record bakes A16 again here with pinned Blender 4.5.14 (cached), into the runner's temp
+  # fixture, as before. A stale record bakes A16 again here with pinned Blender 4.5.14 (one copy cached on main, issue 1487), into the runner's temp
   # folder only, and runs the same seam check on that bake: a clean seam passes, with "fixture record stale: refresh before
   # merge" in the summary; a seam failure on the fresh bake fails. A broken record (missing or unreadable) still fails.
   # godot/tools/ci/godot_checks.txt marks death_seam_check.gd "step:" so the list step does not run it a second time.
   a16-fixture:
     name: A16 death seam (fixture or fresh bake)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
-      BLENDER_VERSION: 4.5.14
     steps:
+      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - name: Merge main in (test the branch as it would land)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
-          if git merge -q --no-edit origin/main; then
-            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
-          else
-            git merge --abort 2>/dev/null || true
-            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
-          fi
+          filter: blob:none
+      - uses: ./.github/actions/merge-main
       - name: Is the A16 fixture record fresh? (sheet_fixture_hash.py --check)
         id: record
         timeout-minutes: 2
@@ -266,34 +280,17 @@ jobs:
                echo "fixture record stale: refresh before merge (this run bakes A16 fresh and checks the seam on that bake)" | tee -a "$GITHUB_STEP_SUMMARY" ;;
             *) echo "The fixture record is missing or unreadable (exit $code): repair it, a rebake alone will not." | tee -a "$GITHUB_STEP_SUMMARY"; exit 1 ;;
           esac
-      - name: Get Godot 4.7.2 (headless)
-        run: |
-          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
-          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
-          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
-      - name: Blender cache (stale record only)
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        uses: ./.github/actions/setup-godot
+      - name: Get Blender 4.5.14 from main's cache (stale record only)
         if: steps.record.outputs.state == 'stale'
-        id: blender-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/blender-${{ env.BLENDER_VERSION }}
-          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
-      - name: Get Blender 4.5.14 for Linux (stale record only)
-        if: steps.record.outputs.state == 'stale'
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libice6 > /dev/null
-          if [ ! -x ~/blender-$BLENDER_VERSION/blender ]; then
-            curl -sSL --retry 3 --retry-all-errors -o blender.tar.xz https://download.blender.org/release/Blender4.5/blender-$BLENDER_VERSION-linux-x64.tar.xz
-            mkdir -p ~/blender-$BLENDER_VERSION
-            tar -xJf blender.tar.xz -C ~/blender-$BLENDER_VERSION --strip-components=1
-          fi
-          ~/blender-$BLENDER_VERSION/blender --version | head -1
+        uses: ./.github/actions/setup-blender
       - name: Bake A16 fresh into the runner's temp folder (stale record only)
         if: steps.record.outputs.state == 'stale'
         timeout-minutes: 8
         run: |
           set +e   # the step shell is bash -e: keep going after a failed bake so its log tail is printed
-          python3 tools/recipe/sheet_fixture_hash.py --bake ~/blender-$BLENDER_VERSION/blender --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
+          python3 tools/recipe/sheet_fixture_hash.py --bake "$BLENDER" --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
           code=$?
           tail -40 "$RUNNER_TEMP/a16_bake.log"
           exit $code
@@ -305,3 +302,20 @@ jobs:
           { echo "### A16 death seam on the $src"; echo '```'; grep -E '^DEATH_SEAM (ship|fixture|machines|inside|failures)' "$RUNNER_TEMP/death_seam.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/death_seam.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
           exit $code
+  # One mark for the whole run (issue 1487): passes when every job passed or was skipped as docs-only, fails otherwise.
+  all-checks:
+    name: All checks
+    if: ${{ always() }}
+    needs: [changes, standing-checks, godot-parity, rules-safety, godot-game, a16-fixture]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every job passed or was skipped for a docs-only push
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          GODOT: ${{ needs.changes.outputs.godot }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
+          bad=$(echo "$RESULTS" | jq -r --arg g "$GODOT" '[to_entries[] | select(.value.result != "success" and !(.value.result == "skipped" and $g == "false"))] | length')
+          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled or were skipped without a docs-only verdict."; exit 1; fi
+          echo "PASS" | tee -a "$GITHUB_STEP_SUMMARY"
