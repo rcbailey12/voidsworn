@@ -27,6 +27,8 @@ rem   6. the in-game shots at camera 170 and 60, only when everything above pass
 rem   7. reports, shots and export\CODE this run wrote copied into out\recipe, only when a recipe stage ran in this run
 rem      (1516: a failed mirror fetch once collected an earlier build's files and looked like a build of the new pin);
 rem      older reports go to out\recipe_from_earlier_runs, older pictures and exports stay behind, all listed
+rem   8. after a PASS, the clone's Godot import cache godot\.godot goes (issue 1497); the clone stays for the publish,
+rem      which removes it
 rem The earlier out folder becomes out_before_<time>. Backups older than the newest two are listed for the janitor.
 if "%~1"=="ship" goto ship
 setlocal EnableExtensions
@@ -81,6 +83,16 @@ set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%O%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
+rem (1535) Python tools make their temporary folders with inherited ACLs (tools\pc\pysite\sitecustomize.py), so the
+rem scratch cleanup can remove them; mkdtemp on Python 3.12.4+ for Windows made private folders it could not delete.
+set "BASE_PYTHONPATH=%PYTHONPATH%"
+set "PYSITE="
+if exist "%~dp0..\pysite\sitecustomize.py" set "PYSITE=%~dp0..\pysite"
+set "PS_TLV="
+if not defined PYSITE if exist "%V%\tools_live\current.txt" set /p PS_TLV=<"%V%\tools_live\current.txt"
+if defined PS_TLV if exist "%V%\tools_live\%PS_TLV%\pc\pysite\sitecustomize.py" set "PYSITE=%V%\tools_live\%PS_TLV%\pc\pysite"
+if defined PYSITE if defined PYTHONPATH set "PYTHONPATH=%PYSITE%;%PYTHONPATH%"
+if defined PYSITE if not defined PYTHONPATH set "PYTHONPATH=%PYSITE%"
 rem The redirection holds the marker open until the tools finish.
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
 set "RUN_EL=%ERRORLEVEL%"
@@ -89,6 +101,7 @@ set "RUN_SCRATCH=%TEMP%"
 set "TEMP=%BASE_TEMP%"
 set "TMP=%BASE_TEMP%"
 set "TMPDIR=%BASE_TEMP%"
+set "PYTHONPATH=%BASE_PYTHONPATH%"
 set "SD_TLV="
 if exist "%V%\tools_live\current.txt" set /p SD_TLV=<"%V%\tools_live\current.txt"
 if defined SD_TLV if exist "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%V%\tools_live\%SD_TLV%\pc\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "ship_job %J%" >> "%RES%" 2>&1
@@ -254,6 +267,17 @@ if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
 if defined CHECKFAIL set "FAILED=checks:%CHECKFAIL%"
 set "TMO_STEP=ship shots"
 if defined FAILED goto collect
+rem (1517) stamp the shots with the installed main picture_provenance.py, which lists the dirty files, so offer_sheet.py
+rem can tell this job's own install (assets\ships, .import, .uid) from a source edit even when the pin predates the list
+rem A pre-merge proof (OPUS1539_PROOF.bat) sets PICTURE_STAMP_TOOL to its branch copy first; otherwise tools_live's.
+if not defined PICTURE_STAMP_TOOL if defined TLV if exist "%V%\tools_live\%TLV%\picture_provenance.py" set "PICTURE_STAMP_TOOL=%V%\tools_live\%TLV%\picture_provenance.py"
+if defined PICTURE_STAMP_TOOL echo shots stamped with %PICTURE_STAMP_TOOL% >> "%RES%"
+rem (1539) record the install the shots are taken with, so offer_sheet.py can match each dirty file in their stamps:
+rem the watchdog hand-off hash and the manifest before and after this job's install (only its own row may differ)
+if defined TMO_OK copy /y "%C%\.git\ship_job_tmo_handoff.txt" "%O%\tmo_handoff.txt" > nul
+git -C "%C%" show HEAD:godot/assets/ships/manifest.json > "%O%\base_manifest.json" 2>> "%RES%"
+copy /y "%C%\godot\assets\ships\manifest.json" "%O%\installed_manifest.json" > nul
+if defined FAILED goto collect
 
 rem 6. the shots, only now: everything above passed, so the installed glb is this run's and checked
 call "%TMO%" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
@@ -304,6 +328,13 @@ if not defined FAILED set "FAILED=collect (no recipe stage ran)"
 :finish
 rem no parenthesised block here: FAILED can hold a ")" that would end the block early
 if defined FAILED goto finish_failed
+rem (1497) A PASS no longer needs the clone's Godot import cache: the publish installs from the export and the clone's
+rem tools, never from it. Removing it here, before the done line, keeps result.txt's tail as the publish receipt reads
+rem it. The clone itself stays until the publish (publish_ship.bat removes it then). A refusal never fails the job.
+set "OJH="
+if defined TLV if exist "%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1" set "OJH=%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1"
+if defined OJH powershell -NoProfile -ExecutionPolicy Bypass -File "%OJH%" dropcache "%J%" >> "%RES%" 2>&1
+if not defined OJH echo import cache kept: no opus_job_head.ps1 in tools_live >> "%RES%"
 echo done PASS %DATE% %TIME% >> "%RES%"
 echo all done >> "%RES%"
 exit /b 0

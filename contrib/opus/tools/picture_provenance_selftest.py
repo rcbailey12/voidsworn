@@ -342,9 +342,46 @@ def checkout_picture_links(repo, out, picture):
     print('PASS prepare refuses outside checkout paths, file URLs, web URLs and UNC paths')
 
 
+def make_folder():
+    # Issue 1535: a plain mkdir, never tempfile.mkdtemp. Python 3.12.4+ on Windows gives a mkdtemp folder a private ACL
+    # (mode 0o700), protected from inheritance, and the cleanup of the job's voidsworn-run TEMP could not remove it
+    # (cleanup 4, Nov 21: 31 folders, about 49 GB; proof board/pc-out-1535: a non-elevated job's stock mkdtemp folder
+    # is protected too, so elevation is not needed for this).
+    base = Path(tempfile.gettempdir())
+    for _ in range(100):
+        folder = base / ('picture889-' + os.urandom(8).hex())
+        try:
+            folder.mkdir()
+            return folder
+        except FileExistsError:
+            continue
+    raise FileExistsError('no free picture889 folder name in ' + str(base))
+
+
+def remove_folder(folder):
+    # Our own folder only, after a PASS. Git leaves read-only object files, so clear that flag and try again; a link is
+    # removed as a link, never followed.
+    def again(func, path, _info):
+        os.chmod(path, 0o700 if os.path.isdir(path) and not os.path.islink(path) else 0o600)
+        func(path)
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(folder, onexc=again)
+    else:
+        shutil.rmtree(folder, onerror=again)
+
+
 def run():
-    folder = Path(tempfile.mkdtemp(prefix='picture889-'))
-    # Deliberately kept for diagnosis, following the PC no-deletion rule.
+    folder = make_folder()
+    try:
+        checks(folder)
+    except BaseException:
+        print('FAIL picture provenance self-test; artifacts kept for diagnosis in ' + str(folder))
+        raise
+    remove_folder(folder)
+    print('PASS picture provenance self-test; its own folder removed: ' + str(folder))
+
+
+def checks(folder):
     repo, out = folder / 'repo', folder / 'out'
     repo.mkdir(); (out / 'shots').mkdir(parents=True)
     subprocess.run(['git', 'init', '-q', str(repo)], check=True)
@@ -511,7 +548,6 @@ def run():
         native_outputs(folder, godot)
     else:
         print('Godot native save check unavailable on this host; Python and runner refusal checks ran')
-    print('PASS picture provenance self-test; artifacts kept in ' + str(folder))
 
 
 if __name__ == '__main__':
