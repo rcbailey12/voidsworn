@@ -1,0 +1,13 @@
+chain CJ waiting for 1373L KF1 exit in chain_1119ci.txt Sat 11/21/2026  8:16:13.69 
+mirror fetch exit 0
+d2a9acd26c3305641229d000d8890ba8a753dcfb reachable in the mirror
+1291 C10H start  8:37:17.79 
+1291 C10H exit 0 at  9:10:38.58 
+1291 C11G start  9:10:38.58 
+1291 C11G exit 0 at  9:29:18.48 
+1291 C12G start  9:29:18.48 
+1291 C12G exit 0 at  9:52:39.75 
+1291 C14H start  9:52:39.75 
+1291 C14H exit 0 at 10:12:14.31 
+after-job janitor ran 10:23:23.44 
+all done Sat 11/21/2026 10:23:23.44 

@@ -1,0 +1,27 @@
+start chorus_C14 B22_11 board/pin-1291-holes4 Sat 11/21/2026  9:52:40.67 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1529 -> board/pc-out-1529
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14h\repo
+commit=d2a9acd26c3305641229d000d8890ba8a753dcfb
+import exit 0 
+3_trace_hull start  9:57:04.27 
+3_trace_hull exit 0 at  9:58:52.58 
+4_parts_kit start  9:58:52.58 
+4_parts_kit exit 0 at 10:01:43.60 
+5_paint_bake start 10:01:43.60 
+5_paint_bake exit 0 at 10:06:08.25 
+6_lod start 10:06:08.25 
+6_lod exit 0 at 10:07:36.28 
+7_export start 10:07:36.28 
+7_export exit 0 at 10:11:14.00 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14h\repo\godot\assets\ships\B22_11\B22_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026 10:12:13.86 
+all done 
