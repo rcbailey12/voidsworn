@@ -6,7 +6,9 @@ board/pin-1155-c14h, job dir opus1155c14h), done PASS 17:17 CST Nov 20: stages 3
 (manifest row B22_11). Results on board/pc-out-1155c14h (218024d6).
 
 - `C14_runH_concept_vs_ingame.jpg`: the accepted concept beside run H in Godot (three-quarter, side, top, below, close).
-- Publish: waits for Ryan's yes; the publish and its readback are linked here and on PR 1172 when done.
+- Published Nov 20 after Ryan's yes ("Yes on all", 6:47 PM CT): publish_ship.bat opus1155c14h B22_11 625d3f2a, receipt 7/7,
+  readback PASS (29 nodes). Undo on the PC: build\godot\_replaced\B22_11_20261120_185749\UNDO_B22_11.bat; log in
+  publish\B22_11_<stamp>\result.txt.
 - `C14_roundG_cloud_preview.jpg`: the first round G cloud preview (before the keel wrap), kept as history.
 
 Everything below is the **R341 baseline** (history, superseded by run H).

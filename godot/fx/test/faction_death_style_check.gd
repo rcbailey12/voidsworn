@@ -1,13 +1,14 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
-# Issue 1399 (R367, Ryan's "Full faction deaths"): the Glasswrights and Eclipse die in their own colours and break, from
-# faction_looks.json "death"; every other metal faction keeps today's shared orange fire. A box cruiser of each faction is
-# killed with the strained death on (the game's default), at quality high with physics plates, and:
-#   corsair (today's): its death pictures keep the baked colours (fac_fire off), it smokes, its torn faces glow orange;
-#   ithar (shatter): every death picture takes the white and rainbow fire, no smoke picture is drawn, its fracture plan
-#     gives more and smaller fragments than corsair's, glittering dust follows the core, torn faces glow its stored light;
-#   deathless (peel): every death picture takes its violet-white fire, plates lift off the hull band by band before the
-#     split (more than corsair throws then), the scene dims at its core flash, torn faces glow violet.
+# Issue 1399 (R367, Ryan's "Full faction deaths"): every metal faction dies in its own colours and break, from
+# faction_looks.json "death". A box cruiser of each is killed with the strained death on (the game's default), at quality
+# high with physics plates, against a plain control (corsair's look with its death entry removed: today's shared fire):
+#   plain: its death pictures keep the baked colours (fac_fire off), it smokes, its torn faces glow orange;
+#   ithar (shatter): white and rainbow fire, no smoke picture, more and smaller fragments, glittering dust, stored-light faces;
+#   deathless (peel): violet-white fire, plates peel off band by band before the split, the scene dims at its core flash;
+#   voidsworn (drumbeat, round 2): ember fire, a row of magazine pops down the broadside before the split;
+#   hegemony (arc, round 2): blue-white fire, lightning ribbons jump the gap as the pieces part;
+#   corsair (patch, round 2): red fire, patch plates tear loose before the split.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const LOOK := preload("res://fx/faction_look.gd")
@@ -27,27 +28,45 @@ func check(ok: bool, why: String) -> void:
 
 
 func _run() -> void:
-	var today := await _kill("corsair")
+	var plain_look: Dictionary = (LOOK.of("corsair") as Dictionary).duplicate()
+	plain_look.erase("death")
+	LOOK.table()["test_plain"] = plain_look
+	var today := await _kill("test_plain")
 	var glass := await _kill("ithar")
 	var ecl := await _kill("deathless")
-	# today's
-	check(today["styled"] == 0 and today["pics"] > 0, "corsair: its %d death pictures keep the baked orange (%d styled)" % [today["pics"], today["styled"]])
-	check(today["smoke"] > 0, "corsair: it still smokes (%d smoke pictures)" % today["smoke"])
-	check(today.get("ember") == null or (today["ember"] as Vector3).is_equal_approx(Vector3(1.0, 0.36, 0.07)), "corsair: its tear keeps today's ember (%s)" % str(today.get("ember")))
-	check(glass.get("ember") is Vector3 and (glass["ember"] as Vector3).z > 0.9, "ithar: its tear glows its stored light (%s)" % str(glass.get("ember")))
-	check(ecl.get("ember") is Vector3 and (ecl["ember"] as Vector3).z > 0.9, "deathless: its tear glows violet (%s)" % str(ecl.get("ember")))
-	check(today["heat"] == "today", "corsair: torn faces glow today's orange (%s)" % today["heat"])
+	var sun := await _kill("voidsworn")
+	var heg := await _kill("hegemony")
+	var ash := await _kill("corsair")
+	LOOK.reload()
+	# today's (no death entry)
+	check(today["styled"] == 0 and today["pics"] > 0, "plain: its %d death pictures keep the baked orange (%d styled)" % [today["pics"], today["styled"]])
+	check(today["smoke"] > 0, "plain: it still smokes (%d smoke pictures)" % today["smoke"])
+	check(today["heat"] == "today", "plain: torn faces glow today's orange (%s)" % today["heat"])
+	check(today.get("ember") == null or (today["ember"] as Vector3).is_equal_approx(Vector3(1.0, 0.36, 0.07)), "plain: its tear keeps today's ember (%s)" % str(today.get("ember")))
+	# every styled faction
+	for r in [glass, ecl, sun, heg, ash]:
+		check(r["pics"] > 0 and r["styled"] == r["pics"], "%s: all %d death pictures take its own fire (%d styled)" % [r["fac"], r["pics"], r["styled"]])
+		check(r["heat"] == "styled", "%s: torn faces glow its own colour (%s)" % [r["fac"], r["heat"]])
+		check(r.get("ember") is Vector3, "%s: its tear glows its own colour (%s)" % [r["fac"], str(r.get("ember"))])
 	# Glasswrights
-	check(glass["pics"] > 0 and glass["styled"] == glass["pics"] and glass["prism"], "ithar: all %d death pictures take its white fire with the rainbow edge (%d styled)" % [glass["pics"], glass["styled"]])
+	check(glass["prism"], "ithar: its fire has the rainbow edge")
 	check(glass["smoke"] == 0, "ithar: no smoke picture (%d)" % glass["smoke"])
-	check(int(glass["n_frag"]) > int(today["n_frag"]), "ithar: shatters into more fragments than corsair (%d against %d)" % [glass["n_frag"], today["n_frag"]])
-	check(int(glass["streaks"]) > int(today["streaks"]) + 30, "ithar: glittering dust after the core (%d streaks against corsair %d)" % [glass["streaks"], today["streaks"]])
-	check(glass["heat"] == "styled", "ithar: torn faces glow its stored light (%s)" % glass["heat"])
+	check(int(glass["n_frag"]) > int(today["n_frag"]), "ithar: shatters into more fragments than the plain hull (%d against %d)" % [glass["n_frag"], today["n_frag"]])
+	check(int(glass["streaks"]) > int(today["streaks"]) + 30, "ithar: glittering dust after the core (%d streaks against plain %d)" % [glass["streaks"], today["streaks"]])
+	check((glass["ember"] as Vector3).z > 0.9 if glass.get("ember") is Vector3 else false, "ithar: its tear is its stored light")
 	# Eclipse
-	check(ecl["pics"] > 0 and ecl["styled"] == ecl["pics"] and not ecl["prism"], "deathless: all %d death pictures take its violet-white fire (%d styled)" % [ecl["pics"], ecl["styled"]])
-	check(int(ecl["plates_before_split"]) > int(today["plates_before_split"]), "deathless: plates peel off before the split (%d against corsair %d)" % [ecl["plates_before_split"], today["plates_before_split"]])
+	check(not ecl["prism"], "deathless: no rainbow edge")
+	check(int(ecl["plates_before_split"]) > int(today["plates_before_split"]), "deathless: plates peel off before the split (%d against plain %d)" % [ecl["plates_before_split"], today["plates_before_split"]])
 	check(ecl["dimmed"], "deathless: the scene dims at its core flash")
-	check(ecl["heat"] == "styled", "deathless: torn faces glow violet (%s)" % ecl["heat"])
+	check((ecl["ember"] as Vector3).z > 0.9 if ecl.get("ember") is Vector3 else false, "deathless: its tear is violet")
+	# Sunward Crusade
+	check(int(sun["sprites_before_split"]) >= int(today["sprites_before_split"]) + 5, "voidsworn: a row of magazine pops before the split (%d sprites against plain %d)" % [sun["sprites_before_split"], today["sprites_before_split"]])
+	# Hegemony
+	check(int(heg["ribbons"]) >= int(today["ribbons"]) + 6, "hegemony: arcs jump the gap (%d ribbons against plain %d)" % [heg["ribbons"], today["ribbons"]])
+	check(int(heg.get("arcs", 0)) >= 6 and int(heg.get("arcs_pinned", 0)) == int(heg.get("arcs", 0)), "hegemony: every arc ran from one piece's torn face to the other's (%d of %d pinned)" % [heg.get("arcs_pinned", 0), heg.get("arcs", 0)])
+	check((heg["ember"] as Vector3).z > 0.9 if heg.get("ember") is Vector3 else false, "hegemony: its tear is blue-white")
+	# Hullbreakers
+	check(int(ash["plates_before_split"]) > int(today["plates_before_split"]), "corsair: patch plates tear loose before the split (%d against plain %d)" % [ash["plates_before_split"], today["plates_before_split"]])
 	print("FACTION_DEATH failures=%d" % failures)
 	quit(1 if failures else 0)
 
@@ -82,12 +101,16 @@ func _kill(fac: String) -> Dictionary:
 		await process_frame
 		if (s.get_meta("cut_job", {}) as Dictionary).get("built", false): break
 	var plan: Dictionary = (s.get_meta("cut_job", {}) as Dictionary).get("plan", {})
-	var streaks0: int = _streaks(fx)
+	var streaks0: int = _emitted(fx, "stk")
+	var spr0: int = _emitted(fx, "spr")
+	var rib0: int = _emitted(fx, "rib")
 	fx.death("k", "blast")
 	var seen := {}
 	var res := {"fac": fac, "pics": 0, "styled": 0, "prism": false, "smoke": 0, "n_frag": int(plan.get("n_frag", 0)),
-		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0}
+		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0, "sprites_before_split": 0, "ribbons": 0}
 	var split_seen := false
+	var arcs_seen := 0
+	var arcs_pinned := 0
 	for i in 7 * 60:
 		fx.step(1.0 / 60.0)
 		await process_frame
@@ -100,7 +123,22 @@ func _kill(fac: String) -> Dictionary:
 					break
 		if not split_seen:
 			res["plates_before_split"] = (fx.dstate.get("debris_awake", {}) as Dictionary).size()
+			res["sprites_before_split"] = _emitted(fx, "spr") - spr0
 			split_seen = s.has_meta("death_hidden")
+		# each new arc's two ends sit on two different pieces' torn faces in the frame it strikes (within 5 percent of the length)
+		var live: Array = s.get_meta("death_arcs", [])
+		while arcs_seen < live.size():
+			var arc: Array = live[arcs_seen]
+			arcs_seen += 1
+			var ok: bool = arc[2] != arc[3]
+			for e in 2:
+				var nd = arc[2 + e]
+				if not is_instance_valid(nd): ok = false; continue
+				var best := INF
+				for q in ((nd as Node3D).get_meta("arc_sites") as PackedVector3Array):
+					best = minf(best, (arc[e] as Vector3).distance_to((nd as Node3D).to_global(q)))
+				if best > s.hull.L * 0.05: ok = false
+			if ok: arcs_pinned += 1
 		for n in fx.get_children():
 			if not (n is MeshInstance3D) or not n.visible or seen.has(n.get_instance_id() * 1000 + int(n.get_meta("pic_gen", 0))): continue
 			var nm := String(n.name)
@@ -113,7 +151,11 @@ func _kill(fac: String) -> Dictionary:
 			if ff is Color and (ff as Color).a > 0.5: res["styled"] += 1
 			if float(m.get_shader_parameter("fac_prism") if m.get_shader_parameter("fac_prism") != null else 0.0) > 0.5: res["prism"] = true
 			if nm == "fx_beat_impact": res["smoke"] += 1
-	res["streaks"] = _streaks(fx) - streaks0
+	res["streaks"] = _emitted(fx, "stk") - streaks0
+	res["ribbons"] = _emitted(fx, "rib") - rib0
+	var arcs: Array = s.get_meta("death_arcs", [])
+	res["arcs"] = arcs.size()
+	res["arcs_pinned"] = arcs_pinned
 	for w in fx.dstate.get("wrecks", []):
 		if w["id"] != "k": continue
 		for nd in w["nodes"]:
@@ -130,10 +172,8 @@ func _kill(fac: String) -> Dictionary:
 	return res
 
 
-# streaks drawn so far (the stk pool's emitted count), for the glitter
-func _streaks(fx) -> int:
-	var pool = fx.pools.get("stk") if "pools" in fx else null
+# sprites, streaks or ribbons drawn so far (a pool's emitted count)
+func _emitted(fx, key: String) -> int:
+	var pool = fx.pools.get(key) if "pools" in fx else null
 	if pool == null: return 0
-	for k in ["emitted", "count", "total", "n"]:
-		if k in pool: return int(pool.get(k))
-	return 0
+	return int(pool.get("emitted"))
