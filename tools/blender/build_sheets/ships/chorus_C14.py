@@ -297,7 +297,7 @@ def build(K):
     for fid, x, th, lean in MOUTHS:
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13)
+        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13, door=6, door_open=float(__import__('os').environ.get('C14_DOOR_OPEN', '0')))
         K.organ(fid, part, pos, ax, fwd=(1, 0, 0), inv='launch_mouths', kind='hangar',
                 what='launch opening, %.1f across, on a neck of flesh; empty, a dim glow deep inside' % (2 * R_MOUTH),
                 note='a spore squadron is born deep in the chamber below and leaves through the mouth', aperture=(2.5, 0.0))
