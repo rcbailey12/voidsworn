@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1413o2f",
+ "ship": "hegemony_O2",
+ "code": "O2_37",
+ "commit": "7521a69d4299163e965750f87fdd3819097ef158",
+ "glb": "559e638717ebe771c3603f79cbb5175bda12ddc67f5b8d4a66701a0c3400e854",
+ "files": {
+  "O2_37.glb": "559e638717ebe771c3603f79cbb5175bda12ddc67f5b8d4a66701a0c3400e854",
+  "O2_37_base.jpg": "41846fb426deaaf4f369f5eee5d68b55a150e7a00ca1d24a28559571a3d2dcc4",
+  "O2_37_glow_emission.jpg": "516bab53a535f1309222bdc5ef2ae7274d508e4e07789d3f7436d232a8d8e9e9",
+  "O2_37_normal.png": "76487fc5236f310f959185dc032e1c9ee010715ebc942cfb82b090ad27a71acc",
+  "O2_37_orm.png": "ab98cf36d54341c978359b883d70961b830ec418d3fbc6e7fee3e838c56f2a5d",
+  "O2_37_parts_base.jpg": "6f3465d71e24ae14910fdbebc0260054f14cf5074c2a68bc4bb7d3a6b5bad15e",
+  "O2_37_parts_normal.png": "f0f35aba723261da7dd025861195edd88acaf414a6b05d7169db6a13d6b1b8ce",
+  "O2_37_parts_orm.png": "bae9a84cb45909df1bf39c9130f3b123e3fbad25b479fcae41105a7f02a1e8d2"
+ },
+ "checked": [
+  "O2_37.glb",
+  "O2_37_base.jpg",
+  "O2_37_glow_emission.jpg",
+  "O2_37_normal.png",
+  "O2_37_orm.png",
+  "O2_37_parts_base.jpg",
+  "O2_37_parts_normal.png",
+  "O2_37_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 2.32 deg (floor 1.34), albedo contrast 0.143 (floor 0.130), roughness spread 0.194 (floor 0.140), 778829 texels"
+}

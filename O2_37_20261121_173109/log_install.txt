@@ -1,0 +1,34 @@
+[check] authored interiors: 4504 triangles, 10 surfaces; authored seams: 3
+[check] 25820 triangles (19264 on part surfaces), box x -0.492 to 0.508, y -0.072 to 0.110, z -0.165 to 0.165
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] hard points: {"board": 2, "breach": 4, "core": 1, "engine": 4, "rcs": 2}
+PASS O2_37 game export: every required point is there and every hard point passes the mesh checks
+skip no_slot, off_mesh, backward, no_socket, breach_near: the export carries none of their points (the pass case proves the check accepts that)
+ok   pass: the check passed as it must | 
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   wrong_side: the check failed as it must | hp_board_0: a port boarding origin sits on the other side (z +0.138)
+ok   no_rcs: the check failed as it must | need at least 2 hp_rcs (0 written)
+ok   no_board: the check failed as it must | need at least 2 hp_board (0 written)
+ok   breach_count: the check failed as it must | need exactly 4 hp_breach for a transport of hegemony (3 written)
+ok   breach_inward: the check failed as it must | hp_breach_0: +Y is not the outward normal (it points z +1.00 on the port side)
+ok   no_interior: the check failed as it must | no authored interior geometry
+ok   no_seams: the check failed as it must | no authored break seams
+ok   liner_only: the check failed as it must | no authored interior rooms: an inner liner alone is not comprehensive insides
+ok   hull_trim_near: the check passed as it must | 
+ok   part_near: the check failed as it must | hp_breach_0 is 0.0000 from a part (at least 0.03)
+ok   same_side_rcs: the check failed as it must | need one valid hp_rcs on each side (P and S)
+ok   same_side_board: the check failed as it must | need one valid hp_board on each side (P and S)
+ok   no_trim_marker: the check failed as it must | hp_breach_0 is 0.0166 from a part (at least 0.03)
+ok   bell_radius: the check failed as it must | hp_eng_0 is 0.0152 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0568 on the exit plane covers 6 of 12 sectors
+ok   bell_plane: the check failed as it must | hp_eng_0 is 0.0255 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0284 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_1: the check failed as it must | hp_eng_1 is 0.0152 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0568 on the exit plane covers 8 of 12 sectors
+ok   bell_plane_hp_eng_1: the check failed as it must | hp_eng_1 is 0.0255 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0284 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_2: the check failed as it must | hp_eng_2 is 0.0152 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0568 on the exit plane covers 8 of 12 sectors
+ok   bell_plane_hp_eng_2: the check failed as it must | hp_eng_2 is 0.0255 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0284 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_3: the check failed as it must | hp_eng_3 is 0.0152 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0568 on the exit plane covers 6 of 12 sectors
+ok   bell_plane_hp_eng_3: the check failed as it must | hp_eng_3 is 0.0255 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0284 on the exit plane covers 0 of 12 sectors
+PASS the export check fails when it should
+INSTALL READBACK PASS code=O2_37 nodes=13
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\build\godot\assets\ships\O2_37; previous files at C:\Users\rcbai\Downloads\voidsworn_test\build\godot\.stage7-replaced-lf2dd08i\previous

@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 5:31:12 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2f\out\recipe\export\O2_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\O2_37_20261121_173109\export\O2_37\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2f\out\recipe\export\O2_37\
+	    New File  		      24	export_status.txt100%  
+	    New File  		    1444	manifest_entry.json100%  
+	    New File  		   3.1 m	O2_37.glb 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   1.0 m	O2_37_base.jpg 23%   47%   71%   95%  100%  
+	    New File  		    4184	O2_37_check.json100%  
+	    New File  		   11648	O2_37_export.json100%  
+	    New File  		  349202	O2_37_glow_emission.jpg 37%   75%  100%  
+	    New File  		   4.5 m	O2_37_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   4.8 m	O2_37_orm.png 10%   20%   30%   41%   51%   61%   72%   82%   92%  100%  
+	    New File  		   1.0 m	O2_37_parts_base.jpg 24%   48%   72%   97%  100%  
+	    New File  		   4.5 m	O2_37_parts_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   5.0 m	O2_37_parts_orm.png  9%   19%   29%   39%   49%   59%   69%   79%   89%   99%  100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2f\out\recipe\export\O2_37\_gltf_source\
+	    New File  		   3.0 m	O2_37.bin 16%   32%   48%   64%   80%   97%  100%  
+	    New File  		   49103	O2_37.gltf100%  
+	    New File  		  458562	O2_engine_emission.png 28%   57%   85%  100%  
+	    New File  		   4.9 m	O2_hull_albedo.png 10%   20%   30%   40%   50%   61%   71%   81%   91%  100%  
+	    New File  		   4.5 m	O2_hull_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   4.8 m	O2_hull_orm.png 10%   20%   30%   41%   51%   61%   72%   82%   92%  100%  
+	    New File  		   4.8 m	O2_parts_albedo.png 10%   20%   30%   40%   51%   61%   71%   81%   91%  100%  
+	    New File  		   4.5 m	O2_parts_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   5.0 m	O2_parts_orm.png  9%   19%   29%   39%   49%   59%   69%   79%   89%   99%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   56.99 m   56.99 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1532393512 Bytes/sec.
+   Speed :            87684.260 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 5:31:12 PM
+

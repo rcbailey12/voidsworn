@@ -1,0 +1,2 @@
+[publish] receipt ok: hegemony_O2 O2_37 commit 7521a69d4299163e965750f87fdd3819097ef158, glb 559e638717ebe771c3603f79cbb5175bda12ddc67f5b8d4a66701a0c3400e854, 8 listed and 8 checked files
+SHIP=hegemony_O2

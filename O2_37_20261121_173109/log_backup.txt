@@ -1,0 +1,1 @@
+[publish] kept O2_37 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\O2_37_20261121_173109
