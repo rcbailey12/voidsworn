@@ -1563,7 +1563,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res))
 			if boarded <= 0.0:
 				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
-			await wait(600.0)
+			# issue 1547: hold on the breach long enough to read it before the next event (the enemy turn)
+			await wait(float(gfx.board_hold_ms()) if boarded > 0.0 and gfx.has_method("board_hold_ms") else 600.0)
 		"command_warning":
 			var C = _command(str(e["id"]))
 			_log("%s is preparing %s. It strikes next round." % [_name(e["unit"]), str(C.get("n", e["id"]))], "e")

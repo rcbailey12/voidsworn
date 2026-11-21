@@ -1748,45 +1748,132 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 # The rules' "board" event (API.md 11): the boarding party's breach in the target's hull at a plausible boarding point
 # (the side facing the attacker, mid section, near the waterline of the hull's side, never on top or below), venting
 # gas and lit from inside while the fight goes on (about 3 s), then a dark gash. Returns seconds until it has played.
+# Issue 1547: at battle camera 110 and 170 the first breach (look "r0") was a few dots. The look options for Ryan's pick:
+#   A  a bigger breach: the hatch mark about three times wider, a bigger burst, vent plume and inside light with pixel
+#      floors so they hold at camera 170, and a short hold before the enemy turn;
+#   B  A plus the boarding lines: amber lines (the shared line style's "board" role, the same amber as the boarding
+#      target ring) run from the attacker's hatch to the breach and hold while the party crosses;
+#   C  B plus the fight inside: small flashes in the target's hull spreading out from the breach during the hold.
+# "hold" is how long the battle waits (ms, at speed 1) before the next event, so the player sees it before the enemy turn.
+const BOARD_LOOKS := {
+	"r0": {"hatch": 1.0, "ring_px": 0.0, "burst": 1.0, "burst_px": 0.0, "vent": 1.0, "vent_px": 0.0, "spark_px": 0.0, "light": 2.5,
+		"reach": 0.0, "lines": 0, "inside": 0, "hold": 600.0},
+	"A": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
+		"reach": 22.0, "lines": 0, "inside": 0, "hold": 1400.0},
+	"B": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
+		"reach": 22.0, "lines": 3, "inside": 0, "hold": 1600.0},
+	"C": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
+		"reach": 22.0, "lines": 3, "inside": 9, "hold": 1900.0},
+}
+var board_look := "B"
+
+
+# how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
+func board_hold_ms() -> float:
+	return float((BOARD_LOOKS.get(board_look, BOARD_LOOKS["B"]) as Dictionary)["hold"])
+
+
 func board(attacker_id: String, target_id: String, _result := "") -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
+	var bl: Dictionary = BOARD_LOOKS.get(board_look, BOARD_LOOKS["B"])
 	# issue 370: the party leaves the attacker from its boarding hatch (hp_board on the side facing the target, else the
 	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
 	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
 	var toward: Vector3
+	var from_hatch := Vector3.INF
 	if ships.has(attacker_id):
 		var a: SHIP = ships[attacker_id]
 		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
 		if o.is_empty():
 			return 0.0
 		toward = a.to_world(o["p"])
+		from_hatch = toward
 	else:
 		toward = s.to_world(s.hull.core + Vector3(0, 0, s.hull.W * 3.0))
 	var inv: Transform3D = s.xf().affine_inverse()
 	var tl: Vector3 = inv * toward
 	var side := Vector3(0, 0, signf(tl.z - s.hull.core.z) if absf(tl.z - s.hull.core.z) > 1e-3 else 1.0)
+	# issue 1547: a party coming from dead ahead or astern (no clear side) breaks in on the side the camera sees; the
+	# first cloud shots put it on the far side, hidden by the hull
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
+		var cl: Vector3 = inv * cam.global_position
+		side = Vector3(0, 0, 1.0 if cl.z >= s.hull.core.z else -1.0)
 	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
 	if h.is_empty():
 		s.hull._took("board", "skip")
 		return 0.0
 	var lp: Vector3 = h["p"]
 	var ln: Vector3 = h["n"]
+	BREACH.board_k = float(bl["hatch"])
 	s.add_mark(self, "board", 2, lp, ln, -ln)
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var k: float = s.scale_k()
 	var T: float = now + 0.1
+	var bk: float = float(bl["burst"])
+	var vk: float = float(bl["vent"])
 	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
-	spr(wp + wn * 0.3 * k, T, 0.4, Color(1, 0.65, 0.35), 2.5, 0.6 * k, 1.8 * k, 2)
+	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 2)
 	for j in 14:
-		spr(wp + wn * 0.2 * k, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25, 0.3 * k, 2.2 * k, 7, (wn + rdir() * 0.25).normalized() * 4.0 * k, 0.8)
-	for j in 18:
-		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05, 0.08 * k, 1, (wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k, 2.0)
-	light(wp + wn * 0.6 * k, T, 3.0, 2.5, Color(1, 0.6, 0.3), 1)
+		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
+			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
+	for j in int(18 * sqrt(bk)):
+		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+			(wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+	if float(bl["ring_px"]) > 0.0:
+		# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
+		ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
+	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.6, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
-	return 3.2
+	var hold: float = float(bl["hold"]) / 1000.0
+	if int(bl["lines"]) > 0 and from_hatch != Vector3.INF:
+		_board_lines(from_hatch, wp, int(bl["lines"]), hold)
+	for j in int(bl["inside"]):
+		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
+		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
+		var ip: Vector3 = s.to_world(smp["p"])
+		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, T + 0.45 + j * (hold - 0.6) / maxf(1.0, float(bl["inside"])),
+			0.35, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
+	return maxf(3.2, hold)
+
+
+# Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the
+# boarding target ring's amber, core only). n lines from the attacker's hatch to the breach, a shallow arc each, drawn
+# out over 0.25 s, held, then faded by the end of the hold.
+func _board_lines(a: Vector3, b: Vector3, n: int, hold: float) -> void:
+	var LSt = load("res://render/line_style.gd")
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var d := b - a
+	var side := d.cross(Vector3.UP).normalized()
+	if side == Vector3.ZERO:
+		side = Vector3.RIGHT
+	var seg := 10
+	for i in n:
+		var off: float = (float(i) - float(n - 1) * 0.5) * 0.9
+		var lift: float = d.length() * (0.10 + 0.05 * i)
+		var pts: Array = []
+		for j in seg + 1:
+			var t := float(j) / seg
+			pts.append(a.lerp(b, t) + side * off * sin(t * PI) + Vector3.UP * lift * sin(t * PI))
+		for j in seg:
+			LSt.strip_into(st, pts[j], pts[j + 1], side, side, "board", Color(-1, -1, -1, -1), true)
+			LSt.strip_into(st, pts[j], pts[j + 1], -side, -side, "board", Color(-1, -1, -1, -1), true)
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var m: ShaderMaterial = LSt.material(false)
+	m.set_shader_parameter("gain", 0.0)
+	mi.material_override = m
+	add_child(mi)
+	var tw := mi.create_tween()
+	tw.tween_property(m, "shader_parameter/gain", 1.0, 0.25)
+	tw.tween_interval(maxf(0.1, hold - 0.6))
+	tw.tween_property(m, "shader_parameter/gain", 0.0, 0.35)
+	tw.tween_callback(mi.queue_free)
 
 
 func command(id: String, _cmd := "") -> void:

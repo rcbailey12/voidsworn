@@ -64,6 +64,7 @@ const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthe
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
 const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
 	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
+static var board_k := 1.0   # issue 1547: the boarding hatch's width factor (fx.gd BOARD_LOOKS "hatch")
 const HALO_MAX_L := 0.16   # ... but never wider than this share of the ship's length (a frigate is not one big scorch; r8 0.12 to 0.16 so frigate hits carry at 170 units)
 
 
@@ -1834,7 +1835,8 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			# the rammer's own bow folds too, a smaller crumple
 			out.append(dent(p, n, L * 0.06 * g, L * 0.012 * g, seed_v, S_RAM))
 		"board":
-			out.append(cluster(p, n, L * 0.012 * g, 5, L * 0.003, 0.0, seed_v, S_HATCH))
+			# issue 1547: board_k widens the hatch for the boarding look being shown (fx.gd BOARD_LOOKS)
+			out.append(cluster(p, n, L * 0.012 * g * board_k, 5, L * 0.003 * board_k, 0.0, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
 		e.wound_kind = {"chorus": 1, "ithar": 2, "deathless": 3}.get(faction, 0)
