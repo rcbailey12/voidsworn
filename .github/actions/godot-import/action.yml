@@ -43,7 +43,7 @@ runs:
         if [ $code -ne 0 ]; then echo "The import ended with exit code $code (124 or 137 is its 300 s limit)." | tee -a "$GITHUB_STEP_SUMMARY"; bad=1; fi
         exit $bad
     - name: Save the import cache (main only)
-      if: steps.cache.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main'
+      if: steps.cache.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/opus/issue-1495')
       uses: actions/cache/save@v4
       with:
         path: |
