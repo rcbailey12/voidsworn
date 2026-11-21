@@ -1,0 +1,25 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1291c10h",
+ "ship": "chorus_C10",
+ "code": "B16_23",
+ "commit": "d2a9acd26c3305641229d000d8890ba8a753dcfb",
+ "glb": "abf178af67a48ebc5db75ee3a150f6403a23eef574e9782fc5cb14a14d4c206c",
+ "files": {
+  "B16_23.glb": "abf178af67a48ebc5db75ee3a150f6403a23eef574e9782fc5cb14a14d4c206c",
+  "B16_23_base.jpg": "3f7fa551baaac33dbd6a29ed10d5ffce8b47b0396804a78efeaf5194a9e26aae",
+  "B16_23_normal.png": "cd35129c49c790201eab2ff992d9bd96069068faffb38ffd469a98f8c6ae337f",
+  "B16_23_orm.png": "638cb2b56b720adac8da009ce4bb8891f886c125d6d63fa316b5b029a100130e",
+  "B16_23_parts_base.jpg": "9f4075d0b4e7f88815e1caba5cd3f0c6e45672780399d7bca610b036e694226f",
+  "B16_23_parts_normal.png": "0faec74a74043db0ceaa9b8ad276e93707b544b12fc0582e0c94af789455b3ad",
+  "B16_23_parts_orm.png": "dcc763e5614b14d4863bf27b3018a18866a255a5f006f6d8b86535d85f245331"
+ },
+ "checked": [
+  "B16_23.glb",
+  "B16_23_base.jpg",
+  "B16_23_normal.png",
+  "B16_23_orm.png",
+  "B16_23_parts_base.jpg",
+  "B16_23_parts_normal.png",
+  "B16_23_parts_orm.png"
+ ]
+}

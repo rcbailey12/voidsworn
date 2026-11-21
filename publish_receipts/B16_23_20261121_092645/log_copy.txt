@@ -1,0 +1,159 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 9:26:48 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\B16_23_20261121_092645\export\B16_23\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\
+	    New File  		  16.3 m	B16_23.glb  6.1% 12.2% 18.3% 24.5% 30.6% 36.7% 42.9% 49.0% 55.1% 61.2% 67.4% 73.5% 79.6% 85.8% 91.9% 98.0%100%  
+	    New File  		  936240	B16_23_base.jpg 27%   55%   83%  100%  
+	    New File  		    9447	B16_23_check.json100%  
+	    New File  		   22416	B16_23_export.json100%  
+	    New File  		   5.5 m	B16_23_normal.png  9%   18%   27%   36%   45%   54%   63%   72%   81%   90%   99%  100%  
+	    New File  		   4.6 m	B16_23_orm.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		  976590	B16_23_parts_base.jpg 26%   53%   80%  100%  
+	    New File  		   5.2 m	B16_23_parts_normal.png  9%   18%   28%   37%   47%   56%   66%   75%   85%   94%  100%  
+	    New File  		   4.9 m	B16_23_parts_orm.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1337	manifest_entry.json100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_gltf_source\
+	    New File  		  16.2 m	B16_23.bin  6.1% 12.2% 18.4% 24.5% 30.7% 36.8% 43.0% 49.1% 55.3% 61.4% 67.6% 73.7% 79.9% 86.0% 92.1% 98.3%100%  
+	    New File  		   61217	B16_23.gltf100%  
+	    New File  		   3.8 m	C10_hull_albedo.png 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   5.5 m	C10_hull_normal.png  9%   18%   27%   36%   45%   54%   63%   72%   81%   90%   99%  100%  
+	    New File  		   4.6 m	C10_hull_orm.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		   3.8 m	C10_parts_albedo.png 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   5.2 m	C10_parts_normal.png  9%   18%   28%   37%   47%   56%   66%   75%   85%   94%  100%  
+	    New File  		   4.9 m	C10_parts_orm.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\backward\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11850	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\breach_count\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11556	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\breach_inward\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11813	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\breach_near\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11789	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\liner_only\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11812	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_board\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11432	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     481	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_core\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11620	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     482	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_engine\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11261	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     480	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_interior\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11851	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_rcs\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11109	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     483	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_seams\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11760	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_slot\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		    9641	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     495	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\no_socket\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11777	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\off_mesh\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11793	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\pass\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11727	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\turret_merged\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   12159	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\turret_no_mesh\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   12204	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\out\recipe\export\B16_23\_selftest\wrong_side\
+	    New File  		   4.7 m	B16_23.glb 10%   21%   31%   42%   53%   63%   74%   84%   95%  100%  
+	    New File  		   11806	B16_23_check.json100%  
+	    New File  		   25508	B16_23_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     496	manifest_entry.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        21        21         0         0         0         0
+   Files :       109       109         0         0         0         0
+   Bytes :  168.48 m  168.48 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1070700939 Bytes/sec.
+   Speed :            61265.999 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 9:26:48 AM
+
