@@ -27,11 +27,18 @@ const PATHS := {
 	"phase": '<path d="M10 3 4 9v14l6 6m12-26 6 6v14l-6 6m-3-24-8 11h7l-5 11"/>',
 	"next": '<path d="m10 6 10 10-10 10M24 6v20"/>',
 	"cancel": '<path d="M7 7l18 18M25 7 7 25"/>',
+	"undo": '<path d="M9 11h12a7 7 0 010 14h-8M9 11l5-5M9 11l5 5"/>',
 	"collapse": '<path d="m7 12 9 9 9-9"/>',
 }
 
 static var _glyphs := {}
 static var _silhouettes := {}
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_glyphs.clear()
+	_silhouettes.clear()
 
 
 static func glyph(id: String) -> Texture2D:

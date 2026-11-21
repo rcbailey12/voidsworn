@@ -14,7 +14,7 @@ const View = preload("res://campaign/campaign_view.gd")   # the Nemesis is read 
 const BANDS := [[0.8, "Easy"], [1.05, "Even"], [1.4, "Hard"], [99.0, "Deadly"]]
 
 var C
-var ai_level := "veteran"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
+var ai_level := "standard"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
 
 func _init(campaign) -> void: C = campaign
 
@@ -31,9 +31,9 @@ func fleet_power() -> float:   # battle.js fleetPower
 
 func danger(n: Dictionary) -> Dictionary:
 	var t = n["type"]
-	if not (t in ["battle", "elite", "boss"]): return {}
-	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
 	var nem = not C.jt(n.get("done")) and View.nem_node_is(C, n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
+	if not (t in ["battle", "elite", "boss"]) and not nem: return {}   # issue 1175: he can hold a rest or event stop in column 4
+	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
 	if nem: kind = "elite"
 	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * float(R["grow"][s])
 	if kind == "elite": budget *= 1.05
@@ -48,6 +48,10 @@ func danger(n: Dictionary) -> Dictionary:
 	budget *= max(float(R["pwMin"]), min(float(R["pwMax"]), pow(max(0.5, P) / float(R["refP"][s]), float(R["pw"]))))
 	var why = []   # what moved the number, for the hover card: [label, factor]
 	if ai_level == "standard": budget *= float(R["std"]); why.append(["Standard AI", float(R["std"])])
+	if s == 3 and R.get("late") is Dictionary:   # issue 1178: Sector 3's extra fleet budget at this AI level (battle.js genEnemyFleet)
+		var lm = float(R["late"].get("veteran" if ai_level == "veteran" else "standard", 1.0))
+		if lm != 1.0: budget *= lm; why.append(["Sector 3 fleets", lm])
+	if ai_level == "veteran": budget *= float(R.get("vet", 1.0)); why.append(["Veteran AI", float(R.get("vet", 1.0))])   # issue 1160: RAMP.vet, as battle.js genEnemyFleet
 	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Heat: Hunted", 1.15])
 	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)

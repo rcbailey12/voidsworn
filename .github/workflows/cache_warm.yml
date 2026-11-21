@@ -1,0 +1,49 @@
+# Issue 1487 (audit GH-04): keep one Godot and one Blender download in main's cache, the only cache every branch can read,
+# and (issue 1495) the Godot asset import, refreshed whenever main's game assets change.
+# checks.yml branches only read it (they never save a copy of their own). Runs when these setup steps change on main,
+# twice a week so the copies are used within GitHub's 7-day eviction window, and by hand (Actions tab, "cache warm").
+name: cache warm
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/actions/setup-godot/**'
+      - '.github/actions/setup-blender/**'
+      - '.github/actions/godot-import/**'
+      - '.github/workflows/cache_warm.yml'
+      # The import cache (issue 1495) follows the game's assets on main.
+      - 'godot/project.godot'
+      - 'godot/**/*.png'
+      - 'godot/**/*.jpg'
+      - 'godot/**/*.webp'
+      - 'godot/**/*.svg'
+      - 'godot/**/*.ttf'
+      - 'godot/**/*.otf'
+      - 'godot/**/*.glb'
+      - 'godot/**/*.import'
+  schedule:
+    - cron: '23 8 * * 1,4'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cache-warm
+  cancel-in-progress: false
+jobs:
+  warm:
+    name: Seed the Godot, Blender and import caches on main
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for the import; never a real profile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            .github
+            godot
+      - uses: ./.github/actions/setup-godot
+      - uses: ./.github/actions/setup-blender
+      - uses: ./.github/actions/godot-import

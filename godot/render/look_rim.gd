@@ -17,6 +17,7 @@ extends DirectionalLight3D
 # shaders the scene already has.
 
 const LOOK := preload("res://render/look.gd")
+const MESH_WATCH := preload("res://render/mesh_watch.gd")
 
 var _cfg := {}
 # issue 601: the soft rim light (LookRimSoft) lights only the stack-painted surfaces, with RIM soft of the specular
@@ -26,7 +27,7 @@ var _soft_seen := false
 
 func _ready() -> void:
 	configure()
-	get_tree().node_added.connect(_on_added)
+	MESH_WATCH.listen(get_tree(), _mark)   # issue 1204: the one shared new-mesh watcher, looked at once per frame
 	_mark_tree(get_parent())
 	_follow()
 
@@ -57,12 +58,6 @@ func _follow() -> void:
 	global_transform = Transform3D(Basis.looking_at(-to_light, up), global_transform.origin)
 
 
-func _on_added(n: Node) -> void:
-	if n is GeometryInstance3D:
-		# Guard: a hull whose material is set a frame or more after it enters the scene is missed here and loses its rim.
-		_mark.call_deferred(n)
-
-
 func _mark_tree(n: Node) -> void:
 	if n == null:
 		return
@@ -70,7 +65,8 @@ func _mark_tree(n: Node) -> void:
 		_mark(g)
 
 
-# A ship's materials are set right after its mesh enters the scene, so this runs deferred, at the end of the frame.
+# A ship's materials are set right after its mesh enters the scene, so the shared watcher (render/mesh_watch.gd) calls
+# this at the end of the frame. A hull material set on a later frame reaches it through MeshWatch.touch (issue 1204).
 func _mark(n) -> void:
 	if not is_instance_valid(n) or not (n is GeometryInstance3D):
 		return
@@ -78,6 +74,8 @@ func _mark(n) -> void:
 	if g.layers & (LOOK.RIM_LAYER | LOOK.RIM_SOFT_LAYER):
 		return
 	if _is_hull(g):
+		if _has_mark(g, "look_rim_none"):   # issue 1315: a faction with READ rim_light 0 (the Glasswrights) takes no rim light
+			return
 		if _is_soft(g):      # issue 601: a stack-painted hull joins the soft rim light's layer instead
 			g.layers |= LOOK.RIM_SOFT_LAYER
 			var sl = get_parent().get_node_or_null("LookRimSoft") if get_parent() else null
@@ -118,6 +116,29 @@ static func _is_soft(g: GeometryInstance3D) -> bool:
 		return false
 	for i in mi.get_surface_override_material_count():
 		if _soft_mat(mi.get_surface_override_material(i)):
+			return true
+	return false
+
+
+static func _mark_mat(m: Material, key: String) -> bool:
+	if m == null:
+		return false
+	if m.has_meta(key):
+		return true
+	if m.has_meta("fx_hull_source"):
+		var src = m.get_meta("fx_hull_source")
+		return src is Material and (src as Material).has_meta(key)
+	return false
+
+
+static func _has_mark(g: GeometryInstance3D, key: String) -> bool:
+	if _mark_mat(g.material_override, key):
+		return true
+	var mi := g as MeshInstance3D
+	if mi == null or mi.mesh == null:
+		return false
+	for i in mi.get_surface_override_material_count():
+		if _mark_mat(mi.get_surface_override_material(i), key):
 			return true
 	return false
 

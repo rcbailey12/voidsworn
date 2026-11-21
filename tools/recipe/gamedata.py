@@ -2,6 +2,14 @@
 # check_export.py outside it), so hard point names always follow the rules file and never a copy of it.
 import os, re
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
+# Objective props are no data.js ship (issue 1413): the game flies any roster hull as an intercept transport with its weapons
+# cleared (battle.js intercept: u.transport, u.weapons=[]) and draws it with the obj|transport mesh, and the relay beacon is a
+# fixed prop (godot/render/hull_table.gd AI_HULLS obj|transport, obj|beacon). Their sheets name these ids as game_ship; the
+# classes are the hard point table's 'transport' and 'beacon' (tools/blender/kits/shared/hardpoints.py).
+OBJECTIVES = {
+    'obj_transport': {'cls': 'transport', 'fac': 'hegemony', 'w': []},
+    'obj_beacon': {'cls': 'beacon', 'fac': 'hegemony', 'w': []},
+}
 
 
 def _block(ship_id, data_js=None):
@@ -18,6 +26,8 @@ def _block(ship_id, data_js=None):
 
 def weapons(ship_id, data_js=None):
     """[(weapon kind, arc), ...] in slot order for the ship with this id in data.js; raises ValueError when it cannot be read"""
+    if ship_id in OBJECTIVES:
+        return list(OBJECTIVES[ship_id]['w'])
     body = _block(ship_id, data_js)
     w = re.search(r'(?<![A-Za-z0-9_])w\s*:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\s*\]', body)
     if not w:
@@ -30,6 +40,8 @@ def weapons(ship_id, data_js=None):
 
 def ship_attr(ship_id, key, data_js=None, default=None, _seen=None):
     """a simple value from the ship's data.js entry (cls, fac, hangar and the like); default when the key is not there"""
+    if ship_id in OBJECTIVES:
+        return OBJECTIVES[ship_id].get(key, default)
     body = _block(ship_id, data_js)
     seen = set(_seen or ())
     if ship_id in seen:

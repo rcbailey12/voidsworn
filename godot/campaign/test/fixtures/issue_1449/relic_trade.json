@@ -1,0 +1,13 @@
+{
+  "note": "issue 1449: relic trades let the player pick which piece of salvage they give up. Each case seeds the relics, opens the event, presses the trade option, then presses the pick (pick -1 means none). Read by contrib/opus/tools/relic_trade_1449_tests.js (browser twin) and godot/campaign/test/relic_trade_1449.gd (Godot twin); both must give the expected result.",
+  "fac": "voidsworn",
+  "admiral": "vex",
+  "cases": [
+    {"name": "three relics, give up the middle one at the shrine", "event": "shrine", "opt": 2, "relics": ["martyr", "compass", "banner"], "pick": 1,
+     "expect": {"pickActs": ["eventChoice:2:0:1", "eventChoice:2:1:1", "eventChoice:2:2:1", "eventBack::1"], "note": " You choose which piece.", "relics": ["martyr", "banner"], "gaveUp": "compass"}},
+    {"name": "two relics, give up the first one for the archive charts", "event": "lament", "opt": 2, "relics": ["martyr", "compass"], "pick": 0,
+     "expect": {"pickActs": ["eventChoice:2:0:1", "eventChoice:2:1:1", "eventBack::1"], "note": " You choose which piece.", "relics": ["compass"], "gaveUp": "martyr"}},
+    {"name": "one relic: the choice names it and no pick opens", "event": "shrine", "opt": 2, "relics": ["banner"], "pick": -1,
+     "expect": {"pickActs": [], "note": " You give up %banner%.", "relics": [], "gaveUp": "banner"}}
+  ]
+}

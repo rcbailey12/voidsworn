@@ -141,14 +141,14 @@ function buildChecks() {
     'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
-    'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
+    'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
-    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
-    'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
+    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
-    'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
+    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'reporting_238_tests', 'runner_stall_tests',
     'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
-    'ui_spec_tests', 'weapon_match_tests',
+    'ui_spec_tests', 'weapon_match_tests', 'workflow_config_tests',
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
@@ -215,7 +215,8 @@ async function execute(c, baseline) {
       childArgs = ['-e', bootstrap, original, target, ...c.args];
     }
     const run = await new Promise(resolve => {
-      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT }, windowsHide: true });
+      // Issue 1194: tmo.bat hands steps to the installed tools_live copy; a check tests this checkout's own watchdog.
+      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT, TMO_OWN_COPY: '1' }, windowsHide: true });
       let output = '', error, timedOut = false;
       const timer = setTimeout(() => {
         timedOut = true;

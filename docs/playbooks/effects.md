@@ -33,6 +33,22 @@ effect: a weapon hit, a shield response, a trail, a death.
   Its hit collider uses that same mesh. Impact and collapse ripples use the shader's
   hits array, including the soft flash fallback; do not add a separate flat ring.
   Check C15s, H9 and E12 at cameras 170 and 60, plus the fitted skin from the side.
+- Shield failure (R340, Ryan Nov 19 2026, issue 1078): every shielded ship fails with the clean collapse, on both shapes:
+  one even flash, then one band closes from the far side into the breach in 1.225 s (R358, Ryan Nov 20 2026, issue 1239:
+  75% slower than the first 0.7 s, picked on the pace sheet; `COLLAPSE_CLOSE` in fx_ship.gd, the shader's `brk_close`),
+  a knot and a flat ring of sparks there, nothing left behind. The collapse closes where the breaking shot struck, and a
+  ship killed by that volley keeps it to its end (issue 1239). Faction colour stays (R163); hits are unchanged. It lives only in the shared shield code
+  (fx_ship.gd `_break_collapse`, the SHIELD shader), so Sunward, Hegemony, Ashfall and the Glasswrights all pick up any
+  change to it; never add a per-ship failure. The old per-faction break (`today`) and the energy shear (`shear`) stay
+  only for dev comparisons through `rendering/effects/shield_failure` (or `VS_SHIELD_FAILURE`); they are not game looks.
+  The band is drawn by the shader, not a sprite flash, so the flash budget never sees it: under reduce flashing it is
+  softer, and the probe's flash pass (`PROBE_FLASH=1`) counts screen flashes with several Glasswright ships, then several Hullbreaker ships, failing at once.
+  Sheets, clips, cost and flash: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`. Pace and
+  hand-off before and after sheets: `fx/test/shield_handoff_probe.gd` (dev pace setting `VS_SHIELD_CLOSE`).
+- Issue 1211 (Board brief from the Nov 19 weapon effects audit): every effect shader and every mark on a hull carries
+  `fog_disabled`, like the hulls (nebula_hulls.gd, R82), so a nebula never dulls a blast; pixel floors and caps are in
+  1080-line pixels (px_world, or the raw size times VIEWPORT_SIZE.y / 1080), so a streak keeps its shape at 4K. A hit's
+  sound, HP drop, number and shield break land on that hit's own shot arrival, on the effect clock (battle.gd _land_hit).
 - Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
   Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 
@@ -68,6 +84,13 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Frame time on the bench is reported against the baseline. Costs are reported; a regression is the Board's call.
 - The standing checks pass, and any new script under godot/**/test/ has its line in godot/tools/ci/godot_checks.txt.
 - The reduce-flashing variant keeps the same sizes with the softer rise and fall the table gives per row.
+- An approved look is live only when the game plays it with no switch set and battle.gd calls it (Ryan, Nov 21 2026:
+  "make sure all of the damage, death, hit effects, etc are being appropriately brought in and used").
+  godot/fx/test/approved_effects_check.gd fails when an approved default is off, or when a rules event's fx call in
+  godot/fx/API.md section 11 is not made by battle.gd. The job that lands an approved effect adds its row to
+  godot/fx/test/approved_effects.json (a default to probe, or the API row it wires) in the same pull request; a call
+  built but not yet wired sits in that file's "unwired" list with its job, and the check fails once it is wired until the
+  row is deleted.
 
 ## 5. Traps
 

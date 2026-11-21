@@ -43,9 +43,9 @@ func _initialize() -> void:
 
 	# Crusade prices: a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it
 	var warden = C.HULLS["warden"]; var mote = C.HULLS["d_scythe"]; var picket = C.HULLS["h_picket"]
-	check(C.capturedHullPrice(mote) == warden["cost"], "the mote sells at the Crusade 1 CP frigate price")
+	check(C.capturedHullPrice(mote) == warden["cost"], "the mote costs what a Warden costs in the shop (issue 1384: the issue 1354 Crusade discount applies to captured hulls too)")
 	check(mote["cost"] > warden["cost"], "the table price really carries the Eclipse premium, so the check means something")
-	check(C.capturedHullPrice(picket) == picket["cost"], "a captured picket sells at its baseline, Hegemony is the 1.0 ladder")
+	check(C.capturedHullPrice(picket) == C.jsround(float(picket["val"]) * float(C.TB.SHOP_DISCOUNT["voidsworn"]) / 5.0) * 5.0, "a captured picket sells at the Hegemony 1.0 ladder price, then the Crusade shop discount (issue 1384)")
 
 	# buying: charged the captured price, links ripped out, normal hulls unaffected
 	C.RUN["credits"] = 1000.0
@@ -94,7 +94,8 @@ func _initialize() -> void:
 	start_run("voidsworn", 2)
 	C.RUN["cpCap"] = 10.0; C.RUN["fleet"] = []
 	var keep = {"tpl": "h_interdictor", "name": "HNS Kept", "cp": 2, "hpf": 0.6, "wk": ["battery"], "ab": null, "regen": 0, "sh": 12}
-	C.RUN["reward"] = {"prizes": [keep], "prizeSel": ["add"]}
+	C.W["rw"] = {}
+	C.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [keep], "prizeSel": ["add"], "wrecks": []}
 	rows = C.prizePlan(C.RUN["reward"])
 	check(rows[0]["room"] and not rows[0]["cinder"] and rows[0]["rip"], "from run 3 the Add choice is offered again for a Hegemony prize")
 	C.ACT_prizeConfirm()
@@ -103,7 +104,7 @@ func _initialize() -> void:
 		if shp["tpl"] == "h_interdictor": kept = shp
 	check(kept != null and C.jt(kept.get("ripped")) and str(kept["name"]) == "HNS Kept", "the kept Hegemony prize joins with its links ripped out")
 	var keep2 = {"tpl": "c_raider", "name": "RVD Plain", "cp": 1, "hpf": 0.7, "wk": ["autocannon"], "ab": null, "regen": 0, "sh": 8}
-	C.RUN["reward"] = {"prizes": [keep2], "prizeSel": ["add"]}
+	C.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [keep2], "prizeSel": ["add"], "wrecks": []}
 	rows = C.prizePlan(C.RUN["reward"])
 	check(not rows[0]["cinder"] and not rows[0]["rip"], "only Hegemony and Eclipse prizes carry the rip")
 	C.ACT_prizeConfirm()

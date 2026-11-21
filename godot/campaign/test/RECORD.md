@@ -12,6 +12,7 @@ Newest first. Each row names the source revision the run used and where its evid
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
+| Nov 19 | Issue 1175 branch `opus/issue-1175` on `7b6e6881` | cloud | `run_parity_campaign.sh 1 30`; `run_nem_scenarios.sh`; `nem_dodge_test.gd` and `node/nem_dodge.js` | **PASS, 30 of 30** with the cross-twin hand-off; Nemesis scenarios PASS (219 records); 0 of 3,000 sectors dodge the Nemesis in both twins (main 78.2%) | [Nemesis column 4 results](../../../docs/shots/nemesis_col4_1175/README.md) |
 | Nov 19 | Issue 1176 working tree on `da81dd82` | Ryan's PC, lane C | Campaign parity steps from `parity_campaign.bat`, with records directed to scratch | **PASS, 30 of 30**. Campaign table export matched byte for byte (`6cc4aef946b793d7`). Seed 1 save hand-off matched for all 40 steps, including 19 steps with a saved run. | [Route choice results](../../../docs/shots/route_choice_1176/README.md) |
 | Nov 1 | 5552c96 (oracle 8e81d75, RAMP step 9b) | Ryan's PC, lane A job `queue\g3_p9b.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4; same step counts as the cloud run) | `docs/shots/g3_campaign/p9b/parity_campaign_log.txt` |
 | Nov 1 | 5552c96 (oracle 8e81d75) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4) | session |

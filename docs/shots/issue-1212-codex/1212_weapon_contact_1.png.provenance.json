@@ -1,0 +1,36 @@
+{
+  "source_commit": "845f1316a458f3b10fbd45239ea92d1a95010f9f",
+  "source_dirty": true,
+  "source_diff_sha256": "33e6fd35ade793f6d97f0b4478e11a512554cff4e878177884dbc0b228a43ffb",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_weapon_contact_1.png",
+  "date": "2026-11-19T21:25:39Z",
+  "sources": [
+    {
+      "source_commit": "845f1316a458f3b10fbd45239ea92d1a95010f9f",
+      "source_dirty": true,
+      "source_diff_sha256": "33e6fd35ade793f6d97f0b4478e11a512554cff4e878177884dbc0b228a43ffb",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "c94a92aa301b19074c89f9f08b3828bed74cbef8c132accde22846d78fcc51c6"
+  ],
+  "stamp_template_sha256": "c94a92aa301b19074c89f9f08b3828bed74cbef8c132accde22846d78fcc51c6",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMcAAEzP+XaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMB+h0BB8Uk95EAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "b7b5f421a7f0d7ccef527a90c301a34c6d7a4fa18a34675d0521c23aa1a0ddda"
+}

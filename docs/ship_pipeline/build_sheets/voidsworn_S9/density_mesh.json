@@ -1,0 +1,76 @@
+{
+ "types": {
+  "hull": {
+   "triangles": 27490,
+   "area": 79.72031,
+   "tris_per_unit2": 344.8,
+   "edges_per_unit2": 355.4
+  },
+  "gun": {
+   "triangles": 6312,
+   "area": 4.26153,
+   "tris_per_unit2": 1481.2,
+   "edges_per_unit2": 932.1,
+   "tris_per_unit2_vs_hull": 4.3,
+   "edges_per_unit2_vs_hull": 2.62
+  },
+  "vent": {
+   "triangles": 2160,
+   "area": 1.68105,
+   "tris_per_unit2": 1284.9,
+   "edges_per_unit2": 1142.1,
+   "tris_per_unit2_vs_hull": 3.73,
+   "edges_per_unit2_vs_hull": 3.21
+  },
+  "slit": {
+   "triangles": 504,
+   "area": 0.09777,
+   "tris_per_unit2": 5154.7,
+   "edges_per_unit2": 4418.3,
+   "tris_per_unit2_vs_hull": 14.95,
+   "edges_per_unit2_vs_hull": 12.43
+  },
+  "radiator": {
+   "triangles": 1612,
+   "area": 3.97747,
+   "tris_per_unit2": 405.3,
+   "edges_per_unit2": 379.1,
+   "tris_per_unit2_vs_hull": 1.18,
+   "edges_per_unit2_vs_hull": 1.07
+  },
+  "engine": {
+   "triangles": 10184,
+   "area": 11.12295,
+   "tris_per_unit2": 915.6,
+   "edges_per_unit2": 587.6,
+   "tris_per_unit2_vs_hull": 2.66,
+   "edges_per_unit2_vs_hull": 1.65
+  },
+  "thruster": {
+   "triangles": 1264,
+   "area": 0.3109,
+   "tris_per_unit2": 4065.6,
+   "edges_per_unit2": 2328.7,
+   "tris_per_unit2_vs_hull": 11.79,
+   "edges_per_unit2_vs_hull": 6.55
+  },
+  "lamp": {
+   "triangles": 960,
+   "area": 0.178,
+   "tris_per_unit2": 5393.1,
+   "edges_per_unit2": 4943.7,
+   "tris_per_unit2_vs_hull": 15.64,
+   "edges_per_unit2_vs_hull": 13.91
+  },
+  "hatch": {
+   "triangles": 1520,
+   "area": 0.24299,
+   "tris_per_unit2": 6255.3,
+   "edges_per_unit2": 4675.0,
+   "tris_per_unit2_vs_hull": 18.14,
+   "edges_per_unit2_vs_hull": 13.15
+  }
+ },
+ "flags": [],
+ "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+}

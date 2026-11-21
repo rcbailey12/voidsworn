@@ -28,12 +28,16 @@ const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's b
 var cam: Camera3D
 var _pending_generation := 0
 var _cancelled_tags := {}
+var _loop_copies := {}   # issue 1237: source clip -> its looping copy
 var _beat := false
 var _ambient_duck_until := 0.0
 var _ambient_duck := 0.0
 # Issue 771: the mix ducks under a core flash and can hold a beat of near-silence after a capital death.
 # legacy = the old dry/unducked behavior, used only by the listening-page bake to render the before pass.
 var legacy := false
+# Issue 1217: main.gd's front-end sound node loads only the cues whose names start with this ("ui_"), and only their
+# clips, so the title and setup screens get their sounds without loading the battle's.
+var only := ""
 var _base_sfx_db := 0.0
 var _duck_db := 0.0
 var _duck_until := 0.0
@@ -50,8 +54,19 @@ func _ready() -> void:
 	var t0 := Time.get_ticks_msec()
 	if FileAccess.file_exists("res://audio/cues.json"):
 		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
+	var want := {}
+	if only != "":
+		for k in cues.keys():
+			if not str(k).begins_with(only):
+				cues.erase(k)
+				continue
+			for L in cues[k]["layers"]:
+				if L.has("s"):
+					want[L["s"]] = true
 	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
 	for k in idx:
+		if only != "" and not want.has(k):
+			continue
 		var a: Array = []
 		for f in idx[k]:
 			var s := _load("res://audio/clips/" + f)
@@ -226,10 +241,17 @@ func _layers(name: String, cue: Dictionary, variant := "") -> Array:
 	if not sy.is_empty() and (not sampled or sl != null):
 		out.append({"st": _pick(sy, name), "g": float(sl["g"]) if sampled else 1.0, "r": 1.0, "d": 0.0, "pj": 0.0 if legacy else float(cue["pj"])})
 	if cue.get("variants", {}).has(variant):
+		var vd: Dictionary = cue["variants"][variant]
 		var vc: Dictionary = cue.duplicate()
-		vc.merge(cue["variants"][variant], true)
+		vc.merge(vd, true)
 		vc.erase("variants")
-		out.append_array(_layers(name + ":" + variant, vc))
+		vc.erase("replace")
+		var vl := _layers(name + ":" + variant, vc)
+		# Issue 1238 (F5.4): a variant marked "replace" is the faction's whole sound (no steel groan under the glass);
+		# otherwise it adds its layers to the base cue. A replace variant with nothing playable falls back to the base.
+		if bool(vd.get("replace", false)) and not vl.is_empty():
+			return vl
+		out.append_array(vl)
 	return out
 
 
@@ -242,9 +264,14 @@ func play(name: String, o := {}) -> void:
 	if not on or not cues.has(name):
 		return
 	var cue: Dictionary = cues[name]
-	var lay := _layers(name, cue, str(o.get("variant", "")))
+	var variant := str(o.get("variant", ""))
+	var lay := _layers(name, cue, variant)
 	if lay.is_empty():
 		return
+	# a faction variant may set its own voice length (its clips differ from the base cue's)
+	if variant != "" and not o.has("duration") and cue.get("variants", {}).get(variant, {}).has("duration"):
+		o = o.duplicate()
+		o["duration"] = float(cue["variants"][variant]["duration"])
 	var now := _now()
 	var t := now + float(o.get("delay", 0.0)) + 0.004
 	var gap := float(cue["gap"])
@@ -312,9 +339,12 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 		var rate := maxf(0.25, float(o.get("rate", 1.0)) * float(L.r) * (1.0 + u * float(L.pj)))
 		var st: AudioStream = L.st
 		if bool(cue.get("loop", false)) and st is AudioStreamOggVorbis:
-			var dup: AudioStreamOggVorbis = (st as AudioStreamOggVorbis).duplicate()
-			dup.loop = true
-			st = dup
+			# Issue 1237 (Neon F7.5): one looping copy per clip, made once, not a new copy on every death bed.
+			if not _loop_copies.has(st):
+				var dup: AudioStreamOggVorbis = (st as AudioStreamOggVorbis).duplicate()
+				dup.loop = true
+				_loop_copies[st] = dup
+			st = _loop_copies[st]
 		var p: Node
 		if pos is Vector3:
 			var p3 := AudioStreamPlayer3D.new()
@@ -431,6 +461,7 @@ func stop_all() -> void:
 	_quiet_db = 0.0
 	_quiet_until = 0.0
 	death_beat(false)
+	_cancelled_tags.clear()   # issue 1237 (Neon F7.5): the battle's cancelled death tags no longer pile up
 	for v in active.duplicate():
 		_steal(v)
 
@@ -456,57 +487,86 @@ func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
 const CHARGE_LEAD := {"lance_charge": 0.26, "torp_charge": 0.30}
 
 
-func _charged(shot: String, charge: String, pos) -> void:
-	if legacy or not cues.has(charge):
+# Issue 1211: with `sched` (a Callable(seconds, Callable), the battle's effect-clock scheduler) the shot cue lands on the
+# effect's own fire time fire_at and the charge leads it by its usual lead (from now at the earliest), both on that clock,
+# so hit pause and the kill beat delay them with the picture. Without it: the charge now, the shot after the fixed lead.
+func _charged(shot: String, charge: String, pos, fire_at := -1.0, sched := Callable()) -> void:
+	var has_charge := not legacy and cues.has(charge)
+	if fire_at >= 0.0 and sched.is_valid():
+		var lead := float(CHARGE_LEAD.get(charge, 0.0))
+		if has_charge:
+			sched.call(maxf(fire_at - lead, 0.0), func() -> void: play(charge, {"pos": pos}))
+		sched.call(fire_at, func() -> void: play(shot, {"pos": pos}))
+		return
+	if not has_charge:
 		play(shot, {"pos": pos})
 		return
 	play(charge, {"pos": pos})
 	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
 
 
-func lance(ion: bool, fac: String, pos = null) -> void:
-	_charged("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", "lance_charge", pos)
+func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := []) -> void:
+	var shot := "lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance"
+	if fires.is_empty():
+		_charged(shot, "lance_charge", pos, fire_at, sched)
+		return
+	# one shot cue per fire time (the null lance), the charge leading the first; on the effect clock when sched is given
+	var lead := float(CHARGE_LEAD["lance_charge"])
+	if sched.is_valid():
+		if not legacy:
+			sched.call(maxf(float(fires.min()) - lead, 0.0), func() -> void: play("lance_charge", {"pos": pos}))
+		for t in fires:
+			sched.call(float(t), func() -> void: play(shot, {"pos": pos}))
+		return
+	if not legacy:
+		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - lead, 0.0)})
+	for t in fires:
+		play(shot, {"pos": pos, "delay": float(t)})
 
 
-func torp(fac: String, pos = null) -> void:
+func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable()) -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
-	_charged(m.get(fac, "torp"), "torp_charge", pos)
+	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched)
 
 
 # The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
-func death_bed(seconds: float, pos = null) -> void:
+func death_bed(seconds: float, pos = null, variant := "") -> void:
 	if legacy or seconds <= 0.0:
 		return
-	play("death_bed", {"pos": pos, "duration": seconds, "death": true})
+	play("death_bed", {"pos": pos, "duration": seconds, "death": true, "variant": variant})
 
 
-func death_tail(pos = null) -> void:
-	play("death_tail", {"pos": pos, "death": true})
+func death_tail(pos = null, variant := "") -> void:
+	play("death_tail", {"pos": pos, "death": true, "variant": variant})
 
 
 func hit(pos = null, heavy := false) -> void:
 	play("hit_heavy" if heavy else "hit", {"pos": pos})
 
 
-# Issue 506: the weapon family and the struck faction choose the hull-hit cue. One table, easy to edit. A critical
-# keeps the heavy cue instead of the family cue, so it never doubles the voices; shield hits keep their own cue.
+# The struck material takes priority over the weapon family. Glass and tissue
+# retain their contact cue on a critical, with a quieter heavy tail under it.
 const HIT_BY_WEAPON := {
 	"las": "hit_las", "lance": "hit_las", "plasma": "hit_plasma",
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
 const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
+const CRIT_BEAT := preload("res://fx/fx_weapons.gd").CRIT_BEAT
 
 
 func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
-	if heavy:
-		return "hit_heavy"
 	if HIT_BY_TARGET.has(target_fac):
 		return str(HIT_BY_TARGET[target_fac])
+	if heavy:
+		return "hit_heavy"
 	return str(HIT_BY_WEAPON.get(fam, "hit"))
 
 
-func impact(fam: String, target_fac: String, pos = null, heavy := false) -> void:
+func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) -> void:
 	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
+	if heavy and HIT_BY_TARGET.has(target_fac):
+		# Issue 1238 (F5.4): the heavy tail under a Chorus or Glasswright hit keeps the target's material (its variant)
+		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))
 
 
 func shield(pos = null, big := false) -> void:

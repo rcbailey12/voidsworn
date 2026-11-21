@@ -1,4 +1,6 @@
 extends SceneTree
+# issue 1077: these checks measure the multi-cut split (two cuts, three sections, staged parting), which stays the
+# death_story="off" path; the default one-crack strained death has its own check, fx/test/death_story_check.gd.
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Runtime contracts for staged deaths, class gating, flash limits and the hurry key.
 const FX := preload("res://fx/fx.gd")
@@ -93,7 +95,7 @@ func _run() -> void:
 			var fx = FX.new()
 			world.add_child(fx)
 			fx.manual = true
-			fx.setup({"quality": "high", "reduce_flashing": calm, "shake": 0.0})
+			fx.setup({"death_story": "off", "quality": "high", "reduce_flashing": calm, "shake": 0.0})
 			fx.check_radius = true
 			# Issue 504: the beats are staged on bright-flash requests (flash_area_log); the safety checks (zero counted in
 			# calm mode, never more than three counted in a rolling second) stay on flash_log, the counted flashes.
@@ -235,7 +237,7 @@ func _run() -> void:
 		var fx = FX.new()
 		world.add_child(fx)
 		fx.manual = true
-		fx.setup({"quality": "high", "reduce_flashing": calm})
+		fx.setup({"death_story": "off", "quality": "high", "reduce_flashing": calm})
 		for i in 20:
 			_ship(world, fx, "Squadron", 0.1, false, "wing%d" % i)
 		for id in fx.ships: fx.death(id, "blast")
@@ -259,7 +261,7 @@ func _run() -> void:
 		var fx = FX.new()
 		world.add_child(fx)
 		fx.manual = true
-		fx.setup({"quality": quality, "shake": 0.0})
+		fx.setup({"death_story": "off", "quality": quality, "shake": 0.0})
 		var s = _ship(world, fx, "Cruiser", 0.8)
 		fx.death("T", "dark")
 		await _advance(fx, 0.8)
@@ -285,7 +287,7 @@ func _run() -> void:
 		var fx = FX.new()
 		root.add_child(fx)
 		fx.manual = true
-		fx.setup({"quality": "low"})
+		fx.setup({"death_story": "off", "quality": "low"})
 		fx.death_slowmo()
 		var real_t := 0.0
 		while fx._death_slow_left > 0.0 or fx.anim_speed() < 0.99:

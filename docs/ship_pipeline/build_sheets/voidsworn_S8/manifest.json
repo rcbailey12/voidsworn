@@ -220,7 +220,7 @@
   {
    "id": "R1",
    "kind": "radiator",
-   "what": "radiator spire, 1.6 tall, profile blade",
+   "what": "radiator spire, 1.1 tall, profile blade",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -231,7 +231,7 @@
   {
    "id": "R2",
    "kind": "radiator",
-   "what": "radiator spire, 2.0 tall, profile raked",
+   "what": "radiator spire, 1.4 tall, profile raked",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -242,7 +242,7 @@
   {
    "id": "R3",
    "kind": "radiator",
-   "what": "radiator spire, 2.4 tall, profile stepped",
+   "what": "radiator spire, 1.6 tall, profile stepped",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -253,7 +253,7 @@
   {
    "id": "R4",
    "kind": "radiator",
-   "what": "radiator spire, 2.6 tall, profile twin",
+   "what": "radiator spire, 1.8 tall, profile twin",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -264,7 +264,7 @@
   {
    "id": "R5",
    "kind": "radiator",
-   "what": "radiator spire, 2.4 tall, profile stepped",
+   "what": "radiator spire, 1.6 tall, profile stepped",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -275,7 +275,7 @@
   {
    "id": "R6",
    "kind": "radiator",
-   "what": "radiator spire, 2.0 tall, profile raked",
+   "what": "radiator spire, 1.4 tall, profile raked",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -286,7 +286,7 @@
   {
    "id": "R7",
    "kind": "radiator",
-   "what": "radiator spire, 1.6 tall, profile blade",
+   "what": "radiator spire, 1.1 tall, profile blade",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -789,31 +789,31 @@
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R1 (blade, 1.6 tall)",
+   "name": "Radiator spire R1 (blade, 1.1 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R2 (raked, 2.0 tall)",
+   "name": "Radiator spire R2 (raked, 1.4 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R3 (stepped, 2.4 tall)",
+   "name": "Radiator spire R3 (stepped, 1.6 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R4 (twin, 2.6 tall)",
+   "name": "Radiator spire R4 (twin, 1.8 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R5 (stepped, 2.4 tall)",
+   "name": "Radiator spire R5 (stepped, 1.6 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R6 (raked, 2.0 tall)",
+   "name": "Radiator spire R6 (raked, 1.4 tall)",
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R7 (blade, 1.6 tall)",
+   "name": "Radiator spire R7 (blade, 1.1 tall)",
    "route": "hand-built"
   },
   {

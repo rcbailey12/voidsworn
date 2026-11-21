@@ -226,15 +226,14 @@ func specification(ship: Dictionary) -> void:
 	if C.jt(ship.get("ripped")): v.add_child(body("Captured prize, links ripped out.", 17))
 	v.add_child(body(C.hull_text(ship["hp"]) + " / " + C.hull_text(d["maxHp"]), 30, GS.HULL_LOW if float(ship["hp"]) < float(d["maxHp"]) else GS.TEXT, GS.num_bold()))
 	var hp = Control.new(); hp.custom_minimum_size.y = ui.px(10); v.add_child(hp); meter(hp, Rect2(0, 0, sheet_w - 14, 8), ship["hp"], d["maxHp"])
-	v.add_child(body("Shields " + C.numstr(d["shMax"]) + "  +" + C.numstr(d["regen"]) + "/turn", 17, GS.GLACIER, GS.num()))
-	v.add_child(body("Armor " + C.pct(d["armor"]) + "   Speed " + C.numstr(d["speed"]) + "\nTurns " + C.numstr(d["turns"]) + "   Evasion " + C.numstr(d["ev"]), 17))
-	var ability = C.ABILITIES.get(hull.get("ab"), {})
-	if not ability.is_empty():
-		v.add_child(body(str(ability["n"]).to_upper(), 28, GS.TEXT, GS.sheet_name())); v.add_child(body(ability["d"]))
-	for w in d["weapons"]:
-		v.add_child(body(w["n"], 18, GS.TEXT, GS.sheet_medium()))
-		var arc = "Turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"]))
-		v.add_child(body(arc + " · " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + " · range " + C.numstr(w["r"]) + ((" · reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 17, GS.TEXT2, GS.num()))
+	for line in spec_lines(C, ship):
+		match line["k"]:
+			"shield": v.add_child(body(line["t"], 17, GS.GLACIER, GS.num()))
+			"ability": v.add_child(body(str(line["t"]).to_upper(), 28, GS.TEXT, GS.sheet_name()))
+			"weapon": v.add_child(body(line["t"], 18, GS.TEXT, GS.sheet_medium()))
+			"gun": v.add_child(body(line["t"], 17, GS.TEXT2, GS.num()))
+			"stat": v.add_child(body(line["t"], 17))
+			_: v.add_child(body(line["t"]))
 	v.add_child(body(str(cap["name"]).to_upper(), 28, GS.TEXT, GS.sheet_name()))
 	var rank = int(cap["rank"]); var next = C.RANK_XP[rank + 1] if rank + 1 < C.RANK_XP.size() else null
 	var xp = C.rankName(cap) + " · " + C.numstr(cap["xp"])
@@ -256,6 +255,34 @@ func specification(ship: Dictionary) -> void:
 	var st = ui._story()
 	if st != null and C.flagshipOf() != null and C.flagshipOf()["uid"] == ship["uid"]:
 		var rename = Button.new(); rename.text = "Rename flagship"; style_link(rename); rename.pressed.connect(func(): st.open_rename()); v.add_child(rename)
+
+# Issue 1449: the one full specification, shared by this sheet and the shipyard's "Full specs" drawer (shop, captured and
+# regrown hulls). Each line is {"t": text, "k": shield | stat | ability | ability_d | weapon | gun}; callers pick the type.
+static func spec_lines(c, ship: Dictionary) -> Array:
+	var hull = c.HULLS[ship["tpl"]]; var d = c.derive(ship); var out = []
+	if ship["uid"] == "" and ship["cap"].has("name"):   # a preview with a recovered captain: say whose perks the numbers include
+		var ps = ship["cap"]["perks"].map(func(p): return str(c.PERKS[p]["n"]))
+		out.append({"k": "captain", "t": "Comes with " + c.rankName(ship["cap"]) + " " + str(ship["cap"]["name"]) + ", recovered from the reserve" + ((" (" + ", ".join(PackedStringArray(ps)) + ")") if not ps.is_empty() else "") + ". The numbers include their perks."})
+	out.append({"k": "shield", "t": "Shields " + c.numstr(d["shMax"]) + "  +" + c.numstr(d["regen"]) + "/turn"})
+	out.append({"k": "stat", "t": "Armor " + c.pct(d["armor"]) + "   Speed " + c.numstr(d["speed"]) + "\nTurns " + c.numstr(d["turns"]) + "   Evasion " + c.numstr(d["ev"])})
+	var ability = c.ABILITIES.get(hull.get("ab"), {})
+	if not ability.is_empty():
+		out.append({"k": "ability", "t": str(ability["n"])}); out.append({"k": "ability_d", "t": str(ability["d"])})
+	for w in d["weapons"]:
+		out.append({"k": "weapon", "t": str(w["n"])})
+		var arc = "Turret" if w["arc"] == "T" else str(c.ARC_NAME.get(w["arc"], w["arc"]))
+		out.append({"k": "gun", "t": arc + " · " + c.numstr(w["shots"]) + "×" + c.numstr(w["dmg"]) + " · range " + c.numstr(w["r"]) + ((" · reload " + c.numstr(w["cd"])) if c.jt(w.get("cd")) else "")})
+	return out
+# A hull as it would arrive (Mk I, no refits), for spec_lines only: never added to the run. Its captain is the one newShip
+# would really install: the nth recovered captain in the reserve when newShip would take one (same test as newShip: no
+# battle running, a reserve to draw from), else a fresh lieutenant. The reserve is read, never popped (issue 1449, Artoo).
+static func preview_ship(c, tpl: String, ripped := false, nth := 0) -> Dictionary:
+	var cap = {"perks": [], "rank": 0, "xp": 0}
+	var R = c.RUN
+	if c.B == null and R != null and R.get("reserve") is Array and nth < R["reserve"].size(): cap = R["reserve"][nth]["cap"].duplicate(true)
+	var s = {"uid": "", "tpl": tpl, "mk": 1, "mods": [], "cap": cap, "hp": c.HULLS[tpl]["hp"]}
+	if ripped: s["ripped"] = true
+	return s
 
 func chooser(title: String) -> VBoxContainer:
 	head(title, Rect2(0, 0, middle_w, 60), 32, workspace)

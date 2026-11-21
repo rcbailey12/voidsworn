@@ -3,7 +3,7 @@ extends RefCounted
 # material, so a whole detailed craft is one mesh with five surfaces.
 const LOOK := preload("res://fx/faction_look.gd")
 const DEFAULT_KIND := {"voidsworn": "fighter", "hegemony": "fighter", "corsair": "bomber", "chorus": "spore", "ithar": "fighter", "deathless": ""}
-static var _meshes := {} # Weak references share geometry without holding GPU resources at exit.
+static var _meshes := {} # not GPU: weak references share geometry without holding GPU resources at exit.
 const SKIN := """
 shader_type spatial;
 uniform vec4 paint : source_color;

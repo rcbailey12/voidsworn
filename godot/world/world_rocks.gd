@@ -16,10 +16,16 @@ extends RefCounted
 const LIB_DIR := "res://world/rocks/"
 
 static var _meshes := {}      # name -> Mesh
-static var _lib: Dictionary = {}
+static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
-static var _scans: Array = []
+static var _scans: Array = []   # not GPU: scan names
 static var _scans_checked := false
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_meshes.clear()
+	_detail = null
 
 # The eight CC0 scans and their explicit far meshes are one package. A partial
 # copy must not make some of the seeded choices turn into fallback spheres.
@@ -35,7 +41,10 @@ static func scan_names() -> Array:
 			return []
 		for entry in manifest.rocks:
 			for suffix in ["", "_lo"]:
-				if not FileAccess.file_exists(LIB_DIR + str(entry.name) + suffix + ".glb"):
+				# An exported game packs only the imported scene and its remap, not the .glb itself, so a plain
+				# file check fails there; ResourceLoader.exists sees the remap (mesh() loads the same way).
+				var glb: String = LIB_DIR + str(entry.name) + str(suffix) + ".glb"
+				if not (ResourceLoader.exists(glb) or FileAccess.file_exists(glb)):
 					push_error("Missing scanned rock: " + str(entry.name) + suffix)
 					return []
 		for entry in manifest.rocks: _scans.append(str(entry.name))
@@ -46,6 +55,9 @@ shader_type spatial;
 render_mode cull_back;
 // A sphere about the pose's origin bounds every orientation of this batch's mesh.
 instance uniform float rock_radius = 1.0;
+global uniform float cam_near;
+global uniform vec4 cam_eye;
+global uniform vec3 cam_fwd;
 varying flat float camera_cover;
 // #230 option B (issue #541): rocks turn at their stored rate under the cap law by default; VS_ROCK_TUMBLE=0 holds the pose.
 uniform float tumble_k = 0.0;
@@ -114,9 +126,16 @@ void vertex() {
 	vL = VERTEX;
 	vScale = length(MODEL_MATRIX[0].xyz);
 	float radius = rock_radius * max(vScale, max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
-	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
-	// The battle camera's near plane is 0.5 units out. Fade the whole instance before it can cut the surface.
-	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
+	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
+	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
+	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
+	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
+	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
+	// Issue 1264: fade the whole instance before the live near plane (cam_near, set by camera_rig.gd: 1, 5 or 15 by
+	// zoom since issue 368) can cut its surface. Depth along the view, not straight-line distance, is what the near
+	// plane cuts, so a rock off to the side fades by its depth too.
+	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
+	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
@@ -265,6 +284,9 @@ const CRYSTAL_SHADER := """
 shader_type spatial;
 render_mode cull_back;
 instance uniform float rock_radius = 1.0;
+global uniform float cam_near;
+global uniform vec4 cam_eye;
+global uniform vec3 cam_fwd;
 varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
@@ -281,8 +303,14 @@ void vertex() {
 	vC = COLOR;
 	float scale = max(length(MODEL_MATRIX[0].xyz), max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
 	float radius = rock_radius * scale;
-	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
-	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
+	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
+	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
+	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
+	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
+	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
+	// Issue 1264: as ROCK_SHADER, fade before the live near plane cuts the surface.
+	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
+	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
 	float axis_length = length(ic.xyz);

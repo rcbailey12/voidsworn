@@ -23,6 +23,17 @@ func compare_case(actual: Dictionary, expected: Dictionary) -> String:
 			return "unit %d: got %s, expected %s" % [i, actual.units[i], expected.units[i]]
 	return ""
 
+func compare_pinned(actual: Dictionary, pinned: Dictionary) -> String:
+	if not pinned.has("units"): return "no pinned fleet for this case"
+	for key in ["shape", "arena"]:
+		if actual[key] != pinned[key]: return "%s: got %s, pinned %s" % [key, actual[key], pinned[key]]
+	if actual.units.size() != pinned.units.size():
+		return "%s units, pinned %s" % [actual.units.size(), pinned.units.size()]
+	for i in range(actual.units.size()):
+		if actual.units[i] != pinned.units[i]:
+			return "unit %d: got %s, pinned %s" % [i, actual.units[i], pinned.units[i]]
+	return ""
+
 func _initialize() -> void:
 	var fixture_script := ProjectSettings.globalize_path("res://rules/test/node/map_trial_fixtures.js")
 	var output := []
@@ -49,14 +60,22 @@ func _initialize() -> void:
 		R.RUN = f.run
 		R.RUN["mapTrial"] = true
 		R.startBattle(f.cfg)
-		var difference := compare_case(snapshot(R), f.expected)
+		var actual := snapshot(R)
+		var difference := compare_case(actual, f.expected)
 		if difference != "":
 			if failures < 8: printerr("FAIL: ", f.enc, " seed ", f.seed, ": ", difference)
+			failures += 1
+		# The pinned fleets catch a change that moves both twins together (issue 1160).
+		var pinned: Dictionary = f.get("pinned", {})
+		difference = compare_pinned(actual, pinned)
+		if difference != "":
+			if failures < 8: printerr("FAIL: ", f.enc, " seed ", f.seed, " against the pinned fleets (", pinned.get("revision", "none"), "): ", difference,
+				". A deliberate fleet change refreshes the pin: node godot/rules/test/node/map_trial_fixtures.js --pin")
 			failures += 1
 	for enc in ENCOUNTERS:
 		if seeds.get(enc, {}).size() < 20:
 			printerr("FAIL: ", enc, " has fewer than 20 distinct seeds")
 			failures += 1
-	if failures == 0: print("PASS: %d map trial battles match the JS sim across %d encounters" % [fixtures.size(), ENCOUNTERS.size()])
+	if failures == 0: print("PASS: %d map trial battles match the JS sim and the pinned fleets across %d encounters" % [fixtures.size(), ENCOUNTERS.size()])
 	else: printerr("FAIL: ", failures, " map trial comparisons failed")
 	quit(0 if failures == 0 else 1)

@@ -75,12 +75,13 @@ test('KIT-2 ionpulse not dead against two whole factions', () => {
   return '';
 });
 
+// Issue 1503 (R372, Eclipse all violet): the colour half is fixed. style 'tomb' is kept: it is the browser
+// hull-shape key (ships3d.js buildTomb), not a colour, and the Godot game draws installed Eclipse hulls.
 test('KIT-3 eclipse not in banned green tomb styling', () => {
   const d = G.FACTIONS.deathless;
   const bad = [];
   if (d.glow === '#3dff6a') bad.push('glow #3dff6a');
   if (d.trim === '#1fbf4a') bad.push('trim #1fbf4a');
-  if (d.style === 'tomb') bad.push("style 'tomb'");
   return bad.length ? 'FACTIONS.deathless still uses banned styling: ' + bad.join(', ') : '';
 });
 
@@ -971,10 +972,11 @@ test('BF-1 clearSpawns preserves shape-defining center terrain', () => {
 
 test('AI-1 veteran brace decision survives the mid-move volley path', async () => {
   setAiLevel(G, 'veteran');
+  // issue 1160: the enemy line starts 6 hexes off (was 8). At 8 a Veteran, which now prices guns that can move into range at 0.8, rightly waits outside them
   const B = probeBattle(G, { player: ['penitent', 'penitent', 'penitent'], enemies: ['d_jackal'], fac: 'deathless', seed: 11, arena: 'strip' });
   clearTerrain(G);
   const pens = B.units.filter(u => u.side === 'player');
-  [[6, 5], [6, 7], [6, 9]].forEach((p, i) => { const h = offH(p[0], p[1]); place(pens[i], h.q, h.r); });
+  [[8, 5], [8, 7], [8, 9]].forEach((p, i) => { const h = offH(p[0], p[1]); place(pens[i], h.q, h.r); });
   const m = B.units.find(u => u.side === 'enemy');
   const mh = offH(14, 7); place(m, mh.q, mh.r);
   pens.forEach(p => faceTowardG(p, m));
@@ -1004,12 +1006,13 @@ test('AI-3 death-cliff weight scales with ship value', async () => {
       Object.assign(target, { weapons: [], hp: 1, maxHp, ev: 0, sh: [0, 0, 0, 0], shMax: 0 });
       place(guard, trap.q - 3, trap.r + 1);
       guard.weapons = [mkWG('scatter', 'T', 0)];
-      guard.weapons[0].dmg = 12;
+      guard.weapons[0].dmg = 12; guard.speed = 1;
       const m = B.units.find(u => u.side === 'enemy');
-      place(m, trap.q + 1, trap.r, 3);
-      Object.assign(m, { t: { ...m.t, cp }, weapons: [mkWG('scatter', 'T', 0)], speed: 1, turns: 0,
+      place(m, trap.q + 2, trap.r, 3);
+      Object.assign(m, { t: { ...m.t, cp }, weapons: [mkWG('scatter', 'T', 0)], speed: 2, turns: 0,
         hp: 24, maxHp: 24, armor: 0, ev: 0, ab: null, sh: [0, 0, 0, 0], shMax: 0 });
-      m.weapons[0].dmg = 2;
+      m.weapons[0].dmg = 2; // issue 1160: the ship starts 2 hexes out with speed 2 (was 1 and 1) and the guard has speed 1, so the start hex stays
+      // safe now that Veteran counts guns that can move into range at 0.8; the trap hex is still one move away
       G._sandbox.__u = m;
       G._sandbox.__trap = trap;
       const [safe, danger] = runIn('[evalThreatVet(__u, alive("player")), evalThreatVet(stateView(__u, {...__trap, f:3}), alive("player"))]');

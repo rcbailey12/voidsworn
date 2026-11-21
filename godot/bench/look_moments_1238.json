@@ -1,0 +1,242 @@
+{
+ "about": "Issue 1238: Chorus big hulls hold for their class's tell, then rupture; a Glasswright cruiser for comparison. Cells: the kill, mid-tell, just before the split, the split, 0.3, 1.0 and 2.5 s after.",
+ "cameras": [
+  170,
+  60
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "d1238_chorus_cruiser",
+   "group": "deaths",
+   "label": "issue 1238 death: Chorus cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     -0.12,
+     1
+    ],
+    [
+     "split",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "d1238_chorus_titan",
+   "group": "deaths",
+   "label": "issue 1238 death: Chorus Bio-Titan",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Bio-titan"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     -0.12,
+     1
+    ],
+    [
+     "split",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "d1238_glass_cruiser",
+   "group": "deaths",
+   "label": "issue 1238 death: Glasswright cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     -0.12,
+     1
+    ],
+    [
+     "split",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "d1238_chorus_frigate",
+   "group": "deaths",
+   "label": "issue 1238 death: Chorus frigate (unchanged control)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Frigate"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     -0.12,
+     1
+    ],
+    [
+     "split",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     2.5,
+     1
+    ]
+   ]
+  }
+ ]
+}
