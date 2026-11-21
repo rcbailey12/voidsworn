@@ -6387,6 +6387,10 @@ func canAbility(u) -> bool:
 			if not jt(t.get("isSq")) and hdist(t, u) <= 4 and z0(t.get("shMax")) > 0 and float(z0(t.get("shp"))) > 0: return true
 		return false
 	return true
+# issue 1444: the nova shell's raw damage to one ship in the blast (before shields and armour); the hit and the battle
+# screen's forecast both use it (battle.js novaDamage)
+func novaDamage(u, x, c) -> float:
+	return (40.0 if hdist(x, c) == 0 else 20.0) * u["dmg"] * (1.5 if jt(x.get("isSq")) else 1.0) * storyDamageMult(u)
 func novaTargets(u) -> Array:
 	var o = []
 	for h in boardHexes():
@@ -6499,7 +6503,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 		for x in alive():
 			if hdist(x, c) <= 1: hitList.append(x)
 		for x in hitList:
-			var dmg = (40.0 if hdist(x, c) == 0 else 20.0) * u["dmg"] * (1.5 if jt(x.get("isSq")) else 1.0) * storyDamageMult(u)
+			var dmg = novaDamage(u, x, c)
 			var quad = shieldQuad(x, u)
 			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
 			if jt(r.shield): flt(x, "−" + ns(r.shield), "#7fd6c8", -18)

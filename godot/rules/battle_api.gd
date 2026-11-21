@@ -254,7 +254,7 @@ func _i_view() -> Dictionary:
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
-			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
+			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": (u.get("stance") if R.jt(u.get("stance")) else "strike") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
 			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
@@ -704,6 +704,19 @@ func _threat_map_raw(only_id = null, both := false) -> Variant:
 	R.eval_end()
 	return {"dmg": out, "n": cnt} if both else out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
+# issue 1444: the nova forecast for a centre hex: every live ship within 1 hex, with the raw damage the shell would deal it
+# (rules.gd novaDamage, the same call the hit makes: centre or ring, x1.5 on craft, the player's story damage modifier)
+func nova_preview(id: String, q: int, r: int) -> Array:
+	_enter()
+	var o = _i_nova_preview(id, q, r); _leave(false); return o
+func _i_nova_preview(id: String, q: int, r: int) -> Array:
+	var u = unit(id)
+	var o := []
+	if u == null: return o
+	var c := {"q": q, "r": r}
+	for x in R.alive():
+		if R.hdist(x, c) <= 1: o.append({"id": x["id"], "centre": R.hdist(x, c) == 0, "dmg": R.novaDamage(u, x, c)})
+	return o
 func world_info() -> Dictionary:
 	_enter()
 	var r = _i_world_info(); _leave(false); return r
