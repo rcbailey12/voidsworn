@@ -24,6 +24,7 @@ ZONES = {
     'tissue': ((.152, .076, .038), (.058, .026, .015), .23),
     'maw': ((.029, .019, .007), (.008, .005, .002), .19),
     'pore': ((.018, .013, .005), (.006, .004, .002), .31),
+    'pit': ((.014, .009, .005), (.004, .003, .002), .9),   # issue 1291: dark open holes, matte (a wet disc flared white in C13 run J)
     'vein': ((.060, .040, .016), (.024, .016, .007), .23),
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
     # the armour shell: pale weathered horn on the keels and lips down to charred horn at the tucked roots (round 3)
@@ -125,6 +126,7 @@ GROWN = {
     'vein': ((.050, .009, .007), (.016, .003, .002), .40),     # dark red blood vessels, never maroon flesh
     'pore': ((.062, .045, .026), (.030, .020, .012), .45),     # round D: a pit in the hide's own colour, never a black rivet
     'maw': ((.030, .012, .007), (.008, .003, .002), .22),
+    'pit': ((.016, .007, .005), (.004, .002, .001), .9),
     # chitin grown out of the hide: pale bone on the worn crests and lips to dark horn at the roots
     'carapace': ((.056, .044, .026), (.013, .009, .005), .62),   # round D: darker, nearer the hide, rough
     'chitin': ((.20, .155, .085), (.04, .028, .013), .55),
@@ -244,7 +246,7 @@ def surface_layers(c, zone, _tiles):
         base, shade, roughness = GROWN[zone]
         if zone == 'carapace':
             return grown_chitin(c, zone, base, shade, roughness)
-        if zone not in ('chitin', 'bone', 'maw', 'pore'):
+        if zone not in ('chitin', 'bone', 'maw', 'pore', 'pit'):
             return grown_flesh(c, zone, base, shade, roughness)
     if zone in ('chitin', 'bone', 'carapace'):
         return hard_layers(c, zone, base, shade, roughness)

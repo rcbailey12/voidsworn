@@ -88,6 +88,7 @@ MATS = {
     'tissue': ((0.13, 0.075, 0.035), 0),     # raw transition tissue (sphincters, lips, the wound along the spine)
     'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
     'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
+    'pit': ((0.010, 0.007, 0.004), 0),       # dark open holes (gland vents, sac pores): matte, so no light flares off them
     'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
     'veilroot': ((0.45, 0.68, 0.06), 1.0),  # the Chorus veils' glowing roots and ribs (R341 round 3)
     'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)

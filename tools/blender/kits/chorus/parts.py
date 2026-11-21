@@ -430,7 +430,7 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
         # Ryan (Nov 20, C13 run I: "There's no actual holes like the concept"): the vent is a real dark hole. A dark crater sits
         # inside the lip ring over the knoll's crown, deepest at its centre, so the opening reads black from the battle camera
-        p.add('crater', 'mount', 'maw', blob(r * 0.06, r * 1.02, r * 1.02, centre=(L * 1.0 - r * 0.02, 0, 0), nu=24, nv=10, seed=seed + 9, amp=0.04))
+        p.add('crater', 'mount', 'pit', blob(r * 0.06, r * 1.02, r * 1.02, centre=(L * 1.0 - r * 0.02, 0, 0), nu=24, nv=10, seed=seed + 9, amp=0.04))
         for k in range(22):
             a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
             ca, sa = math.cos(a), math.sin(a)
@@ -1062,7 +1062,7 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
         # bulbs: a dark pit sunk in the skin with a rolled lip of flesh round it
         pr = r * (0.2 if armour else 0.17)
         top = Vector((0, 0, cz + r * 1.0))
-        p.add('pore_pit', 'body', 'maw', blob(pr, pr * 0.96, r * 0.035, centre=(0, 0, top.z - r * 0.012), nu=20, nv=8, seed=seed + 7, amp=0.05))
+        p.add('pore_pit', 'body', 'pit', blob(pr, pr * 0.96, r * 0.035, centre=(0, 0, top.z - r * 0.012), nu=20, nv=8, seed=seed + 7, amp=0.05))
         ring = [Vector((pr * 1.05 * math.cos(2 * math.pi * k / 28), pr * 1.05 * math.sin(2 * math.pi * k / 28), top.z - r * 0.03)) for k in range(29)]
         p.add('pore_lip', 'body', 'flesh2', tube(ring, [r * 0.05] * 29, n=6, cap0=False, cap1=False))
         glow = 0
