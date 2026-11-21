@@ -1,0 +1,8 @@
+chain CQ waiting for 1415H GA1 exit in chain_1119cp.txt Sat 11/21/2026 14:41:49.81 
+mirror fetch exit 0
+7521a69d4299163e965750f87fdd3819097ef158 reachable in the mirror
+1413 O2F start 16:16:59.71 
+1413 O2F exit 0 at 16:32:38.22 
+1413 O3F start 16:32:38.22 
+1413 O3F exit 0 at 16:46:10.80 
+1413 HB1F start 16:46:10.80 

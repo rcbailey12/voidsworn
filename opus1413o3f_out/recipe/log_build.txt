@@ -1,0 +1,5 @@
+Info: Saved as "O3.blend"
+[209] {"cell": "O3", "hull_objects": 95, "parts": 119, "interiors": 17, "seconds": 0.2, "notes": [{"route": "build sheet hegemony_O3", "contract": {"sheet": "hegemony_O3", "game_ship": "obj_beacon", "variant": "", "model_length": 7.5, "scale": 0.13333333333333333, "length_world": 7.5, "t_lines": [-0.06667, 0.06], "l_line": [], "l_lines": [], "muzzles": 0, "guns": 0, "engines": 0, "bays": 0, "points": 1, "turrets": [], "interior_objects": 17, "slots": []}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

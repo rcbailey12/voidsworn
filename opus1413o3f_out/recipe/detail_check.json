@@ -1,0 +1,21 @@
+{
+ "faction": "hegemony",
+ "floors": {
+  "normal": 1.34,
+  "albedo": 0.13,
+  "rough": 0.14
+ },
+ "opt_out": null,
+ "problem": null,
+ "measured": {
+  "normal": 2.495674933740422,
+  "albedo": 0.13629917293259133,
+  "rough": 0.18422572437203877,
+  "texels": 896059,
+  "from_uvs": true,
+  "covered_share": 0.56
+ },
+ "low": [],
+ "verdict": "PASS",
+ "line": "PASS detail check: normal relief 2.50 deg (floor 1.34), albedo contrast 0.136 (floor 0.130), roughness spread 0.184 (floor 0.140), 896059 texels"
+}
