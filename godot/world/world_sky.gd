@@ -275,15 +275,19 @@ void field(vec3 p, out float gas, out float dst, out float hue) {
 
 vec3 galaxy_band(vec3 d, out float rift) {
 	float y = dot(d, band_n);
-	float core = exp(-pow(y / 0.17, 2.0));
-	float wide = exp(-pow(y / 0.42, 2.0));
+	// y is signed (negative on one side of the band); GLSL leaves pow() undefined for a negative base, so square by hand
+	float yc = y / 0.17;
+	float yw = y / 0.42;
+	float yr = y / 0.06;
+	float core = exp(-yc * yc);
+	float wide = exp(-yw * yw);
 	// the galactic centre is warmer and brighter on one side of the band
 	vec3 cdir = normalize(cross(band_n, vec3(0.31, 0.0, 0.95)));
 	float cen = 0.5 + 0.5 * dot(normalize(d - band_n * y), cdir);
 	float clump = fbm3n(d * 9.0 + seed * 0.7, 5);
 	float lum = (core * (0.4 + 0.9 * smoothstep(0.35, 0.75, clump)) + wide * 0.18) * (0.6 + 0.9 * cen * cen);
 	float rn = fbm3n(d * 6.0 + vec3(5.0, seed, 1.0), 5);
-	rift = 1.0 - exp(-pow(y / 0.06, 2.0)) * smoothstep(0.35, 0.6, rn) * 0.85 - core * smoothstep(0.55, 0.75, rn) * 0.4;
+	rift = 1.0 - exp(-yr * yr) * smoothstep(0.35, 0.6, rn) * 0.85 - core * smoothstep(0.55, 0.75, rn) * 0.4;
 	vec3 col = mix(vec3(0.55, 0.62, 0.8), vec3(1.0, 0.82, 0.6), cen * cen);
 	return col * lum * band * 0.06;
 }
@@ -443,7 +447,8 @@ void sky() {
 	}
 	if (!AT_CUBEMAP_PASS) {
 		float y = dot(d, band_n);
-		float bd = exp(-pow(y / 0.25, 2.0)) * band;
+		float yb = y / 0.25;   // signed: square by hand, never pow() (undefined for a negative base)
+		float bd = exp(-yb * yb) * band;
 		vec3 st = star_layer(d, 120.0, 0.955, 1.0, bd * 0.03) + star_layer(d, 300.0, 0.985, 0.55, bd * 0.012) + star_layer(d, 650.0, 0.994, 0.35, bd * 0.004);
 		col += st * star_k * mix(star_floor, 1.0, T) * (1.0 - 0.6 * has_pano);
 		// the stars inside the gas, with halos
