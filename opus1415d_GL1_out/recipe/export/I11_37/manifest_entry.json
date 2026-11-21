@@ -1,0 +1,53 @@
+{
+ "name": "Glasswright lancet GL1",
+ "faction": "ithar",
+ "cls": "Destroyer",
+ "band": "M",
+ "game_ship": "i_blade",
+ "length_world": 9.5,
+ "hardpoints": {
+  "gun": 4,
+  "engine": 1,
+  "breach": 2,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 2,
+ "turrets": 0,
+ "files": {
+  "I11_37.glb": {
+   "bytes": 11601856,
+   "sha256": "077dc3522b536a6d63482b8093f3d8eba96a439fd1f4d152aff7bf9a57275f42"
+  },
+  "I11_37_base.jpg": {
+   "bytes": 1587553,
+   "sha256": "b7e001cd0abe78fe106a59eb2420538335df383dc61c9a0a6bd4cd863ad9f370"
+  },
+  "I11_37_emission.jpg": {
+   "bytes": 469809,
+   "sha256": "c4dc99aaa3562680755a0275d3bf60bc1588812dbcc8a33ba599b79748130e6d"
+  },
+  "I11_37_normal.png": {
+   "bytes": 1983100,
+   "sha256": "4bd097e7010922705bf2b3feb1d4457a1e1e0aee6613409403f14fbd7bbc9e6c"
+  },
+  "I11_37_orm.png": {
+   "bytes": 4509232,
+   "sha256": "be377f45f65e61d424e76d3af0f61bcd01f75bc2818f2e1a9afda55be946cb22"
+  },
+  "I11_37_parts_base.jpg": {
+   "bytes": 884242,
+   "sha256": "0fa6525b07d09532d83356681d8ac6decf446299811a13ea53ee15fc6d6c00a5"
+  },
+  "I11_37_parts_normal.png": {
+   "bytes": 392245,
+   "sha256": "cb010598370fd54e88e0dfa7c9d2fe4e0b468fbd998dcf90046d25d2d3d99154"
+  },
+  "I11_37_parts_orm.png": {
+   "bytes": 2766128,
+   "sha256": "89686efc13c5185e07565f8913b9623bd65e4f7c24ffc4e769d34d8fe21ad413"
+  }
+ },
+ "pc_path": "godot/assets/ships/I11_37/"
+}

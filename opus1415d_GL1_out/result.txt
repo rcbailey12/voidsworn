@@ -1,0 +1,44 @@
+start ithar_GL1 I11_37 board/pin-1415d Fri 11/20/2026 22:55:42.82 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                -> opus/issue-1451
+ - [deleted]             (none)                -> refs/pull/1486/merge
+ * [new branch]          board/pc-out-1379g    -> board/pc-out-1379g
+ * [new branch]          board/pc-out-1413-O3c -> board/pc-out-1413-O3c
+   868700049..63090f057  main                  -> main
+   516a1ded2..e91f024e9  opus/issue-1434       -> opus/issue-1434
+   a1988ee16..74d5cb101  opus/issue-1448       -> opus/issue-1448
+   60f3a2ff2..e7363aee8  opus/issue-1495       -> opus/issue-1495
+   516a1ded2..e91f024e9  refs/pull/1445/head   -> refs/pull/1445/head
+ + bcccce13d...d5f31afa8 refs/pull/1445/merge  -> refs/pull/1445/merge  (forced update)
+   a1988ee16..74d5cb101  refs/pull/1478/head   -> refs/pull/1478/head
+ + f6cfcd22d...1dbafcf81 refs/pull/1478/merge  -> refs/pull/1478/merge  (forced update)
+   60f3a2ff2..e7363aee8  refs/pull/1496/head   -> refs/pull/1496/head
+ + 2571699e0...af4348634 refs/pull/1496/merge  -> refs/pull/1496/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\repo
+commit=a76a10cc8c4296e809c41643fcd0b0c8531f8152
+import exit 0 
+1_concept_in start 23:01:01.41 
+1_concept_in exit 0 at 23:01:04.02 
+2_shape_ref start 23:01:04.02 
+2_shape_ref exit 0 at 23:01:04.77 
+3_trace_hull start 23:01:04.78 
+3_trace_hull exit 0 at 23:02:30.40 
+4_parts_kit start 23:02:30.40 
+4_parts_kit exit 0 at 23:03:06.59 
+5_paint_bake start 23:03:06.60 
+5_paint_bake exit 0 at 23:06:48.23 
+6_lod start 23:06:48.23 
+6_lod exit 0 at 23:07:54.67 
+7_export start 23:07:54.67 
+7_export exit 0 at 23:09:15.00 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\repo\godot\assets\ships\I11_37\I11_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 23:09:43.96 
+all done 

@@ -1,0 +1,5 @@
+Info: Saved as "GL1.blend"
+[209] {"cell": "GL1", "hull_objects": 43, "parts": 27, "interiors": 21, "seconds": 2.1, "notes": [{"route": "build sheet ithar_GL1", "contract": {"sheet": "ithar_GL1", "game_ship": "i_blade", "variant": "", "model_length": 9.287, "scale": 0.10767740196393043, "length_world": 9.5, "t_lines": [-0.22074, 0.24766], "l_line": [], "l_lines": [], "muzzles": 4, "guns": 2, "engines": 1, "bays": 0, "points": 7, "turrets": [], "interior_objects": 21, "slots": ["0 shard F", "1 startorp F"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

@@ -1,0 +1,338 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:09:43 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\
+	    New File  		     310	audit.json100%  
+	    New File  		   38517	bow_blink.gif.provenance.json100%  
+	    New File  		     509	concept_camera.json100%  
+	    New File  		    2005	density.json100%  
+	    New File  		    2675	GL1.json100%  
+	    New File  		     439	log_audit.txt100%  
+	    New File  		    3575	log_audit_selftest.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		   34031	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     124	log_blink.txt100%  
+	    New File  		     595	log_build.txt100%  
+	    New File  		      65	log_clay.txt100%  
+	    New File  		      60	log_close.txt100%  
+	    New File  		     451	log_detail.txt100%  
+	    New File  		    1503	log_export.txt100%  
+	    New File  		     616	log_export_check.txt100%  
+	    New File  		    1857	log_export_selftest.txt100%  
+	    New File  		    4651	log_godot.txt100%  
+	    New File  		     648	log_install_cache.txt100%  
+	    New File  		     441	log_install_readback.txt100%  
+	    New File  		    1932	log_lod.txt100%  
+	    New File  		  459088	log_render.txt 28%   57%   85%  100%  
+	    New File  		   85212	log_render_concept.txt100%  
+	    New File  		  170494	log_render_far.txt 76%  100%  
+	    New File  		    1243	log_sheet_contract.txt100%  
+	    New File  		      99	log_sil.txt100%  
+	    New File  		     294	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   78038	log_surface.txt100%  
+	    New File  		     690	log_thirds.txt100%  
+	    New File  		     690	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     371	audit_into_ship.json100%  
+	    New File  		     321	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     310	audit_no_longitudinal.json100%  
+	    New File  		     228	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\build\
+	    New File  		     644	GL1_build.json100%  
+	    New File  		    1655	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\glb\
+	    New File  		     312	GL1_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\
+	    New File  		   22737	bench209.json100%  
+	    New File  		    6142	GL1_auto_20.png.provenance.json100%  
+	    New File  		    6144	GL1_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	GL1_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	GL1_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	GL1_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	GL1_hand_20.png.provenance.json100%  
+	    New File  		    6144	GL1_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	GL1_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	GL1_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	GL1_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	GL1_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	GL1_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	GL1_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	GL1_off_20.png.provenance.json100%  
+	    New File  		    6143	GL1_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	GL1_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	GL1_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	GL1_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\r\
+	    New File  		   11348	GL1_battle.png.provenance.json100%  
+	    New File  		   41669	GL1_below.png.provenance.json100%  
+	    New File  		   41650	GL1_below_clay.png.provenance.json100%  
+	    New File  		   41698	GL1_concept.png.provenance.json100%  
+	    New File  		   41861	GL1_concept_cl.png.provenance.json100%  
+	    New File  		   41659	GL1_concept_clay.png.provenance.json100%  
+	    New File  		   41794	GL1_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41646	GL1_hero.png.provenance.json100%  
+	    New File  		   41707	GL1_hero_clay.png.provenance.json100%  
+	    New File  		   41692	GL1_hero_s.png.provenance.json100%  
+	    New File  		   41657	GL1_hero_s_clay.png.provenance.json100%  
+	    New File  		   41600	GL1_side.png.provenance.json100%  
+	    New File  		   41713	GL1_side_clay.png.provenance.json100%  
+	    New File  		   41626	GL1_side_s.png.provenance.json100%  
+	    New File  		   41663	GL1_side_s_clay.png.provenance.json100%  
+	    New File  		   41587	GL1_top.png.provenance.json100%  
+	    New File  		   41700	GL1_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\surface\
+	    New File  		     806	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        87        87         0         0         0         0
+   Bytes :    1.63 m    1.63 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            10009959 Bytes/sec.
+   Speed :             572.774 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:09:43 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:09:43 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\r\
+	    New File  		   84161	GL1_battle.png100%  
+	    New File  		   2.7 m	GL1_below.png 18%   36%   54%   73%   91%  100%  
+	    New File  		   2.0 m	GL1_below_clay.png 24%   48%   73%   97%  100%  
+	    New File  		  891270	GL1_concept.png 29%   58%   88%  100%  
+	    New File  		  904521	GL1_concept_cl.png 28%   57%   86%  100%  
+	    New File  		  763473	GL1_concept_clay.png 34%   68%  100%  
+	    New File  		  761663	GL1_concept_clay_cl.png 34%   68%  100%  
+	    New File  		   1.1 m	GL1_hero.png 21%   43%   65%   87%  100%  
+	    New File  		   1.0 m	GL1_hero_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   1.1 m	GL1_hero_s.png 21%   42%   63%   85%  100%  
+	    New File  		   1.0 m	GL1_hero_s_clay.png 24%   48%   72%   97%  100%  
+	    New File  		   2.5 m	GL1_side.png 19%   39%   58%   78%   97%  100%  
+	    New File  		   2.0 m	GL1_side_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.6 m	GL1_side_s.png 19%   38%   57%   76%   95%  100%  
+	    New File  		   2.0 m	GL1_side_s_clay.png 24%   48%   72%   96%  100%  
+	    New File  		   2.5 m	GL1_top.png 19%   38%   58%   77%   96%  100%  
+	    New File  		   2.0 m	GL1_top_clay.png 24%   49%   74%   98%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   26.23 m   26.23 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1528030166 Bytes/sec.
+   Speed :            87434.587 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:09:43 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:09:43 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\surface\
+	    New File  		   71130	surface_below.png100%  
+	    New File  		   63692	surface_bow.png100%  
+	    New File  		   70404	surface_port.png100%  
+	    New File  		   70394	surface_starboard.png100%  
+	    New File  		   64246	surface_stern.png100%  
+	    New File  		   71098	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   401.3 k   401.3 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            12453454 Bytes/sec.
+   Speed :             712.592 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:09:43 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:09:43 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\godot\
+	    New File  		  472154	GL1_auto_20.png 27%   55%   83%  100%  
+	    New File  		  664500	GL1_auto_d1.2.png 39%   78%  100%  
+	    New File  		  203916	GL1_auto_d16.0.png 64%  100%  
+	    New File  		  301780	GL1_auto_d3.0.png 43%   86%  100%  
+	    New File  		  215579	GL1_auto_d8.0.png 60%  100%  
+	    New File  		  468674	GL1_hand_20.png 27%   55%   83%  100%  
+	    New File  		  664727	GL1_hand_d1.2.png 39%   78%  100%  
+	    New File  		  203365	GL1_hand_d17.4.png 64%  100%  
+	    New File  		  202884	GL1_hand_d18.6.png 64%  100%  
+	    New File  		  306106	GL1_hand_d2.9.png 42%   85%  100%  
+	    New File  		  294069	GL1_hand_d3.1.png 44%   89%  100%  
+	    New File  		  216476	GL1_hand_d7.75.png 60%  100%  
+	    New File  		  214678	GL1_hand_d8.25.png 61%  100%  
+	    New File  		  470904	GL1_off_20.png 27%   55%   83%  100%  
+	    New File  		  664599	GL1_off_d1.2.png 39%   78%  100%  
+	    New File  		  203791	GL1_off_d16.0.png 64%  100%  
+	    New File  		  301021	GL1_off_d3.0.png 43%   87%  100%  
+	    New File  		  215535	GL1_off_d8.0.png 60%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.99 m    5.99 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           241721461 Bytes/sec.
+   Speed :           13831.412 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:09:43 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 11:09:43 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\export\I11_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GL1\out\recipe\export\I11_37\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\export\I11_37\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\export\I11_37\
+	    New File  		      25	export_status.txt100%  
+	    New File  		  11.0 m	I11_37.glb  9.0% 18.0% 27.1% 36.1% 45.1% 54.2% 63.2% 72.3% 81.3% 90.3% 99.4%100%  
+	    New File  		   1.5 m	I11_37_base.jpg 16%   33%   49%   66%   82%   99%  100%  
+	    New File  		    3441	I11_37_check.json100%  
+	    New File  		  469809	I11_37_emission.jpg 27%   55%   83%  100%  
+	    New File  		    9962	I11_37_export.json100%  
+	    New File  		   1.8 m	I11_37_normal.png 13%   26%   39%   52%   66%   79%   92%  100%  
+	    New File  		   4.3 m	I11_37_orm.png 11%   23%   34%   46%   58%   69%   81%   93%  100%  
+	    New File  		  884242	I11_37_parts_base.jpg 29%   59%   88%  100%  
+	    New File  		  392245	I11_37_parts_normal.png 33%   66%  100%  
+	    New File  		   2.6 m	I11_37_parts_orm.png 18%   37%   56%   75%   94%  100%  
+	    New File  		    1430	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\export\I11_37\_gltf_source\
+	    New File  		   3.4 m	GL1_hull_albedo.png 14%   29%   43%   58%   72%   87%  100%  
+	    New File  		   1.2 m	GL1_hull_emission.png 19%   38%   58%   77%   96%  100%  
+	    New File  		   1.8 m	GL1_hull_normal.png 13%   26%   39%   52%   66%   79%   92%  100%  
+	    New File  		   4.3 m	GL1_hull_orm.png 11%   23%   34%   46%   58%   69%   81%   93%  100%  
+	    New File  		  577038	GL1_parts_albedo.png 45%   90%  100%  
+	    New File  		  392245	GL1_parts_normal.png 33%   66%  100%  
+	    New File  		   2.6 m	GL1_parts_orm.png 18%   37%   56%   75%   94%  100%  
+	    New File  		  11.0 m	I11_37.bin  9.0% 18.1% 27.1% 36.2% 45.3% 54.3% 63.4% 72.4% 81.5% 90.6% 99.6%100%  
+	    New File  		   39810	I11_37.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   48.64 m   48.64 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           980942538 Bytes/sec.
+   Speed :           56129.982 MegaBytes/min.
+   Ended : Friday, November 20, 2026 11:09:43 PM
+

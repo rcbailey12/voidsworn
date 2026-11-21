@@ -1,0 +1,1 @@
+[score] GL1 {'overlap': 48.8, 'concept_covered': 56.3, 'cell_outside': 21.2, 'triangles': 256270}
