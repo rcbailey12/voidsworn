@@ -1068,7 +1068,11 @@ static func update(fx, dt: float) -> void:
 			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
 				var u0 := clampf((float(p["dead_at"]) - t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
 				var pp := _bez(p["a"], p["b"], p["c"], _ease(u0))
-				_burst(fx, pp, Vector3.UP, now, 4.0 * float(p["k"]), "flash", 0.24, p["col"], 3.2, 24.0)
+				# shot down short of the hull: a small pop where the round was, its sparks and a puff of its own smoke. The old
+				# pop was 4 k wide with a 24 px floor, a flat white disc bigger than the target's hull at the close camera
+				# (PC run 1379f, Navy seed 3).
+				_burst(fx, pp, Vector3.UP, now, 1.4 * float(p["k"]), "flash", 0.14, p["col"], 2.6, 10.0)
+				_burst(fx, pp, Vector3.UP, now + 0.03, 1.2 * float(p["k"]), "cool", 0.5, p["eng"], 0.5, 0.0, Vector3.ZERO, 0.35)
 				_impact_sparks(fx, pp, ((p["c"] as Vector3)-(p["a"] as Vector3)).normalized(), now, p["k"], Color(0.9,0.62,0.32), 6)
 			if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
 			if p.has("trail"):
