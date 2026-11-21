@@ -44,6 +44,7 @@ headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 t
 headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victory and promotion cards on 30 seeds and check repair choices
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
 headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or Scrap rig in the late market, a regrown Eclipse ship sells for 0 until it fights, Chorus decommission pays biomass
+headless|campaign/test/relic_trade_1449.gd|-|-|issue 1449: relic trades pick which salvage to give up (shared fixture with the browser twin), and the Full specs drawer on shipyard and prize cards shows armor, guns and ability text
 headless|campaign/test/late_fixes_1384.gd|-|-|issue 1384: selling the flagship hands it on, a regrown Eclipse ship never sells above its regrow cost, ascendant and captured hulls carry the Crusade shop discount, an eaten core is remapped in beat 3 and boonStep
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
@@ -60,6 +61,7 @@ headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent r
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
+headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
@@ -101,6 +103,7 @@ headless|fx/test/shield_flash_booking.gd|-|-|issue 1116: a torpedo shield crackl
 headless|fx/test/shield_cache_check.gd|-|-|issue 1130: stable bounded fitted shield cache, geometry replacement, contact and puff cleanup
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
 headless|fx/test/hit_fragments_check.gd|-|-|issue 1000: closed hull fragment meshes, faction paint and glass, larger macro bursts, outward motion, bounded pools and the shared hit random sequence; issue 1117: a real dent rebuild preserves chip paint and UVs on the struck surface
+headless|fx/test/frame_rate_steady_check.gd|-|-|issue 1467 (Astra pass 2, findings 4, 5, 8): over one effect second at 15, 30 and 144 fps, hull recoil integrates 1.00 s and ends in the same pose, the fallback torpedo exhaust gives 14 puffs (rockets 10) within 1 and a hitch drops overdue puffs; the hit-fragment pool uploads once per volley, never on an expiry or when empty
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files

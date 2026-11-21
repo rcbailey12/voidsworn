@@ -6460,9 +6460,10 @@ func _useAbility_raw(u, arg = null) -> bool:
 		var nf = 0
 		for t in alive("enemy" if u["side"] == "player" else "player"):
 			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
-				nf += 1
 				if z0(t.get("shMax")) > 0:
-					t["shp"] = floor(float(z0(t.get("shp"))) * 0.5); syncShields(t)
+					var was = float(z0(t.get("shp")))
+					t["shp"] = floor(was * 0.5); syncShields(t)
+					if float(t["shp"]) < was: nf += 1
 		flt(u, "Ion pulse", "#9fd4ff", -24)
 		logm(String(u["name"]) + " fires an ion pulse: " + ns(nf) + " enemy ship" + ("" if nf == 1 else "s") + " lose half their shields.", pp(u))
 	if a == "blink":
@@ -6991,11 +6992,12 @@ func aiAbilities(u, live: Callable, mode) -> bool:
 		for x in alive("enemy"):
 			if not jt(x.get("isSq")) and hdist(x, u) <= 3 and x["hp"] < x["maxHp"] * 0.6: any = true; break
 		if any: useAbility(u)
-	if pre and u.get("ab") == "ionpulse" and canAbility(u):
+	# Issue 1447: judge the real R246 pools (shp), not the four per-side catches (about 2.35 x the pool), and also check from the
+	# committed destination before firing, so a ship that moves into range 4 pulses that turn.
+	if (pre or aim) and u.get("ab") == "ionpulse" and canAbility(u):
 		var tot = 0.0
 		for t in foes:
-			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
-				for x in t["sh"]: tot += x
+			if not jt(t.get("isSq")) and hdist(t, u) <= 4: tot += float(z0(t.get("shp")))
 		if tot >= 30: useAbility(u)
 	if pre and u.get("ab") == "overburn" and canAbility(u) and nearF != null and hdist(u, nearF) > (u["speed"] if jt(u.get("speed")) else 2) + 1: useAbility(u)
 	if u.get("ab") == "blink" and canAbility(u) and nearF != null:

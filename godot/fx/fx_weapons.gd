@@ -1017,18 +1017,23 @@ static func update(fx, dt: float) -> void:
 	fx.dstate["proj"] = keep
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
 # and let each short puff cool independently. There is no persistent hot ribbon.
-static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
+# Issue 1467: "last" walks the fixed puff grid, so the part of an interval a frame leaves over carries to the next
+# frame (14 puffs a second at 15, 30 or 144 fps). After a hitch, intervals past the 3-puff cap are dropped, not
+# banked, so no burst repeats; the fraction still carries. Returns the puffs emitted (the frame-rate check counts them).
+static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 	var lk: String = p["lk"]
 	var k: float = p["k"]
 	var last: float = p["last"]
 	var rate := 10.0 if lk == "rockets" else 14.0
 	if fx.quality == "low": rate *= 0.6
-	var count := mini(3, int((fx.now-last) * rate))
-	if count <= 0: return
-	p["last"] = fx.now
+	var due := int((fx.now-last) * rate + 1e-6)
+	if due <= 0: return 0
+	var count := mini(3, due)
+	last += float(due) / rate
+	p["last"] = last
 	var eng: Color = p["eng"]
 	for i in count:
-		var tt: float = fx.now - float(count-i-1)/rate
+		var tt: float = last - float(count-i-1)/rate
 		var e := _ease(clampf((tt-float(p["t0"])) / maxf(float(p["t1"])-float(p["t0"]),0.001),0.0,1.0))
 		var at := _bez(p["a"],p["b"],p["c"],e)
 		var d: Vector3 = ((p["b"] as Vector3)-(p["a"] as Vector3)).lerp((p["c"] as Vector3)-(p["b"] as Vector3),e).normalized()
@@ -1041,6 +1046,7 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
 			for j in 3:
 				var f := float(j) / 3.0
 				fx.dst(tail-d*size*(0.5+f*4.0), tt, 0.16, size*(0.4+f*0.5), size*(1.1+f), 1, 0.12*(1.0-f)*(1.0-f))
+	return count
 
 
 static func _ease(u: float) -> float:

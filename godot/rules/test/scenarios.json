@@ -9167,5 +9167,31 @@
   "alt": false,
   "attack_move": true,
   "undo": true
+ },
+ "s1447_ion_pulse": {
+  "note": "Issue 1447: the Cordon's ion pulse judged by the real shield pools (shp) and also checked from the committed destination, so a Cordon that closes to range 4 pulses before it fires; the log counts only ships that lost shields. Two Cordons against Sunward frigates and a cruiser.",
+  "seed": 14470,
+  "sector": 2,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "warden",
+   "warden",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full"
  }
 }

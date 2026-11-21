@@ -1,12 +1,186 @@
-Saved manifest before: ab9c7991a2e8a75c5d0d3a963c5dabc2baf10ef34fa38e38d0cc8844e3b656a2
-Saved manifest after: 873ff1289ab5410612fe751453c092675b485e0d454f7e77ce145598914e8abc
+Saved manifest before: 873ff1289ab5410612fe751453c092675b485e0d454f7e77ce145598914e8abc
+Saved manifest after: 98b1603fdd8dc3c874b4cc2b014d84da4ac10ba04c45ec1309925b8e2a2d537e
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
+FAIL battle s1
+  turn 39, round 3, after move x07; unit x05 (player warden)
+  state.units[1].sh[0]: 9 -> 18
+  later changed records: 142; total records: 175 -> 182
+FAIL battle s2
+  turn 54, round 3, after move x010; unit x07 (player warden)
+  state.units[2].sh[0]: 6 -> 13
+  later changed records: 180; total records: 235 -> 218
+FAIL battle s4
+  turn 14, round 1, after ability x022; unit x012 (player penitent)
+  state.units[1].sh[0]: 38 -> 19
+  later changed records: 267; total records: 264 -> 282
+FAIL battle s7
+  turn 161, round 3, after ability x011; unit none (battle state)
+  state.b.log[68].m: "Cordon destroyer fires an ion pulse: 4 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields."
+  later changed records: 182; total records: 344 -> 342
+FAIL battle s11
+  turn 37, round 2, after move x011; unit x08 (player warden)
+  state.units[3].sh[0]: 9 -> 18
+  later changed records: 124; total records: 162 -> 133
+FAIL battle s16
+  turn 94, round 3, after move x010; unit x07 (player harrow)
+  state.units[2].sh[0]: 10 -> 20
+  later changed records: 155; total records: 250 -> 248
+FAIL battle s18
+  turn 34, round 2, after move x010; unit x08 (player warden)
+  state.units[3].sh[0]: 10 -> 20
+  later changed records: 213; total records: 248 -> 221
+FAIL battle s21
+  turn 158, round 5, after ability x010; unit none (battle state)
+  state.b.log[92].m: "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 1 enemy ship lose half their shields."
+  later changed records: 51; total records: 210 -> 210
+FAIL battle s23
+  turn 260, round 3, after ability x026; unit none (battle state)
+  state.b.log[111].m: "Cordon destroyer fires an ion pulse: 4 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 3 enemy ships lose half their shields."
+  later changed records: 481; total records: 702 -> 742
+FAIL battle s24
+  turn 294, round 4, after ability x018; unit x07 (player reliquary)
+  state.units[0].sh[0]: 22 -> 11
+  later changed records: 304; total records: 599 -> 550
+FAIL battle s25
+  turn 56, round 1, after move x017; unit x08 (player c_marauder)
+  state.units[2].sh[0]: 9 -> 19
+  later changed records: 285; total records: 342 -> 342
+FAIL battle s26
+  turn 37, round 1, after ability x012; unit x07 (player h_interdictor)
+  state.units[1].sh[0]: 31 -> 15
+  later changed records: 120; total records: 157 -> 158
+FAIL battle s29
+  turn 76, round 3, after move x013; unit x09 (player harrow)
+  state.units[3].sh[0]: 13 -> 25
+  later changed records: 120; total records: 197 -> 187
+FAIL battle s38
+  turn 95, round 3, after move x013; unit x09 (player harrow)
+  state.units[3].sh[0]: 1 -> 3
+  later changed records: 198; total records: 291 -> 294
+FAIL battle s41
+  turn 136, round 4, after ability x010; unit x06 (player penitent)
+  state.units[1].sh[0]: 38 -> 19
+  later changed records: 145; total records: 282 -> 271
+FAIL battle s46
+  turn 61, round 3, after ability x07; unit x05 (player cathedral)
+  state.units[1].sh[0]: 57 -> 29
+  later changed records: 98; total records: 152 -> 160
+FAIL battle s52
+  turn 47, round 3, after move x07; unit x06 (player h_picket)
+  state.units[2].sh[0]: 9 -> 17
+  later changed records: 70; total records: 118 -> 117
+FAIL battle s56
+  turn 143, round 5, after move x08; unit x05 (player i_song)
+  state.units[1].sh[0]: 12 -> 25
+  later changed records: 64; total records: 208 -> 208
+FAIL battle s57
+  turn 35, round 2, after move x09; unit x07 (player warden)
+  state.units[2].sh[0]: 9 -> 18
+  later changed records: 37; total records: 73 -> 73
+FAIL battle t_flagshipLedger
+  turn 17, round 2, after ability x05; unit x03 (player penitent)
+  state.units[0].sh[0]: 38 -> 19
+  later changed records: 16; total records: 33 -> 34
+FAIL battle t_debthunts
+  turn 17, round 2, after ability x03; unit x02 (player penitent)
+  state.units[0].sh[0]: 38 -> 19
+  later changed records: 50; total records: 68 -> 68
+FAIL battle t_hb_railboarding
+  turn 28, round 2, after move x07; unit x05 (player c_raider)
+  state.units[1].sh[0]: 6 -> 13
+  later changed records: 50; total records: 79 -> 79
+FAIL battle t_hb_burncarry
+  turn 34, round 2, after move x07; unit x05 (player c_reaver)
+  state.units[1].sh[0]: 8 -> 16
+  later changed records: 35; total records: 70 -> 69
+FAIL battle t_hb_knifeback
+  turn 26, round 2, after move x07; unit x04 (player c_reaver)
+  state.units[0].sh[0]: 2 -> 3
+  later changed records: 14; total records: 41 -> 40
+FAIL battle t_hb_darktorps
+  turn 42, round 3, after move x07; unit x06 (player c_raider)
+  state.units[2].sh[0]: 6 -> 13
+  later changed records: 19; total records: 62 -> 61
+FAIL battle t_hb_cutturn
+  turn 34, round 2, after move x07; unit x05 (player c_reaver)
+  state.units[1].sh[0]: 8 -> 16
+  later changed records: 22; total records: 57 -> 57
+FAIL battle t_hb_smilecut
+  turn 7, round 1, after ability x07; unit x04 (player c_marauder)
+  state.units[0].sh[0]: 27 -> 14
+  later changed records: 29; total records: 36 -> 37
+FAIL battle t_hb_retasked
+  turn 62, round 3, after move x05; unit x04 (player c_reaver)
+  state.units[1].sh[0]: 8 -> 16
+  later changed records: 42; total records: 105 -> 101
+FAIL battle t_hb_loosepack
+  turn 7, round 1, after move x03; unit x02 (player c_raider)
+  state.units[0].sh[0]: 6 -> 13
+  later changed records: 23; total records: 31 -> 30
+FAIL battle t_hb_firstscar
+  turn 23, round 2, after ability x07; unit x05 (player c_marauder)
+  state.units[1].sh[0]: 27 -> 14
+  later changed records: 24; total records: 48 -> 48
+FAIL battle t_heg_rollingfire
+  turn 45, round 2, after ability x07; unit none (battle state)
+  state.b.log[16].m: "HNS Forecast fires an ion pulse: 2 enemy ships lose half their shields." -> "HNS Forecast fires an ion pulse: 1 enemy ship lose half their shields."
+  later changed records: 25; total records: 71 -> 71
+FAIL battle t_heg_irontempo
+  turn 33, round 2, after move x09; unit x04 (player h_picket)
+  state.units[0].sh[0]: 9 -> 17
+  later changed records: 163; total records: 187 -> 197
+FAIL battle t_heg_columnstraight
+  turn 36, round 2, after move x010; unit x07 (player h_picket)
+  state.units[2].sh[0]: 9 -> 19
+  later changed records: 83; total records: 120 -> 120
+FAIL battle t_heg_overflow
+  turn 49, round 2, after move x010; unit x07 (player h_picket)
+  state.units[2].sh[0]: 9 -> 19
+  later changed records: 86; total records: 136 -> 134
+FAIL battle t_heg_bell
+  turn 51, round 2, after move x010; unit x07 (player h_picket)
+  state.units[2].sh[0]: 9 -> 19
+  later changed records: 81; total records: 133 -> 131
+FAIL battle t_heg_rotation
+  turn 70, round 3, after move x011; unit x09 (player h_picket)
+  state.units[3].sh[0]: 9 -> 19
+  later changed records: 62; total records: 133 -> 132
+FAIL battle t_heg_columnendures
+  turn 33, round 2, after move x011; unit x05 (player h_picket)
+  state.units[0].sh[0]: 9 -> 19
+  later changed records: 93; total records: 127 -> 125
+FAIL battle t_heg_standardcovers
+  turn 38, round 2, after ability x09; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 63 -> 32
+  later changed records: 127; total records: 166 -> 132
+FAIL battle t_heg_flagshipstandard
+  turn 31, round 2, after move x09; unit x07 (player h_picket)
+  state.units[2].sh[0]: 9 -> 19
+  later changed records: 118; total records: 135 -> 150
+FAIL battle t7a_wallearly
+  turn 18, round 2, after ability x05; unit x03 (player cathedral)
+  state.units[0].sh[0]: 63 -> 31
+  later changed records: 22; total records: 41 -> 41
+FAIL battle s983_station_defend
+  turn 88, round 3, after ability x010; unit x05 (player penitent)
+  state.units[0].sh[0]: 38 -> 19
+  later changed records: 86; total records: 175 -> 174
+FAIL battle s983_teaching_station_defend
+  turn 35, round 2, after move x07; unit x05 (player warden)
+  state.units[1].sh[0]: 9 -> 18
+  later changed records: 32; total records: 68 -> 67
 FAIL battle s1450_undo
-  new battle; no saved result
-FAIL battle s1450_undo_chorus
-  new battle; no saved result
+  turn 258, round 8, after ability x07; unit none (battle state)
+  state.b.log[50].m: "Cordon destroyer fires an ion pulse: 3 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields."
+  later changed records: 104; total records: 363 -> 362
 FAIL battle s1450_undo_classic
+  turn 183, round 4, after ability x010; unit x07 (player harrow)
+  state.units[2].sh[0]: 25 -> 13
+  later changed records: 216; total records: 400 -> 400
+FAIL battle s1447_ion_pulse
   new battle; no saved result
-FAIL: saved Godot results; 287 battles checked, 3 changed, 0 other files changed, 3 failures; 14.067 s
+FAIL file threat_s4.json
+  map.3.-1,19: "405087ae147ae148" -> "404575c28f5c28f6"
+FAIL: saved Godot results; 288 battles checked, 45 changed, 1 other files changed, 46 failures; 16.699 s
