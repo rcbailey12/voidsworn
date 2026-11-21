@@ -1,0 +1,12 @@
+issue 1539 proof, PR 1540 at a006817a8f778e9cd793f9818fc6247cc8691544, attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1539proof\out_20261121_112430_8344
+step 2 PASS: recipe\chorus_C14 holds C14H's export
+step 3 PASS: ship job done PASS at d2a9acd26c3305641229d000d8890ba8a753dcfb, shots stamped by the PR 1540 copy
+offer sheet written: C:\Users\rcbai\Downloads\voidsworn_test\opus1539proof\out_20261121_112430_8344\proof\C14H_offer_sheet.jpg
+step 4 PASS: offer_sheet wrote the sheet from the real PC shots
+offer sheet REFUSED: B22_11_b.jpg was made at the job commit d2a9acd26c33 but from a dirty tree with changes that are not this job's recorded install: godot/fx/fx.gd
+step 5 PASS: a source edit is refused by name
+offer sheet written: C:\Users\rcbai\Downloads\voidsworn_test\opus1539proof\out_20261121_112430_8344\proof\sheet_tmo.jpg
+offer sheet REFUSED: B22_11_b.jpg was made at the job commit d2a9acd26c33 but from a dirty tree with changes that are not this job's recorded install: tools/pc/tmo.bat
+step 6 PASS: a differing live watchdog passes at its recorded hash and is refused at any other
+proof PASS: a real PC ship job's shots get through offer_sheet; a source edit and a wrong hand-off are refused
+all done

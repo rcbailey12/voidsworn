@@ -1,0 +1,6 @@
+OPUS1539_WAIT.bat waiting for 1415F GA1 exit in chain_1119cl.txt Sat 11/21/2026 10:55:29.83 
+OPUS1539_PROOF start 11:24:30.16 
+OPUS1539_PROOF exit 0 at 11:39:29.98 
+run folder out_20261121_112430_8344
+result: done PASS
+all done Sat 11/21/2026 11:39:30.38 
