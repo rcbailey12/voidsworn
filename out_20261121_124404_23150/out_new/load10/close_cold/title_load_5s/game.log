@@ -1,0 +1,24 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 29 ms
+[sfx] 71 cues, 67 clip sets, loaded in 296 ms
+[load] battle scene ready in 941 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[main] leaving the battle for the title at 6791 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 223 ms (title backdrop)
+[main] battle to title: leave frame 54.7 ms, first title frame 54.5 ms after the leave
+[main] battle to title parts (ms): battle_out 9.3, title_build 32.9, battle_free 8.6, battle exit_tree 6.1, pre@43.2, draw@54.5, step@54.7, draw@55.6, step@55.7, draw@88.8, step@89.1, draw@89.4, step@89.4, draw@89.6
+[main] battle to title: worst frame in the first second 1205.7 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.497, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked e430620919a585eeb841567ab9e95f1faf95077b891bce7dfbbcecc63c996a7a 4096x2048 in 4403 ms (worker; stages ms { "began": 5398, "device": 163, "spirv": 3, "pipeline": 2, "dispatch": 98, "worst_strip": 3, "readback": 36, "mips": 17 })
+[load] 7 ships built in 1119 ms over 17 frames (title backdrop): longest stretch 101 ms; ship setup 103 ms (worst 93 ms, V16_37: inst 0, look_new_mats 1, look_assign 77, look_worst_assign 16, look_counts 17, look 78, look_touch 0, fit 0, rest 7), effects registration 233 ms (worst 63 ms, V14_23: analyse 61, damage_root 0, engines 0, shield 0, collider 1), hull geometry 315 ms (worst 87 ms, V16_37), waiting on hull files and worker instances 1 ms; 7 hulls instanced on workers
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 4663 ms (worker; stages ms { "began": 9801, "device": 201, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 1, "readback": 26, "mips": 0 })
+[main] quit (window) at 10531 ms
+[main] quit stages: scenes freed + 2 frames 165 ms, statics and fx drain 3343 ms, engine exit from 14039 ms
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)

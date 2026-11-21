@@ -1,0 +1,52 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[sfx] 71 cues, 67 clip sets, loaded in 316 ms
+[load] battle scene ready in 915 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[load] 8 ships built in 2163 ms over 24 frames: longest stretch 213 ms; ship setup 213 ms (worst 47 ms, V15_37: inst 0, look_new_mats 2, look_assign 43, look_worst_assign 29, look_counts 16, look 46, look_touch 0, fit 0, rest 0), effects registration 647 ms (worst 198 ms, C14s_23: analyse 195, damage_root 0, engines 1, shield 0, collider 1), hull geometry 607 ms (worst 212 ms, C14s_23), waiting on hull files and worker instances 2 ms; 8 hulls instanced on workers
+[world] baked d4d1586712ecd9521e71097e18130ed29640acdf064ce3b09d882d3bd905a00e 4096x2048 in 4068 ms (worker; stages ms { "began": 5428, "device": 162, "spirv": 2, "pipeline": 2, "dispatch": 123, "worst_strip": 18, "readback": 37, "mips": 15 })
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 5792 ms (worker; stages ms { "began": 9496, "device": 200, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 2, "readback": 44, "mips": 1 })
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 10896 ms (worker; stages ms { "began": 11401, "device": 193, "spirv": 13, "pipeline": 4, "dispatch": 6, "worst_strip": 3, "readback": 94, "mips": 1 })
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 338 ms (worker; stages ms { "began": 16509, "device": 162, "spirv": 6, "pipeline": 2, "dispatch": 5, "worst_strip": 2, "readback": 31, "mips": 1 })
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 521 ms (worker; stages ms { "began": 16845, "device": 218, "spirv": 3, "pipeline": 1, "dispatch": 6, "worst_strip": 1, "readback": 29, "mips": 0 })
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[main] leaving the battle for the title at 31463 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x010 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[fx] late shader: mat SPRITE #define SOFT frame 1652 32361.8 ms
+[fx] late shader: mat STREAK frame 1652 32444.6 ms
+[fx] late shader: mat RING frame 1652 32496.2 ms
+[fx] late shader: mat RIBBON frame 1652 32534.3 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1652 32586.3 ms
+[fx] late shader: mat NULL_SLUG frame 1652 32625.1 ms
+[fx] late shader: mat SHARD frame 1652 32654.5 ms
+[fx] late shader: hit fragments frame 1652 32759.0 ms
+[fx] late shader: death debris body frame 1652 32870.4 ms
+[fx] late shader: mat TEAR frame 1652 32966.2 ms
+[fx] late shader: death strain tear frame 1652 32994.1 ms
+[load] battle scene ready in 765 ms (title backdrop)
+[main] battle to title: leave frame 126.2 ms, first title frame 125.8 ms after the leave
+[main] battle to title parts (ms): battle_out 43.1, title_build 34.1, battle_free 47.3, battle exit_tree 4.0, pre@78.0, draw@125.8, step@126.2, draw@192.2, step@192.4, draw@721.4, step@721.6, draw@722.0, step@722.0, draw@722.3
+[main] battle to title: worst frame in the first second 872.3 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.540, target 4.4; visual tuning (R191)
+[main] quit (window) at 36619 ms
+[main] quit stages: scenes freed + 2 frames 56 ms, statics and fx drain 1080 ms, engine exit from 37755 ms
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)

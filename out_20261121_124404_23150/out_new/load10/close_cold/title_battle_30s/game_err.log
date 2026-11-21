@@ -1,0 +1,17 @@
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_shader_rid' in base 'StandardMaterial3D'.
+   at: _keep_shaders (res://render/ship_view.gd:153)
+   GDScript backtrace (most recent call first):
+       [0] _keep_shaders (res://render/ship_view.gd:153)
+       [1] clear_look_cache (res://render/ship_view.gd:133)
+       [2] _exit_tree (res://scenes/battle/battle.gd:1485)
+       [3] _retire_battle (res://main/main.gd:477)
+       [4] <anonymous lambda> (res://main/main.gd:450)
+       [5] _finish (res://scenes/battle/battle.gd:1459)
+       [6] _on_action (res://scenes/battle/battle.gd:4840)
+       [7] <anonymous lambda> (res://main/main.gd:460)
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_shader_rid' in base 'StandardMaterial3D'.
+   at: _keep_shaders (res://render/ship_view.gd:153)
+   GDScript backtrace (most recent call first):
+       [0] _keep_shaders (res://render/ship_view.gd:153)
+       [1] clear_look_cache (res://render/ship_view.gd:133)
+       [2] _exit_tree (res://scenes/battle/battle.gd:1485)

@@ -1,0 +1,25 @@
+LOAD10, project C:\Users\rcbai\Downloads\voidsworn_test\opus1434l\out_20261121_124404_23150\new\godot, 2026-11-21T13:01:23
+load cold: [load1434] RESULT FAIL on the cold profile (limit 500 ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)
+load cold: [load1434] COVER FAIL on the cold profile (the loading cover up on every frame to play and no frame of 5 s or more: s25 FAIL, title FAIL, b1 ok, b2 FAIL, b3 FAIL, b2r reported only)
+load warm: [load1434] RESULT FAIL on the warm profile (limit 500 ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)
+load warm: [load1434] COVER FAIL on the warm profile (the loading cover up on every frame to play and no frame of 5 s or more: s25 ok, title FAIL, b1 ok, b2 ok, b3 ok, b2r reported only)
+close cold x_load_4s: PASS clean=PASS 1518=- 1519=- sent=x hidden_ms=563 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=1050 exit=0
+close cold altf4_load_5s: PASS clean=PASS 1518=PASS 1519=- sent=altf4 hidden_ms=137 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=6355 exit=0
+close cold x_battle_30s: FAIL clean=FAIL: crash or script error 1518=- 1519=- sent=x hidden_ms=206 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=1703 exit=0
+close cold altf4_battle_30s: FAIL clean=FAIL: crash or script error 1518=- 1519=- sent=altf4 hidden_ms=301 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=2253 exit=0
+close cold title_load_5s: FAIL clean=FAIL: crash or script error 1518=PASS 1519=PASS sent=x hidden_ms=46 first_title_frame_ms=54.5 worst_title_frame_first_s=1205.7 close_to_exit_ms=6792 exit=0 | battle to title parts (ms): battle_out 9.3, title_build 32.9, battle_free 8.6, battle exit_tree 6.1, pre@43.2, draw@54.5, step@54.7, draw@55.6, step@55.7, draw@88.8, step@89.1, draw@89.4, step@89.4, draw@89.6
+close cold title_battle_30s: FAIL clean=FAIL: crash or script error 1518=PASS 1519=PASS sent=x hidden_ms=111 first_title_frame_ms=125.8 worst_title_frame_first_s=872.3 close_to_exit_ms=3908 exit=0 | battle to title parts (ms): battle_out 43.1, title_build 34.1, battle_free 47.3, battle exit_tree 4.0, pre@78.0, draw@125.8, step@126.2, draw@192.2, step@192.4, draw@721.4, step@721.6, draw@722.0, step@722.0, draw@722.3
+close warm x_load_4s: PASS clean=PASS 1518=- 1519=- sent=x hidden_ms=95 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=549 exit=0
+close warm altf4_load_5s: FAIL clean=FAIL: crash or script error 1518=PASS 1519=- sent=altf4 hidden_ms=110 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=3993 exit=0
+close warm x_battle_30s: FAIL clean=FAIL: crash or script error 1518=- 1519=- sent=x hidden_ms=63 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=1039 exit=0
+close warm altf4_battle_30s: FAIL clean=FAIL: crash or script error 1518=- 1519=- sent=altf4 hidden_ms=31 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=782 exit=0
+close warm title_load_5s: FAIL clean=FAIL: crash or script error 1518=FAIL (hidden after 3797 ms, limit 500) 1519=PASS sent=x hidden_ms=3797 first_title_frame_ms=54.1 worst_title_frame_first_s=997.7 close_to_exit_ms=4704 exit=0 | battle to title parts (ms): battle_out 5.6, title_build 34.7, battle_free 12.1, battle exit_tree 4.7, pre@41.3, draw@54.1, step@54.2, draw@56.5, step@56.5, draw@75.5, step@75.6, draw@75.8, step@75.9, draw@79.6
+close warm title_battle_30s: FAIL clean=FAIL: crash or script error 1518=PASS 1519=PASS sent=x hidden_ms=41 first_title_frame_ms=94.1 worst_title_frame_first_s=844.8 close_to_exit_ms=1460 exit=0 | battle to title parts (ms): battle_out 28.6, title_build 33.9, battle_free 30.2, battle exit_tree 3.7, pre@63.4, draw@94.1, step@94.5, draw@128.2, step@128.3, draw@273.7, step@273.9, draw@274.2, step@274.3, draw@274.6
+[load10] 1434 load (warm bench, cold COVER): FAIL
+[load10] 1518 close hides within 500 ms, cold: PASS
+[load10] 1519 first title frame within 200 ms, cold: PASS
+[load10] every close clean, cold: FAIL
+[load10] 1518 close hides within 500 ms, warm: FAIL
+[load10] 1519 first title frame within 200 ms, warm: PASS
+[load10] every close clean, warm: FAIL
+[load10] RESULT FAIL (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)

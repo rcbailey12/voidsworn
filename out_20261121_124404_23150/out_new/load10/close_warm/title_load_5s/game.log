@@ -1,0 +1,28 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 33 ms
+[sfx] 71 cues, 67 clip sets, loaded in 281 ms
+[load] battle scene ready in 904 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.920, target 4.4; visual tuning (R191)
+[main] leaving the battle for the title at 6032 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 231 ms (title backdrop)
+[main] battle to title: leave frame 54.2 ms, first title frame 54.1 ms after the leave
+[main] battle to title parts (ms): battle_out 5.6, title_build 34.7, battle_free 12.1, battle exit_tree 4.7, pre@41.3, draw@54.1, step@54.2, draw@56.5, step@56.5, draw@75.5, step@75.6, draw@75.8, step@75.9, draw@79.6
+[main] battle to title: worst frame in the first second 997.7 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.487, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 032d11b96ef15366e965f15171183e442d4af0d628960fbbc0ba90a006e743e0 4096x2048 in 3917 ms (worker; stages ms { "began": 4821, "device": 153, "spirv": 74, "pipeline": 1, "dispatch": 93, "worst_strip": 3, "readback": 36, "mips": 14 })
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[load] 9 ships built in 1244 ms over 21 frames (title backdrop): longest stretch 127 ms; ship setup 217 ms (worst 108 ms, hegemony|fighter: -), effects registration 302 ms (worst 60 ms, V15_37: analyse 58, damage_root 0, engines 0, shield 0, collider 1), hull geometry 447 ms (worst 122 ms, H9_23), waiting on hull files and worker instances 1 ms; 8 hulls instanced on workers
+[world] baked da3e76be1394a28703144f82cdc4b59570befd50988585ca4ba4c145890748c9 4096x2048 in 6341 ms (worker; stages ms { "began": 8738, "device": 188, "spirv": 3, "pipeline": 1, "dispatch": 13, "worst_strip": 4, "readback": 37, "mips": 13 })
+[main] quit (window) at 14278 ms
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[world] loaded 9aaf9407a87eca54ab36148a169d89e051bd9212d3eae02e87664c5d58bb2486 1024x512 in 9367 ms (worker; stages ms {  })
+[main] quit stages: scenes freed + 2 frames 103 ms, statics and fx drain 33 ms, engine exit from 14414 ms

@@ -1,0 +1,26 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[sfx] 71 cues, 67 clip sets, loaded in 317 ms
+[load] battle scene ready in 916 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.272, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[load] 8 ships built in 2162 ms over 24 frames: longest stretch 214 ms; ship setup 212 ms (worst 45 ms, V14_23: inst 0, look_new_mats 1, look_assign 43, look_worst_assign 14, look_counts 16, look 44, look_touch 0, fit 0, rest 0), effects registration 648 ms (worst 203 ms, C14s_23: analyse 200, damage_root 0, engines 1, shield 0, collider 1), hull geometry 605 ms (worst 214 ms, C14s_23), waiting on hull files and worker instances 2 ms; 8 hulls instanced on workers
+[world] baked 5dad3d09eea0ad73f9ebd3bb0d579ae87deb051d73672ce89aa2f830888e490e 4096x2048 in 5942 ms (worker; stages ms { "began": 6083, "device": 155, "spirv": 3, "pipeline": 3, "dispatch": 106, "worst_strip": 5, "readback": 38, "mips": 16 })
+[world] baked 04d852f40f8af7c0af9c537e5142ce27f0b06f711794c9dcbef2bc75e87e6cac 4096x2048 in 11811 ms (worker; stages ms { "began": 12025, "device": 184, "spirv": 13, "pipeline": 2, "dispatch": 16, "worst_strip": 1, "readback": 74, "mips": 22 })
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 12221 ms (worker; stages ms { "began": 18065, "device": 188, "spirv": 5, "pipeline": 2, "dispatch": 6, "worst_strip": 3, "readback": 31, "mips": 1 })
+[world] baked 0447013b47e77871db26a9d6efbe36864b7fa1be3474e1cf1ed63112478b75c7 4096x2048 in 1464 ms (worker; stages ms { "began": 18478, "device": 217, "spirv": 3, "pipeline": 1, "dispatch": 11, "worst_strip": 1, "readback": 42, "mips": 13 })
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 1480 ms (worker; stages ms { "began": 19719, "device": 210, "spirv": 4, "pipeline": 1, "dispatch": 12, "worst_strip": 6, "readback": 32, "mips": 0 })
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[main] quit (window) at 30929 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 174 ms, statics and fx drain 39 ms, engine exit from 31142 ms

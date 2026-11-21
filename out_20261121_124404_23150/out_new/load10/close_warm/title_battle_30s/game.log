@@ -1,0 +1,66 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[sfx] 71 cues, 67 clip sets, loaded in 285 ms
+[load] battle scene ready in 927 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[load] 8 ships built in 1424 ms over 23 frames: longest stretch 209 ms; ship setup 432 ms (worst 193 ms, hegemony|fighter: -), effects registration 285 ms (worst 63 ms, V15_37: analyse 60, damage_root 0, engines 0, shield 0, collider 1), hull geometry 532 ms (worst 124 ms, H9_23), waiting on hull files and worker instances 2 ms; 7 hulls instanced on workers
+[world] baked 22e0cb23329b900d4bbf6d9e325e488e92f4e4aa2a867fe093152e3903753340 4096x2048 in 4036 ms (worker; stages ms { "began": 4804, "device": 162, "spirv": 75, "pipeline": 1, "dispatch": 100, "worst_strip": 3, "readback": 38, "mips": 14 })
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 6597 ms (worker; stages ms { "began": 8841, "device": 158, "spirv": 3, "pipeline": 1, "dispatch": 4, "worst_strip": 1, "readback": 26, "mips": 1 })
+[world] baked 34256ddb7841296bd3fc3cc7d8c67930a096a6b98280436d94adc59d0399bc5e 1024x512 in 7039 ms (worker; stages ms { "began": 11574, "device": 210, "spirv": 4, "pipeline": 2, "dispatch": 4, "worst_strip": 1, "readback": 28, "mips": 0 })
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 633 ms (worker; stages ms { "began": 12025, "device": 222, "spirv": 3, "pipeline": 1, "dispatch": 8, "worst_strip": 1, "readback": 27, "mips": 0 })
+[world] baked 78a3e73472eb6e584ea271ae28e3fc5cf9f275b22f7dc5c68f5da369071605fa 1024x512 in 749 ms (worker; stages ms { "began": 12420, "device": 220, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 1, "readback": 33, "mips": 0 })
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[main] leaving the battle for the title at 30943 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x010 H9_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[fx] late shader: mat SPRITE #define SOFT frame 2551 31471.9 ms
+[fx] late shader: mat STREAK frame 2551 31541.2 ms
+[fx] late shader: mat RING frame 2551 31588.2 ms
+[fx] late shader: mat RIBBON frame 2551 31625.8 ms
+[fx] late shader: mat ECLIPSE_ARC frame 2551 31675.5 ms
+[fx] late shader: mat NULL_SLUG frame 2551 31713.9 ms
+[fx] late shader: mat SHARD frame 2551 31743.3 ms
+[fx] late shader: hit fragments frame 2551 31845.2 ms
+[fx] late shader: death debris body frame 2551 31951.0 ms
+[fx] late shader: mat TEAR frame 2551 32041.2 ms
+[fx] late shader: death strain tear frame 2551 32068.4 ms
+[load] battle scene ready in 731 ms (title backdrop)
+[main] battle to title: leave frame 94.5 ms, first title frame 94.1 ms after the leave
+[main] battle to title parts (ms): battle_out 28.6, title_build 33.9, battle_free 30.2, battle exit_tree 3.7, pre@63.4, draw@94.1, step@94.5, draw@128.2, step@128.3, draw@273.7, step@273.9, draw@274.2, step@274.3, draw@274.6
+[main] battle to title: worst frame in the first second 844.8 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 2573 35134.1 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[fx] late shader: mat CRAFT_TRAIL frame 2589 35994.7 ms
+[load] 6 ships built in 1577 ms over 26 frames (title backdrop): longest stretch 120 ms; ship setup 754 ms (worst 532 ms, V16_37: inst 0, look_new_mats 1, look_assign 473, look_worst_assign 99, look_counts 17, look 475, look_touch 0, fit 0, rest 29), effects registration 336 ms (worst 70 ms, H10_23: analyse 68, damage_root 0, engines 0, shield 0, collider 1), hull geometry 378 ms (worst 87 ms, V16_37), waiting on hull files and worker instances 1 ms; 5 hulls instanced on workers
+[main] quit (window) at 36530 ms
+[main] quit stages: scenes freed + 2 frames 110 ms, statics and fx drain 783 ms, engine exit from 37423 ms
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)

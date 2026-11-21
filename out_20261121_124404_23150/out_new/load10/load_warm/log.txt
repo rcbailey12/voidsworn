@@ -1,0 +1,230 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[load1434] display Windows, window (2560.0, 1440.0), renderer forward_plus
+[sfx] 71 cues, 67 clip sets, loaded in 285 ms
+[load] battle scene ready in 935 ms
+[world] loaded c884a9e2201a51173f5f2bb9a5ef7b8d29cb05a7fe1ee98ac5a09bc08131a69a 4096x2048 in 160 ms (worker; stages ms {  })
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 7.059, target 4.4; visual tuning (R191)
+[world] loaded 9365c2f8c48dbf1989956acf0d300cf492beb5efdf576a7af02ba8a24fdc670a 4096x2048 in 418 ms (worker; stages ms {  })
+[world] loaded cf6ed33160b6675e7307f28b0e4543e9b21790f48742d411e70121b630d90596 1024x512 in 484 ms (worker; stages ms {  })
+[world] loaded 3ccb01efd6eeabfe7346385e6cda8ecd8ed0b8c3b542858c1a019cc63843a88c 1024x512 in 603 ms (worker; stages ms {  })
+[world] loaded 9de514380dac396a39b7cdb3c646f73873ac2d871f67a85160bf45bc9abbbfc1 4096x2048 in 392 ms (worker; stages ms {  })
+[world] loaded 90f3632eb0ff5d7d9d9601b2fb978a8986b48dfc8c610adc589957ccd183944c 1024x512 in 572 ms (worker; stages ms {  })
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+[world] loaded 521126be7fa01e9a9aab89b3260cbc7c03a4cbddde5f0e383aef817f98b44a7d 1024x512 in 662 ms (worker; stages ms {  })
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[load] 24 ships built in 4021 ms over 64 frames: longest stretch 248 ms; ship setup 742 ms (worst 201 ms, corsair|bomber: -), effects registration 1352 ms (worst 215 ms, C16s_23: analyse 202, damage_root 0, engines 11, shield 0, collider 1), hull geometry 1527 ms (worst 227 ms, C16s_23), waiting on hull files and worker instances 4 ms; 14 hulls instanced on workers
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[load1434] s25 FAIL (slice PASS, ready PASS, cover FAIL)
+[load1434] s25: 24 ships in 4021 ms over 64 frames; longest build stretch 248 ms; worst ship setup 201 ms (corsair|bomber), worst effects registration 215 ms; waiting on hull files 4 ms; scene ready 1087 ms; worst frame cover to play 3276 ms; to play 20773 ms
+[load1434] s25 cover frames: worst 3276 ms prepare_hulls, 408 ms fx_warmup, 397 ms start->board_build, 335 ms prepare_hulls, 261 ms ships; time by phase { "prepare_hulls": 11684, "fx_warmup": 1965, "start->board_build": 397, "ships": 3989, "world_build": 641, "arrival_warm->prepare_hulls": 222, "board->world_build": 105, "ships->pull_back": 88, "board_build->board": 46, "pull_back->arrival_warm": 22, "pull_back": 17, "camera_back->settle": 9, "world_build->ships": 8, "fx_warmup->camera_back": 7, "settle->": 7, "prepare_hulls->fx_warmup": 7, "settle": 430, "camera_back": 11, "start": 3, "arrival_warm": 3 }
+[load1434] s25 cover check PASS: 0 frames without the cover before play, 0 frames of 5 s or more (worst 3276 ms)
+[load1434] s25 worst cover frames split: 3276 ms prepare_hulls (began at 10789 ms): render cpu 2 ms, gpu 2 ms, rest 3274 ms of which the process step 223 ms, 89 pipelines compiled, 0 world bakes pending; 408 ms fx_warmup (began at 22439 ms): render cpu 1 ms, gpu 2 ms, rest 407 ms of which the process step 11 ms, 2 pipelines compiled, 0 world bakes pending; 397 ms start->board_build (began at 4216 ms): render cpu 2 ms, gpu 0 ms, rest 395 ms of which the process step 229 ms, 86 pipelines compiled, -1 world bakes pending; 335 ms prepare_hulls (began at 10454 ms): render cpu 1 ms, gpu 2 ms, rest 334 ms of which the process step 223 ms, 0 pipelines compiled, 0 world bakes pending; 261 ms ships (began at 5597 ms): render cpu 6 ms, gpu 7 ms, rest 255 ms of which the process step 119 ms, 24 pipelines compiled, 2 world bakes pending
+[load1434] s25 worst ship corsair|bomber setup stages (us) {  }; worst effects registration C16s_23 parts (us) { "add:analyse": 202486, "add:damage_root": 51, "add:engines": 11570, "add:shield": 3, "add:collider": 1518 }; worst hull geometry 227 ms (C16s_23)
+[load1434] s25 start to board parts (us) { "tables": 11, "reset": 52, "board": 168087 }
+[attach] battle x06 C16s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x07 C16s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 C15s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x010 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x011 H10_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x012 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x016 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x017 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x018 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[sfx] 11 cues, 10 clip sets, loaded in 27 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[fx] late shader: mat SPRITE #define SOFT frame 1420 26034.4 ms
+[fx] late shader: mat STREAK frame 1420 26103.2 ms
+[fx] late shader: mat RING frame 1420 26149.4 ms
+[fx] late shader: mat RIBBON frame 1420 26184.5 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1420 26232.8 ms
+[fx] late shader: mat NULL_SLUG frame 1420 26270.4 ms
+[fx] late shader: mat SHARD frame 1420 26299.7 ms
+[fx] late shader: hit fragments frame 1420 26399.7 ms
+[fx] late shader: death debris body frame 1420 26509.4 ms
+[fx] late shader: mat TEAR frame 1420 26607.1 ms
+[fx] late shader: death strain tear frame 1420 26635.2 ms
+[load] battle scene ready in 734 ms (title backdrop)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.586, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 1442 31787.3 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 9 ships built in 1971 ms over 27 frames (title backdrop): longest stretch 349 ms; ship setup 705 ms (worst 511 ms, V16_37: inst 0, look_new_mats 1, look_assign 457, look_worst_assign 94, look_counts 17, look 459, look_touch 0, fit 0, rest 26), effects registration 385 ms (worst 63 ms, V15_37: analyse 60, damage_root 0, engines 0, shield 0, collider 1), hull geometry 776 ms (worst 349 ms, B20_11), waiting on hull files and worker instances 2 ms; 9 hulls instanced on workers
+[world] baked 4d497bec39f67205abc594dcda345d93fa8166406e1e9385145a46725df16564 4096x2048 in 3889 ms (worker; stages ms { "began": 30318, "device": 150, "spirv": 3, "pipeline": 1, "dispatch": 86, "worst_strip": 3, "readback": 49, "mips": 14 })
+[fx] late shader: exterior frame 1616 34420.6 ms
+[fx] late shader: damage 1303355530 frame 1616 34514.4 ms
+[fx] late shader: death piece slag frame 1616 35565.4 ms
+[world] baked b8c48beebe3ff94b653d03116e192f190a484ac10b4cf4942c200b74619c5b5f 4096x2048 in 12956 ms (worker; stages ms { "began": 34207, "device": 203, "spirv": 3, "pipeline": 1, "dispatch": 17, "worst_strip": 4, "readback": 35, "mips": 14 })
+[world] baked 3e83e1f5e001c98cdb028f6f73a5f903164a16ede399540516db31a1ec406d93 4096x2048 in 1538 ms (worker; stages ms { "began": 43491, "device": 182, "spirv": 4, "pipeline": 1, "dispatch": 16, "worst_strip": 2, "readback": 44, "mips": 13 })
+[load1434] title FAIL (slice PASS, ready PASS, click PASS (15 ms), frame FAIL (9081 ms), bus PASS)
+[load1434] title cover check FAIL: 0 frames without the cover before play, 1 frames of 5 s or more (worst 9081 ms)
+[load1434] title worst frames split: 9081 ms world (began at 34408 ms): render cpu 2 ms, gpu 2 ms, rest 9079 ms of which the process step 75 ms, 61 pipelines compiled, 1 world bakes pending; 3392 ms start->board_build (began at 26893 ms): render cpu 5 ms, gpu 1 ms, rest 3387 ms of which the process step 164 ms, 123 pipelines compiled, -1 world bakes pending; 853 ms none->start (began at 26025 ms): render cpu 0 ms, gpu 0 ms, rest 853 ms of which the process step 164 ms, 48 pipelines compiled, -1 world bakes pending; 352 ms ships (began at 32303 ms): render cpu 1 ms, gpu 2 ms, rest 351 ms of which the process step 105 ms, 0 pipelines compiled, 2 world bakes pending; 254 ms world_build (began at 30504 ms): render cpu 1 ms, gpu 1 ms, rest 253 ms of which the process step 3392 ms, 4 pipelines compiled, 2 world bakes pending
+[load1434] title: backdrop 9 ships; longest build stretch 349 ms; worst frame while it built 9081 ms; backdrop ready after 20849 ms; sfx bus -21.42 dB before, never moved
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 746 ms (title backdrop)
+[load1434] leave try 1: New run button clicked with a hull load pending; the backdrop's own exit 1 ms on the main thread (limit 100); it left work pending (handed on); click to first campaign frame 894 ms; worst frame over the next 2 s 18 ms; work handed on 0
+[load1434] leave PASS (try 1: exit 1 ms, click to first campaign frame 894 ms)
+[fx] late shader: mat DISTORT frame 2372 51681.4 ms
+[sfx] 71 cues, 67 clip sets, loaded in 288 ms
+[load] battle scene ready in 1141 ms
+[world] loaded cd3750fbc8b976fa2ccaa20544992fcedb65b2fba58cd16fa200a4a59ed10e47 4096x2048 in 277 ms (worker; stages ms {  })
+[world] loaded 118fd70093190d6e1ab2fd57cfb665df240c382248d76594105169f324c7ccd4 4096x2048 in 398 ms (worker; stages ms {  })
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.529, target 4.4; visual tuning (R191)
+[world] loaded fb838765029938b9809af04d56ad3a270f2d3451ae2adc725309ade8531e45c9 1024x512 in 473 ms (worker; stages ms {  })
+[world] loaded 1bdcee8bb42a0ae239dc712b6c4b09d7999594e697cb899fbca2158d6e8fffc8 1024x512 in 718 ms (worker; stages ms {  })
+[world] loaded ad1b79b2e4ffdfdbb51f6276045c8cc2629949bb512e1dbf138337d8882f3552 4096x2048 in 528 ms (worker; stages ms {  })
+[world] loaded 95a9fd0cbc3ea970d504a07c3bf764640f562865077f674b5b4a56222ddfe654 1024x512 in 962 ms (worker; stages ms {  })
+[world] loaded 787056fede485861d5e7ef7abd6d381305b916bfee910fbb2e27189bfdb18dde 1024x512 in 777 ms (worker; stages ms {  })
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[fx] late shader: mat CRAFT_TRAIL frame 2414 57237.7 ms
+[load] 7 ships built in 3150 ms over 30 frames: longest stretch 785 ms; ship setup 1619 ms (worst 765 ms, hegemony|fighter: -), effects registration 356 ms (worst 72 ms, H10_23: analyse 69, damage_root 0, engines 0, shield 0, collider 1), hull geometry 466 ms (worst 114 ms, H7_23), waiting on hull files and worker instances 11 ms; 6 hulls instanced on workers
+[load1434] b1 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] b1: 7 ships in 3150 ms over 30 frames; longest build stretch 785 ms; worst ship setup 765 ms (hegemony|fighter), worst effects registration 72 ms; waiting on hull files 11 ms; scene ready 1240 ms; worst frame cover to play 878 ms; to play 9835 ms
+[load1434] b1 cover frames: worst 878 ms start->board_build, 787 ms ships, 538 ms ships, 399 ms fx_warmup, 311 ms fx_warmup; time by phase { "start->board_build": 878, "ships": 3105, "fx_warmup": 1732, "prepare_hulls": 2172, "world_build": 861, "arrival_warm->prepare_hulls": 156, "ships->pull_back": 38, "board->world_build": 20, "pull_back->arrival_warm": 14, "world_build->ships": 13, "pull_back": 17, "arrival_warm": 12, "start": 9, "prepare_hulls->fx_warmup": 7, "settle->": 7, "settle": 450, "camera_back": 12, "camera_back->settle": 6, "fx_warmup->camera_back": 6, "board_build->board": 3 }
+[load1434] b1 cover check PASS: 0 frames without the cover before play, 0 frames of 5 s or more (worst 878 ms)
+[load1434] b1 worst cover frames split: 878 ms start->board_build (began at 52337 ms): render cpu 7 ms, gpu 4 ms, rest 871 ms of which the process step 1250 ms, 51 pipelines compiled, -1 world bakes pending; 787 ms ships (began at 56331 ms): render cpu 1 ms, gpu 12 ms, rest 786 ms of which the process step 177 ms, 18 pipelines compiled, 0 world bakes pending; 538 ms ships (began at 54220 ms): render cpu 1 ms, gpu 12 ms, rest 537 ms of which the process step 275 ms, 45 pipelines compiled, 2 world bakes pending; 399 ms fx_warmup (began at 59865 ms): render cpu 1 ms, gpu 2 ms, rest 398 ms of which the process step 36 ms, 2 pipelines compiled, 0 world bakes pending; 311 ms fx_warmup (began at 60954 ms): render cpu 1 ms, gpu 2 ms, rest 310 ms of which the process step 395 ms, 3 pipelines compiled, 0 world bakes pending
+[load1434] b1 worst ship hegemony|fighter setup stages (us) {  }; worst effects registration H10_23 parts (us) { "add:analyse": 69906, "add:damage_root": 42, "add:engines": 828, "add:shield": 3, "add:collider": 1478 }; worst hull geometry 114 ms (H7_23)
+[load1434] b1 start to board parts (us) { "tables": 8, "reset": 41, "board": 861633 }
+[sfx] 71 cues, 67 clip sets, loaded in 284 ms
+[load] battle scene ready in 1197 ms
+[world] loaded 5b648e04a71a745f8506e17aaf4099fbc947a355a2b8b63e3e247c5541ed8b56 4096x2048 in 334 ms (worker; stages ms {  })
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.275, target 4.4; visual tuning (R191)
+[world] loaded ff148e6d092733097a9a6bd1cee7d7462e3ee35b49ed092917efa3f8ca359ed7 4096x2048 in 424 ms (worker; stages ms {  })
+[world] loaded 904d1b0f09a9400bf079317ca394b2d5eb4483bf85c0233db23936551863ab13 1024x512 in 465 ms (worker; stages ms {  })
+[world] loaded e84fb05e05a7a82f8e6de7abf67a48af6ee97b18aa479b6769a8bb920689ba15 1024x512 in 595 ms (worker; stages ms {  })
+[world] loaded 472766cc346917cb9166891c4da5c809f964b20900d47f3d49e81ae69edaffa8 4096x2048 in 332 ms (worker; stages ms {  })
+[world] loaded 84c51e8621811593cca7f0933e3b6e8a4469fd5870f590356c2bdc78904ffe25 1024x512 in 801 ms (worker; stages ms {  })
+[world] loaded 02d28b3fc77a9d37ee7adaf0f3dad00ed7a15209f47ba6b319e3ed0c2adffc57 1024x512 in 733 ms (worker; stages ms {  })
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[load] 7 ships built in 3108 ms over 32 frames: longest stretch 223 ms; ship setup 942 ms (worst 496 ms, V16_37: inst 0, look_new_mats 1, look_assign 436, look_worst_assign 94, look_counts 17, look 438, look_touch 0, fit 0, rest 29), effects registration 723 ms (worst 204 ms, C14s_23: analyse 202, damage_root 0, engines 1, shield 0, collider 1), hull geometry 750 ms (worst 223 ms, C14s_23), waiting on hull files and worker instances 4 ms; 7 hulls instanced on workers
+[load1434] b2 FAIL (slice PASS, ready PASS, cover FAIL)
+[load1434] b2: 7 ships in 3108 ms over 32 frames; longest build stretch 223 ms; worst ship setup 496 ms (V16_37), worst effects registration 204 ms; waiting on hull files 4 ms; scene ready 1290 ms; worst frame cover to play 1399 ms; to play 15035 ms
+[load1434] b2 cover frames: worst 1399 ms start->board_build, 706 ms fx_warmup, 571 ms prepare_hulls, 537 ms ships, 407 ms fx_warmup; time by phase { "start->board_build": 1399, "fx_warmup": 2330, "prepare_hulls": 5986, "ships": 3088, "world_build": 700, "arrival_warm->prepare_hulls": 159, "ships->pull_back": 69, "camera_back": 20, "board->world_build": 9, "start": 9, "fx_warmup->camera_back": 8, "settle->": 8, "board_build->board": 8, "arrival_warm": 8, "pull_back->arrival_warm": 8, "world_build->ships": 8, "settle": 436, "prepare_hulls->fx_warmup": 6, "pull_back": 10, "camera_back->settle": 1 }
+[load1434] b2 cover check PASS: 0 frames without the cover before play, 0 frames of 5 s or more (worst 1399 ms)
+[load1434] b2 worst cover frames split: 1399 ms start->board_build (began at 63920 ms): render cpu 6 ms, gpu 1 ms, rest 1393 ms of which the process step 1299 ms, 57 pipelines compiled, -1 world bakes pending; 706 ms fx_warmup (began at 77454 ms): render cpu 2 ms, gpu 3 ms, rest 704 ms of which the process step 403 ms, 12 pipelines compiled, 0 world bakes pending; 571 ms prepare_hulls (began at 70174 ms): render cpu 1 ms, gpu 14 ms, rest 570 ms of which the process step 184 ms, 0 pipelines compiled, 0 world bakes pending; 537 ms ships (began at 66150 ms): render cpu 1 ms, gpu 6 ms, rest 536 ms of which the process step 225 ms, 45 pipelines compiled, 2 world bakes pending; 407 ms fx_warmup (began at 76060 ms): render cpu 1 ms, gpu 2 ms, rest 406 ms of which the process step 7 ms, 2 pipelines compiled, 0 world bakes pending
+[load1434] b2 worst ship V16_37 setup stages (us) { "inst": 80, "look_new_mats": 1855, "look_assign": 436522, "look_worst_assign": 94940, "look_counts": 17017, "look": 438630, "look_touch": 30, "fit": 18, "rest": 29659 }; worst effects registration C14s_23 parts (us) { "add:analyse": 202079, "add:damage_root": 54, "add:engines": 1076, "add:shield": 2, "add:collider": 1476 }; worst hull geometry 223 ms (C14s_23)
+[load1434] b2 start to board parts (us) { "tables": 8, "reset": 38, "board": 1394736 }
+[sfx] 71 cues, 67 clip sets, loaded in 282 ms
+[load] battle scene ready in 1190 ms
+[world] loaded ed506d290babca92e1e476f6b66cd451ba01a46820292c34ff437fc5dd8017f5 4096x2048 in 258 ms (worker; stages ms {  })
+[world] loaded 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d 1024x512 in 286 ms (worker; stages ms {  })
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] loaded 441af199859ba4baf13a8f506dd00238f092103e076fa0c2e8befb5edd10420f 1024x512 in 344 ms (worker; stages ms {  })
+[world] loaded 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 1024x512 in 216 ms (worker; stages ms {  })
+[world] loaded bd4e038767bb0dd5f89b0c336cd581b0fc5b506bba4e4f6ede100c52423cd0a0 1024x512 in 232 ms (worker; stages ms {  })
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[load] 7 ships built in 3016 ms over 30 frames: longest stretch 745 ms; ship setup 1579 ms (worst 725 ms, hegemony|fighter: -), effects registration 347 ms (worst 78 ms, H10_23: analyse 75, damage_root 0, engines 0, shield 0, collider 1), hull geometry 431 ms (worst 105 ms, H7_23), waiting on hull files and worker instances 2 ms; 6 hulls instanced on workers
+[load1434] b3 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] b3: 7 ships in 3016 ms over 30 frames; longest build stretch 745 ms; worst ship setup 725 ms (hegemony|fighter), worst effects registration 78 ms; waiting on hull files 2 ms; scene ready 1298 ms; worst frame cover to play 1399 ms; to play 10145 ms
+[load1434] b3 cover frames: worst 1399 ms start->board_build, 751 ms ships, 530 ms ships, 446 ms prepare_hulls, 403 ms fx_warmup; time by phase { "start->board_build": 1399, "ships": 2976, "prepare_hulls": 2329, "fx_warmup": 1780, "world_build": 531, "arrival_warm->prepare_hulls": 158, "ships->pull_back": 84, "arrival_warm": 15, "pull_back->arrival_warm": 14, "pull_back": 19, "board->world_build": 13, "world_build->ships": 9, "fx_warmup->camera_back": 8, "start": 8, "settle": 441, "prepare_hulls->fx_warmup": 7, "settle->": 6, "camera_back": 11, "camera_back->settle": 6, "board_build->board": 5 }
+[load1434] b3 cover check PASS: 0 frames without the cover before play, 0 frames of 5 s or more (worst 1399 ms)
+[load1434] b3 worst cover frames split: 1399 ms start->board_build (began at 80862 ms): render cpu 6 ms, gpu 1 ms, rest 1393 ms of which the process step 1307 ms, 51 pipelines compiled, -1 world bakes pending; 751 ms ships (began at 84958 ms): render cpu 1 ms, gpu 5 ms, rest 750 ms of which the process step 96 ms, 18 pipelines compiled, 0 world bakes pending; 530 ms ships (began at 82917 ms): render cpu 1 ms, gpu 1 ms, rest 529 ms of which the process step 1400 ms, 45 pipelines compiled, 0 world bakes pending; 446 ms prepare_hulls (began at 86492 ms): render cpu 1 ms, gpu 2 ms, rest 445 ms of which the process step 144 ms, 0 pipelines compiled, 0 world bakes pending; 403 ms fx_warmup (began at 88659 ms): render cpu 1 ms, gpu 2 ms, rest 402 ms of which the process step 7 ms, 2 pipelines compiled, 0 world bakes pending
+[load1434] b3 worst ship hegemony|fighter setup stages (us) {  }; worst effects registration H10_23 parts (us) { "add:analyse": 75356, "add:damage_root": 53, "add:engines": 904, "add:shield": 3, "add:collider": 1553 }; worst hull geometry 105 ms (H7_23)
+[load1434] b3 start to board parts (us) { "tables": 7, "reset": 34, "board": 1395108 }
+[sfx] 71 cues, 67 clip sets, loaded in 282 ms
+[load] battle scene ready in 1192 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.275, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[load] 7 ships built in 2997 ms over 32 frames: longest stretch 211 ms; ship setup 956 ms (worst 508 ms, V16_37: inst 0, look_new_mats 1, look_assign 452, look_worst_assign 93, look_counts 17, look 454, look_touch 0, fit 0, rest 26), effects registration 706 ms (worst 196 ms, C14s_23: analyse 193, damage_root 0, engines 1, shield 0, collider 1), hull geometry 691 ms (worst 211 ms, C14s_23), waiting on hull files and worker instances 2 ms; 7 hulls instanced on workers
+[world] baked 5b648e04a71a745f8506e17aaf4099fbc947a355a2b8b63e3e247c5541ed8b56 4096x2048 in 4034 ms (worker; stages ms { "began": 94416, "device": 147, "spirv": 3, "pipeline": 1, "dispatch": 95, "worst_strip": 3, "readback": 49, "mips": 14 })
+[fx] late shader: damage 444838022 frame 4409 99328.2 ms
+[world] baked ff148e6d092733097a9a6bd1cee7d7462e3ee35b49ed092917efa3f8ca359ed7 4096x2048 in 13344 ms (worker; stages ms { "began": 98450, "device": 197, "spirv": 3, "pipeline": 1, "dispatch": 14, "worst_strip": 3, "readback": 37, "mips": 13 })
+[world] baked 904d1b0f09a9400bf079317ca394b2d5eb4483bf85c0233db23936551863ab13 1024x512 in 13702 ms (worker; stages ms { "began": 107965, "device": 160, "spirv": 4, "pipeline": 1, "dispatch": 7, "worst_strip": 2, "readback": 29, "mips": 1 })
+[world] baked e84fb05e05a7a82f8e6de7abf67a48af6ee97b18aa479b6769a8bb920689ba15 1024x512 in 14129 ms (worker; stages ms { "began": 108352, "device": 211, "spirv": 4, "pipeline": 1, "dispatch": 9, "worst_strip": 2, "readback": 54, "mips": 1 })
+[world] baked 472766cc346917cb9166891c4da5c809f964b20900d47f3d49e81ae69edaffa8 4096x2048 in 1870 ms (worker; stages ms { "began": 108809, "device": 215, "spirv": 4, "pipeline": 1, "dispatch": 16, "worst_strip": 2, "readback": 42, "mips": 13 })
+[world] baked 84c51e8621811593cca7f0933e3b6e8a4469fd5870f590356c2bdc78904ffe25 1024x512 in 1854 ms (worker; stages ms { "began": 110000, "device": 217, "spirv": 3, "pipeline": 1, "dispatch": 9, "worst_strip": 3, "readback": 32, "mips": 1 })
+[world] baked 02d28b3fc77a9d37ee7adaf0f3dad00ed7a15209f47ba6b319e3ed0c2adffc57 1024x512 in 1710 ms (worker; stages ms { "began": 110350, "device": 149, "spirv": 3, "pipeline": 1, "dispatch": 5, "worst_strip": 2, "readback": 26, "mips": 0 })
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[load1434] b2r FAIL (slice PASS, ready PASS, cover FAIL)
+[load1434] b2r: 7 ships in 2997 ms over 32 frames; longest build stretch 211 ms; worst ship setup 508 ms (V16_37), worst effects registration 196 ms; waiting on hull files 2 ms; scene ready 1283 ms; worst frame cover to play 8738 ms; to play 27095 ms
+[load1434] b2r cover frames: worst 8738 ms world, 1565 ms start->board_build, 711 ms fx_warmup, 548 ms ships, 403 ms fx_warmup; time by phase { "world": 12049, "start->board_build": 1565, "fx_warmup": 2336, "ships": 2979, "world_build": 849, "prepare_hulls": 5507, "arrival_warm->prepare_hulls": 151, "ships->world": 56, "board->world_build": 11, "fx_warmup->camera_back": 9, "settle->": 9, "start": 8, "board_build->board": 8, "world_build->ships": 7, "world->pull_back": 7, "pull_back->arrival_warm": 7, "settle": 444, "prepare_hulls->fx_warmup": 6, "camera_back": 10, "pull_back": 12, "arrival_warm": 6, "camera_back->settle": 5 }
+[load1434] b2r cover check FAIL: 0 frames without the cover before play, 1 frames of 5 s or more (worst 8738 ms)
+[load1434] b2r worst cover frames split: 8738 ms world (began at 99225 ms): render cpu 1 ms, gpu 2 ms, rest 8737 ms of which the process step 196 ms, 0 pipelines compiled, 3 world bakes pending; 1565 ms start->board_build (began at 92829 ms): render cpu 6 ms, gpu 1 ms, rest 1559 ms of which the process step 1319 ms, 57 pipelines compiled, -1 world bakes pending; 711 ms fx_warmup (began at 118416 ms): render cpu 2 ms, gpu 3 ms, rest 709 ms of which the process step 400 ms, 12 pipelines compiled, 0 world bakes pending; 548 ms ships (began at 95371 ms): render cpu 1 ms, gpu 2 ms, rest 547 ms of which the process step 231 ms, 45 pipelines compiled, 4 world bakes pending; 403 ms fx_warmup (began at 117019 ms): render cpu 1 ms, gpu 2 ms, rest 402 ms of which the process step 7 ms, 2 pipelines compiled, 0 world bakes pending
+[load1434] b2r worst ship V16_37 setup stages (us) { "inst": 62, "look_new_mats": 1895, "look_assign": 452221, "look_worst_assign": 93831, "look_counts": 17017, "look": 454384, "look_touch": 32, "fit": 15, "rest": 26883 }; worst effects registration C14s_23 parts (us) { "add:analyse": 193781, "add:damage_root": 53, "add:engines": 1044, "add:shield": 3, "add:collider": 1480 }; worst hull geometry 211 ms (C14s_23)
+[load1434] b2r start to board parts (us) { "tables": 9, "reset": 42, "board": 1561405 }
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[load1434] b2r is reported only (bakes again, shaders warm): its FAIL or PASS above does not count toward RESULT
+[load1434] COVER FAIL on the warm profile (the loading cover up on every frame to play and no frame of 5 s or more: s25 ok, title FAIL, b1 ok, b2 ok, b3 ok, b2r reported only)
+[load1434] RESULT FAIL on the warm profile (limit 500 ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)

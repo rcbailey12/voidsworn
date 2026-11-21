@@ -1,0 +1,36 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 29 ms
+[sfx] 71 cues, 67 clip sets, loaded in 277 ms
+[load] battle scene ready in 926 ms
+[world] loaded c884a9e2201a51173f5f2bb9a5ef7b8d29cb05a7fe1ee98ac5a09bc08131a69a 4096x2048 in 161 ms (worker; stages ms {  })
+[world] loaded 9365c2f8c48dbf1989956acf0d300cf492beb5efdf576a7af02ba8a24fdc670a 4096x2048 in 248 ms (worker; stages ms {  })
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 7.059, target 4.4; visual tuning (R191)
+[world] loaded cf6ed33160b6675e7307f28b0e4543e9b21790f48742d411e70121b630d90596 1024x512 in 246 ms (worker; stages ms {  })
+[world] loaded 3ccb01efd6eeabfe7346385e6cda8ecd8ed0b8c3b542858c1a019cc63843a88c 1024x512 in 430 ms (worker; stages ms {  })
+[world] loaded 9de514380dac396a39b7cdb3c646f73873ac2d871f67a85160bf45bc9abbbfc1 4096x2048 in 265 ms (worker; stages ms {  })
+[world] loaded 90f3632eb0ff5d7d9d9601b2fb978a8986b48dfc8c610adc589957ccd183944c 1024x512 in 400 ms (worker; stages ms {  })
+[world] loaded 521126be7fa01e9a9aab89b3260cbc7c03a4cbddde5f0e383aef817f98b44a7d 1024x512 in 271 ms (worker; stages ms {  })
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 9 ships built in 1095 ms over 20 frames: longest stretch 114 ms; ship setup 221 ms (worst 97 ms, V16_37: inst 0, look_new_mats 1, look_assign 74, look_worst_assign 15, look_counts 17, look 76, look_touch 0, fit 0, rest 14), effects registration 265 ms (worst 67 ms, V14_23: analyse 64, damage_root 0, engines 0, shield 0, collider 1), hull geometry 425 ms (worst 114 ms, H7_23), waiting on hull files and worker instances 7 ms; 9 hulls instanced on workers
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[main] quit (window) at 30530 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 H8_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x012 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 122 ms, statics and fx drain 36 ms, engine exit from 30688 ms
