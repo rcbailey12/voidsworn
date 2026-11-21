@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/cool_color.png-d7085d81fda62f3209517595257b3f
 
 compress/mode=2
 compress/high_quality=true
-compress/lossy_quality=0.71
+compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
