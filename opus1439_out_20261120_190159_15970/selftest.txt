@@ -1,0 +1,10 @@
+Error formatting a string: Index (zero based) must be greater than or equal to zero and less than the size of the 
+argument list..
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1439\out_20261120_190159_15970\new\contrib\opus\perf_1120_firstlaunch\su
+mmarize.ps1:34 char:1
++ $o.Add("{0,-15}{1,9}{2,10}{3,8}{4,10}{5,10}{6,10}{7,10}{8,10}{9,10}"  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: ({0,-15}{1,9}{2,...10}{8,10}{9,10}:String) [], ParentContainsErrorReco 
+   rdException
+    + FullyQualifiedErrorId : FormatError
+ 

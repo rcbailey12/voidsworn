@@ -1,0 +1,10 @@
+waiting for OPUS1435_CLOSE_PP2 exit in opus1435d_wait.txt Fri 11/20/2026 18:30:42.75 
+OPUS1439_MEASURE2 start 18:50:42.14 
+swapped out while only waiting 18:50:58: replaced by OPUS1439_WAIT2.bat (also waits for the three publishes, Board Nov 21 00:50 UTC)
+WAIT2 waiting for OPUS1435_CLOSE_PP2 exit and PUBLISH 1155 C14H exit Fri 11/20/2026 18:50:58.85 
+CORRECTION 18:51:20: the swap was NOT while only waiting. PP2 had exited at 18:50:25 and MEASURE2 had started at 18:50:42; stopping the old waiter at 18:50:58 cut attempt out_20261120_185042_11999 during its checkout (nothing deleted; that folder is left as is). WAIT2 will start a fresh attempt after the publishes.
+OPUS1439_MEASURE2 start 19:01:59.19 
+OPUS1439_MEASURE2 exit 1 at 19:02:25.72 
+run folder out_20261120_190159_15970
+result: done FAILED: new selftest: see selftest.txt
+all done Fri 11/20/2026 19:02:26.14 

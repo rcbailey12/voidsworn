@@ -1,0 +1,4 @@
+PC relay note (Nov 20, 19:05 PC time): which ship-line steps were running during the measured runs.
+No measured run happened: MEASURE2 stopped at its selftest (19:02:00 to 19:02:25), before cold_1, cold_2 and battle24.
+During the selftest the ship line was on 1291 C13_I (chain_1119bt.txt, started 18:36:26, in stages 3 to 7).
+An earlier attempt, out_20261120_185042_11999, was cut by me at 18:50:58 during its checkout (waiter stopped by mistake); it does not count.
