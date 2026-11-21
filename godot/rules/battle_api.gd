@@ -155,6 +155,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 		for tpl in S.enemies: en.append({"tpl": tpl})
 		cfg["enemies"] = en
 	new_battle(run, cfg)
+	R.UNDO_ON = S.get("undo") == true   # issue 1450: only the undo fixtures; the other scenarios play exactly as before
 
 # The config is the one input the rules take from outside (G3's campaign, G2's scenes, saves). The rules compare these fields with
 # string literals, and GDScript stops the call on a cross-type ==, so a wrong type is reported here and dropped (treated as unset,
@@ -203,6 +204,7 @@ func _i_new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	if not (cfg.get("fac") is String and R.FACTIONS.has(cfg["fac"])):
 		R.events.clear(); _queue.clear(); _halt(cfg_errors[-1]); return
 	R.RUN = run; R.events.clear(); _queue.clear()
+	R.UNDO_ON = true; R.UNDO = null   # issue 1450: the game can take a move back (a scenario sets its own, below)
 	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); var war = R.jt(cfg.get("event_war")); _alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
 	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("event_war"); cfg.erase("alt")
 	R.startBattle(cfg)
@@ -253,7 +255,8 @@ func _i_view() -> Dictionary:
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
 			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
-			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
+			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
+			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
 		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
@@ -425,6 +428,23 @@ func _i_board(id: String, target_id: String) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	if t == null or not _guard(u): return false
 	R.B["busy"] = true; var ok = R.boardUnit(u, t); _after_act(); return ok
+# Issue 1450 (Ryan, Nov 21 2026): take back the ship's last move or turn, while nothing else has happened since (no shot, ram,
+# boarding, ability, order, Command, dice or other change: rules.gd canUndo). view().units[i].undo says when it is allowed.
+# Each call takes back one move or turn; undoing the first one also lets another ship go first. Emits {t: "undo", unit, q, r, f}.
+# The battle version moves on, so every per-version cache (ui_info, threat_map, the scene's reads) is rebuilt after it.
+func undo(id: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_undo(id); _leave(true); return r
+func _i_undo(id: String) -> bool:
+	var u = unit(id)
+	if phase != "player" or u == null or u["side"] != "player" or R.jt(R.B.get("busy")): return false
+	return R.undoMove(u)
+func set_undo(on: bool) -> void:   # new_battle turns undo on and a test scenario sets its own; the battle scene turns it on for --scenario too
+	_enter(); R.UNDO_ON = on; R.UNDO = null; _leave(true)
+func can_undo(id: String) -> bool:
+	_enter()
+	var u = unit(id); var r = phase == "player" and u != null and u["side"] == "player" and R.canUndo(u); _leave(false); return r
 func rotate(id: String, dir: int) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h

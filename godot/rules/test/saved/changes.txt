@@ -1,5 +1,5 @@
-Saved manifest before: ab9c7991a2e8a75c5d0d3a963c5dabc2baf10ef34fa38e38d0cc8844e3b656a2
-Saved manifest after: 7b4057ee1d19370ab7ebc525695940bdf696564c4e5c0ce0d1d7744afc22564d
+Saved manifest before: 873ff1289ab5410612fe751453c092675b485e0d454f7e77ce145598914e8abc
+Saved manifest after: 98b1603fdd8dc3c874b4cc2b014d84da4ac10ba04c45ec1309925b8e2a2d537e
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
@@ -171,8 +171,16 @@ FAIL battle s983_teaching_station_defend
   turn 35, round 2, after move x07; unit x05 (player warden)
   state.units[1].sh[0]: 9 -> 18
   later changed records: 32; total records: 68 -> 67
+FAIL battle s1450_undo
+  turn 258, round 8, after ability x07; unit none (battle state)
+  state.b.log[50].m: "Cordon destroyer fires an ion pulse: 3 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields."
+  later changed records: 104; total records: 363 -> 362
+FAIL battle s1450_undo_classic
+  turn 183, round 4, after ability x010; unit x07 (player harrow)
+  state.units[2].sh[0]: 25 -> 13
+  later changed records: 216; total records: 400 -> 400
 FAIL battle s1447_ion_pulse
   new battle; no saved result
 FAIL file threat_s4.json
   map.3.-1,19: "405087ae147ae148" -> "404575c28f5c28f6"
-FAIL: saved Godot results; 285 battles checked, 43 changed, 1 other files changed, 44 failures; 16.004 s
+FAIL: saved Godot results; 288 battles checked, 45 changed, 1 other files changed, 46 failures; 16.699 s
