@@ -1,0 +1,25 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 33 ms
+[sfx] 71 cues, 67 clip sets, loaded in 389 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.559, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[world] baked 67c82dab1bb146e150dd5935cd5d56e878be55c07b92db1e25b6c54fd5b1d77a 4096x2048 in 13563 ms (worker)
+[world] baked 0d0f1290be5700b5a8cbcb9fb37b983cdfd419bfc45db9527100d9b01fe2df16 4096x2048 in 16045 ms (worker)
+[world] baked 904d1b0f09a9400bf079317ca394b2d5eb4483bf85c0233db23936551863ab13 1024x512 in 16495 ms (worker)
+[world] baked e84fb05e05a7a82f8e6de7abf67a48af6ee97b18aa479b6769a8bb920689ba15 1024x512 in 16934 ms (worker)
+[world] baked 48e84643c8b3ce9cdd0f2adcbf4e639c9a70c61af5e12719f722bcf9b615ae9f 4096x2048 in 2250 ms (worker)
+[world] baked 84c51e8621811593cca7f0933e3b6e8a4469fd5870f590356c2bdc78904ffe25 1024x512 in 1961 ms (worker)
+[world] baked 02d28b3fc77a9d37ee7adaf0f3dad00ed7a15209f47ba6b319e3ed0c2adffc57 1024x512 in 1902 ms (worker)
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[main] quit (window)
+[attach] battle x07 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)
+[fx] drained 3 retired jobs before quit in 3309 ms

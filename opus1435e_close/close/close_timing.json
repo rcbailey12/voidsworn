@@ -1,0 +1,140 @@
+[
+    {
+        "case":  "x_load_4s",
+        "how":  "x",
+        "wait_s":  4,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "sent":  "x",
+        "close_to_exit_ms":  2983,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  2,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "FAIL: see game.log"
+    },
+    {
+        "case":  "x_load_7s",
+        "how":  "x",
+        "wait_s":  7,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "sent":  "x",
+        "close_to_exit_ms":  5803,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  2,
+        "fx_retired":  [
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)",
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)"
+                       ],
+        "cut_pending_at_close":  true,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "FAIL: see game.log"
+    },
+    {
+        "case":  "altf4_load_5s",
+        "how":  "altf4",
+        "wait_s":  5,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "sent":  "altf4",
+        "close_to_exit_ms":  7363,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  2,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "FAIL: see game.log"
+    },
+    {
+        "case":  "x_battle_30s",
+        "how":  "x",
+        "wait_s":  30,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "sent":  "x",
+        "close_to_exit_ms":  4742,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  2,
+        "fx_retired":  [
+                           "[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)",
+                           "[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)"
+                       ],
+        "cut_pending_at_close":  true,
+        "fx_drained":  [
+                           "[fx] drained 3 retired jobs before quit in 3309 ms",
+                           "[fx] drained 3 retired jobs before quit in 3309 ms"
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "FAIL: see game.log"
+    },
+    {
+        "case":  "altf4_battle_30s",
+        "how":  "altf4",
+        "wait_s":  30,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "sent":  "altf4",
+        "close_to_exit_ms":  1410,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  2,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "FAIL: see game.log"
+    }
+]

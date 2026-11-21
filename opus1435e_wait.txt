@@ -1,0 +1,6 @@
+waiting for OPUS1433_HOVER exit in opus1433_wait.txt Fri 11/20/2026 18:38:14.15 
+OPUS1435_CLOSE3 start 19:21:16.23 
+OPUS1435_CLOSE3 exit 1 at 19:39:53.63 
+run folder out_20261120_192117_13471
+result: done FAILED: new close timing
+all done Fri 11/20/2026 19:39:54.06 

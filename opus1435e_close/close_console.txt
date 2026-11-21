@@ -1,0 +1,9 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+close timing, project C:\Users\rcbai\Downloads\voidsworn_test\opus1435e\out_20261120_192117_13471\new\godot, 2026-11-20T19:37:58
+x_load_4s: FAIL: see game.log sent=x pending_cut=False close_to_exit_ms=2983 exit=0 quit_window=True retired=[] drained=[] crash=False
+x_load_7s: FAIL: see game.log sent=x pending_cut=True close_to_exit_ms=5803 exit=0 quit_window=True retired=[[fx] left with 1 jobs still running: retired, not waited for (0.8 ms); [fx] left with 1 jobs still running: retired, not waited for (0.8 ms)] drained=[] crash=False
+altf4_load_5s: FAIL: see game.log sent=altf4 pending_cut=False close_to_exit_ms=7363 exit=0 quit_window=True retired=[] drained=[] crash=False
+x_battle_30s: FAIL: see game.log sent=x pending_cut=True close_to_exit_ms=4742 exit=0 quit_window=True retired=[[fx] left with 3 jobs still running: retired, not waited for (0.7 ms); [fx] left with 3 jobs still running: retired, not waited for (0.7 ms)] drained=[[fx] drained 3 retired jobs before quit in 3309 ms; [fx] drained 3 retired jobs before quit in 3309 ms] crash=False
+altf4_battle_30s: FAIL: see game.log sent=altf4 pending_cut=False close_to_exit_ms=1410 exit=0 quit_window=True retired=[] drained=[] crash=False
+failures=5
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-30021837d8c24aea8da894e11b1aa8b6
