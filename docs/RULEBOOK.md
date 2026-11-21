@@ -320,6 +320,17 @@ each slot like a board lane's, and accepts a runner-managed sparse copy under th
 checkout per run and picture folders in code jobs drove up disk use (issue 1186).
 
 
+Helper PC jobs (`opus_job_head.bat`) remove their own pinned checkouts once the attempt passed and every result file is
+on a relay branch: the Board runs the job head's checkout step right after each relay, and the same job's later tails
+repeat it. A file the job left in a checkout that is not a proven rebuildable leftover is saved into the job's own
+`out_<name>\checkout_leftovers` first (at most 200 MB, read back by SHA-256); more, a staged change, a stash or a local
+commit keeps the checkout. Failed and unfinished attempts are left to the janitor's rules. A ship job drops only its
+clone's import cache on PASS; its publish removes the clone after the relay, saving leftovers the same way. Nothing
+outside the job's own folders is touched. Why: on Nov 21 every passing job kept a 14 to 22 GB checkout for a
+build_info.json or a few .import files, and C: fell from 176 to 55 GB in three hours (issue 1497; relay and Git-state
+checks from Artoo on PR 1498).
+Set: Board, Nov 21, under R326; playbook detail in docs/playbooks/pc.md.
+
 Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
