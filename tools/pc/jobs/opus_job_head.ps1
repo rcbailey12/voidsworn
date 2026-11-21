@@ -60,7 +60,7 @@
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
 param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropcache', 'droprepo', 'survey')][string]$Action,
-      [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$E = '')
+      [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
@@ -640,7 +640,7 @@ switch ($Action) {
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
-      Write-RelayReceipt (Join-Path $jobDir 'out') $D $E
+      Write-RelayReceipt (Join-Path $jobDir 'out') $D $Folder
       Assert-Relayed (Join-Path $jobDir 'out') @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo')
       $work = @(Get-KeptWork $repo $null @{} "godot/assets/ships/$C/" $export)
       if (Test-Paused) { throw 'the Board PC pause is active' }
