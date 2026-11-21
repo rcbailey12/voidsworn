@@ -21,3 +21,6 @@ What was wrong:
 - Title music: the playing title track kept its playback at quit (4 objects, 2 resources: title_war.ogg). quit_clean now
   calls Music.release(). A title-only verbose run in the cloud shows no leak after the fix; music_check passes with a
   new release line.
+- Faction crests: on a window too narrow for the faction tab crests (the cloud's 64 by 64 headless window), the crest
+  TextureRect was built and never added, so 6 crests and their textures were still in use at exit. It is now freed.
+  After both fixes a verbose seed 31 run exits with no leak lines (cloud_seed-31_verbose_after_crest_fix.txt).

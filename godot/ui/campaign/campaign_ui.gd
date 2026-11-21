@@ -723,6 +723,7 @@ func _crest_tab(f: String, w: float) -> Button:
 	cr.modulate = Color(1, 1, 1, 1.0 if picked else 0.6)
 	var crest_on = w / k >= 170.0   # a narrow strip drops the crest so the name keeps its words whole
 	if crest_on: h.add_child(cr)
+	else: cr.free()   # issue 1457: an unparented crest was 6 leaked TextureRects and crests at exit on a narrow window
 	var name_w = w - (px(34) + px(10) if crest_on else 0) - px(20)
 	var nl = Kit.label(str(C.FACTIONS[f]["n"]), 18, k, GS.TEXT if picked else GS.TEXT2, Kit.medium_font(), true, name_w / k)
 	Kit.fit_words(nl, name_w, k)
