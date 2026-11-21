@@ -1,9 +1,9 @@
 """Issue 1535: job tools make temporary folders that the normal cleanup can delete.
 
 ship_job.bat and look_bench.bat put this folder on PYTHONPATH while their tools run under the job's own voidsworn-run
-TEMP. Python 3.12.4+ on Windows gives a tempfile.mkdtemp folder (mode 0o700) a private ACL; under an elevated token its
-owner is Administrators, so the non-elevated cleanup could neither read nor delete it (cleanup 4, Nov 21: 31 folders,
-about 49 GB). Here mkdtemp makes its folder with a plain mkdir instead, which inherits the TEMP folder's ACL. Names,
+TEMP. Python 3.12.4+ on Windows gives a tempfile.mkdtemp folder (mode 0o700) a private ACL protected from inheritance,
+and the cleanup could not remove it (cleanup 4, Nov 21: 31 folders, about 49 GB). The PC proof (board/pc-out-1535)
+showed a stock mkdtemp folder protected even from a non-elevated job, so the 0o700 ACL alone is the cause. Here mkdtemp makes its folder with a plain mkdir instead, which inherits the TEMP folder's ACL. Names,
 retries and the return value are as in the standard library; TemporaryDirectory uses it too.
 """
 import os

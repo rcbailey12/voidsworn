@@ -1,6 +1,6 @@
 'use strict';
 // Issue 1535: job tools make temporary folders the normal cleanup can delete. Python 3.12.4+ on Windows gives a
-// tempfile.mkdtemp folder a private ACL (an elevated owner made 31 voidsworn-run folders undeletable, cleanup 4, Nov 21).
+// tempfile.mkdtemp folder a private ACL (31 voidsworn-run folders the cleanup could not remove, cleanup 4, Nov 21).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');

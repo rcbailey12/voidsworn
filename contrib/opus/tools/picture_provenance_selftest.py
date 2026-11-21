@@ -344,8 +344,9 @@ def checkout_picture_links(repo, out, picture):
 
 def make_folder():
     # Issue 1535: a plain mkdir, never tempfile.mkdtemp. Python 3.12.4+ on Windows gives a mkdtemp folder a private ACL
-    # (mode 0o700); made under an elevated token it is owned by Administrators, and the normal cleanup of the job's
-    # voidsworn-run TEMP could then neither read nor delete it (cleanup 4, Nov 21: 31 folders, about 49 GB).
+    # (mode 0o700), protected from inheritance, and the cleanup of the job's voidsworn-run TEMP could not remove it
+    # (cleanup 4, Nov 21: 31 folders, about 49 GB; proof board/pc-out-1535: a non-elevated job's stock mkdtemp folder
+    # is protected too, so elevation is not needed for this).
     base = Path(tempfile.gettempdir())
     for _ in range(100):
         folder = base / ('picture889-' + os.urandom(8).hex())
