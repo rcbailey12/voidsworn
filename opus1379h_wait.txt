@@ -1,0 +1,6 @@
+OPUS1379H_WAIT.bat waiting for OPUS1434_LOAD5 exit in opus1434e_wait.txt Sat 11/21/2026  6:45:30.25 
+OPUS1379_BODY_RUN7 start  7:05:30.12 
+OPUS1379_BODY_RUN7 exit 0 at  7:36:53.09 
+run folder out_20261121_070530_24900
+result: done PASS
+all done Sat 11/21/2026  7:36:54.58 

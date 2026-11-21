@@ -1,0 +1,89 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1379)
+GPU: acquired solo claim 0c194ac4-6fe8-4631-97d0-4860cef2ad66
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4d911b9c046b4401a4d3ec0b3983bc3f\godot-profile-48124b2199144fb9b7cf6459be7978c9
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 318 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.547, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 6fca0d08376f23201a8a454f8c8b1f7c7cf4f4e79634e798cc202e3b03ca39ad 4096x2048 in 9474 ms (worker)
+[world] baked 6f5d22b0bee77b9e0ad85e5d188e39c92aee751faf95f85899b5ea36a8c1cf88 4096x2048 in 11753 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 12179 ms (worker)
+[world] baked 68914572724dd0d0692b995fb3375c3fc21750d0cee8efc67f80893adee952b4 4096x2048 in 2048 ms (worker)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1773 ms (worker)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/01_start.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/03_attack_tip.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/05_fire_1.png
+[attach] scorch on H10_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/07_fire_3.png
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=1
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/08_tp_r1_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/09_tp_r1_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/10_tp_r1_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/11_tp_r1_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/12_tp_r1_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/13_fire_4.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/14_tp_r1_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/15_tp_r1_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/16_tp_r1_x05_07.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/17_tp_r1_x05_08.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/18_tp_r1_x05_09.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/19_tp_r1_x05_10.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/20_tp_r1_x05_11.png
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=0
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/21_tp_r1_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/22_tp_r1_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/23_tp_r1_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/24_tp_r1_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/25_tp_r1_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/26_tp_r1_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/27_tp_r1_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/28_tp_r1_x05_07.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/29_tp_r1_x05_08.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/30_tp_r1_x05_09.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/31_tp_r1_x05_10.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/32_tp_r1_x05_11.png
+[attach] flare on H10_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on H10_23: no authored point fits this request; using the surface ray
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+TORP_FIRE r2_x05 weapon=torp shots=1 pd=0
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/33_tp_r2_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/34_tp_r2_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/35_tp_r2_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/36_tp_r2_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/37_tp_r2_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/38_tp_r2_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/39_tp_r2_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/40_tp_r2_x05_07.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/41_tp_r2_x05_08.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/42_tp_r2_x05_09.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/43_tp_r2_x05_10.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/44_tp_r2_x05_11.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379h\out_20261121_070530_24900\out_new\pd_C_26/45_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[14.2,6.6],"enemy_s_max":14.23,"enemy_s_mean":10.39,"movement":"brisk","per_round_by_kind":{"ability":0.08,"activation":0.1,"aiEnd":0.13,"command":0.13,"fire":2.04,"move":7.81,"round":0.08},"rounds":2},"pipeline_compiles_in_play":18,"result":"win","round":3,"secs":97.87}
+[attach] battle x04 V16_37: skipped 0; rcs hp 230 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 11 ray 0 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 64 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x07 H10_23: skipped 0; rcs hp 240 ray 0 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 8 centre 0 skip 0; gun hp 7 ray 3 centre 0 skip 0; flare hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 H8_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[attach] battle x09 hegemony|fighter: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4d911b9c046b4401a4d3ec0b3983bc3f\godot-profile-48124b2199144fb9b7cf6459be7978c9
+GPU: released solo claim 0c194ac4-6fe8-4631-97d0-4860cef2ad66
