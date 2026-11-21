@@ -155,7 +155,7 @@ def build(K):
     # ---------------- the drives: the bomber's thruster bank, three bells under a hood ----------------
     # Ryan, Nov 21 2026: "make the engines a bit more prominent too? So it's not just a floating wedge": bigger bells on longer
     # drums, hung out behind the stern past the hood (they were tucked inside it)
-    BANK = [(0.096, 0.090, 0.036), (-0.002, 0.096, 0.044), (-0.098, 0.088, 0.033)]
+    BANK = [(0.112, 0.092, 0.043), (-0.002, 0.096, 0.053), (-0.114, 0.090, 0.040)]
     XB = X_END - 0.085
     for i, (y, z, r) in enumerate(BANK):
         K.engine('E%d' % (i + 1), (U(XB), U(y), U(z)), U(r), U(0.11), bell=1.0, kw=dict(craft=True, craft_len=U(0.05), seed=i + 3), inv='drives',
@@ -191,7 +191,7 @@ def build(K):
     K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
              'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
     K.change('The vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
-    K.change('Three drive bells about twice the size on longer drums, hung out behind the stern; deeper craft bump in the Hullbreaker stack (normal relief 5.65 against the 3.5 floor)',
+    K.change('Three drive bells about 2.4 times the size on longer drums, hung out behind the stern; deeper craft bump in the Hullbreaker stack (normal relief 5.65 against the 3.5 floor)',
              'Ryan, Nov 21 2026: "make the engines a bit more prominent too? So it\'s not just a floating wedge"; issue 1517 detail floor')
     K.change('Two slim banded cannon booms past the bow (port longer and higher), the main guns, with muzzle brakes and armoured sponsons carrying their feed machinery; one centred twin turret on the ramp in place of the two uneven ones; no ram',
              'Ryan, Nov 21 2026: "a bit more dramatic ... clearly a fighting ship", "keep it distinct from the bomber but use that type of detailed approach"')
