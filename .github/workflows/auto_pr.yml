@@ -174,7 +174,11 @@ jobs:
             # If another run opened it in the meantime, that is a pass, not a failure.
             gh api "repos/$REPO/pulls" -f base=main -f head="$BRANCH" -f title="$title" -F body=@body.md --silent || {
               sleep 3
-              if [ "$(open_prs 'length')" != "0" ]; then
+              # Only a successful lookup with a positive count is a race another run won (Artoo on PR 1492): a failed
+              # lookup prints nothing, and an empty answer must not pass as "opened elsewhere".
+              raced=$(open_prs 'length' 2>/dev/null) || raced=""
+              case "$raced" in ''|*[!0-9]*) raced=0 ;; esac
+              if [ "$raced" -gt 0 ]; then
                 echo "PR for $BRANCH was opened by another run"
               elif [ "$(gh api "repos/$REPO/compare/main...$BRANCH" --jq .ahead_by 2>/dev/null)" = "0" ]; then
                 # Muse creates its branch from main a second before its first commit: nothing to open yet, the next push opens
