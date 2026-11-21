@@ -20,7 +20,10 @@ on:
       # <branch>-partial and must open no pull request. A '!' pattern after the patterns above takes those branches back out.
       - '!codex/issue-*-partial'
       - '!work/issue-*-partial'
+      - '!opus/issue-*-partial'
+      - '!neon/issue-*-partial'
       - '!muse/wip-*'
+      # Keep these '!' lines in step with checks.yml (issue 1488); contrib/opus/tools/workflow_config_tests.js checks both.
 # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
 # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
 concurrency:
@@ -32,14 +35,17 @@ permissions:
 jobs:
   open-pr:
     runs-on: ubuntu-latest
+    # A hung gh call used to hold a runner for the default 360 minutes (issue 1488, audit GH-06).
+    timeout-minutes: 5
     steps:
       - name: Open the PR if there isn't one (the push itself starts the checks)
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
-          # Standing issues never close on a merge (256 is the outside-check issue). One list for both paths below (opus_check_594).
-          STANDING: '256'
+          # Standing issues never close on a merge (256 is the outside-check issue, 906 Artoo's standing technical sweep, issue
+          # 1488). One list for both paths below (opus_check_594) and for main_commit_lint.yml.
+          STANDING: '256 906'
         run: |
           # Second line of defence for partial runs (issue 377): never open a pull request for a -partial branch.
           case "$BRANCH" in *-partial) echo "partial run branch $BRANCH: no pull request (issue 377)"; exit 0 ;; esac
@@ -137,7 +143,9 @@ jobs:
             n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
             arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
           fi
-          open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
+          # REST calls only, never the GraphQL-backed gh pr commands (RULEBOOK 2.5, issue 1488).
+          open_prs() { gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$BRANCH" --jq "$1"; }
+          open=$(open_prs 'length')
           if [ "$open" = "0" ]; then
             ititle=""
             [ -n "$n" ] && ititle=$(gh api "repos/$REPO/issues/$n" --jq .title 2>/dev/null || true)
@@ -164,9 +172,13 @@ jobs:
             guard_standing
             limit_body
             # If another run opened it in the meantime, that is a pass, not a failure.
-            gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md || {
+            gh api "repos/$REPO/pulls" -f base=main -f head="$BRANCH" -f title="$title" -F body=@body.md --silent || {
               sleep 3
-              if [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ]; then
+              # Only a successful lookup with a positive count is a race another run won (Artoo on PR 1492): a failed
+              # lookup prints nothing, and an empty answer must not pass as "opened elsewhere".
+              raced=$(open_prs 'length' 2>/dev/null) || raced=""
+              case "$raced" in ''|*[!0-9]*) raced=0 ;; esac
+              if [ "$raced" -gt 0 ]; then
                 echo "PR for $BRANCH was opened by another run"
               elif [ "$(gh api "repos/$REPO/compare/main...$BRANCH" --jq .ahead_by 2>/dev/null)" = "0" ]; then
                 # Muse creates its branch from main a second before its first commit: nothing to open yet, the next push opens
@@ -183,7 +195,7 @@ jobs:
             case "$BRANCH" in
               opus/*) echo "PR already open for $BRANCH" ;;
               *)
-                pr=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
+                pr=$(open_prs '.[0].number')
                 # Issue 1135: when the Board has set the open body to "Refs #N" with no closing word, keep Refs on refresh
                 # (a later run or a main merge used to append "Closes #N" again and close a multi-run issue early).
                 keep_refs=""
@@ -208,7 +220,7 @@ jobs:
                 esac
                 guard_standing
                 limit_body
-                gh pr edit "$pr" -R "$REPO" --body-file body.md && echo "PR $pr text refreshed"
+                gh api -X PATCH "repos/$REPO/pulls/$pr" -F body=@body.md --silent && echo "PR $pr text refreshed"
                 ;;
             esac
           fi
