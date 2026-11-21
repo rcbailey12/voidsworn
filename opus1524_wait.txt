@@ -1,0 +1,8 @@
+OPUS1524_WAIT.bat waiting for OPUS1434_LOAD8 exit in opus1434h_wait.txt Sat 11/21/2026  9:15:17.13 
+swapped out while only waiting 09:20:38: replaced by OPUS1524_WAIT2.bat (waits for OPUS1434_LOAD9 exit)
+OPUS1524_WAIT2.bat waiting for OPUS1434_LOAD9 exit in opus1434i_wait.txt Sat 11/21/2026  9:20:39.34 
+OPUS1524_SHOTS start  9:58:41.14 
+OPUS1524_SHOTS exit 1 at 10:15:29.08 
+run folder out_20261121_095841_22531
+result: done FAILED: the hulls in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old differ from the first checkout's (a ship was published between them), see C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\ships_identity_first.txt
+all done Sat 11/21/2026 10:15:29.58 

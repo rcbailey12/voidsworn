@@ -1,0 +1,35 @@
+[Sat 11/21/2026  9:58:41.91] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T15:58:42Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sat 11/21/2026  9:58:42.92] ready: GPU label 1524
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1 (tools_live version 9204dbb0c395)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 5aa1e1692f8ff3a29b9b237b1548f2ed05f0051e C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\new_ships_identity.txt
+[Sat 11/21/2026  9:59:05.93] step new import start
+[Sat 11/21/2026 10:14:18.80] step new import ok
+[Sat 11/21/2026 10:14:18.82] step new shots start
+[Sat 11/21/2026 10:15:06.60] step new shots ok
+checkout old 6be527ff0d880179cf5b021aa8cfd02517e61093 C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old_ships_identity.txt
+FAILED: the hulls in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old differ from the first checkout's (a ship was published between them), see C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\ships_identity_first.txt
+[Sat 11/21/2026 10:15:28.42] skipped old import: an earlier step failed
+[Sat 11/21/2026 10:15:28.43] skipped old shots: an earlier step failed
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+checkouts kept: the job failed
+done FAILED: the hulls in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old differ from the first checkout's (a ship was published between them), see C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\ships_identity_first.txt
+all done Sat 11/21/2026 10:15:29.05

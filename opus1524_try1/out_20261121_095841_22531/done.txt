@@ -1,0 +1,1 @@
+FAILED: the hulls in C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old differ from the first checkout's (a ship was published between them), see C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\ships_identity_first.txt
