@@ -1,4 +1,5 @@
 @echo off
+rem MEASURE2 replaces MEASURE (never run): Windows GPU memory joins the game process id; fixture selftest first.
 rem Issue 1439 (Astra items 3 and 6): first-launch cost and graphics memory per stage, before any fix. Measurement only.
 rem Built from tools/pc/jobs/opus_job_template.bat on opus_job_head.bat (issue 1303). GPU solo (frame-time measurement).
 rem Steps on one pinned commit (opus/issue-1439: godot/bench/perf_1439.gd and a 4-line hook in main.gd):
