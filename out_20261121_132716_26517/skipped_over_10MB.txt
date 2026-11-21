@@ -1,0 +1,6 @@
+out_new\BRD-FX_after.avi 51.6 MB
+out_new\CMD-FX_after.avi 31.5 MB
+out_new\RAM-FX_after.avi 38.9 MB
+out_old\BRD-FX_before.avi 50.8 MB
+out_old\CMD-FX_before.avi 31.1 MB
+out_old\RAM-FX_before.avi 38.5 MB

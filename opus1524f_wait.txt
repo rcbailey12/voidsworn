@@ -1,0 +1,7 @@
+OPUS1524F_WAIT.bat waiting for OPUS1434_LOAD12 exit in opus1434l_wait.txt Sat 11/21/2026 12:28:14.07 
+ffmpeg -version ok 13:27:15.50 
+OPUS1524_SHOTS5 start 13:27:15.50 
+OPUS1524_SHOTS5 exit 0 at 14:08:53.24 
+run folder out_20261121_132716_26517
+result: done PASS
+all done Sat 11/21/2026 14:08:54.87 

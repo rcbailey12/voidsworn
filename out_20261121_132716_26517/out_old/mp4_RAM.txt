@@ -1,0 +1,58 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+ffmpeg version 9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+  built with gcc 16.2.0 (Rev3, Built by MSYS2 project)
+  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-openal --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
+  libavutil      61.  1.102 / 61.  1.102
+  libavcodec     63.  1.102 / 63.  1.102
+  libavformat    63.  1.102 / 63.  1.102
+  libavdevice    63.  1.102 / 63.  1.102
+  libavfilter    12.  1.102 / 12.  1.102
+  libswscale     10.  1.102 / 10.  1.102
+  libswresample   7.  1.102 /  7.  1.102
+[aist#0:1/pcm_s16le @ 0000017b8c4d7d80] Guessed Channel Layout: stereo
+Input #0, avi, from 'C:\Users\rcbai\Downloads\voidsworn_test\opus1524c\out_20261121_132716_26517\out_old\RAM-FX_before.avi':
+  Duration: 00:00:09.17, start: 0.000000, bitrate: 35243 kb/s
+  Stream #0:0: Video: mjpeg (Baseline) (MJPG / 0x47504A4D), yuvj420p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9], 33819 kb/s, 30 fps, 30 tbr, 30 tbn
+  Stream #0:1: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (mjpeg (native) -> h264 (libx264))
+  Stream #0:1 -> #0:1 (pcm_s16le (native) -> aac (native))
+Press [q] to stop, [?] for help
+[swscaler @ 0000017b8e4c9d80] deprecated pixel format used, make sure you did set range correctly
+[libx264 @ 0000017b8c4ede40] using SAR=1/1
+[libx264 @ 0000017b8c4ede40] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 0000017b8c4ede40] profile High, level 3.1, 4:2:0, 8-bit
+[libx264 @ 0000017b8c4ede40] 264 - core 165 r3223 0480cb0 - H.264/MPEG-4 AVC codec - Copyleft 2003-2025 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=22 lookahead_threads=3 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=20.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'C:\Users\rcbai\Downloads\voidsworn_test\opus1524c\out_20261121_132716_26517\out_old\RAM-FX_before.mp4':
+  Metadata:
+    encoder         : Lavf63.1.102
+  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(pc, bt470bg/unknown/unknown, progressive), 1280x720 [SAR 1:1 DAR 16:9], q=2-31, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc63.1.102 libx264
+    Side data:
+      CPB properties: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 128 kb/s
+    Metadata:
+      encoder         : Lavc63.1.102 aac
+frame=  113 fps=0.0 q=26.0 size=       0KiB time=00:00:06.20 bitrate=   0.1kbits/s speed=12.1x elapsed=0:00:00.51    [out#0/mp4 @ 0000017b8c48acc0] video:1502KiB audio:145KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.683353%
+frame=  275 fps=0.0 q=-1.0 Lsize=    1659KiB time=00:00:09.16 bitrate=1482.7kbits/s speed=9.26x elapsed=0:00:00.98    
+[libx264 @ 0000017b8c4ede40] frame I:2     Avg QP:12.71  size: 72234
+[libx264 @ 0000017b8c4ede40] frame P:70    Avg QP:14.89  size: 13234
+[libx264 @ 0000017b8c4ede40] frame B:203   Avg QP:20.75  size:  2300
+[libx264 @ 0000017b8c4ede40] consecutive B-frames:  1.5%  0.0%  1.1% 97.5%
+[libx264 @ 0000017b8c4ede40] mb I  I16..4: 34.9% 35.6% 29.5%
+[libx264 @ 0000017b8c4ede40] mb P  I16..4:  0.4%  1.1%  1.4%  P16..4: 11.3%  5.9%  5.1%  0.0%  0.0%    skip:74.8%
+[libx264 @ 0000017b8c4ede40] mb B  I16..4:  0.0%  0.1%  0.1%  B16..8:  9.9%  2.6%  1.1%  direct: 0.8%  skip:85.4%  L0:32.2% L1:58.6% BI: 9.2%
+[libx264 @ 0000017b8c4ede40] 8x8 transform intra:36.6% inter:43.8%
+[libx264 @ 0000017b8c4ede40] coded y,uvDC,uvAC intra: 53.6% 41.3% 28.9% inter: 4.3% 3.0% 0.7%
+[libx264 @ 0000017b8c4ede40] i16 v,h,dc,p: 57% 20% 13% 11%
+[libx264 @ 0000017b8c4ede40] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 23% 15% 39%  3%  3%  2%  6%  4%  5%
+[libx264 @ 0000017b8c4ede40] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 22% 21% 20%  5%  5%  4%  9%  5%  7%
+[libx264 @ 0000017b8c4ede40] i8c dc,h,v,p: 70% 18% 10%  2%
+[libx264 @ 0000017b8c4ede40] Weighted P-Frames: Y:1.4% UV:0.0%
+[libx264 @ 0000017b8c4ede40] ref P L0: 59.1% 13.5% 19.3%  8.0%  0.0%
+[libx264 @ 0000017b8c4ede40] ref B L0: 87.7%  9.9%  2.4%
+[libx264 @ 0000017b8c4ede40] ref B L1: 94.4%  5.6%
+[libx264 @ 0000017b8c4ede40] kb/s:1342.09
+[aac @ 0000017b8c50e880] Qavg: 8581.113
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-360b19adfc294ae89fd2e486bcf22f59

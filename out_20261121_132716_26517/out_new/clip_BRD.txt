@@ -1,0 +1,42 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1524)
+GPU: acquired shared claim fe59cddb-fd0f-4ed3-bb22-0293b49083a2
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b140d224ebd34e8caf661994bbd02604\godot-profile-16535a26ade747cba0b907ec07259d94
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 71 cues, 67 clip sets, loaded in 367 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.487, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 6bae038f9c81fbd48bc4dc0f460c866bd71a99752b7068bea81d0370a5d91083 4096x2048 in 10142 ms (worker)
+[world] baked 218e2577354221f052dc668751ddd67b27e130d111102d11dddd0f2e4bec4ba8 4096x2048 in 12837 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 13271 ms (worker)
+[world] baked 34256ddb7841296bd3fc3cc7d8c67930a096a6b98280436d94adc59d0399bc5e 1024x512 in 13683 ms (worker)
+[world] baked f4eee6c6fd571eff92831355ea544d92efc019a03c31043a5339597edda8389e 4096x2048 in 2002 ms (worker)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1960 ms (worker)
+[world] baked 78a3e73472eb6e584ea271ae28e3fc5cf9f275b22f7dc5c68f5da369071605fa 1024x512 in 1893 ms (worker)
+[attach] hp_rcs missing on H8_23; using the surface ray
+[close-action-shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1524c\out_20261121_132716_26517\out_new\clip_BRD/BRD-1524_after.jpg
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] battle x04 V15_37: skipped 0; board hp 1 ray 0 centre 0 skip 0; rcs hp 4 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x05 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; core hp 1 ray 0 centre 0 skip 0; rcs hp 0 ray 34 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1524c\out_20261121_132716_26517\out_new\BRD-FX_after.avi
+360 frames at 30 FPS (movie length: 00:00:12:00), recorded in 00:00:56 (21% of real-time speed).
+CPU render time: 7.04 seconds (average: 19.54 ms/frame)
+GPU render time: 3.69 seconds (average: 10.25 ms/frame)
+Encoding time: 6.25 seconds (average: 17.37 ms/frame)
+--------------------------------------------------------------------------------
+WARNING: 8 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 4 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b140d224ebd34e8caf661994bbd02604\godot-profile-16535a26ade747cba0b907ec07259d94
+GPU: released shared claim fe59cddb-fd0f-4ed3-bb22-0293b49083a2
