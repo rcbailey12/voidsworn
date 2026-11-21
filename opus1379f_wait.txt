@@ -1,0 +1,12 @@
+OPUS1379F_WAIT.bat waiting for OPUS1439_MEASURE3 exit in opus1439c_wait.txt Fri 11/20/2026 19:55:16.07 
+swapped out while only waiting 19:59:08: replaced by OPUS1379F_WAIT2.bat (waits for OPUS1433_PP2 exit; Board Nov 21 01:58 UTC)
+OPUS1379F_WAIT2.bat waiting for OPUS1433_PP2 exit in opus1433pp2_wait.txt Fri 11/20/2026 19:59:10.01 
+HELD 20:47:48 by PC relay (Board, Nov 21 02:47 UTC): waiter stopped while only waiting, disk under 60 GB; Board will requeue after cleanup.
+OPUS1379F_WAIT3.bat waiting for OPUS1433_PP2 exit in opus1433pp2_wait.txt Fri 11/20/2026 20:52:14.07 
+swapped out while only waiting 21:01:44: WAIT3 replaced by OPUS1379F_WAIT4.bat (also waits for the S11 publish; Board Nov 21 03:01 UTC)
+OPUS1379F_WAIT4.bat waiting for OPUS1433_PP2 exit and PUBLISH 1414D S11 exit in publish_1121b.txt Fri 11/20/2026 21:01:45.40 
+OPUS1379_BODY_RUN5 start 21:12:45.15 
+OPUS1379_BODY_RUN5 exit 0 at 22:01:00.53 
+run folder out_20261120_211245_8823
+result: done PASS
+all done Fri 11/20/2026 22:01:02.33 
