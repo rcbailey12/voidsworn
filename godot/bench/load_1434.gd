@@ -400,21 +400,9 @@ func _b2_again() -> void:
 	# the folder stays: bakes still running would write into it; it lives in this run's own throwaway Godot profile
 
 
-func _run() -> void:
-	_say("[load1434] display %s, window %s, renderer %s" % [DisplayServer.get_name(), str(root.get_visible_rect().size), RenderingServer.get_current_rendering_method()])
-	if "s25" in cases: await _battle("s25", {"scenario": "s25"})
-	if "title" in cases: await _title()
-	if "leave" in cases: await _leave()
-	if "b1" in cases: await _battle("b1", {"seed": 101})
-	if "b2" in cases: await _battle("b2", {"seed": 202})
-	if "b3" in cases: await _battle("b3", {"seed": 303})
-	if "b2r" in cases: await _b2_again()
-	for c in cases:
-		if not c in finished:
-			pass_all = false
-			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
-	# the bakes made during loads write their PNGs once nothing loads: wait for them here, so the next (warm) launch on
-	# this profile finds them on disk, and report how long each write took and whether a frame froze meanwhile
+# the bakes made during loads write their PNGs once nothing loads: wait for them, so the next (warm) launch on this
+# profile finds them on disk; run before b2r too, so its folder switch cannot meet a pending normal write
+func _drain(label: String) -> void:
 	var svc = root.get_node_or_null("WorldBakes")
 	var sw0 := Time.get_ticks_msec()
 	var sworst := 0
@@ -424,8 +412,28 @@ func _run() -> void:
 		var now := Time.get_ticks_usec()
 		sworst = maxi(sworst, now - slast)
 		slast = now
-	_say("[load1434] world bake writes after the loads: %s in %d ms, worst frame meanwhile %d ms (reported only)" % [
-		"all written" if svc == null or svc._unsaved.is_empty() else "%d left unwritten" % svc._unsaved.size(), Time.get_ticks_msec() - sw0, sworst / 1000])
+	# Artoo on PR 1445: count the writes that saved, not an empty queue
+	_say("[load1434] world bake writes %s: %s in %d ms, worst frame meanwhile %d ms (reported only)" % [
+		label, "no bake service" if svc == null else "%d written, %d failed, %d still queued%s" % [svc.written, svc.write_failed, svc._unsaved.size(),
+			", one still being written" if svc._active == svc.SAVE_JOB else ""], Time.get_ticks_msec() - sw0, sworst / 1000])
+
+
+func _run() -> void:
+	_say("[load1434] display %s, window %s, renderer %s" % [DisplayServer.get_name(), str(root.get_visible_rect().size), RenderingServer.get_current_rendering_method()])
+	if "s25" in cases: await _battle("s25", {"scenario": "s25"})
+	if "title" in cases: await _title()
+	if "leave" in cases: await _leave()
+	if "b1" in cases: await _battle("b1", {"seed": 101})
+	if "b2" in cases: await _battle("b2", {"seed": 202})
+	if "b3" in cases: await _battle("b3", {"seed": 303})
+	if "b2r" in cases:
+		await _drain("before b2r")
+		await _b2_again()
+	for c in cases:
+		if not c in finished:
+			pass_all = false
+			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
+	await _drain("after the loads")
 	_say("[load1434] COVER %s on the %s profile (the loading cover up on every frame to play and no frame of %d s or more: %s)" % [
 		"PASS" if cover_ok_all else "FAIL", pass_name, STALL_MS / 1000, ", ".join(cover_notes)])
 	_say("[load1434] RESULT %s on the %s profile (limit %d ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)" % ["PASS" if pass_all else "FAIL", pass_name, LIMIT_MS])

@@ -27,7 +27,9 @@ var _thread: Thread
 # "battle_loading") keeps its image in memory and writes its PNG and prunes the cache only once nothing is loading.
 # work_stage says what the worker is doing (0 idle, 1 disk check, 2 compute, 3 png save, 4 prune, 5 mips), so the load
 # bench can put a frozen frame against it.
-var _unsaved: Array = []   # [key, image] baked during a load, saved later
+var _unsaved: Array = []   # [key, image, folder] baked during a load, saved later into the folder it was queued for
+var written := 0           # deferred writes that saved and renamed (the load bench reads these)
+var write_failed := 0
 const SAVE_JOB := "#save"
 static var work_stage := 0
 
@@ -113,7 +115,7 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size,
-			"done": false, "image": null, "started": Time.get_ticks_msec(),
+			"done": false, "image": null, "started": Time.get_ticks_msec(), "folder": _folder(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 		owner._queue.append(key)
 	var job: Dictionary = owner._jobs[key]
@@ -129,7 +131,9 @@ func _process(_dt: float) -> void:
 		var result: Dictionary = _thread.wait_to_finish()
 		_thread = null
 		if _active == SAVE_JOB:
-			print("[world] saved %s later (stages ms %s)" % [str(result.get("saved", "")), str(result.get("stages", {}))])
+			if result.get("ok", false): written += 1
+			else: write_failed += 1
+			print("[world] %s %s later (stages ms %s)" % ["saved" if result.get("ok", false) else "could not save", str(result.get("key", "")), str(result.get("stages", {}))])
 			_active = ""
 			return
 		var job: Dictionary = _jobs[_active]
@@ -142,7 +146,7 @@ func _process(_dt: float) -> void:
 		job.image = result.image
 		job.done = true
 		if result.get("unsaved", false):
-			_unsaved.append([_active, result.image])
+			_unsaved.append([_active, result.image, str(job.get("folder", _folder()))])
 		if result.image != null:
 			remember(_active, result.image)
 			# Artoo on PR 1445: queued, worker start and completion apart (absolute ms), so a frozen frame can be put
@@ -159,7 +163,7 @@ func _process(_dt: float) -> void:
 			var u: Array = _unsaved.pop_front()
 			_active = SAVE_JOB
 			_thread = Thread.new()
-			if _thread.start(_save_later.bind(u[0], u[1], _keep_keys())) != OK:
+			if _thread.start(_save_later.bind(u[0], u[1], _keep_keys(), u[2])) != OK:
 				_thread = null
 				_active = ""
 		return
@@ -208,7 +212,9 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
 		authored_image.generate_mipmaps()
 		return {"image": authored_image, "source": "authored"}
-	var folder := _folder()
+	# Artoo on PR 1445: the folder is pinned when the job is queued, so a later VS_WORLD_CACHE change (the bench's b2r)
+	# cannot move this job's read or its deferred write
+	var folder: String = str(job.get("folder", _folder()))
 	var path := folder.path_join(key + ".png")
 	var img: Image = null
 	work_stage = 1
@@ -228,7 +234,7 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 			if img != null and job.get("defer_save", false):
 				stages["save"] = "deferred (a load is running)"
 			elif img != null:
-				_save(key, img, keep, stages)
+				_save(key, img, keep, stages, folder)
 	elif source == "loaded":
 		touch(folder, key)
 	work_stage = 5
@@ -241,11 +247,10 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 
 
 # The PNG write and the cache prune of one baked map, each timed (stages "save" and "prune", with their wall-clock start).
-static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary) -> void:
-	var folder := _folder()
+static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary, folder: String) -> bool:
 	var path := folder.path_join(key + ".png")
 	if DirAccess.make_dir_recursive_absolute(folder) != OK:
-		return
+		return false
 	work_stage = 3
 	var t := Time.get_ticks_usec()
 	stages["save_began"] = Time.get_ticks_msec()
@@ -258,12 +263,13 @@ static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary)
 		prune(folder, CACHE_CAP_BYTES, keep, key)
 		stages["prune"] = (Time.get_ticks_usec() - t) / 1000
 	work_stage = 0
+	return ok
 
 
-static func _save_later(key: String, img: Image, keep: Dictionary) -> Dictionary:
+static func _save_later(key: String, img: Image, keep: Dictionary, folder: String) -> Dictionary:
 	var stages := {}
-	_save(key, img, keep, stages)
-	return {"saved": key, "stages": stages}
+	var ok := _save(key, img, keep, stages, folder)
+	return {"key": key, "ok": ok, "stages": stages}
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
