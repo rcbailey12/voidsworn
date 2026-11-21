@@ -4,3 +4,4 @@ OPUS1497_SELFTEST4 exit 0 at 10:39:56.38
 run folder out_20261121_101843_1137
 result: done PASS
 all done Sat 11/21/2026 10:39:56.81 
+OPUS1497_AFTERRELAY4 exit 0 at 10:42:02.52 

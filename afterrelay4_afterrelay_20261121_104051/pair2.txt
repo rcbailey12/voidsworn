@@ -1,0 +1,3 @@
+finished an earlier removal (14.6 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\new.removing
+no listed checkout left in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138
+disk: checkouts freed 14.6 GB in all, C: 481.7 GB free

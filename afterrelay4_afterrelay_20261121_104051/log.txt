@@ -1,0 +1,25 @@
+finished an earlier removal (14.6 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\new.removing
+no listed checkout left in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138
+disk: checkouts freed 14.6 GB in all, C: 481.7 GB free
+relay receipt written: board/pc-out-1497st4 out_20261121_101843_1137
+result kept on the PC only: out_new/selftest_big.bin (the relay listed it in skipped_over_10MB.txt)
+results relayed: 3 of 4 result file(s) are on board/pc-out-1497st4 under out_20261121_101843_1137, 1 over 10 MB listed as skipped
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\out_new\checkout_leftovers
+still locked, trying again in 250 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+still locked, trying again in 500 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+still locked, trying again in 1000 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+still locked, trying again in 2000 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+still locked, trying again in 4000 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+still locked, trying again in 8000 ms: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new (Exception calling "Move" with "2" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new' is denied.")
+checkout new removed after the job (24.8 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\out_old\checkout_leftovers
+checkout old removed after the job (22.2 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\old
+disk: checkouts freed 47.1 GB in all, C: 497.8 GB free
+import cache removed after the PASS (0.1 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4ship\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.1 GB in all, C: 497.9 GB free
+relay receipt written: board/pc-out-1497st4 opus1497st4ship_out
+result kept on the PC only: recipe/export/SELF1497/SELF1497.glb (the relay listed it in skipped_over_10MB.txt)
+results relayed: 1 of 2 result file(s) are on board/pc-out-1497st4 under opus1497st4ship_out, 1 over 10 MB listed as skipped
+saved 0 changed and 1 new file(s), 0.0 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4ship\out\checkout_leftovers_repo
+ship clone removed after the publish (17.5 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4ship\repo
+disk: checkouts freed 17.5 GB in all, C: 500.0 GB free
