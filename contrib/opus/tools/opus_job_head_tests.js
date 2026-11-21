@@ -464,7 +464,7 @@ assert(fs.existsSync(se.repo) && /ship clone kept: merge [0-9a-f]{40} is on no b
 const fixedEnv = { ...process.env, GIT_AUTHOR_NAME: 'f', GIT_AUTHOR_EMAIL: 'f@example.invalid', GIT_COMMITTER_NAME: 'f',
   GIT_COMMITTER_EMAIL: 'f@example.invalid', GIT_AUTHOR_DATE: '1700000000 +0000', GIT_COMMITTER_DATE: '1700000000 +0000' };
 const mirrorDir = path.join(vt, 'repo-mirror.git');
-const orphanTree = git(['rev-parse', `${two}^{tree}`]);
+const orphanTree = git(['rev-parse', `${two}^{tree}`], work);
 const mk = cwdArgs => { const rr = spawnSync('git', [...cwdArgs, 'commit-tree', orphanTree, '-p', two, '-m', 'orphan'], { env: fixedEnv, encoding: 'utf8' }); assert.equal(rr.status, 0, rr.stderr); return rr.stdout.trim(); };
 const orphan = mk(['--git-dir', mirrorDir]);
 const so2 = shipJob('opus1497f');
