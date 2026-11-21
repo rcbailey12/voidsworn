@@ -345,6 +345,44 @@ func t_voice() -> void:
 	var close: String = rv.closing(win)
 	print("      s1: %d events, %d voice lines, result %s: %s" % [n_ev, got.size(), str(api.view().get("over")), str(got.map(func(l): return l["moment"]))])
 	ok(api.phase == "over" and got.size() >= 1 and close != "", "voice: a real battle plays through with admiral lines (%d)" % got.size())
+	t_voice_live()
+
+
+# Issue 1551: the voice reads the real player flagship (pflag), live roster state, and treats an Intercept exit as no retreat.
+func t_voice_live() -> void:
+	var B := {"cfg": {"fac": "hegemony", "kind": "", "obj": "intercept"}, "seed": 5, "units": [
+		{"id": "p1", "side": "player", "pflag": true, "hp": 80, "maxHp": 100, "name": "Cold Watch"},
+		{"id": "p2", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"},
+		{"id": "e1", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"},
+		{"id": "e2", "side": "enemy", "transport": true, "hp": 40, "maxHp": 40, "name": "Hauler"},
+		{"id": "e3", "side": "enemy", "hp": 0, "maxHp": 100, "dead": true, "name": "Bonewright"}]}
+	var R := {"RUN": {"admiral": "vex", "fac": "voidsworn", "sector": 1, "t0": 7, "flagUid": "s1", "fleet": [{"uid": "s1", "name": "Cold Watch"}]}, "B": B, "ADMIRALS": {}, "FACTIONS": {}}
+	var view := {"units": [{"id": "p1", "side": "player", "flagship": false, "hp": 80, "maxHp": 100, "name": "Cold Watch"},
+		{"id": "p2", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"}, {"id": "e1", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"},
+		{"id": "e2", "side": "enemy", "hp": 40, "maxHp": 40, "name": "Hauler"}, {"id": "e3", "side": "enemy", "hp": 0, "maxHp": 100, "name": "Bonewright"}]}
+	var v = Voice.new()
+	v.setup_from_rules(R, view)
+	ok(v.flag_id == "p1" and str(v.info.get("flagship_name")) == "Cold Watch", "voice live: player flagship read from pflag (%s, %s)" % [v.flag_id, str(v.info.get("flagship_name"))])
+	ok(v._fill("Cover {flagship}!") == "Cover Cold Watch!", "voice live: {flagship} fills with the run flagship name")
+	var v0 = Voice.new()
+	v0.setup({"units": []}, {"admiral": "vex", "fac": "voidsworn", "flagship_name": ""})
+	ok(v0._fill("Cover {flagship}!") == "", "voice live: a line with an empty {flagship} slot is skipped")
+	# roster drift: a reinforcement joins, a risen hull comes back at the rules hp, a ram reads the real outcome
+	B["units"].append({"id": "g1", "side": "player", "reinf": true, "hp": 30, "maxHp": 30, "name": "Garrison Picket"})
+	v.on_event({"t": "log", "text": "A friendly ship jumps in."})
+	ok(v.units.has("g1") and v._player_alive_count() == 3, "voice live: a mid-battle reinforcement joins the roster (alive %d)" % v._player_alive_count())
+	B["units"][4]["dead"] = false; B["units"][4]["hp"] = 35
+	v.on_event({"t": "risen", "unit": "e3"})
+	ok(is_equal_approx(float(v.units["e3"]["hp"]), 35.0), "voice live: risen hull takes the rules hp (%s)" % str(v.units["e3"]["hp"]))
+	v.on_event({"t": "ram", "unit": "p1", "target": "e1", "dmg": 999})
+	ok(float(v.units["e1"]["hp"]) == 200.0, "voice live: ram reads the real outcome, not the estimate (%s)" % str(v.units["e1"]["hp"]))
+	B["units"][1]["hp"] = 12   # a player revival or repair shows up too
+	v.on_event({"t": "round", "round": 2})
+	ok(float(v.units["p2"]["hp"]) == 12.0, "voice live: player hp follows the rules")
+	# Intercept transport getting through: no coward taunt
+	B["units"][3]["dead"] = true
+	var fl: Array = v.on_event({"t": "fled", "unit": "e2", "why": "exit"})
+	ok(fl.is_empty() and not v.said.has("sit_enemy_flee"), "voice live: an Intercept exit speaks no retreat taunt")
 
 
 # ---------------------------------------------------------------- 7. arc plumbing (tokens, conditions, variants)
