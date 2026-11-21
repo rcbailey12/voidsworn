@@ -1,0 +1,32 @@
+  outline O3: bow 69.8, midship 53.3, stern 11.2, whole 60.7 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 72.0, midship 64.5, stern 25.6
+  REPORT bow overlap 69.8 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 53.3 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 11.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 60.7 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera O3: game bow 50.4 midship 66.2 stern 55.4 whole 61.4, studio bow 9.5 midship 58.9 stern 66.9 whole 58.2
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] O3_11 triangles 12388 hard points {"gun": 0, "engine": 0, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 0 (0 triangles) files ['O3_11.glb', 'O3_11_base.jpg', 'O3_11_glow_emission.jpg', 'O3_11_normal.png', 'O3_11_orm.png', 'O3_11_parts_base.jpg', 'O3_11_parts_normal.png', 'O3_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11
+[check] authored interiors: 1184 triangles, 8 surfaces; authored seams: 2
+[check] 11204 triangles (7424 on part surfaces), box x -0.500 to 0.500, y -0.154 to 0.205, z -0.294 to 0.294
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] hard points: {"core": 1}
+PASS O3_11 game export: every required point is there and every hard point passes the mesh checks
+skip no_slot, off_mesh, backward, no_socket, no_engine, wrong_side, no_rcs, no_board, breach_count, breach_inward, hull_trim_near, part_near, breach_near: the export carries none of their points (the pass case proves the check accepts that)
+ok   pass: the check passed as it must | 
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_interior: the check failed as it must | no authored interior geometry
+ok   no_seams: the check failed as it must | no authored break seams
+ok   liner_only: the check failed as it must | no authored interior rooms: an inner liner alone is not comprehensive insides
+PASS the export check fails when it should
+INSTALL READBACK PASS code=O3_11 nodes=1
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3c\repo\godot\assets\ships\O3_11; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3c\repo\godot\.stage7-replaced-8j7xy9o2\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11

@@ -1,0 +1,1 @@
+[score] O3 {'overlap': 60.7, 'concept_covered': 84.9, 'cell_outside': 32.0, 'triangles': 11776}

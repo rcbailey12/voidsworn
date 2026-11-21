@@ -1,0 +1,9 @@
+chain CD waiting for 1413 O3B exit in chain_1119bv.txt Fri 11/20/2026 21:33:11.81 
+mirror fetch exit 0
+e031f492561e76b3f6ee807323b7a15e8b0d2641 reachable in the mirror
+1413 O2C start 22:04:35.43 
+1413 O2C exit 0 at 22:18:34.73 
+1413 O3C start 22:18:34.73 
+1413 O3C exit 0 at 22:38:52.61 
+after-job janitor ran 22:38:53.18 
+all done Fri 11/20/2026 22:38:53.18 

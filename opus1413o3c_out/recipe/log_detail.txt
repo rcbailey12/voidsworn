@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1413)
+GPU: acquired shared claim 4aaaf6c9-45d8-4931-8674-02819feab093
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\O3.blend"
+detail check (reported, this ship has no surface_detail floor): normal relief 1.45 deg (floor 3.50), albedo contrast 0.083 (floor 0.040), roughness spread 0.096 (floor 0.080), 2288 texels
+GPU: released shared claim 4aaaf6c9-45d8-4931-8674-02819feab093

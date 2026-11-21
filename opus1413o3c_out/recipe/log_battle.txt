@@ -1,0 +1,1 @@
+[battle] O3 {"game": {"bow": 50.4, "midship": 66.2, "stern": 55.4, "whole": 61.4}, "studio": {"bow": 9.5, "midship": 58.9, "stern": 66.9, "whole": 58.2}}
