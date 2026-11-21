@@ -13,7 +13,7 @@ extends RefCounted
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
 #            pulsar (Ithar: the beam in travelling pulses), nlance (Eclipse: three compression beams)
-#            doom (Eclipse corona arc: re-striking green lightning)
+#            doom (Eclipse corona arc: re-striking violet lightning)
 #   torp:    torp (Voidsworn hellfire: armoured bodies, short plumes)   rockets (Corsair rattle-rocket pods: swarms of
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
@@ -208,7 +208,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
 	var col: Color = PLASMA_COL if lk in ["plasma", "plasma_cannon"] else fac["weapon"]
-	# Doom keeps R263 green; the R271 null tracer uses the faction's violet-white.
+	# Doom uses its own deep violet core (issue 1503, was R263 green); the R271 null tracer uses the faction's violet-white.
 	if lk == "doom" and fac.has("weapon_core"):
 		col = fac["weapon_core"]
 	# Issue 461: a hit is sized by the gun that fired it as well as by the ship it lands on

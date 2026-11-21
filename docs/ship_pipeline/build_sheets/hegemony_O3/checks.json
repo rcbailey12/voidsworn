@@ -1,0 +1,32 @@
+{
+ "length_from_game": 7.5,
+ "model_length": 7.5,
+ "length_side": 7.525,
+ "length_top": 7.525,
+ "length_disagreement_percent": 0.0,
+ "model_vs_game_percent": 0.0,
+ "beam_top": 4.438,
+ "beam_bow": 4.438,
+ "beam_disagreement_percent": 0.0,
+ "height_side": 2.712,
+ "height_bow": 2.712,
+ "height_disagreement_percent": 0.0,
+ "widest_at_station_percent": 49.3,
+ "hull_beam": 2.2,
+ "hull_depth": 2.2,
+ "L_to_B_hull": 3.41,
+ "L_to_H_hull": 3.41,
+ "PASS": true,
+ "outline_iou_percent": 85.9,
+ "mass_outline_iou_percent": 85.9,
+ "concept_camera": {
+  "az": 27.367425661168948,
+  "el": 20.507871399732064,
+  "roll": -2.8606151382800395,
+  "dist": 16.482233296597048,
+  "mm": 66.213039359894,
+  "sx": 0.0407757163147252,
+  "sy": 0.02198470964085379
+ },
+ "prow_overhang": 2.25
+}

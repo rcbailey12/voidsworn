@@ -82,11 +82,16 @@ check(sk and all(o.modifiers.get('skin') for o in sc.objects if o.name in shell)
 # the first version swapped in c_marauder, which is A17's own ship and lacks nothing)
 d, K = build(); own = gamedata.weapons(SHIP['game_ship'])
 used = {(x.get('weapon'), f['slot']) for f in fit for x in feats if x['id'] == f['id'] and f['kind'] in ('gun', 'launcher')}
-drop = next(w for w in own if w in used); lacking = [w for w in own if w != drop]
-_weapons = gamedata.weapons; gamedata.weapons = lambda gid, data_js=None: lacking if gid == SHIP['game_ship'] else _weapons(gid, data_js)
-try: contract.to_recipe(K, SHIP); check(False, f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused')
-except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused: {e}')
-finally: gamedata.weapons = _weapons
+drop = next((w for w in own if w in used), None)
+if drop is None:
+    # issue 1413: an unarmed objective prop (gamedata.OBJECTIVES) has no weapon to take out; the decorative gun case below still runs
+    check(not own and not used, 'an unarmed objective: no data.js weapon and no sheet weapon, so no weapon can be taken out')
+else:
+    lacking = [w for w in own if w != drop]
+    _weapons = gamedata.weapons; gamedata.weapons = lambda gid, data_js=None: lacking if gid == SHIP['game_ship'] else _weapons(gid, data_js)
+    try: contract.to_recipe(K, SHIP); check(False, f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused')
+    except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused: {e}')
+    finally: gamedata.weapons = _weapons
 d, K = build()
 t0 = tx[0]
 K.inside += [dict(kind='break', name='L-x', x=0, orient='long', path=[(t0 + 0.5, 0.5), (t0 - 0.5, 0.5)])]

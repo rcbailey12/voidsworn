@@ -88,6 +88,10 @@ SUBPARTS = {
     'pipe': ['trunk', 'collar', 'flange', 'saddle'],
     'capbank': ['base', 'cell', 'cap', 'bus', 'strip'],
     'exchanger': ['base', 'housing', 'fin', 'frame', 'port'],
+    # issue 1413 (hegemony_O2, the Convoy transport): a cargo module locked in the cargo well
+    'container': ['frame', 'lid', 'seam', 'rib', 'clamp'],
+    # issue 1413 (hegemony_O3, the Relay beacon): the oversized recessed relay lens
+    'relay_lens': ['face', 'ring', 'lens', 'glow'],
     'bomb_tube': ['housing', 'frame', 'collar', 'bore', 'ring', 'back', 'warhead'],
 }
 
@@ -579,6 +583,78 @@ def hatchbox(w, l, h, fins=0):
     p.add('lid', 'body', 'hpanel', block(-l * 0.4, l * 0.36, w * 0.38, 0.03, 0.02, zo=h * 0.93))
     p.add('seam', 'body', 'dark', block(-l * 0.42, l * 0.38, w * 0.4, 0.012, 0.0, zo=h * 0.9))
     p.add('lidstrip', 'body', 'hblue', block(l * 0.37, l * 0.39, w * 0.3, 0.012, 0.0, zo=h * 0.92))
+    return p
+
+
+def container(l, w, h, ribs=3):
+    """a cargo module (issue 1413, the Convoy transport: designs.md "FOUR identical container modules ... plain slab sides,
+    mooring clamps"): origin at the middle of its floor, +X along the ship (l), +Y across (w), +Z up (h). A plain chamfered slab
+    box sitting in the cargo well (the mount), an inset lid with a seam round it, flat stiffener ribs up the fore and aft faces,
+    corner castings, and mooring clamps at the foot of each face that lock it to the well floor."""
+    p = Part('container')
+    p.add('frame', 'mount', 'hgrey', _zblock(-l / 2, l / 2, -w / 2, w / 2, 0.0, h, ch=0.04))
+    p.add('seam', 'body', 'dark', _zblock(-l / 2 + 0.045, l / 2 - 0.045, -w / 2 + 0.045, w / 2 - 0.045, h - 0.01, h + 0.006))
+    p.add('lid', 'body', 'hpanel', _zblock(-l / 2 + 0.06, l / 2 - 0.06, -w / 2 + 0.06, w / 2 - 0.06, h - 0.01, h + 0.016, ch=0.008))
+    for k in range(ribs):
+        y = -w / 2 + w * (k + 1) / (ribs + 1)
+        for sx in (1, -1):
+            x0, x1 = (l / 2 - 0.01, l / 2 + 0.022) if sx > 0 else (-l / 2 - 0.022, -l / 2 + 0.01)
+            p.add('rib%d%s' % (k, 'f' if sx > 0 else 'a'), 'body', 'hgrey2', _zblock(x0, x1, y - 0.03, y + 0.03, 0.07, h - 0.07))
+    for sy in (1, -1):
+        for sx in (1, -1):
+            cx, cy = sx * (l / 2 - 0.035), sy * (w / 2 - 0.035)
+            p.add('clampc%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'htrim', _zblock(cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, h - 0.02, h + 0.03))
+            x0, x1 = (l / 2, l / 2 + 0.07) if sx > 0 else (-l / 2 - 0.07, -l / 2)
+            yc = sy * (w / 2 - 0.22)
+            p.add('clamp%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'hmetal', _zblock(x0, x1, yc - 0.08, yc + 0.08, 0.0, 0.16, ch=0.02))
+    return p
+
+
+def relay_lens(half, r, depth, steps=5, ch=0.2, n=32):
+    """the Relay beacon's lens (issue 1413; designs.md: ONE oversized recessed blue lens in the module's forward face, stepped
+    machined rings, NO muzzle lip, no capacitor trench, a thin blue ring at its base): origin at the middle of the face's back,
+    local +Z out of the face (a surface part, like the vent). A square face block (half-width `half`, its corners chamfered by ch) `depth` deep with a round mouth of
+    radius r; inside it machined rings step down toward a glowing blue lens at the back; a thin blue ring round the mouth; four
+    bolt bosses in the face's corners."""
+    p = Part('relay_lens')
+    angs = [2 * math.pi * i / n + math.pi / n for i in range(n)]
+
+    def sq(a):
+        c, s_ = math.cos(a), math.sin(a)
+        t = min(half / max(abs(c), 1e-9), half / max(abs(s_), 1e-9), (2 * half - ch) / max(abs(c) + abs(s_), 1e-9))
+        return (t * c, t * s_)
+    outer = [sq(a) for a in angs]
+    inner = [(r * math.cos(a), r * math.sin(a)) for a in angs]
+    x0, x1 = 0.0, depth
+    V = [(x0, y, z) for (y, z) in outer] + [(x1, y, z) for (y, z) in outer] + [(x0, y, z) for (y, z) in inner] + [(x1, y, z) for (y, z) in inner]
+    F = []
+    for i in range(n):
+        j = (i + 1) % n
+        F.append((i, j, n + j, n + i)); F.append((2 * n + j, 2 * n + i, 3 * n + i, 3 * n + j))
+        F.append((j, i, 2 * n + i, 2 * n + j)); F.append((n + i, n + j, 3 * n + j, 3 * n + i))
+    p.add('face', 'mount', 'hgrey', (V, F))
+    # the stepped machined rings, each a little smaller and deeper, down to the lens
+    prof = []
+    for k in range(steps):
+        rr = r * (1.0 - 0.1 * k)
+        xa = x1 - depth * 0.65 * k / steps
+        xb = x1 - depth * 0.65 * (k + 1) / steps
+        prof += [(xa, rr), (xb + 0.02, rr), (xb + 0.02, rr * 0.93)]
+    rlast = prof[-1][1]
+    p.add('ring', 'mount', 'hmetal', revolve([(x1, r * 1.001)] + prof + [(prof[-1][0] - 0.03, rlast), (prof[-1][0] - 0.03, rlast + 0.06), (x1 - 0.002, r + 0.06)],
+                                               n, closed=True, phase=math.pi / n))
+    xl = prof[-1][0] - 0.01
+    # the lens: a deep blue dish (the dimmer lining blue, so the rings read) round a small bright core
+    p.add('lens', 'body', 'hlining', revolve([(xl, rlast * 0.98), (xl + rlast * 0.08, rlast * 0.7), (xl + rlast * 0.1, rlast * 0.36), (xl + rlast * 0.1, 0.001)],
+                                             n, cap0=True, phase=math.pi / n))
+    p.add('lens_core', 'body', 'hblue', revolve([(xl + rlast * 0.09, rlast * 0.34), (xl + rlast * 0.2, rlast * 0.26), (xl + rlast * 0.27, 0.001)], n, cap0=True, phase=math.pi / n))
+    p.add('glow', 'body', 'hblue', ring_band(x1 - 0.03, r * 0.985, 0.03, r * 0.025, n))
+    for (yy, zz) in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        c = (half - ch * 0.9) * 0.92
+        p.add('face_boss%d%d' % (yy > 0, zz > 0), 'mount', 'dark', moved(revolve([(x1 - 0.01, 0.1), (x1 + 0.03, 0.1), (x1 + 0.04, 0.07), (x1 + 0.04, 0.001)], 12),
+                                                                         Matrix.Translation((0, yy * c, zz * c))))
+    p.transform(Matrix.Rotation(-math.pi / 2, 4, 'Y'))   # built along +X, turned so the face looks along local +Z
+    p.fit = dict(exits=[], radius=r)
     return p
 
 
