@@ -56,6 +56,7 @@ X0, X1 = -0.5 * LENGTH + 0.03 * LENGTH, 0.5 * LENGTH   # the core; the stern sto
 HW, HH = 0.095 * LENGTH, 0.070 * LENGTH   # the core's half-beam and half-height at its widest (about 5 to 1)
 BOW_EXP = 0.75   # how fast the core swells from its bow point (t=1 is the bow, X1); lower is a blunter, rounder bow (the bomber sets it)
 MOSAIC_WEIGHTS = None           # the mosaic's amber, violet, green shares; None: the kit's (the bomber sets its own)
+MOSAIC_KW = {}                 # extra kit mosaic_tint options (a wide body passes streak=True, issue 1415); none: the kit default
 
 
 def core(x, a, inset=0.0):
@@ -210,7 +211,7 @@ def body(K):
     for i in range(len(tint.data)):
         ix, iv = divmod(i, nv)
         x = X0 + (X1 - X0) * ix / nu; a = TAU * iv / nv
-        rgb, g = P.mosaic_tint(x, a, lambda x_, a_: gaps(x_, a_, ribs), stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES)
+        rgb, g = P.mosaic_tint(x, a, lambda x_, a_: gaps(x_, a_, ribs), stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES, **MOSAIC_KW)
         tint.data[i].color = (rgb[0], rgb[1], rgb[2], 1.0)
         glow.data[i].value = g
     K.hull_sections = [(x, core(x, 0.0)[1], core(x, 0.0)[1], core(x, -math.pi / 2)[2], core(x, math.pi / 2)[2], 0.0, 0.0)

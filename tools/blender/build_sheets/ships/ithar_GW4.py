@@ -81,7 +81,19 @@ def lowest_z(x):
 F.NRIB = 10
 F.HALF = 0.045   # narrow: the ribbons read as the concept's silver veins over the stained panes
 F.TWIST = lambda x: -0.4                   # straight meridian veins bow to stern; -0.4 sets them at 0, 36, 72.. degrees so the grooves (90, 270) stay open
-F.MOSAIC_WEIGHTS = (50, 30, 20)
+F.MOSAIC_WEIGHTS = (38, 34, 28)   # Ryan, Nov 20: "more distribution of color"
+F.MOSAIC_KW = dict(streak=True)   # Ryan, Nov 20 7:07 PM CT: "random lights rather than integrated"; evenly lit panes with a thin dark rim (kit, issue 1415)
+_gaps0 = F.gaps
+
+
+def gaps(x, a, ribs):
+    """long panes along the flow (issue 1415's streak style): each bay runs a little longer bow to stern than the kit's, so
+    a pane between two veins reads as one long streak of stained glass"""
+    r = _gaps0(x, a, ribs)
+    return (r[0], r[1] * 0.8) + tuple(r[2:])
+
+
+F.gaps = gaps
 F.CORE_NOTE = 'two plump lobes fused side by side, the same size and shape, fully closed; a groove top and bottom where they meet (W4b)'
 F.STONES = [(0.0, 'c')]
 F.STONE_RING = (0.0, 0.0)
