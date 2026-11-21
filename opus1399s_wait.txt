@@ -1,0 +1,12 @@
+OPUS1399SB_WAIT.bat waiting for OPUS1379_BODY_RUN8 exit in opus1379i_wait.txt Sat 11/21/2026  8:38:59.38 
+OPUS1399SA_WAIT.bat waiting for OPUS1399_SMALLBEFORE exit in opus1399s_wait.txt Sat 11/21/2026  8:38:59.42 
+HELD 08:40:01 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule).
+HELD 08:40:03 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule).
+OPUS1399SB_WAIT.bat waiting for OPUS1379_BODY_RUN8 exit in opus1379i_wait.txt Sat 11/21/2026  8:42:55.09 
+OPUS1399SA_WAIT.bat waiting for OPUS1399_SMALLBEFORE exit in opus1399s_wait.txt Sat 11/21/2026  8:42:55.13 
+OPUS1399_SMALLBEFORE start  9:10:56.19 
+OPUS1399_SMALLBEFORE exit 0 at  9:16:52.91 
+all done Sat 11/21/2026  9:16:52.91 
+OPUS1399_SMALLAFTER start  9:16:55.18 
+OPUS1399_SMALLAFTER exit 0 at  9:18:49.02 
+all done Sat 11/21/2026  9:18:49.02 

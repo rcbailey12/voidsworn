@@ -1,0 +1,18 @@
+start Sat 11/21/2026  9:16:55.20 attempt 1 tag smallafter 
+drive bytes free 131869810688 
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1399\out_smallafter_1\checkout_15138 
+commit=8e7a5682930a8f1e3f4eba3e806d877faa186901 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 0 (0 to 7 is success) 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1399\profile_9\appdata 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+capture exit 0 
+drive bytes free 130606678016 
+real options unchanged 
+PASSED 
+all done Sat 11/21/2026  9:18:49.02 

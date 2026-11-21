@@ -1,0 +1,11 @@
+
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         7         0         7         0         0         0
+   Files :       181         0       181         0         0         0
+   Bytes :   3.531 g         0   3.531 g         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+   Ended : Saturday, November 21, 2026 9:16:59 AM
+
