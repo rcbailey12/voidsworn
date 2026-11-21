@@ -407,6 +407,9 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             rad.append(r * (0.25 + 0.06 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
         pts.append(pts[0]); rad.append(rad[0])
         p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
+        # Ryan (Nov 20, C13 run I: "There's no actual holes like the concept"): the vent is a real dark hole. A dark crater sits
+        # inside the lip ring over the knoll's crown, deepest at its centre, so the opening reads black from the battle camera
+        p.add('crater', 'mount', 'maw', blob(r * 0.06, r * 1.02, r * 1.02, centre=(L * 1.0 - r * 0.02, 0, 0), nu=24, nv=10, seed=seed + 9, amp=0.04))
         for k in range(22):
             a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
             ca, sa = math.cos(a), math.sin(a)
@@ -1030,6 +1033,16 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             p.add('vein%d' % i, 'body', 'vein', welt(pts, nrm, r * 0.022, r * 0.01, n=4))
         else:
             p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
+    if window == 'slit' and glow:
+        # Ryan (Nov 20, on C13 run I): "There's no actual holes like the concept" and "the same weird yellow circle or patch on
+        # the sacs": a slit-window sac shows no lit bile at all. Its crown carries one dark pore, a real hole like the concept's
+        # bulbs: a dark pit sunk in the skin with a rolled lip of flesh round it
+        pr = r * (0.2 if armour else 0.17)
+        top = Vector((0, 0, cz + r * 1.0))
+        p.add('pore_pit', 'body', 'maw', blob(pr, pr * 0.96, r * 0.035, centre=(0, 0, top.z - r * 0.012), nu=20, nv=8, seed=seed + 7, amp=0.05))
+        ring = [Vector((pr * 1.05 * math.cos(2 * math.pi * k / 28), pr * 1.05 * math.sin(2 * math.pi * k / 28), top.z - r * 0.03)) for k in range(29)]
+        p.add('pore_lip', 'body', 'flesh2', tube(ring, [r * 0.05] * 29, n=6, cap0=False, cap1=False))
+        glow = 0
     for i in range(glow):
         a = 2 * math.pi * (i + 0.3) / max(1, glow); th = max(thb + 0.05, rnd.uniform(-0.2, 0.6))
         if armour:
