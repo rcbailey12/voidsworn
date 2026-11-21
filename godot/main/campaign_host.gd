@@ -133,10 +133,12 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
-# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336
+# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.
+# A missing setting falls back to Standard, the new-player default (R49, issue 1504); a bare host with no main keeps the
+# API default, Veteran.
 func ai_level() -> String:
 	if main != null and "settings" in main:
-		return str(main.settings.get("ai", "veteran"))
+		return str(main.settings.get("ai", "standard"))
 	return "veteran"
 
 

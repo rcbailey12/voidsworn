@@ -115,7 +115,14 @@ def _pick(g, bay, palette, weights, seed):
     return colour
 
 
-def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
+import os as _os
+# How the panel colours mix (Ryan Nov 20 7:48 PM CT, look test A/B/C, issue 1415: picked C): 'streaks' runs thin streaks of
+# mixed amber, violet and green side by side down each gap between the ribbons, each its own colour and length, for every
+# Glasswright hull. 'blocks' (one colour per leaf panel, R337 round 5) stays for comparison only; GW_MIX overrides it in a test.
+MIX = _os.environ.get('GW_MIX', 'streaks')
+
+
+def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None, streak=False):
     """the colour and glow a core point carries. `gaps` gives (gap index, along-coordinate[, across 0..1]) for the point;
     each gap is cut into leaf-length bays and every bay picks one colour from the palette by weight, so panels read as
     leaves of one colour each, never salt and pepper.
@@ -123,16 +130,46 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
     R337 round 5 (outside read: "flat blocks, not lit from behind"): a panel is lit from behind, so its glow is hottest in
     the middle and falls to dark at its lead border, along AND across; with `tones` (name -> (deep rgb, hot rgb)) the colour
     itself runs from the deep tone at the border to the hot tone in the middle, and near a bay end it runs into the next
-    leaf's colour along the flow. Returns (rgb or palette name, glow)."""
+    leaf's colour along the flow. Returns (rgb or palette name, glow).
+
+    streak=True (issue 1415, Ryan Nov 20: the Prism and the W4b bomber read as "random circles of light"): on a wide body the
+    ribbons no longer hide a bay's dark border, so the hot-middle fall-off shows as a lit disk. The streak style keeps only a
+    thin dark rim (outer 15% along, 20% across), lights the pane evenly inside and adds a soft hot line down its long axis,
+    so each pane reads as a streak of stained glass between the leading. Off by default: CD5 and the slim hulls keep R337."""
     r = gaps(x, a)
     g, along = r[0], r[1]
     across = r[2] if len(r) > 2 else 0.5
+    if MIX == 'streaks':
+        # thin streaks of mixed colour side by side down each gap, each its own colour and length
+        n = 4
+        ac = min(0.999, max(0.0, across)) * n
+        sub = int(ac)
+        sa = along * 0.55 + 0.37 * sub
+        bay = math.floor(sa)
+        frac = sa - bay
+        colour = _pick(g * 7 + sub, bay, palette, weights, seed + 11)
+        fa = ac - sub
+        rim_c = min(1.0, min(fa, 1 - fa) / 0.22)
+        rim_a = min(1.0, min(frac, 1 - frac) / 0.08)
+        glow = 0.06 + 0.78 * (rim_a * rim_c) ** 0.7 * (0.40 + 0.60 * math.sin(math.pi * fa) ** 1.5) * (0.6 + 0.4 * math.sin(math.pi * min(1.0, max(0.0, across))))
+        if not tones:
+            return colour, glow
+        deep, hot = tones[colour]
+        return tuple(d + (h - d) * glow ** 1.5 for d, h in zip(deep, hot)), glow
     bay = math.floor(along)
     frac = along - bay
     colour = _pick(g, bay, palette, weights, seed)
     # the ribbons hide the outer quarter of a gap each side, so the fall-off is steep across: dark at the visible border
-    glow = (max(0.0, math.sin(math.pi * frac)) ** 1.2) * (max(0.0, math.sin(math.pi * min(1.0, max(0.0, across)))) ** 3.0)
-    glow = 0.06 + 0.94 * glow
+    if streak:
+        ac = min(1.0, max(0.0, across))
+        rim_a = min(1.0, min(frac, 1 - frac) / 0.15)
+        rim_c = min(1.0, min(ac, 1 - ac) / 0.20)
+        rim = (rim_a * rim_c) ** 0.7
+        line = math.exp(-((ac - 0.5) / 0.16) ** 2)
+        glow = 0.06 + 0.94 * rim * (0.62 + 0.38 * line)
+    else:
+        glow = (max(0.0, math.sin(math.pi * frac)) ** 1.2) * (max(0.0, math.sin(math.pi * min(1.0, max(0.0, across)))) ** 3.0)
+        glow = 0.06 + 0.94 * glow
     if not tones:
         return colour, glow
     def tone(name, k):
@@ -141,7 +178,7 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
     rgb = tone(colour, glow ** 1.5)
     # run into the neighbouring leaf along the flow over the last fifth of the bay
     edge = min(frac, 1 - frac)
-    if edge < 0.2:
+    if edge < 0.2 and not streak:
         other = _pick(g, bay + (1 if frac > 0.5 else -1), palette, weights, seed)
         w = 0.5 * (1 - edge / 0.2) ** 2
         rgb = [c + (o - c) * w for c, o in zip(rgb, tone(other, glow ** 1.5))]

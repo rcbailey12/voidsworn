@@ -218,6 +218,21 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    rebuilds the ship cache, reads it back and takes the in-game shots from build\godot. The undo restores only that ship's
    files and manifest rows, under the install lock, and refuses if the ship changed since. Why: Ryan accepted Warden S9 and
    CD5 on Nov 19, but build\godot still held their Nov 1 hulls, and a capture job drew the old CD5.
+16. **No ship reaches Ryan without a surface-detail PASS (issue 1517, Nov 21 2026).** Stage 5's detail check
+   (tools/recipe/detail_check.py) gates every ship of every faction built through the recipe, hulls and strike craft alike, against
+   its faction's floors (docs/ship_pipeline/detail_floors.md), and a FAIL fails the stage. A pick or publish picture of a
+   build is made only with `tools/recipe/offer_sheet.py JOB_OUT OUT.jpg`, which refuses a job whose
+   `out/recipe/log_detail.txt` has no PASS, takes as proof only the job's own pictures stamped with its commit and the
+   sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`; a shot
+   from a dirty tree only when every dirty file is the install ship_job.bat recorded for that job: its own ship files, its
+   manifest row, the watchdog hand-off, .import and .uid, issue 1539),
+   and prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
+   same job. A ship under its floor passes only with a dated opt-out holding Ryan's own words in its recipe json
+   (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
+   while the check only reported their flat skins (it failed Chorus ships alone), and he caught it himself: "Just make sure
+   the level of detail is on both so they don't look like clay". The same happened with an earlier build of strike craft KF1 ("it
+   looks unfinished"). Torpedo and rocket bodies (the munitions builder, PR 1416) have no stage 5 bake, so no atlas to
+   measure: they are not covered until they get one.
 
 ### Named variant parts (issue 812)
 
@@ -451,6 +466,8 @@ hard points.
   inside its own arc, and the breach anchors meet their contract. An install refreshes the game's ship cache and reads the
   ship back through ShipView, or the stage fails. The contract's count comes from the hull's class and faction
   (factions.md, "Breach anchors by class"; issue 363), never from a constant.
+- Stage 5: the surface-detail check passes against the faction's floors (section 0, rule 16; issue 1517). A FAIL is a
+  flat clay skin: fix it in the faction's paint stack (R333), never by lowering the floor.
 - Stage 6 reports cost; costs are never capped (R111).
 - The insides (R209): a break render of each authored break line at the battle camera and at camera 60 shows decks, frames
   and machinery, never a hollow or flat interior. A hull that shows one is not done.
@@ -521,3 +538,27 @@ bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new
 (beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
 sat beside fully painted hulls and made the whole scene look cheaper (inventory:
 /mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.
+
+**Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
+faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
+nose, x -1.15 to 1.15) and writes `godot/fx/munition_bodies/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+`fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
+`fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
+code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
+the Hullbreaker stack at its craft sizes) into small 512 atlases, so it wears the same paint as the hulls (Ryan, Nov 20:
+"are we going to paint it and add more detail after?"). A munition is a few pixels on the board, so it carries detail at
+the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo may be lifted per faction (`LIFT` in
+munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten"). A kit body
+drives like a ship: a ship-size engine core at its nozzle and the ships' own engine trail (SH.TRAIL, faction engine colour
+and trail style, a short wake), never a flame card, a halo or smoke puffs (Ryan, Nov 20: "the trails/engine effects look
+super basic and weird"; fx_weapons.gd `_kit_trail_*`). A munition shot down by point defence never burns and never
+flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_pd_*.jpg, after "it's hard to distinguish
+whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
+and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
+an orange fireball belong only to a round that reaches the hull.
+A munition leaves its own ship (Ryan, Nov 21: the torpedo "appears out of thin air" and "shoots straight up"; picks from
+board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its mount, slides clear along the tube with
+its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
+nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
+(fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).

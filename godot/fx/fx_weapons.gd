@@ -13,7 +13,7 @@ extends RefCounted
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
 #            pulsar (Ithar: the beam in travelling pulses), nlance (Eclipse: three compression beams)
-#            doom (Eclipse corona arc: re-striking green lightning)
+#            doom (Eclipse corona arc: re-striking violet lightning)
 #   torp:    torp (Voidsworn hellfire: armoured bodies, short plumes)   rockets (Corsair rattle-rocket pods: swarms of
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
@@ -208,7 +208,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
 	var col: Color = PLASMA_COL if lk in ["plasma", "plasma_cannon"] else fac["weapon"]
-	# Doom keeps R263 green; the R271 null tracer uses the faction's violet-white.
+	# Doom uses its own deep violet core (issue 1503, was R263 green); the R271 null tracer uses the faction's violet-white.
 	if lk == "doom" and fac.has("weapon_core"):
 		col = fac["weapon_core"]
 	# Issue 461: a hit is sized by the gun that fired it as well as by the ship it lands on
@@ -503,12 +503,13 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				if A != null and hd.size() > 0:
 					fx.later(T0, func l_ram_mark() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
-				var vent = 0.45 + beat * (0.35 if lk == "torp" else 0.12)
+				var slide_room := 0.30 if lk == "torp" and OS.get_environment("VS_1379_LAUNCH") != "old" else 0.0   # torp: room for the 0.7 s slide after the order (the old arm keeps main's timing)
+				var vent = 0.45 + slide_room + beat * (0.35 if lk == "torp" else 0.12)
 				tf = T0 + vent
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
 				var tt = dist / spd + 0.25
 				ti = tf + tt
-				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread)
+				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread, faction)
 				tend = ti
 		"flak", "pflak", "spores", "mflak", "gflak", "gsentry":
 			var cadence := 0.19 if lk == "gsentry" else 0.12 if lk == "flak" else 0.07
@@ -811,29 +812,115 @@ static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k:
 	_impact_sparks(fx, p, dir, t, k, col, 4, 9.0)
 
 
-static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0) -> float:
+# Issue 1379 launch (Ryan, Nov 21: "the torpedo just seems to shoot straight up super fast and it doesn't really seem like
+# it comes from the ship but more appears out of thin air"). A round leaves its tube the way a ship would fire it:
+#   1. the hatch: a small cold gas puff and a faint flash at the mount, the round already sitting in the mouth;
+#   2. the push out: it slides clear along the tube, slowing, drive dark (LAUNCH_EJECT s; rockets kick out quicker);
+#   3. ignition at tf (the old release time, so impact times and the battle's timing do not move): a flash at the nozzle,
+#      the drive lights and the wake starts;
+#   4. the turn: the flight leaves along the tube's own line and bends onto the target with only a low lift, never a
+#      climb. A deck tube that points up is tipped toward the target so the round does not stand on its tail.
+const LAUNCH_EJECT := {"torp": 0.7, "rockets": 0.14, "star": 0.22}   # torp: a long slow slide so it plainly leaves the hull (Ryan, Nov 21)
+const LAUNCH_PUSH := {"torp": 3.5, "rockets": 1.4, "star": 1.6}   # push-out length, in round lengths (pk)
+# Ryan, Nov 21 ("the size of the torpedoes looks odd ... too large"): the round itself is drawn smaller than its old size
+# against the ships. Its trail, flashes and shoot-down follow the smaller body; the push-out distance does not shrink.
+const ROUND_SIZE := {"torp": 0.5, "rockets": 0.7, "star": 1.0}
+
+
+static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
+	var flat := to - from
+	flat.y = 0.0
+	flat = flat.normalized() if flat.length() > 1e-4 else Vector3.RIGHT
+	var d := mn.normalized() if mn.length() > 1e-4 else flat
+	if d.dot(flat) < 0.0:
+		d = (d - flat * d.dot(flat) * 1.2).normalized()   # never back toward the firing ship's own far side
+	if d.y > 0.55:
+		d = (d + flat * 1.1).normalized()                  # a deck tube: tipped toward the target
+	return d
+
+
+static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "") -> float:
 	var eng: Color = fac["engine"]
-	_vent(fx, from + mn * 0.6 * k, mn, tf, 3.2 * k, 0.35, eng, 0.8, mn * 4.0 * k, 0.7, 1.0, 2, src)
+	var old := OS.get_environment("VS_1379_LAUNCH") == "old"   # the launch before this change, for before shots only
+	var ed := _launch_dir(mn, from, to)
+	var ej: float = 0.0 if old else float(LAUNCH_EJECT.get(lk, 0.2))
+	var tl := tf - ej   # the hatch opens (the vent delay before tf, 0.75 s for torpedoes and 0.45 s for the rest, is longer than the slide, so this stays after the order)
+	# the hatch: cold grey gas and a faint flash at the mount (not the engine colour: nothing burns yet)
+	if old:
+		_vent(fx, from + mn * 0.6 * k, mn, tf, 3.2 * k, 0.35, eng, 0.8, mn * 4.0 * k, 0.7, 1.0, 2, src)
+	else:
+		_vent(fx, from + mn * 0.3 * k, mn, tl, 2.0 * k, 0.5, Color(0.55, 0.56, 0.58), 0.5, ed * 2.0 * k, 0.45, 1.0, 1, src)
+		_burst(fx, from, mn, tl, 0.6 * k, "flash", 0.08, Color(0.85, 0.9, 1.0), 1.4, 6.0)
 	var n: int = 4 if lk == "rockets" else 1
 	if rhythm == null:
 		rhythm = _volley_rng(fx)
 	var burst := _volley_pattern(rhythm, n)
 	var last := ti
+	var dist := from.distance_to(to)
 	for j in n:
 		var pulse: Dictionary = burst[j]
 		var t0 = tf + float(pulse["phase"]) * 0.07
 		var pk: float = k * float(pulse["size"])
-		var side = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
-		var mid = from.lerp(to, 0.45) + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
-		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
-		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": from, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": pk,
-			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"])), "dead_at": INF}
-		if intercept: p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
+		var rk: float = pk * (1.0 if old else float(ROUND_SIZE.get(lk, 1.0)))   # the drawn round (ROUND_SIZE)
+		# rockets leave a rack: each one from its own cell, a little apart
+		var cell: Vector3 = Vector3.ZERO if old else fx.rdir() * (0.35 * k if lk == "rockets" else 0.0)   # old: no extra draw, main's seeded paths
+		cell -= ed * cell.dot(ed)
+		var l0: Vector3 = from + cell
+		var e0: Vector3 = l0 + ed * float(LAUNCH_PUSH.get(lk, 1.6)) * pk * fx.unit
+		var lead := clampf(dist * 0.32, 3.0 * k, 14.0 * k)
+		var mid: Vector3
+		if old:   # main's draws in main's order, so the before clip keeps main's seeded flight paths
+			e0 = from
+			var side_old = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
+			mid = from.lerp(to, 0.45) + side_old + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
+		else:
+			var side = fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
+			mid = e0 + ed * lead + side + Vector3(0, minf(1.5 * k, dist * 0.04), 0)
+		var end = to + (fx.rdir() * 0.6 * (k if old else rk) if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
+		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
+			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
+			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
+		if not old:
+			_kit_nozzle_dark(p["mesh"], true)
+		if old:
+			p.erase("lt")
+			if (p["mesh"] as Node3D).has_meta("kit"):
+				_kit_trail_start(fx, p, fac)
+		if intercept:
+			p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
+			_pd_fire(fx, p)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
 		fx.dstate["proj"] = list
 		last = maxf(last, float(p["t1"]))
 	return last
+
+
+# The push out (launch steps 1 and 2): the round slides from the tube mouth to its ignition point, slowing, drive dark.
+static func _launch_step(fx, p: Dictionary, now: float) -> void:
+	var node = p["mesh"]
+	if not is_instance_valid(node):
+		return
+	var n3 := node as Node3D
+	var u := clampf((now - float(p["lt"])) / maxf(float(p["t0"]) - float(p["lt"]), 0.001), 0.0, 1.0)
+	var e := 1.0 - (1.0 - u) * (1.0 - u)
+	var d: Vector3 = p["ed"]
+	var pos: Vector3 = (p["l0"] as Vector3).lerp(p["a"], e)
+	var z := d.cross(Vector3.UP if absf(d.y) < 0.95 else Vector3.FORWARD).normalized()
+	n3.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(n3.scale), pos)
+	n3.visible = true
+	(n3.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
+	p["pos"] = pos
+
+
+# Ignition (launch step 3): a short hot flash at the nozzle, then the drive and the wake take over.
+static func _ignite(fx, p: Dictionary, fac_engine: Color) -> void:
+	_kit_nozzle_dark(p["mesh"], false)
+	var d: Vector3 = p["ed"]
+	var k: float = p["k"]
+	var nozzle: Vector3 = (p["a"] as Vector3) - d * 1.2 * k * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
+	_burst(fx, nozzle, -d, float(p["t0"]), 1.1 * k, "flash", 0.10, fac_engine, 2.4, 8.0)
+	_burst(fx, nozzle - d * 0.4 * k, -d, float(p["t0"]) + 0.02, 1.4 * k, "cool", 0.45, Color(0.4, 0.4, 0.42), 0.5, 0.0, -d * 3.0 * k, 0.35)
 
 
 # Compact, lit casings with a closed nose, a recessed motor and rear fins.
@@ -913,11 +1000,130 @@ static func _casing(fx, rocket: bool) -> ArrayMesh:
 	return mesh
 
 
-static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
+# R362 (docs/playbooks/ships.md section 9): a torpedo or rocket is a solid object beside the ships, so it is built from its
+# faction's part kit (tools/blender/build_sheets/munitions/munitions.py writes fx/munition_bodies/<faction>_<look>.glb, the same
+# frame and length as the code casing: +X the nose, x -1.15 to 1.15) and takes the hull finish (LOOK.hull: the faction's
+# brightness band, the material rim and the "look_hull" mark the rim light reads). A faction with no body file keeps the
+# code casing. Loaded once per body and faction; every shot shares the finished meshes.
+const MUNITIONS_DIR := "res://fx/munition_bodies/"
+
+
+static func _kit_body(fx, lk: String, faction: String) -> Node3D:
+	if faction.is_empty() or lk == "star" or OS.get_environment("VS_1379_OLD") == "1":   # VS_1379_OLD: the code casing, for before shots
+		return null
+	var key := "munition_%s_%s" % [faction, lk]
+	if not fx.dstate.has(key):
+		fx.dstate[key] = _load_munition(MUNITIONS_DIR + "%s_%s.glb" % [faction, lk], faction)
+	return _build_munition(fx.dstate[key])
+
+
+# The cache holds only refcounted data (meshes, finished materials, transforms), never a Node: fx.release() clears dstate and
+# that frees it all (Artoo on PR 1416: an unattached template node would outlive every battle). Each shot builds its own nodes,
+# which its projectile owns and frees.
+static func _build_munition(parts) -> Node3D:
+	if not parts is Array or (parts as Array).is_empty():
+		return null
+	var root := Node3D.new()
+	root.name = "kit_body"
+	var nozzles: Array = []
+	for part in parts:
+		var mi := MeshInstance3D.new()
+		mi.name = str(part["name"])
+		mi.mesh = part["mesh"]
+		mi.transform = part["xf"]
+		var mats: Array = part["mats"]
+		var dark: Array = part.get("dark", [])
+		for i in mats.size():
+			mi.set_surface_override_material(i, mats[i])
+			if i < dark.size() and dark[i] != null:
+				nozzles.append([mi, i, mats[i], dark[i]])
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(mi)
+	if not nozzles.is_empty():
+		root.set_meta("nozzles", nozzles)
+	return root
+
+
+static func _load_munition(path: String, faction: String) -> Array:
+	var n: Node = null
+	if ResourceLoader.exists(path):
+		var ps = load(path)
+		if ps is PackedScene:
+			n = (ps as PackedScene).instantiate()
+	elif FileAccess.file_exists(path):
+		# not imported (a partial install, or a cloud run): read the glTF file itself at run time, as world_rocks.gd does
+		var doc := GLTFDocument.new()
+		var st := GLTFState.new()
+		if doc.append_from_buffer(FileAccess.get_file_as_bytes(path), "", st) == OK:
+			n = doc.generate_scene(st)
+	if n == null:
+		return []
+	var parts: Array = []
+	var LOOK = load("res://render/look.gd") if ResourceLoader.exists("res://render/look.gd") else null
+	for m in n.find_children("*", "MeshInstance3D", true, false):
+		var src := m as MeshInstance3D
+		if src.mesh == null:
+			continue
+		var mats: Array = []
+		var dark: Array = []
+		for i in src.mesh.get_surface_count():
+			var mat: Material = src.get_active_material(i)
+			if mat != null and LOOK != null:
+				mat = LOOK.hull(mat, faction, true)
+			mats.append(mat)
+			dark.append(_dark_nozzle(mat))
+		parts.append({"name": String(src.name), "mesh": src.mesh, "xf": _to_root(n, src), "mats": mats, "dark": dark})
+	n.free()
+	return parts
+
+
+# Issue 1531 (Artoo on PR 1532): the nozzle's baked glow (the engine emission map) stays dark until ignition. A nozzle
+# surface gets its own unlit copy in the cache, so a shot swaps its own surface and no shared material changes; marker
+# lights (Sunward frost band, window, vent ember) keep their glow. Returns null for any other surface.
+static func _dark_nozzle(mat: Material) -> Material:
+	var m := mat as BaseMaterial3D
+	if m == null or not m.emission_enabled or m.emission_texture == null:
+		return null
+	var t := m.emission_texture
+	# the runtime glTF read names the map; an imported glb keeps it in the extracted file's path; the paint stack names the
+	# nozzle material p3_glow either way
+	if not ("engine_emission" in t.resource_name or "engine_emission" in t.resource_path or m.resource_name == "p3_glow"):
+		return null
+	var d := m.duplicate() as BaseMaterial3D
+	d.emission_enabled = false
+	return d
+
+
+# A kit body's nozzle glow off (true: the push out) or on (ignition), on this shot's own surfaces only.
+static func _kit_nozzle_dark(node, dark: bool) -> void:
+	if not is_instance_valid(node):
+		return
+	var kit := (node as Node).get_node_or_null("kit_body")
+	if kit == null or not kit.has_meta("nozzles"):
+		return
+	for row in kit.get_meta("nozzles"):
+		var mi := row[0] as MeshInstance3D
+		mi.set_surface_override_material(int(row[1]), row[3] if dark else row[2])
+
+
+static func _to_root(root: Node, n: Node3D) -> Transform3D:
+	var xf := n.transform
+	var p := n.get_parent()
+	while p != null and p != root:
+		if p is Node3D:
+			xf = (p as Node3D).transform * xf
+		p = p.get_parent()
+	return xf
+
+
+static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := "") -> Node3D:
 	var node := Node3D.new()
 	node.name = "fx_projectile_" + lk
 	var body := MeshInstance3D.new()
-	if lk == "star":
+	var kit := _kit_body(fx, lk, faction)
+	if kit != null:
+		node.add_child(kit)
+	elif lk == "star":
 		var sphere := SphereMesh.new()
 		sphere.radius = 0.65; sphere.height = 1.3; sphere.radial_segments = 16; sphere.rings = 8
 		body.mesh = sphere
@@ -925,8 +1131,11 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
 		body.material_override.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
 	else:
 		body.mesh = _casing(fx, lk == "rockets")
-	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	node.add_child(body)
+	if kit == null:
+		body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(body)
+	else:
+		body.free()
 	var drive := MeshInstance3D.new()
 	var quad := QuadMesh.new(); quad.size = Vector2.ONE
 	drive.mesh = quad
@@ -934,12 +1143,24 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
 	var mat: ShaderMaterial = fx.mat(DRIVE, 1)
 	mat.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
 	mat.set_shader_parameter("extent", 2.5 if lk == "star" else 1.8)
+	if kit != null:
+		# Ryan, Nov 20 ("the trails/engine effects look super basic and weird"): a kit body drives like a ship. Its own
+		# nozzle glows (the baked engine map); the core is the ship's size for that nozzle (fx_ship: r x 2.8), not a halo
+		# twice the body's width, and the trail is the ships' engine trail (_kit_trail_*), not a flame card and puffs.
+		drive.position.x = -1.28
+		mat.set_shader_parameter("extent", KIT_CORE)
+		node.set_meta("kit", true)
 	mat.set_shader_parameter("seed", fx.rng.randf() * TAU)
 	drive.material_override = mat
 	node.set_meta("motor", mat)
 	drive.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	drive.extra_cull_margin = 3.0
 	node.add_child(drive)
+	if kit != null:
+		node.scale = Vector3.ONE * k * fx.unit * (0.55 if lk == "rockets" else 1.0)
+		node.visible = false
+		fx.add_child(node)
+		return node
 	var plume := MeshInstance3D.new()
 	plume.name = "exhaust"
 	plume.mesh = quad
@@ -987,15 +1208,27 @@ static func update(fx, dt: float) -> void:
 		var t1: float = p["t1"]
 		var now: float = fx.now
 		if now < t0:
+			if p.has("lt") and now >= float(p["lt"]):
+				_launch_step(fx, p, now)
 			keep.append(p)
 			continue
-		if now >= t1 or now >= float(p["dead_at"]):
-			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
-				var u0 := clampf((float(p["dead_at"]) - t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
-				var pp := _bez(p["a"], p["b"], p["c"], _ease(u0))
-				_burst(fx, pp, Vector3.UP, now, 4.0 * float(p["k"]), "flash", 0.24, p["col"], 3.2, 24.0)
-				_impact_sparks(fx, pp, ((p["c"] as Vector3)-(p["a"] as Vector3)).normalized(), now, p["k"], Color(0.9,0.62,0.32), 6)
-			if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
+		if p.has("lt") and not p.has("lit"):
+			p["lit"] = true
+			_ignite(fx, p, p["eng"])
+			if is_instance_valid(p["mesh"]) and (p["mesh"] as Node3D).has_meta("kit"):
+				_kit_trail_start(fx, p, p["fac"])
+		if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
+			# shot down short of the hull (issue 1379 round 5: Ryan could not tell this from a hull hit)
+			if not p.has("down"):
+				p["down"] = now
+				_shot_down(fx, p)
+			if _shot_down_step(fx, p, now, dt):
+				keep.append(p)
+				continue
+			_projectile_free(fx, p)
+			continue
+		if now >= t1:
+			_projectile_free(fx, p)
 			continue
 		keep.append(p)
 		var u := clampf((now-t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
@@ -1010,11 +1243,16 @@ static func update(fx, dt: float) -> void:
 			var scale: Vector3 = node.scale
 			node.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(scale), pos)
 			node.visible = true
-			(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
+			if node.has_meta("exhaust"):
+				(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
 			var fade := smoothstep(0.0, 0.06, now - t0) * (1.0 - smoothstep(t1 - 0.08, t1, now))
 			(node.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", fade)
-		_projectile_exhaust(fx, p, d)
+		if p.has("trail"):
+			_kit_trail_push(fx, p)
+		else:
+			_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
+	_kit_trails_update(fx)
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
 # and let each short puff cool independently. There is no persistent hot ribbon.
 # Issue 1467: "last" walks the fixed puff grid, so the part of an interval a frame leaves over carries to the next
@@ -1047,6 +1285,191 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 				var f := float(j) / 3.0
 				fx.dst(tail-d*size*(0.5+f*4.0), tt, 0.16, size*(0.4+f*0.5), size*(1.1+f), 1, 0.12*(1.0-f)*(1.0-f))
 	return count
+
+
+# Issue 1379 r4: a kit-built torpedo or rocket leaves the ships' own engine trail (fx_ship _update_trails, SH.TRAIL): a
+# world-space strip through the nozzle's recent positions in the faction's engine colour and trail style (Hullbreakers
+# sooty). It is short because the round is small and fast; it keeps fading after the hit until its last sample cools.
+const KIT_CORE := 0.62          # the drive core billboard on a kit body (body units; the nozzle exit radius is about 0.17)
+const KIT_TRAIL_LIFE := 0.38    # seconds a trail sample lives (a short wake: longer read as ruler lines at rocket speed)
+const KIT_TRAIL_PTS := 28
+
+
+static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
+	var mi := MeshInstance3D.new()
+	mi.name = "fx_kit_trail"
+	mi.top_level = true
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+	var style: int = 1 if String(fac.get("engine_extra", "")) == "soot" else int(fac.get("trail", 0))
+	mat.set_shader_parameter("trail_style", float(style))
+	mi.material_override = mat
+	mi.extra_cull_margin = 16384.0
+	mi.visible = false
+	fx.add_child(mi)
+	mi.global_transform = Transform3D.IDENTITY
+	var r: float = 0.17 * float(p["k"]) * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
+	p["trail"] = {"mi": mi, "hist": [], "r": r, "eng": p["eng"], "seed": float(p["seed"]), "mesh_time": fx.now}
+
+
+static func _kit_trail_push(fx, p: Dictionary) -> void:
+	var node = p["mesh"]
+	if not is_instance_valid(node) or not (node as Node3D).visible:
+		return
+	var t: Dictionary = p["trail"]
+	var hist: Array = t["hist"]
+	var at: Vector3 = (node as Node3D).global_transform * Vector3(-1.3, 0, 0)
+	if hist.is_empty() or (hist[0][0] as Vector3).distance_to(at) > 0.02 * fx.unit:
+		hist.push_front([at, fx.now])
+		t["dirty"] = true
+
+
+static func _kit_trails_update(fx) -> void:
+	var live: Array = []
+	for p in fx.dstate.get("proj", []):
+		if p.has("trail"):
+			live.append(p["trail"])
+	var fading: Array = fx.dstate.get("ptrails", [])
+	var keep: Array = []
+	for t in live + fading:
+		var hist: Array = t["hist"]
+		while not hist.is_empty() and (hist.size() > KIT_TRAIL_PTS or fx.now - float(hist.back()[1]) >= KIT_TRAIL_LIFE):
+			hist.pop_back()
+			t["dirty"] = true
+		var mi: MeshInstance3D = t["mi"]
+		if not is_instance_valid(mi):
+			continue
+		if t in fading and hist.size() < 2:
+			mi.queue_free()
+			continue
+		if t in fading:
+			keep.append(t)
+		mi.visible = hist.size() >= 2
+		if not mi.visible:
+			continue
+		if t.get("dirty", false):
+			t["dirty"] = false
+			t["mesh_time"] = fx.now
+			_kit_trail_mesh(fx, t)
+		(mi.material_override as ShaderMaterial).set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / KIT_TRAIL_LIFE)
+	fx.dstate["ptrails"] = keep
+
+
+static func _kit_trail_mesh(fx, t: Dictionary) -> void:
+	var hist: Array = t["hist"]
+	var n := hist.size()
+	var eng: Color = t["eng"]
+	var r: float = t["r"]
+	var verts := PackedVector3Array(); var nrm := PackedVector3Array(); var uv := PackedVector2Array()
+	var c0 := PackedFloat32Array(); var c1 := PackedFloat32Array(); var idx := PackedInt32Array()
+	for i in n:
+		var d: Vector3 = ((hist[mini(i + 1, n - 1)][0] as Vector3) - (hist[maxi(i - 1, 0)][0] as Vector3)).normalized()
+		for sd in [-0.5, 0.5]:
+			verts.append(hist[i][0]); nrm.append(d)
+			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / KIT_TRAIL_LIFE, 0.0, 1.0), sd))
+			c0.append_array([eng.r, eng.g, eng.b, 0.55])
+			c1.append_array([r * 1.8, r * 4.0, float(t["seed"]), 0.0])
+	for i in n - 1:
+		var q := i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts; arr[Mesh.ARRAY_NORMAL] = nrm; arr[Mesh.ARRAY_TEX_UV] = uv
+	arr[Mesh.ARRAY_CUSTOM0] = c0; arr[Mesh.ARRAY_CUSTOM1] = c1; arr[Mesh.ARRAY_INDEX] = idx
+	var fmt := (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fmt)
+	mesh.custom_aabb = POOLS.BIG
+	t["mi"].mesh = mesh
+
+
+# ---------------------------------------------------------------- shot down (issue 1379 round 5)
+# Ryan, Nov 21: "it's hard to distinguish whats a hull hit vs explosion before due to turrets". A round shot down never
+# burns: no fire, no flash on the hull. Ryan picked PD-C on Nov 21 (options sheet board/torpedo_rework/tp_pd_*.jpg): the
+# target's point defence fires pale tracer dashes at the round, dark flak puffs bracket it, cold sparks where it is holed,
+# and the round goes dead (drive out) and tumbles away trailing grey smoke.
+const PD_TRACER := Color(0.72, 0.88, 1.0)
+const PD_TUMBLE_S := 0.9
+
+
+static func _down_point(p: Dictionary) -> Vector3:
+	var u0 := clampf((float(p["dead_at"]) - float(p["t0"])) / maxf(float(p["t1"]) - float(p["t0"]), 0.001), 0.0, 1.0)
+	return _bez(p["a"], p["b"], p["c"], _ease(u0))
+
+
+static func _pd_fire(fx, p: Dictionary) -> void:
+	var pp := _down_point(p)
+	var c: Vector3 = p["c"]
+	var k: float = p["k"]
+	# four short dashes from the target's side, a little spread, the last one arriving as the round dies
+	for j in 4:
+		var src: Vector3 = c + fx.rdir() * 0.8 * k + (pp - c).normalized() * 0.6 * k
+		var aim: Vector3 = pp + fx.rdir() * (0.5 if j < 3 else 0.05) * k
+		var ft := maxf(src.distance_to(aim) / (260.0 * fx.unit), 0.05)
+		var tb := float(p["dead_at"]) - ft - (3 - j) * 0.07
+		fx.stk(src, tb, ft, PD_TRACER, 6.0, 5.0 * k, 0.12 * k, 4, (aim - src) / ft, 0.0, 0.0, 1.6, 18.0)
+
+
+static func _shot_down(fx, p: Dictionary) -> void:
+	var pp := _down_point(p)
+	var now: float = fx.now
+	var k: float = p["k"]
+	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()
+	# cold sparks where the round is holed: white-blue, not fire
+	_impact_sparks(fx, pp, -d, now, k * 0.7, PD_TRACER, 5)
+	for j in 5:
+		var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
+		var tj := now - 0.18 + j * 0.06
+		_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
+		_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
+	# the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke
+	var node = p["mesh"]
+	if is_instance_valid(node) and (node as Node3D).has_meta("motor"):
+		((node as Node3D).get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
+	var e := _ease(clampf((now - float(p["t0"])) / maxf(float(p["t1"]) - float(p["t0"]), 0.001), 0.0, 1.0))
+	var vd: Vector3 = ((p["b"] as Vector3) - (p["a"] as Vector3)).lerp((p["c"] as Vector3) - (p["b"] as Vector3), e)
+	p["down_v"] = vd.normalized() * minf(vd.length(), 40.0 * k * fx.unit) * 0.35 + Vector3(0, -0.8 * k * fx.unit, 0)
+	p["down_p"] = pp
+	p["down_spin"] = fx.rdir() * (5.0 + fx.rng.randf() * 4.0)
+	if p.has("trail"):
+		var fading: Array = fx.dstate.get("ptrails", [])
+		fading.append(p["trail"])
+		fx.dstate["ptrails"] = fading
+		p.erase("trail")
+
+
+static func _shot_down_step(fx, p: Dictionary, now: float, dt: float) -> bool:
+	if not p.has("down_p"):
+		return false
+	var age := now - float(p["down"])
+	if age >= PD_TUMBLE_S:
+		return false
+	var node = p["mesh"]
+	if not is_instance_valid(node):
+		return false
+	var n3 := node as Node3D
+	var drift := (1.0 - exp(-age * 2.0)) / 2.0
+	n3.global_position = (p["down_p"] as Vector3) + (p["down_v"] as Vector3) * drift
+	var spin: Vector3 = p["down_spin"]
+	if spin.length() > 0.0:
+		n3.rotate(spin.normalized(), spin.length() * clampf(dt, 0.0, 0.1))
+	if not p.has("down_scale"):
+		p["down_scale"] = n3.basis.get_scale().x
+	var fade := 1.0 - smoothstep(PD_TUMBLE_S * 0.6, PD_TUMBLE_S, age)
+	n3.basis = n3.basis.orthonormalized().scaled(Vector3.ONE * float(p["down_scale"]) * maxf(fade, 0.01))
+	if now - float(p.get("down_smoke", -1.0)) > 0.08:
+		p["down_smoke"] = now
+		_burst(fx, n3.global_position, Vector3.UP, now, 0.7 * float(p["k"]), "cool", 0.8, Color(0.22, 0.21, 0.2), 0.5, 0.0, Vector3(0, 0.4 * fx.unit, 0), 0.45 * fade)
+	return true
+
+
+static func _projectile_free(fx, p: Dictionary) -> void:
+	if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
+	if p.has("trail"):
+		var fading: Array = fx.dstate.get("ptrails", [])
+		fading.append(p["trail"])
+		fx.dstate["ptrails"] = fading
+		p.erase("trail")
 
 
 static func _ease(u: float) -> float:
@@ -1918,6 +2341,10 @@ static func launch(fx, cid: String, sid: String) -> void:
 	C.set_meta("launches", int(C.get_meta("launches", 0)) + 1)
 	if bay.is_empty():
 		return
+	# issue 1543: the mouth's flesh door eases open before the first craft leaves (T + 0.3), holds while the six leave, and
+	# shuts once the last is clear of the lip
+	if bay.has("bay"):
+		C.hull.door_cycle(int(bay["bay"]), T, T + 0.3 + 5 * 0.25 + 0.35)
 	var from: Vector3 = C.to_world(bay["p"])
 	var to: Vector3 = S.to_world(S.hull.core) if S != null else from + C.dir_world(Vector3(1, 0, 0)) * 20.0
 	var eng: Color = C.fac["engine"]

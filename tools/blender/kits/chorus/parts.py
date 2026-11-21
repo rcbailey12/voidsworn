@@ -418,7 +418,14 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         nsp = int(kw.get('spines', 16))
         # the knoll: a lumpy dome whose crown is the vent; its body runs back into the hull (mount)
         kc = L * 0.98 - RK * 0.92
-        p.add('knoll', 'mount', 'flesh', blob(RK * 0.92, RK * 1.12, RK * 1.08, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1))
+        KV, KF = blob(RK * 0.92, RK * 1.12, RK * 1.08, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1)
+        # Ryan (Nov 21, C13 run K: "these are clearly not holes"): the crown is cut open under the lip ring and a bore runs down
+        # into the knoll, so the vent is a real opening with depth, never a dark cap on a closed dome
+        def _open(f):
+            c = [KV[i] for i in f]
+            cx = sum(v[0] for v in c) / len(c); cr = sum(math.hypot(v[1], v[2]) for v in c) / len(c)
+            return not (cx > kc and cr < r * 0.98)
+        p.add('knoll', 'mount', 'flesh', (KV, [f for f in KF if _open(f)]))
         # the puckered lip: a thick lumpy ring sunk a little into the crown, pucker folds gathered into the hole
         m = 60; pts = []; rad = []
         for k in range(m):
@@ -428,6 +435,14 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             rad.append(r * (0.25 + 0.06 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
         pts.append(pts[0]); rad.append(rad[0])
         p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
+        # Ryan (Nov 20, C13 run I: "There's no actual holes like the concept"): the vent is a real dark hole. A dark crater sits
+        # inside the lip ring over the knoll's crown, deepest at its centre, so the opening reads black from the battle camera
+        # the bore: a lumpy throat from the lip down into the knoll, its floor closed deep inside (dark, matte: no flare)
+        bp = [(L * 1.0 - r * 0.02, r * 1.0), (L * 1.0 - r * 0.35, r * 0.9), (L * 1.0 - r * 0.9, r * 0.74), (L * 1.0 - r * 1.5, r * 0.55),
+              (L * 1.0 - r * 1.9, r * 0.3), (L * 1.0 - r * 2.05, 0.001)]
+        BV, BF = revolve(bp, 28)
+        BV = [(x, y * (1 + 0.08 * math.sin(5 * math.atan2(z, y) + seed)), z * (1 + 0.08 * math.sin(5 * math.atan2(z, y) + seed))) for (x, y, z) in BV]
+        p.add('crater', 'mount', 'pit', (BV, [tuple(reversed(f)) for f in BF] + list(BF)))
         for k in range(22):
             a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
             ca, sa = math.cos(a), math.sin(a)
@@ -1011,8 +1026,16 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
         creases = veins = 0
     cz = h - r * 1.0
     # hang > 1: a pendulous lobe, swelling away from the body and narrowing to a soft neck where it grows out
-    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.15 if window == 'slit' else 0.06,
-                                         squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None))
+    SV, SF = blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.15 if window == 'slit' else 0.06,
+                  squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None)
+    has_pore = window == 'slit' and glow
+    pr = r * (0.2 if armour else 0.17)
+    if has_pore:
+        # Ryan (Nov 21: "these are clearly not holes"): the crown is cut open and a bore runs down into the sac (below)
+        SF = [f for f in SF if not (sum(SV[i][2] for i in f) / len(f) > cz and max(math.hypot(SV[i][0], SV[i][1]) for i in f) < pr * 0.95)]
+        ring_v = [v for v in SV if v[2] > cz and pr * 0.8 < math.hypot(v[0], v[1]) < pr * 1.4]
+        top_z = sum(v[2] for v in ring_v) / max(1, len(ring_v)) if ring_v else cz + r
+    p.add('sac', 'mount', 'flesh', (SV, SF))
     # the root: a broad swelling where the sac grows out of the body, so it reads as a bulge of the flank, not a ball stuck on
     p.add('rootf', 'mount', 'flesh', blob(r * (0.85 if hang > 1 else 1.1), r * (0.8 if hang > 1 else 1.05), r * (0.55 if hang > 1 else 0.3), centre=(0, 0, 0.0), nu=28, nv=10, seed=seed + 7, amp=0.08))
     # the socket: wrinkle rolls round the base, where the sac meets the hull (z about 0)
@@ -1053,6 +1076,17 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             p.add('vein%d' % i, 'body', 'vein', welt(pts, nrm, r * 0.022, r * 0.01, n=4))
         else:
             p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
+    if window == 'slit' and glow:
+        # Ryan (Nov 20, on C13 run I): "There's no actual holes like the concept" and "the same weird yellow circle or patch on
+        # the sacs": a slit-window sac shows no lit bile at all. Its crown carries one dark pore, a real hole like the concept's
+        # bulbs: a dark pit sunk in the skin with a rolled lip of flesh round it
+        top = Vector((0, 0, top_z))
+        BV, BF = revolve([(top.z + r * 0.02, pr * 1.02), (top.z - r * 0.12, pr * 0.85), (top.z - r * 0.32, pr * 0.6), (top.z - r * 0.48, pr * 0.25),
+                          (top.z - r * 0.52, 0.001)], 20, axis='Z')
+        p.add('pore_pit', 'body', 'pit', (BV, [tuple(reversed(f)) for f in BF] + list(BF)))
+        ring = [Vector((pr * 1.05 * math.cos(2 * math.pi * k / 28), pr * 1.05 * math.sin(2 * math.pi * k / 28), top.z + r * 0.01)) for k in range(29)]
+        p.add('pore_lip', 'body', 'flesh2', tube(ring, [r * 0.05] * 29, n=6, cap0=False, cap1=False))
+        glow = 0
     for i in range(glow):
         a = 2 * math.pi * (i + 0.3) / max(1, glow); th = max(thb + 0.05, rnd.uniform(-0.2, 0.6))
         if armour:
@@ -1433,7 +1467,60 @@ def spore_patch(R, barrels=3, seed=0, mount='turret'):
     return p
 
 
-def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0):
+def door_lobes(r, z, n=6, seed=0, open_=0.0, thick=None):
+    """the lobed flesh door over a launch mouth (issue 1543; Ryan, Nov 21 2026: "a flesh door in sections with the opening
+    spreading from the middle", closed between launches, plain flesh). n fleshy lobes, each a thick wedge from a hinge on the
+    mouth's inner rim (radius r, height z, local +Z out of the mouth) to the centre, domed a little and puckered along the
+    seams, so the closed door reads as a star seam of flesh. open_: 0 closed, 1 fully open (each lobe turned about its hinge,
+    folded down into the bore against its wall, about 100 degrees). Returns one dict per lobe: verts, faces, hinge (point), axis (the hinge line, the
+    turning axis: a negative turn about it opens the lobe), in the mouth's own frame."""
+    nf = _noise(seed + 17)
+    th = thick if thick is not None else r * 0.24
+    NU, NV = 9, 9
+    gap = 0.008                       # the seam between lobes (radians, each side): closed tight, no light through
+    out = []
+    for k in range(n):
+        a0 = 2 * math.pi * k / n + gap; a1 = 2 * math.pi * (k + 1) / n - gap; am = (a0 + a1) / 2
+        hinge = Vector((r * math.cos(am), r * math.sin(am), z))
+        axis = Vector((-math.sin(am), math.cos(am), 0.0))            # tangent: a negative turn folds the tip down into the bore
+        def pt(u, v, top):
+            # u 0 at the rim .. 1 at the centre; v 0..1 across the lobe
+            a = a0 + (a1 - a0) * v
+            rr = r * (1.0 - u) * (1.0 + 0.04 * math.sin(3 * a + seed)) + r * 0.012
+            edge = math.sin(math.pi * v) ** 0.6                       # thin at the seams: puckered, not a flat cut
+            tip = (1.0 - u) ** 0.35                                   # thin at the centre where the lobes meet
+            dome = r * 0.14 * math.sin(math.pi * (0.25 + 0.75 * u)) * edge
+            w = 1.0 + 0.25 * nf(Vector((math.cos(a), math.sin(a), u)).normalized())
+            h = th * edge * tip * w * 0.5
+            zz = z + dome - r * 0.05 * u * u + (h if top else -h)
+            return Vector((rr * math.cos(a), rr * math.sin(a), zz))
+        V = []
+        for top in (True, False):
+            for i in range(NU + 1):
+                for j in range(NV + 1):
+                    V.append(pt(i / NU, j / NV, top))
+        idx = lambda t, i, j: t * (NU + 1) * (NV + 1) + i * (NV + 1) + j
+        F = []
+        for i in range(NU):
+            for j in range(NV):
+                F.append((idx(0, i, j), idx(0, i + 1, j), idx(0, i + 1, j + 1), idx(0, i, j + 1)))
+                F.append((idx(1, i, j), idx(1, i, j + 1), idx(1, i + 1, j + 1), idx(1, i + 1, j)))
+        for i in range(NU):            # the two seam sides
+            F.append((idx(0, i, 0), idx(1, i, 0), idx(1, i + 1, 0), idx(0, i + 1, 0)))
+            F.append((idx(0, i, NV), idx(0, i + 1, NV), idx(1, i + 1, NV), idx(1, i, NV)))
+        for j in range(NV):            # the rim end and the tip end
+            F.append((idx(0, 0, j), idx(0, 0, j + 1), idx(1, 0, j + 1), idx(1, 0, j)))
+            F.append((idx(0, NU, j), idx(1, NU, j), idx(1, NU, j + 1), idx(0, NU, j + 1)))
+        if open_:
+            # opening: each lobe folds down into the bore against its wall, tip first, so the hole spreads from the middle
+            # and no lobe stands up past the lip like a tooth (Ryan Nov 21: "random teeth inside look odd")
+            M = Matrix.Translation(hinge) @ Matrix.Rotation(-math.radians(100) * open_, 4, axis) @ Matrix.Translation(-hinge)
+            V = [M @ v for v in V]
+        out.append(dict(verts=[tuple(v) for v in V], faces=F, hinge=tuple(hinge), axis=tuple(axis)))
+    return out
+
+
+def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0, door=0, door_open=0.0):
     """a launch opening of the hangar (C14, the brood-sac carrier; data.js hangar 3): local +Z out of the hull. root: a neck of
     flesh rising out of the body and flaring into it at the base (mount); lip: one thick rolled lip of flesh round the mouth,
     lumpy, never a ring; crease: creases across the lip and stretch wrinkles down the neck; bore: a deep dark wet chamber,
@@ -1477,15 +1564,18 @@ def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0):
         p.add('neckcrease%d' % k, 'mount', 'flesh2', tube(q, [r * 0.05 * (1 - 0.4 * j / 5) for j in range(6)], n=5, flat=0.6))
     # the bore: a deep dark chamber below the lip, the wet wall wrinkled, a dim warm glow at its floor and nothing in it
     D_ = depth
-    p.add('bore', 'mount', 'maw', revolve([(H * 0.1, r * 0.96), (-D_ * 0.45, r * 0.9), (-D_ * 0.85, r * 0.72), (-D_, r * 0.4)], 40, cap1=True, axis='Z'))
-    for k in range(14):
-        a = 2 * math.pi * (k + 0.5) / 14
-        q = [Vector((r * (0.93 - 0.15 * t) * math.cos(a + 0.04 * t), r * (0.93 - 0.15 * t) * math.sin(a + 0.04 * t), H * 0.05 - D_ * 0.8 * t)) for t in [j / 6 for j in range(7)]]
-        p.add('borew%d' % k, 'mount', 'tissue' if k % 3 else 'bilewet', tube(q, [r * 0.04] * 7, n=5, flat=0.6))
-    p.add('boreg', 'mount', 'bilewet', revolve([(-D_ * 0.8, r * 0.76), (-D_ * 0.92, r * 0.6), (-D_ * 0.99, r * 0.42)], 40, axis='Z'))
-    for k in range(5):
-        a = 2 * math.pi * (k + rnd.uniform(0, 0.5)) / 5
-        c = Vector((r * 0.35 * math.cos(a), r * 0.35 * math.sin(a), -D_ * 0.97))
-        p.add('glow%d' % k, 'mount', 'bile', blob(r * 0.08, r * 0.08, r * 0.03, centre=tuple(c), nu=10, nv=5, seed=seed + k))
+    # issue 1291 (Ryan Nov 21): matte dark 'pit', so the open bore reads as a hole and never flares like a lit cap
+    BV, BF = revolve([(H * 0.1, r * 0.96), (-D_ * 0.45, r * 0.9), (-D_ * 0.85, r * 0.72), (-D_, r * 0.4)], 40, cap1=True, axis='Z')
+    p.add('bore', 'mount', 'pit', (BV, list(BF) + [tuple(reversed(f)) for f in BF]))   # both faces: seen from the mouth, never culled
+    # Ryan (Nov 21): the ridges down the bore read as "random teeth inside"; the wall stays smooth
+    p.add('boreg', 'mount', 'pit', revolve([(-D_ * 0.8, r * 0.76), (-D_ * 0.92, r * 0.6), (-D_ * 0.99, r * 0.42)], 40, axis='Z'))
+    if door:
+        # issue 1543: a lobed flesh door just inside the lip, closed. Each lobe is its own 'door' piece carrying its hinge
+        # (point and turning axis, in the part's frame); the build kit writes each as its own object with the hinge in world
+        # space (kit.py emit) and the export hangs it on a hinge node the game turns (export7.py, HARDPOINTS.md "Doors").
+        # door_open is for a still preview only (0 closed, 1 open); the game opens the door, never the build.
+        for k, lb in enumerate(door_lobes(r * 0.97, H - r * 0.08, n=int(door), seed=seed, open_=door_open)):
+            p.add('door%d' % k, 'door', 'flesh', (lb['verts'], lb['faces']))
+            p.comps[-1]['hinge'] = lb['hinge']; p.comps[-1]['axis'] = lb['axis']; p.comps[-1]['centre'] = (0.0, 0.0, lb['hinge'][2])
     p.fit = dict(exit=P((0, 0, H + r * 0.1)), axis=D((0, 0, 1)), radius=r, floor=P((0, 0, -D_)))
     return p

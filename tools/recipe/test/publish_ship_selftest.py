@@ -45,6 +45,11 @@ LAYOUT = ('{c}.glb', '{c}_base.jpg', '{c}_normal.png', '{c}_orm.png', '{c}_parts
           '{c}_parts_orm.png', '{c}_maps.json')
 
 
+# issue 1517: the stage 5 surface-detail verdict every published job carries (detail_check.py's PASS line)
+DETAIL_PASS = ('Blender 4.5.4 LTS\nPASS detail check: normal relief 2.61 deg (floor 2.00), albedo contrast 0.310 (floor 0.060), '
+               'roughness spread 0.115 (floor 0.060), 8528 texels\n')
+
+
 def fake_job(root, receipt, code, files=None, bare=False):
     """a job folder: the real receipt, an export with CODE_export.json listing its files in export7's shape ({"bytes",
     "sha256"} per file; bare=True writes the old bare hex string), the clone's checked install"""
@@ -54,6 +59,7 @@ def fake_job(root, receipt, code, files=None, bare=False):
     exp.mkdir(parents=True)
     inst.mkdir(parents=True)
     shutil.copy(RECEIPTS / receipt, job / 'out' / 'result.txt')
+    (job / 'out' / 'recipe' / 'log_detail.txt').write_text(DETAIL_PASS, encoding='utf-8')
     files = files or {n.format(c=code): (n.split('}')[1] + ' ' + code).encode() for n in LAYOUT}
     files[f'{code}_base.jpg'] = b'base ' + code.encode()
     for name, data in files.items():
@@ -85,6 +91,19 @@ def check_receipts(root):
         ok(f'{receipt} refuses another commit, a short commit, another or partial glb, another code')
         res = job / 'out' / 'result.txt'
         text = res.read_text(encoding='utf-8')
+        scratch = 'job scratch removed after PASS: C:\\Temp\\voidsworn-run-0123'
+        if 'pin ok' in text:
+            res.write_text(text.replace('all done', 'all done\n' + scratch, 1), encoding='utf-8')
+        else:
+            res.write_text(text.rstrip('\n') + '\n' + scratch + '\n', encoding='utf-8')
+        rc, out = run('receipt', job, code, commit, glb, rec)
+        assert rc == 0 and 'SHIP=' in out, out
+        ok(f'{receipt} passes with a scratch_done line after "all done" (1535)')
+        res.write_text(text.rstrip('\n') + '\nsomething else\n', encoding='utf-8')
+        rc, out = run('receipt', job, code, commit, glb, rec)
+        assert rc == 1, out
+        ok(f'{receipt} still refuses any other line after the tail')
+        res.write_text(text, encoding='utf-8')
         if 'pin ok' in text:
             res.write_text(text.replace('pin ok ' + commit, 'pin ok ' + 'f' * 40), encoding='utf-8')
             rc, out = run('receipt', job, code, commit, glb, rec)
@@ -103,6 +122,25 @@ def check_receipts(root):
         rc, out = run('receipt', job, code, commit, glb, rec)
         assert rc == 1 and 'was checked by the job' in out, out
         ok(f'{receipt} refuses a done FAILED, a changed export file and a checked file the export lacks')
+        (job / 'repo' / 'godot' / 'assets' / 'ships' / code / f'{code}_extra.png').unlink()
+        log = job / 'out' / 'recipe' / 'log_detail.txt'
+        for text, why in (('detail check FAIL: a flat clay surface (normal under the hegemony floor): normal relief 1.54 deg\n',
+                           'a detail FAIL'),
+                          ('detail check NOT RUN: bake bakeAb6.py is not the paint stack\n', 'a detail check not run'),
+                          ('Blender quit\n', 'no verdict line'), (None, 'no log_detail.txt'),
+                          (DETAIL_PASS + 'detail check FAIL: second\n', 'two verdicts')):
+            log.unlink(missing_ok=True)
+            if text is not None:
+                log.write_text(text, encoding='utf-8')
+            rc, out = run('receipt', job, code, commit, glb, rec)
+            assert rc == 1 and 'SHIP=' not in out and 'detail' in out, f'{receipt} with {why}: {out}'
+        log.write_text('OPT-OUT detail check: normal under the floor, Ryan 2026-11-21: "fine as it is"; normal relief 1.20\n',
+                       encoding='utf-8')
+        rc, out = run('receipt', job, code, commit, glb, rec)
+        assert rc == 0 and 'SHIP=' in out, out
+        assert json.loads(rec.read_text(encoding='utf-8'))['detail'].startswith('OPT-OUT detail check'), rec.read_text()
+        log.write_text(DETAIL_PASS, encoding='utf-8')
+        ok(f'{receipt} refuses a detail FAIL, a check not run, no verdict, no log and two verdicts; a dated opt-out passes')
     # PR 1312 run one: the real CODE_export.json lists {"bytes", "sha256"}; the old bare hex form still passes, a listing
     # with no full sha256 or a wrong size is refused
     receipt, code, commit = cases[0]

@@ -170,7 +170,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# why marks came and went between runs)
 	for m in meshes:
 		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -366,6 +366,8 @@ func update(fx, dt: float) -> void:
 		return
 	if not hull.turrets.is_empty():
 		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+	if not hull.doors.is_empty():
+		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
@@ -1518,6 +1520,8 @@ func _plan(fx, i: int, st: int) -> Array:
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true
 		return

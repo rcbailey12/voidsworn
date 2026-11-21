@@ -14,7 +14,7 @@ const View = preload("res://campaign/campaign_view.gd")   # the Nemesis is read 
 const BANDS := [[0.8, "Easy"], [1.05, "Even"], [1.4, "Hard"], [99.0, "Deadly"]]
 
 var C
-var ai_level := "veteran"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
+var ai_level := "standard"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
 
 func _init(campaign) -> void: C = campaign
 
