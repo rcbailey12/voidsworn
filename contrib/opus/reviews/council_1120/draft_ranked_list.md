@@ -180,17 +180,17 @@ stalls a player feels are three different waits, so a faster shader or a better 
 | 3 Cold first launch | The exported PCK holds zero baked shader payloads; rendered cold time not measured | 1439 (PC, GPU solo) |
 | 4 Other GPUs | A failed compute sky bake never falls back to raster, so the sky stays plain | 1436 |
 | 5 Battle-end join | fx.release with one cut outstanding: 5.7 to 6.5 s on 4 threads | 1435 |
-| 6 VRAM at 4K Max | World map cache is capped by count, not bytes (up to about 2 GiB); no 8 GB spill shown | 1439 |
+| 6 VRAM at 4K Max | World map cache is capped by count, not bytes; Astra's ~2 GiB is a worst case (24 full-size bakes, half of it CPU images), not a measured peak; no 8 GB spill shown | 1439 |
 | 7 Leaving mid enemy turn | Did not reproduce; _threat_busy never cleared on exit is a real risk | 1433 |
 | 8 Display defaults | AA state not always fully written; Low keeps costly shadows; no frame cap if V-Sync is forced off | 1437 (Ryan picks defaults) |
 | 9 Idle cost | Wings 0.9 ms and FX 0.6 ms lead; the HUD guard saves far less than 4 ms | 1437 |
-| 10 Title showcase (#32) | 8.5 s synchronous build before the title is usable | 1434 |
+| 10 Title showcase (#32) | 8.5 s synchronous build when the showcase callback was called by hand in a headless run; the windowed wait a player sees is not measured yet | 1434 |
 | 11 Long-run leaks | Churn only, no growing leak over three sectors | None |
 | 12 Splitting battle.gd | Real upkeep risk, no rewrite; split behind the item 1 rules client first | 1433 (step 1 only) |
 | W1 | The hidden campaign map keeps animating during battles | 1437 |
 | W2 | 371 MB of source GLBs ship beside the generated ship scenes | 1438 |
 | W3 | Closing the window skips quit_clean | 1435 |
-| W4 | The title showcase overrides the player's SFX volume each frame | 1434 |
+| W4 | The title showcase briefly overwrites the player's SFX volume when it starts (back to the saved level 60 frames later) and loads the whole sound bank | 1434 |
 | W5 | The safe-mode launcher only works from a source checkout | 1436 |
 
 ## Already tracked
