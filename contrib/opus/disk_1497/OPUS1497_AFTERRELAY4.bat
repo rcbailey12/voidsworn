@@ -70,7 +70,7 @@ if defined DO2 (>> "%R%" echo pair 2 leftover: %A2%\new) else (>> "%R%" echo pai
 rem 1b. hold a file in NEW open for 25 s (reads allowed, no delete or rename) while step 1 runs
 set "LOCKF=%ATT%\new\godot\project.godot"
 if exist "%LOCKF%" start "" /b powershell -NoProfile -Command "$f = [IO.File]::Open($env:LOCKF, 'Open', 'Read', 'Read'); [IO.File]::WriteAllText((Join-Path $env:AR 'lock_held.txt'), (Get-Date -Format o)); Start-Sleep -Seconds 25; $f.Dispose(); [IO.File]::WriteAllText((Join-Path $env:AR 'lock_released.txt'), (Get-Date -Format o))"
-if exist "%LOCKF%" powershell -NoProfile -Command "for ($i = 0; $i -lt 40 -and -not (Test-Path (Join-Path $env:AR 'lock_held.txt'))); $i++) { Start-Sleep -Milliseconds 250 }"
+if exist "%LOCKF%" powershell -NoProfile -Command "for ($i = 0; $i -lt 40 -and -not (Test-Path (Join-Path $env:AR 'lock_held.txt')); $i++) { Start-Sleep -Milliseconds 250 }"
 if not exist "%AR%\lock_held.txt" set "BAD=%BAD% the test lock was not taken;"
 powershell -NoProfile -Command "Get-Date -Format o" > "%AR%\drop_started.txt"
 
