@@ -1,0 +1,334 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "authored interiors: 4808 triangles, 5 surfaces; authored seams: 3",
+  "376388 triangles (58180 on part surfaces), box x -0.499 to 0.501, y -0.114 to 0.128, z -0.158 to 0.175",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 1 written (turret_0 O1); marked by the kit: ['O1']"
+ ],
+ "cls": "Carrier",
+ "faction": "ithar",
+ "expected_breach": 5,
+ "required": {
+  "weapon_slots": 2,
+  "core": 1,
+  "engine": 1,
+  "bay": 1,
+  "breach": 5,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "pulsar",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_pulsar_F_0"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "turret",
+   "arc": "T",
+   "hard_points": [
+    "hp_w1_turret_T_0"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "bay": 2,
+  "board": 2,
+  "breach": 5,
+  "core": 1,
+  "engine": 1,
+  "rcs": 2,
+  "gun": 2
+ },
+ "maps": [
+  "I16_11_emission.jpg",
+  "I16_11_normal.png",
+  "I16_11_orm.png",
+  "I16_11_base.jpg",
+  "I16_11_parts_normal.png",
+  "I16_11_parts_orm.png",
+  "I16_11_parts_base.jpg"
+ ],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_bay_0",
+   "p": [
+    -0.0354,
+    0.0,
+    -0.096
+   ],
+   "fwd": [
+    0.498,
+    0.0,
+    -0.867
+   ],
+   "off_mesh": 0.0016
+  },
+  {
+   "name": "hp_bay_1",
+   "p": [
+    -0.0354,
+    0.0,
+    0.096
+   ],
+   "fwd": [
+    0.498,
+    0.0,
+    0.867
+   ],
+   "off_mesh": 0.0053
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.2477,
+    0.0,
+    -0.1058
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.2831,
+    0.0,
+    0.1066
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.2713,
+    0.059,
+    -0.0658
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    0.629,
+    -0.778
+   ],
+   "clear": 0.1022
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.2123,
+    0.0673,
+    0.0905
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    0.736,
+    0.677
+   ],
+   "clear": 0.088
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    0.1044,
+    0.0732,
+    -0.1012
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    0.793,
+    -0.609
+   ],
+   "clear": 0.0318
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    -0.1264,
+    0.0899,
+    0.1231
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.559,
+    0.829
+   ],
+   "clear": 0.0313
+  },
+  {
+   "name": "hp_breach_4",
+   "p": [
+    -0.3539,
+    0.0546,
+    -0.1075
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.722,
+    -0.691
+   ],
+   "clear": 0.0596
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.0354,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4989,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    -0.2949,
+    0.0,
+    -0.1007
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.2359,
+    0.0,
+    0.1091
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_pulsar_F_0",
+   "p": [
+    0.5006,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w1_turret_T_0",
+   "p": [
+    -0.1327,
+    0.0959,
+    -0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0006
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "O1",
+   "socket": "O1",
+   "p": [
+    -0.1534,
+    0.0959,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w1_turret_T_0"
+   ],
+   "off_mesh": 0.0016
+  }
+ ]
+}

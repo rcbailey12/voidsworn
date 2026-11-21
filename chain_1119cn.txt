@@ -1,0 +1,11 @@
+chain CN waiting for OPUS1539_PROOF exit in opus1539_wait.txt Sat 11/21/2026 11:25:00.16 
+mirror fetch exit 0
+5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230 reachable in the mirror
+1415G GS1 start 11:40:04.26 
+1415G GS1 exit 0 at 12:04:45.09 
+1415G GL1 start 12:04:45.09 
+1415G GL1 exit 0 at 12:18:18.03 
+1415G GP1 start 12:18:18.03 
+1415G GP1 exit 0 at 12:32:40.98 
+1415G GA1 start 12:32:40.98 
+1415G GA1 exit 0 at 12:52:06.09 

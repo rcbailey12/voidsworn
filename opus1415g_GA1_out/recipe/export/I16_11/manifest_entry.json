@@ -1,0 +1,54 @@
+{
+ "name": "Glasswright aperture GA1",
+ "faction": "ithar",
+ "cls": "Carrier",
+ "band": "L",
+ "game_ship": "i_carrier",
+ "length_world": 16.5,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 1,
+  "bay": 2,
+  "breach": 5,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 5,
+ "turrets": 1,
+ "files": {
+  "I16_11.glb": {
+   "bytes": 15996080,
+   "sha256": "5f72ec56eb55e50da0ecc97e0920c934ab983992a85181cd4e9a793d9dac84b5"
+  },
+  "I16_11_base.jpg": {
+   "bytes": 1895530,
+   "sha256": "522b2097bf431d4d1f5231298e5ccabfa7d4a973a78ecc7f41419b7f40addfff"
+  },
+  "I16_11_emission.jpg": {
+   "bytes": 699497,
+   "sha256": "5b83acd7fe8dee4a72bde27f779cb807f78c411898de97fff8a65cc31e787e89"
+  },
+  "I16_11_normal.png": {
+   "bytes": 6355693,
+   "sha256": "8da0054dd15d6a63610c0abddde9b011b2f7c43f9d5cd5cc1c9688114ff8986e"
+  },
+  "I16_11_orm.png": {
+   "bytes": 6928643,
+   "sha256": "a7f11539b129a26b23b3ae64abaafc01c2083abd5c6d03c276c3ee2d3fc0e693"
+  },
+  "I16_11_parts_base.jpg": {
+   "bytes": 993049,
+   "sha256": "08cb53add49cf3e78de4b70e6e38a8ba63e06e9176eeab2b9e4b01a888bc962e"
+  },
+  "I16_11_parts_normal.png": {
+   "bytes": 6124532,
+   "sha256": "42ddff065bf69946170c91cac2886dadb0787a4944fe3bc6b30b82b301b0a128"
+  },
+  "I16_11_parts_orm.png": {
+   "bytes": 5270441,
+   "sha256": "5d2d87b348477d0535beb9a540a9cebf576fb853bd750c006731df544ff7cf38"
+  }
+ },
+ "pc_path": "godot/assets/ships/I16_11/"
+}
