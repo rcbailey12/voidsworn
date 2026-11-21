@@ -2204,8 +2204,11 @@ static func _death_inner(fx, s, cause: String) -> float:
 		axis = lines[0][1]
 	if s.death_big and fx.death_story:
 		_strain_begin(fx, s, T, timeline, seeds, lines)
-	if str(dstyle(s).get("style", "")) == "peel":
-		_peel(fx, s, T, timeline)
+	match str(dstyle(s).get("style", "")):
+		"peel": _peel(fx, s, T, timeline)
+		"drumbeat": _drumbeat(fx, s, T, timeline)
+		"patch": _patch_tear(fx, s, T, timeline)
+		"arc": fx.later(T + float(timeline.cut), _arcs.bind(fx, s))
 	if s.death_big:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
 	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN) if s.death_big else _small_hit(fx, s)
@@ -2317,7 +2320,9 @@ static func _power_down(fx, s) -> void:
 	s.set_meta("death_poses", poses)
 	s.set_meta("death_power_queue", queue)
 	s._reacting = false
-	s._shield_until = -1.0
+	# issue 1239 (F2.3): a shield failure still playing (the volley that broke the shield also killed the ship) runs to
+	# its end on the dying hull instead of vanishing on the kill frame; any other shield glow goes now
+	s._shield_until = minf(s._shield_until, s._brk_until) if fx.now < s._brk_until else -1.0
 	_power_down_step(fx, s, POWER_BUDGET)
 
 
@@ -2928,6 +2933,98 @@ static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
 			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 0.0, 1.5, 5.0)
 
 
+# R367 round 2 (issue 1399): the Sunward Crusade's magazines go off as an even row down the broadside during the tell, a
+# drumbeat a quarter second apart (deaths_and_hits.md, "How each faction dies"): each a small ember pop on the plating with
+# a spray of sparks. Small pops (under fx.FLASH_I), so they never spend the flash budget the core flash needs.
+static func _drumbeat(fx, s, T: float, tl: DeathTimeline) -> void:
+	var n := 7 if s.death_tier == "capital" else (5 if s.death_big else 3)
+	var step: float = minf(0.25, maxf(float(tl.cut) * 0.9, 0.3) / float(n))
+	# the broadside that faces the camera, so the row reads (Ryan's clip review, round 2)
+	var side := 1.0
+	if is_instance_valid(fx.camera): side = 1.0 if (s.xf().affine_inverse() * fx.camera.global_position).z >= s.hull.c.z else -1.0
+	for b in n:
+		fx.later(T + step * float(b), _drum_pop.bind(fx, s, b, n, side))
+
+
+static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
+	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.ships.get(s.id) != s: return
+	var h = s.hull
+	var x: float = h.box.position.x + h.L * (0.08 + 0.84 * (float(b) + 0.5) / float(n))
+	var hit: Dictionary = h.ray(Vector3(x, h.c.y, h.c.z + side * h.W * 2.0), Vector3(0.0, 0.0, -side))
+	if hit.is_empty(): return
+	var pw: Vector3 = s.to_world(hit["p"])
+	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3(0.0, 0.0, side)) as Vector3)).normalized()
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	fx.spr(pw + nw * h.L * 0.015, fx.now, 0.3, dcol(s, "light", Color(1.0, 0.78, 0.5)), 3.6, h.L * 0.04, h.L * 0.13, 0, inherited, 0.0, 0.0, 0.0, 24.0)
+	var col := dcol(s, "spark", Color(1.0, 0.62, 0.3))
+	for j in 8:
+		fx.stk(pw, fx.now, 0.5, col, 4.0, 0.05, maxf(h.L * 0.004, 0.04), 1, inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 0.0, 1.5, 6.0)
+
+
+# R367 round 2: the Hullbreakers' patch plates tear loose during the tell, four to six of them spinning off from scattered
+# spots on the hull (a frigate two), each a torn plate from the shared pool with its rim in the faction's colour.
+static func _patch_tear(fx, s, T: float, tl: DeathTimeline) -> void:
+	var n := 6 if s.death_tier == "capital" else (4 if s.death_big else 2)
+	var span: float = maxf(float(tl.cut) * 0.85, 0.3)
+	for b in n:
+		fx.later(T + span * (float(b) + fx.rng.randf() * 0.6) / float(n), _patch_plate.bind(fx, s))
+
+
+static func _patch_plate(fx, s) -> void:
+	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.ships.get(s.id) != s: return
+	var h = s.hull
+	var x: float = h.box.position.x + h.L * fx.rng.randf_range(0.1, 0.9)
+	var z: float = h.c.z + h.W * fx.rng.randf_range(-0.4, 0.4)
+	var hit: Dictionary = h.ray(Vector3(x, h.c.y + h.L, z), Vector3.DOWN)
+	if hit.is_empty(): return
+	var pw: Vector3 = s.to_world(hit["p"])
+	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	spawn_debris(fx, pw + nw * h.L * 0.01, inherited + (nw + fx.rdir() * 0.4).normalized() * h.L * 0.09, 1, h.L * 0.035, STORY_DEBRIS_DAMP, s.id)
+	fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.5, 0.2)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
+
+
+# R367 round 2: the Hegemony Navy breaks with no fire in the gap: blue-white arcs jump it for a third of a second as the
+# pieces part. Each arc runs from a point on one main piece's torn face to the nearest point on the next piece's torn face
+# (their arc_sites, read at the strike, so the arc follows the pieces as they move), the shared lightning ribbon pinned at
+# both ends. Before the wreck exists (the cut still finishing) it waits a beat, up to a second.
+static func _arcs(fx, s, tries := 0) -> void:
+	if fx.ships.get(s.id) != s or fx.quality == "low": return
+	var wreck: Dictionary = {}
+	for w in fx.dstate.get("wrecks", []):
+		if w.get("id", "") == s.id and not w.get("hulk", false): wreck = w
+	var nodes: Array = []
+	for nd in wreck.get("nodes", []):
+		if is_instance_valid(nd) and (nd as Node3D).has_meta("arc_sites"): nodes.append(nd)
+	if nodes.size() < 2:
+		if tries < 20: fx.later(fx.now + 0.05, _arcs.bind(fx, s, tries + 1))
+		return
+	var n := 14 if s.death_tier == "capital" else (10 if s.death_big else 4)
+	s.set_meta("death_arcs", [])
+	for j in n:
+		fx.later(fx.now + 0.36 * float(j) / float(n), _arc_strike.bind(fx, s, weakref(nodes[0]), weakref(nodes[1])))
+
+
+static func _arc_strike(fx, s, ra: WeakRef, rb: WeakRef) -> void:
+	var na = ra.get_ref()
+	var nb = rb.get_ref()
+	if not is_instance_valid(na) or not is_instance_valid(nb): return
+	var sa: PackedVector3Array = (na as Node3D).get_meta("arc_sites")
+	var sb: PackedVector3Array = (nb as Node3D).get_meta("arc_sites")
+	if sa.is_empty() or sb.is_empty(): return
+	# from a point on one face to one of the other face's points (not always the nearest), so the bolts cross the gap at
+	# angles and read as lightning, not as cracks along the seam (Ryan's clip review, round 2)
+	var a: Vector3 = (na as Node3D).to_global(sa[fx.rng.randi() % sa.size()])
+	var b: Vector3 = (nb as Node3D).to_global(sb[fx.rng.randi() % sb.size()])
+	var d: float = a.distance_to(b)
+	if d < 1e-3: return
+	var L: float = s.hull.L
+	var col := dcol(s, "spark", Color(0.7, 0.88, 1.0))
+	fx.rib(a, (b - a) / d, d, fx.now, 0.2, col, 3.4, maxf(L * 0.008, 0.08), maxf(L * 0.006, 0.06), 6)
+	fx.spr(a, fx.now, 0.12, col, 2.4, L * 0.01, L * 0.03, 0, Vector3.ZERO, 0.0, 0.0, 0.0, 8.0)
+	(s.get_meta("death_arcs", []) as Array).append([a, b, na, nb])
+
+
 # R367 (issue 1399): an Eclipse hull peels during the tell: shade plates lift away band by band, a beat apart, from the
 # stern forward (deaths_and_hits.md, "How each faction dies"). Each band throws two torn plates (the shared plate pool, its
 # rim in the faction's colour) and a short spark off the plating.
@@ -3238,6 +3335,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var face_view := Vector3(0, 1, 1).normalized()
 		if is_instance_valid(fx.camera): face_view = node.to_local(fx.camera.global_position).normalized()
 		node.set_meta("tear_site", _edge_sites(pc, cen, face_view, 1)[0] + face_view * h.L * 0.02)
+		# R367 round 2: a Hegemony break's arcs are pinned to points on each piece's own torn face (Artoo on PR 1418)
+		if str(dstyle(s).get("style", "")) == "arc": node.set_meta("arc_sites", _edge_sites(pc, cen, face_view, 8))
 		# Separate on the board plane while allowing each piece to tumble freely.
 		var out: Vector3 = cen - h.c
 		out.y = 0.0
