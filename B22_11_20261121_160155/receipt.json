@@ -1,0 +1,26 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1291c14k",
+ "ship": "chorus_C14",
+ "code": "B22_11",
+ "commit": "4a73ba3abee5a62b3317a63030ca082a498e86d6",
+ "glb": "aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b",
+ "files": {
+  "B22_11.glb": "aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b",
+  "B22_11_base.jpg": "6de86ef20617c64b10ed70732f18c166bbb1a0ccfcf979de465d285c4e1a64b5",
+  "B22_11_normal.png": "5e34fbf5f538eb74a9f4be3885d7bb3e6310d854f873d8cc6bd9944481b74d9c",
+  "B22_11_orm.png": "8ca0480fe267d0cbacf589c4148afcb35533a07dea4f5c73da5ca3133d3a5d67",
+  "B22_11_parts_base.jpg": "36675fd78f6da200034a8776b1c17ef623557a165db6307076096d9d62fcae10",
+  "B22_11_parts_normal.png": "a72e5a86a07e97f95b1dafeb8473ee323369e037ee4a77c47015e12276c64608",
+  "B22_11_parts_orm.png": "1aca309ee4aa00b3e74b8d3720e12908ddf81ff5712749bd381e8d1df01e054f"
+ },
+ "checked": [
+  "B22_11.glb",
+  "B22_11_base.jpg",
+  "B22_11_normal.png",
+  "B22_11_orm.png",
+  "B22_11_parts_base.jpg",
+  "B22_11_parts_normal.png",
+  "B22_11_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 5.14 deg (floor 3.50), albedo contrast 0.087 (floor 0.040), roughness spread 0.170 (floor 0.080), 563243 texels"
+}

@@ -1,0 +1,28 @@
+start publish opus1291c14k B22_11 4a73ba3abee5a62b3317a63030ca082a498e86d6 aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b Sat 11/21/2026 16:01:55.12 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\B22_11_20261121_160155\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\recipe\publish_ship.py 
+[publish] receipt ok: chorus_C14 B22_11 commit 4a73ba3abee5a62b3317a63030ca082a498e86d6, glb aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b, 7 listed and 7 checked files
+SHIP=chorus_C14
+[publish] kept B22_11 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\B22_11_20261121_160155
+undo: C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\B22_11_20261121_160155\UNDO_B22_11.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) 
+install exit 0 
+INSTALL READBACK PASS code=B22_11 nodes=29
+[publish] sealed what is now live for B22_11
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-79633bb075944e878d83b3bdf0cb6499
+ships cache exit 0 
+[assets] ships refreshed: 46 A4 ships in res://gen/manifest.json
+readback exit 0 
+INSTALL READBACK PASS code=B22_11 nodes=29
+[publish] sealed what is now live for B22_11
+shots exit 0 
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+ship clone kept: results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\out (the Board writes it when it relays)
+published B22_11 from opus1291c14k at 4a73ba3abee5a62b3317a63030ca082a498e86d6 into C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+all done PASS Sat 11/21/2026 16:06:02.18 
