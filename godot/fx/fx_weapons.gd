@@ -863,17 +863,20 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var pk: float = k * float(pulse["size"])
 		var rk: float = pk * (1.0 if old else float(ROUND_SIZE.get(lk, 1.0)))   # the drawn round (ROUND_SIZE)
 		# rockets leave a rack: each one from its own cell, a little apart
-		var cell: Vector3 = fx.rdir() * (0.35 * k if lk == "rockets" else 0.0)
+		var cell: Vector3 = Vector3.ZERO if old else fx.rdir() * (0.35 * k if lk == "rockets" else 0.0)   # old: no extra draw, main's seeded paths
 		cell -= ed * cell.dot(ed)
 		var l0: Vector3 = from + cell
 		var e0: Vector3 = l0 + ed * float(LAUNCH_PUSH.get(lk, 1.6)) * pk * fx.unit
 		var lead := clampf(dist * 0.32, 3.0 * k, 14.0 * k)
-		var side = fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
-		var mid = e0 + ed * lead + side + Vector3(0, minf(1.5 * k, dist * 0.04), 0)
-		if old:
+		var mid: Vector3
+		if old:   # main's draws in main's order, so the before clip keeps main's seeded flight paths
 			e0 = from
-			mid = from.lerp(to, 0.45) + mn * (6.0 + fx.rng.randf() * 4.0) * k + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
-		var end = to + (fx.rdir() * 0.6 * rk if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
+			var side_old = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
+			mid = from.lerp(to, 0.45) + side_old + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
+		else:
+			var side = fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
+			mid = e0 + ed * lead + side + Vector3(0, minf(1.5 * k, dist * 0.04), 0)
+		var end = to + (fx.rdir() * 0.6 * (k if old else rk) if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
 			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
