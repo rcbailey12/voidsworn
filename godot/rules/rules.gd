@@ -2364,7 +2364,7 @@ func nemFleeCheck() -> void:
 	for e in alive("enemy"):
 		if jt(e.get("isSq")) or jt(e.get("transport")): continue
 		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
-	logm(String(f["name"]) + " breaks off and jumps out with what is left of his fleet. He will be back.", "s"); checkEnd()
+	logm(String(f["name"]) + " breaks off and jumps clear with the surviving hulls. Expect another encounter.", "s"); checkEnd()
 # R42 personality and faction weights for his ships in the AI's move scoring
 func nemProf(u, prof) -> Dictionary:
 	var P = B.get("nemPersona") if B != null else null; var F = B.get("nemAi") if B != null else null
@@ -2416,7 +2416,7 @@ func nemBreak() -> void:
 		if not is_same(u, f) and not jt(u.get("isSq")) and not jt(u.get("transport")): esc.append(u)
 	for e in esc:
 		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
-	logm(String(f["name"]) + "'s flagship is burning. " + ("His escorts lose their nerve and flee." if esc.size() > 0 else ""), "s")
+	logm(String(f["name"]) + "'s flagship is burning. " + ("The escorts lose formation and break off." if esc.size() > 0 else ""), "s")
 func ionVs(att, w, t) -> float: return ionOf(att, w) * (1.5 if (t != null and jt(t.get("nem")) and nemWeak("ion") and (jt(w.get("ion")) or w.get("k") == "lance")) else 1.0)
 func applyVerb(id) -> void:
 	var P = []
@@ -3187,7 +3187,7 @@ func damageSection(t, sec, dmg, by) -> void:
 	if sec == "eng":
 		t["secSave"] = {"turns": t["turns"], "ev": t["ev"]}; t["st"]["engine"] = max(0, t["speed"] - 1); t["turns"] = min(t["turns"], 1); t["ev"] = 0
 	flt(t, String(SEC_NAME[sec]).substr(0, 1).to_upper() + String(SEC_NAME[sec]).substr(1) + " destroyed", "#f0b35a", -36)
-	logm(String(t["name"]) + ": " + String(SEC_NAME[sec]) + " destroyed. " + ("Forward weapons silenced." if sec == "prow" else ("Broadsides and shield generator gone." if sec == "mid" else "Engines crippled.")), pe(t))
+	logm(String(t["name"]) + ": " + String(SEC_NAME[sec]) + " destroyed. " + ("Forward weapons silenced." if sec == "prow" else ("Flank guns and shield generator gone." if sec == "mid" else "Engines crippled.")), pe(t))
 	if by != null and not jt(by.get("dead")): gainResolve(by["side"], 1)
 func systemDamage(t, forced = null) -> Variant:
 	if jt(t.get("isSq")) or jt(t.get("dead")): return null
@@ -3280,7 +3280,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 		for d in alive(t["side"]):
 			if jt(d.get("isSq")) or d["intercepts"] <= 0 or jt(d.get("braced")): continue
 			if treeSkill("flakSkip") != null and cmdActive(u["side"], "scramble") and B.get("treeFlakSkip") == d["id"]:
-				treeFx(d, "flakSkip", "point defence looks the wrong way"); continue
+				treeFx(d, "flakSkip", "point defense tracks wide"); continue
 			var fcF = treeSkill("flightCast")
 			if fcF != null and cmdActive(u["side"], "scramble") and jt(u.get("isSq")) and jt(u.get("extra")) and is_same(d, t): treeFx(d, "flightCast", "the flak cannot see the strike"); continue   # Tamsa capstone 1
 			var fi = -1
@@ -3343,7 +3343,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if z0(u.get("treeAimNext")) > 0:
 		hc = min(95.0, hc + z0(u["treeAimNext"])); treeFx(u, "stillnessCounted", "the stillness counts"); u["treeAimNext"] = 0   # Seveth T3b
 	if not jt(opts.get("intercept")) and u.get("treeScent") != null and u["side"] == "player" and not jt(u.get("isSq")):
-		if treeScentAim(u, t) > 0: treeFx(u, "scentDark", "the scent leads to new prey")
+		if treeScentAim(u, t) > 0: treeFx(u, "scentDark", "thermal track locks onto a fresh target")
 		u["treeScent"] = null   # Razormaw T2b: spent on the next shot
 	var rlF = treeSkill("roles")
 	if rlF != null and not jt(opts.get("intercept")):
@@ -3363,7 +3363,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 		var fg2 = null
 		for x in B["units"]:
 			if jt(x.get("pflag")) and not jt(x.get("dead")): fg2 = x; break
-		if fg2 != null and hdist(u, fg2) <= 2: treeFx(u, "throatDeep", "the deep throat guides the shot")   # Chorus shared C1b
+		if fg2 != null and hdist(u, fg2) <= 2: treeFx(u, "throatDeep", "deep-core pulse guides the volley")   # Chorus shared C1b
 	var wg = treeSkill("wardGlass")
 	if not jt(opts.get("intercept")) and u["side"] == "enemy" and t["side"] == "player" and cmdActive("player", "iron") and wg != null and not jt(u.get("treeWardOnce")):
 		u["treeWardOnce"] = 1; u["treeAimDebuff"] = float(wg["n"])
@@ -3438,13 +3438,13 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 						if v3 > bs: bs = v3; best = t2
 					if best != null and canFire(other, lw, best):
 						B["tr"]["ledgerUsed"] = 1
-						if treeExtraShot(other, lwi, best, {"half": true}): treeFx(u, "flagshipLedger", "the flagship calls in the debt")   # H4 Vex shared C1a
+						if treeExtraShot(other, lwi, best, {"half": true}): treeFx(u, "flagshipLedger", "the flagship calls the follow-up")   # H4 Vex shared C1a
 	if not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")): u["treeRedFirst"] = 0   # Razormaw capstone 1: the first shot spends it
 	if landed and not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and treeSkill("rushRail") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeRushLogged")):
 		var nearR = false
 		for xR in alive("enemy"):
 			if not jt(xR.get("isSq")) and hdist(u, xR) == 1: nearR = true; break
-		if nearR: u["treeRushLogged"] = 1; treeFx(u, "rushRail", "rush the rail")   # Grax T2b
+		if nearR: u["treeRushLogged"] = 1; treeFx(u, "rushRail", "hard breach on the burn")   # Grax T2b
 	return landed
 func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
@@ -3489,13 +3489,13 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 		var pgL = treeSkill("patchGuns")
 		if pgL != null and u["side"] == "player" and not jt(u.get("isSq")) and jt(u.get("treeAimGuns")): treeFx(u, "patchGuns", "the patched guns find the mark")   # Vesh T1b
 		var psL = treeSkill("preyScent")
-		if psL != null and u["side"] == "player" and not jt(u.get("isSq")) and B.get("tr") != null and B["tr"].get("scent") == t.get("id"): treeFx(u, "preyScent", "the named prey is scented")   # Hullbreakers shared B1a
+		if psL != null and u["side"] == "player" and not jt(u.get("isSq")) and B.get("tr") != null and B["tr"].get("scent") == t.get("id"): treeFx(u, "preyScent", "priority target thermal-locked")   # Hullbreakers shared B1a
 		var rBL = treeSkill("runBigger")
 		if rBL != null and u["side"] == "player" and not jt(u.get("isSq")) and cmdActive(u["side"], "surge") and u.get("treeBigStart") != null and B.get("tr") != null and B["tr"].get("bigId") != null:
 			var bigL = null
 			for x in B["units"]:
 				if x["id"] == B["tr"]["bigId"] and not jt(x.get("dead")): bigL = x; break
-			if bigL != null and z0(u.get("hexMoved")) > 0 and hdist(u, bigL) < float(u["treeBigStart"]): treeFx(u, "runBigger", "the biggest thing is closer")   # Grax T1a
+			if bigL != null and z0(u.get("hexMoved")) > 0 and hdist(u, bigL) < float(u["treeBigStart"]): treeFx(u, "runBigger", "closing on the heaviest enemy hull")   # Grax T1a
 		var smL = treeSkill("smileCut")
 		if smL != null and u["side"] == "player" and not jt(u.get("isSq")) and jt(u.get("treeSmile")): treeFx(u, "smileCut", "the first cut smiles")   # Sable T3a
 		var pbL = treeSkill("packBites")
@@ -3587,7 +3587,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			for xAC in arrAC:
 				if xAC["sq"] != u["id"] and xAC["tid"] != t["id"]: treeFx(u, "accountSplits", "the account splits"); break   # Ashgrove T2a
 		var laL = treeSkill("ledgerArcs")
-		if laL != null and u["side"] == "player" and not jt(u.get("isSq")) and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and (w["arc"] == "P" or w["arc"] == "S"): treeFx(u, "ledgerArcs", "the broadside is on the ledger")   # Vex T1a
+		if laL != null and u["side"] == "player" and not jt(u.get("isSq")) and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and (w["arc"] == "P" or w["arc"] == "S"): treeFx(u, "ledgerArcs", "flank volley charged")   # Vex T1a
 		var olL = treeSkill("oneLens")
 		if olL != null and u["side"] == "player" and not jt(u.get("isSq")) and B["tr"].get("oneLens") != null and u["id"] == B["tr"]["oneLens"]["ship"] and t["id"] == B["tr"]["oneLens"]["tgt"] and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"]: treeFx(u, "oneLens", "one lens, one target")   # Saro T1b
 		var ltL = treeSkill("lightTogether")
@@ -3614,7 +3614,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			var rtC = treeSkill("reTasked")
 			if rtC != null and not jt(B["tr"]["wingStruck"].get(t["id"])): treeFx(u, "reTasked", "the wing takes a fresh target")   # Mott T2a
 			var scC = treeSkill("screaming")
-			if scC != null and jt(B["tr"]["hitRound"].get(t["id"])): treeFx(u, "screaming", "the wing comes back screaming")   # Mott T3b
+			if scC != null and jt(B["tr"]["hitRound"].get(t["id"])): treeFx(u, "screaming", "the wing whips back on full burn")   # Mott T3b
 			var pwC = treeSkill("privateWing")
 			if pwC != null and jt(u.get("treePrivate")) and u.get("treePrivateRound") != B["round"]: u["treePrivateRound"] = B["round"]; treeFx(u, "privateWing", "the private wing strikes first")   # Mott capstone 2
 		if jt(u.get("isSq")) and u["side"] == "player":
@@ -3814,7 +3814,7 @@ func boardUnit(u, t) -> bool:
 	hook("board", u)
 	if not live.call() or jt(t.get("dead")): return false
 	if jt(t.get("nem")) and u["side"] == "player": nemTrip("board")   # R42: his thin crews show once you board
-	if treeRailBonus(u) > 0.0: treeFx(u, "railBoarding", "over the rail")   # Grax T1b
+	if treeRailBonus(u) > 0.0: treeFx(u, "railBoarding", "through the airlock")   # Grax T1b
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct")) + treeRailBonus(u)) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
 	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
@@ -3947,7 +3947,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 			k["bloodied"] = min(3, z0(k.get("bloodied")) + 1); flt(k, "Bloodied +" + ns(JSM.jsround(15 * k["bloodied"])) + "%", "#ff9f3a", -36)
 	if not jt(t.get("isSq")) and t["size"] >= 0.7 and not legion and not blocks(B["terrain"].get(hkey(t["q"], t["r"]))):
 		B["terrain"][hkey(t["q"], t["r"])] = "hulk"; t["hulk"] = true; emit({"t": "wreck", "unit": t["id"], "q": t["q"], "r": t["r"]})
-		logm("The wreck of " + String(t["name"]) + " drifts in place, blocking movement and fire.", "x")
+		logm("The wreck of " + String(t["name"]) + " breaks into tumbling wreckage, blocking movement and line of fire.", "x")
 	if by != null and not jt(t.get("isSq")): gainResolve(by["side"], 1)
 	if by != null:
 		by["kills"] = by["kills"] + 1
@@ -4440,7 +4440,7 @@ func treeRoundFx() -> void:
 			treeFreeVolleyShip(uD, "enemy", false)
 		B["treeDebtDue"] = 0
 		if is_same(B, bD): B["volleyMul"] = null
-		if is_same(B, bD) and not jt(B.get("over")): treeFx(treeFlagUnit(), "debtDue", "the interest comes due")
+		if is_same(B, bD) and not jt(B.get("over")): treeFx(treeFlagUnit(), "debtDue", "held volley fires")
 	if jt(B.get("treeSpatRound")) and B["treeSpatRound"] == B["round"]:
 		B["treeSpatRound"] = 0
 		var bS = B; B["volleyMul"] = {"side": "player", "m": 1.0}
@@ -4451,7 +4451,7 @@ func treeRoundFx() -> void:
 			if uS == null or jt(B.get("over")): continue
 			treeFreeVolleyShip(uS, "enemy", true)
 		if is_same(B, bS): B["volleyMul"] = null
-		if is_same(B, bS) and not jt(B.get("over")): treeFx(treeFlagUnit(), "spatRounds", "the held spit spits now")   # Voice T2b: the held half volley fires at half damage
+		if is_same(B, bS) and not jt(B.get("over")): treeFx(treeFlagUnit(), "spatRounds", "held acid volley fires")   # Voice T2b: the held half volley fires at half damage
 	if not jt(B.get("treeNoonRound")) or B["treeNoonRound"] != B["round"]: return
 	B["treeNoonRound"] = 0
 	var b0 = B; B["volleyMul"] = {"side": "player", "m": 1.0}
@@ -4944,7 +4944,7 @@ func treeRoundStart() -> void:
 					for x in B["units"]:
 						if x["id"] == id: u4 = x; break
 					if u4 != null and not jt(u4.get("dead")) and not jt(u4.get("isSq")):
-						u4["treeDmgNext"] = treeAddVal(u4, "dmgPct", fs2["n"]); treeFx(u4, "fleshKnit", "the new flesh is angry")
+						u4["treeDmgNext"] = treeAddVal(u4, "dmgPct", fs2["n"]); treeFx(u4, "fleshKnit", "fresh regrowth surges")
 			if p["k"] == "tideEnd":
 				var rp2 = z0(p.get("pow")) * 0.5; var anyT = false
 				for u in alive("player"):
@@ -4985,7 +4985,7 @@ func treeRoundStart() -> void:
 					var secGW = uGW["sec"][eGW.get("sec")]
 					if jt(secGW.get("broken")): continue
 					repairSection(uGW, eGW.get("sec"), float(eGW.get("amt"))); anyGW = true
-				if anyGW and sGW != null: treeFx(_treeFlag(), "growthWound", "the wound holds its growth")   # Mending T2b: the section heals again
+				if anyGW and sGW != null: treeFx(_treeFlag(), "growthWound", "scar tissue seals thicker")   # Mending T2b: the section heals again
 			if p["k"] == "noonRepeat":
 				B["treeNoonRound"] = B["round"]   # Umbra capstone 1: the volley repeats after this round start (treeRoundFx)
 			if p["k"] == "debtDue":
@@ -5201,7 +5201,7 @@ func treeAfterMove(u) -> void:
 				if not is_same(xE, u) and not jt(xE.get("isSq")) and hdist(xE, u) == 1: nearE += 1
 			if nearE >= 2: u["treeEclForm"] = 1; u["evBuff"] = min(float(TB.FX_CAPS.get("ev", 45)), z0(u.get("evBuff")) + float(efE["n"])); treeFx(u, "eclFormation", "the formation holds")   # Eclipse shared B1a
 		var spE = treeSkill("shadowPos")
-		if spE != null and cmdActive(u["side"], "hunt") and not jt(u.get("treeShadowPos")) and treeInEnemyRear(u): u["treeShadowPos"] = 1; treeFx(u, "shadowPos", "the shadow is a position")   # Ostrel T2a
+		if spE != null and cmdActive(u["side"], "hunt") and not jt(u.get("treeShadowPos")) and treeInEnemyRear(u): u["treeShadowPos"] = 1; treeFx(u, "shadowPos", "flank vector held")   # Ostrel T2a
 		if cmdActive(u["side"], "iron"):
 			var cs = treeSkill("columnStraight")
 			if cs != null and treeInColumn(u):
@@ -5397,7 +5397,7 @@ func runCommand(side, c, tier) -> bool:
 		var ddB = treeMay("debtDue")
 		if ddB != null and side == "player":
 			if B.get("treePending") == null: B["treePending"] = []
-			B["treePending"].append({"k": "debtDue", "r": B["round"], "pow": cmdPow("barrage", tier)}); treeFx(treeFlagUnit(), "debtDue", "the account waits a round")
+			B["treePending"].append({"k": "debtDue", "r": B["round"], "pow": cmdPow("barrage", tier)}); treeFx(treeFlagUnit(), "debtDue", "delayed volley held for next round")
 			if is_same(B, bStart): checkEnd()
 			return true   # Vex T3b: the volley is delayed
 		treeRecordedAngle(side)
@@ -5421,7 +5421,7 @@ func runCommand(side, c, tier) -> bool:
 		if sunS != null and sunT != null: B["tr"]["sunTarget"] = sunT["id"]; B["tr"]["sunFirstDone"] = 0; treeFx(sunT, "sunLens", "the sun goes through one lens")   # Saro capstone 1
 		var grandS = treeSkill("grandLedger") if (side == "player" and treeSkill("grandLedger") != null and not jt(B["tr"].get("grandUsed"))) else null
 		var grandT = treeChoice("enemy") if grandS != null else null
-		if grandS != null and grandT != null: B["tr"]["grandUsed"] = 1; B["tr"]["grandTarget"] = grandT["id"]; B["tr"]["grandFirstDone"] = 0; treeFx(grandT, "grandLedger", "the grand ledger opens")   # Vex capstone 1
+		if grandS != null and grandT != null: B["tr"]["grandUsed"] = 1; B["tr"]["grandTarget"] = grandT["id"]; B["tr"]["grandFirstDone"] = 0; treeFx(grandT, "grandLedger", "target marked on the roll")   # Vex capstone 1
 		var lastA = treeSkill("lastAccount") if side == "player" else null
 		var srS = treeSkill("spatRounds") if side == "player" else null
 		var spatSet = {}
@@ -5541,7 +5541,7 @@ func runCommand(side, c, tier) -> bool:
 						if not canFire(u, w2, t2): continue
 						var e2 = expectedVs(u, w2, t2); var v2 = e2["hull"] + e2["shield"] * 0.3
 						if v2 > bv: bv = v2; bw = i; bt2 = t2
-				if bw >= 0 and bt2 != null and treeExtraShot(u, bw, bt2, {"half": true}): treeFx(u, "volleyGrows", "the first spit spits again")   # Voice capstone 1
+				if bw >= 0 and bt2 != null and treeExtraShot(u, bw, bt2, {"half": true}): treeFx(u, "volleyGrows", "follow-up acid burst")   # Voice capstone 1
 			if mouth != null and mouthShip != null and u["id"] == mouthShip["id"] and not jt(u.get("dead")) and not jt(B.get("over")):
 				var bt3 = null; var bv3 = -1.0
 				for t3 in alive(foe):
@@ -5556,7 +5556,7 @@ func runCommand(side, c, tier) -> bool:
 						for i in range(u["weapons"].size()):
 							if jt(bt3.get("dead")) or jt(B.get("over")) or jt(u.get("dead")): break
 							if canFire(u, u["weapons"][i], bt3): treeExtraShot(u, i, bt3, {})
-					treeFx(u, "mouthDeep", "the deep mouth spits every gun twice")   # Voice capstone 2
+					treeFx(u, "mouthDeep", "all acid sacs discharge twice")   # Voice capstone 2
 			if side == "player" and cf != null and not jt(u.get("dead")) and not jt(B.get("over")) and alive(foe).size() < foesBefore:
 				var bt2 = null; var bv2 = -INF
 				for t2 in alive(foe):
@@ -5596,13 +5596,13 @@ func runCommand(side, c, tier) -> bool:
 					var wiL = -1
 					for iL in range(u["weapons"].size()):
 						if canFire(u, u["weapons"][iL], btL): wiL = iL; break
-					if wiL >= 0 and treeExtraShot(u, wiL, btL, {}): treeFx(u, "lastAccount", "the last account is paid")   # Vex capstone 2
+					if wiL >= 0 and treeExtraShot(u, wiL, btL, {}): treeFx(u, "lastAccount", "final follow-up volley")   # Vex capstone 2
 		if srS != null:
 			var idsS = spatSet.keys()
 			if idsS.size() > 0:
 				if B.get("treePending") == null: B["treePending"] = []
 				B["treePending"].append({"k": "spatRounds", "r": B["round"], "ids": idsS})
-				treeFx(treeFlagUnit(), "spatRounds", "half the spits are held")   # Voice T2b
+				treeFx(treeFlagUnit(), "spatRounds", "half the acid volley held")   # Voice T2b
 		var ovB = treeSkill("oneVoice")
 		if ovB != null and side == "player" and not jt(B.get("treeOneVoiceUsed")):
 			var eB = treeChoice("enemy")
@@ -5632,7 +5632,7 @@ func runCommand(side, c, tier) -> bool:
 					ids.append(k); var tm = null
 					for x in B["units"]:
 						if x["id"] == k: tm = x; break
-					if tm != null: treeFx(tm, "manyMouths", "four mouths find one throat")
+					if tm != null: treeFx(tm, "manyMouths", "four broods converge on one hull")
 			if ids.size() > 0:
 				if B.get("treePending") == null: B["treePending"] = []
 				B["treePending"].append({"k": "manyMouths", "r": B["round"], "ids": ids})
@@ -5693,7 +5693,7 @@ func runCommand(side, c, tier) -> bool:
 				if gCF != null and treeStepToward(uCF, gCF, 2) > 0: treeFx(uCF, "cutFeeds", "the cut feeds the pack")   # Sable capstone 2
 		if treeSkill("filedTriplicate") != null and side == "player":
 			var eFT = treeChoice("enemy"); B["treeFiled"] = ({"id": eFT["id"]} if eFT != null else null)
-			if eFT != null: treeFx(treeFlagUnit() if treeFlagUnit() != null else eFT, "filedTriplicate", "the target is filed in triplicate")   # Vorn T1a
+			if eFT != null: treeFx(treeFlagUnit() if treeFlagUnit() != null else eFT, "filedTriplicate", "target priority locked across the column")   # Vorn T1a
 		if treeSkill("oneOrder") != null and side == "player":
 			var anyOO = false
 			for uOO in caps("player"):
@@ -5981,7 +5981,7 @@ func runCommand(side, c, tier) -> bool:
 		if p and fk != null and flesh.size() > 0:
 			if B.get("treePending") == null: B["treePending"] = []
 			B["treePending"].append({"k": "fleshKnit", "r": B["round"], "ids": flesh})
-			treeFx(_treeFlag(), "fleshKnit", "the new flesh is angry")   # Mending T3a
+			treeFx(_treeFlag(), "fleshKnit", "fresh regrowth surges")   # Mending T3a
 		if p and te != null:
 			if B.get("treePending") == null: B["treePending"] = []
 			B["treePending"].append({"k": "tideEnd", "r": B["round"], "pow": rp})
@@ -5989,7 +5989,7 @@ func runCommand(side, c, tier) -> bool:
 		if p and growth != null and gwList.size() > 0:
 			if B.get("treePending") == null: B["treePending"] = []
 			B["treePending"].append({"k": "growthWound", "r": B["round"], "list": gwList})
-			treeFx(treeFlagUnit(), "growthWound", "the wound will hold its growth")   # Mending T2b
+			treeFx(treeFlagUnit(), "growthWound", "regrowth continues next round")   # Mending T2b
 	if c["id"] == "surge":
 		for u in caps(side):
 			u["mp"] = z0(u.get("mp")) + cmdPow("surge", tier); u["turnsLeft"] = z0(u.get("turnsLeft")) + (2 if tier >= 2 else 1)
@@ -6056,7 +6056,7 @@ func runCommand(side, c, tier) -> bool:
 			var en = treeChoice("enemy"); B["treeFlakSkip"] = en["id"] if en != null else null
 			if en != null:
 				for w in en["weapons"]:
-					if w["k"] == "flak": treeFx(en, "flakSkip", "point defence cannot see the wings"); break
+					if w["k"] == "flak": treeFx(en, "flakSkip", "point defense fails to lock onto wings"); break
 		var cars = []
 		for u in alive(side):
 			if u.get("ab") == "launch": cars.append(u)
@@ -6494,7 +6494,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 		launchWing(u, h, kind)
 	if a == "nova":
 		var c = arg["hex"]
-		logm(String(u["name"]) + " fires its nova cannon.", pp(u))
+		logm(String(u["name"]) + " fires its spinal cannon.", pp(u))
 		var live = liveFrom(u)
 		hook("nova", u)
 		if not live.call(): return false
