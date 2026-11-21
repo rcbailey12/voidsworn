@@ -1,0 +1,15 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 29 ms
+[sfx] 71 cues, 67 clip sets, loaded in 278 ms
+[load] battle scene ready in 927 ms
+[world] baked 0c169d67905f4b25a605893a4778e4c9d666a8ea3264d9dbd4b1ed4cdde916dd 4096x2048 in 401 ms (worker; stages ms { "began": 4785, "device": 155, "spirv": 74, "pipeline": 1, "dispatch": 98, "worst_strip": 3, "readback": 36, "save": "deferred (a load is running)", "mips": 14 }; queued at 4784, worker from 4784, handed back at 5185 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] loaded 904d1b0f09a9400bf079317ca394b2d5eb4483bf85c0233db23936551863ab13 1024x512 in 252 ms (worker; stages ms {  }; queued at 4949, worker from 5187, handed back at 5201 ms)
+[world] loaded e84fb05e05a7a82f8e6de7abf67a48af6ee97b18aa479b6769a8bb920689ba15 1024x512 in 431 ms (worker; stages ms {  }; queued at 4958, worker from 5201, handed back at 5389 ms)
+[world] loaded 84c51e8621811593cca7f0933e3b6e8a4469fd5870f590356c2bdc78904ffe25 1024x512 in 250 ms (worker; stages ms {  }; queued at 5206, worker from 5390, handed back at 5456 ms)
+[world] loaded 02d28b3fc77a9d37ee7adaf0f3dad00ed7a15209f47ba6b319e3ed0c2adffc57 1024x512 in 77 ms (worker; stages ms {  }; queued at 5392, worker from 5456, handed back at 5469 ms)
+[main] quit (window) at 5738 ms
+[main] loading at the close: battle ships
+[main] quit stages: scenes freed + 2 frames 68 ms, statics and fx drain 3525 ms, engine exit from 9331 ms

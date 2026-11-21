@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 27 ms
+[sfx] 71 cues, 67 clip sets, loaded in 278 ms
+[load] battle scene ready in 925 ms
+[world] baked dc41ba61c0fbc792e5b219095e0895e6356b32c124e4fb08f4fec098d345e9df 4096x2048 in 451 ms (worker; stages ms { "began": 4678, "device": 153, "spirv": 69, "pipeline": 1, "dispatch": 105, "worst_strip": 4, "readback": 36, "save": "deferred (a load is running)", "mips": 14 }; queued at 4676, worker from 4677, handed back at 5127 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.344, target 4.4; visual tuning (R191)
+[world] baked 6e948f6772fe199e6edc225baa67ea3a2a4f6fec5b921cd37e638e3aaf9fc4f4 4096x2048 in 660 ms (worker; stages ms { "began": 5130, "device": 174, "spirv": 4, "pipeline": 2, "dispatch": 17, "worst_strip": 6, "readback": 36, "save": "deferred (a load is running)", "mips": 13 }; queued at 4847, worker from 5129, handed back at 5507 ms)
+[world] loaded 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d 1024x512 in 930 ms (worker; stages ms {  }; queued at 4856, worker from 5507, handed back at 5786 ms)
+[world] baked eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c 1024x512 in 1184 ms (worker; stages ms { "began": 5787, "device": 213, "spirv": 5, "pipeline": 2, "dispatch": 6, "worst_strip": 1, "readback": 29, "save": "deferred (a load is running)", "mips": 1 }; queued at 4865, worker from 5787, handed back at 6049 ms)
+[world] baked 7a48410863d15cbccadcfc62fc50a5433e06799c6cd14fb84ffa6b710494661d 4096x2048 in 933 ms (worker; stages ms { "began": 6051, "device": 209, "spirv": 4, "pipeline": 1, "dispatch": 12, "worst_strip": 2, "readback": 47, "save": "deferred (a load is running)", "mips": 14 }; queued at 5509, worker from 6050, handed back at 6442 ms)
+[world] loaded 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 1024x512 in 492 ms (worker; stages ms {  }; queued at 6002, worker from 6443, handed back at 6494 ms)
+[world] baked aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c 1024x512 in 658 ms (worker; stages ms { "began": 6495, "device": 165, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 1 }; queued at 6051, worker from 6494, handed back at 6709 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 9 ships built in 1294 ms over 21 frames: longest stretch 112 ms; ship setup 228 ms (worst 103 ms, V16_37: inst 0, look_new_mats 2, look_assign 78, look_worst_assign 17, look_counts 17, look 81, look_touch 0, fit 0, rest 15), effects registration 251 ms (worst 59 ms, V15_37: analyse 57, damage_root 0, engines 0, shield 0, collider 1), hull geometry 380 ms (worst 97 ms, H7_23), waiting on hull files and worker instances 2 ms; 9 hulls instanced on workers
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[world] saved dc41ba61c0fbc792e5b219095e0895e6356b32c124e4fb08f4fec098d345e9df later (stages ms { "save_began": 15939, "save": 3563, "prune": 11 })
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[world] saved 6e948f6772fe199e6edc225baa67ea3a2a4f6fec5b921cd37e638e3aaf9fc4f4 later (stages ms { "save_began": 19526, "save": 2359, "prune": 11 })
+[world] saved eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c later (stages ms { "save_began": 21908, "save": 157, "prune": 11 })
+[world] saved 7a48410863d15cbccadcfc62fc50a5433e06799c6cd14fb84ffa6b710494661d later (stages ms { "save_began": 22088, "save": 1018, "prune": 11 })
+[attach] hp_rcs missing on H8_23; using the surface ray
+[world] saved aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c later (stages ms { "save_began": 23130, "save": 116, "prune": 11 })
+[attach] hp_rcs missing on H8_23; using the surface ray
+[main] quit (window) at 30525 ms
+[main] loading at the close: nothing
+[attach] battle x04 V16_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x012 H8_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 119 ms, statics and fx drain 36 ms, engine exit from 30680 ms

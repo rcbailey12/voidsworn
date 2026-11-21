@@ -1,0 +1,31 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1434)
+GPU: acquired solo claim a7a8a894-a8c9-4d26-a07d-686358410510
+cache readback, load cold: shader_cache 0 -> 248 files (0 -> 41.5 MB); vulkan 0 -> 1 files (0 -> 43 MB); world_bakes 0 -> 32 files (0 -> 83.2 MB)
+load cold: [load1434] RESULT FAIL on the cold profile (limit 500 ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)
+load cold: [load1434] COVER FAIL on the cold profile (the loading cover up on every frame to play and no frame of 5 s or more: s25 FAIL, title FAIL, b1 ok, b2 ok, b3 ok, b2r reported only)
+cache readback, load warm: shader_cache 248 -> 262 files (41.5 -> 45.9 MB); vulkan 1 -> 1 files (43 -> 49.5 MB); world_bakes 32 -> 37 files (83.2 -> 106 MB)
+load warm: [load1434] RESULT FAIL on the warm profile (limit 500 ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)
+load warm: [load1434] COVER FAIL on the warm profile (the loading cover up on every frame to play and no frame of 5 s or more: s25 ok, title FAIL, b1 ok, b2 ok, b3 ok, b2r reported only)
+close cold x_load_4s: PASS clean=PASS 1518=- 1519=- sent=x loading_at_close=[battle start] hidden_ms=62 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=867 exit=0
+close cold altf4_load_5s: PASS clean=PASS 1518=PASS 1519=- sent=altf4 loading_at_close=[battle board_build] hidden_ms=271 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=793 exit=0
+close cold x_battle_30s: PASS clean=PASS 1518=- 1519=- sent=x loading_at_close=[nothing] hidden_ms=46 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=2949 exit=0
+close cold altf4_battle_30s: PASS clean=PASS 1518=- 1519=- sent=altf4 loading_at_close=[nothing] hidden_ms=47 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=1565 exit=0
+close cold title_load_5s: FAIL clean=PASS 1518=FAIL (hidden after 5238 ms, limit 500) 1519=PASS sent=x loading_at_close=[backdrop world, world bake 7f63fbd8f21d] hidden_ms=5238 first_title_frame_ms=75.3 worst_title_frame_first_s=316.2 close_to_exit_ms=6465 exit=0 | battle to title parts (ms): battle_out 4.8, title_build 53.4, battle_free 8.4, battle exit_tree 1.9, pre@59.1, draw@75.3, step@75.5, draw@80.8, step@80.9, draw@104.6, step@104.7, draw@104.9, step@105.0, draw@105.2
+close cold title_battle_30s: PASS clean=PASS 1518=PASS 1519=PASS sent=x loading_at_close=[backdrop ships] hidden_ms=143 first_title_frame_ms=125.6 worst_title_frame_first_s=902.2 close_to_exit_ms=4597 exit=0 | battle to title parts (ms): battle_out 41.3, title_build 34.4, battle_free 48.6, battle exit_tree 1.5, pre@76.5, draw@125.6, step@126.2, draw@208.8, step@209.0, draw@830.9, step@831.1, draw@832.1, step@832.1, draw@832.5
+close warm x_load_4s: PASS clean=PASS 1518=- 1519=- sent=x loading_at_close=[battle board_build] hidden_ms=144 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=622 exit=0
+close warm altf4_load_5s: PASS clean=PASS 1518=PASS 1519=- sent=altf4 loading_at_close=[battle ships] hidden_ms=95 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=4041 exit=0
+close warm x_battle_30s: PASS clean=PASS 1518=- 1519=- sent=x loading_at_close=[nothing] hidden_ms=47 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=891 exit=0
+close warm altf4_battle_30s: PASS clean=PASS 1518=- 1519=- sent=altf4 loading_at_close=[nothing] hidden_ms=46 first_title_frame_ms= worst_title_frame_first_s= close_to_exit_ms=1059 exit=0
+close warm title_load_5s: PASS clean=PASS 1518=PASS 1519=PASS sent=x loading_at_close=[backdrop world, world bake 7ff0435e4dcb] hidden_ms=206 first_title_frame_ms=51.3 worst_title_frame_first_s=347.5 close_to_exit_ms=1122 exit=0 | battle to title parts (ms): battle_out 3.2, title_build 33.5, battle_free 13.0, battle exit_tree 2.1, pre@37.6, draw@51.3, step@51.4, draw@55.0, step@55.1, draw@71.1, step@71.2, draw@71.4, step@71.4, draw@71.6
+close warm title_battle_30s: PASS clean=PASS 1518=PASS 1519=PASS sent=x loading_at_close=[backdrop world_build, world bake 04a596a828fe] hidden_ms=142 first_title_frame_ms=105.4 worst_title_frame_first_s=838.3 close_to_exit_ms=2092 exit=0 | battle to title parts (ms): battle_out 32.7, title_build 33.7, battle_free 37.7, battle exit_tree 1.6, pre@67.3, draw@105.4, step@106.2, draw@147.5, step@147.6, draw@317.6, step@317.7, draw@318.1, step@318.2, draw@318.4
+cache readback, the cold then warm close launches: shader_cache 262 -> 277 files (45.9 -> 49.5 MB); vulkan 1 -> 1 files (49.5 -> 54 MB); world_bakes 37 -> 56 files (106 -> 180.9 MB)
+[load10] 1434 load (warm bench, cold COVER): FAIL
+[load10] 1518 close hides within 500 ms, cold: FAIL
+[load10] 1519 first title frame within 200 ms, cold: PASS
+[load10] every close clean, cold: PASS
+[load10] 1518 close hides within 500 ms, warm: PASS
+[load10] 1519 first title frame within 200 ms, warm: PASS
+[load10] every close clean, warm: PASS
+[load10] RESULT FAIL (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)
+GPU: released solo claim a7a8a894-a8c9-4d26-a07d-686358410510

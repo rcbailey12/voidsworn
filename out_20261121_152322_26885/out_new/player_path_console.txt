@@ -1,0 +1,8 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+Recording seed 31 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434m\out_20261121_152322_26885\out_new\player_path\seed-31.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434m\out_20261121_152322_26885\out_new\player_path\seed-10.avi
+Retrying seed 10 after the first map jump timed out
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434m\out_20261121_152322_26885\out_new\player_path\seed-10.avi
+Full run: 1,021 seconds
+Full 1080p recordings: C:\Users\rcbai\Downloads\voidsworn_test\opus1434m\out_20261121_152322_26885\out_new\player_path
+Review clips and sheets: C:\Users\rcbai\Downloads\voidsworn_test\opus1434m\out_20261121_152322_26885\out_new\player_path\review

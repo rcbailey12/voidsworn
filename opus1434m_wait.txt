@@ -1,0 +1,6 @@
+OPUS1434M_WAIT.bat waiting for OPUS1121O_MOTION exit in opus1121moto_wait.txt Sat 11/21/2026 15:17:21.55 
+OPUS1434_LOAD13 start 15:23:21.23 
+OPUS1434_LOAD13 exit 1 at 16:06:48.84 
+run folder out_20261121_152322_26885
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sat 11/21/2026 16:06:49.31 
