@@ -21,6 +21,8 @@ var player_lost_ships := 0      # non-squadron player hulls destroyed this battl
 var rounds_seen := 1            # updated from "round" events
 var sit_spoken := 0             # throttle mid-battle situational reactions (max 2 per battle)
 var _mem_override = null        # optional persistent Dictionary (e.g. career.P["live"]["spoken"])
+var _R = null                   # the rules object when set up from rules: live state is read from it after each event
+const LEGION_HP_FALLBACK := 0.35  # rules TB.LEGION_HP, used only when no rules object is bound
 
 
 func _init() -> void:
@@ -123,6 +125,19 @@ func setup_from_rules(R, view: Dictionary) -> void:
 	var rk := ""
 	if run is Dictionary:
 		rk = "%s:%s" % [str(run.get("t0", 0)), adm]
+	# The player flagship is the unit whose run ship is RUN.flagUid (rules "pflag"); view() never marks it.
+	var flag_name := ""
+	if B is Dictionary and B.get("units") is Array:
+		for ru in B["units"]:
+			if ru is Dictionary and str(ru.get("side", "")) == "player" and bool(ru.get("pflag", false)):
+				flag_name = str(ru.get("name", ""))
+				break
+	if flag_name == "" and run is Dictionary and run.get("fleet") is Array:
+		for sh in run["fleet"]:
+			if sh is Dictionary and sh.get("uid") != null and sh.get("uid") == run.get("flagUid"):
+				flag_name = str(sh.get("name", ""))
+				break
+	_R = R
 	setup(view, {
 		"admiral": adm,
 		"admiral_name": str(ADM.get(adm, {}).get("n", adm)) if ADM is Dictionary else adm,
@@ -137,8 +152,9 @@ func setup_from_rules(R, view: Dictionary) -> void:
 		"seed": int(B.get("seed", cfg.get("seed", 0))) if B is Dictionary and (B.get("seed") != null or cfg.get("seed") != null) else 0,
 		"run_key": rk,
 		"nem": nem if nem is Dictionary else null,
-		"flagship_name": "",
+		"flagship_name": flag_name,
 	})
+	_sync()
 
 
 func setup(view: Dictionary, inf: Dictionary) -> void:
@@ -154,7 +170,7 @@ func setup(view: Dictionary, inf: Dictionary) -> void:
 		var id := str(u["id"])
 		var side := str(u.get("side", ""))
 		var is_sq := bool(u.get("squadron", false))
-		var is_flag := bool(u.get("flagship", false))
+		var is_flag := bool(u.get("pflag", false)) if side == "player" and u.has("pflag") else bool(u.get("flagship", false))
 		units[id] = {
 			"side": side,
 			"flagship": is_flag,
@@ -172,6 +188,41 @@ func setup(view: Dictionary, inf: Dictionary) -> void:
 				info["flagship_name"] = str(u.get("name", ""))
 
 
+# Reads live unit state from the bound rules (B.units): reinforcements join, revivals, risen hulls, captures and
+# ram outcomes all come out right without the voice keeping its own arithmetic. Returns false with no rules bound.
+func _sync() -> bool:
+	if _R == null or not ("B" in _R):
+		return false
+	var B = _R.B
+	if not (B is Dictionary) or not (B.get("units") is Array):
+		return false
+	for ru in B["units"]:
+		if not (ru is Dictionary) or ru.get("id") == null:
+			continue
+		var id := str(ru["id"])
+		var side := str(ru.get("side", ""))
+		var is_flag := bool(ru.get("pflag", false)) if side == "player" else (bool(ru.get("flagship", false)) or bool(ru.get("boss", false)))
+		var dead := bool(ru.get("dead", false))
+		var is_new := not units.has(id)
+		var u: Dictionary = units.get(id, {})
+		u["side"] = side
+		u["flagship"] = is_flag
+		u["squadron"] = bool(ru.get("isSq", false))
+		u["nemesis"] = bool(ru.get("nemFlag", u.get("nemesis", false)))
+		u["hp"] = 0.0 if dead else float(ru.get("hp", 0))
+		u["maxHp"] = maxf(1.0, float(ru.get("maxHp", 1)))
+		u["name"] = str(ru.get("name", ""))
+		u["reinf"] = bool(ru.get("reinf", false))
+		units[id] = u
+		if is_new and side == "player" and not u["squadron"] and not u["reinf"]:
+			player_start_ships += 1
+		if side == "player" and is_flag and flag_id == "":
+			flag_id = id
+			if str(info.get("flagship_name", "")) == "":
+				info["flagship_name"] = u["name"]
+	return true
+
+
 # ---------------------------------------------------------------- lines
 
 func admiral_name() -> String:
@@ -182,7 +233,9 @@ func admiral_name() -> String:
 func _fill(t: String) -> String:
 	var nem = info.get("nem")
 	var rival_name := Tokens.full_name(nem) if nem is Dictionary else ""
-	var flag_name := str(info.get("flagship_name", "the flagship"))
+	var flag_name := str(info.get("flagship_name", ""))
+	if flag_name == "" and t.contains("{flagship}"):
+		return ""   # no real flagship name: skip the line rather than speak an empty slot
 	var out := t.replace("{flagship}", flag_name).replace("{rival}", rival_name if rival_name != "" else "the enemy commander").replace("{enemy}", str(info.get("enemy_name", "the enemy")))
 	if flag_name.begins_with("The ") or flag_name.begins_with("MDV "):
 		out = out.replace("the " + flag_name, flag_name).replace("The " + flag_name, flag_name)
@@ -242,7 +295,7 @@ func _boss_text(key: String) -> String:
 func _ctx() -> Dictionary:
 	return {
 		"you": admiral_name(),
-		"flagship": str(info.get("flagship_name", "your flagship")),
+		"flagship": str(info.get("flagship_name", "")) if str(info.get("flagship_name", "")) != "" else "your flagship",
 		"player_fac": str(info.get("fac", "")),
 	}
 
@@ -336,17 +389,19 @@ func _nem_down_key() -> String:
 
 func on_event(e: Dictionary) -> Array:
 	var out: Array = []
+	var live := _sync()   # live rules state wins over the voice's own running copy
 	match str(e.get("t", "")):
 		"round":
 			rounds_seen = maxi(rounds_seen, int(e.get("round", rounds_seen)))
 		"tick":
 			var tid := str(e.get("unit", ""))
-			if units.has(tid):
+			if units.has(tid) and not live:
 				units[tid]["hp"] = maxf(0.0, float(units[tid]["hp"]) - float(e.get("hull", 0)))
 		"hit":
 			var id := str(e.get("target", ""))
 			if units.has(id):
-				units[id]["hp"] = float(units[id]["hp"]) - float(e.get("hull", 0))
+				if not live:
+					units[id]["hp"] = float(units[id]["hp"]) - float(e.get("hull", 0))
 				if id == flag_id and not said.has("flag_hurt") and float(units[id]["hp"]) > 0 and float(units[id]["hp"]) < 0.4 * float(units[id]["maxHp"]):
 					said["flag_hurt"] = true
 					out += _adm_line("flag_hurt")
@@ -355,7 +410,8 @@ func on_event(e: Dictionary) -> Array:
 			var tid := str(e.get("target", ""))
 			var dmg := float(e.get("dmg", 0))
 			if units.has(aid) and units.has(tid):
-				units[tid]["hp"] = float(units[tid]["hp"]) - dmg
+				if not live:
+					units[tid]["hp"] = float(units[tid]["hp"]) - dmg   # estimate only; with rules bound the real outcome is read
 				if units[aid]["side"] == "player" and units[tid]["side"] == "enemy" and not bool(units[tid].get("squadron", false)) and float(units[tid]["hp"]) <= 0:
 					out += _try_sit_event("ram_kill")
 		"death":
@@ -395,12 +451,16 @@ func on_event(e: Dictionary) -> Array:
 		"risen":
 			var rid := str(e.get("unit", ""))
 			if units.has(rid) and units[rid]["side"] == "enemy":
-				units[rid]["hp"] = float(units[rid]["maxHp"]) * 0.5
+				if not live:
+					units[rid]["hp"] = maxf(1.0, round(float(units[rid]["maxHp"]) * LEGION_HP_FALLBACK))
 				out += _try_sit_event("enemy_risen")
 		"fled":
 			var fid := str(e.get("unit", ""))
-			if units.has(fid) and units[fid]["side"] == "enemy" and not bool(units[fid].get("squadron", false)):
+			if units.has(fid):
 				units[fid]["hp"] = 0.0
+			# why "exit": an Intercept transport getting through (or a Break ship jumping clear) is not a retreat,
+			# so no coward taunt; the objective HUD already reports it.
+			if str(e.get("why", "")) != "exit" and units.has(fid) and units[fid]["side"] == "enemy" and not bool(units[fid].get("squadron", false)):
 				out += _try_sit_event("enemy_flee")
 		"board":
 			if str(e.get("result", "")) == "capture":
