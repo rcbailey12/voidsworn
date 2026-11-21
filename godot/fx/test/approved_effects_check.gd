@@ -11,6 +11,7 @@ extends SceneTree
 #    alone (battle start, move, fire, death, batch end) keep a source inventory: gfx.<call>( somewhere in battle.gd.
 #    A missing call fails unless the registry's "unwired" list names it with its job; a listed call that is made now also
 #    fails, so the list cannot go stale.
+#    Looks proven by their own check are listed under "covered": that check must exist and be registered for CI.
 # 3. Prints the approved looks still waiting on an open pull request.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -132,6 +133,8 @@ func _run() -> void:
 				for fac in (d["want"] as Dictionary):
 					var got := float(looks.get(fac, {}).get("death", {}).get("smoke", -1.0))
 					_check(is_equal_approx(got, float(d["want"][fac])), "%s: %s smoke %.2f (got %.2f)" % [tag, fac, float(d["want"][fac]), got])
+			"pd_shot_down":
+				pass   # played in the battle scene in section 2, checked there
 			_:
 				var got = _probe(str(d["probe"]), fx)
 				var want = d["want"]
@@ -185,6 +188,17 @@ func _run() -> void:
 				_check(wired, "%s -> %s" % [ev, how])
 	for key in listed:
 		_check(seen.has(key), "registry unwired row %s matches an API.md row" % key)
+
+	for d in reg.get("defaults", []):
+		if str(d["probe"]) == "pd_shot_down":
+			var got := str(played.get("_pd", "not played"))
+			_check(got == str(d["want"]), "%s (%s): pd_shot_down is %s (got %s)" % [str(d["ruling"]), str(d["what"]), str(d["want"]), got])
+	# looks proven by their own registered check (linked, not repeated here): the check file exists and CI runs it
+	var ci := _text("res://tools/ci/godot_checks.txt")
+	for c in reg.get("covered", []):
+		var path := str(c["check"])
+		_check(FileAccess.file_exists("res://" + path) and ci.contains("headless|%s|" % path),
+			"%s (%s): proven by %s, a registered headless check" % [str(c["ruling"]), str(c["what"]), path])
 
 	print("-- 3. approved looks waiting on an open pull request")
 	for w in reg.get("waiting", []):
@@ -297,4 +311,26 @@ func _play_events() -> Dictionary:
 			names.append(c[0])
 		print("INFO %s played, fx calls: %s" % [str(e["t"]), ", ".join(names) if not names.is_empty() else "none"])
 	b.gfx = real
+	out["_pd"] = await _pd_probe(b, mine, foe)
 	return out
+
+
+# R392 (PD-C): a torpedo the point defence stops is drawn shot down: the round is marked to die short of the hull and,
+# when it does, it tumbles away (fx_weapons._shot_down). Played as a real fire event through battle.gd with the real fx,
+# so the check also proves the battle hands the rules' pd count to the volley.
+func _pd_probe(b, mine: String, foe: String) -> String:
+	var e := {"t": "fire", "unit": mine, "target": foe, "kind": "torp", "name": "PD probe", "weapon": 0, "weapon_id": "",
+		"shots": [false, false], "quad": 0, "pd": 2}
+	b._play_fire(e, [])   # not awaited: the rounds are read while they fly
+	var marked := 0
+	var tumbled := false
+	for i in 1200:
+		for p in b.gfx.dstate.get("proj", []):
+			if str(p.get("lk", "")) == "torp" and float(p.get("dead_at", INF)) < float(p.get("t1", 0.0)):
+				marked = maxi(marked, 1)
+			if p.has("down_p"):
+				tumbled = true
+		if tumbled:
+			break
+		await process_frame
+	return "marked %s, tumbles %s" % [marked > 0, tumbled]
