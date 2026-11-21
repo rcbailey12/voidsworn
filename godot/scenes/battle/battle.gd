@@ -170,6 +170,9 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save each round start once it has settled (main.play_api)
+var round_saved := 0                       # the newest round handed to round_save_cb
+var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
@@ -518,6 +521,8 @@ func _begin(a) -> void:
 	bot_tried.clear()
 	bot_cmd_used = false
 	roles_opened = false
+	round_saved = 0
+	round_on_disk = 0
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -4465,6 +4470,19 @@ func _on_action(name: String, arg) -> void:
 			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 			_play_log_out("quit")
 			_finish(result)
+		"save_quit", "save_quit_older":
+			if ended or not round_save_cb.is_valid():
+				return
+			# Save and quit is offered only while this round's save is on disk (a failed write offers the older start instead,
+			# by name), so leaving never promises more than Continue will load; the host still tries to write a newer round
+			if name == "save_quit" and round_on_disk != round_saved:
+				_open_menu()
+				return
+			hud.hide_menu()
+			ended = true
+			result = {"result": "save_quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			_play_log_out("quit")
+			_finish(result)
 		"continue":
 			hud.hide_end()
 			_finish(result)
@@ -4599,6 +4617,13 @@ func _open_menu() -> void:
 	items.append(["Controls", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
+	elif in_campaign and round_save_cb.is_valid() and round_saved > 0:
+		# issue 1451: back here at the start of this round. Artoo on PR 1486: when this round's save did not reach the disk, say
+		# what Continue will really load instead of promising this round
+		if round_on_disk == round_saved:
+			items.append(["Save and quit to title", "save_quit"])
+		else:
+			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "from the last checkpoint"), "save_quit_older"])
 	elif not external:
 		items.append(["Fight again", "restart"])
 	items.append(["Copy a problem report", "report"])
@@ -5324,6 +5349,11 @@ func _process(dt: float) -> void:
 		world.step(dt)
 	if api == null:
 		return
+	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
+	if round_save_cb.is_valid() and int(api.round_snap_round) > round_saved and _can_act():
+		round_saved = int(api.round_snap_round)
+		if bool(round_save_cb.call()):
+			round_on_disk = round_saved
 	var vs := get_viewport().get_visible_rect().size
 	for id in views:
 		var sv = views[id]
