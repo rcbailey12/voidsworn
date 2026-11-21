@@ -229,7 +229,7 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
    while the check only reported their flat skins (it failed Chorus ships alone), and he caught it himself: "Just make sure
    the level of detail is on both so they don't look like clay". The same happened with strike craft KF1 ("it looks
-   unfinished"). Torpedo and rocket bodies (tools/blender/build_sheets/munitions/) have no stage 5 bake, so no atlas to
+   unfinished"). Torpedo and rocket bodies (the munitions builder, PR 1416) have no stage 5 bake, so no atlas to
    measure: they are not covered until they get one.
 
 ### Named variant parts (issue 812)
