@@ -1,0 +1,5 @@
+[audit] {"problems": [], "parts": 52, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.30077267550230236, 0.2800297323642126], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\build\GP1.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2146624949d3426eb3c38935ce2ea81d\runner-step-e10c9a23a0ba494893a28db8f4311057

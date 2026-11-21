@@ -1,0 +1,12 @@
+chain CP waiting for 1291 C14J exit in opus1291c14j_wait.txt Sat 11/21/2026 14:06:07.99 
+swapped out while only waiting 14:22:19: replaced by HELPERS_CHAIN_1119CP2.bat (waits for 1291 C14K exit in opus1291c14k_wait.txt, Board Nov 21 20:21 UTC)
+chain CP2 waiting for 1291 C14K exit in opus1291c14k_wait.txt Sat 11/21/2026 14:22:20.42 
+mirror fetch exit 0
+ddc85277c0ef733d1ebb46ce95127a262826cf41 reachable in the mirror
+1415H GS1 start 15:04:22.36 
+1415H GS1 exit 0 at 15:17:13.21 
+1415H GL1 start 15:17:13.21 
+1415H GL1 exit 0 at 15:31:02.13 
+1415H GP1 start 15:31:02.13 
+1415H GP1 exit 0 at 16:01:15.44 
+1415H GA1 start 16:01:15.44 
