@@ -431,9 +431,28 @@ func quick_battle() -> void:
 	battle = b
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
+		var t_leave := Time.get_ticks_usec()
 		b.queue_free()
 		battle = null
-		show_title(), CONNECT_ONE_SHOT)
+		show_title()
+		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
+	if args.has("title-after"):
+		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(b) and battle == b:
+				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
+				b._on_action("to_title", null))
+
+
+# Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
+# retires any running cut) and the first title frame after it.
+func _time_title_return(t_leave: int) -> void:
+	await get_tree().process_frame
+	var t_free := Time.get_ticks_usec()
+	await get_tree().process_frame
+	var t_title := Time.get_ticks_usec()
+	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
+		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the
