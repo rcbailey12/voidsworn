@@ -1,6 +1,6 @@
 extends SceneTree
 # Issue 1450 picture UNDO-1: the real battle scene, one player ship moves one hex (keeping movement), and the KEEL shelf shows
-# "Undo move" next to "End ship". Then Backspace takes the move back (UNDO-2: the button is gone, the ship is back).
+# "Undo move" next to "End ship" (UNDO-0 is before the move). Then Backspace takes the move back (UNDO-2: the button is gone, the ship is back).
 # Run: godot --path godot --script res://bench/undo_1450_shot.gd -- --out <folder> [--scenario s1]
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 var b
@@ -65,6 +65,10 @@ func _run() -> void:
 			break
 	var q0 := int(b.api.unit(ship)["q"])
 	var r0 := int(b.api.unit(ship)["r"])
+	b._refresh_ui()
+	await _wait_idle(5000)
+	_say("[undo1450] ship %s %s hull code %s at %d,%d" % [ship, str(b.VU[ship]["name"]), str(b.views[ship].code), q0, r0])
+	await _shot("UNDO-0_before_move")
 	b._cmd(func(): return b.api.move(ship, st))
 	await _wait_idle(60000)
 	b.sel = ship

@@ -1341,6 +1341,12 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
+		"undo":
+			# issue 1450: the ship's last move or turn was taken back; it stands at once on the hex and facing the rules give
+			# (no burn back along the path), and the reach overlay is rebuilt from there on the next refresh
+			if views.has(e["unit"]) and not views[e["unit"]].dead:
+				views[e["unit"]].snap_to(board.hex_world(int(e["q"]), int(e["r"])), ShipView.yaw_of(int(e["f"])))
+			reach_map.clear()
 		"pulled":
 			await _play_move(e["unit"], [{"q": e["to"]["q"], "r": e["to"]["r"], "f": VU[e["unit"]]["facing"] if VU.has(e["unit"]) else 0}], false)
 			_float(e["unit"], "Pulled in", Color("#c79bff"))
