@@ -44,7 +44,15 @@ function selfTest() {
     const got = classify(paths).docsOnly;
     if (got !== want) { bad++; console.log(`FAIL: ${JSON.stringify(paths)} gave ${got}, want ${want}`); }
   }
-  console.log(bad ? `FAIL: ${bad} of ${cases.length} cases` : `PASS: ${cases.length} cases`);
+  // Regression (Artoo on PR 1494): a run on main compares main with itself, an empty list, so it must run every check;
+  // and All checks may accept a skip only from the four Godot jobs. Both live in checks.yml: hold them here.
+  const yml = fs.readFileSync(require('path').join(__dirname, '../../.github/workflows/checks.yml'), 'utf8');
+  const wiring = [
+    ['main with no base runs every check', /\[ -z "\$BASE" \] && \{ \[ "\$EVENT" = workflow_dispatch \] \|\| \[ "\$GITHUB_REF" = refs\/heads\/main \]; \}/],
+    ['All checks accepts skips only from the four Godot jobs', /IN\("godot-parity", "rules-safety", "godot-game", "a16-fixture"\)/],
+  ];
+  for (const [what, re] of wiring) if (!re.test(yml)) { bad++; console.log(`FAIL: checks.yml lost: ${what}`); }
+  console.log(bad ? `FAIL: ${bad} of ${cases.length + wiring.length} cases` : `PASS: ${cases.length} cases, ${wiring.length} checks.yml wiring checks`);
   return bad ? 1 : 0;
 }
 

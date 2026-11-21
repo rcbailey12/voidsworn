@@ -24,12 +24,20 @@ on:
       - '!codex/**-partial'
       - '!work/**-partial'
       - '!opus/**-partial'
+      - '!neon/**-partial'
+      # A Muse scratch branch (muse/wip-<name>) opts out of a pull request in auto_pr.yml and of checks here too (issue 1488,
+      # audit GH-06: each scratch push used to start a full run). Keep these '!' lines in step with auto_pr.yml;
+      # contrib/opus/tools/workflow_config_tests.js holds the two lists against each other.
+      - '!muse/wip-**'
   workflow_dispatch:
     inputs:
       base:
         description: 'Leave empty to run every check. Or a branch or commit: the Godot jobs then run only if this run changes non-docs files compared with it (issue 1487).'
         required: false
         default: ''
+# Read-only token: no step here writes to the repo, issues or pull requests (issue 1488, audit GH-06).
+permissions:
+  contents: read
 concurrency:
   group: checks-${{ github.ref }}
   cancel-in-progress: true
@@ -47,7 +55,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none
-          sparse-checkout: tools/ci
+          sparse-checkout: |
+            tools/ci
+            .github/workflows
       - name: Docs only, or code too?
         id: classify
         env:
