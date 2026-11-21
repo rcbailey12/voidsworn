@@ -873,7 +873,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		if old:
 			e0 = from
 			mid = from.lerp(to, 0.45) + mn * (6.0 + fx.rng.randf() * 4.0) * k + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
-		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
+		var end = to + (fx.rdir() * 0.6 * rk if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
 			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
