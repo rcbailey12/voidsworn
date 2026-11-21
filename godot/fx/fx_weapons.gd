@@ -1228,21 +1228,11 @@ static func _kit_trail_mesh(fx, t: Dictionary) -> void:
 
 # ---------------------------------------------------------------- shot down (issue 1379 round 5)
 # Ryan, Nov 21: "it's hard to distinguish whats a hull hit vs explosion before due to turrets". A round shot down never
-# burns: no fire, no flash on the hull. What the player sees depends on PD_STYLE (Ryan picks; VS_1379_PD overrides for the
-# options sheet):
-#   A  the target's point defence: pale tracer dashes from the target's hull to the round, a spark where they meet, and the
-#      round goes dead (drive out) and tumbles away trailing grey smoke
-#   B  a flak box: dark flak puffs bracket the round, a small dim pop, the round is gone
-#   C  A and B together
-#   old  the round-4 small pop (for the before column)
-const PD_STYLE := "A"
+# burns: no fire, no flash on the hull. Ryan picked PD-C on Nov 21 (options sheet board/torpedo_rework/tp_pd_*.jpg): the
+# target's point defence fires pale tracer dashes at the round, dark flak puffs bracket it, cold sparks where it is holed,
+# and the round goes dead (drive out) and tumbles away trailing grey smoke.
 const PD_TRACER := Color(0.72, 0.88, 1.0)
 const PD_TUMBLE_S := 0.9
-
-
-static func _pd_style() -> String:
-	var e := OS.get_environment("VS_1379_PD")
-	return e if e in ["A", "B", "C", "old"] else PD_STYLE
 
 
 static func _down_point(p: Dictionary) -> Vector3:
@@ -1251,9 +1241,6 @@ static func _down_point(p: Dictionary) -> Vector3:
 
 
 static func _pd_fire(fx, p: Dictionary) -> void:
-	var st := _pd_style()
-	if not st in ["A", "C"]:
-		return
 	var pp := _down_point(p)
 	var c: Vector3 = p["c"]
 	var k: float = p["k"]
@@ -1267,29 +1254,18 @@ static func _pd_fire(fx, p: Dictionary) -> void:
 
 
 static func _shot_down(fx, p: Dictionary) -> void:
-	var st := _pd_style()
 	var pp := _down_point(p)
 	var now: float = fx.now
 	var k: float = p["k"]
 	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()
-	if st == "old":
-		_burst(fx, pp, Vector3.UP, now, 1.4 * k, "flash", 0.14, p["col"], 2.6, 10.0)
-		_burst(fx, pp, Vector3.UP, now + 0.03, 1.2 * k, "cool", 0.5, p["eng"], 0.5, 0.0, Vector3.ZERO, 0.35)
-		_impact_sparks(fx, pp, d, now, k, Color(0.9, 0.62, 0.32), 6)
-		return
 	# cold sparks where the round is holed: white-blue, not fire
 	_impact_sparks(fx, pp, -d, now, k * 0.7, PD_TRACER, 5)
-	if st in ["B", "C"]:
-		for j in 5:
-			var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
-			var tj := now - 0.18 + j * 0.06
-			_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
-			_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
-	if st == "B":
-		_burst(fx, pp, Vector3.UP, now, 0.8 * k, "flash", 0.08, Color(1.0, 0.8, 0.55), 2.0, 5.0)
-		_burst(fx, pp, Vector3.UP, now + 0.03, 1.0 * k, "cool", 0.7, Color(0.2, 0.19, 0.18), 0.5, 0.0, Vector3.ZERO, 0.5)
-		return
-	# A and C: the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke
+	for j in 5:
+		var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
+		var tj := now - 0.18 + j * 0.06
+		_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
+		_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
+	# the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke
 	var node = p["mesh"]
 	if is_instance_valid(node) and (node as Node3D).has_meta("motor"):
 		((node as Node3D).get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
