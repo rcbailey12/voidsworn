@@ -59,6 +59,31 @@ static func clear_static() -> void:
 	_old_swept = false
 	_textures.clear()
 	_cache.clear()
+	# issue 1434 (Artoo on PR 1445): quit_clean clears statics before the tree quits, while the root service's worker can
+	# still be inside a bake. Stop the worker here (a compute bake leaves at its next strip and frees its own device).
+	_stop_worker()
+
+
+static var _abort := false   # set while shutting down: a running compute bake stops at its next strip
+
+
+static func _stop_worker() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var node: Node = tree.root.get_node_or_null("WorldBakes") if tree != null and tree.root != null else null
+	if node == null or node.get("_thread") == null:
+		return
+	_abort = true
+	var th: Thread = node._thread
+	if th.is_started():
+		th.wait_to_finish()
+	node._thread = null
+	_abort = false
+	# a clear that is not a quit (a check): the stopped job ends without an image, so nobody waits on it
+	var act: String = node._active
+	if act != "" and node._jobs.has(act):
+		node._jobs[act].done = true
+		node._jobs.erase(act)
+	node._active = ""
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
@@ -103,7 +128,8 @@ func _process(_dt: float) -> void:
 		job.done = true
 		if result.image != null:
 			remember(_active, result.image)
-			print("[world] %s %s %dx%d in %d ms (worker)" % [result.source, _active, job.size.x, job.size.y, Time.get_ticks_msec() - job.started])
+			print("[world] %s %s %dx%d in %d ms (worker%s)" % [result.source, _active, job.size.x, job.size.y, Time.get_ticks_msec() - job.started,
+				"; stages ms %s" % str(result.get("stages")) if result.get("stages") is Dictionary else ""])
 		elif result.get("error", "") != "":
 			push_error("World bake: " + result.error)
 		_jobs.erase(_active)
@@ -158,12 +184,14 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 	if FileAccess.file_exists(path): img = Image.load_from_file(path)
 	var source := "loaded"
 	var error := ""
+	var stages := {}
 	if img == null or img.is_empty() or img.get_size() != job.size:
 		img = null
 		if job.compute:
 			var result := _compute(job.code, job.params, job.size)
 			img = result.image
 			error = result.get("error", "")
+			stages = result.get("stages", {})
 			source = "baked"
 			if img != null and DirAccess.make_dir_recursive_absolute(folder) == OK:
 				var tmp := path + ".tmp"
@@ -171,8 +199,10 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 					prune(folder, CACHE_CAP_BYTES, keep, key)
 	elif source == "loaded":
 		touch(folder, key)
+	var tm := Time.get_ticks_usec()
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
-	return {"image": img, "source": source, "error": error}
+	if not stages.is_empty(): stages["mips"] = (Time.get_ticks_usec() - tm) / 1000
+	return {"image": img, "source": source, "error": error, "stages": stages}
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
@@ -349,11 +379,20 @@ static func _compute_source(code: String, params: Dictionary, size: Vector2i) ->
 	var entry := "\nvoid main() { ivec2 p=ivec2(gl_GlobalInvocationID.xy)+ivec2(0,tile.y); if(any(greaterThanEqual(p,ivec2(full_size)))) return; UV=(vec2(p)+0.5)/full_size; bake_pixel(); imageStore(output_image,p,COLOR); }\n"
 	return {"code": header + defines + code + entry, "data": values.to_byte_array()}
 
+# Issue 1434 (LOAD6 on the PC: with world bakes pending, single main-thread frames of 5 to 10 s that were neither
+# render nor pipeline time). Each stage of a compute bake is timed with its wall-clock start, so a PC log lines up a
+# frozen frame against the stage that ran during it. The local device stays per bake: it belongs to the thread that
+# made it (a cloud trial on software Vulkan refused free_rid and finalize from any other thread), and each bake is a
+# new worker thread.
 static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictionary:
 	var source := _compute_source(code, params, size)
 	if source.has("error"): return {"image": null, "error": source.error}
+	var stages := {"began": Time.get_ticks_msec()}
+	var t := Time.get_ticks_usec()
 	var rd := RenderingServer.create_local_rendering_device()
+	stages["device"] = (Time.get_ticks_usec() - t) / 1000
 	if rd == null: return {"image": null, "error": "Local RenderingDevice is unavailable"}
+	t = Time.get_ticks_usec()
 	var shader_source := RDShaderSource.new()
 	shader_source.source_compute = source.code
 	var spirv := rd.shader_compile_spirv_from_source(shader_source)
@@ -361,8 +400,12 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	if error != "":
 		rd.free()
 		return {"image": null, "error": error}
+	stages["spirv"] = (Time.get_ticks_usec() - t) / 1000
+	t = Time.get_ticks_usec()
 	var shader := rd.shader_create_from_spirv(spirv)
 	var pipeline := rd.compute_pipeline_create(shader)
+	stages["pipeline"] = (Time.get_ticks_usec() - t) / 1000
+	t = Time.get_ticks_usec()
 	var format := RDTextureFormat.new()
 	format.width = size.x
 	format.height = size.y
@@ -380,7 +423,13 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	data_uniform.add_id(buffer)
 	var uniforms := rd.uniform_set_create([image_uniform, data_uniform], shader, 0)
 	# Small dispatches avoid the Windows GPU watchdog on slower graphics cards.
+	var worst_strip := 0
 	for y in range(0, size.y, 32):
+		if _abort:
+			for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
+			rd.free()
+			return {"image": null, "error": "", "stages": stages}
+		var ts := Time.get_ticks_usec()
 		var list := rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(list, pipeline)
 		rd.compute_list_bind_uniform_set(list, uniforms, 0)
@@ -390,11 +439,16 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 		rd.compute_list_end()
 		rd.submit()
 		rd.sync()
+		worst_strip = maxi(worst_strip, Time.get_ticks_usec() - ts)
+	stages["dispatch"] = (Time.get_ticks_usec() - t) / 1000
+	stages["worst_strip"] = worst_strip / 1000
+	t = Time.get_ticks_usec()
 	var bytes := rd.texture_get_data(output, 0)
 	for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
 	rd.free()
-	if bytes.size() != size.x * size.y * 4: return {"image": null, "error": "Incomplete bake readback"}
-	return {"image": Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes)}
+	stages["readback"] = (Time.get_ticks_usec() - t) / 1000
+	if bytes.size() != size.x * size.y * 4: return {"image": null, "error": "Incomplete bake readback", "stages": stages}
+	return {"image": Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes), "stages": stages}
 
 
 # Compatibility has no compute device. Keep its original raster bake under the

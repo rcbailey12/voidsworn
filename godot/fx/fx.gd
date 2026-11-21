@@ -161,6 +161,9 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+# issue 1434: with defer_initial_cuts, add_ship leaves each shield for prepare_battle_hulls (battle.gd sets it for its load)
+var defer_shields := false
+var warmup_batch := 0   # issue 1434: warm meshes revealed this many per frame (0: all at once); battle.gd sets 4
 var _piece_builds: Array = []
 var _shield_jobs := {}
 const LOAD_PIECE_BUDGET := 16000  # microseconds per frame while the cover is up
@@ -1429,6 +1432,16 @@ func prepare_battle_hulls() -> void:
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
 	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
+	# issue 1434: the shields the load put off (fx_ship.setup with defer_shields), one ship at a time between frames
+	for value in ships.values():
+		var ship_s: SHIP = value
+		if ship_s.shield_later:
+			var t_s := Time.get_ticks_usec()
+			ship_s.build_shield_later(self)
+			pend("prep:shield", t_s)
+			if Time.get_ticks_usec() >= deadline:
+				await get_tree().process_frame
+				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
 		FRAGMENTS.warm_source(ship)
@@ -1845,6 +1858,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# once the warm objects have drawn.
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
+	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -1860,6 +1874,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	_warm_fragment_finish(at, T, c)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
+	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
 	add_child(tmp)
@@ -1875,6 +1890,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	sail_src.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	sail_src.albedo_color = Color(1, 1, 1, 0.55)
 	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
+	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -1883,6 +1899,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("born", now)
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
+		if warmup_batch > 0: await get_tree().process_frame
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
@@ -1900,6 +1917,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("born", now)
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
+		if warmup_batch > 0: await get_tree().process_frame
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
 		if rel.begins_with("weapons/"):
 			var hit := WEAP.hull_impact_material(self, rel)
@@ -1911,7 +1929,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			production.set_shader_parameter("born", now)
 			production.set_shader_parameter("intensity", 0.01)
 			mats.append(production)
+		if warmup_batch > 0: await get_tree().process_frame
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
+	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
@@ -1960,8 +1980,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# tell puts on every dying hull.
 	var seen := {}
 	var hk := 0
-	for sid in ships:
+	for sid in ships.keys():
+		if not ships.has(sid):
+			continue
 		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
+		if warmup_batch > 0: await get_tree().process_frame
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -2000,6 +2023,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 					(b as RigidBody3D).angular_velocity = Vector3.ZERO
 					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
+	# Issue 1434 (PC run 1: cover frames of 2 to 9 s): every warm mesh drew its first frame together, so all their
+	# pipelines compiled in one frame. They now appear WARM_BATCH at a time, a frame apart, and all of them stay up for
+	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).
+	if warmup_batch > 0:
+		var shown: Array = []
+		for wc in tmp.get_children():
+			if wc is GeometryInstance3D and (wc as GeometryInstance3D).visible:
+				(wc as GeometryInstance3D).visible = false
+				shown.append(wc)
+		for i in shown.size():
+			if is_instance_valid(shown[i]):
+				(shown[i] as GeometryInstance3D).visible = true
+			if (i + 1) % warmup_batch == 0:
+				await RenderingServer.frame_post_draw
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	warmed = true

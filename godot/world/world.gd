@@ -84,6 +84,9 @@ var _dawn_to := 0.0
 var _disc_mats: Array = []      # [{mat, key, gain}] the Hollow Sun's disc, haze and lens, for the dawn ramp
 var _disc_light: OmniLight3D = null
 var pending_bakes := 0
+# Issue 1434: the battle's sliced load sets this for build(), which then yields a frame between its big steps (and the
+# living terrain's); every other caller leaves it off and build() runs straight through in one call, as before.
+var slice_yield := false
 
 
 # A sector's map and battles use the same inputs, including rival encounters and
@@ -223,6 +226,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 	if env != null:
 		_make_sky(env)
+	if slice_yield: await get_tree().process_frame
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
@@ -234,6 +238,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_look["rim_pos"] = _well
 	if not deadstar:
 		system(mk != "planet")
+	if slice_yield: await get_tree().process_frame
 	_batch = WR.Batch.new()
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
@@ -255,12 +260,16 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	for t in clouds:
 		if not (clouds[t] as Array).is_empty():
 			cloud_hexes(clouds[t], t, fac)
+	if slice_yield: await get_tree().process_frame
 	fields(mk, rock_kind)
+	if slice_yield: await get_tree().process_frame
 	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
+	if slice_yield: await get_tree().process_frame
 	dust(mk)
 	wisps()
 	underlay()
+	if slice_yield: await get_tree().process_frame
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
@@ -268,7 +277,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_rock_kind = rock_kind
 	_fac = fac
 	add_to_group("vs_world")
-	set_look()
+	await set_look()
 	if finale:
 		_build_dawn(env)
 
@@ -290,7 +299,7 @@ func set_look() -> void:
 		_living = LIV.new()
 		_living.name = "Living"
 		add_child(_living)
-		_living.build(self)
+		await _living.build(self)
 		if not _debris_ships.is_empty(): _living.use_ship_debris(_debris_ships)
 		notes.append("living terrain built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	if _living != null:

@@ -441,10 +441,13 @@ func build(world) -> void:
 			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
 			_gas(patches[j], kind == "storm", broad)
 			broad_left -= broad
+	if bool(W.get("slice_yield")): await get_tree().process_frame
 	if not (pts["storm"] as Array).is_empty():
 		_bolts(pts["storm"])
+	if bool(W.get("slice_yield")): await get_tree().process_frame
 	if not (pts["debris"] as Array).is_empty():
 		_debris(pts["debris"])
+	if bool(W.get("slice_yield")): await get_tree().process_frame
 	if W._well != Vector3.INF:
 		_well(W._well)
 

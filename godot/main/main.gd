@@ -359,15 +359,22 @@ func _start_showcase() -> void:
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
+	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
 	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
-	while is_instance_valid(showcase) and not showcase.showcase_ready:
+	# issue 1434: the backdrop builds a few ships per frame behind the live menu; this wait belongs to this title and this
+	# backdrop only (leaving the menu calls stop_build in _clear, and a later title starts its own)
+	var sc: Node = showcase
+	var t0: Node = title
+	while is_instance_valid(sc) and not sc.showcase_ready:
 		await get_tree().process_frame
-	if is_instance_valid(showcase) and title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
+	if not is_instance_valid(sc) or sc != showcase or t0 != title:
+		return
+	if title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
 		title.reveal_showcase()
 	if args.has("title-shot"):
 		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit; --title-open settings opens
@@ -387,6 +394,8 @@ func _clear() -> void:
 		title.queue_free()
 	title = null
 	if showcase != null and is_instance_valid(showcase):
+		if showcase.has_method("stop_build"):
+			showcase.stop_build()   # issue 1434: no more backdrop build work, and the menu's viewport settings back
 		showcase.queue_free()
 	showcase = null
 

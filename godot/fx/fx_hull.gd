@@ -549,6 +549,9 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
 	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
 	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
+	if geo == null and geo_key != "":
+		geo = build_geo(root, meshes)   # issue 1434: a sliced load builds it a frame earlier (prime), so this is a hit
+		shared[geo_key] = geo
 	var faces: PackedVector3Array
 	if geo is Dictionary:
 		faces = geo["faces"]
@@ -568,16 +571,6 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 			tm.create_from_faces(faces)
 		else:
 			tm = null
-		if geo_key != "":
-			var keep: Array = []
-			for r in bvh_ranges:
-				var e: Dictionary = r.duplicate()
-				e["mi_index"] = meshes.find(r["mi"])
-				e.erase("mi")
-				e.erase("paint")
-				keep.append(e)
-			geo = {"faces": faces, "tm": tm, "ranges": keep}
-			shared[geo_key] = geo
 	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
@@ -602,12 +595,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 			geo["turrets"] = reach
 
 
+# The shared geometry entry for one hull pose: its triangles, the hit BVH and the per-surface ranges (meshes by index).
+static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
+	var ranges: Array = []
+	var faces := faces_of(root, meshes, ranges)
+	var tm2: TriangleMesh = TriangleMesh.new()
+	if faces.size() >= 3:
+		tm2.create_from_faces(faces)
+	else:
+		tm2 = null
+	var keep: Array = []
+	for r in ranges:
+		var e: Dictionary = r.duplicate()
+		e["mi_index"] = meshes.find(r["mi"])
+		e.erase("mi")
+		e.erase("paint")
+		keep.append(e)
+	return {"faces": faces, "tm": tm2, "ranges": keep}
+
+
+# Issue 1434: the sliced battle load builds a new hull's geometry in its own frame before the ship's effects are
+# registered (on the PC a first hull's analyse took 100 to 450 ms, most of it here). True when it built one.
+static func prime(root: Node3D, meshes: Array, shared: Dictionary) -> bool:
+	var key := _geo_key(root, meshes)
+	if key == "" or shared.has(key):
+		return false
+	shared[key] = build_geo(root, meshes)
+	return true
+
+
 var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
 
 
 # The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
 # The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
-func _geo_key(root: Node3D, meshes: Array) -> String:
+static func _geo_key(root: Node3D, meshes: Array) -> String:
 	var parts := PackedStringArray()
 	for m in meshes:
 		var mi := m as MeshInstance3D
