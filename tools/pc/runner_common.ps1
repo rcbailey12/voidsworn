@@ -356,6 +356,12 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
       $Matches[2]
       continue
     }
+    # Issue 1379: Godot's glb import extracts the munition bodies' embedded maps beside the glb files (ignored by
+    # godot/fx/munitions/.gitignore); the next import writes them again, so they are rebuildable like .godot/.
+    if (-not $inGen -and $line -match '^!! ("?)(godot/fx/munitions/[^/"\\:\r\n]+\.(?:jpg|png))\1$') {
+      $Matches[2]
+      continue
+    }
     if ($line -match '^!! ("?)(godot/(?:gen|assets/ships)/[^"\\:\r\n]+)(?<!/)\1$') {
       $path = $Matches[2]
       if (-not (Test-SharedBuildCopy $repo $path $forRemoval)) {

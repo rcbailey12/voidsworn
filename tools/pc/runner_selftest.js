@@ -44,6 +44,7 @@ assert(read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_SPACE_FREE_M
 assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \} catch \{ \}/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Log must not throw on a locked result.txt');
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
 assert(/\$limit = 600\.0/.test(read(path.join(here, 'runner_common.ps1'))), 'checkout preservation must allow ten minutes');
+assert(read(path.join(here, 'runner_common.ps1')).includes("godot/fx/munitions/[^/"), 'Reuse-Caches must count the munition maps the glb import extracts as rebuildable (issue 1379)');
 pass('shared runner contract, chain launcher and issue 722 start checks');
 // Issue 914: lookup order and logging belong to Invoke-Gh, including the board audit.
 const shared = read(path.join(here, 'runner_common.ps1'));
@@ -620,6 +621,19 @@ async function testCleanAndCacheReuse() {
   assert.equal(read(path.join(cache.repo, 'godot/.godot/imported/cached.bin')), 'cached import');
   assert.equal(read(path.join(cache.repo, 'godot/texture.png.import')), 'import settings');
   pass('cache-only ignored files allow reuse and both cache files survive');
+  const maps = await checkoutFixture(source, 'munition-maps', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/fx/munitions/*.jpg\ngodot/fx/munitions/*.png\n');
+    write(path.join(repo, 'godot/fx/munitions/corsair_rockets_hull_albedo.jpg'), 'extracted map');
+    write(path.join(repo, 'godot/fx/munitions/voidsworn_torp_parts_normal.png'), 'extracted normal');
+  });
+  assert.equal(read(path.join(maps.repo, 'godot/fx/munitions/corsair_rockets_hull_albedo.jpg')), 'extracted map');
+  pass('ignored munition maps extracted by the glb import allow reuse (issue 1379)');
+  const mapLookalike = await checkoutFixture(source, 'munition-map-lookalike', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/fx/munitions/\n');
+    write(path.join(repo, 'godot/fx/munitions/work/notes.jpg'), 'unique work');
+  }, true);
+  assert.equal(read(path.join(mapLookalike.old, 'godot/fx/munitions/work/notes.jpg')), 'unique work');
+  pass('a file in a folder under godot/fx/munitions is still kept aside');
   const pythonCaches = {
     '__pycache__/root.cpython-312.pyc': 'root bytecode',
     'tools/blender/build_sheets/__pycache__/weapon_match.cpython-312.pyc': 'nested bytecode',
