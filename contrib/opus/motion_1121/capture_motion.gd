@@ -156,7 +156,17 @@ func _moves() -> Array:
 		var best = null
 		var score := -1e9
 		for st in battle.api.reach(id):
-			var value: float = _long_score(battle, id, st.path) if kind == "long" else battle._maneuver_score(st.path, kind)
+			var value: float = -1e9
+			if kind == "long":
+				value = _long_score(battle, id, st.path)
+			elif kind == "final":
+				# battle._maneuver_score has no "final" case (PC run 1121O: every class unavailable); the issue 505
+				# capture's own rule: a move that runs first and ends on a turn into its final facing
+				var path: Array = st.path
+				if path.size() > 1 and battle._jt(path[-1].get("rot")) and not battle._jt(path[0].get("rot")):
+					value = float(path.size())
+			else:
+				value = battle._maneuver_score(st.path, kind)
 			if value > score:
 				score = value
 				best = st
