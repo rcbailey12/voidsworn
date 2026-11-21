@@ -1,0 +1,7 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-188d61a7dde6409c999edde453a3ed66\voidsworn-run-4a19986e7bc7474a808dcbc569d6fd9c\godot-profile-a1e5c0d9cdfb4fefb006e6759a6ed71f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 (G1) on authored: arc -180 to 180, trains -123.5 to 122.9 from rest; 116 degrees of its arc are kept clear of the ship
+[turret] turret_0 (G1) on this hull: arc -180 to 180, trains -123.5 to 123.0 from rest; 116 degrees of its arc are kept clear of the ship
+AUTHORED_INTERIORS failures=0 interior_triangles=52273
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-188d61a7dde6409c999edde453a3ed66\voidsworn-run-4a19986e7bc7474a808dcbc569d6fd9c\godot-profile-a1e5c0d9cdfb4fefb006e6759a6ed71f

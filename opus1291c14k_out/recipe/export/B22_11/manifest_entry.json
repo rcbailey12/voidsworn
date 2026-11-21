@@ -1,0 +1,50 @@
+{
+ "name": "The brood-sac, the Chorus carrier (The Chorus)",
+ "faction": "chorus",
+ "cls": "Carrier",
+ "band": "L",
+ "game_ship": "b_brood",
+ "length_world": 16.5,
+ "hardpoints": {
+  "gun": 4,
+  "engine": 4,
+  "bay": 5,
+  "breach": 7,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 7,
+ "turrets": 1,
+ "files": {
+  "B22_11.glb": {
+   "bytes": 18655896,
+   "sha256": "aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b"
+  },
+  "B22_11_base.jpg": {
+   "bytes": 921017,
+   "sha256": "6de86ef20617c64b10ed70732f18c166bbb1a0ccfcf979de465d285c4e1a64b5"
+  },
+  "B22_11_normal.png": {
+   "bytes": 6680193,
+   "sha256": "5e34fbf5f538eb74a9f4be3885d7bb3e6310d854f873d8cc6bd9944481b74d9c"
+  },
+  "B22_11_orm.png": {
+   "bytes": 5388851,
+   "sha256": "8ca0480fe267d0cbacf589c4148afcb35533a07dea4f5c73da5ca3133d3a5d67"
+  },
+  "B22_11_parts_base.jpg": {
+   "bytes": 1074493,
+   "sha256": "36675fd78f6da200034a8776b1c17ef623557a165db6307076096d9d62fcae10"
+  },
+  "B22_11_parts_normal.png": {
+   "bytes": 6237319,
+   "sha256": "a72e5a86a07e97f95b1dafeb8473ee323369e037ee4a77c47015e12276c64608"
+  },
+  "B22_11_parts_orm.png": {
+   "bytes": 6121977,
+   "sha256": "1aca309ee4aa00b3e74b8d3720e12908ddf81ff5712749bd381e8d1df01e054f"
+  }
+ },
+ "pc_path": "godot/assets/ships/B22_11/"
+}

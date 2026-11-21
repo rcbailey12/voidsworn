@@ -1,0 +1,10 @@
+[armadillo] 12 bands, 71 runs, 0 steps clamped
+[open_hull] L1: 1845 faces cut
+[open_hull] L2: 1050 faces cut
+[open_hull] L3: 1066 faces cut
+[open_hull] L4: 849 faces cut
+[open_hull] L5: 1225 faces cut
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\C14.npz (511800, 3, 3) objects 250
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

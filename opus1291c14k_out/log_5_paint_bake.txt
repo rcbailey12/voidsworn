@@ -1,0 +1,15 @@
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+PASS detail check: normal relief 5.14 deg (floor 3.50), albedo contrast 0.087 (floor 0.040), roughness spread 0.170 (floor 0.080), 563243 texels
+Stage 5 R224 density (reported, not a pass bar): paint flags 4 mesh flags 2
+   spinal: texels_per_unit2 1961952.4 is 0.73 of the hull's 2703509.2
+   launch: texels_per_unit2 2015265.3 is 0.75 of the hull's 2703509.2
+   sac: texels_per_unit2 1979115.8 is 0.73 of the hull's 2703509.2
+   engine: texels_per_unit2 2018783.0 is 0.75 of the hull's 2703509.2
+   launch: tris_per_unit2 18847.5 is 0.19 of the hull's 98905.7
+   launch: edges_per_unit2 8537.6 is 0.50 of the hull's 17110.1
+Stage 5: skipped C15s close-ups for sheet ship chorus_C14. 
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\r

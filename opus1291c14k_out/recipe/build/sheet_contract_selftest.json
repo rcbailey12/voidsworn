@@ -1,0 +1,46 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (16.5 = LENGTH 16.5)",
+  "ok   3 transverse seams at the sheet's stations",
+  "ok   0 longitudinal seams at the sheet's heights and spans",
+  "ok   4 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (2) has muzzles of its own",
+  "ok   1 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   4 engine exits and bell radii are the sheet's",
+  "ok   28 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (bioplasma F) was refused: M1: weapon 'bioplasma' arc 'F' names 0 slots of the data.js list [('spores', 'T')]",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-4.15 to -3.15) runs across the transverse seam B-3: one compartment each",
+  "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+ ],
+ "record": {
+  "sheet": "chorus_C14",
+  "game_ship": "b_brood",
+  "variant": "",
+  "model_length": 16.47944,
+  "scale": 0.06068166233250059,
+  "length_world": 16.5,
+  "t_lines": [
+   -0.22149,
+   0.11833,
+   0.26093
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 4,
+  "guns": 2,
+  "engines": 4,
+  "bays": 5,
+  "points": 14,
+  "turrets": [
+   "G1_turret"
+  ],
+  "interior_objects": 28,
+  "slots": [
+   "0 bioplasma F",
+   "1 spores T"
+  ]
+ }
+}

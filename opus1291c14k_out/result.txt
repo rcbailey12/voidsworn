@@ -1,0 +1,35 @@
+start chorus_C14 B22_11 board/pin-1543-doors1 Sat 11/21/2026 14:43:21.52 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1413e-h10 -> board/pc-out-1413e-h10
+   e42d1118b..3eb415cc4  main                   -> main
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\repo
+commit=4a73ba3abee5a62b3317a63030ca082a498e86d6
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+import exit 0 
+3_trace_hull start 14:48:06.87 
+3_trace_hull exit 0 at 14:49:48.92 
+4_parts_kit start 14:49:48.92 
+4_parts_kit exit 0 at 14:52:44.33 
+5_paint_bake start 14:52:44.33 
+5_paint_bake exit 0 at 14:57:12.41 
+6_lod start 14:57:12.41 
+6_lod exit 0 at 14:58:34.41 
+7_export start 14:58:34.41 
+7_export exit 0 at 15:02:03.03 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\repo\godot\assets\ships\B22_11\B22_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\picture_provenance.py 
+shots exit 0 
+collected 149 files this run wrote; 24 older files from earlier runs
+collect: files from earlier runs are listed in recipe_from_earlier_runs.txt and kept out of out\recipe 
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 338.4 GB free
+done PASS Sat 11/21/2026 15:04:10.25 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-188d61a7dde6409c999edde453a3ed66

@@ -1,0 +1,106 @@
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+Warning: No mesh data to join
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+14:58:44 | INFO: Starting glTF 2.0 export
+14:58:44 | INFO: Extracting primitive: B22_11
+14:58:46 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+14:58:49 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+14:58:52 | INFO: Primitives created: 16
+14:58:52 | INFO: Extracting primitive: door_0_lobe_0_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_0_lobe_1_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_0_lobe_2_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_0_lobe_3_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_0_lobe_4_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_0_lobe_5_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_0_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_1_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_2_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_3_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_4_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_1_lobe_5_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_0_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_1_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_2_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_3_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_4_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_2_lobe_5_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_0_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_1_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_2_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_3_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_4_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_3_lobe_5_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_0_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_1_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_2_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_3_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_4_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: door_4_lobe_5_mesh
+14:58:52 | INFO: Primitives created: 1
+14:58:52 | INFO: Extracting primitive: turret_0_turn
+14:58:52 | INFO: Primitives created: 2
+14:58:52 | INFO: Finished glTF 2.0 export in 7.446842432022095 s
+
+[export7] B22_11 triangles 497412 hard points {"gun": 4, "engine": 4, "bay": 5, "breach": 7, "core": 1, "rcs": 4, "board": 2} turrets 1 (10180 triangles) doors 5 (11880 triangles) files ['B22_11.glb', 'B22_11_base.jpg', 'B22_11_normal.png', 'B22_11_orm.png', 'B22_11_parts_base.jpg', 'B22_11_parts_normal.png', 'B22_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\C14.blend"
+
+Blender quit
