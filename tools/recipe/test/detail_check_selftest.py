@@ -111,6 +111,19 @@ def check_fixtures(tmp):
         rc = DC.main(str(empty), 'X1', str(empty / 'ship.json'))
     assert rc == 1
     ok('a job with no hull atlas fails for every faction')
+    # Artoo on PR 1521: a partial bake (good hull, parts ORM missing under visible parts skin) fails, opt-out or not
+    for ship in (dict(faction='hegemony'),
+                 dict(faction='hegemony', surface_detail={'opt_out': {'date': '2026-11-21', 'ryan': 'stand-in'}})):
+        part = tmp / ('partial_%d' % len(ship))
+        shutil.copytree(FIX / 'S10', part)
+        (part / 'S10_parts_orm.png').unlink()
+        (part / 'ship.json').write_text(json.dumps(dict(ship, faction='voidsworn')), encoding='utf-8')
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = DC.main(str(part), 'S10', str(part / 'ship.json'), masks=masks('S10'))
+        line = buf.getvalue().strip()
+        assert rc == 1 and 'S10_parts_orm' in line and line.startswith('detail check FAIL'), line
+    ok('a blend whose visible parts skin lost one map fails naming it, even with an opt-out: ' + line.split(': ', 1)[-1])
 
 
 JOB_COMMIT = 'e' * 40

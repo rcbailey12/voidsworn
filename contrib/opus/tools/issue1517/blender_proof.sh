@@ -12,6 +12,8 @@ cat > "$W/run.py" <<'PYEOF'
 import bpy, sys, runpy, os
 a = sys.argv[sys.argv.index('--') + 1:]
 bpy.ops.wm.open_mainfile(filepath=a[0])
+for name in filter(None, os.environ.get('DROP_IMAGES', '').split(',')):   # a partial bake: these images taken out
+    bpy.data.images.remove(bpy.data.images[name])
 sys.argv = ['detail_check.py', '--'] + a[2:]
 try:
     runpy.run_path(a[1], run_name='__main__')
@@ -36,4 +38,10 @@ proof C12 chorus_C12 392b9468b495d66cad4ffac29a6fe95d6f27a1fc 0      # Chorus ro
 proof S10 voidsworn_S10 "$MAIN" 0                                       # Sunward Vigil, accepted
 proof GV2 ithar_GV2 "$MAIN" 0                                           # Glasswright fighter, accepted
 proof KF1 corsair_KF1 237fd5b260efe1be2df04aba5492ed7d41e505c6 0      # Hullbreaker fighter KF1 L, Ryan OK Nov 21
-echo "PASS blender_proof: O2 fails, C12, S10, GV2 and KF1 L pass, read from the blend with no atlas files on disk"
+# Artoo on PR 1521: the same S10 blend with its parts ORM taken out must fail and name it, not pass on the hull alone
+set +e
+DROP_IMAGES=S10_parts_orm "$PY" "$W/run.py" -- "$W/S10/job/S10.blend" "$REPO/tools/recipe/detail_check.py" "$W/S10/job" S10 "$REPO/tools/recipe/ships/voidsworn_S10.json" > "$W/S10/log_partial.txt" 2>&1
+code=$?; set -e
+line=$(grep -E '^(PASS detail check|detail check FAIL|OPT-OUT detail check)' "$W/S10/log_partial.txt")
+case "$code $line" in "1 detail check FAIL"*S10_parts_orm*) echo "PASS S10 partial bake exit 1: $line";; *) echo "FAILED S10 partial bake exit $code: $line"; exit 1;; esac
+echo "PASS blender_proof: O2 and a partial S10 fail, C12, S10, GV2 and KF1 L pass, read from the blend with no atlas files on disk"

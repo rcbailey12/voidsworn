@@ -51,7 +51,7 @@ not for the Chorus or Glasswright ones, whose unwraps differ between the two bui
 | IM5 Iron Mandate | Navy | main | 1.19 | 0.202 | 0.151 | 0.58 | accepted | PASS |
 | O2 Convoy | Navy | pin-1413c and main (same) | 1.46 | 0.120 | 0.154 | 0.62 | sent back as clay | FAIL (albedo) |
 | O3 Relay | Navy | main | 1.52 | 0.074 | 0.196 | 0.53 | sent back as clay | FAIL (albedo) |
-| HB1 bomber | Navy | main | 1.34 | 0.153 | 0.109 | 0.35 | published Nov 21, then named by Ryan for the Navy paint fix with O2 and O3 | FAIL (rough) |
+| HB1 bomber | Navy | main | 1.34 | 0.153 | 0.109 | 0.35 | published Nov 21, now in the Navy paint fix with O2 and O3 | FAIL (rough) |
 | A18 Raider | Hullbreakers | main | 1.64 | 0.387 | 0.223 | 0.76 | accepted | PASS |
 | A19 Gutship | Hullbreakers | main | 1.77 | 0.375 | 0.256 | 0.78 | accepted | PASS |
 | KF1 L fighter | Hullbreakers | 237fd5b2 (pin-1373l) | 7.45 | 0.302 | 0.146 | 0.79 | accepted Nov 21 | PASS |
@@ -65,14 +65,16 @@ not for the Chorus or Glasswright ones, whose unwraps differ between the two bui
 "covered" is the share of outside triangles left out as covered.
 
 **Known limits:**
-- HB1 fails on roughness spread (0.109 against 0.12). It is not counted as an accepted ship: Ryan put it in the Nov 21 Navy
-  paint fix with O2 and O3, and the Navy stack fix reaches all three (R333). Otherwise Ryan can opt it out.
+- HB1 fails on roughness spread (0.109 against 0.12). It is not counted as an accepted ship: it is in the Nov 21 Navy paint
+  fix with O2 and O3, and the Navy stack fix rebakes all three (R333). Otherwise Ryan can opt it out.
 - KF1 L (Ryan's OK Nov 21, "Engines slightly bigger again and then go") is the least-detailed accepted Hullbreaker on
   colour and roughness, so it sets those two floors. An earlier KF1 build at main (c2c6795e) measured 1.52 / 0.301 / 0.127
   and passes them too. The check does not judge shape.
 - The Navy colour margin is thin: H10 is 0.04 over its floor.
 - Cloud and PC bakes of the same ship differ: normal relief read about 0.3 higher in the cloud on O2's old hull-only sample,
   and colour contrast was within 0.05. A floor near a ship's number can therefore flip between the two.
+- An atlas with visible skin must have all three baked maps in the blend. If one is missing the check fails and names it,
+  and an opt-out does not excuse it (Artoo on PR 1521). An atlas with no visible skin is skipped.
 - Torpedo and rocket bodies have no stage 5 bake and are not measured.
 
 ## How the self-test fixtures were made

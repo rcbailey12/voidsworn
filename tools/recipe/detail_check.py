@@ -178,9 +178,15 @@ def skin_texels(cell, res, info=None):
     return out
 
 
+class MissingMap(Exception):
+    """a map of an atlas with visible skin on it is missing: the check fails rather than measure the rest alone"""
+
+
 def measure(job, cell, r=3, masks=None):
     """the three numbers over the skin's texels. masks: {atlas: bool array REF x REF} instead of the open blend's UVs (the
-    self-test's fixtures); without either, outside Blender, every texel of the atlas counts"""
+    self-test's fixtures); without either, outside Blender, every texel of the atlas counts. An atlas with visible skin
+    must have all three maps, or MissingMap is raised naming them (Artoo on PR 1521: a detailed hull must not pass alone
+    when the parts atlas lost its ORM); an atlas with no visible skin is skipped"""
     import numpy as np
     if masks is None:
         try:
@@ -194,26 +200,32 @@ def measure(job, cell, r=3, masks=None):
         inside, texel_idx, cover = 'mask', None, {}
     sums = dict(normal=[], albedo=[], lum=[], rough=[])
     texels = 0
+    names = ('normal', 'albedo', 'orm')
     for atlas in ('hull', 'parts'):
-        if inside is True:      # inside Blender: the open blend's own baked images, the ones stage 7 exports
-            maps = [_blend_atlas('%s_%s_%s' % (cell, atlas, k)) for k in ('normal', 'albedo', 'orm')]
-            if any(m is None for m in maps):
+        if masks is not None:   # the visible skin first: an atlas none of it lands on is skipped, maps or not
+            if atlas not in masks or not masks[atlas].any():
                 continue
+        elif texel_idx is not None and texel_idx.get(atlas) is None:
+            continue
+        if inside is True:      # inside Blender: the open blend's own baked images, the ones stage 7 exports
+            maps = [_blend_atlas('%s_%s_%s' % (cell, atlas, k)) for k in names]
+            missing = ['%s_%s_%s' % (cell, atlas, k) for k, m in zip(names, maps) if m is None]
+            if missing:
+                raise MissingMap('the visible %s skin has no baked %s in the blend' % (atlas, ', '.join(missing)))
             nrm, alb, orm = maps
         else:                   # the self-test's fixtures, or a folder of atlas files outside Blender
             base = os.path.join(job, '%s_%s_' % (cell, atlas))
-            if not os.path.exists(base + 'normal.png'):
-                continue
+            missing = [os.path.basename(base + k + '.png') for k in names if not os.path.exists(base + k + '.png')]
+            if masks is None and len(missing) == 3:
+                continue        # no mask and no files: this cell has no such atlas
+            if missing:
+                raise MissingMap('the visible %s skin has no %s' % (atlas, ', '.join(missing)))
             nrm, alb, orm = _load(base + 'normal.png'), _load(base + 'albedo.png'), _load(base + 'orm.png')
         res = nrm.shape[0]
         if masks is not None:
-            if atlas not in masks:
-                continue
             sel = np.nonzero(masks[atlas])
         elif texel_idx is not None:
-            idx = texel_idx.get(atlas)
-            if idx is None:
-                continue
+            idx = texel_idx[atlas]
             flat = np.unique(idx[0] * res + idx[1])
             sel = (flat // res, flat % res)
         else:
@@ -288,9 +300,14 @@ def main(job, cell, ship_json, masks=None):
         print('detail check FAIL: the ship json %s could not be read (%s)' % (ship_json, e))
         return 1
     floors, opt, problem = floors_for(ship)
-    m = measure(job, cell, masks=masks)
+    try:
+        m = measure(job, cell, masks=masks)
+    except MissingMap as e:     # never excused by an opt-out: the check could not see the whole skin
+        m, problem = None, 'a map is missing (%s)' % e
     rec = dict(faction=ship.get('faction'), floors=floors, opt_out=opt, problem=problem, measured=m)
-    if m is None:
+    if problem and m is None:
+        line, low = 'not measured', list(KEYS)
+    elif m is None:
         line = 'no outside skin to measure: the blend has no baked %s_hull_normal, _albedo and _orm images over hull UVs' % cell
         low = list(KEYS)
     else:
