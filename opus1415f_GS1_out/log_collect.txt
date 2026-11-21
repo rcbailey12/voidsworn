@@ -1,0 +1,338 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:28:07 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\
+	    New File  		     285	audit.json100%  
+	    New File  		   38513	bow_blink.gif.provenance.json100%  
+	    New File  		     507	concept_camera.json100%  
+	    New File  		    2011	density.json100%  
+	    New File  		    2551	GS1.json100%  
+	    New File  		     418	log_audit.txt100%  
+	    New File  		    3764	log_audit_selftest.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		   25320	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     124	log_blink.txt100%  
+	    New File  		     681	log_build.txt100%  
+	    New File  		      65	log_clay.txt100%  
+	    New File  		      60	log_close.txt100%  
+	    New File  		     451	log_detail.txt100%  
+	    New File  		    1393	log_export.txt100%  
+	    New File  		     574	log_export_check.txt100%  
+	    New File  		    1852	log_export_selftest.txt100%  
+	    New File  		    4653	log_godot.txt100%  
+	    New File  		     648	log_install_cache.txt100%  
+	    New File  		     441	log_install_readback.txt100%  
+	    New File  		    1929	log_lod.txt100%  
+	    New File  		  314075	log_render.txt 41%   83%  100%  
+	    New File  		   56989	log_render_concept.txt100%  
+	    New File  		  112291	log_render_far.txt100%  
+	    New File  		    1227	log_sheet_contract.txt100%  
+	    New File  		      98	log_sil.txt100%  
+	    New File  		     184	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   64226	log_surface.txt100%  
+	    New File  		     689	log_thirds.txt100%  
+	    New File  		     689	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     346	audit_into_ship.json100%  
+	    New File  		     296	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     285	audit_no_longitudinal.json100%  
+	    New File  		     224	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\build\
+	    New File  		     608	GS1_build.json100%  
+	    New File  		    1607	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\glb\
+	    New File  		     310	GS1_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\
+	    New File  		   20813	bench209.json100%  
+	    New File  		    6142	GS1_auto_20.png.provenance.json100%  
+	    New File  		    6144	GS1_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	GS1_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	GS1_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	GS1_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	GS1_hand_20.png.provenance.json100%  
+	    New File  		    6144	GS1_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	GS1_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	GS1_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	GS1_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	GS1_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	GS1_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	GS1_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	GS1_off_20.png.provenance.json100%  
+	    New File  		    6143	GS1_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	GS1_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	GS1_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	GS1_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\r\
+	    New File  		   11332	GS1_battle.png.provenance.json100%  
+	    New File  		   41629	GS1_below.png.provenance.json100%  
+	    New File  		   41686	GS1_below_clay.png.provenance.json100%  
+	    New File  		   41630	GS1_concept.png.provenance.json100%  
+	    New File  		   41853	GS1_concept_cl.png.provenance.json100%  
+	    New File  		   41671	GS1_concept_clay.png.provenance.json100%  
+	    New File  		   41806	GS1_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41646	GS1_hero.png.provenance.json100%  
+	    New File  		   41707	GS1_hero_clay.png.provenance.json100%  
+	    New File  		   41684	GS1_hero_s.png.provenance.json100%  
+	    New File  		   41673	GS1_hero_s_clay.png.provenance.json100%  
+	    New File  		   41568	GS1_side.png.provenance.json100%  
+	    New File  		   41649	GS1_side_clay.png.provenance.json100%  
+	    New File  		   41634	GS1_side_s.png.provenance.json100%  
+	    New File  		   41707	GS1_side_s_clay.png.provenance.json100%  
+	    New File  		   41623	GS1_top.png.provenance.json100%  
+	    New File  		   41688	GS1_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\surface\
+	    New File  		     798	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        87        87         0         0         0         0
+   Bytes :    1.38 m    1.38 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            23858655 Bytes/sec.
+   Speed :            1365.203 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:28:07 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:28:07 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\r\
+	    New File  		   83809	GS1_battle.png100%  
+	    New File  		   2.8 m	GS1_below.png 17%   35%   53%   71%   89%  100%  
+	    New File  		   1.9 m	GS1_below_clay.png 12%   25%   38%   50%   63%   76%   88%  100%  
+	    New File  		  986514	GS1_concept.png 26%   53%   79%  100%  
+	    New File  		 1002001	GS1_concept_cl.png 26%   52%   78%  100%  
+	    New File  		  774012	GS1_concept_clay.png 33%   67%  100%  
+	    New File  		  779266	GS1_concept_clay_cl.png 33%   67%  100%  
+	    New File  		   1.1 m	GS1_hero.png 21%   42%   64%   85%  100%  
+	    New File  		 1025626	GS1_hero_clay.png 25%   51%   76%  100%  
+	    New File  		   1.1 m	GS1_hero_s.png 21%   42%   63%   84%  100%  
+	    New File  		   1.0 m	GS1_hero_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.6 m	GS1_side.png 18%   37%   55%   74%   93%  100%  
+	    New File  		   1.9 m	GS1_side_clay.png 12%   25%   37%   50%   63%   75%   88%  100%  
+	    New File  		   2.7 m	GS1_side_s.png 18%   36%   55%   73%   92%  100%  
+	    New File  		   2.0 m	GS1_side_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.7 m	GS1_top.png 18%   36%   54%   72%   91%  100%  
+	    New File  		   1.9 m	GS1_top_clay.png 12%   25%   38%   51%   64%   77%   90%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   26.62 m   26.62 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1395689550 Bytes/sec.
+   Speed :            79861.996 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:28:07 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:28:07 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\surface\
+	    New File  		   70812	surface_below.png100%  
+	    New File  		   62695	surface_bow.png100%  
+	    New File  		   68562	surface_port.png100%  
+	    New File  		   68557	surface_starboard.png100%  
+	    New File  		   63251	surface_stern.png100%  
+	    New File  		   70713	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   395.1 k   395.1 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            67431666 Bytes/sec.
+   Speed :            3858.470 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:28:07 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:28:07 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\godot\
+	    New File  		  576355	GS1_auto_20.png 45%   90%  100%  
+	    New File  		  654134	GS1_auto_d1.2.png 40%   80%  100%  
+	    New File  		  205686	GS1_auto_d16.0.png 63%  100%  
+	    New File  		  305021	GS1_auto_d3.0.png 42%   85%  100%  
+	    New File  		  230179	GS1_auto_d8.0.png 56%  100%  
+	    New File  		  578778	GS1_hand_20.png 45%   90%  100%  
+	    New File  		  656756	GS1_hand_d1.2.png 39%   79%  100%  
+	    New File  		  202650	GS1_hand_d17.4.png 64%  100%  
+	    New File  		  202159	GS1_hand_d18.6.png 64%  100%  
+	    New File  		  308047	GS1_hand_d2.9.png 42%   85%  100%  
+	    New File  		  299818	GS1_hand_d3.1.png 43%   87%  100%  
+	    New File  		  231876	GS1_hand_d7.75.png 56%  100%  
+	    New File  		  230052	GS1_hand_d8.25.png 56%  100%  
+	    New File  		  579599	GS1_off_20.png 45%   90%  100%  
+	    New File  		  656531	GS1_off_d1.2.png 39%   79%  100%  
+	    New File  		  205815	GS1_off_d16.0.png 63%  100%  
+	    New File  		  304296	GS1_off_d3.0.png 43%   86%  100%  
+	    New File  		  230708	GS1_off_d8.0.png 56%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    6.35 m    6.35 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           475604285 Bytes/sec.
+   Speed :           27214.295 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:28:07 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 10:28:07 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\export\I14_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\out\recipe\export\I14_23\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\export\I14_23\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\export\I14_23\
+	    New File  		      25	export_status.txt100%  
+	    New File  		   7.5 m	I14_23.glb  6.6% 13.3% 19.9% 26.6% 33.2% 39.9% 46.5% 53.2% 59.9% 66.5% 73.2% 79.8% 86.5% 93.1% 99.8%100%  
+	    New File  		   1.2 m	I14_23_base.jpg 20%   40%   61%   81%  100%  
+	    New File  		    2901	I14_23_check.json100%  
+	    New File  		  598772	I14_23_emission.jpg 43%   87%  100%  
+	    New File  		    8229	I14_23_export.json100%  
+	    New File  		   4.6 m	I14_23_normal.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		   4.7 m	I14_23_orm.png 10%   20%   31%   41%   52%   62%   73%   83%   93%  100%  
+	    New File  		  686458	I14_23_parts_base.jpg 38%   76%  100%  
+	    New File  		   4.9 m	I14_23_parts_normal.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		   3.7 m	I14_23_parts_orm.png 13%   26%   40%   53%   66%   80%   93%  100%  
+	    New File  		    1427	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\export\I14_23\_gltf_source\
+	    New File  		   2.9 m	GS1_hull_albedo.png 16%   33%   50%   67%   84%  100%  
+	    New File  		   1.6 m	GS1_hull_emission.png 15%   30%   45%   60%   75%   90%  100%  
+	    New File  		   4.6 m	GS1_hull_normal.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		   4.7 m	GS1_hull_orm.png 10%   20%   31%   41%   52%   62%   73%   83%   93%  100%  
+	    New File  		  495106	GS1_parts_albedo.png 26%   52%   79%  100%  
+	    New File  		   4.9 m	GS1_parts_normal.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		   3.7 m	GS1_parts_orm.png 13%   26%   40%   53%   66%   80%   93%  100%  
+	    New File  		   7.4 m	I14_23.bin  6.6% 13.3% 20.0% 26.7% 33.3% 40.0% 46.7% 53.4% 60.0% 66.7% 73.4% 80.1% 86.7% 93.4%100%  
+	    New File  		   31083	I14_23.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   58.88 m   58.88 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1871061666 Bytes/sec.
+   Speed :           107063.007 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 10:28:07 AM
+

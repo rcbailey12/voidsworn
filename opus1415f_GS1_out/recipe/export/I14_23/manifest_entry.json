@@ -1,0 +1,53 @@
+{
+ "name": "Glasswright sliver GS1",
+ "faction": "ithar",
+ "cls": "Frigate",
+ "band": "S",
+ "game_ship": "i_wisp",
+ "length_world": 6.5,
+ "hardpoints": {
+  "gun": 3,
+  "engine": 1,
+  "breach": 1,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 1,
+ "turrets": 0,
+ "files": {
+  "I14_23.glb": {
+   "bytes": 7875604,
+   "sha256": "dc1bfc9cd866396667ddc75818afa7a679fe1165414016aedacfe1d7f2f4ecf9"
+  },
+  "I14_23_base.jpg": {
+   "bytes": 1288898,
+   "sha256": "f9c70971a93a284db0316871ffb96751d46908385b8e13ddb89d0d65fe18a604"
+  },
+  "I14_23_emission.jpg": {
+   "bytes": 598772,
+   "sha256": "f39244fb7e38663024b3a1f1367facede4290ed5104d94940fe121530dab36c7"
+  },
+  "I14_23_normal.png": {
+   "bytes": 4910149,
+   "sha256": "463718c2f68b7122ed78aa897cb02544b8b150b53c051c2e372602785ffd6664"
+  },
+  "I14_23_orm.png": {
+   "bytes": 5024485,
+   "sha256": "cbba78ae80282c1dafc446d1f06555c32ce6461b7eaa77029335eb3c2edfd1dc"
+  },
+  "I14_23_parts_base.jpg": {
+   "bytes": 686458,
+   "sha256": "6f2c4813850cd65060c06808bd6bcab2f610040e4ed9f43c79e133b00cf447c1"
+  },
+  "I14_23_parts_normal.png": {
+   "bytes": 5191733,
+   "sha256": "0d5a97816316057351ca785e33fa814a92ab6782640c23c39289fe5ebb352332"
+  },
+  "I14_23_parts_orm.png": {
+   "bytes": 3915425,
+   "sha256": "3dfb8e60b3cc98715cb0386a64b0145c391b9ca4d265afe9c534ab396d6e0666"
+  }
+ },
+ "pc_path": "godot/assets/ships/I14_23/"
+}
