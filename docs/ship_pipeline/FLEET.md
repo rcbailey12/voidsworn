@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 21 new builds installed, 2 with a build sheet but the old hull in game, 4 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 25 new builds installed, 2 with a build sheet but the old hull in game, 0 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -57,10 +57,10 @@ of this is the playable exe (that is a separate snapshot).
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Sliver | Frigate | `I14_23` | Concept picked, old hull in game |  | [frigate_sliver_r2a.webp](../../contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp) | R369 |  | #1415 | Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337). |
-| Lancet | Destroyer | `I11_37` | Concept picked, old hull in game |  | [destroyer_lancet_s1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp) | R369 |  | #1415 | Ryan's Nov 16 pick Step 1. |
-| Prism | Cruiser | `I15_11` | Concept picked, old hull in game |  | [cruiser_prism_s3.webp](../../contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp) | R369 |  | #1415 | Ryan's Nov 16 pick Step 3, twin pane hulls. |
-| Aperture | Carrier | `I16_11` | Concept picked, old hull in game |  | [carrier_aperture_v1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp) | R369 |  | #1415 | Ryan's Nov 16 pick V1. |
+| Sliver | Frigate | `I14_23` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb 6421b23a) | [frigate_sliver_r2a.webp](../../contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp) | R369 | ithar_GS1 |  | Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337). |
+| Lancet | Destroyer | `I11_37` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb df9f533f) | [destroyer_lancet_s1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp) | R369 | ithar_GL1 |  | Ryan's Nov 16 pick Step 1. |
+| Prism | Cruiser | `I15_11` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb cdb9a547) | [cruiser_prism_s3.webp](../../contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp) | R369 | ithar_GP1 |  | Ryan's Nov 16 pick Step 3, twin pane hulls. |
+| Aperture | Carrier | `I16_11` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb 8efcd98f) | [carrier_aperture_v1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp) | R369 | ithar_GA1 |  | Ryan's Nov 16 pick V1. |
 | The Unfinished (flagship, CD5) | Ark | `I8_37` | New-format build on main | Pending: Warming round, champagne ribbons (issue 1282). Accepted before that: Ryan, Nov 20 (R348, put it in, then warm it up). | [concept.jpg](../../docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg) | R298 | ithar_CD5 |  |  |
 
 ## Eclipse (`deathless`)
