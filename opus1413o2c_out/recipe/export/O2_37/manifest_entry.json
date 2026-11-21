@@ -1,0 +1,52 @@
+{
+ "name": "Convoy transport (Hegemony Navy objective)",
+ "faction": "hegemony",
+ "cls": "transport",
+ "band": "M",
+ "game_ship": "obj_transport",
+ "length_world": 11.0,
+ "hardpoints": {
+  "engine": 4,
+  "breach": 4,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 4,
+ "turrets": 0,
+ "files": {
+  "O2_37.glb": {
+   "bytes": 2672980,
+   "sha256": "883fa2af0250c829f7da720f2901c48b4ac556396600992970f17a3d15f78d3a"
+  },
+  "O2_37_base.jpg": {
+   "bytes": 901266,
+   "sha256": "442a2875b2e4e85c415bb180effbedf0cff7e699ffb813cf3c5924586d840932"
+  },
+  "O2_37_glow_emission.jpg": {
+   "bytes": 339366,
+   "sha256": "20919983e0f3c93b9929c548e5d4b0fd79fc94b9581b86eff5b7a31b2c7f9729"
+  },
+  "O2_37_normal.png": {
+   "bytes": 4736060,
+   "sha256": "370d0ca5545def4c01e1db371f1e99976337154901802fa0a912338936155193"
+  },
+  "O2_37_orm.png": {
+   "bytes": 5212681,
+   "sha256": "7902ba20734791bf0dfa073425a365c4a9cff6009c37256c8afeebe379842c45"
+  },
+  "O2_37_parts_base.jpg": {
+   "bytes": 722634,
+   "sha256": "f6de82a7708dbf66157231c123dc6eda90ac8843530ab9cf8297ef319d65f63c"
+  },
+  "O2_37_parts_normal.png": {
+   "bytes": 4660972,
+   "sha256": "ec62092ac6888f14052b686c3f0e1cdf1a43d74eda9e86c23861f07b11271314"
+  },
+  "O2_37_parts_orm.png": {
+   "bytes": 4896579,
+   "sha256": "bc92947b777d484a678a55ff0a91194b69cdd67436b9ea9aae3c8c7d4645e655"
+  }
+ },
+ "pc_path": "godot/assets/ships/O2_37/"
+}

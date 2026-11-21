@@ -1,0 +1,287 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "authored interiors: 4504 triangles, 10 surfaces; authored seams: 3",
+  "20236 triangles (13440 on part surfaces), box x -0.492 to 0.508, y -0.072 to 0.108, z -0.165 to 0.165",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 0 written (none); marked by the kit: none"
+ ],
+ "cls": "transport",
+ "faction": "hegemony",
+ "expected_breach": 4,
+ "required": {
+  "weapon_slots": 0,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 4,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [],
+ "hardpoints": {
+  "board": 2,
+  "breach": 4,
+  "core": 1,
+  "engine": 4,
+  "rcs": 2
+ },
+ "maps": [
+  "O2_37_normal.png",
+  "O2_37_orm.png",
+  "O2_37_base.jpg",
+  "O2_37_parts_normal.png",
+  "O2_37_parts_orm.png",
+  "O2_37_parts_base.jpg",
+  "O2_37_glow_emission.jpg"
+ ],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.1069,
+    -0.0107,
+    -0.1381
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    -0.1069,
+    -0.0107,
+    0.1381
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.2156,
+    0.0058,
+    -0.1617
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "clear": 0.0397
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.0,
+    0.0058,
+    0.162
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "clear": 0.0725
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    -0.0367,
+    -0.0292,
+    -0.1556
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    -0.817,
+    -0.576
+   ],
+   "clear": 0.0549
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    -0.2156,
+    0.0058,
+    0.1397
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "clear": 0.0534
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.2762,
+    0.0134,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49,
+    -0.0143,
+    -0.1016
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0152,
+   "bell": {
+    "radius": 0.0284,
+    "plane_tolerance": 0.007105,
+    "rim_sectors": 12,
+    "throat_vertices": 119,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49,
+    -0.0143,
+    -0.0339
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0152,
+   "bell": {
+    "radius": 0.0284,
+    "plane_tolerance": 0.007105,
+    "rim_sectors": 12,
+    "throat_vertices": 119,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.49,
+    -0.0143,
+    0.0339
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0152,
+   "bell": {
+    "radius": 0.0284,
+    "plane_tolerance": 0.007105,
+    "rim_sectors": 12,
+    "throat_vertices": 119,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_eng_3",
+   "p": [
+    -0.49,
+    -0.0143,
+    0.1016
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0152,
+   "bell": {
+    "radius": 0.0284,
+    "plane_tolerance": 0.007105,
+    "rim_sectors": 12,
+    "throat_vertices": 119,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.4956,
+    0.0,
+    -0.0739
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.4956,
+    0.0,
+    0.0739
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  }
+ ],
+ "turrets": []
+}

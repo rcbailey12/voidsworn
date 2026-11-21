@@ -1,0 +1,10 @@
+{
+ "result": "FAIL",
+ "failures": [
+  "no guns recorded (r209_guns is empty)"
+ ],
+ "problems": [],
+ "crossing_break_lines": [],
+ "guns": 0,
+ "guns_with_normals": 0
+}

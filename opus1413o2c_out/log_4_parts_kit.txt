@@ -1,0 +1,32 @@
+{
+ "problems": [],
+ "parts": 180,
+ "crossing_break_lines": [],
+ "structure_across_seams": [
+  "H3"
+ ],
+ "guns_with_normals": 0,
+ "guns_into_ship": 0,
+ "guns": 0,
+ "break_lines": {
+  "t_lines": [
+   -0.21559020227708542,
+   0.0,
+   0.21559020227708542
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "PASS"
+}REPORT O2 outline overlap 58.7 percent, outline_gate 90 is context only (not a pass bar)
+  outline O2: bow 57.1, midship 63.4, stern 54.0, whole 58.7 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 60.0, midship 54.7, stern 66.3
+  REPORT bow overlap 57.1 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 63.4 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 54.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 58.7 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera O2: game bow 80.0 midship 84.5 stern 82.1 whole 82.5, studio bow 76.5 midship 94.5 stern 89.6 whole 88.4
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+Stage 4: skipped C15s clay close-ups for sheet ship hegemony_O2. 
+Stage 4 done: audit PASS, outline overlap reported above (not a pass bar, RULEBOOK 5.8)
