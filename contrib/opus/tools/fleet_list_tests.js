@@ -63,7 +63,7 @@ const data = fleet.build(ROOT);
 for (const p of data.problems) { bad++; console.log('FAIL fleet list: ' + p); }
 checks++;
 // Artoo on PR 1425: the two recovered Glasswright craft picks (R370) must resolve for a brief, and Bladeback must not read
-// as done while its installed files carry the old armour.
+// as done while its installed files carry the old armour (until its run D publish, Nov 20).
 t('the R370 craft picks resolve', () => {
   for (const [key, file] of [['ithar|fighter', 'fighter_starling_v2d.webp'], ['ithar|bomber', 'bomber_heliograph_w4b.webp']]) {
     const row = fleet.findPick(data, key);
@@ -74,9 +74,11 @@ t('the R370 craft picks resolve', () => {
   assert.ok(fleet.findPick(data, 'ithar|Cruiser') && fleet.findPick(data, 'I15_11'), 'slot key and hull code both resolve');
   assert.strictEqual(fleet.findPick(data, ''), null);
 });
-t('Bladeback reads as pending', () => {
+// Nov 20: Bladeback's run D (armour almost everywhere, R374) is published, so it now reads as accepted with that ruling.
+t('Bladeback reads as accepted after run D', () => {
   const row = fleet.findPick(data, 'chorus|Cruiser');
-  assert.ok(fleet.lookOf(row).startsWith('Pending:'), fleet.lookOf(row));
+  const look = fleet.lookOf(row);
+  assert.ok(look.startsWith('Accepted:') && look.includes('R374'), look);
 });
 t('FLEET.md is current', () => {
   const page = path.join(ROOT, fleet.PAGE);
