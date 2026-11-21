@@ -2,7 +2,7 @@
   "code": "ithar_GP1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GP1.py",
-  "design_sha256": "9e0179f0ed5a008f198bab4c8cd8bf8a52c05b7f4fcb53308b969171d18b90ec",
+  "design_sha256": "0df5dcb21ff27b40b8a646830b2ab2858aaca11e8397f4a63b495dc0c427ab50",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_song",
   "cls": "Cruiser",

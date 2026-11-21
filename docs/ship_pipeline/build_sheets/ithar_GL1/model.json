@@ -424,13 +424,15 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 244192,
-      "unjoined_surfaces": 67,
-      "material_surfaces": 10,
+      "triangles": 256270,
+      "unjoined_surfaces": 70,
+      "material_surfaces": 12,
       "materials": [
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",
@@ -464,8 +466,11 @@
       "T1_mount_gw_light",
       "T1_mount_gw_drive_core",
       "T1_mount_gw_gem_violet",
+      "T1_mount_gw_pearl",
       "T1_mount_gw_silver",
-      "T1_mount_gw_pearl"
+      "T1_mount_gw_gem_amber",
+      "T1_mount_gw_gem_green",
+      "T1_mount_gw_drive_cut"
     ],
     "E1": [
       "E1_grown_stern",
@@ -488,8 +493,8 @@
   "dimensions": [
     9.286999702453613,
     2.53286612033844,
-    2.6163253784179688
+    2.6206436157226562
   ],
   "design_sha256": "3c43706fa17726da936e9b14d60604f8214c24607a77af5271b78eac903e64eb",
-  "kit_sha256": "5a44567d9e8b8f894b4eb562a71d5ba55c07b5e40a5be08eb8c43d0d7c4c2be9"
+  "kit_sha256": "20523ca6c199ed7a2d7209003ce8bdc872d20c584c85223d8cb098ab4c00ffb2"
 }

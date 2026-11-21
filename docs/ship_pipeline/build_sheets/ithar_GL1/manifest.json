@@ -104,8 +104,11 @@
         "T1_mount_gw_light",
         "T1_mount_gw_drive_core",
         "T1_mount_gw_gem_violet",
+        "T1_mount_gw_pearl",
         "T1_mount_gw_silver",
-        "T1_mount_gw_pearl"
+        "T1_mount_gw_gem_amber",
+        "T1_mount_gw_gem_green",
+        "T1_mount_gw_drive_cut"
       ],
       "full_interior": true,
       "attachment": "separate whole group, grown into its parent skin"
@@ -213,13 +216,15 @@
   "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
   "budget": {
     "outside": {
-      "triangles": 244192,
-      "unjoined_surfaces": 67,
-      "material_surfaces": 10,
+      "triangles": 256270,
+      "unjoined_surfaces": 70,
+      "material_surfaces": 12,
       "materials": [
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",

@@ -358,33 +358,123 @@ def shard_cluster(K, fid, root, length, r0, n=3, spread=0.16, note=''):
     smooth_group(K, fid)
 
 
+def _band(rad, x0, x1, a_of, hw, lift=1.05, depth=0.06, nu=40, nv=5):
+    """a closed pearl band lying on a round body: rad(x) the body radius, a_of(x) the band's centre angle, hw its half
+    width in radians; outer face at lift*rad, inner face depth*rad below it, side walls closed"""
+    vv, ff = [], []
+    for layer, k in ((0, lift), (1, lift - depth)):
+        for i in range(nu + 1):
+            x = x0 + (x1 - x0) * i / nu
+            t = i / nu
+            w = hw * max(0.15, math.sin(math.pi * (0.04 + 0.92 * t))) ** 0.5
+            for j in range(nv + 1):
+                a = a_of(x) + w * (-1 + 2 * j / nv)
+                r = rad(x) * k
+                vv.append((x, r * math.cos(a), r * math.sin(a)))
+    row = nv + 1
+    off = (nu + 1) * row
+    for i in range(nu):
+        for j in range(nv):
+            a_, b_ = i * row + j, i * row + j + 1
+            ff.append((a_, b_, b_ + row, a_ + row))
+            ff.append((off + a_ + row, off + b_ + row, off + b_, off + a_))
+    for i in range(nu):
+        for j in (0, nv):
+            a_, b_ = i * row + j, (i + 1) * row + j
+            ff.append((a_, off + a_, off + b_, b_) if j == 0 else (b_, off + b_, off + a_, a_))
+    for i in (0, nu):
+        for j in range(nv):
+            a_, b_ = i * row + j, i * row + j + 1
+            ff.append((a_, b_, off + b_, off + a_) if i == 0 else (off + a_, off + b_, b_, a_))
+    return vv, ff
+
+
 def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
     """a star torpedo carried on the keel in a grown pearl cradle (startorp F). The cradle's two arms rise into the hull
-    (cradle_up: how far above the torpedo axis the hull's underside sits), so it reads carried, not docked."""
+    (cradle_up: how far above the torpedo axis the hull's underside sits), so it reads carried, not docked.
+
+    Round 2 (Ryan Nov 20, "the torpedo on lancet needs more detail"): the body is a small Glasswright ship in its own right:
+    four pearl ribbons twist along a stored-light body with silver edges, a pearl collar behind the cut nose, a glowing mosaic
+    streak down each gap, three leaf vanes and a rose-cut drive lens with a violet bloom at the tail."""
     p = own_part()
-    body = [(length * (i / 40 - 0.5), 0, 0) for i in range(41)]
-    radii = [r0 * max(0.05, math.sin(math.pi * (0.04 + 0.92 * i / 40))) ** 0.55 for i in range(41)]
-    p.add('star_body', 'mount', 'gw_light', tube_mesh(body, radii, 20))
-    p.add('star_core', 'mount', 'gw_drive_core', ellipsoid((0.05 * length, 0, 0), (0.30 * length, r0 * 0.55, r0 * 0.55), 24, 10))
-    gv, gf = gw_kit('parts').cut_lens((0.5 * length, 0, 0), (1, 0, 0), r0 * 0.55, r0 * 0.45, 8)
+    gw = gw_kit('parts')
+    L = length
+    rad = lambda x: r0 * max(0.05, math.sin(math.pi * (0.04 + 0.92 * (x / L + 0.5)))) ** 0.55
+    body = [(L * (i / 48 - 0.5), 0, 0) for i in range(49)]
+    p.add('star_body', 'mount', 'gw_light', tube_mesh(body, [rad(q[0]) for q in body], 24))
+    p.add('star_core', 'mount', 'gw_drive_core', ellipsoid((0.05 * L, 0, 0), (0.30 * L, r0 * 0.55, r0 * 0.55), 24, 10))
+    # the cut nose and its pearl collar
+    gv, gf = gw.cut_lens((0.5 * L, 0, 0), (1, 0, 0), r0 * 0.55, r0 * 0.45, 8)
     p.add('star_nose', 'mount', 'gw_gem_violet', (gv, gf))
-    for k in range(6):
-        a = k * TAU / 6
-        line = [(q[0], r * 1.02 * math.cos(a + 0.6 * i / 40), r * 1.02 * math.sin(a + 0.6 * i / 40)) for i, (q, r) in enumerate(zip(body, radii))]
-        p.add('star_vein%d' % k, 'mount', 'gw_silver', tube_mesh(line, [0.010 * r0 / 0.25] * len(line), 5))
+    xc = 0.40 * L
+    ring = [(xc, rad(xc) * 1.07 * math.cos(a), rad(xc) * 1.07 * math.sin(a)) for a in [TAU * i / 32 for i in range(33)]]
+    p.add('star_nose_collar', 'mount', 'gw_pearl', tube_mesh(ring, [r0 * 0.09] * 33, 10))
+    p.add('star_nose_collar_silver', 'mount', 'gw_silver',
+          tube_mesh([(xc + r0 * 0.09, q[1] * 1.03, q[2] * 1.03) for q in ring], [r0 * 0.025] * 33, 6))
+    # four pearl ribbons twisting along the body, silver on each edge (the hull's own language at small size)
+    twist = lambda x: 0.9 * (x / L + 0.5)
+    xa, xb = -0.44 * L, 0.38 * L
+    for k in range(4):
+        a_of = lambda x, k=k: k * TAU / 4 + 0.4 + twist(x)
+        p.add('star_ribbon%d' % k, 'mount', 'gw_pearl', _band(rad, xa, xb, a_of, 0.44, 1.06, 0.08))
+        for sgn in (-1, 1):
+            line = []
+            for i in range(41):
+                x = xa + (xb - xa) * i / 40
+                w = 0.44 * max(0.15, math.sin(math.pi * (0.04 + 0.92 * i / 40))) ** 0.5
+                a = a_of(x) + sgn * w
+                line.append((x, rad(x) * 1.065 * math.cos(a), rad(x) * 1.065 * math.sin(a)))
+            p.add('star_ribbon%d_silver%s' % (k, 'a' if sgn < 0 else 'b'), 'mount', 'gw_silver',
+                  tube_mesh(line, [r0 * 0.022] * 41, 5))
+    # a streak of glowing mosaic down each gap between the ribbons, following the twist
+    for k in range(4):
+        a_of = lambda x, k=k: k * TAU / 4 + 0.4 + TAU / 8 + twist(x)
+        gem = ('gw_gem_amber', 'gw_gem_violet', 'gw_gem_green', 'gw_gem_amber')[k]
+        p.add('star_streak%d' % k, 'mount', gem, _band(rad, -0.32 * L, 0.32 * L, a_of, 0.24, 1.025, 0.05))
+    # three leaf vanes at the tail
+    xt = -0.40 * L
+    for k in range(3):
+        a = k * TAU / 3 + math.pi / 2
+        ca, sa = math.cos(a), math.sin(a)
+        vv, ff = [], []
+        for i in range(13):
+            t = i / 12
+            x = xt - 0.10 * L + 0.22 * L * t
+            reach = r0 * (0.95 + 0.55 * math.sin(math.pi * t) ** 0.8)
+            for e, th in ((0, 0.020), (1, -0.020)):
+                rr0, rr1 = rad(x) * 0.9, reach
+                for j, rr in enumerate((rr0, rr1)):
+                    vv.append((x, rr * ca - th * L * sa * (1 - j * 0.6), rr * sa + th * L * ca * (1 - j * 0.6)))
+        for i in range(12):
+            b = i * 4
+            ff += [(b, b + 1, b + 5, b + 4), (b + 2, b + 6, b + 7, b + 3), (b + 1, b + 3, b + 7, b + 5), (b, b + 4, b + 6, b + 2)]
+        ff += [(0, 2, 3, 1), (48, 49, 51, 50)]
+        p.add('star_vane%d' % k, 'mount', 'gw_pearl', (vv, ff))
+        edge = [(xt - 0.10 * L + 0.22 * L * (i / 12), r0 * (0.95 + 0.55 * math.sin(math.pi * i / 12) ** 0.8) * ca,
+                 r0 * (0.95 + 0.55 * math.sin(math.pi * i / 12) ** 0.8) * sa) for i in range(13)]
+        p.add('star_vane%d_silver' % k, 'mount', 'gw_silver', tube_mesh(edge, [r0 * 0.03] * 13, 6))
+    # the tail drive: a rose-cut lens over a violet bloom
+    xe = -0.5 * L
+    p.add('star_tail_bloom', 'mount', 'gw_drive_core', ellipsoid((xe + 0.02 * L, 0, 0), (0.03 * L, r0 * 0.34, r0 * 0.34), 18, 8))
+    tv, tf = gw.cut_lens((xe, 0, 0), (-1, 0, 0), r0 * 0.40, r0 * 0.22, 8)
+    p.add('star_tail_lens', 'mount', 'gw_drive_cut', (tv, tf))
+    # the cradle: two hoops and four arms grown from the hull's belly
     for xs in (-0.28, 0.22):
         for side in (-1, 1):
-            arm = [(xs * length + 0.04 * length * math.sin(math.pi * i / 12), side * r0 * (1.05 - 0.55 * i / 12),
+            arm = [(xs * L + 0.04 * L * math.sin(math.pi * i / 12), side * r0 * (1.12 - 0.60 * i / 12),
                     r0 * 0.2 + (cradle_up - r0 * 0.2) * (i / 12) ** 0.8) for i in range(13)]
             p.add('cradle_%s_%d' % ('aft' if xs < 0 else 'fwd', side), 'mount', 'gw_pearl', tube_mesh(arm, [r0 * 0.20 * (1.0 - 0.3 * i / 12) for i in range(13)], 10))
-        hoop = [(xs * length, r0 * 1.08 * math.cos(a), r0 * 1.08 * math.sin(a)) for a in [math.pi * (-0.15 + 1.3 * i / 24) for i in range(25)]]
+        hoop = [(xs * L, r0 * 1.16 * math.cos(a), r0 * 1.16 * math.sin(a)) for a in [math.pi * (-0.15 + 1.3 * i / 24) for i in range(25)]]
         p.add('cradle_hoop_%s' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_pearl', tube_mesh(hoop, [r0 * 0.15] * 25, 10))
-    nose = (0.5 * length + r0 * 0.45, 0, 0)
+        p.add('cradle_hoop_%s_silver' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_silver',
+              tube_mesh([(q[0] + r0 * 0.15, q[1], q[2]) for q in hoop], [r0 * 0.03] * 25, 6))
+    nose = (0.5 * L + r0 * 0.45, 0, 0)
     p.fit = dict(pivot=('p', nose), reach=0.05, radius=r0 * 1.2, muzzles=[('p', nose)], aim=('d', (1, 0, 0)))
-    K.gun(fid, pos, 0, cal=0.08, blen=length, fixed=True, slot='F', weapon='startorp', part=p, inv=['star_torpedo'], band=(0, 5),
+    K.gun(fid, pos, 0, cal=0.08, blen=L, fixed=True, slot='F', weapon='startorp', part=p, inv=['star_torpedo'], band=(0, 5),
           note=note or 'One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.')
     K.features[-1]['what'] = 'star torpedo carried in a grown keel cradle / startorp'
-    K.built[-1].update(detailed=True, subs=['star body', 'stored light', 'cut nose', 'two cradle hoops and four arms'])
+    K.built[-1].update(detailed=True, subs=['stored-light body', 'four twisting pearl ribbons with silver edges', 'cut nose and pearl collar',
+                                            'a mosaic streak in each gap', 'three leaf vanes', 'rose-cut tail drive', 'two cradle hoops and four arms'])
     smooth_group(K, fid)
 
 

@@ -1,6 +1,6 @@
 # GP1 Prism: Glasswright prism GP1
 
-Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design 9e0179f0ed5a.
+Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design 0df5dcb21ff2.
 Built from Ryan's Nov 16 pick Step 3 (contrib/muse/design/glasswright_family_2026_11/, PR 942) in the R337 finish on the
 shared Glasswright kit: opaque pearl ribbons with silver edges over glowing amber, violet and green mosaic; nothing see-through.
 
