@@ -25,6 +25,11 @@ extends SceneTree
 # Run: godot --path godot [--fullscreen] --script res://bench/load_1434.gd -- --out <folder>
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
+const BAKER = preload("res://world/world_bake.gd")
+
+
+func _stage_name(w: int) -> String:
+	return ["idle", "disk check", "compute", "png save", "prune", "mips"][w] if w >= 0 and w < 6 else str(w)
 const LIMIT_MS := 500
 var out_dir := ""
 var lines: Array = []
@@ -76,7 +81,7 @@ func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
 		out.append("%d ms %s (began at %d ms): render cpu %.0f ms, gpu %.0f ms, rest %.0f ms of which the process step %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[7], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[6], f[4], f[5]])
+			f[0], f[1], f[7], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[6], f[4], f[5]] + (", bake worker %s" % f[8] if f.size() > 8 else ""))
 	return out
 
 
@@ -108,6 +113,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 	var stalls := 0
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
 		var ph0: String = b.load_phase
+		var ws0: int = BAKER.work_stage
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
@@ -122,7 +128,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
-			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000])
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage)])
 		pipes0 = pipes
 		last = now
 	frames.sort_custom(func(x, y): return x[0] > y[0])
@@ -199,6 +205,7 @@ func _title() -> void:
 			_click(link.get_global_rect().get_center())
 		var sc0 = m.showcase
 		var ph0: String = sc0.load_phase if sc0 != null and is_instance_valid(sc0) else "none"
+		var ws0: int = BAKER.work_stage
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
@@ -209,7 +216,7 @@ func _title() -> void:
 		frames.append([(now - last) / 1000, ph0 if ph0 == ph1 else "%s->%s" % [ph0, ph1],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
-			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000])
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage)])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
@@ -406,6 +413,19 @@ func _run() -> void:
 		if not c in finished:
 			pass_all = false
 			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
+	# the bakes made during loads write their PNGs once nothing loads: wait for them here, so the next (warm) launch on
+	# this profile finds them on disk, and report how long each write took and whether a frame froze meanwhile
+	var svc = root.get_node_or_null("WorldBakes")
+	var sw0 := Time.get_ticks_msec()
+	var sworst := 0
+	var slast := Time.get_ticks_usec()
+	while svc != null and (not svc._unsaved.is_empty() or svc._active != "" or not svc._queue.is_empty()) and Time.get_ticks_msec() - sw0 < 180000:
+		await process_frame
+		var now := Time.get_ticks_usec()
+		sworst = maxi(sworst, now - slast)
+		slast = now
+	_say("[load1434] world bake writes after the loads: %s in %d ms, worst frame meanwhile %d ms (reported only)" % [
+		"all written" if svc == null or svc._unsaved.is_empty() else "%d left unwritten" % svc._unsaved.size(), Time.get_ticks_msec() - sw0, sworst / 1000])
 	_say("[load1434] COVER %s on the %s profile (the loading cover up on every frame to play and no frame of %d s or more: %s)" % [
 		"PASS" if cover_ok_all else "FAIL", pass_name, STALL_MS / 1000, ", ".join(cover_notes)])
 	_say("[load1434] RESULT %s on the %s profile (limit %d ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)" % ["PASS" if pass_all else "FAIL", pass_name, LIMIT_MS])

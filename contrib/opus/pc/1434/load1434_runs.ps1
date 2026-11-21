@@ -33,6 +33,24 @@ function Start-Game($profile, $argList, $log, $err) {
   return $p
 }
 
+# Artoo on PR 1445: read back whether the warm launch really reuses the caches. Godot's shader cache
+# (user://shader_cache) and the Vulkan pipeline cache (user://vulkan) are counted before and after each launch on the
+# shared profile: a warm launch that reuses them adds few or no files, and the pipeline cache file is the same size.
+function Get-CacheStat($profile) {
+  $ud = Join-Path $profile 'Godot\app_userdata\Voidsworn'
+  $o = [ordered]@{}
+  foreach ($d in @('shader_cache', 'vulkan', 'world_bakes')) {
+    $p = Join-Path $ud $d
+    $files = @(if (Test-Path -LiteralPath $p) { Get-ChildItem -LiteralPath $p -Recurse -File -ErrorAction SilentlyContinue } else { @() })
+    $o[$d] = @{n = $files.Count; mb = [math]::Round((($files | Measure-Object -Property Length -Sum).Sum) / 1MB, 1)}
+  }
+  return $o
+}
+function Say-Cache($label, $before, $after) {
+  $bits = foreach ($k in $after.Keys) { "$k $($before[$k].n) -> $($after[$k].n) files ($($before[$k].mb) -> $($after[$k].mb) MB)" }
+  Say "cache readback, $label`: $($bits -join '; ')"
+}
+
 # ---- 1 and 2: the load bench, cold then warm, on one profile
 $warmProfile = Join-Path $Out 'profile_warm'
 New-Item -ItemType Directory -Force -Path $warmProfile | Out-Null
@@ -41,8 +59,10 @@ foreach ($pass in @('cold', 'warm')) {
   $d = Join-Path $Out "load_$pass"
   New-Item -ItemType Directory -Force -Path $d | Out-Null
   $argList = @('--path', "`"$Project`"", '--fullscreen', '--script', 'res://bench/load_1434.gd', '--', '--out', "`"$d`"", '--pass', $pass)
+  $c0 = Get-CacheStat $warmProfile
   $p = Start-Game $warmProfile $argList (Join-Path $d 'log.txt') (Join-Path $d 'log_err.txt')
   if (-not $p.WaitForExit(1500 * 1000)) { Kill-Tree $p; Say "load $pass`: FAIL: still running after 1500 s, stopped" }
+  Say-Cache "load $pass" $c0 (Get-CacheStat $warmProfile)
   $txt = Join-Path $d 'load_result.txt'
   $r = if (Test-Path -LiteralPath $txt) { Get-Content -LiteralPath $txt -Raw } else { '' }
   $bench[$pass] = @{
@@ -94,6 +114,7 @@ $cases = @(
 )
 $limitMs = 15000
 $rows = @()
+$cw0 = Get-CacheStat $warmProfile
 foreach ($set in @('cold', 'warm')) {
   foreach ($c in $cases) {
     $dir = Join-Path $Out "close_$set\$($c.name)"
@@ -148,6 +169,8 @@ foreach ($set in @('cold', 'warm')) {
         if ($mt.Success) { $row.title_leave_frame_ms = [double]$mt.Groups[1].Value; $row.title_first_frame_ms = [double]$mt.Groups[2].Value }
         $mw = [regex]::Match($text, 'battle to title: worst frame in the first second ([0-9.]+) ms')
         if ($mw.Success) { $row.title_worst_first_second_ms = [double]$mw.Groups[1].Value }
+        $ml = [regex]::Match($text, '\[main\] loading at the close: ([^\r\n]*)')
+        $row.loading_at_close = if ($ml.Success) { $ml.Groups[1].Value } else { $null }
         $mp = [regex]::Match($text, 'battle to title parts \(ms\): [^\r\n]*')
         if ($mp.Success) { $row.title_parts = $mp.Value }
         $row.crash = $text -match 'CrashHandlerException|Program crashed|access violation|RenderingServer is null|SCRIPT ERROR'
@@ -162,7 +185,7 @@ foreach ($set in @('cold', 'warm')) {
     $row.clean = if ($fails.Count) { 'FAIL: ' + ($fails -join '; ') } else { 'PASS' }
     $row.g1518 = '-'
     if ($c.hide) {
-      $row.g1518 = if ($row.hidden_ms -eq $null -or $row.hidden_ms -gt $c.hide) { "FAIL (hidden after $($row.hidden_ms) ms, limit $($c.hide))" } elseif ($row.skip) { 'UNVERIFIED (Alt-F4 not sent)' } else { 'PASS' }
+      $row.g1518 = if ($row.hidden_ms -eq $null -or $row.hidden_ms -gt $c.hide) { "FAIL (hidden after $($row.hidden_ms) ms, limit $($c.hide))" } elseif ($row.skip) { 'UNVERIFIED (Alt-F4 not sent)' } elseif (-not $row.loading_at_close -or $row.loading_at_close -eq 'nothing') { 'UNVERIFIED (nothing was loading at the close)' } else { 'PASS' }
     }
     $row.g1519 = '-'
     if ($c.first) {
@@ -170,12 +193,13 @@ foreach ($set in @('cold', 'warm')) {
     }
     $row.result = if ($row.clean -ne 'PASS' -or $row.g1518 -like 'FAIL*' -or $row.g1519 -like 'FAIL*') { 'FAIL' } elseif ($row.skip -or $row.g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } else { 'PASS' }
     $rows += New-Object psobject -Property $row
-    Say ("close {0} {1}: {2}{3} clean={11} 1518={12} 1519={13}{14} sent={4} hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
+    Say ("close {0} {1}: {2}{3} clean={11} 1518={12} 1519={13}{14} sent={4} loading_at_close=[{15}] hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
       '', $row.result, $row.sent, $row.hidden_ms, $row.title_first_frame_ms, $row.title_worst_first_second_ms,
-      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' }))
+      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' }), $row.loading_at_close)
     Start-Sleep -Seconds 2
   }
 }
+Say-Cache 'the cold then warm close launches' $cw0 (Get-CacheStat $warmProfile)
 $rows | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Out 'close_timing.json') -Encoding Ascii
 
 # Separate results (Artoo on PR 1445): the Board's warm grading covers the issue 1434 load items only; issues 1518 and

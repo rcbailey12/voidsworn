@@ -41,6 +41,16 @@ func quit_clean(code := 0, route := "menu") -> void:
 	quit_route = route
 	var t0 := Time.get_ticks_msec()
 	print("[main] quit (%s) at %d ms" % [route, t0])
+	# issue 1518 (Artoo on PR 1445): what was loading when the close came, so a close timed "during a load" is proven
+	var loading := PackedStringArray()
+	if battle != null and is_instance_valid(battle) and bool(battle.get("warming")):
+		loading.append("battle %s" % str(battle.get("load_phase")))
+	if showcase != null and is_instance_valid(showcase) and not bool(showcase.get("showcase_ready")):
+		loading.append("backdrop %s" % str(showcase.get("load_phase")))
+	var svc := get_tree().root.get_node_or_null("WorldBakes")
+	if svc != null and (str(svc.get("_active")) != "" or not (svc.get("_queue") as Array).is_empty()):
+		loading.append("world bake %s" % str(svc.get("_active")).left(12))
+	print("[main] loading at the close: %s" % (", ".join(loading) if not loading.is_empty() else "nothing"))
 	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
 	if route == "window" and DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)

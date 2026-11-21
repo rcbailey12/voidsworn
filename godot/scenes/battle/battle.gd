@@ -537,6 +537,7 @@ func _begin(a) -> void:
 	var gen := _build_gen
 	load_phase = "start"
 	warming = true
+	add_to_group("battle_loading")   # issue 1434: world bakes keep their disk writes until no battle is loading
 	hud.loading(true)
 	# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
 	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
@@ -747,6 +748,7 @@ func _begin(a) -> void:
 				if n != null:
 					n.visible = false
 		showcase_ready = true
+		remove_from_group("battle_loading")
 		return
 	if not bot and not args.has("shots") and not args.has("breach-shots"):
 		_start_opening()
@@ -903,6 +905,7 @@ func _warmup() -> void:
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
+	remove_from_group("battle_loading")
 
 
 func _enemy_fac_of(v: Dictionary) -> String:

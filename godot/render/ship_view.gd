@@ -138,20 +138,39 @@ static func clear_look_cache() -> void:
 # shader lives only while a material uses it, so clearing the look cache at a battle's end freed every hull shader and
 # the next battle compiled them again. One stand-in per shader stays: a copy of the looked material with its textures
 # swapped for a 1 pixel one (no hull textures held), kept only when it still maps to the same shader. Cleared at quit.
-static var _shader_keep := {}   # shader RID id -> stand-in material
+static var _shader_keep := {}   # shader signature -> stand-in material
 static var _keep_tex: Texture2D = null
 const SHADER_KEEP_MAX := 96
 
 
+# Which shader a BaseMaterial3D compiles to is set by its modes, features, flags and which textures it has; the
+# colours and numbers are uniforms. Godot gives no shader RID for a BaseMaterial3D (LOAD12: get_shader_rid() is a
+# script error), so two materials with the same signature share one shader, and one stand-in keeps it.
+static func shader_sig(bm: BaseMaterial3D) -> String:
+	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
+		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
+		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
+		str(bm.alpha_antialiasing_mode), str(bm.vertex_color_use_as_albedo)])
+	var bits := ""
+	for f in BaseMaterial3D.FEATURE_MAX:
+		bits += "1" if bm.get_feature(f) else "0"
+	bits += "|"
+	for f in BaseMaterial3D.FLAG_MAX:
+		bits += "1" if bm.get_flag(f) else "0"
+	bits += "|"
+	for t in BaseMaterial3D.TEXTURE_MAX:
+		bits += "1" if bm.get_texture(t) != null else "0"
+	p.append(bits)
+	return ",".join(p)
+
+
 static func _keep_shaders() -> void:
-	if DisplayServer.get_name() == "headless":
-		return
 	for m in _look_cache.values():
 		var bm := m as BaseMaterial3D
 		if bm == null or _shader_keep.size() >= SHADER_KEEP_MAX:
 			continue
-		var rid: RID = bm.get_shader_rid()
-		if not rid.is_valid() or _shader_keep.has(rid.get_id()):
+		var sig := shader_sig(bm)
+		if _shader_keep.has(sig):
 			continue
 		if _keep_tex == null:
 			var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
@@ -160,9 +179,8 @@ static func _keep_shaders() -> void:
 		var k := bm.duplicate() as BaseMaterial3D
 		for t in BaseMaterial3D.TEXTURE_MAX:
 			if k.get_texture(t) != null:
-				k.set_texture(t, _keep_tex)
-		if k.get_shader_rid() == rid:
-			_shader_keep[rid.get_id()] = k
+				k.set_texture(t, _keep_tex)   # still a texture, so the same shader; no hull texture held
+		_shader_keep[sig] = k
 
 
 static func kept_shader_count() -> int:

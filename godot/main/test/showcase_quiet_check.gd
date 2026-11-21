@@ -197,7 +197,23 @@ func _run() -> void:
 	_check(done and calls == 5 and set_n == 5 and int(lv.stage_us.get("look_counts", 0)) == 5005,
 		"the hull look goes a surface per call on a zero budget (%d calls, %d of 5 set, counts %d)" % [calls, set_n, int(lv.stage_us.get("look_counts", 0))])
 	lv.free()
+	# LOAD12: the shader keeper raised a script error on every battle exit (get_shader_rid is not on StandardMaterial3D);
+	# it runs headless now, and five looks of one material keep one stand-in, a second clear no more
+	var kept0: int = SV.kept_shader_count()
 	SV.clear_look_cache()
+	var kept1: int = SV.kept_shader_count()
+	_check(kept1 >= 1 and kept1 <= kept0 + 1, "the cleared look cache keeps at most one new shader stand-in for its one shader (%d before, %d after)" % [kept0, kept1])
+	var ma := StandardMaterial3D.new()
+	var mb := StandardMaterial3D.new()
+	mb.albedo_color = Color.RED
+	var mc := StandardMaterial3D.new()
+	mc.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var md := StandardMaterial3D.new()
+	md.normal_enabled = true
+	_check(SV.shader_sig(ma) == SV.shader_sig(mb) and SV.shader_sig(ma) != SV.shader_sig(mc) and SV.shader_sig(ma) != SV.shader_sig(md),
+		"a colour does not change the shader signature, transparency and a feature do")
+	_check(SV.kept_shader_count() == kept1 and SV._shader_keep.values().all(func(k): return k is BaseMaterial3D),
+		"the stand-ins are materials")
 	var c = BattleScene.instantiate()
 	c.args["sliced-load"] = true
 	c.args["noworld"] = true
