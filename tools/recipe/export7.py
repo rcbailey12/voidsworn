@@ -296,7 +296,9 @@ def prep(o):
         sk.show_viewport = True; sk.show_render = True
         c.data.materials.append(inside_material(None, liner=True))
         sk.material_offset = len(c.data.materials) - 1
-        sk.material_offset_rim = len(c.data.materials) - 1
+        # issue 1291: a hull cut open under an organ's mouth (kit open_hull) keeps its rim, the wall of the hole, in the
+        # hull's own material: it is seen from outside, never an inside liner standing past the plating
+        sk.material_offset_rim = 0 if o.get('open_cut') else len(c.data.materials) - 1
     for md in list(c.modifiers):
         try: bpy.ops.object.modifier_apply(modifier=md.name)
         except Exception as e: die(f'cannot apply {o.name}/{md.name}: {e}')
