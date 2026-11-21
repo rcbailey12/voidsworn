@@ -1,0 +1,24 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+07:11:45 | INFO: Starting glTF 2.0 export
+07:11:45 | INFO: Extracting primitive: GS1_lod0
+07:11:46 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:11:46 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:11:46 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:11:46 | INFO: Primitives created: 11
+07:11:46 | INFO: Extracting primitive: GS1_lod1
+07:11:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:11:47 | INFO: Primitives created: 7
+07:11:47 | INFO: Extracting primitive: GS1_lod2
+07:11:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:11:47 | INFO: Primitives created: 7
+07:11:47 | INFO: Extracting primitive: GS1_lod3
+07:11:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:11:47 | INFO: Primitives created: 6
+07:11:47 | INFO: Finished glTF 2.0 export in 1.5500962734222412 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\glb\GS1.glb {"lod0": {"triangles": 187942, "objects": 59, "materials": 11}, "lod1": {"triangles": 180446, "objects": 45, "materials": 7}, "lod2": {"triangles": 90228, "objects": 45, "materials": 7}, "lod3": {"triangles": 38877, "objects": 44, "materials": 6}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\GS1.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-ebb4b7baaefb4562864885e758dfda9c
