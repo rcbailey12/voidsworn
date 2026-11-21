@@ -24,17 +24,17 @@ import re
 import sys
 
 # The floors per faction (issue 1517), each 80 percent of the least-detailed ship Ryan accepted in game, measured the way this
-# file measures on a cloud 1024 bake of that ship (docs/ship_pipeline/detail_floors.md has every ship's numbers). On the
-# hard-plate factions the colour's local contrast is the number that tells clay from finished: Navy O2 0.12 and O3 0.07
-# against Dominion H10 0.19 and Iron Mandate IM5 0.20.
+# file measures (weighted by visible area) on a cloud 1024 bake of that ship (docs/ship_pipeline/detail_floors.md has every
+# ship's numbers). On the hard-plate factions the colour's local contrast is the number that tells clay from finished: Navy O2 0.095 and O3 0.070
+# against Dominion H10 0.174 and Iron Mandate IM5 0.222.
 FLOORS = {
-    'chorus': dict(normal=3.5, albedo=0.04, rough=0.08),      # issue 1291 floors kept; round G C10, C12 least 7.0/0.065/0.158
-    'voidsworn': dict(normal=0.94, albedo=0.26, rough=0.13),  # Sunward S8, S9, S10, S11 least 1.18/0.328/0.165
-    'hegemony': dict(normal=0.95, albedo=0.15, rough=0.12),   # Navy H10, IM5 least 1.19/0.193/0.151
-    'hullbreakers': dict(normal=1.31, albedo=0.24, rough=0.11),  # A18, A19, KF1 L least 1.64/0.302/0.146
-    'eclipse': dict(normal=0.62, albedo=0.37, rough=0.13),    # E11 0.78/0.466/0.162
-    'ithar': dict(normal=0.6, albedo=0.02, rough=0.01),       # Glasswrights, smooth pearl glass by design: CD5, GV2, GW4 least
-                                                              # 0.76/0.030/0.016
+    'chorus': dict(normal=3.5, albedo=0.04, rough=0.08),      # issue 1291 floors kept; round G C10, C12 least 7.20/0.064/0.160
+    'voidsworn': dict(normal=1.44, albedo=0.23, rough=0.12),  # Sunward S8, S9, S10, S11 least 1.81/0.290/0.152
+    'hegemony': dict(normal=1.34, albedo=0.13, rough=0.14),   # Navy H10, IM5 least 1.68/0.174/0.175
+    'hullbreakers': dict(normal=1.26, albedo=0.16, rough=0.07),  # A18, A19, KF1 L least 1.58/0.201/0.088
+    'eclipse': dict(normal=0.88, albedo=0.40, rough=0.11),    # E11 1.11/0.502/0.139
+    'ithar': dict(normal=0.47, albedo=0.02, rough=0.01),      # Glasswrights, smooth pearl glass by design: CD5, GV2, GW4 least
+                                                              # 0.59/0.030/0.013
 }
 DEFAULT = dict(FLOORS['hegemony'])                            # a faction with no accepted new-format ship: the Navy floor
 KEYS = ('normal', 'albedo', 'rough')
@@ -105,13 +105,16 @@ def _atlas(o, cell):
     return found
 
 
-COVER = 0.03   # a skin point with any surface within this share of the ship's length straight out from it is covered
+COVER = 0.03
+SAMPLES = 4_000_000             # area samples over the whole visible skin, about four per texel of two 1024 atlases   # a skin point with any surface within this share of the ship's length straight out from it is covered
 
 
 def skin_texels(cell, res, info=None):
-    """{atlas: (rows, cols)} of the texels of the visible outside skin: every outside object on the hull atlas and the parts
-    atlas (Board on PR 1521: the cargo containers and other parts are what Ryan sees too), sampled at four points in every
-    UV triangle. A triangle whose centre has another surface straight out from it within COVER of the ship's length (the
+    """{atlas: REF x REF float array}: how much visible outside surface (world area) each texel carries, over every outside
+    object on the hull atlas and the parts atlas (Board on PR 1521: the cargo containers and other parts are what Ryan sees
+    too). Each triangle gets random points in proportion to its world area (at least one), and each point carries an equal
+    share of that area, so the numbers follow what Ryan sees: a finely divided smooth part (O3's lens rings, 1216
+    triangles) weighs by its size, not its triangle count (Board ruling, Nov 21), and a part used twice counts twice. A triangle whose centre has another surface straight out from it within COVER of the ship's length (the
     bare hull shell under authored panels, Board on PR 1521: 28 percent of O2's old sample) is hidden in game and left out.
     info, a dict, gets the counts."""
     import numpy as np
@@ -130,7 +133,7 @@ def skin_texels(cell, res, info=None):
     tree = BVHTree.FromPolygons(verts, polys)
     va = np.array([tuple(v) for v in verts], dtype=np.float64)
     reach = COVER * float((va.max(0) - va.min(0)).max())
-    out = {}
+    tris = []                   # (atlas, uv triangles (k,3,2), world areas (k,))
     seen = hidden = 0
     for o in outside:
         if not o.data.uv_layers or o.get('emissive_zone'):
@@ -166,15 +169,27 @@ def skin_texels(cell, res, info=None):
             continue
         uv = np.zeros(len(me.loops) * 2, dtype=np.float32)
         me.uv_layers.active.data.foreach_get('uv', uv)
-        t = uv.reshape(-1, 2)[li].reshape(nt, 3, 2)[keep]
-        pts = [t.mean(1)] + [(t.mean(1) + t[:, k]) / 2 for k in range(3)]
-        p = np.concatenate(pts)
-        col = np.clip((p[:, 0] * res).astype(int), 0, res - 1)
-        row = np.clip(((1.0 - p[:, 1]) * res).astype(int), 0, res - 1)
-        a, b = out.get(atlas, (np.zeros(0, int), np.zeros(0, int)))
-        out[atlas] = (np.concatenate([a, row]), np.concatenate([b, col]))
+        tris.append((atlas, uv.reshape(-1, 2)[li].reshape(nt, 3, 2)[keep].astype(np.float64), ln[keep] / 2.0))
     if info is not None:
         info.update(triangles=seen, covered=hidden)
+    total = sum(float(a.sum()) for _, _, a in tris)
+    out = {}
+    if total <= 0:
+        return out
+    rng = np.random.default_rng(1517)
+    per = SAMPLES / total
+    for atlas, t, area in tris:
+        n = np.maximum(1, np.round(area * per)).astype(np.int64)
+        which = np.repeat(np.arange(len(t)), n)
+        r1, r2 = rng.random(len(which)), rng.random(len(which))
+        flip = r1 + r2 > 1
+        r1[flip], r2[flip] = 1 - r1[flip], 1 - r2[flip]
+        tt = t[which]
+        p = tt[:, 0] + (tt[:, 1] - tt[:, 0]) * r1[:, None] + (tt[:, 2] - tt[:, 0]) * r2[:, None]
+        col = np.clip((p[:, 0] * res).astype(np.int64), 0, res - 1)
+        row = np.clip(((1.0 - p[:, 1]) * res).astype(np.int64), 0, res - 1)
+        w = np.bincount(row * res + col, weights=(area / n)[which], minlength=res * res).reshape(res, res)
+        out[atlas] = out.get(atlas, 0) + w
     return out
 
 
@@ -183,7 +198,8 @@ class MissingMap(Exception):
 
 
 def measure(job, cell, r=3, masks=None):
-    """the three numbers over the skin's texels. masks: {atlas: bool array REF x REF} instead of the open blend's UVs (the
+    """the three numbers over the skin, each texel weighted by the visible area it carries. masks: {atlas: weight array
+    REF x REF} instead of the open blend's UVs (the
     self-test's fixtures); without either, outside Blender, every texel of the atlas counts. An atlas with visible skin
     must have all three maps, or MissingMap is raised naming them (Artoo on PR 1521: a detailed hull must not pass alone
     when the parts atlas lost its ORM); an atlas with no visible skin is skipped"""
@@ -198,14 +214,14 @@ def measure(job, cell, r=3, masks=None):
         texel_idx = skin_texels(cell, REF, cover) if inside else None
     else:
         inside, texel_idx, cover = 'mask', None, {}
-    sums = dict(normal=[], albedo=[], lum=[], rough=[])
+    sums = dict(normal=[], albedo=[], lum=[], rough=[], w=[])
     texels = 0
     names = ('normal', 'albedo', 'orm')
     for atlas in ('hull', 'parts'):
         if masks is not None:   # the visible skin first: an atlas none of it lands on is skipped, maps or not
             if atlas not in masks or not masks[atlas].any():
                 continue
-        elif texel_idx is not None and texel_idx.get(atlas) is None:
+        elif texel_idx is not None and atlas not in texel_idx:
             continue
         if inside is True:      # inside Blender: the open blend's own baked images, the ones stage 7 exports
             maps = [_blend_atlas('%s_%s_%s' % (cell, atlas, k)) for k in names]
@@ -221,15 +237,13 @@ def measure(job, cell, r=3, masks=None):
             if missing:
                 raise MissingMap('the visible %s skin has no %s' % (atlas, ', '.join(missing)))
             nrm, alb, orm = _load(base + 'normal.png'), _load(base + 'albedo.png'), _load(base + 'orm.png')
-        res = nrm.shape[0]
         if masks is not None:
-            sel = np.nonzero(masks[atlas])
+            wt = np.asarray(masks[atlas], dtype=np.float64)
         elif texel_idx is not None:
-            idx = texel_idx[atlas]
-            flat = np.unique(idx[0] * res + idx[1])
-            sel = (flat // res, flat % res)
+            wt = texel_idx[atlas]
         else:
-            sel = np.nonzero(np.ones(nrm.shape[:2], bool))
+            wt = np.ones(nrm.shape[:2])
+        sel = np.nonzero(wt > 0)
         n = nrm * 2.0 - 1.0
         nl = n / np.maximum(np.linalg.norm(n, axis=2, keepdims=True), 1e-6)
         avg = _box(nl, r)
@@ -238,13 +252,16 @@ def measure(job, cell, r=3, masks=None):
         lum = alb[..., 0] * 0.2126 + alb[..., 1] * 0.7152 + alb[..., 2] * 0.0722
         la = _box(lum, r)
         sums['normal'].append(ang[sel]); sums['albedo'].append(np.abs(lum - la)[sel]); sums['lum'].append(lum[sel])
-        sums['rough'].append(orm[..., 1][sel])
+        sums['rough'].append(orm[..., 1][sel]); sums['w'].append(wt[sel])
         texels += len(sel[0])
     if texels < 1000:
         return None
-    cat = {k: np.concatenate(v) for k, v in sums.items()}
-    return dict(normal=float(cat['normal'].mean()), albedo=float(cat['albedo'].mean() / max(1e-4, cat['lum'].mean())),
-                rough=float(cat['rough'].std()), texels=int(texels), from_uvs=inside,
+    cat = {k: np.concatenate(v).astype(np.float64) for k, v in sums.items()}
+    w = cat['w'] / cat['w'].sum()    # each texel weighs by the visible area it carries (Board ruling, Nov 21)
+    mean = lambda x: float((w * x).sum())  # noqa: E731
+    rough_mean = mean(cat['rough'])
+    return dict(normal=mean(cat['normal']), albedo=mean(cat['albedo']) / max(1e-4, mean(cat['lum'])),
+                rough=float(np.sqrt(max(0.0, mean((cat['rough'] - rough_mean) ** 2)))), texels=int(texels), from_uvs=inside,
                 covered_share=round(cover['covered'] / max(1, cover['triangles']), 3) if cover else None)
 
 

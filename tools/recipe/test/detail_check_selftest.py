@@ -1,12 +1,12 @@
 """Issue 1517: the stage 5 surface-detail check gates every faction, and the sheet and publish tools refuse a build without
-its PASS. No Blender: the fixtures are real PC bakes measured over the skin texels Blender's UVs gave.
+its PASS. No Blender: the fixtures are real cloud bakes measured over the skin texels Blender's UVs gave.
 
   python tools/recipe/test/detail_check_selftest.py
 
 Fixtures (tools/recipe/test/detail_fixtures/, docs/ship_pipeline/detail_floors.md says how they were made): each is the
 baked atlases read out of a stage 5 blend (bake_sheet.py at 1024 px, 8 samples, pip bpy 4.5.4), every texel more than 3 away
-from the measured skin zeroed, plus the skin mask detail_check.skin_texels took from that blend (visible outside skin of the
-hull and parts atlases, covered surfaces left out).
+from the measured skin zeroed, plus the area weight per texel detail_check.skin_texels took from that blend (visible outside
+skin of the hull and parts atlases, covered surfaces left out; CELL_ATLAS_weight.npz).
   O2   Navy Convoy transport O2 at board/pin-1413c (e031f492): Ryan caught its clay look on Nov 21; it must fail.
   C12  Chorus Drone-spawn C12, round G (392b9468, the commit of PC run opus1291c12d), accepted Nov 20 (R374): one quarter
        of its skin texels (every other 128 px tile both ways), to keep the fixture small. It must pass.
@@ -39,12 +39,11 @@ def ok(what):
 
 def masks(cell):
     import numpy as np
-    from PIL import Image
     out = {}
     for a in ('hull', 'parts'):
-        p = FIX / cell / ('%s_%s_mask.png' % (cell, a))
+        p = FIX / cell / ('%s_%s_weight.npz' % (cell, a))
         if p.exists():
-            out[a] = np.asarray(Image.open(p).convert('L')) > 127
+            out[a] = np.load(p)['weight']
     return out
 
 
