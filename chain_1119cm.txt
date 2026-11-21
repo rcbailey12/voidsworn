@@ -1,0 +1,16 @@
+chain CM waiting for 1415F GA1 exit in chain_1119cl.txt Sat 11/21/2026  9:44:13.16 
+swapped out while only waiting 10:55:29: replaced by HELPERS_CHAIN_1119CM2.bat (waits for OPUS1539_PROOF exit in opus1539_wait.txt, Board Nov 21 16:54 UTC)
+chain CM2 waiting for OPUS1539_PROOF exit in opus1539_wait.txt Sat 11/21/2026 10:55:29.85 
+swapped out while only waiting 11:24:59: replaced by HELPERS_CHAIN_1119CM3.bat (waits for 1415G GA1 exit in chain_1119cn.txt, Board Nov 21 17:24 UTC)
+chain CM3 waiting for 1415G GA1 exit in chain_1119cn.txt Sat 11/21/2026 11:25:00.17 
+swapped out while only waiting 12:10:29: replaced by HELPERS_CHAIN_1119CM4.bat (waits for 1291 C14I exit in opus1291c14i_wait.txt, Board Nov 21 18:09 UTC)
+chain CM4 waiting for 1291 C14I exit in opus1291c14i_wait.txt Sat 11/21/2026 12:10:29.95 
+mirror fetch exit 0
+3dd4e50204db724721e4acd24c40028ef84a0b04 reachable in the mirror
+1413 O2E start 13:42:37.58 
+1413 O2E exit 0 at 13:55:41.30 
+1413 O3E start 13:55:41.30 
+1413 O3E exit 0 at 14:11:25.80 
+1413 HB1E start 14:11:25.80 
+1413 HB1E exit 0 at 14:24:14.78 
+1413 H10E start 14:24:14.78 

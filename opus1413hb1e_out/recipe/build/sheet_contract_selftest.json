@@ -1,0 +1,41 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (1.6 = LENGTH 1.6)",
+  "ok   1 transverse seams at the sheet's stations",
+  "ok   0 longitudinal seams at the sheet's heights and spans",
+  "ok   2 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (1) has muzzles of its own",
+  "ok   0 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   1 engine exits and bell radii are the sheet's",
+  "ok   4 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (bombs T) was refused: BT: weapon 'bombs' arc 'T' names 0 slots of the data.js list []",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-0.66 to 0.33999999999999997) runs across the transverse seam B-1: one compartment each",
+  "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+ ],
+ "record": {
+  "sheet": "hegemony_HB1",
+  "game_ship": "bomber",
+  "variant": "",
+  "model_length": 1.59735,
+  "scale": 0.626036709525953,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.10017
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 1,
+  "engines": 1,
+  "bays": 0,
+  "points": 1,
+  "turrets": [],
+  "interior_objects": 4,
+  "slots": [
+   "0 bombs T"
+  ]
+ }
+}
