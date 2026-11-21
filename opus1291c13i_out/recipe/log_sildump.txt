@@ -1,0 +1,10 @@
+[armadillo] 13 bands, 50 runs, 0 steps clamped
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\C13.npz (339152, 3, 3) objects 131
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-f1fae2989e6a4045ac2be34544b9dc40

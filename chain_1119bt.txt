@@ -1,0 +1,12 @@
+chain BT waiting for OPUS1373 probe exit in chain_1119br.txt Fri 11/20/2026 16:43:44.19 
+mirror fetch exit 0
+b0648f5423ce61095a14f06710a0a380d02c8383 reachable in the mirror
+392b9468b495d66cad4ffac29a6fe95d6f27a1fc reachable in the mirror
+1291 C11_D start 18:06:49.18 
+1291 C11_D exit 0 at 18:21:27.74 
+1291 C12_D start 18:21:27.74 
+1291 C12_D exit 0 at 18:36:26.71 
+1291 C13_I start 18:36:26.71 
+1291 C13_I exit 0 at 19:01:18.90 
+after-job janitor ran 19:01:19.76 
+all done Fri 11/20/2026 19:01:19.76 

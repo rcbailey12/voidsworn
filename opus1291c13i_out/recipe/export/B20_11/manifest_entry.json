@@ -1,0 +1,49 @@
+{
+ "name": "The spitter, the Chorus destroyer (The Chorus)",
+ "faction": "chorus",
+ "cls": "Destroyer",
+ "band": "M",
+ "game_ship": "b_spitter",
+ "length_world": 9.5,
+ "hardpoints": {
+  "gun": 3,
+  "engine": 3,
+  "breach": 3,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 3,
+ "turrets": 0,
+ "files": {
+  "B20_11.glb": {
+   "bytes": 12282740,
+   "sha256": "98b08cdf80258b602c2ed1c5ecfe4efc603889186483193e202915f911f05103"
+  },
+  "B20_11_base.jpg": {
+   "bytes": 852920,
+   "sha256": "7c9b911af3d9492902c2af8ecb881a1bba4e61417453706e0be19ab067549717"
+  },
+  "B20_11_normal.png": {
+   "bytes": 6630786,
+   "sha256": "8f98a2d75c1daa01f8128ad7794999cea0279d998ea416cc7446a3a4a248bb3d"
+  },
+  "B20_11_orm.png": {
+   "bytes": 4865536,
+   "sha256": "6b09bba85a01897e4512dbed624cb505c296bb1cb135a579434ff37dc5ca44af"
+  },
+  "B20_11_parts_base.jpg": {
+   "bytes": 1039385,
+   "sha256": "7636e9c8d0e5f84c069e79df92acb64781c454ad11aa20e55d4b7a7621c229c4"
+  },
+  "B20_11_parts_normal.png": {
+   "bytes": 6255311,
+   "sha256": "4d398f68947cc0d36eaf5c91285afaa3f7f782a60a0adbf4f62255a4c9f85eda"
+  },
+  "B20_11_parts_orm.png": {
+   "bytes": 5548744,
+   "sha256": "53bc6656fd45a6e5fb3da33a7c375ea5ed4b76fb80c7480c0055cb982c853f51"
+  }
+ },
+ "pc_path": "godot/assets/ships/B20_11/"
+}
