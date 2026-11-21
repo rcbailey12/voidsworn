@@ -52,11 +52,14 @@ def build(K):
     K.hull_sections = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in BODY]
     PL = dict(size=(U(0.08), U(0.19)), thick=(U(0.002), U(0.0045)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
               rivets_share=0.07, rivet_r=U(0.0018),
-              mats={'rust': 12, 'blood': 7, 'soot': 1.3, 'iron': 1, 'soot2': .7, 'steel': .3})
+              # Ryan, Nov 21 2026: "it's ALL red compared to the patchy colors of the rest": the capitals' plate mix (A18, A19):
+              # red plate, grey salvaged trophy plates and a few violet ones over a dark steel body. The faction register paints soot and
+              # iron red (R306), so the grey and violet come from steel, pale and violet here.
+              mats={'rust': 3, 'blood': 3, 'steel': 2, 'pale': 4, 'violet': 2})
     PATCH = []
     ns = sorted({r[0] for r in BODY} | {round(0.46 - 0.04 * i, 3) for i in range(24) if 0.46 - 0.04 * i > X_END}, reverse=True)
     bsecs = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in [sec(BODY, n) for n in ns]]
-    body = K.loft(CODE + '_body', bsecs, 'rust', shell=U(0.004))
+    body = K.loft(CODE + '_body', bsecs, 'steel', shell=U(0.004))
     PATCH.append((CODE + '_body', [[(s_[0], y, z) for (y, z) in _k._octa(*s_[1:7])] for s_ in bsecs],
                   dict(PL, seed=17, faces=[1, 3, 7, 5], inv=['glacis_plates', 'belly_plates'])))
     K.mass('Hull: the glacis body (the bomber\'s ramp and stern housing, narrowed)', body, 'soot and patched plate',
@@ -111,7 +114,7 @@ def build(K):
     K.box('KF1_banksill', U(X_END - 0.03), U(X_END + 0.004), U(-hw_ + 0.005), U(hw_ - 0.005), U(zb_ + 0.006), U(0.055), 'soot2', ch=U(0.003), grp='hull')
     K.mark('bank_recess', 'pylon', ['web', 'plate'])
 
-    K.colour('rust and dried-blood plate in a patchwork of big uneven plates, soot and bare iron between', U(0.5), U(-0.5), 'whole hull, as on KB1CC')
+    K.colour('a patchwork of rust and dried-blood plate, dark iron, grey salvaged trophy plates and a few violet ones', U(0.5), U(-0.5), 'whole hull, the capitals\' mix (Ryan, Nov 21)')
     K.colour('red-orange stern drives, dark gun mount', U(-0.46), U(-0.5), 'factions.md: runs dark')
 
     def room(name, kind, n0, n1, y0, y1, z0, z1, note=''):
@@ -130,11 +133,8 @@ def build(K):
 
     for nm_, rings_, spec_ in PATCH:
         F.patchwork(K, HP, nm_, rings_, spec_)
-    for ob in K.coll.objects:
-        if ob.type == 'MESH':
-            for slot in ob.material_slots:
-                if slot.material and slot.material.name == 'pale':
-                    slot.material = _k.mat('iron')
     K.change('Built on the accepted KB1CC bomber: the same glacis ramp, rails, lip and patchwork at about two thirds of the beam, no shoulders or bomb barrels',
              'issue 1373: the Hullbreaker adaptive fighter wing drew a code-built box; one family per faction, the fighter reads as the light craft (R259, R362)')
+    K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
+             'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
     K.change('A salvaged twin gun off to port on the deck above the ramp, the vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')

@@ -162,6 +162,11 @@ static func _model_code(fac: String, kind: String) -> String:
 	return _model_codes.get(fac + "|" + kind, "")
 
 
+# Ryan (Nov 21 2026, issue 1373): the Hullbreaker fighter, a deep box of plate, read about twice the size of the other factions'
+# slim fighters at the same length; it is drawn at 0.7 of the unit length.
+const CRAFT_K := {"corsair_KF1": 0.7}
+
+
 func _make_craft(fac: String, kind: String) -> Node3D:
 	var code := _model_code(fac, kind)
 	var path := ship_cache_dir.path_join(code + ".scn")
@@ -181,7 +186,9 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 		return CRAFT.make(fac, kind)
 	# The formation animates a unit-length root. Fit only its model child so
 	# all poses, including the shorter effect passes, use the same scale.
-	var fit := Transform3D(Basis.from_scale(Vector3.ONE / box.size.x), -box.get_center() / box.size.x)
+	# CRAFT_K: a model drawn smaller than the unit length when its bulk reads too big beside the other factions' craft
+	var k: float = CRAFT_K.get(code, 1.0) / box.size.x
+	var fit := Transform3D(Basis.from_scale(Vector3.ONE * k), -box.get_center() * k)
 	body.transform = fit * body.transform
 	_stern = _engine_origin(body)
 	var craft_root := Node3D.new()
