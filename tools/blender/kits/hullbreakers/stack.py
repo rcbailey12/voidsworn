@@ -186,7 +186,7 @@ TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(.45, 1.55), warp=.55,
 # the grey trophy plates pale. The build contract supplies the sheet's LENGTH.
 # Larger ships keep their pattern sizes; R306's colour register applies at every length.
 CRAFT_SIZE = dict(max_length=1.6, patches=3.0, trophies=1.5, marks=2.0,
-                  trophy_gain=1.0, wear=.18, grey_wear=.18)
+                  trophy_gain=1.0, wear=.18, grey_wear=.18, bump_distance=.004, bump_strength=.95)
 _SHIP_LAYERS = deepcopy(LAYERS)
 _SHIP_TROPHY = deepcopy(TROPHY)
 _SHIP_ZONES = deepcopy(ZONES)
@@ -268,7 +268,10 @@ def configure_size(length=None):
         # Pale is the sheet's name for its few salvaged dark grey plates.
         LAYERS.update(scuff=.55,
                       ao_dark=.88, side_dark=.25, ao_short=.006, ao_long=.035,
-                      edge_radius=.0020, wear_lo=.26, wear_hi=.50)
+                      edge_radius=.0020, wear_lo=.26, wear_hi=.50,
+                      # issue 1517 (Nov 21): the capital bump read flat at craft size (KF1 normal relief 1.05 deg against
+                      # the 3.5 floor; Ryan: "it looks unfinished"), so the craft's pitting, scuffs and rivets press deeper
+                      bump_distance=CRAFT_SIZE['bump_distance'], bump_strength=CRAFT_SIZE['bump_strength'])
         for name, zone in ZONES.items():
             if name == 'dark':
                 continue
