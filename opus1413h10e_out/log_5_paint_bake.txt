@@ -1,0 +1,19 @@
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+detail check FAIL: no hull atlas to measure in C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10 (H10_hull_normal.png)
+Stage 5 R224 density (reported, not a pass bar): paint flags 6 mesh flags 4
+   spinal: paint_detail_share 0.159 is 0.53 of the hull's 0.3
+   bay: paint_detail_share 0.094 is 0.31 of the hull's 0.3
+   engine: paint_detail_share 0.212 is 0.71 of the hull's 0.3
+   antenna: paint_detail_share 0.204 is 0.68 of the hull's 0.3
+   hatch: paint_detail_share 0.181 is 0.60 of the hull's 0.3
+   hatchbox: paint_detail_share 0.13 is 0.43 of the hull's 0.3
+   antenna: tris_per_unit2 5853.3 is 0.61 of the hull's 9628.6
+   antenna: edges_per_unit2 5050.8 is 0.63 of the hull's 8039.6
+   hatchbox: tris_per_unit2 7020.8 is 0.73 of the hull's 9628.6
+   hatchbox: edges_per_unit2 6017.8 is 0.75 of the hull's 8039.6
+Stage 5: skipped C15s close-ups for sheet ship hegemony_H10. 
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\r

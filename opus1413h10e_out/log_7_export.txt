@@ -1,0 +1,61 @@
+  outline H10: bow 58.1, midship 82.4, stern 21.6, whole 70.0 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 81.1, midship 62.2, stern 78.9
+  REPORT bow overlap 58.1 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 82.4 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 21.6 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 70.0 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera H10: game bow 64.5 midship 74.3 stern 80.7 whole 72.8, studio bow 59.3 midship 65.4 stern 80.2 whole 68.3
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] H10_23 triangles 53260 hard points {"gun": 9, "engine": 4, "bay": 1, "breach": 6, "core": 1, "rcs": 4, "board": 2} turrets 4 (6504 triangles) files ['H10_23.glb', 'H10_23_base.jpg', 'H10_23_glow_emission.jpg', 'H10_23_normal.png', 'H10_23_orm.png', 'H10_23_parts_base.jpg', 'H10_23_parts_normal.png', 'H10_23_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\export\H10_23
+[check] authored interiors: 9580 triangles, 13 surfaces; authored seams: 3
+[check] 50184 triangles (26772 on part surfaces), box x -0.496 to 0.504, y -0.106 to 0.069, z -0.214 to 0.214
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 4 written (turret_0 F1, turret_1 F2, turret_2 HP, turret_3 HS); marked by the kit: ['F1', 'F2', 'HP', 'HS']
+[check] slot 0 hturbo P: 2 hard points
+[check] slot 1 hturbo S: 2 hard points
+[check] slot 2 ion F: 1 hard points
+[check] slot 3 flak T: 4 hard points
+[check] hard points: {"bay": 1, "board": 2, "breach": 6, "core": 1, "engine": 4, "rcs": 4, "gun": 9}
+PASS H10_23 game export: every required point is there and every hard point passes the mesh checks
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 3 (flak T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w2_ion_F_0 is 0.0871 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w2_ion_F_0 rests aimed backward (x -1.00)
+ok   no_socket: the check failed as it must | hp_w2_ion_F_0 has no extras.socket
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   wrong_side: the check failed as it must | hp_w0_hturbo_P_0: a port mount must sit and aim to port (z below 0)
+ok   no_rcs: the check failed as it must | need at least 2 hp_rcs (0 written)
+ok   no_board: the check failed as it must | need at least 2 hp_board (0 written)
+ok   breach_count: the check failed as it must | need exactly 6 hp_breach for a Battleship of hegemony (5 written)
+ok   breach_inward: the check failed as it must | hp_breach_0: +Y is not the outward normal (it points z +1.00 on the port side)
+ok   breach_near: the check failed as it must | hp_breach_0 is 0.0000 from a part (at least 0.03)
+ok   no_interior: the check failed as it must | no authored interior geometry
+ok   no_seams: the check failed as it must | no authored break seams
+ok   liner_only: the check failed as it must | no authored interior rooms: an inner liner alone is not comprehensive insides
+ok   hull_trim_near: the check passed as it must | 
+ok   part_near: the check failed as it must | hp_breach_0 is 0.0000 from a part (at least 0.03)
+ok   same_side_rcs: the check failed as it must | need one valid hp_rcs on each side (P and S)
+ok   same_side_board: the check failed as it must | need one valid hp_board on each side (P and S)
+ok   no_trim_marker: the check failed as it must | hp_breach_0 is 0.0030 from a part (at least 0.03)
+ok   turret_merged: the check failed as it must | turret F1 is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+ok   bell_radius: the check failed as it must | hp_eng_0 is 0.0199 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0662 on the exit plane covers 6 of 12 sectors
+ok   bell_plane: the check failed as it must | hp_eng_0 is 0.0303 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0331 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_1: the check failed as it must | hp_eng_1 is 0.0199 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0662 on the exit plane covers 6 of 12 sectors
+ok   bell_plane_hp_eng_1: the check failed as it must | hp_eng_1 is 0.0303 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0331 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_2: the check failed as it must | hp_eng_2 is 0.0199 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0662 on the exit plane covers 6 of 12 sectors
+ok   bell_plane_hp_eng_2: the check failed as it must | hp_eng_2 is 0.0303 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0331 on the exit plane covers 0 of 12 sectors
+ok   bell_radius_hp_eng_3: the check failed as it must | hp_eng_3 is 0.0199 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0662 on the exit plane covers 6 of 12 sectors
+ok   bell_plane_hp_eng_3: the check failed as it must | hp_eng_3 is 0.0303 off the mesh (limit 0.0120) and is not the centre of an open engine bell: its rim at radius 0.0331 on the exit plane covers 0 of 12 sectors
+PASS the export check fails when it should
+INSTALL READBACK PASS code=H10_23 nodes=35
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10e\repo\godot\assets\ships\H10_23; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10e\repo\godot\.stage7-replaced-f_696p5j\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\export\H10_23

@@ -1,0 +1,240 @@
+{
+ "cell": "H10",
+ "route": "build sheet hegemony_H10 + the hegemony paint stack (kits/hegemony/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 144.8,
+ "geometry_seconds": 0.5,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 57,
+  "part_objects": 247,
+  "glow_objects": 52,
+  "interior_objects": 60,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [
+   {
+    "file": "hegemony_trim.png",
+    "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "trim sheet: machining and handling marks (rows: scuffs)"
+   },
+   {
+    "file": "hegemony_decals.png",
+    "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "decal atlas: hull number, module corner tick, module index bars, registry plate"
+   }
+  ],
+  "decals": [
+   {
+    "rule": "hull number",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.3682,
+     0.1383,
+     -0.019
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "hull number",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.3682,
+     -0.1383,
+     -0.019
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.069,
+     0.1863,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.069,
+     -0.1863,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick port",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2747,
+     0.06,
+     0.0444
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick starboard",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2747,
+     -0.06,
+     0.0444
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "registry plate",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.1999,
+     0.0,
+     0.0481
+    ],
+    "room": 1.0
+   }
+  ],
+  "bake_H_masks_s": 9.7,
+  "bake_H_albedo_s": 12.5,
+  "bake_H_orm_s": 12.0,
+  "bake_H_normal_s": 45.3,
+  "zones_H": [
+   "hgrey",
+   "hgrey2",
+   "hpanel",
+   "htrim"
+  ],
+  "bake_P_masks_s": 9.6,
+  "bake_P_albedo_s": 7.4,
+  "bake_P_orm_s": 7.0,
+  "bake_P_normal_s": 11.0,
+  "zones_P": [
+   "dark",
+   "hgrey",
+   "hgrey2",
+   "hmetal",
+   "hpanel",
+   "htrim",
+   "nozzle_hgrey2",
+   "nozzle_hmetal",
+   "nozzle_hpanel",
+   "nozzle_htrim"
+  ],
+  "bake_engine_glow_s": 1.6,
+  "engine_glow": {
+   "engines": 4,
+   "map": "H10_engine_emission.png",
+   "res": 2048
+  },
+  "glow_materials": [
+   "p3_glow",
+   "p3_glow_hull",
+   "p3_hlens",
+   "p3_hwin"
+  ],
+  "inside_materials": [
+   "ps_inside_bridge",
+   "ps_inside_core",
+   "ps_inside_deck",
+   "ps_inside_engroom",
+   "ps_inside_frame",
+   "ps_inside_hangar",
+   "ps_inside_hcorr",
+   "ps_inside_hemerg",
+   "ps_inside_hold",
+   "ps_inside_hrack",
+   "ps_inside_machinery",
+   "ps_inside_magazine"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.4538,
+    "area": 2.33844,
+    "texels_per_unit2": 3256016.9
+   },
+   "parts": {
+    "uv_share": 0.5521,
+    "area": 0.75109,
+    "texels_per_unit2": 12331804.0
+   }
+  },
+  "stack_seconds": 143.2
+ },
+ "density": {
+  "paint_flags": [
+   "spinal: paint_detail_share 0.159 is 0.53 of the hull's 0.3",
+   "bay: paint_detail_share 0.094 is 0.31 of the hull's 0.3",
+   "engine: paint_detail_share 0.212 is 0.71 of the hull's 0.3",
+   "antenna: paint_detail_share 0.204 is 0.68 of the hull's 0.3",
+   "hatch: paint_detail_share 0.181 is 0.60 of the hull's 0.3",
+   "hatchbox: paint_detail_share 0.13 is 0.43 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "antenna: tris_per_unit2 5853.3 is 0.61 of the hull's 9628.6",
+   "antenna: edges_per_unit2 5050.8 is 0.63 of the hull's 8039.6",
+   "hatchbox: tris_per_unit2 7020.8 is 0.73 of the hull's 9628.6",
+   "hatchbox: edges_per_unit2 6017.8 is 0.75 of the hull's 8039.6"
+  ],
+  "hull": {
+   "area": 2.33844,
+   "triangles": 22516,
+   "tris_per_unit2": 9628.6,
+   "edges_per_unit2": 8039.6,
+   "texels_per_unit2": 3256016.9,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 156.93,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "hegemony_H10",
+  "game_ship": "h_dominion",
+  "variant": "",
+  "model_length": 21.2,
+  "scale": 0.04716980962322129,
+  "length_world": 21.0,
+  "t_lines": [
+   -0.26415,
+   -0.02594,
+   0.33019
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 9,
+  "guns": 5,
+  "engines": 4,
+  "bays": 1,
+  "points": 13,
+  "turrets": [
+   "F1_turret",
+   "F2_turret",
+   "HP_turret",
+   "HS_turret"
+  ],
+  "interior_objects": 60,
+  "slots": [
+   "0 hturbo P",
+   "1 hturbo S",
+   "2 ion F",
+   "3 flak T"
+  ]
+ },
+ "triangles": 54332,
+ "objects": 356,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

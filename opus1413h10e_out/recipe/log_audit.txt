@@ -1,0 +1,5 @@
+[audit] {"problems": [], "parts": 283, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 5, "guns_into_ship": 0, "guns": 5, "break_lines": {"t_lines": [-0.2641509338900392, -0.02594339529277171, 0.33018866736254904], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-65b0fc9d22e74caeb62df781c0eaf9ff\runner-step-3453adf73c1447f99fad85fcf3a3d6bf

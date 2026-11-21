@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1413)
+GPU: acquired shared claim 9e534450-3770-40b8-9980-8ff7b2fe745f
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\H10.blend"
+detail check FAIL: no hull atlas to measure in C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10 (H10_hull_normal.png)
+GPU: released shared claim 9e534450-3770-40b8-9980-8ff7b2fe745f
