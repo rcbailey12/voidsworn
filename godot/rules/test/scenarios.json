@@ -9087,5 +9087,85 @@
    "h_picket",
    "h_picket"
   ]
+ },
+ "s1450_undo": {
+  "note": "Issue 1450 (R376): undo before firing. s1 with the undo fixture: each ship moves, takes it back and makes the same move again, turns (in round 1 a free turn) and takes that back; after firing, undo must be refused. The hook names carry canUndo, so both twins must agree on every answer.",
+  "seed": 1001,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "undo": true
+ },
+ "s1450_undo_chorus": {
+  "note": "Issue 1450: the undo fixture on a Chorus fleet (the free first turn each round sets pivotUsed, which undo restores)",
+  "seed": 11053,
+  "sector": 1,
+  "admiral": "voice",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "chorus",
+  "storyMods": {
+   "dmgPct": -0.1
+  },
+  "undo": true
+ },
+ "s1450_undo_classic": {
+  "note": "Issue 1450: the undo fixture in Classic mode with attack-move first: fire during the burn draws dice, so undo is refused after it",
+  "seed": 21021,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "alt": false,
+  "attack_move": true,
+  "undo": true
  }
 }
