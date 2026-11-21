@@ -1,0 +1,576 @@
+{
+ "acts": [
+  {
+   "acts": [
+    {
+     "at": 1196,
+     "cost": 2,
+     "f": 1,
+     "k": "move",
+     "to": "7,4"
+    },
+    {
+     "at": 6147,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 6147,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 1,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 1196,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 605,
+     "cost": 5,
+     "f": 1,
+     "k": "move",
+     "to": "5,8"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 7783,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 1,
+   "r": 1,
+   "ship": "x02",
+   "targets": 0,
+   "think_ms": 605,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "at": 559,
+     "cost": 6,
+     "f": 0,
+     "k": "move",
+     "to": "11,1"
+    },
+    {
+     "at": 7975,
+     "cost": 6,
+     "f": 1,
+     "k": "move",
+     "to": "12,5"
+    },
+    {
+     "at": 11004,
+     "k": "command"
+    },
+    {
+     "armed": false,
+     "at": 13213,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 14222,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 2,
+   "r": 1,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 559,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 710,
+     "cost": 3,
+     "f": 2,
+     "k": "move",
+     "to": "8,3"
+    },
+    {
+     "at": 4116,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 4116,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 2,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 710,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 584,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "8,9"
+    },
+    {
+     "at": 8661,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "10,10"
+    },
+    {
+     "armed": false,
+     "at": 11837,
+     "guns": 2,
+     "k": "fire",
+     "target": "Carrier",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 18621,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 2,
+   "r": 2,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 584,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "at": 3520,
+     "cost": 6,
+     "f": 1,
+     "k": "move",
+     "to": "11,10"
+    },
+    {
+     "armed": false,
+     "at": 7216,
+     "guns": 1,
+     "k": "fire",
+     "target": "Carrier",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 11892,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 1,
+   "r": 3,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 3520,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 619,
+     "cost": 1,
+     "f": 2,
+     "k": "move",
+     "to": "7,4"
+    },
+    {
+     "at": 2365,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 2365,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 3,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 619,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 988,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1813,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 0,
+   "r": 4,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 988,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 946,
+     "guns": 1,
+     "k": "fire",
+     "target": "Carrier",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 1945,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 0,
+   "r": 4,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 946,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 716,
+     "cost": 1,
+     "f": 2,
+     "k": "move",
+     "to": "7,4"
+    },
+    {
+     "at": 2511,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 2511,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 5,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 716,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 979,
+     "guns": 1,
+     "k": "fire",
+     "target": "Carrier",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1767,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 0,
+   "r": 5,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 979,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 983,
+     "guns": 1,
+     "k": "fire",
+     "target": "Carrier",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 2006,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 0,
+   "r": 5,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 983,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 674,
+     "cost": 2,
+     "f": 2,
+     "k": "move",
+     "to": "8,3"
+    },
+    {
+     "at": 3217,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3217,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 6,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 674,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1002,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 2213,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 0,
+   "r": 6,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 1002,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 709,
+     "cost": 4,
+     "f": 4,
+     "k": "move",
+     "to": "9,2"
+    },
+    {
+     "armed": false,
+     "at": 6439,
+     "guns": 2,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 9110,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 7,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 709,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 946,
+     "guns": 2,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 4310,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 0,
+   "r": 8,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 946,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 942,
+     "guns": 2,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 4186,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 0,
+   "r": 9,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 942,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 617,
+     "cost": 3,
+     "f": 5,
+     "k": "move",
+     "to": "8,3"
+    },
+    {
+     "at": 4053,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 4053,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 10,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 617,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": true,
+  "enemy": "corsair",
+  "obj": "hold",
+  "seed": 2297535820
+ },
+ "enemy_s": {
+  "1": 14.93,
+  "10": 4.93,
+  "11": 4.3,
+  "12": 7.97,
+  "2": 8.3,
+  "3": 14.4,
+  "4": 13.57,
+  "5": 12.67,
+  "6": 16.67,
+  "7": 11.5,
+  "8": 9.0,
+  "9": 4.63
+ },
+ "hurries": 0,
+ "result": "loss",
+ "rounds": 13,
+ "secs": 224.8,
+ "tips": [
+  {
+   "activation": "1:player:x01",
+   "at": 12354,
+   "id": "resolve",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x01",
+   "at": 17484,
+   "id": "resolve",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "3:player:x03",
+   "at": 69728,
+   "id": "close",
+   "k": "show",
+   "r": 3,
+   "why": ""
+  },
+  {
+   "activation": "3:player:x03",
+   "at": 72417,
+   "id": "close",
+   "k": "dismiss",
+   "r": 3,
+   "why": "got_it"
+  }
+ ],
+ "v": 1
+}

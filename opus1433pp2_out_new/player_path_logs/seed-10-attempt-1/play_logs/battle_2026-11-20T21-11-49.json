@@ -1,0 +1,223 @@
+{
+ "acts": [
+  {
+   "acts": [
+    {
+     "at": 1446,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "6,11"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 9177,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 1,
+   "r": 1,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 1446,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 3257,
+     "cost": 6,
+     "f": 0,
+     "k": "move",
+     "to": "7,9"
+    },
+    {
+     "at": 12237,
+     "cost": 6,
+     "f": 0,
+     "k": "move",
+     "to": "11,10"
+    },
+    {
+     "at": 17549,
+     "k": "command"
+    },
+    {
+     "armed": false,
+     "at": 21873,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x03"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 24722,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Cold Fury",
+   "plans": 2,
+   "r": 1,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 3257,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 673,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "10,11"
+    },
+    {
+     "armed": false,
+     "at": 4649,
+     "guns": 2,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x04"
+    },
+    {
+     "at": 10416,
+     "k": "brace"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 10416,
+   "end": "brace",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 1,
+   "r": 2,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 673,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 906,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 1688,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Cold Fury",
+   "plans": 0,
+   "r": 3,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 906,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 965,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x03"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 5428,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 4,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 965,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": true,
+  "enemy": "corsair",
+  "obj": "hold",
+  "seed": 2908194046
+ },
+ "enemy_s": {
+  "1": 9.0,
+  "2": 2.93,
+  "3": 8.6
+ },
+ "hurries": 0,
+ "result": "win",
+ "rounds": 4,
+ "secs": 68.1,
+ "tips": [
+  {
+   "activation": "1:player:x01",
+   "at": 10492,
+   "id": "objective",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 21180,
+   "id": "objective",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "1:enemy:x04",
+   "at": 27718,
+   "id": "reinforce_warn",
+   "k": "show",
+   "r": 2,
+   "why": ""
+  },
+  {
+   "activation": "1:enemy:x04",
+   "at": 30162,
+   "id": "reinforce_warn",
+   "k": "dismiss",
+   "r": 2,
+   "why": "got_it"
+  },
+  {
+   "activation": "2:player:x02",
+   "at": 33339,
+   "id": "close",
+   "k": "show",
+   "r": 2,
+   "why": ""
+  },
+  {
+   "activation": "2:player:x02",
+   "at": 35579,
+   "id": "close",
+   "k": "dismiss",
+   "r": 2,
+   "why": "got_it"
+  }
+ ],
+ "v": 1
+}

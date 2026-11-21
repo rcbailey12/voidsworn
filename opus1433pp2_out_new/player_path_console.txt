@@ -1,0 +1,21 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+Recording seed 121 to C:\Users\rcbai\Downloads\voidsworn_test\opus1433pp2\out_20261120_204312_29329\out_new\player_path\seed-121.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1433pp2\out_20261120_204312_29329\out_new\player_path\seed-10.avi
+Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-ec39d3d9c939\seed-
+121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-ec39d3d9
+c939\seed-121-attempt-1\game.log
+Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-ec39d3d9c939\seed-1
+0-attempt-1\launcher.log and 
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-ec39d3d9c939\seed-10-attempt-1\game.log
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1433pp2\out_20261120_204312_29329\new\contrib\codex\player_path_1119\run
+.ps1:99 char:24
++ ...  ($failures.Count) { throw ($failures -join [Environment]::NewLine) }
++                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Seed 121 failed...empt-1\game.log:String) [], RuntimeException
+    + FullyQualifiedErrorId : Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b 
+   43-4015-a0c6-ec39d3d9c939\seed-121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-p  
+  ath-b0f5e1fc-5b43-4015-a0c6-ec39d3d9c939\seed-121-attempt-1\game.log
+    Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-ec39d3d9c939\s 
+   eed-10-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-b0f5e1fc-5b43-4015-a0c6-  
+  ec39d3d9c939\seed-10-attempt-1\game.log
+ 
