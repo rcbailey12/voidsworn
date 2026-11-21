@@ -1,0 +1,726 @@
+GPU: waiting for shared claim, weight 2 (1291)
+GPU: acquired shared claim ecdcc064-c899-4b0e-87d2-664c3fb16d2a
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\C11.blend"
+Fra:1 Mem:181.78M (Peak 182.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:182.78M (Peak 182.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | face
+Fra:1 Mem:182.82M (Peak 182.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_flesh
+Fra:1 Mem:184.88M (Peak 184.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_flesh2
+Fra:1 Mem:185.28M (Peak 185.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_tissue
+Fra:1 Mem:187.05M (Peak 187.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_chitin
+Fra:1 Mem:187.20M (Peak 187.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_maw
+Fra:1 Mem:187.45M (Peak 187.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bile
+Fra:1 Mem:187.59M (Peak 187.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:187.61M (Peak 187.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_chitin
+Fra:1 Mem:187.69M (Peak 187.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:188.82M (Peak 188.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh
+Fra:1 Mem:188.86M (Peak 188.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:189.87M (Peak 189.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:190.33M (Peak 190.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_bile
+Fra:1 Mem:190.27M (Peak 190.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:190.43M (Peak 190.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh2
+Fra:1 Mem:190.71M (Peak 190.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:190.84M (Peak 190.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh2
+Fra:1 Mem:190.84M (Peak 190.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh
+Fra:1 Mem:191.08M (Peak 191.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh2
+Fra:1 Mem:191.35M (Peak 191.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_bile
+Fra:1 Mem:191.41M (Peak 191.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_pore
+Fra:1 Mem:191.44M (Peak 191.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:193.01M (Peak 193.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_mane_muscle
+Fra:1 Mem:193.13M (Peak 193.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_flesh
+Fra:1 Mem:193.23M (Peak 193.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_tissue
+Fra:1 Mem:193.42M (Peak 193.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:193.37M (Peak 193.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:193.39M (Peak 193.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_flesh
+Fra:1 Mem:193.41M (Peak 193.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_tissue
+Fra:1 Mem:193.44M (Peak 193.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_tissue
+Fra:1 Mem:193.46M (Peak 193.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_flesh2
+Fra:1 Mem:193.47M (Peak 193.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_maw
+Fra:1 Mem:193.49M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_tissue
+Fra:1 Mem:193.35M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:193.39M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_tissue
+Fra:1 Mem:193.42M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:193.41M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:193.45M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:193.48M (Peak 193.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh
+Fra:1 Mem:193.51M (Peak 193.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:193.58M (Peak 193.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_tissue
+Fra:1 Mem:193.61M (Peak 193.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:193.65M (Peak 193.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_fore
+Fra:1 Mem:193.65M (Peak 193.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:193.69M (Peak 193.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_bile
+Fra:1 Mem:193.72M (Peak 193.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:193.75M (Peak 193.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh
+Fra:1 Mem:193.77M (Peak 193.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:193.78M (Peak 193.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_bile
+Fra:1 Mem:193.80M (Peak 193.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh
+Fra:1 Mem:193.83M (Peak 193.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_maw
+Fra:1 Mem:193.84M (Peak 193.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_mount_flesh2
+Fra:1 Mem:193.87M (Peak 193.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:193.90M (Peak 193.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_tissue
+Fra:1 Mem:193.92M (Peak 193.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_maw
+Fra:1 Mem:193.97M (Peak 193.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_bile
+Fra:1 Mem:194.01M (Peak 194.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh
+Fra:1 Mem:194.07M (Peak 194.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_bile
+Fra:1 Mem:194.09M (Peak 194.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_membrane
+Fra:1 Mem:194.11M (Peak 194.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:194.14M (Peak 194.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_1
+Fra:1 Mem:194.20M (Peak 194.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_bone
+Fra:1 Mem:194.20M (Peak 194.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_sockets
+Fra:1 Mem:194.25M (Peak 194.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_shell
+Fra:1 Mem:195.09M (Peak 195.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:195.17M (Peak 195.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_caps
+Fra:1 Mem:195.28M (Peak 195.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_lower
+Fra:1 Mem:195.29M (Peak 195.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_upper
+Fra:1 Mem:195.29M (Peak 195.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:195.29M (Peak 195.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:195.29M (Peak 195.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:196.00M (Peak 196.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:198.26M (Peak 198.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2p
+Fra:1 Mem:198.31M (Peak 198.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:198.36M (Peak 198.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:198.40M (Peak 198.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:199.92M (Peak 199.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_p
+Fra:1 Mem:199.93M (Peak 199.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ganglion
+Fra:1 Mem:200.82M (Peak 200.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:205.24M (Peak 205.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:196.81M (Peak 205.71M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_hull_albedo
+Fra:1 Mem:196.81M (Peak 205.71M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.87M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.87M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.87M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.87M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:575.95M (Peak 836.86M) | Time:00:00.33 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:575.98M (Peak 836.86M) | Time:00:00.33 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:575.98M (Peak 836.86M) | Time:00:00.33 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:575.98M (Peak 836.86M) | Time:00:00.33 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:575.98M (Peak 836.86M) | Time:00:00.33 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:575.98M (Peak 836.86M) | Time:00:00.33 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.02M (Peak 836.86M) | Time:00:00.33 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.00M (Peak 836.86M) | Time:00:00.33 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.00M (Peak 836.86M) | Time:00:00.33 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.00M (Peak 836.86M) | Time:00:00.34 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.00M (Peak 836.86M) | Time:00:00.36 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.00M (Peak 836.86M) | Time:00:00.36 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.27M (Peak 836.86M) | Time:00:00.36 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.25M (Peak 836.86M) | Time:00:00.60 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.25M (Peak 836.86M) | Time:00:00.60 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.25M (Peak 836.86M) | Time:00:00.60 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.25M (Peak 836.86M) | Time:00:00.60 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.25M (Peak 836.86M) | Time:00:00.60 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.26M (Peak 836.86M) | Time:00:00.60 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.60M (Peak 836.86M) | Time:00:00.62 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.60M (Peak 836.86M) | Time:00:00.62 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_top.png'
+Time: 00:00.67 (Saving: 00:00.01)
+
+Fra:1 Mem:191.13M (Peak 192.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:191.14M (Peak 192.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_flesh
+Fra:1 Mem:192.14M (Peak 192.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_pore
+Fra:1 Mem:192.87M (Peak 192.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_flesh2
+Fra:1 Mem:192.86M (Peak 192.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_tissue
+Fra:1 Mem:192.88M (Peak 192.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_mount_tissue
+Fra:1 Mem:194.61M (Peak 194.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:195.23M (Peak 195.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh
+Fra:1 Mem:195.22M (Peak 195.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:195.22M (Peak 195.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:195.44M (Peak 195.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_bile
+Fra:1 Mem:195.75M (Peak 195.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:195.89M (Peak 195.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh2
+Fra:1 Mem:195.92M (Peak 195.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_bile
+Fra:1 Mem:196.75M (Peak 196.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_pore
+Fra:1 Mem:196.70M (Peak 196.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_bile
+Fra:1 Mem:196.74M (Peak 196.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_pore
+Fra:1 Mem:197.76M (Peak 197.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh
+Fra:1 Mem:197.79M (Peak 197.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:198.25M (Peak 198.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_pore
+Fra:1 Mem:198.31M (Peak 198.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:198.42M (Peak 198.42M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh2
+Fra:1 Mem:198.42M (Peak 198.42M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:198.44M (Peak 198.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_pore
+Fra:1 Mem:198.44M (Peak 198.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:198.47M (Peak 198.47M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_maw
+Fra:1 Mem:198.65M (Peak 198.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_flesh2
+Fra:1 Mem:198.77M (Peak 198.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_maw
+Fra:1 Mem:198.81M (Peak 198.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_tissue
+Fra:1 Mem:198.81M (Peak 198.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_tissue
+Fra:1 Mem:198.81M (Peak 198.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:199.66M (Peak 199.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:199.68M (Peak 199.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:199.68M (Peak 199.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:199.70M (Peak 199.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_tissue
+Fra:1 Mem:199.76M (Peak 199.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_maw
+Fra:1 Mem:199.80M (Peak 199.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_bile
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh2
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_tissue
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_tissue
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_bile
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_membrane
+Fra:1 Mem:199.92M (Peak 199.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh
+Fra:1 Mem:199.78M (Peak 199.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_tissue
+Fra:1 Mem:199.79M (Peak 199.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_bile
+Fra:1 Mem:199.79M (Peak 199.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:199.90M (Peak 199.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:199.93M (Peak 199.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_1
+Fra:1 Mem:199.95M (Peak 199.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_0
+Fra:1 Mem:199.96M (Peak 199.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_bone
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_shell
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_lower
+Fra:1 Mem:201.52M (Peak 201.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:201.55M (Peak 201.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:201.56M (Peak 201.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:201.57M (Peak 201.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_p
+Fra:1 Mem:201.60M (Peak 201.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:201.61M (Peak 201.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_s
+Fra:1 Mem:201.62M (Peak 201.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ganglion
+Fra:1 Mem:201.65M (Peak 201.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:202.14M (Peak 202.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ram_muscle
+Fra:1 Mem:202.15M (Peak 202.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:202.17M (Peak 202.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1s
+Fra:1 Mem:202.17M (Peak 202.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:202.19M (Peak 202.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:202.19M (Peak 202.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:202.23M (Peak 202.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_fore
+Fra:1 Mem:205.28M (Peak 205.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:196.85M (Peak 205.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_normal
+Fra:1 Mem:196.85M (Peak 205.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.89M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.89M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.89M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.89M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:575.98M (Peak 836.91M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:576.01M (Peak 836.91M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:576.01M (Peak 836.91M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:576.01M (Peak 836.91M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:576.01M (Peak 836.91M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:576.01M (Peak 836.91M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.05M (Peak 836.91M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.03M (Peak 836.91M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.03M (Peak 836.91M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.03M (Peak 836.91M) | Time:00:00.30 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.03M (Peak 836.91M) | Time:00:00.31 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.03M (Peak 836.91M) | Time:00:00.31 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.30M (Peak 836.91M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.28M (Peak 836.91M) | Time:00:00.53 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.63M (Peak 836.91M) | Time:00:00.54 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.63M (Peak 836.91M) | Time:00:00.54 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_below.png'
+Time: 00:00.57 (Saving: 00:00.01)
+
+Fra:1 Mem:191.17M (Peak 191.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:191.17M (Peak 191.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_pore
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_tissue
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_chitin
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_maw
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_gland
+Fra:1 Mem:194.95M (Peak 194.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_tissue
+Fra:1 Mem:194.87M (Peak 194.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_maw
+Fra:1 Mem:195.00M (Peak 195.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bilewet
+Fra:1 Mem:194.95M (Peak 195.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bile
+Fra:1 Mem:194.96M (Peak 195.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_mount_tissue
+Fra:1 Mem:195.02M (Peak 195.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:195.11M (Peak 195.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_chitin
+Fra:1 Mem:195.34M (Peak 195.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:196.04M (Peak 196.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh
+Fra:1 Mem:196.05M (Peak 196.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:197.06M (Peak 197.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_pore
+Fra:1 Mem:197.62M (Peak 197.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:197.94M (Peak 197.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh2
+Fra:1 Mem:198.12M (Peak 198.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh2
+Fra:1 Mem:198.13M (Peak 198.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:198.30M (Peak 198.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_pore
+Fra:1 Mem:198.42M (Peak 198.42M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:198.44M (Peak 198.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_pore
+Fra:1 Mem:198.46M (Peak 198.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_flesh
+Fra:1 Mem:199.17M (Peak 199.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:199.34M (Peak 199.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_flesh
+Fra:1 Mem:199.52M (Peak 199.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_flesh2
+Fra:1 Mem:199.62M (Peak 199.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_maw
+Fra:1 Mem:199.63M (Peak 199.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_flesh
+Fra:1 Mem:199.68M (Peak 199.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_tissue
+Fra:1 Mem:199.69M (Peak 199.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_maw
+Fra:1 Mem:199.69M (Peak 199.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_tissue
+Fra:1 Mem:199.72M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_maw
+Fra:1 Mem:199.56M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:199.62M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:199.63M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pulse_bladder
+Fra:1 Mem:199.67M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:199.68M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_mane_muscle
+Fra:1 Mem:199.69M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:199.71M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:199.71M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:199.72M (Peak 199.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:199.75M (Peak 199.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:199.75M (Peak 199.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh
+Fra:1 Mem:199.77M (Peak 199.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:199.78M (Peak 199.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_tissue
+Fra:1 Mem:199.79M (Peak 199.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_maw
+Fra:1 Mem:199.79M (Peak 199.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh2
+Fra:1 Mem:199.81M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_tissue
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_maw
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_bile
+Fra:1 Mem:199.85M (Peak 199.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_membrane
+Fra:1 Mem:199.85M (Peak 199.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh
+Fra:1 Mem:199.86M (Peak 199.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh2
+Fra:1 Mem:199.88M (Peak 199.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_maw
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_bile
+Fra:1 Mem:199.91M (Peak 199.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:199.91M (Peak 199.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:199.94M (Peak 199.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_1
+Fra:1 Mem:199.96M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_0
+Fra:1 Mem:199.96M (Peak 199.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_bone
+Fra:1 Mem:199.98M (Peak 199.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_sockets
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_shell
+Fra:1 Mem:201.53M (Peak 201.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:201.53M (Peak 201.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_lower
+Fra:1 Mem:201.54M (Peak 201.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_upper
+Fra:1 Mem:201.58M (Peak 201.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:201.60M (Peak 201.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:201.60M (Peak 201.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:201.63M (Peak 201.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:202.47M (Peak 202.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:204.44M (Peak 204.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:204.66M (Peak 204.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:204.67M (Peak 204.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:204.69M (Peak 204.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:204.71M (Peak 204.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:205.32M (Peak 205.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:196.89M (Peak 205.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_hull_albedo
+Fra:1 Mem:196.89M (Peak 205.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.91M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.91M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.91M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.91M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:576.00M (Peak 836.94M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:576.03M (Peak 836.94M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:576.03M (Peak 836.94M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:576.03M (Peak 836.94M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:576.03M (Peak 836.94M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:576.03M (Peak 836.94M) | Time:00:00.30 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.07M (Peak 836.94M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.05M (Peak 836.94M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.05M (Peak 836.94M) | Time:00:00.30 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.05M (Peak 836.94M) | Time:00:00.31 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.05M (Peak 836.94M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.05M (Peak 836.94M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.32M (Peak 836.94M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.30M (Peak 836.94M) | Time:00:00.56 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.65M (Peak 836.94M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.65M (Peak 836.94M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_port.png'
+Time: 00:00.60 (Saving: 00:00.01)
+
+Fra:1 Mem:191.21M (Peak 191.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:191.21M (Peak 191.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_pore
+Fra:1 Mem:192.21M (Peak 192.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_chitin
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_maw
+Fra:1 Mem:192.83M (Peak 192.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_bile
+Fra:1 Mem:192.78M (Peak 192.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_pore
+Fra:1 Mem:194.94M (Peak 194.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bilewet
+Fra:1 Mem:194.88M (Peak 194.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_mount_flesh
+Fra:1 Mem:194.89M (Peak 194.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:195.39M (Peak 195.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_chitin
+Fra:1 Mem:195.43M (Peak 195.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:195.40M (Peak 195.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:195.42M (Peak 195.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_bile
+Fra:1 Mem:196.10M (Peak 196.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:196.12M (Peak 196.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_bile
+Fra:1 Mem:197.13M (Peak 197.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:197.17M (Peak 197.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh
+Fra:1 Mem:197.58M (Peak 197.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh2
+Fra:1 Mem:197.98M (Peak 197.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_bile
+Fra:1 Mem:197.98M (Peak 197.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh
+Fra:1 Mem:198.08M (Peak 198.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh2
+Fra:1 Mem:198.08M (Peak 198.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_bile
+Fra:1 Mem:198.12M (Peak 198.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_bile
+Fra:1 Mem:198.27M (Peak 198.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh2
+Fra:1 Mem:198.27M (Peak 198.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_pore
+Fra:1 Mem:198.58M (Peak 198.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_tissue
+Fra:1 Mem:198.71M (Peak 198.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:198.73M (Peak 198.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_flesh2
+Fra:1 Mem:198.78M (Peak 198.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_tissue
+Fra:1 Mem:199.45M (Peak 199.45M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_flesh2
+Fra:1 Mem:199.46M (Peak 199.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_maw
+Fra:1 Mem:199.63M (Peak 199.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:199.64M (Peak 199.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh2
+Fra:1 Mem:199.65M (Peak 199.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_maw
+Fra:1 Mem:199.65M (Peak 199.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:199.77M (Peak 199.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:199.79M (Peak 199.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh
+Fra:1 Mem:199.80M (Peak 199.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:199.81M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pulse_bladder
+Fra:1 Mem:199.83M (Peak 199.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:199.84M (Peak 199.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_mane_muscle
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:199.91M (Peak 199.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh
+Fra:1 Mem:199.91M (Peak 199.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:199.96M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_flesh2
+Fra:1 Mem:199.81M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_bile
+Fra:1 Mem:199.83M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_mount_flesh2
+Fra:1 Mem:199.90M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_tissue
+Fra:1 Mem:199.93M (Peak 199.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_bile
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:200.00M (Peak 200.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:200.02M (Peak 200.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:200.04M (Peak 200.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_membrane
+Fra:1 Mem:200.04M (Peak 200.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:200.06M (Peak 200.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh2
+Fra:1 Mem:200.06M (Peak 200.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_maw
+Fra:1 Mem:200.08M (Peak 200.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_bile
+Fra:1 Mem:200.08M (Peak 200.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:200.11M (Peak 200.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_1
+Fra:1 Mem:200.12M (Peak 200.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_sockets
+Fra:1 Mem:200.16M (Peak 200.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_lower
+Fra:1 Mem:200.17M (Peak 200.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:200.18M (Peak 200.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:200.18M (Peak 200.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:200.21M (Peak 200.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:200.22M (Peak 200.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:200.41M (Peak 200.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ram_muscle
+Fra:1 Mem:200.72M (Peak 200.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:202.39M (Peak 202.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:202.40M (Peak 202.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_p
+Fra:1 Mem:202.40M (Peak 202.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ganglion
+Fra:1 Mem:205.36M (Peak 206.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:196.93M (Peak 206.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_normal
+Fra:1 Mem:196.93M (Peak 206.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.93M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.93M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.93M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.93M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.30 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:576.02M (Peak 836.98M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:576.05M (Peak 836.98M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:576.05M (Peak 836.98M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:576.05M (Peak 836.98M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:576.05M (Peak 836.98M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:576.05M (Peak 836.98M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.09M (Peak 836.98M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.07M (Peak 836.98M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.07M (Peak 836.98M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.07M (Peak 836.98M) | Time:00:00.31 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.07M (Peak 836.98M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.07M (Peak 836.98M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.34M (Peak 836.98M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.32M (Peak 836.98M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.32M (Peak 836.98M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.32M (Peak 836.98M) | Time:00:00.55 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.32M (Peak 836.98M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.32M (Peak 836.98M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.33M (Peak 836.98M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.67M (Peak 836.98M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.67M (Peak 836.98M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_starboard.png'
+Time: 00:00.60 (Saving: 00:00.01)
+
+Fra:1 Mem:191.25M (Peak 192.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:191.25M (Peak 192.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_pore
+Fra:1 Mem:192.25M (Peak 192.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_tissue
+Fra:1 Mem:192.54M (Peak 192.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_chitin
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_gland
+Fra:1 Mem:192.96M (Peak 192.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_bile
+Fra:1 Mem:195.00M (Peak 195.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_gland
+Fra:1 Mem:195.02M (Peak 195.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bilewet
+Fra:1 Mem:195.03M (Peak 195.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:195.06M (Peak 195.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_chitin
+Fra:1 Mem:195.33M (Peak 195.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:195.44M (Peak 195.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh
+Fra:1 Mem:195.50M (Peak 195.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:195.50M (Peak 195.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:196.19M (Peak 196.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_bile
+Fra:1 Mem:196.19M (Peak 196.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_bile
+Fra:1 Mem:197.35M (Peak 197.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:197.96M (Peak 197.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh
+Fra:1 Mem:198.01M (Peak 198.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_mount_flesh2
+Fra:1 Mem:198.03M (Peak 198.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_bile
+Fra:1 Mem:198.03M (Peak 198.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2p_body_pore
+Fra:1 Mem:198.03M (Peak 198.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_mount_flesh
+Fra:1 Mem:198.12M (Peak 198.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh
+Fra:1 Mem:198.22M (Peak 198.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_pore
+Fra:1 Mem:198.52M (Peak 198.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh2
+Fra:1 Mem:198.60M (Peak 198.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:198.64M (Peak 198.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_pore
+Fra:1 Mem:198.63M (Peak 198.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_maw
+Fra:1 Mem:198.69M (Peak 198.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_maw
+Fra:1 Mem:199.51M (Peak 199.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_flesh
+Fra:1 Mem:199.75M (Peak 199.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_tissue
+Fra:1 Mem:199.75M (Peak 199.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_flesh2
+Fra:1 Mem:199.77M (Peak 199.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_maw
+Fra:1 Mem:199.78M (Peak 199.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_tissue
+Fra:1 Mem:199.78M (Peak 199.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_maw
+Fra:1 Mem:199.80M (Peak 199.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:199.81M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh2
+Fra:1 Mem:199.65M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_membrane
+Fra:1 Mem:199.65M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh
+Fra:1 Mem:199.68M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_flesh2
+Fra:1 Mem:199.68M (Peak 199.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_pulse_bladder
+Fra:1 Mem:199.73M (Peak 199.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_mane_muscle
+Fra:1 Mem:199.75M (Peak 199.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:199.77M (Peak 199.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:199.79M (Peak 199.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:199.80M (Peak 199.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_fore
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_tissue
+Fra:1 Mem:199.84M (Peak 199.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_maw
+Fra:1 Mem:199.84M (Peak 199.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_bile
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_membrane
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_tissue
+Fra:1 Mem:199.88M (Peak 199.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_bile
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_tissue
+Fra:1 Mem:199.92M (Peak 199.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_mount_flesh
+Fra:1 Mem:199.93M (Peak 199.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_tissue
+Fra:1 Mem:199.95M (Peak 199.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_maw
+Fra:1 Mem:199.95M (Peak 199.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_membrane
+Fra:1 Mem:199.97M (Peak 199.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh
+Fra:1 Mem:199.98M (Peak 199.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh2
+Fra:1 Mem:199.98M (Peak 199.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_maw
+Fra:1 Mem:200.01M (Peak 200.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_membrane
+Fra:1 Mem:200.04M (Peak 200.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:200.05M (Peak 200.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_bone
+Fra:1 Mem:200.06M (Peak 200.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:200.08M (Peak 200.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_sockets
+Fra:1 Mem:200.12M (Peak 200.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2p
+Fra:1 Mem:200.13M (Peak 200.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:200.99M (Peak 200.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_caps
+Fra:1 Mem:201.15M (Peak 201.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F0
+Fra:1 Mem:201.16M (Peak 201.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:201.20M (Peak 201.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:201.22M (Peak 201.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:201.23M (Peak 201.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1s
+Fra:1 Mem:201.23M (Peak 201.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:201.39M (Peak 201.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:201.91M (Peak 201.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_p
+Fra:1 Mem:201.92M (Peak 201.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_s
+Fra:1 Mem:201.94M (Peak 201.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ganglion
+Fra:1 Mem:201.97M (Peak 201.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ram_muscle
+Fra:1 Mem:202.00M (Peak 202.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:205.40M (Peak 205.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:196.96M (Peak 205.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_hull_albedo
+Fra:1 Mem:196.96M (Peak 205.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.96M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.96M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.96M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.96M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:576.04M (Peak 773.02M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:576.07M (Peak 773.02M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:576.07M (Peak 773.02M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:576.07M (Peak 773.02M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:576.07M (Peak 773.02M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:576.07M (Peak 773.02M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.11M (Peak 773.02M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.09M (Peak 773.02M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.09M (Peak 773.02M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.09M (Peak 773.02M) | Time:00:00.31 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.09M (Peak 773.02M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.09M (Peak 773.02M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.36M (Peak 773.02M) | Time:00:00.32 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.34M (Peak 773.02M) | Time:00:00.54 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.34M (Peak 773.02M) | Time:00:00.54 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.34M (Peak 773.02M) | Time:00:00.54 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.34M (Peak 773.02M) | Time:00:00.54 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.34M (Peak 773.02M) | Time:00:00.54 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.35M (Peak 773.02M) | Time:00:00.54 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.69M (Peak 773.02M) | Time:00:00.55 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.69M (Peak 773.02M) | Time:00:00.55 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_bow.png'
+Time: 00:00.58 (Saving: 00:00.00)
+
+Fra:1 Mem:191.29M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | chorus_C11_hull
+Fra:1 Mem:191.29M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_pore
+Fra:1 Mem:192.30M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_chitin
+Fra:1 Mem:192.53M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_maw
+Fra:1 Mem:192.62M (Peak 192.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_gland
+Fra:1 Mem:192.84M (Peak 192.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M1_mount_bile
+Fra:1 Mem:194.99M (Peak 194.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_maw
+Fra:1 Mem:195.05M (Peak 195.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_gland
+Fra:1 Mem:195.06M (Peak 195.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | M2_mount_bile
+Fra:1 Mem:195.08M (Peak 195.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_mount_flesh
+Fra:1 Mem:195.11M (Peak 195.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh2
+Fra:1 Mem:195.11M (Peak 195.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_chitin
+Fra:1 Mem:195.23M (Peak 195.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_bilewet
+Fra:1 Mem:195.30M (Peak 195.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | T1_body_flesh
+Fra:1 Mem:196.17M (Peak 196.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh
+Fra:1 Mem:196.18M (Peak 196.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_mount_flesh2
+Fra:1 Mem:196.19M (Peak 196.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1p_body_pore
+Fra:1 Mem:197.53M (Peak 197.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh
+Fra:1 Mem:197.97M (Peak 197.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_mount_flesh2
+Fra:1 Mem:197.98M (Peak 197.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1s_body_pore
+Fra:1 Mem:197.98M (Peak 197.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S2s_body_pore
+Fra:1 Mem:198.24M (Peak 198.24M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh
+Fra:1 Mem:198.29M (Peak 198.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_mount_flesh2
+Fra:1 Mem:198.31M (Peak 198.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3p_body_pore
+Fra:1 Mem:198.36M (Peak 198.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh
+Fra:1 Mem:198.46M (Peak 198.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_mount_flesh2
+Fra:1 Mem:198.72M (Peak 198.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S3s_body_bile
+Fra:1 Mem:199.46M (Peak 199.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_tissue
+Fra:1 Mem:199.63M (Peak 199.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_flesh2
+Fra:1 Mem:199.73M (Peak 199.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_maw
+Fra:1 Mem:199.75M (Peak 199.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_flesh
+Fra:1 Mem:199.80M (Peak 199.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_flesh2
+Fra:1 Mem:199.82M (Peak 199.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_flesh
+Fra:1 Mem:199.83M (Peak 199.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_flesh2
+Fra:1 Mem:199.83M (Peak 199.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_flesh
+Fra:1 Mem:199.84M (Peak 199.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_tissue
+Fra:1 Mem:199.85M (Peak 199.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_maw
+Fra:1 Mem:199.86M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_bile
+Fra:1 Mem:199.70M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_tissue
+Fra:1 Mem:199.71M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_bile
+Fra:1 Mem:199.75M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh
+Fra:1 Mem:199.76M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_mane_muscle
+Fra:1 Mem:199.83M (Peak 199.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_flesh2
+Fra:1 Mem:199.87M (Peak 199.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_s
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_regrowth_p
+Fra:1 Mem:199.89M (Peak 199.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_tissue
+Fra:1 Mem:199.90M (Peak 199.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_aft
+Fra:1 Mem:199.93M (Peak 199.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_gut_fore
+Fra:1 Mem:199.94M (Peak 199.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_heart_vat
+Fra:1 Mem:199.96M (Peak 199.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3s
+Fra:1 Mem:199.97M (Peak 199.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_maw
+Fra:1 Mem:199.98M (Peak 199.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_3p
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_membrane
+Fra:1 Mem:199.99M (Peak 199.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E5_body_tissue
+Fra:1 Mem:200.01M (Peak 200.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2s
+Fra:1 Mem:200.03M (Peak 200.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_mount_flesh
+Fra:1 Mem:200.03M (Peak 200.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_2p
+Fra:1 Mem:200.04M (Peak 200.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_tissue
+Fra:1 Mem:200.07M (Peak 200.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_maw
+Fra:1 Mem:200.08M (Peak 200.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_bile
+Fra:1 Mem:200.09M (Peak 200.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E6_body_membrane
+Fra:1 Mem:200.11M (Peak 200.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_channel
+Fra:1 Mem:200.11M (Peak 200.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | wound_lip_0
+Fra:1 Mem:200.12M (Peak 200.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_bone
+Fra:1 Mem:200.16M (Peak 200.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | blade_row_sockets
+Fra:1 Mem:200.16M (Peak 200.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_skirt
+Fra:1 Mem:200.65M (Peak 200.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | armour_caps
+Fra:1 Mem:202.14M (Peak 202.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1s
+Fra:1 Mem:202.32M (Peak 202.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_upper
+Fra:1 Mem:202.34M (Peak 202.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_store_1p
+Fra:1 Mem:202.35M (Peak 202.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F0
+Fra:1 Mem:202.69M (Peak 202.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:202.70M (Peak 202.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:202.71M (Peak 202.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:203.23M (Peak 203.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:203.24M (Peak 203.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:203.29M (Peak 203.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ram_muscle
+Fra:1 Mem:203.30M (Peak 203.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bile_gland_s
+Fra:1 Mem:203.33M (Peak 203.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_ganglion
+Fra:1 Mem:205.44M (Peak 205.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:197.01M (Peak 205.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_normal
+Fra:1 Mem:197.01M (Peak 205.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading C11_parts_orm
+Fra:1 Mem:575.98M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:575.98M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:575.98M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:575.98M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:576.06M (Peak 837.06M) | Time:00:00.31 | Mem:384.00M, Peak:384.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:576.10M (Peak 837.06M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:576.10M (Peak 837.06M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:576.10M (Peak 837.06M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:576.10M (Peak 837.06M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:576.10M (Peak 837.06M) | Time:00:00.31 | Mem:384.03M, Peak:384.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:576.14M (Peak 837.06M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:576.12M (Peak 837.06M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:576.12M (Peak 837.06M) | Time:00:00.31 | Mem:384.05M, Peak:384.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:576.12M (Peak 837.06M) | Time:00:00.31 | Mem:394.47M, Peak:394.47M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:576.12M (Peak 837.06M) | Time:00:00.33 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:576.12M (Peak 837.06M) | Time:00:00.33 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:405.80M, Peak:416.22M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.07M, Peak:416.22M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:585.39M (Peak 837.06M) | Time:00:00.33 | Mem:415.15M, Peak:416.22M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:648.36M (Peak 837.06M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:648.36M (Peak 837.06M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:648.37M (Peak 837.06M) | Time:00:00.55 | Mem:478.05M, Peak:478.13M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:648.37M (Peak 837.06M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:648.37M (Peak 837.06M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:648.37M (Peak 837.06M) | Time:00:00.55 | Mem:478.13M, Peak:478.13M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:658.72M (Peak 837.06M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:658.72M (Peak 837.06M) | Time:00:00.56 | Mem:485.18M, Peak:485.18M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\surface_stern.png'
+Time: 00:00.59 (Saving: 00:00.00)
+
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+
+Blender quit
+GPU: released shared claim ecdcc064-c899-4b0e-87d2-664c3fb16d2a

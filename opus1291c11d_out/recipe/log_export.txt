@@ -1,0 +1,14 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+18:19:01 | INFO: Starting glTF 2.0 export
+18:19:01 | INFO: Extracting primitive: B21_11
+18:19:02 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+18:19:05 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+18:19:08 | INFO: Primitives created: 16
+18:19:08 | INFO: Finished glTF 2.0 export in 6.661265134811401 s
+
+[export7] B21_11 triangles 341330 hard points {"gun": 5, "engine": 6, "bay": 0, "breach": 4, "core": 1, "rcs": 4, "board": 2} turrets 0 (0 triangles) files ['B21_11.glb', 'B21_11_base.jpg', 'B21_11_normal.png', 'B21_11_orm.png', 'B21_11_parts_base.jpg', 'B21_11_parts_normal.png', 'B21_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\C11.blend"
+
+Blender quit
