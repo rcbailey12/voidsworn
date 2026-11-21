@@ -1,0 +1,10 @@
+1121P waiter held (written, not started) for the C14 K publish 15:39:30
+held released 15:40:06: C14 K publish refused at receipt, nothing installed
+OPUS1121P_WAIT.bat waiting for OPUS1434_LOAD13 exit in opus1434m_wait.txt Sat 11/21/2026 15:40:06.89 
+HELD 16:01:54: OPUS1121P_WAIT stopped while only waiting for the C14 K publish retry (Board Nov 21 21:58 UTC); restarts as OPUS1121P_WAIT2.bat after
+OPUS1121P_WAIT2.bat waiting for OPUS1434_LOAD13 exit in opus1434m_wait.txt Sat 11/21/2026 16:06:14.49 
+OPUS1121P_MOTION start 16:07:14.21 
+OPUS1121P_MOTION exit 0 at 16:28:42.59 
+run folder out_20261121_160714_3695
+result: done PASS
+all done Sat 11/21/2026 16:28:42.99 
