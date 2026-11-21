@@ -31,7 +31,9 @@ func _go() -> void:
 	C._enter_battle_node(node)
 	var b = load("res://scenes/battle/battle.tscn").instantiate()
 	b.external = true; b.in_campaign = true; b.args["no-tips"] = true
-	b.round_save_cb = func(): saves += 1; C.save_battle_round(api.take_round_snapshot())
+	b.round_save_cb = func() -> bool:   # as campaign_host.gd _save_round: true only when the save was written
+		saves += 1
+		return C.save_battle_round(api.take_round_snapshot())
 	root.add_child(b)
 	b.begin_with(api)
 	var t0 := Time.get_ticks_msec()
@@ -41,8 +43,9 @@ func _go() -> void:
 	b._open_menu()
 	for i in 20: await process_frame
 	var img := root.get_viewport().get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, out)   # stage: installed in game (the game's own battle menu)
+	var werr: Error = preload("res://tools/picture_provenance.gd").save_png(img, out)   # stage: installed in game (the game's own battle menu)
 	var items: Array = b.hud._last.get("show_menu", ["", []])[1]
 	var has_row := items.any(func(x): return x[1] == "save_quit")
 	print("SAVE-1: round %d saved %d time(s), menu row 'Save and quit to title' %s, battle save in campaign: %s -> %s" % [int(api.round_snap_round), saves, "PRESENT" if has_row else "MISSING", str(C.saved_battle != null), out])
-	quit(0 if has_row else 1)
+	if werr != OK or not FileAccess.file_exists(out): print("SAVE-1: the picture was not written (error %d)" % werr)
+	quit(0 if has_row and werr == OK and FileAccess.file_exists(out) else 1)
