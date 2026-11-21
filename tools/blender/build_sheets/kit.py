@@ -528,23 +528,28 @@ class Kit:
         self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
         return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
 
-    def open_hull(self, pos, axis, r, reach=1.5, keep_grp=None):
+    def open_hull(self, pos, axis, r, reach=1.5, keep_grp=None, depth=0.0):
         """cut the hull open where an organ's opening goes into the body (Ryan, Nov 21 2026, C14 run H: "There are no actual
         holes, it's just caps"): faces whose centre lies within r of the opening's axis and within reach of pos along it are
         removed from the hull and from every other outside mesh there (armour bands, hull detail), so the organ's own bore
         shows through instead of skin or a plate closing it like a cap. The hull's shell (solidify, rim on) walls the cut.
-        keep_grp: the organ's own group, left whole. Call it after the armour. Returns the number of faces removed."""
+        keep_grp: the organ's own group, left whole. depth: how far the organ's bore runs in below pos; inside rooms are cut
+        clear of the bore down to it, so no room shows down an open mouth (the game draws them on an intact hull). Call it
+        after the armour and the inside rooms. Returns the number of faces removed."""
         import bmesh
         p0 = Vector(pos); ax = Vector(axis).normalized(); n = 0
-        for ob in [o for o in self.coll.objects if o.type == 'MESH' and not o.name.startswith('in_')
-                   and (keep_grp is None or o.get('grp') != keep_grp)]:
+        for ob in [o for o in list(self.coll.objects) + list(self.cin.objects) if o.type == 'MESH' and (keep_grp is None or o.get('grp') != keep_grp)]:
+            inside = bool(ob.get('inside'))
+            if inside and not depth:
+                continue
+            lo = -(depth + 0.1) if inside else -reach
             mw = ob.matrix_world
             bm = bmesh.new(); bm.from_mesh(ob.data)
             kill = []
             for f in bm.faces:
                 d = mw @ f.calc_center_median() - p0
                 along = d.dot(ax)
-                if abs(along) < reach and (d - ax * along).length < r:
+                if lo < along < reach and (d - ax * along).length < r:
                     kill.append(f)
             if kill:
                 bmesh.ops.delete(bm, geom=kill, context='FACES')

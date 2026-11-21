@@ -362,12 +362,6 @@ def build(K):
                      keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'),
                      note='armadillo bands of grown chitin wrapping the sac down to the keel, lips aft; broken round the creased front, '
                           'the honeycomb field, the five launch necks, the sacs, siphons and vents; hide rolled at the edges')
-    # Ryan (Nov 21, run H: "There are no actual holes, it's just caps"): the skin and any band are cut open under each launch
-    # mouth, so its bore runs down into the body as a real hole instead of stopping on skin or a plate
-    for fid, x, th, lean in MOUTHS:
-        pos, nrm = K.hpt(x, th, out=-0.05)
-        ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        print('[open_hull] %s: %d faces cut' % (fid, K.open_hull(pos, ax, R_MOUTH * 1.05, keep_grp=fid)))
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 6.2, -5.15, 'whole body')
@@ -435,6 +429,14 @@ def build(K):
     for i, side in enumerate((1, -1)):
         pos, nrm = K.hpt(0.4, side_th(-0.45, side), out=0.02)
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+
+    # Ryan (Nov 21, run H: "There are no actual holes, it's just caps"): the skin and any band are cut open under each launch
+    # mouth, so its bore runs down into the body as a real hole instead of stopping on skin or a plate,
+    # and the rooms inside are kept clear of the bore (after the armour and the inside rooms)
+    for fid, x, th, lean in MOUTHS:
+        pos, nrm = K.hpt(x, th, out=-0.05)
+        ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
+        print('[open_hull] %s: %d faces cut' % (fid, K.open_hull(pos, ax, R_MOUTH * 1.05, keep_grp=fid, depth=2.2)))
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown chitin down to the keel (plates.armadillo, the kit default plates.WRAP), flat caps over the teardrop sacs; the R341 scute shell of v7 retired. The creased front, the spine pore, the honeycomb field and the launch necks stay bare',
