@@ -1,0 +1,80 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f2c2f87878714874b89de40425f6722a\godot-profile-881c90d70ae547f4b997cc6e6dfa45d4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+DEATH_SEAM ship C:\Users\rcbai\Downloads\voidsworn_test\opus1415_GL1\repo\godot\assets\ships\I11_37\I11_37.glb
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_normal.png'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/png' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_normal.png because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_orm.png'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/png' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_orm.png because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_normal.png'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/png' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_normal.png because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_orm.png'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/png' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_orm.png because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1415_GL1/repo/godot/assets/ships/I11_37_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_seam_check.gd:103)
+       [1] _run (res://fx/test/death_seam_check.gd:111)
+DEATH_SEAM kill_frame death_ms=5.7 power_down_frames_after=2 power_down_ms_per_frame=["4.6", "3.2", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0"] surfaces=13 powered=13
+DEATH_SEAM machines=3 machines_split=0 []
+DEATH_SEAM inside_triangles=7165 inside_outside_hull=0 fragment_inside_triangles=2115 pieces=10 main=2 (outside the whole ship before the break, a sheet matter: 0)
+DEATH_SEAM cut_worker_ms=1193.8 main_thread_ms piece_build=43.7 (most in one frame 18.5; headless also builds the geometry here, a game window builds it on the worker) death=5.7 break_up=0.5
+DEATH_SEAM failures=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f2c2f87878714874b89de40425f6722a\godot-profile-881c90d70ae547f4b997cc6e6dfa45d4

@@ -1,0 +1,11 @@
+chain BS3 waiting for 1291 C13_I exit in chain_1119bt.txt Fri 11/20/2026 16:52:31.11 
+mirror fetch exit 0
+3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01 reachable in the mirror
+1415B GS1 start 19:01:35.23 
+1415B GS1 exit 0 at 19:19:09.28 
+1415B GL1 start 19:19:09.28 
+NOTE by PC relay 19:22:56 (Board, Nov 21 01:22 UTC): GP1 is stale and must not run. OPUS1415B_GP1_PINNED.bat renamed to OPUS1415B_GP1_PINNED.bat.skipped_stale (contents untouched), so the chain's GP1 call will fail at once (expect '1415B GP1 exit 1') and GA1 runs next. GL1 left running.
+1415B GL1 exit 0 at 19:37:56.24 
+1415B GP1 start 19:37:56.24 
+1415B GP1 exit 1 at 19:37:56.24 
+1415B GA1 start 19:37:56.25 
