@@ -1,0 +1,4 @@
+tool preflight 2026-11-21T14:08:38Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+MISSING pil: set PIL_PYTHON or install it
+STOPPED: missing tools: pil

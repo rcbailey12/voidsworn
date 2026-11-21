@@ -1,0 +1,32 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+PASS the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count
+PASS the GPU wait: 3600 s by default for every GPU step, accepted by gpu_slots.js
+PASS the last line: every way out of the job writes done PASS or done FAILED, then all done
+PASS no deletes or moves; logs only under out
+PASS mirror refresh and local clone for ship job and both look bench checkouts
+PASS collect only reports, shots and the requested export
+PASS 1516 real cmd run: fetch failed, stage 1 failed over an old glb, and a fresh export
+PASS 1516: a failed fetch collects nothing; otherwise only files this run wrote reach out\recipe
+PASS the newest two backups stay off the janitor list
+node:fs:441
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'C:\Users\rcbai\AppData\Local\Temp\helper-temp-proof-yQCTAR\voidsworn-run-8288d7da4ee14f63b3e87b999b25b260\.voidsworn-run-owner'
+    at Object.readFileSync (node:fs:441:20)
+    at Object.<anonymous> (C:\Users\rcbai\Downloads\voidsworn_test\opus1516\out_20261121_081123_8956\new\contrib\opus\tools\ship_job_tests.js:310:23)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\rcbai\\AppData\\Local\\Temp\\helper-temp-proof-yQCTAR\\voidsworn-run-8288d7da4ee14f63b3e87b999b25b260\\.voidsworn-run-owner'
+}
+
+Node.js v22.11.0

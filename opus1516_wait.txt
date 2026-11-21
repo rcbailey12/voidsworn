@@ -1,0 +1,10 @@
+OPUS1516_COLLECT_PROOF start Sat 11/21/2026  8:08:36.31 
+OPUS1516_COLLECT_PROOF exit 2 at  8:08:38.48 
+run folder out_20261121_080837_8414
+result: done FAILED: preflight: missing tool
+all done Sat 11/21/2026  8:08:38.92 
+OPUS1516_COLLECT_PROOF try 2 start Sat 11/21/2026  8:11:22.35 
+OPUS1516_COLLECT_PROOF exit 1 at  8:12:01.48 
+run folder out_20261121_081123_8956
+result: done FAILED: new ship_job_tests
+all done Sat 11/21/2026  8:12:01.92 

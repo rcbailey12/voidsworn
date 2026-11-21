@@ -1,0 +1,9 @@
+[Sat 11/21/2026  8:08:37.25] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T14:08:38Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+MISSING pil: set PIL_PYTHON or install it
+STOPPED: missing tools: pil
+done FAILED: preflight: missing tool
+all done Sat 11/21/2026  8:08:38.44
