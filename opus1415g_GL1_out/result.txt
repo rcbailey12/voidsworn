@@ -1,0 +1,39 @@
+start ithar_GL1 I11_37 board/pin-1415g Sat 11/21/2026 12:04:46.39 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   5a0dffb22..dc4ddbf70  opus/issue-1434      -> opus/issue-1434
+   5a0dffb22..dc4ddbf70  refs/pull/1445/head  -> refs/pull/1445/head
+ + 1a8db42e1...271d0a428 refs/pull/1445/merge -> refs/pull/1445/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415g_GL1\repo
+commit=5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\pc\tmo.bat 
+import exit 0 
+1_concept_in start 12:09:49.60 
+1_concept_in exit 0 at 12:09:52.09 
+2_shape_ref start 12:09:52.09 
+2_shape_ref exit 0 at 12:09:52.80 
+3_trace_hull start 12:09:52.80 
+3_trace_hull exit 0 at 12:11:13.13 
+4_parts_kit start 12:11:13.13 
+4_parts_kit exit 0 at 12:11:46.27 
+5_paint_bake start 12:11:46.27 
+5_paint_bake exit 0 at 12:15:23.75 
+6_lod start 12:15:23.75 
+6_lod exit 0 at 12:16:28.32 
+7_export start 12:16:28.32 
+7_export exit 0 at 12:17:45.41 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415g_GL1\repo\godot\assets\ships\I11_37\I11_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8c7e3743f9d5\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1415g_GL1\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 442.1 GB free
+done PASS Sat 11/21/2026 12:18:17.57 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-73fa7d222ce140ec8ccea6015d8c54b6
