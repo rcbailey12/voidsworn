@@ -1,0 +1,21 @@
+{
+ "faction": "chorus",
+ "floors": {
+  "normal": 3.5,
+  "albedo": 0.04,
+  "rough": 0.08
+ },
+ "opt_out": null,
+ "problem": null,
+ "measured": {
+  "normal": 5.170087771889289,
+  "albedo": 0.08604230751566097,
+  "rough": 0.17057445758940323,
+  "texels": 561292,
+  "from_uvs": true,
+  "covered_share": 0.496
+ },
+ "low": [],
+ "verdict": "PASS",
+ "line": "PASS detail check: normal relief 5.17 deg (floor 3.50), albedo contrast 0.086 (floor 0.040), roughness spread 0.171 (floor 0.080), 561292 texels"
+}

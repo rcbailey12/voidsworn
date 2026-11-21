@@ -1,0 +1,4 @@
+OPUS1291C14I_WAIT.bat waiting for 1415G GS1B exit in opus1415gs1b_wait.txt Sat 11/21/2026 12:10:29.93 
+1291 C14I start 13:22:31.18 
+1291 C14I exit 1 at 13:41:41.93 
+all done Sat 11/21/2026 13:41:41.93 

@@ -1,0 +1,30 @@
+start chorus_C14 B22_11 board/pin-1291-c14holes Sat 11/21/2026 13:22:32.62 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1415g-GA1 -> board/pc-out-1415g-GA1
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14i\repo
+commit=d30dfcefe5519a7707b64c54e741a5c70a3f0fd1
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+import exit 0 
+3_trace_hull start 13:26:53.35 
+3_trace_hull exit 0 at 13:28:34.74 
+4_parts_kit start 13:28:34.74 
+4_parts_kit exit 0 at 13:31:30.46 
+5_paint_bake start 13:31:30.46 
+5_paint_bake exit 0 at 13:36:01.15 
+6_lod start 13:36:01.16 
+6_lod exit 0 at 13:37:22.58 
+7_export start 13:37:22.58 
+7_export exit 0 at 13:40:50.51 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14i\repo\godot\assets\ships\B22_11\B22_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collected 149 files this run wrote; 24 older files from earlier runs
+collect: files from earlier runs are listed in recipe_from_earlier_runs.txt and kept out of out\recipe 
+done FAILED: checks: death_seam Sat 11/21/2026 13:41:41.46 
+all done 
+job scratch kept for a day after exit 1 (newest failure of ship_job C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14i): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9f7d06df1bed48c2914458e3707b539d
