@@ -41,6 +41,9 @@ var _attitudes: Array[Quaternion] = []
 var _patrol_blend := 0.0
 var sample_t := 0.0
 var trail_mat: ShaderMaterial
+const TRAIL_LIFE := 0.65
+const TRAIL_LIFE_CHORUS := 0.2
+var trail_life := TRAIL_LIFE
 var _model_scene: PackedScene
 var _stern := Vector3(-0.47, 0.0, 0.0)
 # issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
@@ -53,6 +56,7 @@ uniform float clock_now = 0.0;
 uniform float trail_len = 1.0;
 uniform float width_k = 0.026;
 uniform float alpha_k = 0.56;
+uniform float life = 0.65;
 void vertex() {
     float age = clock_now - UV2.x;
     vec3 back = NORMAL;
@@ -61,8 +65,8 @@ void vertex() {
     vec3 side = cl > 1e-6 ? c / cl : vec3(0.0);
     float width = trail_len * width_k * (1.0 + age);
     VERTEX += back * age * trail_len * 1.2 + side * width * (1.0 - 2.0 * UV.y);
-    COLOR.a = max(0.0, 1.0 - age / 0.65) * alpha_k;
-    UV.x = age / 0.65;
+    COLOR.a = max(0.0, 1.0 - age / life) * alpha_k;
+    UV.x = age / life;
 }
 void fragment() {
     float edge = smoothstep(0.0, 0.38, UV.y) * (1.0 - smoothstep(0.62, 1.0, UV.y));
@@ -80,8 +84,12 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	shader.code = TRAIL
 	trail_mat.shader = shader
 	trail_mat.set_shader_parameter("trail_len", size)
-	trail_mat.set_shader_parameter("width_k", 0.065 if fac == "chorus" else 0.026)
-	trail_mat.set_shader_parameter("alpha_k", 0.22 if fac == "chorus" else 0.56)
+	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
+	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
+	trail_life = TRAIL_LIFE_CHORUS if fac == "chorus" else TRAIL_LIFE
+	trail_mat.set_shader_parameter("width_k", 0.022 if fac == "chorus" else 0.026)
+	trail_mat.set_shader_parameter("alpha_k", 0.14 if fac == "chorus" else 0.56)
+	trail_mat.set_shader_parameter("life", trail_life)
 	if count <= 0:
 		return
 	var lead := _make_craft(fac, kind)
@@ -410,7 +418,7 @@ func step(dt: float) -> void:
 		if active and sample:
 			hist.push_front([stern, clock, -n.global_basis.x.normalized()])
 			changed = true
-		while not hist.is_empty() and (clock - float(hist[-1][1]) > 0.65 or hist.size() > 20):
+		while not hist.is_empty() and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
 			hist.pop_back()
 			changed = true
 		# issue 221: the shader ages the ribbon; the mesh only changes with its samples
