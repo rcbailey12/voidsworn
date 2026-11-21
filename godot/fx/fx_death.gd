@@ -2208,7 +2208,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		"peel": _peel(fx, s, T, timeline)
 		"drumbeat": _drumbeat(fx, s, T, timeline)
 		"patch": _patch_tear(fx, s, T, timeline)
-		"arc": fx.later(T + float(timeline.cut), _arcs.bind(fx, s))
+		# "arc" strikes from _break_up_inner, once the wreck really exists (a cold cut can split late: Artoo on 1399)
 	if s.death_big:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
 	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN) if s.death_big else _small_hit(fx, s)
@@ -2987,8 +2987,8 @@ static func _patch_plate(fx, s) -> void:
 # R367 round 2: the Hegemony Navy breaks with no fire in the gap: blue-white arcs jump it for a third of a second as the
 # pieces part. Each arc runs from a point on one main piece's torn face to the nearest point on the next piece's torn face
 # (their arc_sites, read at the strike, so the arc follows the pieces as they move), the shared lightning ribbon pinned at
-# both ends. Before the wreck exists (the cut still finishing) it waits a beat, up to a second.
-static func _arcs(fx, s, tries := 0) -> void:
+# both ends. Called by _break_up_inner as the wreck is made, so a late cold cut still gets its arcs.
+static func _arcs(fx, s) -> void:
 	if fx.ships.get(s.id) != s or fx.quality == "low": return
 	var wreck: Dictionary = {}
 	for w in fx.dstate.get("wrecks", []):
@@ -2996,9 +2996,7 @@ static func _arcs(fx, s, tries := 0) -> void:
 	var nodes: Array = []
 	for nd in wreck.get("nodes", []):
 		if is_instance_valid(nd) and (nd as Node3D).has_meta("arc_sites"): nodes.append(nd)
-	if nodes.size() < 2:
-		if tries < 20: fx.later(fx.now + 0.05, _arcs.bind(fx, s, tries + 1))
-		return
+	if nodes.size() < 2: return
 	var n := 14 if s.death_tier == "capital" else (10 if s.death_big else 4)
 	s.set_meta("death_arcs", [])
 	for j in n:
@@ -3388,6 +3386,9 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		_gap_lights(fx, s, wreck, plan, xf)
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
+	# R367 (issue 1399): Hegemony lightning jumps the gap the moment the pieces part, however late a cold cut split them
+	# (Artoo on 1399: a timer from the nominal cut gave up after a second); a no-pieces pop has no gap and gets none
+	if str(dstyle(s).get("style", "")) == "arc" and not organic: _arcs(fx, s)
 	if organic:
 		# Issue 1238: a big Chorus rupture is its kill beat. No fireball: the beat (and the death sound's low end) lands
 		# just after the skin bursts.

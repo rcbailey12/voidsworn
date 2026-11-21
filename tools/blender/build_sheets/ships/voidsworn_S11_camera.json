@@ -1,0 +1,21 @@
+{
+ "az": 65.3769213831703,
+ "el": 47.57821244173872,
+ "roll": -7.031985232999938,
+ "dist": 61.21972951958123,
+ "mm": 200.6901375672839,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.03140377961266592,
+ "sy": -0.03333108469484648,
+ "res": [
+  1920,
+  1200
+ ],
+ "iou": 0.8918,
+ "body_iou": 0.8937,
+ "note": "Harrow beauty (issue 1414): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges over 28 or luminance over the blurred picture, closed, filled, largest shape)"
+}

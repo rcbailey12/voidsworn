@@ -10,14 +10,14 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 20 new builds installed, 2 with a build sheet but the old hull in game, 5 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 20 new builds installed, 3 with a build sheet but the old hull in game, 4 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
 | Warden | Frigate | `V14_23` | New-format build on main | Accepted: Ryan, Nov 20 (round 3, PR 1164; brighter ember R360) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg) | R331 | voidsworn_S9 |  |  |
-| Harrow | Destroyer | `V15_37` | Concept picked, old hull in game |  | none | R369 |  | #1414 | Round 2 picked Nov 20 (four small spires at 0.85). Its picture is on PR 1163 until that merges; set the path here when it does. |
+| Harrow | Destroyer | `V15_37` | Build sheet made, old hull in game |  | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S11/concept_beauty.jpg) | R369 | voidsworn_S11 | #1414 | Round 2 picked Nov 20 (four small spires at 0.85); the sheet's concept_beauty.jpg is that round 2 picture (PR 1163), the same file the recipe reads. |
 | Vigil | Cruiser | `V16_37` | New-format build on main | Accepted: Ryan, Nov 20 (PR 1166) | [vigil_beauty.webp](../../contrib/muse/design/class_family_sunward_2026_11/vigil_beauty.webp) | R331 | voidsworn_S10 |  |  |
 | Bastion | Battleship | `V17_37` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
 | Hearth | Carrier | `V18_51` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |

@@ -513,7 +513,8 @@ function computeReach(u){
 }
 // v51 fire on the move: opts.onLate runs about two-thirds of the way through the burn, after the rules have already put the ship
 // on its destination hex, so guns open up while the hull is still travelling (the maths is identical to firing after the move)
-async function moveUnit(u, state, opts){
+async function moveUnit(u, state, opts){ const um=undoMark(u); try{ await moveUnitRaw(u,state,opts); } finally{ undoSeal(u,um); } } // issue 1450: a player move can be taken back until anything else happens
+async function moveUnitRaw(u, state, opts){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
   const path=state.path; let committed=false; const fg=treeSkill('standardForward')?treeFlagUnit():null, fgD0=fg?hdist(u,fg):0;
   const commit=()=>{ if(committed) return; committed=true; for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=path.at(-1).f;
@@ -538,7 +539,51 @@ function treeFullFade(u){ return !!(treeSkill('splitThree')&&u&&u.side==='player
 function postFireMp(u){ return u.postFire?Math.min(u.mp,u.postMp||0):u.mp; }
 function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
 function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && (u.turnsLeft>0||u.treeFreeTurn>0) && (u.mp>0||freePivot(u)||u.treeFreeTurn>0) && !u.braced; }
-async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; const live=liveFrom(u), f=(u.facing+dir+6)%6; const free=u.treeFreeTurn>0; if(free) u.treeFreeTurn=0; else if(freePivot(u)) u.pivotUsed=true; else u.mp--; if(!free) u.turnsLeft--; u.moved=true; if(typeof animRotate==='function') await animRotate(u,f); if(!live()) return; u.facing=f; treeAfterMove(u); } // v53: facing commits after the live check, like moveUnit; a free turn (Sable T2a, shared C1b) costs nothing
+async function rotateUnit(u,dir){ const um=undoMark(u); try{ await rotateUnitRaw(u,dir); } finally{ undoSeal(u,um); } }
+async function rotateUnitRaw(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; const live=liveFrom(u), f=(u.facing+dir+6)%6; const free=u.treeFreeTurn>0; if(free) u.treeFreeTurn=0; else if(freePivot(u)) u.pivotUsed=true; else u.mp--; if(!free) u.turnsLeft--; u.moved=true; if(typeof animRotate==='function') await animRotate(u,f); if(!live()) return; u.facing=f; treeAfterMove(u); } // v53: facing commits after the live check, like moveUnit; a free turn (Sable T2a, shared C1b) costs nothing
+// ---------- issue 1450 (Ryan, Nov 21 2026, R376): undo a move before firing ----------
+// A player ship's moves and turns can be taken back, one at a time, while nothing else has happened since: no shot, ram,
+// boarding, ability, order or Command (undoSpend), no dice drawn (the PRNG state is compared), and no other change anywhere
+// in the battle (a print of the whole battle state, leaving out only the ship's own move fields and the move counter, must be
+// identical). So a tree effect after the move, an objective exit, terrain damage or fire on the move all block it by
+// themselves. UNDO lives outside B: it is never part of the battle state, and a battle replaced by a new B drops it.
+// UNDO_ON is set by the Godot battle (and by parity fixtures with undo); the browser and the sims leave it off.
+let UNDO_ON=false, UNDO=null;
+const UNDO_KEYS=['q','r','facing','mp','postMp','turnsLeft','pivotUsed','moved','hexMoved','treeFreeTurn','treeWarlord'];
+const UNDO_SKIP_B={units:1,cfg:1,prog:1,sel:1,reach:1,armed:1,mode:1,inspect:1,busy:1,usage:1,log:1};
+function undoPrint(v,top,skip){
+  if(v===null||v===undefined) return 'null';
+  if(typeof v==='number'||typeof v==='boolean') return String(v);
+  if(typeof v==='string') return JSON.stringify(v);
+  if(typeof v==='function') return 'null';
+  if(Array.isArray(v)) return '['+v.map(x=>undoPrint(x)).join(',')+']';
+  if(!top&&v.id&&v.side&&v.hp!==undefined) return JSON.stringify('@'+v.id);
+  const ks=Object.keys(v).filter(k=>v[k]!==null&&v[k]!==undefined&&typeof v[k]!=='function'&&!(skip&&skip[k])).sort();
+  return '{'+ks.map(k=>JSON.stringify(k)+':'+undoPrint(v[k])).join(',')+'}'; }
+function undoPrintAll(u){ const us={}; for(const k of UNDO_KEYS) us[k]=1; us.t=1; us.ship=1; const ux={t:1,ship:1};
+  const usage=B.usage?Object.assign({},B.usage):null; if(usage) delete usage.moves;
+  return undoPrint(B,'b',UNDO_SKIP_B)+'|'+(B.log?B.log.length:0)+'|'+undoPrint(usage)+'|'+UID+'|'+B.units.map(x=>undoPrint(x,'u',x===u?us:ux)).join(','); }
+function undoPick(u){ const o={}; for(const k of UNDO_KEYS) o[k]=u[k]; return o; }
+function undoSame(a,b){ for(const k of UNDO_KEYS) if((a[k]??null)!==(b[k]??null)) return false; return true; }
+function undoCtx(u,make){ if(!UNDO_ON||!B||!u||u.side!=='player'||u.isSq) return null;
+  if(UNDO&&UNDO.b===B&&UNDO.id===u.id&&UNDO.round===B.round&&UNDO.side===B.side) return UNDO;
+  if(!make) return null; UNDO={b:B,id:u.id,round:B.round,side:B.side,stack:[],spent:false}; return UNDO; }
+function undoSpend(){ if(UNDO){ UNDO.spent=true; UNDO.stack=[]; } }
+function undoStill(u,e){ return !u.dead&&!B.over&&!u.activated&&(RNG_S>>>0)===e.rng&&undoSame(undoPick(u),e.after)&&undoPrintAll(u)===e.print; }
+function undoMark(u){ const c=undoCtx(u,true); if(!c||c.spent||u.dead||B.over||u.postFire||u.weapons.some(w=>w.fired)) return null;
+  if(c.stack.length&&!undoStill(u,c.stack[c.stack.length-1])){ undoSpend(); return null; }
+  return {c,e:{keys:undoPick(u),moves:B.usage?B.usage.moves:null,rng:RNG_S>>>0,print:undoPrintAll(u),free:!c.stack.length&&!!B.alt&&B.activeUnit===u}}; }
+function undoSeal(u,m){ if(!m||UNDO!==m.c||m.c.spent) return; const e=m.e;
+  if(u.dead||B!==m.c.b||B.over||(RNG_S>>>0)!==e.rng||undoPrintAll(u)!==e.print){ undoSpend(); return; }
+  e.after=undoPick(u); if(undoSame(e.keys,e.after)) return; // nothing moved (a turn the rules refused)
+  m.c.stack.push(e); }
+function canUndo(u){ const c=undoCtx(u,false); return !!(c&&!c.spent&&c.stack.length&&undoStill(u,c.stack[c.stack.length-1])); }
+function undoDepth(u){ return canUndo(u)?UNDO.stack.length:0; }
+function undoMove(u){ if(!canUndo(u)) return false; const e=UNDO.stack.pop();
+  for(const k of UNDO_KEYS){ if(e.keys[k]===undefined||e.keys[k]===null) delete u[k]; else u[k]=e.keys[k]; }
+  if(B.usage&&e.moves!=null) B.usage.moves=e.moves;
+  if(e.free&&!UNDO.stack.length&&B.activeUnit===u) B.activeUnit=null; // the first move undone: the ship has done nothing, so another may go first
+  if(typeof hook==="function") hook("undo",u); return true; }
 
 // ---------- B3 faction identity (Oct 26; numbers are Claude's calls, vetoable) ----------
 // One rule per faction on top of the drives (MOVE_RULES) and gates (FAC_GATES in data.js). Every rule keys off the hull's own faction (u.fac).
@@ -920,7 +965,7 @@ function systemDamage(t,forced){
   t.st.fire=2; return 'Fire on deck';
 }
 
-async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; const live=liveFrom(null);
+async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; undoSpend(); const live=liveFrom(null);
   const w=u.weapons[wi]; let svArc=false;
   if(!opts.intercept && !canFire(u,w,t)){ if(opts.forceArc&&treeArcLegal(u,w,t)){ svArc=true; } else if(opts.forceRange&&treeRangeLegal(u,w,t)){ svArc=true; } else if(treeSecondVolleyOK(u,w,t)){ svArc=true; B.tr.secondVolleyUsed=1; treeFx(u,'secondVolley','one more synced ship fires out of arc'); } else return false; }
   const keep=[w.fired,w.cdLeft,u.sureUsed,u.postFire,u.postMp], b0=B; // v53: an abandoned shot gives the gun back (see the live check below)
@@ -1159,7 +1204,7 @@ function ramEstimate(u,t,run){ const f=u.fx||{}, base=(14+46*u.size)*(RAM_FAC[u.
   return {dmg:Math.round(Math.min(raw-soak,t.maxHp*(.4+Math.min(.3,f.ramCap||0)))), soak:Math.round(soak), recoil:Math.round(base*(RAM_FAC[u.fac]?.35:.5)*clamp(t.size/u.size,.5,1.6)*(1-u.armor*.5)*(1-Math.min(1,f.ramGuard||0))), sec:SEC_OF_QUAD[quad]}; }
 async function ramUnit(u){
   const mawPre=!!(treeSkill('mawOpens')&&u.side==='player'&&cmdActive(u.side,'surge')&&!u.treeMawUsed); // Grax T3b
-  const info=ramInfo(u); if(!info) return false; const t=info.t, live=liveFrom(u);
+  const info=ramInfo(u); if(!info) return false; undoSpend(); const t=info.t, live=liveFrom(u);
   if(typeof animPath==='function') await animPath(u,info.path,{charge:true}); else for(const p of info.path){ if(typeof animMove==='function') await animMove(u,p.q,p.r,p.f); }
   if(!live()) return false; // abandoned after a stall: the ram never lands
   for(const p of info.path){ u.q=p.q; u.r=p.r; } u.facing=info.path.at(-1).f; // v53: the ram commits its own run-up (animPath is presentation only)
@@ -1193,7 +1238,7 @@ function cantFireReason(s,t){ if(s.braced) return 'This ship is braced, so it ho
   return 'None of the ready guns can reach that target right now.'; }
 function boardOdds(u,t){ const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)+treeRailBonus(u)), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5); const p=captureChance(u,t); return {kill:Math.round(a*.38), loss:Math.round(d*.3), chance:p, capture:p>=50}; }
 async function boardUnit(u,t){
-  if(!boardTargets(u).includes(t)) return false;
+  if(!boardTargets(u).includes(t)) return false; undoSpend();
   const hadFired=u.weapons.some(w=>w.fired); // Grax T2b: boarded after firing this round
   if(B.usage&&u.side==='player') B.usage.board=(B.usage.board||0)+1; u.boarded=true; u.repel=true; u.mp=0; u.weapons.forEach(w=>w.fired=true);
   const live=liveFrom(u); if(typeof fxBoard==='function') await fxBoard(u,t); if(!live()||t.dead) return false; // abandoned after a stall: the boarders never land
@@ -1344,7 +1389,7 @@ function canOrder(u,o){
   if(o==='brace') return !u.isSq && !(FAC_GATES[u.fac]&&FAC_GATES[u.fac].noBrace) && !u.weapons.some(w=>w.fired&&w.k!=='flak'); // brace instead of firing: not after this ship has fired; B3: Ithar cannot brace
   return false;
 }
-function giveOrder(u,o){ if(B.usage&&u.side==='player') B.usage.ord[o]=(B.usage.ord[o]||0)+1;
+function giveOrder(u,o){ undoSpend(); if(B.usage&&u.side==='player') B.usage.ord[o]=(B.usage.ord[o]||0)+1;
   if(!canOrder(u,o)) return;
   u.order=o;
   if(o==='brace'){ fstat(u.fac,'braces'); u.braced=true; u.mp=0; for(const w of u.weapons) w.fired=true; if(typeof fxText==='function') fxText(u,'Braced','#7fd6c8',-24); braceCover(u); if(u.fx.bastion&&u.shMax>0){ u.shp=u.shMax; syncShields(u); boonFx(u,'d_bastion','shields full',-44); } }
@@ -1731,7 +1776,7 @@ function cmdTaken(t){ // shieldless hulls get a deeper cut, since the shield ref
   { const sh=treeSkill('screensShift'); if(sh&&t.side==='player'&&cmdActive('player','iron')&&B){ if(B.treeShiftUp&&B.treeShiftUp.r===B.round&&t.id===B.treeShiftUp.id) cut=Math.min(.95,cut+sh.n); if(B.treeShiftDown&&B.treeShiftDown.r===B.round&&t.id===B.treeShiftDown.id) cut=Math.max(0,cut-sh.n); } } // Thale T1b
   { const we=treeSkill('wallEarly'); if(we&&t.side==='player'&&cmdActive('player','iron')&&B&&B.treeWallEarly===B.round) cut=Math.min(.95,cut+we.n); } // Thale T2a
   return cut>0?1-cut-(t.shMax?0:.1):1; }
-async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
+async function useCommand(side){ if(!canCommand(side)) return false; undoSpend(); const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
   log(`Admiral's Command${tier?` at power ${tier+1} of 3`:''}: ${c.n}. ${cmdDesc(c,tier,(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn')}`,side==='player'?'p':'e'); try{ if(typeof tel==='function') tel('command',{id:c.id,round:B.round,tier}); }catch(e){}
   return runCommand(side,c,tier); }
 async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
@@ -2051,7 +2096,7 @@ function autoBlink(u){ const hs=blinkHexes(u), foes=alive(u.side==='player'?'ene
   return best; }
 function launchHexes(u){ const occ=occMap(); return DIRS.map(d=>({q:u.q+d[0],r:u.r+d[1]})).filter(h=>onBoard(h.q,h.r)&&!blocks(terr(h.q,h.r))&&!occ.has(hkey(h.q,h.r))); }
 async function useAbility(u,arg){
-  if(!inThisBattle(u)||!canAbility(u)) return false; if(B.usage&&u.side==='player') B.usage.ab[u.ab]=(B.usage.ab[u.ab]||0)+1;
+  if(!inThisBattle(u)||!canAbility(u)) return false; undoSpend(); if(B.usage&&u.side==='player') B.usage.ab[u.ab]=(B.usage.ab[u.ab]||0)+1;
   const a=u.ab;
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; if(typeof fxText==='function') fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } if(typeof fxText==='function') fxText(u,'Tubes loaded','#f0b35a',-24); }
@@ -2061,7 +2106,7 @@ async function useAbility(u,arg){
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; if(typeof fxText==='function') fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; if(typeof fxText==='function') fxText(u,'+'+h+' hull','#8ff0a0',-24); }
   if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
-  if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); for(const t of foes){ if(t.shMax>0){ t.shp=Math.floor((t.shp||0)*.5); syncShields(t); } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+foes.length+' enemy ship'+(foes.length===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
+  if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); let nf=0; for(const t of foes){ if(t.shMax>0){ const was=t.shp||0; t.shp=Math.floor(was*.5); syncShields(t); if(t.shp<was) nf++; } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+nf+' enemy ship'+(nf===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
   if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ u.shp=u.shMax; syncShields(u); if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }
   if(a==='launch'){
@@ -2229,7 +2274,9 @@ async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.le
     if(u.ab==='reload' && canAbility(u) && (pre?foes.some(f=>!f.isSq&&hdist(u,f)<=6+(u.speed||2)):aim&&u.weapons.some(w=>w.k==='torp'&&w.off===0&&!weaponReady(w)&&foes.some(f=>!f.isSq&&inReach(u,w,f))))) { await useAbility(u); if(!live()) return false; }
     if(pre&&u.ab==='regrow' && canAbility(u) && u.hp<u.maxHp*.6) await useAbility(u);
     if(pre&&u.ab==='reclaim' && canAbility(u) && alive('enemy').some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp*.6)) await useAbility(u);
-    if(pre&&u.ab==='ionpulse' && canAbility(u) && foes.filter(t=>!t.isSq&&hdist(t,u)<=4).reduce((a,t)=>a+t.sh.reduce((x,y)=>x+y,0),0)>=30) await useAbility(u);
+    /* ion pulse (issue 1447): judge the real R246 pools (shp), not the four per-side catches, which sum to about 2.35 x the pool;
+       also checked from the committed destination before firing, so a ship that moves into range 4 pulses that turn */
+    if((pre||aim)&&u.ab==='ionpulse' && canAbility(u) && foes.filter(t=>!t.isSq&&hdist(t,u)<=4).reduce((a,t)=>a+(t.shp||0),0)>=30) await useAbility(u);
     if(pre&&u.ab==='overburn' && canAbility(u) && nearF && hdist(u,nearF)>(u.speed||2)+1) await useAbility(u);
     if(u.ab==='blink' && canAbility(u) && nearF && (pre?(u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3 || !u.weapons.some(w=>weaponReady(w)&&foes.some(f=>hdist(u,f)<=w.r+(u.speed||2)))):mode==='escape'&&u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3)) { await useAbility(u); if(!live()) return false; }
     return live(); }

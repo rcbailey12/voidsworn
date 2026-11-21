@@ -1891,7 +1891,9 @@ func _commit(u, state, ctx: Dictionary) -> void:
 	treeAfterMove(u)
 	if fgC != null: treeMoveTowardFlag(u, path, fgD0)
 # opts.onLate (fire on the move) runs inside the burn, after the ship is committed to its hex, exactly as the headless game does
-func moveUnit(u, state, opts = null) -> void:
+func moveUnit(u, state, opts = null) -> void:   # issue 1450: a player move can be taken back until anything else happens
+	var um = undoMark(u); _moveUnit_raw(u, state, opts); undoSeal(u, um)
+func _moveUnit_raw(u, state, opts = null) -> void:
 	if not inThisBattle(u): return
 	var live = liveFrom(null); var ctx = {"committed": false}
 	emit({"t": "move", "unit": u["id"], "path": state.path.duplicate(true), "late_fire": opts != null and opts.get("onLate") != null}); hook("move", u)
@@ -1910,6 +1912,8 @@ func moveUnit(u, state, opts = null) -> void:
 func freePivot(u) -> bool: return jt(moveRules(u).get("pivot")) and not jt(u.get("pivotUsed"))
 func canRotate(u) -> bool: return not jt(u.get("dead")) and not jt(u.get("isSq")) and not jt(u.get("noTurn")) and (u["turnsLeft"] > 0 or z0(u.get("treeFreeTurn")) > 0) and (u["mp"] > 0 or freePivot(u) or z0(u.get("treeFreeTurn")) > 0) and not jt(u.get("braced"))
 func rotateUnit(u, dir) -> void:
+	var um = undoMark(u); _rotateUnit_raw(u, dir); undoSeal(u, um)
+func _rotateUnit_raw(u, dir) -> void:
 	if not canRotate(u) or not inThisBattle(u): return
 	var live = liveFrom(u); var f = (int(u["facing"]) + int(dir) + 6) % 6
 	var freeTurn = z0(u.get("treeFreeTurn")) > 0
@@ -1922,6 +1926,81 @@ func rotateUnit(u, dir) -> void:
 	if not live.call(): return
 	u["facing"] = f
 	treeAfterMove(u)
+# ---------------- issue 1450 (Ryan, Nov 21 2026, R376): undo a move before firing (battle.js undoMark ... undoMove) ----------------
+# A player ship's moves and turns can be taken back, one at a time, while nothing else has happened since: no shot, ram,
+# boarding, ability, order or Command (undoSpend), no dice drawn (the PRNG state is compared), and no other change anywhere in
+# the battle (a print of the whole battle state, leaving out only the ship's own move fields and the move counter, must be
+# identical). A tree effect after the move, an objective exit, terrain damage or fire on the move therefore block it by
+# themselves. UNDO lives outside B (never battle state); a battle replaced by a new B (a new battle, a restored save) drops it.
+# UNDO_ON: set by battle_api new_battle (the game) and by parity fixtures with undo; the sims and the bot harness leave it off.
+var UNDO_ON := false
+var UNDO: Variant = null
+const UNDO_KEYS := ["q", "r", "facing", "mp", "postMp", "turnsLeft", "pivotUsed", "moved", "hexMoved", "treeFreeTurn", "treeWarlord"]
+const UNDO_SKIP_B := {"units": 1, "cfg": 1, "prog": 1, "sel": 1, "reach": 1, "armed": 1, "mode": 1, "inspect": 1, "busy": 1, "usage": 1, "log": 1}
+const UNDO_SKIP_U := {"t": 1, "ship": 1}
+func _undoPrintAll(u) -> String:
+	var us := UNDO_SKIP_U.duplicate()
+	for k in UNDO_KEYS: us[k] = 1
+	var usage = null
+	if B.get("usage") is Dictionary:
+		usage = B["usage"].duplicate(); usage.erase("moves")
+	var parts := PackedStringArray()
+	for x in B["units"]: parts.append(JSM.canon(x, "u", us if is_same(x, u) else UNDO_SKIP_U))
+	return JSM.canon(B, "b", UNDO_SKIP_B) + "|" + str((B["log"] as Array).size() if B.get("log") is Array else 0) + "|" + JSM.canon(usage) + "|" + str(UID) + "|" + ",".join(parts)
+func _undoPick(u) -> Dictionary:
+	var o := {}
+	for k in UNDO_KEYS: o[k] = u.get(k)
+	return o
+func _undoSame(a: Dictionary, b: Dictionary) -> bool:
+	for k in UNDO_KEYS:
+		var x = a.get(k); var y = b.get(k)
+		if x == null or y == null:
+			if x != y: return false
+		elif typeof(x) != typeof(y) and not ((x is int or x is float) and (y is int or y is float)): return false
+		elif x != y: return false
+	return true
+func _undoCtx(u, make: bool) -> Variant:
+	if not UNDO_ON or B == null or u == null or u["side"] != "player" or jt(u.get("isSq")): return null
+	if UNDO != null and is_same(UNDO.b, B) and UNDO.id == u["id"] and UNDO.round == B["round"] and UNDO.side == B["side"]: return UNDO
+	if not make: return null
+	UNDO = {"b": B, "id": u["id"], "round": B["round"], "side": B["side"], "stack": [], "spent": false}
+	return UNDO
+func undoSpend() -> void:
+	if UNDO != null:
+		UNDO.spent = true; UNDO.stack = []
+func _undoStill(u, e: Dictionary) -> bool:
+	return not jt(u.get("dead")) and not jt(B.get("over")) and not jt(u.get("activated")) and JSM.rng_u32() == e.rng and _undoSame(_undoPick(u), e.after) and _undoPrintAll(u) == e.print
+func undoMark(u) -> Variant:
+	var c = _undoCtx(u, true)
+	if c == null or c.spent or jt(u.get("dead")) or jt(B.get("over")) or jt(u.get("postFire")): return null
+	for w in u["weapons"]:
+		if jt(w.get("fired")): return null
+	if c.stack.size() > 0 and not _undoStill(u, c.stack[c.stack.size() - 1]):
+		undoSpend(); return null
+	return {"c": c, "e": {"keys": _undoPick(u), "moves": B["usage"].get("moves") if B.get("usage") is Dictionary else null, "rng": JSM.rng_u32(), "print": _undoPrintAll(u),
+		"free": c.stack.size() == 0 and jt(B.get("alt")) and B.get("activeUnit") != null and is_same(B["activeUnit"], u)}}
+func undoSeal(u, m) -> void:
+	if m == null or not is_same(UNDO, m.c) or m.c.spent: return
+	var e: Dictionary = m.e
+	if jt(u.get("dead")) or not is_same(B, m.c.b) or jt(B.get("over")) or JSM.rng_u32() != e.rng or _undoPrintAll(u) != e.print:
+		undoSpend(); return
+	e["after"] = _undoPick(u)
+	if _undoSame(e.keys, e.after): return   # nothing moved (a turn the rules refused)
+	m.c.stack.append(e)
+func canUndo(u) -> bool:
+	var c = _undoCtx(u, false)
+	return c != null and not c.spent and c.stack.size() > 0 and _undoStill(u, c.stack[c.stack.size() - 1])
+func undoDepth(u) -> int: return UNDO.stack.size() if canUndo(u) else 0
+func undoMove(u) -> bool:
+	if not canUndo(u): return false
+	var e: Dictionary = UNDO.stack.pop_back()
+	for k in UNDO_KEYS:
+		if e.keys[k] == null: u.erase(k)
+		else: u[k] = e.keys[k]
+	if B.get("usage") is Dictionary and e.moves != null: B["usage"]["moves"] = e.moves
+	if e.free and UNDO.stack.size() == 0 and B.get("activeUnit") != null and is_same(B["activeUnit"], u): B["activeUnit"] = null   # the first move undone: the ship has done nothing, so another may go first
+	emit({"t": "undo", "unit": u["id"], "q": int(u["q"]), "r": int(u["r"]), "f": int(u["facing"]), "active": B.get("activeUnit") != null})
+	hook("undo", u); return true
 # ======================= B3 faction identity, travelling torpedoes, B4 Nemesis, verbs, wing doctrines, v54 doctrines =======================
 func canFade(u) -> bool: return u["fac"] == "ithar" or jt(g(u.get("fx"), "fade"))
 func treeFullFade(u) -> bool: return treeSkill("splitThree") != null and u != null and u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("dead")) and cmdActive(u["side"], "surge")   # Vell T2b
@@ -3139,6 +3218,7 @@ func systemDamage(t, forced = null) -> Variant:
 
 func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if not inThisBattle(u): return false
+	undoSpend()
 	var live = liveFrom(null)
 	var w = u["weapons"][wi]; var svArc = false
 	if not jt(opts.get("intercept")) and not canFire(u, w, t):
@@ -3653,6 +3733,7 @@ func ramUnit(u) -> bool:
 	var mawPre = treeSkill("mawOpens") != null and u["side"] == "player" and cmdActive(u["side"], "surge") and not jt(u.get("treeMawUsed"))   # Grax T3b
 	var info = ramInfo(u)
 	if info == null: return false
+	undoSpend()
 	var t = info.t; var live = liveFrom(u)
 	hook("move", u)
 	if not live.call(): return false
@@ -3725,6 +3806,7 @@ func boardOdds(u, t) -> Dictionary:
 	return {"kill": JSM.jsround(a * 0.38), "loss": JSM.jsround(d * 0.3), "chance": p, "capture": p >= 50}
 func boardUnit(u, t) -> bool:
 	if not JSM.has_same(boardTargets(u), t): return false
+	undoSpend()
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["board"] = z0(B["usage"].get("board")) + 1
 	u["boarded"] = true; u["repel"] = true; u["mp"] = 0
 	for w in u["weapons"]: w["fired"] = true
@@ -4182,6 +4264,7 @@ func canOrder(u, o) -> bool:
 func giveOrder(u, o) -> void:
 	_giveOrder_raw(u, o); hook("order", u)
 func _giveOrder_raw(u, o) -> void:
+	undoSpend()
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ord"][o] = z0(B["usage"]["ord"].get(o)) + 1
 	if not canOrder(u, o): return
 	u["order"] = o
@@ -5241,6 +5324,7 @@ func commandFor(side):
 func canCommand(side) -> bool: return B != null and not jt(B.get("over")) and side == "player" and commandFor(side) != null and B["round"] >= 1 and not jt(B.get("cmdUsed"))
 func useCommand(side) -> bool:
 	if not canCommand(side): return false
+	undoSpend()
 	var c = commandFor(side); var tier = cmdTier(); B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
 	if jt(B.get("usage")) and side == "player": B["usage"]["cmd"] = B["usage"]["cmd"] + 1
 	logm("Admiral's Command" + ((" at power " + ns(tier + 1) + " of 3") if jt(tier) else "") + ": " + String(c["n"]) + ". " + cmdDesc(c, tier, RUN["fac"] if (RUN != null and jt(RUN.get("fac"))) else "voidsworn"), "p" if side == "player" else "e")
@@ -6343,6 +6427,7 @@ func useAbility(u, arg = null) -> bool:
 	var r = _useAbility_raw(u, arg); hook("ability", u); return r
 func _useAbility_raw(u, arg = null) -> bool:
 	if not inThisBattle(u) or not canAbility(u): return false
+	undoSpend()
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	var a = u["ab"]
 	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
@@ -6375,9 +6460,10 @@ func _useAbility_raw(u, arg = null) -> bool:
 		var nf = 0
 		for t in alive("enemy" if u["side"] == "player" else "player"):
 			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
-				nf += 1
 				if z0(t.get("shMax")) > 0:
-					t["shp"] = floor(float(z0(t.get("shp"))) * 0.5); syncShields(t)
+					var was = float(z0(t.get("shp")))
+					t["shp"] = floor(was * 0.5); syncShields(t)
+					if float(t["shp"]) < was: nf += 1
 		flt(u, "Ion pulse", "#9fd4ff", -24)
 		logm(String(u["name"]) + " fires an ion pulse: " + ns(nf) + " enemy ship" + ("" if nf == 1 else "s") + " lose half their shields.", pp(u))
 	if a == "blink":
@@ -6906,11 +6992,12 @@ func aiAbilities(u, live: Callable, mode) -> bool:
 		for x in alive("enemy"):
 			if not jt(x.get("isSq")) and hdist(x, u) <= 3 and x["hp"] < x["maxHp"] * 0.6: any = true; break
 		if any: useAbility(u)
-	if pre and u.get("ab") == "ionpulse" and canAbility(u):
+	# Issue 1447: judge the real R246 pools (shp), not the four per-side catches (about 2.35 x the pool), and also check from the
+	# committed destination before firing, so a ship that moves into range 4 pulses that turn.
+	if (pre or aim) and u.get("ab") == "ionpulse" and canAbility(u):
 		var tot = 0.0
 		for t in foes:
-			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
-				for x in t["sh"]: tot += x
+			if not jt(t.get("isSq")) and hdist(t, u) <= 4: tot += float(z0(t.get("shp")))
 		if tot >= 30: useAbility(u)
 	if pre and u.get("ab") == "overburn" and canAbility(u) and nearF != null and hdist(u, nearF) > (u["speed"] if jt(u.get("speed")) else 2) + 1: useAbility(u)
 	if u.get("ab") == "blink" and canAbility(u) and nearF != null:
