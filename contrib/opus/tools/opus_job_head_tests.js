@@ -79,12 +79,12 @@ const outsideWalk = psCode.replace(walk, '');
 for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(outsideWalk), 'ps1 must not use ' + banned + ' outside the link-safe walk');
 const ownedFn = psCode.slice(psCode.indexOf('function Remove-Owned'), psCode.indexOf('function Assert-NoLinks'));
 assert.equal((psCode.match(/Remove-LinkSafeTree /g) || []).length, (ownedFn.match(/Remove-LinkSafeTree /g) || []).length, 'the link-safe walk is called only from Remove-Owned and Complete-Removing');
-assert(/function Complete-Removing[\s\S]*Assert-NoLinks \$t\.FullName[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$t\.FullName/.test(ownedFn), 'an unfinished removal is finished only after the link and pause checks');
-assert(/\.removing'[\s\S]*\[IO\.Directory\]::Move\(\$path, \$tomb\)[\s\S]*Remove-LinkSafeTree \$tomb/.test(ownedFn), 'a checkout is renamed whole before any file goes (Board, AFTERRELAY2 lock)');
+assert(/function Complete-Removing[\s\S]*removing\.txt[\s\S]*\$names -cnotcontains[\s\S]*Assert-NoLinks \$tomb[\s\S]*not the recorded commit[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$tomb/.test(ownedFn), 'an unfinished removal is finished only when recorded, for a listed name, after the link, HEAD and pause checks (Artoo on PR 1498)');
+assert(/\.removing'[\s\S]*AppendAllText\(\$record[\s\S]*\[IO\.Directory\]::Move\(\$full, \$tomb\)[\s\S]*Remove-LinkSafeTree \$tomb/.test(ownedFn), 'a checkout is recorded, then renamed whole, before any file goes (Board, AFTERRELAY2 lock)');
 const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'hashes' {"));
 const dropFn = psCode.slice(psCode.indexOf('function Drop-Attempt'), psCode.indexOf('function Get-AttemptState'));
 assert(/HEAD is no longer the pin[\s\S]*Get-KeptWork \$repo[\s\S]*Test-Paused[\s\S]*Save-Leftovers \$repo[\s\S]*Remove-Owned \$repo/.test(dropFn), 'a checkout goes only after its pin, its working files and the pause are checked, and its work is saved');
-assert(/function Remove-Owned\(\$path, \[switch\]\$InPlace\) \{\n(\s*#[^\n]*\n)*\s*if \(Test-Paused\)[^\n]*\n/.test(walk), 'every removal checks the pause first');
+assert(/function Remove-Owned\(\$path, \[switch\]\$InPlace, \[string\]\$Commit = ''\) \{\n(\s*#[^\n]*\n)*\s*if \(Test-Paused\)[^\n]*\n/.test(walk), 'every removal checks the pause first');
 assert(/Get-AttemptProblem \$attempt[\s\S]*Drop-Attempt \$attempt[\s\S]*Drop-Attempt \$sib\.FullName/.test(drop), 'the step covers this attempt and the earlier ones of the same job');
 assert(/\$state -ne 'PASS'[\s\S]*Assert-Relayed \$attempt[\s\S]*HEAD is no longer the pin[\s\S]*Assert-Rebuildable \$repo[\s\S]*Get-KeptWork/.test(dropFn), 'only a passed and relayed attempt, then pin, branches and stash, then the files (Artoo on PR 1498)');
 assert(/\$code\[0\] -ne ' '[^\n]*staged: /.test(psCode), 'a staged change is listed as staged, which Save-Leftovers refuses');
@@ -390,8 +390,16 @@ if (process.getuid && process.getuid() !== 0) {
   r = run('dropcheckouts', l2, l2relay, 'out_2');
   assert(/checkout new kept: .*partly removed; the rest is .*new\.removing/.test(r.out) && fs.existsSync(path.join(l2, 'new.removing')), 'a lasting lock leaves the renamed folder and says so: ' + r.out);
   fs.chmodSync(path.join(l2, 'new.removing', 'godot'), 0o755);
+  // a .removing folder this file did not record, and a recorded name that is no listed checkout, are left alone
+  write(path.join(l2, 'notes.removing', 'keep.txt'), 'not a checkout');
+  write(path.join(l2, 'other.removing', 'keep.txt'), 'not a listed checkout');
+  fs.appendFileSync(path.join(l2, 'removing.txt'), `other.removing ${two}\r\n`);
   r = run('dropcheckouts', l2);
   assert(!fs.existsSync(path.join(l2, 'new.removing')) && /finished an earlier removal/.test(r.out), 'the next run finishes the removal: ' + r.out);
+  assert.equal(fs.readFileSync(path.join(l2, 'notes.removing', 'keep.txt'), 'utf8'), 'not a checkout', 'an unrecorded .removing folder is untouched');
+  assert.equal(fs.readFileSync(path.join(l2, 'other.removing', 'keep.txt'), 'utf8'), 'not a listed checkout', 'a recorded name that is no listed checkout is untouched');
+  assert(/removing\.txt line not accepted, left alone: other\.removing/.test(r.out), 'and says so: ' + r.out);
+  assert(!/new\.removing/.test(fs.readFileSync(path.join(l2, 'removing.txt'), 'utf8')), 'the finished name leaves the record');
   delete env.PC_TEST_RETRY_MS;
 }
 const mine = relay([[path.join(attempt, 'out_new'), 'out_1/out_new']]);

@@ -260,34 +260,60 @@ function Invoke-Retry([scriptblock]$act, $what) {
     }
   }
 }
-function Remove-Owned($path, [switch]$InPlace) {
-  # The one place this file removes anything: a folder the callers have checked is the job's own leftover. It is first
-  # renamed to <name>.removing (one atomic step; a lock there keeps it whole and the next run tries again), then
-  # removed; if a file stays locked past the retries, what is left is that .removing folder, which the next run of the
-  # same step finishes (Complete-Removing). -InPlace (the import cache) skips the rename: a cache may go part way.
+function Remove-Owned($path, [switch]$InPlace, [string]$Commit = '') {
+  # The one place this file removes anything: a folder the callers have checked is the job's own leftover. A checkout or
+  # ship clone (-Commit: the pin or published commit its checks proved) is first recorded in its parent's removing.txt
+  # ("<name>.removing <commit>"), then renamed whole to <name>.removing (one step; a lock there keeps it whole and the
+  # next run checks it again), then removed. If a file stays locked past the retries, that recorded folder is what is
+  # left, and the next run of the same step finishes it (Complete-Removing). -InPlace (the import cache) skips the
+  # rename: a cache may go part way.
   if (Test-Paused) { throw 'the Board PC pause is active' }
   if ($InPlace) { return (Remove-LinkSafeTree $path) }
-  $tomb = $path.TrimEnd('\', '/') + '.removing'
+  if ($Commit -notmatch '\A[0-9a-f]{40}\z') { throw 'a removal needs the commit its checks proved' }
+  $full = $path.TrimEnd('\', '/')
+  $tomb = $full + '.removing'
   if (Test-Path -LiteralPath $tomb) { throw "$tomb already exists" }
-  try { Invoke-Retry { [IO.Directory]::Move($path, $tomb) } $path }
+  $record = Join-Path (Split-Path -Parent $full) 'removing.txt'
+  [IO.File]::AppendAllText($record, ('{0}.removing {1}' -f (Split-Path -Leaf $full), $Commit) + "`r`n")
+  try { Invoke-Retry { [IO.Directory]::Move($full, $tomb) } $full }
   catch { throw "nothing removed: $($_.Exception.Message)" }
-  try { return (Remove-LinkSafeTree $tomb) }
+  try { $bytes = Remove-LinkSafeTree $tomb }
   catch { throw "partly removed; the rest is $tomb, which the next run finishes ($($_.Exception.Message))" }
+  Set-RemovingRecord $record (Split-Path -Leaf $tomb)
+  return $bytes
 }
-function Complete-Removing($folder) {
-  # Finish the <name>.removing folders an earlier run left in $folder (already proven and renamed by Remove-Owned).
+function Set-RemovingRecord($record, $done) {
+  # Drop the finished name from removing.txt (and the file when nothing is left in it).
+  if (-not (Test-Path -LiteralPath $record -PathType Leaf)) { return }
+  $keep = @([IO.File]::ReadAllLines($record) | Where-Object { $_.Trim() -and ($_ -split ' ')[0] -cne $done })
+  if ($keep.Count) { [IO.File]::WriteAllLines($record, [string[]]$keep) } else { [IO.File]::Delete($record) }
+}
+function Complete-Removing($folder, [string[]]$names) {
+  # Finish only removals this file recorded itself (Artoo on PR 1498: a .removing suffix alone is no proof): a
+  # removing.txt line "<name>.removing <commit>" in $folder whose <name> is one of $names (the attempt's listed
+  # checkouts, or repo for a ship job), for a plain folder of exactly that name with no link above it, whose .git\HEAD,
+  # while it is still there, is that commit. Anything else is reported and left alone.
   $bytes = [long]0
-  $dir = Get-Item -LiteralPath $folder -Force -ErrorAction SilentlyContinue
-  if (-not (Test-PlainDir $dir)) { return $bytes }
-  foreach ($t in @($dir.EnumerateDirectories('*.removing'))) {
+  $record = Join-Path $folder 'removing.txt'
+  if (-not (Test-Path -LiteralPath $record -PathType Leaf)) { return $bytes }
+  foreach ($line in @([IO.File]::ReadAllLines($record))) {
+    if (-not $line.Trim()) { continue }
+    if ($line -notmatch '\A([A-Za-z0-9_-]{1,40})\.removing ([0-9a-f]{40})\z' -or $names -cnotcontains $Matches[1]) { Write-Output "removing.txt line not accepted, left alone: $line"; continue }
+    $name = $Matches[1]; $commit = $Matches[2]
+    $tomb = Join-Path $folder "$name.removing"
     try {
+      $t = Get-Item -LiteralPath $tomb -Force -ErrorAction SilentlyContinue
+      if ($null -eq $t) { Set-RemovingRecord $record "$name.removing"; continue }
       if (-not (Test-PlainDir $t)) { throw 'not a plain folder' }
-      Assert-NoLinks $t.FullName
+      Assert-NoLinks $tomb
+      $headFile = Join-Path (Join-Path $tomb '.git') 'HEAD'
+      if ((Test-Path -LiteralPath $headFile -PathType Leaf) -and ([IO.File]::ReadAllText($headFile)).Trim() -ne $commit) { throw "its HEAD is not the recorded commit $commit" }
       if (Test-Paused) { throw 'the Board PC pause is active' }
-      $gone = Remove-LinkSafeTree $t.FullName
+      $gone = Remove-LinkSafeTree $tomb
+      Set-RemovingRecord $record "$name.removing"
       $bytes += $gone
-      Write-Output ("finished an earlier removal ({0:N1} GB): {1}" -f ($gone / 1GB), $t.FullName)
-    } catch { Write-Output "earlier removal still unfinished: $($t.FullName) ($($_.Exception.Message))" }
+      Write-Output ("finished an earlier removal ({0:N1} GB): {1}" -f ($gone / 1GB), $tomb)
+    } catch { Write-Output "earlier removal still unfinished: $tomb ($($_.Exception.Message))" }
   }
   return $bytes
 }
@@ -446,7 +472,9 @@ function Drop-Attempt($attempt) {
   # bytes removed to $script:freed. Every refusal is logged, never thrown.
   $state = Get-AttemptState $attempt
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
-  foreach ($o in @(Complete-Removing $attempt)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
+  $listed = @(); $ckFile = Join-Path $attempt 'checkouts.txt'
+  if (Test-Path -LiteralPath $ckFile -PathType Leaf) { $listed = @(foreach ($l in [IO.File]::ReadAllLines($ckFile)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z') { $Matches[1] } }) }
+  foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
@@ -479,7 +507,7 @@ function Drop-Attempt($attempt) {
         try { Write-Output (Save-Leftovers $repo $work $dest) }
         catch { throw ("it holds {0} path(s) that are not rebuildable leftovers and could not be saved ({1}), e.g. {2}" -f $work.Count, $_.Exception.Message, (($work | Select-Object -First 5) -join '; ')) }
       }
-      $gone = Remove-Owned $repo
+      $gone = Remove-Owned $repo -Commit $pin
       $script:freed += $gone
       Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($gone / 1GB), $repo)
     } catch { Write-Output "checkout $name kept: $repo ($($_.Exception.Message))" }
@@ -718,7 +746,7 @@ switch ($Action) {
       $jobDir = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
       if (Test-Path -LiteralPath (Join-Path $jobDir 'repo.removing')) {
         Assert-NoLinks $jobDir
-        foreach ($o in @(Complete-Removing $jobDir)) { if ($o -is [long]) { Write-Free $o } else { Write-Output $o } }
+        foreach ($o in @(Complete-Removing $jobDir @('repo'))) { if ($o -is [long]) { Write-Free $o } else { Write-Output $o } }
       }
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
@@ -735,7 +763,7 @@ switch ($Action) {
         try { Write-Output (Save-Leftovers $repo $work $dest) }
         catch { throw ("it holds {0} path(s) that are not rebuildable leftovers and could not be saved ({1}), e.g. {2}" -f $work.Count, $_.Exception.Message, (($work | Select-Object -First 5) -join '; ')) }
       }
-      $gone = Remove-Owned $repo
+      $gone = Remove-Owned $repo -Commit $B
       Write-Output ("ship clone removed after the publish ({0:N1} GB): {1}" -f ($gone / 1GB), $repo)
       Write-Free $gone
     } catch { Write-Output "ship clone kept: $($_.Exception.Message)" }

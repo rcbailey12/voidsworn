@@ -41,9 +41,11 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   receipt; a later tail of the same job repeats the check. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
   size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
-  everything, and the log names the first files that differ or are missing. A proven checkout is first renamed whole to
-  `<name>.removing`, then removed; a file that stays locked (Defender, a survey) is retried for about 30 s, and what a
-  lasting lock leaves is that `.removing` folder, which the next run of the same step finishes (issue 1497, Nov 21). A failed or unfinished attempt is never
+  everything, and the log names the first files that differ or are missing. A proven checkout is first recorded in its folder's
+  `removing.txt` (`<name>.removing <commit>`), renamed whole to `<name>.removing`, then removed; a file that stays locked
+  (Defender, a survey) is retried for about 30 s, and what a lasting lock leaves is that recorded folder, which the next
+  run of the same step finishes only for a listed checkout (or `repo`) whose HEAD, if still there, is the recorded
+  commit. Any other `.removing` folder is left alone (issue 1497, Nov 21). A failed or unfinished attempt is never
   touched by this step (the janitor's rules cover it). Per checkout: listed in `checkouts.txt` by the head, `.git\HEAD`
   still the pin, every local branch in the mirror (a local merge only when git rebuilds its exact tree from its two mirror parents),
   no stash, nothing staged, and no link or junction anywhere between `voidsworn_test` and the folder. Proven leftovers go as they are: the import
