@@ -26,10 +26,25 @@ var bot_mode := false
 var player_path: Node
 
 
-# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
-func quit_clean(code := 0) -> void:
-	if battle != null and is_instance_valid(battle):
-		battle.queue_free()
+# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static).
+# Issue 1435 (W3): the window close button and Alt-F4 come here too (auto accept is off, see _notification), and it runs
+# once however many ask: no new showcase or load work starts, the scenes are freed, the fx jobs drain once
+# (static_caches clear_all, fx.gd clear_static) and the statics are cleared before the process ends.
+var quitting := false
+var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
+
+
+func quit_clean(code := 0, route := "menu") -> void:
+	if quitting:
+		return
+	quitting = true
+	quit_route = route
+	print("[main] quit (%s)" % route)
+	for n in [battle, showcase]:
+		if n != null and is_instance_valid(n):
+			if "quitting" in n:
+				n.quitting = true   # issue 521: an awaiting command must not draw on the freed HUD
+			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
 	await get_tree().process_frame
@@ -37,6 +52,13 @@ func quit_clean(code := 0) -> void:
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
 	load("res://render/static_caches.gd").clear_all()
 	get_tree().quit(code)
+
+
+# Issue 1435 (W3): the system close (title bar X, Alt-F4) used to end the process straight from SceneTree, past
+# quit_clean, so the statics were released after the rendering server (the crash class static_caches.gd describes).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_clean(0, "window")
 
 
 # bot runs: count every engine and script error per run (Godot 4.5+ Logger), since a script error never reaches the run's
@@ -74,6 +96,7 @@ var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.
 
 func _ready() -> void:
 	name = "Main"
+	get_tree().set_auto_accept_quit(false)   # issue 1435: the window close runs quit_clean (see _notification)
 	_args()
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
@@ -323,7 +346,7 @@ static func next_showcase_fac() -> String:
 
 
 func _start_showcase() -> void:
-	if title == null or not is_instance_valid(title) or showcase != null:
+	if quitting or title == null or not is_instance_valid(title) or showcase != null:
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true

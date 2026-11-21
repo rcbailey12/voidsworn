@@ -1264,6 +1264,8 @@ static func _lance_recut(fx, s) -> void:
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
+		return
 	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
