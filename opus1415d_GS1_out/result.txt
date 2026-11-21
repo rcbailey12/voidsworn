@@ -1,0 +1,29 @@
+start ithar_GS1 I14_23 board/pin-1415d Fri 11/20/2026 22:39:17.70 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GS1\repo
+commit=a76a10cc8c4296e809c41643fcd0b0c8531f8152
+import exit 0 
+1_concept_in start 22:44:29.98 
+1_concept_in exit 0 at 22:44:32.55 
+2_shape_ref start 22:44:32.55 
+2_shape_ref exit 0 at 22:44:33.33 
+3_trace_hull start 22:44:33.33 
+3_trace_hull exit 0 at 22:45:56.34 
+4_parts_kit start 22:45:56.35 
+4_parts_kit exit 0 at 22:46:27.08 
+5_paint_bake start 22:46:27.08 
+5_paint_bake exit 0 at 22:51:35.84 
+6_lod start 22:51:35.84 
+6_lod exit 0 at 22:54:12.70 
+7_export start 22:54:12.70 
+7_export exit 0 at 22:55:15.19 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415d_GS1\repo\godot\assets\ships\I14_23\I14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 22:55:41.02 
+all done 

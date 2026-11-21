@@ -1,0 +1,2 @@
+  battle camera GS1: game bow 53.0 midship 71.6 stern 67.9 whole 65.4, studio bow 25.5 midship 64.2 stern 50.7 whole 49.1
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
