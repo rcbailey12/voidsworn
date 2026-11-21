@@ -1,0 +1,41 @@
+start hegemony_O3 O3_11 board/pin-1413e Sat 11/21/2026 13:55:43.03 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1291c14i -> board/pc-out-1291c14i
+   0f10e1a04..ec40adfbc  main                  -> main
+   da710ea6d..0ffa13d10  opus/issue-1531       -> opus/issue-1531
+   da710ea6d..0ffa13d10  refs/pull/1532/head   -> refs/pull/1532/head
+ + d149ce008...915f251cd refs/pull/1532/merge  -> refs/pull/1532/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3e\repo
+commit=3dd4e50204db724721e4acd24c40028ef84a0b04
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+import exit 0 
+1_concept_in start 14:00:45.72 
+1_concept_in exit 0 at 14:00:48.80 
+2_shape_ref start 14:00:48.81 
+2_shape_ref exit 0 at 14:00:49.66 
+3_trace_hull start 14:00:49.66 
+3_trace_hull exit 0 at 14:02:10.82 
+4_parts_kit start 14:02:10.82 
+4_parts_kit exit 0 at 14:02:31.86 
+5_paint_bake start 14:02:31.86 
+5_paint_bake exit 0 at 14:09:27.36 
+6_lod start 14:09:27.36 
+6_lod exit 0 at 14:10:21.61 
+7_export start 14:10:21.61 
+7_export exit 0 at 14:11:00.01 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3e\repo\godot\assets\ships\O3_11\O3_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3e\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 367.9 GB free
+done PASS Sat 11/21/2026 14:11:25.35 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-24faed4fd9ce48229d56b86de5a24ea9

@@ -1,0 +1,2 @@
+  battle camera O3: game bow 50.7 midship 66.2 stern 55.4 whole 61.5, studio bow 10.3 midship 58.8 stern 66.8 whole 58.3
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
