@@ -1,15 +1,18 @@
 extends SceneTree
-# Issue 1524: one picture per close action, each a strip of four moments with its code name on it, in the real battle
-# scene: RAM-1524 (a player ship rams an enemy dead ahead) and BRD-1524 (a player ship boards an enemy next to it).
-# Run it on the commit before the wiring and on the commit after, with --arm before|after, for a before and after.
-# The ram's moments are timed from the rules hit landing (the target's drawn hull drops); the boarding's from the command.
+# Issues 1524 and 1461: one picture per close action, each a strip of four moments with its code name on it, in the real
+# battle scene: RAM-1524 (a player ship rams an enemy dead ahead), BRD-1524 (a player ship boards an enemy next to it) and
+# CMD-1524 (the admiral's command, the camera on the flagship). Run it on the commit before the wiring and on the commit
+# after, with --arm before|after. The ram's moments are timed from the rules hit landing (the target's drawn hull drops);
+# the boarding's and the command's from the order. All waits are on the game clock, so a movie run (Godot's
+# --write-movie with --fixed-fps) records the same moments as a clip (RAM-FX, BRD-FX, CMD-FX at camera 170).
 # usage (needs a window): godot --path godot --script res://tools/probes/close_action_1524_shots.gd -- --scenario s1
-#   --out <folder> --arm before|after [--items RAM,BRD] [--cam 110] [--stage "PC, installed in game"]
+#   --out <folder> --arm before|after [--items RAM,BRD,CMD] [--cam 110] [--stage "PC, installed in game"]
 
 var b
 const ShipViewS := preload("res://render/ship_view.gd")
 const RAM_AT := [0.05, 0.3, 0.7, 1.4]    # seconds after the ram lands
 const BRD_AT := [0.3, 0.8, 1.6, 2.8]     # seconds after the boarding command
+const CMD_AT := [0.1, 0.4, 0.8, 1.4]     # seconds after the admiral's command
 var out := ""
 var stage := ""
 var arm := ""
@@ -30,7 +33,7 @@ func _idle() -> void:
 	var t0 := Time.get_ticks_msec()
 	while b.busy or b.warming or b._threat_busy or b.thinking:
 		await process_frame
-		if Time.get_ticks_msec() - t0 > 60000:
+		if Time.get_ticks_msec() - t0 > 120000:
 			break
 	for i in 4:
 		await process_frame
@@ -82,7 +85,7 @@ func _save(code: String, frames: Array) -> void:
 
 
 func _tag(code: String, what: String, t: float) -> void:
-	label.text = "%s %s   %s +%.2f s   (1524 r1, %s)" % [code, arm, what, t, stage]
+	label.text = "%s %s   %s +%.2f s   (1524 r2, %s)" % [code, arm, what, t, stage]
 
 
 func _look(at: Vector3) -> void:
@@ -132,17 +135,11 @@ func _ram() -> void:
 	var hp0 := float(b.disp.get(foe["id"], {}).get("hp", 0.0))
 	b._ram_press()
 	b._ram_press()   # the second press commits the armed ram
-	var t0 := Time.get_ticks_msec()
-	while float(b.disp.get(foe["id"], {}).get("hp", 0.0)) >= hp0 and Time.get_ticks_msec() - t0 < 15000:
+	var n := 0
+	while float(b.disp.get(foe["id"], {}).get("hp", 0.0)) >= hp0 and n < 900:
 		await process_frame
-	var land := Time.get_ticks_msec()
-	var frames: Array = []
-	for t in RAM_AT:
-		while (Time.get_ticks_msec() - land) / 1000.0 < float(t):
-			await process_frame
-		_tag("RAM-1524", "ram lands", float(t))
-		frames.append(await _grab())
-	await _save("RAM-1524", frames)
+		n += 1
+	await _save("RAM-1524", await _strip("RAM-1524", "ram lands", RAM_AT))
 
 
 func _board() -> void:
@@ -162,16 +159,41 @@ func _board() -> void:
 			var tid: String = foe["id"]
 			if not b._cmd(func(): return b.api.board(id, tid)):
 				print("[close-action-shots] BRD: the rules refused the boarding"); return
-			var t0 := Time.get_ticks_msec()
-			var frames: Array = []
-			for t in BRD_AT:
-				while (Time.get_ticks_msec() - t0) / 1000.0 < float(t):
-					await process_frame
-				_tag("BRD-1524", "boarding", float(t))
-				frames.append(await _grab())
-			await _save("BRD-1524", frames)
+			await _save("BRD-1524", await _strip("BRD-1524", "boarding", BRD_AT))
 			return
 	print("[close-action-shots] BRD: no ship with boarders found")
+
+
+# the four moments, on the game clock from now
+func _strip(code: String, what: String, at: Array) -> Array:
+	var frames: Array = []
+	var prev := 0.0
+	for t in at:
+		if float(t) > prev:
+			await create_timer(float(t) - prev).timeout
+		prev = float(t)
+		_tag(code, what, float(t))
+		frames.append(await _grab())
+	return frames
+
+
+# the admiral's command, the camera on the flagship (the rules' pflag, else the first ship)
+func _cmd() -> void:
+	var R = b.api.R
+	if not b.api.can_command():
+		print("[close-action-shots] CMD: the rules offer no command now"); return
+	var flag = null
+	for x in R.alive("player"):
+		if R.jt(x.get("pflag")): flag = x; break
+	if flag == null:
+		flag = _first_ship("player")
+	b.select(flag["id"], "pick")
+	_sync()
+	await _idle()
+	await _look(b._pos(flag["id"]))
+	if not b._cmd(func(): return b.api.command()):
+		print("[close-action-shots] CMD: the rules refused the command"); return
+	await _save("CMD-1524", await _strip("CMD-1524", "admiral's command", CMD_AT))
 
 
 func _run() -> void:
@@ -194,10 +216,11 @@ func _run() -> void:
 	await create_timer(2.5).timeout
 	await _idle()
 	b.tips_off = true
-	for it in _arg("items", "RAM,BRD").split(","):
+	for it in _arg("items", "RAM,BRD,CMD").split(","):
 		match it:
 			"RAM": await _ram()
 			"BRD": await _board()
+			"CMD": await _cmd()
 		await _idle()
 		await create_timer(1.0).timeout
 	quit(0)
