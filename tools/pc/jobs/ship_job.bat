@@ -27,6 +27,8 @@ rem   6. the in-game shots at camera 170 and 60, only when everything above pass
 rem   7. reports, shots and export\CODE this run wrote copied into out\recipe, only when a recipe stage ran in this run
 rem      (1516: a failed mirror fetch once collected an earlier build's files and looked like a build of the new pin);
 rem      older reports go to out\recipe_from_earlier_runs, older pictures and exports stay behind, all listed
+rem   8. after a PASS, the clone's Godot import cache godot\.godot goes (issue 1497); the clone stays for the publish,
+rem      which removes it
 rem The earlier out folder becomes out_before_<time>. Backups older than the newest two are listed for the janitor.
 if "%~1"=="ship" goto ship
 setlocal EnableExtensions
@@ -304,6 +306,13 @@ if not defined FAILED set "FAILED=collect (no recipe stage ran)"
 :finish
 rem no parenthesised block here: FAILED can hold a ")" that would end the block early
 if defined FAILED goto finish_failed
+rem (1497) A PASS no longer needs the clone's Godot import cache: the publish installs from the export and the clone's
+rem tools, never from it. Removing it here, before the done line, keeps result.txt's tail as the publish receipt reads
+rem it. The clone itself stays until the publish (publish_ship.bat removes it then). A refusal never fails the job.
+set "OJH="
+if defined TLV if exist "%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1" set "OJH=%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1"
+if defined OJH powershell -NoProfile -ExecutionPolicy Bypass -File "%OJH%" dropcache "%J%" >> "%RES%" 2>&1
+if not defined OJH echo import cache kept: no opus_job_head.ps1 in tools_live >> "%RES%"
 echo done PASS %DATE% %TIME% >> "%RES%"
 echo all done >> "%RES%"
 exit /b 0
