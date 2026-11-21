@@ -822,6 +822,9 @@ static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k:
 #      climb. A deck tube that points up is tipped toward the target so the round does not stand on its tail.
 const LAUNCH_EJECT := {"torp": 0.7, "rockets": 0.14, "star": 0.22}   # torp: a long slow slide so it plainly leaves the hull (Ryan, Nov 21)
 const LAUNCH_PUSH := {"torp": 3.5, "rockets": 1.4, "star": 1.6}   # push-out length, in round lengths (pk)
+# Ryan, Nov 21 ("the size of the torpedoes looks odd ... too large"): the round itself is drawn smaller than its old size
+# against the ships. Its trail, flashes and shoot-down follow the smaller body; the push-out distance does not shrink.
+const ROUND_SIZE := {"torp": 0.5, "rockets": 0.7, "star": 1.0}
 
 
 static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
@@ -858,6 +861,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var pulse: Dictionary = burst[j]
 		var t0 = tf + float(pulse["phase"]) * 0.07
 		var pk: float = k * float(pulse["size"])
+		var rk: float = pk * (1.0 if old else float(ROUND_SIZE.get(lk, 1.0)))   # the drawn round (ROUND_SIZE)
 		# rockets leave a rack: each one from its own cell, a little apart
 		var cell: Vector3 = fx.rdir() * (0.35 * k if lk == "rockets" else 0.0)
 		cell -= ed * cell.dot(ed)
@@ -870,8 +874,8 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 			e0 = from
 			mid = from.lerp(to, 0.45) + mn * (6.0 + fx.rng.randf() * 4.0) * k + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
 		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
-		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": pk,
-			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"]), faction), "dead_at": INF,
+		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
+			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
 			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
 		if not old:
 			_kit_nozzle_dark(p["mesh"], true)
