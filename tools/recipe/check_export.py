@@ -186,6 +186,9 @@ def main():
     turret_ids = [i for i, n in enumerate(nodes) if re.fullmatch(HP_CONTRACT.TURRET_PATTERN, str(n.get('name', ''))) or (n.get('extras') or {}).get('kind') == 'turret']
     turn_meshes = [(i, nodes[i]) for i, n in enumerate(nodes) if 'mesh' in n and parent.get(i) in turret_ids]
     prims = [(pr, None) for pr in g['meshes'][nodes[root]['mesh']]['primitives']]
+    # issue 1543: a door lobe's mesh hangs under its hinge node (HARDPOINTS.md "Doors"); shut, it is part of the ship's surface
+    lobe_ids = {i for i, n in enumerate(nodes) if re.fullmatch(r'door_\d+_lobe_\d+', str(n.get('name', '')))}
+    turn_meshes += [(i, nodes[i]) for i, n in enumerate(nodes) if 'mesh' in n and parent.get(i) in lobe_ids]
     for i, n in turn_meshes: prims += [(pr, WM[i]) for pr in g['meshes'][n['mesh']]['primitives']]
     for pr, M in prims:
         pos = accessor(g, blob, pr['attributes']['POSITION']).astype(np.float64)

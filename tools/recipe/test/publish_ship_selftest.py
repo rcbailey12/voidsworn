@@ -91,6 +91,19 @@ def check_receipts(root):
         ok(f'{receipt} refuses another commit, a short commit, another or partial glb, another code')
         res = job / 'out' / 'result.txt'
         text = res.read_text(encoding='utf-8')
+        scratch = 'job scratch removed after PASS: C:\\Temp\\voidsworn-run-0123'
+        if 'pin ok' in text:
+            res.write_text(text.replace('all done', 'all done\n' + scratch, 1), encoding='utf-8')
+        else:
+            res.write_text(text.rstrip('\n') + '\n' + scratch + '\n', encoding='utf-8')
+        rc, out = run('receipt', job, code, commit, glb, rec)
+        assert rc == 0 and 'SHIP=' in out, out
+        ok(f'{receipt} passes with a scratch_done line after "all done" (1535)')
+        res.write_text(text.rstrip('\n') + '\nsomething else\n', encoding='utf-8')
+        rc, out = run('receipt', job, code, commit, glb, rec)
+        assert rc == 1, out
+        ok(f'{receipt} still refuses any other line after the tail')
+        res.write_text(text, encoding='utf-8')
         if 'pin ok' in text:
             res.write_text(text.replace('pin ok ' + commit, 'pin ok ' + 'f' * 40), encoding='utf-8')
             rc, out = run('receipt', job, code, commit, glb, rec)

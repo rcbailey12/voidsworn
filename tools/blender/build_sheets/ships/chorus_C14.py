@@ -297,7 +297,7 @@ def build(K):
     for fid, x, th, lean in MOUTHS:
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13)
+        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13, door=6)   # issue 1543: closed between launches, plain flesh (Ryan Nov 21)
         K.organ(fid, part, pos, ax, fwd=(1, 0, 0), inv='launch_mouths', kind='hangar',
                 what='launch opening, %.1f across, on a neck of flesh; empty, a dim glow deep inside' % (2 * R_MOUTH),
                 note='a spore squadron is born deep in the chamber below and leaves through the mouth', aperture=(2.5, 0.0))
@@ -422,13 +422,23 @@ def build(K):
     for i, (fid, x, th, lean) in enumerate(MOUTHS):
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        ob = _bpy.data.objects['%s_mount_maw' % fid]
+        ob = _bpy.data.objects['%s_mount_pit' % fid]
         vs = [ob.matrix_world @ v.co for v in ob.data.vertices]
         floor = min(vs, key=lambda v: (v - (Vector(pos) - ax * 2.2)).length)
         K.point('bay', 'hp_bay_%d' % i, tuple(floor), side='port' if pos[1] > 0.1 else 'stbd' if pos[1] < -0.1 else 'top', note='launch opening %s floor' % fid, dir=tuple(ax))
+        for ob in [o for o in _bpy.data.objects if o.get('door_lobe') and o.get('door') == fid]:
+            ob['door_bay'] = i      # issue 1543: this opening's door opens when a squadron leaves from hp_bay_<i>
     for i, side in enumerate((1, -1)):
         pos, nrm = K.hpt(0.4, side_th(-0.45, side), out=0.02)
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+
+    # Ryan (Nov 21, run H: "There are no actual holes, it's just caps"): the skin and any band are cut open under each launch
+    # mouth, so its bore runs down into the body as a real hole instead of stopping on skin or a plate,
+    # and the rooms inside are kept clear of the bore (after the armour and the inside rooms)
+    for fid, x, th, lean in MOUTHS:
+        pos, nrm = K.hpt(x, th, out=-0.05)
+        ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
+        print('[open_hull] %s: %d faces cut' % (fid, K.open_hull(pos, ax, R_MOUTH * 1.05, keep_grp=fid, depth=2.2)))
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown chitin down to the keel (plates.armadillo, the kit default plates.WRAP), flat caps over the teardrop sacs; the R341 scute shell of v7 retired. The creased front, the spine pore, the honeycomb field and the launch necks stay bare',
