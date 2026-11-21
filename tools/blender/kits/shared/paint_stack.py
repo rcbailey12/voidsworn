@@ -464,8 +464,11 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     seam = None
     # The ship-frame lattice belongs to the shell. A fitting already has
     # its own joints, edges and clearances in the built geometry.
-    if base_image is None and group == 'H' and z.get('patchwork', 0) > 0:
-        col, seam = patchwork(c, S, col, z['patchwork'])
+    # issue 1413 (Ryan, Nov 21: Navy O2 and O3 "don't look like clay"): a faction may opt its big flat fittings into the same
+    # plate grid (LAYERS parts_patchwork, a share of the zone's own patchwork; 0, the default, leaves every other faction as it was)
+    pw = z.get('patchwork', 0) * (1.0 if group == 'H' else S.LAYERS.get('parts_patchwork', 0.0))
+    if base_image is None and pw > 0:
+        col, seam = patchwork(c, S, col, pw)
     mottle = c.noise(L['mottle_scale'], 2)
     tone_range = z.get('mottle_range', L.get('mottle_range', .03))
     col = mulc(nt, col, math_(nt, 'ADD', 1 - tone_range / 2, math_(nt, 'MULTIPLY', mottle, tone_range)))
@@ -544,7 +547,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
         panel_height = math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5))
         panel_height.node.label = 'NORMAL_PATCHWORK_HEIGHT'
         height = math_(nt, 'SUBTRACT', height, panel_height)
-        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, .1))
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, L.get('seam_roughness', .1)))   # issue 1413: a faction may set it
     # 5. decals (hull atlas): before the wear, so the wear eats into them
     wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
     wear = math_(nt, 'MULTIPLY', wear, ramp(nt, c.noise(L['wear_patch'], 2), .30, .66), clamp=True)

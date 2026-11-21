@@ -141,7 +141,7 @@ def build(K):
         for lev, z in (('u', RZ), ('l', -RZ)):
             y0, y1 = side * RY - RW / 2, side * RY + RW / 2
             K.mass('Rail, %s %s' % ('port' if side > 0 else 'starboard', 'upper' if lev == 'u' else 'lower'),
-                   K.box('O3_rail_%s%s' % (sn, lev), -RX + 0.12, RX - 0.12, y0, y1, z - RT / 2, z + RT / 2, 'hgrey', ch=0.04, grp='hull'), 'pale grey module plate',
+                   K.box('O3_rail_%s%s' % (sn, lev), -RX + 0.12, RX - 0.12, y0, y1, z - RT / 2, z + RT / 2, 'hpanel', ch=0.04, grp='hull'), 'pale grey module plate',
                    note='a cradle rail: a chamfered beam with flush panels, end caps and blue light strips')
             for e in (1, -1):   # machined end caps
                 K.box('O3_railcap_%s%s%d' % (sn, lev, e > 0), (RX - 0.14) if e > 0 else -RX, RX if e > 0 else -(RX - 0.14),

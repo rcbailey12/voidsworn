@@ -657,7 +657,7 @@ def relay_lens(half, r, depth, steps=5, ch=0.2, n=32):
         j = (i + 1) % n
         F.append((i, j, n + j, n + i)); F.append((2 * n + j, 2 * n + i, 3 * n + i, 3 * n + j))
         F.append((j, i, 2 * n + i, 2 * n + j)); F.append((n + i, n + j, 3 * n + j, 3 * n + i))
-    p.add('face', 'mount', 'hgrey', (V, F))
+    p.add('face', 'mount', 'hpanel', (V, F))   # issue 1413 round 4: the small plate grid, so the broad face reads as plates
     # the stepped machined rings, each a little smaller and deeper, down to the lens
     prof = []
     for k in range(steps):
