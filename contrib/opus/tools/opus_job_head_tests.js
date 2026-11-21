@@ -382,7 +382,7 @@ if (process.getuid && process.getuid() !== 0) {
   fs.chmodSync(path.join(l1, 'new', 'godot'), 0o555);
   const unlock = spawn('sh', ['-c', `sleep 2; chmod 755 '${path.join(l1, 'new.removing', 'godot')}'`], { stdio: 'ignore' });
   r = run('dropcheckouts', l1, l1relay, 'out_1');
-  assert(!fs.existsSync(path.join(l1, 'new')) && !fs.existsSync(path.join(l1, 'new.removing')) && /checkout new removed after the job/.test(r.out), 'a short lock is retried, then the checkout goes: ' + r.out);
+  assert(!fs.existsSync(path.join(l1, 'new')) && !fs.existsSync(path.join(l1, 'new.removing')) && /checkout new removed after the job/.test(r.out) && /still locked, trying again in \d+ ms/.test(r.out), 'a short lock is retried, logged, then the checkout goes: ' + r.out);
   unlock.unref();
   env.PC_TEST_RETRY_MS = '50';
   const [l2, l2relay] = lockAttempt('out_2');

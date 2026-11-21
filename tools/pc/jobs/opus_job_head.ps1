@@ -256,6 +256,7 @@ function Invoke-Retry([scriptblock]$act, $what) {
     try { & $act; return }
     catch {
       if ($i -ge $waits.Count) { throw "$what is still locked after $($waits.Count) retries: $($_.Exception.Message)" }
+      [Console]::Error.WriteLine(('still locked, trying again in {0} ms: {1} ({2})' -f $waits[$i], $what, $_.Exception.Message))
       Start-Sleep -Milliseconds $waits[$i]
     }
   }
