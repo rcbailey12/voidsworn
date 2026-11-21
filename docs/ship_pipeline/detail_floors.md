@@ -52,14 +52,15 @@ the PC for O2 and the same for S10; colour contrast within 0.05).
 | CD5 Unfinished | Glasswrights | PC publish I8_37 | 0.73 | 0.477 | 0.043 | accepted | PASS |
 | GV2 fighter | Glasswrights | PC opus1373gv2i | 0.19 | 0.191 | 0.079 | accepted, published | PASS |
 | GW4 bomber | Glasswrights | PC opus1373gw4i | 0.25 | 0.276 | 0.068 | accepted, published | PASS |
-| GS1, GL1, GP1 | Glasswrights | PC pin-1415e | 0.37 to 0.50 | 0.197 to 0.385 | 0.047 to 0.078 | waiting on changes | PASS |
+| GS1, GL1 | Glasswrights | PC pin-1415e | 0.37, 0.48 | 0.309, 0.197 | 0.078, 0.047 | waiting on changes | PASS |
 | C10 Ninefold Maw | Chorus | PC opus1291c10g | 5.15 | 0.166 | 0.251 | accepted | PASS |
 | C12 Drone-spawn | Chorus | PC opus1291c12d | 5.26 | 0.167 | 0.254 | accepted | PASS |
 
 Known limits: HB1 measures like O2 and fails its next rebake until the Navy paint stack gives the plates more colour detail (a
 stack fix reaches O2, O3 and HB1 together, R333) or Ryan opts it out. KF1's "unfinished" look is not a flat skin by these
 numbers (its colour contrast is Sunward-level); the check does not judge shape. The Navy margin is thin: IM5 is 0.04 over
-the albedo floor, measured in the cloud. Torpedo and rocket bodies have no stage 5 bake and are not measured.
+the albedo floor, measured in the cloud. GP1 is left out: its pin-1415e relay failed at fetch and holds an
+earlier run's files (Artoo on PR 1521, issue 1516), so its numbers are not proved. Torpedo and rocket bodies have no stage 5 bake and are not measured.
 
 ## How the numbers and the self-test fixtures were made
 

@@ -112,15 +112,32 @@ def check_fixtures(tmp):
     ok('a job with no hull atlas fails for every faction')
 
 
-def fake_out(tmp, name, detail, result='start voidsworn_S10 V16_37 board/pin\ncommit=' + 'e' * 40 + '\ndone PASS\nall done\n'):
+JOB_COMMIT = 'e' * 40
+
+
+def stamp(img, path, stage, commit=JOB_COMMIT):
+    """save a picture with a real provenance stamp made at `commit` (the job clone's revision)"""
+    from unittest.mock import patch
+    from picture_provenance import save_picture
+    with patch('picture_provenance.revision', return_value=dict(source_commit=commit, source_dirty=False,
+                                                                 source_diff_sha256='')):
+        save_picture(img, path, stage)
+
+
+def fake_out(tmp, name, detail, result='start voidsworn_S10 V16_37 board/pin\ncommit=' + JOB_COMMIT + '\ndone PASS\nall done\n',
+             renders=True, shots=False):
     from PIL import Image
     out = tmp / name
     (out / 'recipe' / 'r').mkdir(parents=True)
     (out / 'result.txt').write_text(result, encoding='utf-8')
     if detail is not None:
         (out / 'recipe' / 'log_detail.txt').write_text(detail, encoding='utf-8')
-    Image.new('RGB', (640, 360), (90, 80, 70)).save(out / 'recipe' / 'r' / 'S10_concept_cl.png')
-    Image.new('RGB', (640, 360), (60, 70, 80)).save(out / 'recipe' / 'r' / 'S10_hero.png')
+    if renders:
+        stamp(Image.new('RGB', (1280, 720), (90, 80, 70)), out / 'recipe' / 'r' / 'S10_concept_cl.png', 'paint proof')
+        stamp(Image.new('RGB', (1280, 720), (60, 70, 80)), out / 'recipe' / 'r' / 'S10_hero.png', 'paint proof')
+    if shots:
+        (out / 'shots').mkdir()
+        stamp(Image.new('RGB', (1280, 720), (40, 60, 90)), out / 'shots' / 'V16_37_battle.jpg', 'installed in game')
     return out
 
 
@@ -128,32 +145,56 @@ def check_offer_sheet(tmp):
     import contextlib
     import io
     import offer_sheet as OS
-    good = 'PASS detail check: normal relief 1.62 deg (floor 1.40), albedo contrast 0.460 (floor 0.300), roughness spread 0.161 (floor 0.100), 102278 texels\n'
+    from PIL import Image
+
+    def run(args):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
+            rc = OS.main([str(a) for a in args])
+        return rc, buf.getvalue()
+
+    good = 'PASS detail check: normal relief 1.62 deg (floor 1.30), albedo contrast 0.460 (floor 0.300), roughness spread 0.161 (floor 0.120), 102278 texels\n'
     cases = (('fail', 'detail check FAIL: a flat clay surface (normal under the hegemony floor): normal relief 1.25 deg\n'),
              ('old', 'detail check (reported, this ship has no surface_detail floor): normal relief 1.54 deg (floor 3.50)\n'),
              ('notrun', 'detail check NOT RUN: bake bakeAb6.py is not the paint stack\n'),
              ('missing', None))
     for name, detail in cases:
-        out = fake_out(tmp, 'offer_' + name, detail)
+        out = fake_out(tmp, 'offer_' + name, detail, shots=True)
         sheet = tmp / ('sheet_' + name + '.jpg')
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            rc = OS.main([str(out), str(sheet)])
-        assert rc == 1 and not sheet.exists() and 'REFUSED' in buf.getvalue(), (name, buf.getvalue())
-    out = fake_out(tmp, 'offer_failedjob', good, result='start a b\ncommit=' + 'e' * 40 + '\ndone FAILED: shots\nall done\n')
-    with contextlib.redirect_stdout(io.StringIO()):
-        assert OS.main([str(out), str(tmp / 'sheet_failedjob.jpg')]) == 1
+        rc, text = run([out, sheet])
+        assert rc == 1 and not sheet.exists() and 'REFUSED' in text, (name, text)
+    out = fake_out(tmp, 'offer_failedjob', good, result='start a b\ncommit=' + JOB_COMMIT + '\ndone FAILED: shots\nall done\n')
+    assert run([out, tmp / 'sheet_failedjob.jpg'])[0] == 1
     ok('the offer sheet refuses a detail FAIL, the old reported-only line, a check not run, no log and a failed job')
-    out = fake_out(tmp, 'offer_pass', good)
+    # Artoo on PR 1521: a passed job's sheet must show this job's own current proof of the sheet's stage
+    out = fake_out(tmp, 'offer_noshots', good)
+    rc, text = run([out, tmp / 'sheet_noshots.jpg'])
+    assert rc == 1 and 'in-game shots' in text and not (tmp / 'sheet_noshots.jpg').exists(), text
+    rc, text = run([out, tmp / 'sheet_rendersasgame.jpg', out / 'recipe' / 'r' / 'S10_hero.png'])
+    assert rc == 1 and 'not "installed in game"' in text, text
+    stamp(Image.new('RGB', (1280, 720), (1, 2, 3)), out / 'recipe' / 'r' / 'S10_old.png', 'paint proof', commit='a' * 40)
+    rc, text = run([out, tmp / 'sheet_old.jpg', '--stage', 'paint proof', out / 'recipe' / 'r' / 'S10_old.png'])
+    assert rc == 1 and 'not the job commit' in text, text
+    Image.new('RGB', (1280, 720)).save(out / 'recipe' / 'r' / 'S10_plain.png')
+    rc, text = run([out, tmp / 'sheet_plain.jpg', '--stage', 'paint proof', out / 'recipe' / 'r' / 'S10_plain.png'])
+    assert rc == 1 and 'provenance' in text, text
+    outside = tmp / 'concept.png'
+    stamp(Image.new('RGB', (1280, 720), (9, 9, 9)), outside, 'paint proof')
+    rc, text = run([out, tmp / 'sheet_outside.jpg', '--stage', 'paint proof', outside])
+    assert rc == 1 and '--reference' in text, text
+    ok('a passed job is refused with no in-game shots, a render passed as in-game, an old-commit, an unstamped or an outside picture')
     sheet = tmp / 'sheet_pass.jpg'
-    with contextlib.redirect_stdout(io.StringIO()):
-        assert OS.main([str(out), str(sheet), '--stage', 'paint proof']) == 0
-    from PIL import Image
+    Image.new('RGB', (1024, 1024), (120, 110, 90)).save(tmp / 'concept_unstamped.jpg')
+    rc, text = run([out, sheet, '--stage', 'paint proof', '--reference', tmp / 'concept_unstamped.jpg'])
+    assert rc == 0, text
     from picture_provenance import verify
     with Image.open(sheet) as im:
         assert im.height == OS.HEIGHT, im.size
     rec = verify(sheet)
-    assert rec['stage'] == 'paint proof', rec['stage']
-    ok('a passed job gets a 720 px sheet with the detail numbers, stamped with its revision and stage')
+    assert rec['stage'] == 'paint proof' and rec['source_commit'] == JOB_COMMIT, rec
+    out = fake_out(tmp, 'offer_game', good, shots=True)
+    rc, text = run([out, tmp / 'sheet_game.jpg'])
+    assert rc == 0 and verify(tmp / 'sheet_game.jpg')['stage'] == 'installed in game', text
+    ok('a passed job gets a 720 px sheet of its own stamped pictures (a concept only as a labelled reference), stamped with the job commit')
 
 
 def main():

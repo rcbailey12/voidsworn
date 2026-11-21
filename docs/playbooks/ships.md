@@ -222,7 +222,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (tools/recipe/detail_check.py) gates every ship of every faction built through the recipe, hulls and strike craft alike, against
    its faction's floors (docs/ship_pipeline/detail_floors.md), and a FAIL fails the stage. A pick or publish picture of a
    build is made only with `tools/recipe/offer_sheet.py JOB_OUT OUT.jpg`, which refuses a job whose
-   `out/recipe/log_detail.txt` has no PASS and prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
+   `out/recipe/log_detail.txt` has no PASS, takes as proof only the job's own pictures stamped with its commit and the
+   sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`), and
+   prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
    same job. A ship under its floor passes only with a dated opt-out holding Ryan's own words in its recipe json
    (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
    while the check only reported their flat skins (it failed Chorus ships alone), and he caught it himself: "Just make sure

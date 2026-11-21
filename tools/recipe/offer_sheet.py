@@ -8,11 +8,13 @@ output and refuses, writing nothing, unless the job passed and its stage 5 surfa
 three detail numbers and their floors under the pictures, and is saved with its revision and stage
 (tools/picture_provenance.py).
 
-usage: python tools/recipe/offer_sheet.py JOB_OUT OUT.jpg [--stage "installed in game"] [--title TEXT] [PICTURE ...]
-  JOB_OUT   the ship job's out folder (result.txt and recipe/ inside; a board/pc-out-* relay's <job>_out folder)
-  PICTURE   the pictures to show, left to right (a concept, the job's renders or in-game shots); with none, the job's own
-            r/CELL_concept_cl.png, r/CELL_hero.png and the first in-game shots (shots/) are used
-  --stage   'paint proof' (the recipe's renders) or 'installed in game' (default, the in-game shots)
+usage: python tools/recipe/offer_sheet.py JOB_OUT OUT.jpg [--stage "installed in game"] [--reference CONCEPT] [PICTURE ...]
+  JOB_OUT     the ship job's out folder (result.txt and recipe/ inside; a board/pc-out-* relay's <job>_out folder)
+  PICTURE     the proof pictures, left to right. Each must be in JOB_OUT, carry a valid provenance stamp of the sheet's
+              stage and be made at exactly the job's commit (its result.txt commit= line). With none: the job's own
+              in-game shots (shots/) for "installed in game", or r/CELL_concept_cl.png and r/CELL_hero.png for "paint proof"
+  --reference a concept or older picture to compare against, any path; drawn first with a REFERENCE label, never proof
+  --stage     'installed in game' (default) or 'paint proof'
 Exit 0 with "offer sheet written: OUT", or exit 1 with "offer sheet REFUSED: <why>" and no file written.
 """
 import argparse
@@ -55,50 +57,75 @@ def gate(job_out):
                 verdict=verdict, line=detail_line(text))
 
 
-def default_pictures(job_out):
+def default_pictures(job_out, stage):
+    """the job's own proof pictures for a stage: its in-game shots (stamped "installed in game"), or its recipe renders"""
     rec = Path(job_out) / 'recipe'
-    pics = sorted((rec / 'r').glob('*_concept_cl.png'))[:1] + [p for p in sorted((rec / 'r').glob('*_hero.png'))[:1]]
-    for shots in (Path(job_out) / 'shots', rec / 'shots'):
-        pics += sorted(p for p in shots.glob('**/*.png'))[:2] if shots.is_dir() else []
-    return pics
+    if stage == 'installed in game':
+        pics = []
+        for shots in (Path(job_out) / 'shots', rec / 'shots'):
+            if shots.is_dir():
+                pics += sorted(p for p in shots.glob('**/*') if p.suffix.lower() in ('.png', '.jpg', '.jpeg'))
+        return pics[:3]
+    return sorted((rec / 'r').glob('*_concept_cl.png'))[:1] + sorted((rec / 'r').glob('*_hero.png'))[:1]
 
 
-def build(job_out, out, pictures=None, stage='installed in game', title=None):
+def proof(path, job_out, info, stage):
+    """the picture's provenance record, or Refused: it must sit in the job's output, carry a valid stamp of this sheet's
+    stage, and be built from exactly the job's commit (Artoo on PR 1521: no old, foreign or unstamped render as proof)"""
+    from picture_provenance import verify
+    path = Path(path).resolve()
+    root = Path(job_out).resolve()
+    if root not in path.parents:
+        raise Refused(f'{path} is not in the job output {root}; pass another picture with --reference')
+    try:
+        rec = verify(path)
+    except (ValueError, OSError, KeyError) as e:
+        raise Refused(f'{path.name} has no valid provenance stamp ({e})') from None
+    if rec['stage'] != stage:
+        raise Refused(f'{path.name} is stamped "{rec["stage"]}", not "{stage}"')
+    if not info['commit'] or rec['source_commit'] != info['commit'] or rec.get('source_dirty'):
+        raise Refused(f'{path.name} was made at {rec["source_commit"][:12]}, not the job commit {info["commit"][:12] or "?"}')
+    return rec
+
+
+def build(job_out, out, pictures=None, stage='installed in game', title=None, references=()):
     from PIL import Image, ImageDraw, ImageFont
-    from picture_provenance import open_picture, save_picture, verify
+    from picture_provenance import STAGES, open_picture, save_picture
+    if stage not in STAGES:
+        raise Refused(f'unknown stage {stage!r}')
     info = gate(job_out)
-    pics = [Path(p) for p in (pictures or default_pictures(job_out))]
+    pics = [Path(p) for p in (pictures or default_pictures(job_out, stage))]
     if not pics:
-        raise Refused('no pictures to show')
-    missing = [str(p) for p in pics if not p.is_file()]
+        raise Refused(f'no "{stage}" pictures from this job (an "installed in game" sheet needs the job\'s own in-game shots)')
+    refs = [Path(p) for p in references]
+    missing = [str(p) for p in pics + refs if not p.is_file()]
     if missing:
         raise Refused('missing pictures: ' + ', '.join(missing))
+    sources = [proof(p, job_out, info, stage) for p in pics]
+    try:
+        font = ImageFont.truetype('DejaVuSans.ttf', 18)
+    except OSError:
+        font = ImageFont.load_default()
     h = HEIGHT - CAPTION
-    tiles, sources = [], []
-    for p in pics:
+    tiles = []
+    for p, is_ref in [(r, True) for r in refs] + [(p, False) for p in pics]:
         im = open_picture(p).convert('RGB')
-        tiles.append(im.resize((max(1, round(im.width * h / im.height)), h), Image.LANCZOS))
-        try:
-            rec = verify(p)
-            if rec:
-                sources.append(rec)
-        except (ValueError, OSError):
-            pass
+        tile = im.resize((max(1, round(im.width * h / im.height)), h), Image.LANCZOS)
+        if is_ref:   # a concept or older picture: shown for comparison, labelled, never the proof
+            ImageDraw.Draw(tile).rectangle((0, 0, tile.width - 1, 30), fill=(70, 40, 10))
+            ImageDraw.Draw(tile).text((8, 5), 'REFERENCE: ' + p.name, fill=(255, 220, 160), font=font)
+        tiles.append(tile)
     sheet = Image.new('RGB', (sum(t.width for t in tiles), HEIGHT), (16, 16, 20))
     x = 0
     for t in tiles:
         sheet.paste(t, (x, CAPTION))
         x += t.width
     d = ImageDraw.Draw(sheet)
-    try:
-        font = ImageFont.truetype('DejaVuSans.ttf', 18)
-    except OSError:
-        font = ImageFont.load_default()
     name = title or '%s %s (job commit %s)' % (info['ship'], info['code'], info['commit'][:12] or '?')
     numbers = info['line'].split(': ', 1)[-1]
     d.text((10, 8), name + '  |  stage: ' + stage, fill=(235, 235, 235), font=font)
     d.text((10, 36), 'detail %s: %s' % (info['verdict'], numbers[:160]), fill=(170, 230, 170), font=font)
-    save_picture(sheet, out, stage, sources=sources or None, repo=HERE.parent.parent, quality=90)
+    save_picture(sheet, out, stage, sources=sources, quality=90)
     return info
 
 
@@ -109,9 +136,10 @@ def main(argv=None):
     ap.add_argument('pictures', nargs='*')
     ap.add_argument('--stage', default='installed in game')
     ap.add_argument('--title')
+    ap.add_argument('--reference', action='append', default=[], help='a concept or older picture, shown labelled')
     a = ap.parse_args(argv)
     try:
-        build(a.job_out, a.out, a.pictures, a.stage, a.title)
+        build(a.job_out, a.out, a.pictures, a.stage, a.title, a.reference)
     except Refused as e:
         print('offer sheet REFUSED: %s' % e)
         return 1
