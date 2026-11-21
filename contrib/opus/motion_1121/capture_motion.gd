@@ -12,15 +12,28 @@ var battle
 var out := ""
 var kind := ""
 var every := 2
+const KINDS := ["straight", "turn", "final", "side", "back", "long", "kill_frigate", "kill_enemy", "kill_cruiser", "kill_capital"]
 var allow_placeholder := false
 
 
 func _init() -> void:
+	# PC run 1121N (Nov 21): the kind read from the command line came back as "OK.txt", so every class was "unavailable"
+	# and the run still printed done with 0 frames. The bat now also passes MOTION_OUT and MOTION_KIND in the
+	# environment, which win; the command line is the fallback. Anything unread or unknown fails the run.
 	var a := OS.get_cmdline_user_args()
-	out = a[a.find("--out") + 1]
-	kind = a[a.find("--kind") + 1]
-	every = int(a[a.find("--every") + 1]) if a.has("--every") else 2
+	print("MOTION_ARGS ", a, " env kind '", OS.get_environment("MOTION_KIND"), "' env out '", OS.get_environment("MOTION_OUT"), "'")
+	out = OS.get_environment("MOTION_OUT")
+	kind = OS.get_environment("MOTION_KIND")
+	if out == "" and a.find("--out") >= 0 and a.find("--out") + 1 < a.size():
+		out = a[a.find("--out") + 1]
+	if kind == "" and a.find("--kind") >= 0 and a.find("--kind") + 1 < a.size():
+		kind = a[a.find("--kind") + 1]
+	every = int(a[a.find("--every") + 1]) if a.has("--every") and a.find("--every") + 1 < a.size() else 2
 	allow_placeholder = a.has("--allow-placeholder")
+	if out == "" or not (kind in KINDS):
+		print("MOTION_FAILED bad arguments: out '%s', kind '%s' (want one of %s)" % [out, kind, str(KINDS)])
+		quit(1)
+		return
 	# Artoo on PR 1523: a reused folder could pass old frames off as new; refuse anything but a fresh one
 	if DirAccess.dir_exists_absolute(out) and (not DirAccess.get_files_at(out).is_empty() or not DirAccess.get_directories_at(out).is_empty()):
 		print("MOTION_FAILED output folder is not fresh: ", out)
@@ -103,6 +116,13 @@ func run() -> void:
 			n_jpg += 1 if fn.ends_with(".jpg") else 0
 		if n_jpg != int(expected[folder]):
 			save_errors.append("%s holds %d frames, %d saved" % [folder, n_jpg, int(expected[folder])])
+	var recorded := 0
+	for r in result:
+		recorded += 0 if (r as Dictionary).has("unavailable") else 1
+	if recorded == 0:
+		save_errors.append("no class could fly a %s move: nothing recorded" % kind)
+	if not allow_placeholder and expected.is_empty():
+		save_errors.append("0 frames saved")
 	if not save_errors.is_empty():
 		for e in save_errors:
 			print("MOTION_SAVE_ERROR ", e)
@@ -136,7 +156,17 @@ func _moves() -> Array:
 		var best = null
 		var score := -1e9
 		for st in battle.api.reach(id):
-			var value: float = _long_score(battle, id, st.path) if kind == "long" else battle._maneuver_score(st.path, kind)
+			var value: float = -1e9
+			if kind == "long":
+				value = _long_score(battle, id, st.path)
+			elif kind == "final":
+				# battle._maneuver_score has no "final" case (PC run 1121O: every class unavailable); the issue 505
+				# capture's own rule: a move that runs first and ends on a turn into its final facing
+				var path: Array = st.path
+				if path.size() > 1 and battle._jt(path[-1].get("rot")) and not battle._jt(path[0].get("rot")):
+					value = float(path.size())
+			else:
+				value = battle._maneuver_score(st.path, kind)
 			if value > score:
 				score = value
 				best = st
@@ -189,20 +219,30 @@ func _moves() -> Array:
 
 
 func _kill() -> Array:
-	var cls := "Cruiser" if kind == "kill_cruiser" else "Dreadnought"
+	# kill_frigate (Ryan Nov 21: small-ship deaths fly apart) kills the player's Sunward frigate; kill_enemy kills the
+	# first living enemy (a Hegemony ship in s1) by the player's frigate, so a second faction's small death is on file
+	var cls := {"kill_frigate": "Frigate", "kill_cruiser": "Cruiser", "kill_capital": "Dreadnought"}.get(kind, "Enemy")
 	var tid := ""
 	var by := ""
 	for u in battle.V["units"]:
+		if kind == "kill_enemy":
+			if u["side"] == "enemy" and not u["dead"] and tid == "":
+				tid = u["id"]
+			if u["side"] == "player" and u["cls"] == "Frigate":
+				by = u["id"]
+			continue
 		if u["side"] == "player" and u["cls"] == cls:
 			tid = u["id"]
 		if u["side"] == "enemy" and not u["dead"] and by == "":
 			by = u["id"]
 	if tid == "" or by == "":
 		return [{"cls": cls, "unavailable": kind}]
-	battle.cine = "key"
+	# MOTION_CAM_R and MOTION_CINE (run R, Nov 21): a close look at a small death. Run Q at the battle camera (170) drew
+	# the frigate's death a few pixels wide, and the player's kill cut-in turned the camera off the dying ship.
+	battle.cine = OS.get_environment("MOTION_CINE") if OS.get_environment("MOTION_CINE") != "" else "key"
 	var sv = battle.views[tid]
 	battle.cam.t = sv.position
-	battle.cam.r = 170.0
+	battle.cam.r = float(OS.get_environment("MOTION_CAM_R")) if OS.get_environment("MOTION_CAM_R") != "" else 170.0
 	battle.cam.snap()
 	await create_timer(0.5).timeout
 	var folder := out.path_join(cls)
@@ -214,13 +254,15 @@ func _kill() -> Array:
 	var core_at: float = float(gfx.death_core_at(tid)) - fx0 if gfx != null and gfx.has_method("death_core_at") and float(gfx.death_core_at(tid)) >= 0.0 else -1.0
 	var tel := []
 	var n := 0
+	var saved := 0
 	while battle.game_t - t0 < 4.4:
 		await process_frame
 		tel.append({"t": battle.game_t - t0, "fx_t": (float(gfx.now) - fx0) if gfx != null else 0.0,
 			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n, "cam_r": float(battle.cam._cr),
 			"screen": [battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).x, battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).y]})
-		if n % 3 == 0:
+		if every > 0 and n % every == 0 and not allow_placeholder:
 			await RenderingServer.frame_post_draw
-			_save(folder, "%05d.jpg" % n)
+			_save(folder, "%05d.jpg" % saved)   # consecutive, for ffmpeg
+			saved += 1
 		n += 1
 	return [{"cls": cls, "kind": kind, "target": tid, "by": by, "hull_L": float(sv.L), "core_flash_fx_s": core_at, "telemetry": tel}]
