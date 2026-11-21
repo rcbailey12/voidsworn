@@ -1,0 +1,14 @@
+issue 1497 selftest part 2, Sat 11/21/2026  9:02:28.93, tools_live pre-merge copy C:\Users\rcbai\Downloads\voidsworn_test\board1119\prehead1497\tools\pc\jobs\opus_job_head.bat
+attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138, relay board/pc-out-1497st2
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\out_new\checkout_leftovers
+checkout new kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\new (Exception calling "Delete" with "1" argument(s): "Access to the path 'C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\new\.git\objects\pack\pack-0091bf373db5d43c0efaf56d6b9409f9e3845cb0.idx' is denied.")
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\out_old\checkout_leftovers
+checkout old removed after the job (21.2 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\old
+disk: checkouts freed 21.2 GB in all, C: 127.4 GB free
+import cache removed after the PASS (0.1 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2ship\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.1 GB in all, C: 127.4 GB free
+saved 0 changed and 1 new file(s), 0.0 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2ship\out\checkout_leftovers_repo
+ship clone removed after the publish (16.6 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2ship\repo
+disk: checkouts freed 16.6 GB in all, C: 129.4 GB free
+selftest part 2 FAILED: new checkout still there;
+all done
