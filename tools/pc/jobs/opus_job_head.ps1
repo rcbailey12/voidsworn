@@ -320,28 +320,55 @@ function Write-RelayReceipt($folder, $ref, $path) {
   Write-Output "relay receipt written: $ref $path"
 }
 function Test-ReceiptTree($receipt, $want) {
-  # Does the receipt's branch tree hold every wanted path (relative to the receipt's folder) with exactly that blob?
+  # The wanted paths (relative to the receipt's folder) the receipt's branch tree does not hold with exactly that blob,
+  # each as @{ Key; Absent } (Absent: no such path in the tree at all), plus the relay's own skipped_over_10MB.txt lines
+  # in that folder. $null when the branch is not in the mirror.
   $ErrorActionPreference = 'Continue'
   $sha = (& $gitExe --git-dir $mirror rev-parse --verify -q "refs/heads/$($receipt.Ref)^{commit}" 2>$null) | Select-Object -Last 1
-  if ($LASTEXITCODE -ne 0 -or -not $sha) { return $false }
+  if ($LASTEXITCODE -ne 0 -or -not $sha) { return $null }
   $ErrorActionPreference = 'Stop'
   $have = @{}
   foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
     if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
   }
-  foreach ($k in $want.Keys) { if ($have[$receipt.Path + '/' + $k] -ne $want[$k]) { return $false } }
-  return $true
+  $skipped = @()
+  if ($have.ContainsKey($receipt.Path + '/skipped_over_10MB.txt')) {
+    $skipped = @(Run-Git --git-dir $mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
+  }
+  $miss = @(foreach ($k in $want.Keys) {
+    $at = $receipt.Path + '/' + $k
+    if ($have[$at] -ne $want[$k]) { @{ Key = $k; Absent = -not $have.ContainsKey($at) } }
+  })
+  return @{ Missing = $miss; Skipped = $skipped }
+}
+function Test-RelaySkipped($skipped, $key, $file) {
+  # The relay leaves out files over 10 MB and lists each in skipped_over_10MB.txt as "<path with \> <size> MB" (Artoo on
+  # PR 1498: board/pc-out da39c826, opus1415d_GL1_out). Such a file counts as accounted for only when it is absent from
+  # the tree (never a different copy), is listed under its exact path, is over 10 MB here, and the listed size matches
+  # its size in MB to 0.1. It stays on the PC: out folders are never removed here, only the rebuildable checkout.
+  $len = (Get-Item -LiteralPath $file -Force).Length
+  if ($len -le 10MB -and $len -le 10000000) { return $false }
+  $want = $key.Replace('/', '\')
+  foreach ($line in $skipped) {
+    if ("$line".Trim() -notmatch '\A(.+) ([0-9]+(?:\.[0-9]+)?) MB\z') { continue }
+    if ($Matches[1] -cne $want) { continue }
+    $mb = [double]::Parse($Matches[2], [Globalization.CultureInfo]::InvariantCulture)
+    if ([math]::Abs($mb - $len / 1MB) -le 0.1 -or [math]::Abs($mb - $len / 1000000) -le 0.1) { return $true }
+  }
+  return $false
 }
 function Assert-Relayed($base, [string[]]$dirs, $skip) {
   # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
   # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
   # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
-  # receipt's folder plus its path under $base, with the same bytes. No receipt, no branch or any difference: kept.
+  # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
+  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
+  # other difference: kept, and the reason names the first files.
   $receipt = Read-RelayReceipt $base
   if (-not $receipt) { throw "results not relayed yet: no relay_receipt.txt in $base (the Board writes it when it relays)" }
   $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
-  $want = @{}
+  $want = @{}; $files = @{}
   foreach ($d in $dirs) {
     $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
     $pending.Push((Get-Item -LiteralPath $d -Force))
@@ -350,15 +377,31 @@ function Assert-Relayed($base, [string[]]$dirs, $skip) {
         if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
         if ($e -is [IO.DirectoryInfo]) { if ($skip -notcontains $e.Name) { $pending.Push($e) }; continue }
         if ($e.FullName -eq $receiptFile) { continue }
-        $want[$e.FullName.Substring($baseFull.Length + 1).Replace('\', '/')] = Get-BlobSha $e.FullName
+        $k = $e.FullName.Substring($baseFull.Length + 1).Replace('\', '/')
+        $want[$k] = Get-BlobSha $e.FullName; $files[$k] = $e.FullName
       }
     }
   }
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
-  $ok = Test-ReceiptTree $receipt $want
-  if (-not $ok) { Update-Mirror; $ok = Test-ReceiptTree $receipt $want }
-  if (-not $ok) { throw ("results not relayed yet: {0}:{1} does not hold all {2} result file(s) with the same bytes" -f $receipt.Ref, $receipt.Path, $want.Count) }
-  Write-Output "results relayed: all $($want.Count) result file(s) are on $($receipt.Ref) under $($receipt.Path)"
+  $bad = $null; $big = @()
+  for ($try = 0; $try -lt 2; $try++) {
+    if ($try) { Update-Mirror }
+    $r = Test-ReceiptTree $receipt $want
+    if ($null -eq $r) { $bad = @("branch $($receipt.Ref) is not in the shared mirror"); continue }
+    $big = @(); $bad = @()
+    foreach ($m in $r.Missing) {
+      if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $files[$m.Key])) { $big += $m.Key }
+      elseif ($m.Absent) { $bad += "$($m.Key) is not on the relay" }
+      else { $bad += "$($m.Key) differs on the relay" }
+    }
+    if (-not $bad.Count) { break }
+  }
+  if ($bad.Count) {
+    $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
+    throw ("results not relayed yet: {0}:{1}: {2}{3}" -f $receipt.Ref, $receipt.Path, (($bad | Select-Object -First 3) -join '; '), $more)
+  }
+  foreach ($k in $big) { Write-Output "result kept on the PC only: $k (the relay listed it in skipped_over_10MB.txt)" }
+  Write-Output "results relayed: $($want.Count - $big.Count) of $($want.Count) result file(s) are on $($receipt.Ref) under $($receipt.Path), $($big.Count) over 10 MB listed as skipped"
 }
 function Drop-Attempt($attempt) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the

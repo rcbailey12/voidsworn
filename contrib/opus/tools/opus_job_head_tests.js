@@ -333,10 +333,36 @@ assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: no 
 // a receipt whose tree folder does not hold this attempt's files (the bytes sit under another folder) proves nothing
 const other = relay([[path.join(attempt, 'out_new'), 'opus9999/out_9/out_new']]);
 r = run('dropcheckouts', attempt, other, 'out_1');
-assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-t\d+:out_1 does not hold all 1 result file/.test(r.out), 'identical bytes under another folder keep the checkouts: ' + r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-t\d+:out_1: out_new\/\S+ is not on the relay/.test(r.out), 'identical bytes under another folder keep the checkouts: ' + r.out);
 assert.notEqual(run('dropcheckouts', attempt, 'main', 'out_1').out.match(/relay receipt not accepted/), null, 'a receipt must name a board/pc-out branch');
 assert(!fs.existsSync(path.join(passedBefore, 'new')), 'an earlier passed and relayed attempt is cleared: ' + r.out);
 assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(unfinished, 'new')), 'failed and unfinished attempts are never touched here: ' + r.out);
+// A relay that left out a file over 10 MB (board/pc-out da39c826, opus1415d_GL1_out/skipped_over_10MB.txt; Artoo on
+// PR 1498): kept with the reason named, unless the relay's own list names that exact file and size. The file stays here.
+{
+  const big = path.join(vt, 'opus1498big', 'out_1');
+  assert.equal(run('checkout', big, 'new', two).status, 0);
+  write(path.join(big, 'out_new', 'result.txt'), 'big job result\n');
+  fs.writeFileSync(path.join(big, 'out_new', 'big.glb'), Buffer.alloc(11 * 1024 * 1024, 7));
+  write(path.join(big, 'done.txt'), 'PASS\r\n');
+  const stage = path.join(tmp, 'stage1498');
+  const partial = (list) => {
+    fs.rmSync(stage, { recursive: true, force: true });
+    write(path.join(stage, 'out_new', 'result.txt'), 'big job result\n');
+    if (list !== null) write(path.join(stage, 'skipped_over_10MB.txt'), list);
+    return relay([[stage, 'out_1']]);
+  };
+  r = run('dropcheckouts', big, partial(null), 'out_1');
+  assert(fs.existsSync(path.join(big, 'new')) && /results not relayed yet: .*out_1: out_new\/big\.glb is not on the relay/.test(r.out), 'a partial relay keeps the checkout and names the file: ' + r.out);
+  r = run('dropcheckouts', big, partial('out_new\\big.glb 4.0 MB\r\n'), 'out_1');
+  assert(fs.existsSync(path.join(big, 'new')) && /out_new\/big\.glb is not on the relay/.test(r.out), 'a skip list with another size proves nothing: ' + r.out);
+  r = run('dropcheckouts', big, partial('out_new\\other.glb 11.0 MB\r\n'), 'out_1');
+  assert(fs.existsSync(path.join(big, 'new')), 'a skip list naming another file proves nothing: ' + r.out);
+  r = run('dropcheckouts', big, partial('out_new\\big.glb 11.0 MB\r\n'), 'out_1');
+  assert.equal(r.status, 0, r.out);
+  assert(!fs.existsSync(path.join(big, 'new')) && /result kept on the PC only: out_new\/big\.glb/.test(r.out) && /1 of 2 result file\(s\) are on/.test(r.out), 'a listed skipped file lets the checkout go: ' + r.out);
+  assert.equal(fs.statSync(path.join(big, 'out_new', 'big.glb')).size, 11 * 1024 * 1024, 'the skipped file stays on the PC');
+}
 const mine = relay([[path.join(attempt, 'out_new'), 'out_1/out_new']]);
 const pause = path.join(tmp, 'gpu_go.txt');
 write(pause, 'GPU not cleared: paused by the Board for a check\n');
@@ -424,7 +450,7 @@ r = run('droprepo', sa.j, two, 'S5');
 assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet/.test(r.out), 'an unrelayed ship job keeps its clone: ' + r.out);
 const saOther = relay([[path.join(sa.j, 'out'), 'opus1497z_out']]);
 r = run('droprepo', sa.j, two, 'S5', saOther, 'opus1497a_out');
-assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet: .* does not hold/.test(r.out), 'a receipt whose folder does not hold the files keeps the clone: ' + r.out);
+assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet: .* is not on the relay/.test(r.out), 'a receipt whose folder does not hold the files keeps the clone: ' + r.out);
 const saRef = relay([[path.join(sa.j, 'out'), 'opus1497a_out']]);
 write(path.join(sa.j, 'out', 'relay_receipt.txt'), `${saRef} opus1497a_out\r\n`);
 r = run('droprepo', sa.j, one1, 'S5');

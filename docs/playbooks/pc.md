@@ -38,7 +38,10 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   names a relay branch whose tree holds every file of its `out_*` folders at `<tree folder>/out_<name>/<path>` with the
   same bytes (the mirror is fetched when it does not). The Board relays an attempt in that layout (the attempt folder
   itself, as board/pc-out-1211r6 does) and then runs `dropcheckouts <attempt> <branch> <tree folder>`, which writes the
-  receipt; a later tail of the same job repeats the check. No receipt or any difference keeps everything. A failed or unfinished attempt is never
+  receipt; a later tail of the same job repeats the check. A file over 10 MB the relay left out counts only when it is
+  absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
+  size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
+  everything, and the log names the first files that differ or are missing. A failed or unfinished attempt is never
   touched by this step (the janitor's rules cover it). Per checkout: listed in `checkouts.txt` by the head, `.git\HEAD`
   still the pin, every local branch in the mirror (a local merge only when git rebuilds its exact tree from its two mirror parents),
   no stash, nothing staged, and no link or junction anywhere between `voidsworn_test` and the folder. Proven leftovers go as they are: the import
