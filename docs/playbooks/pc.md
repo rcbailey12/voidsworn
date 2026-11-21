@@ -34,10 +34,11 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS. Then the checkout step (`opus_job_head.ps1 dropcheckouts <attempt>`) runs
   for this attempt and the same job's earlier ones. An attempt's pinned checkouts (rebuildable from their pins, up to
-  22 GB each) go only when its `done.txt` says PASS and one `board/pc-out-*` relay branch holds every file of its
-  `out_*` folders at `<job>_<out folder>/<path>` with the same bytes (the relay layout; the mirror is fetched when none
-  does). Same bytes elsewhere prove nothing. At the tail nothing is relayed yet, so the Board runs the same
-  step right after each relay; a later tail of the same job also catches it. A failed or unfinished attempt is never
+  22 GB each) go only when its `done.txt` says PASS and its `relay_receipt.txt` (`<board/pc-out branch> <tree folder>`)
+  names a relay branch whose tree holds every file of its `out_*` folders at `<tree folder>/out_<name>/<path>` with the
+  same bytes (the mirror is fetched when it does not). The Board relays an attempt in that layout (the attempt folder
+  itself, as board/pc-out-1211r6 does) and then runs `dropcheckouts <attempt> <branch> <tree folder>`, which writes the
+  receipt; a later tail of the same job repeats the check. No receipt or any difference keeps everything. A failed or unfinished attempt is never
   touched by this step (the janitor's rules cover it). Per checkout: listed in `checkouts.txt` by the head, `.git\HEAD`
   still the pin, every local branch in the mirror (a local merge only when git rebuilds its exact tree from its two mirror parents),
   no stash, nothing staged, and no link or junction anywhere between `voidsworn_test` and the folder. Proven leftovers go as they are: the import
@@ -56,7 +57,8 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - Ship jobs (`ship_job.bat`): after a PASS the clone's Godot import cache `repo\godot\.godot` goes before the done line
   (`opus_job_head.ps1 dropcache`); the clone stays because the publish installs with its tools. `publish_ship.bat`
   removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every file in the job's
-  `out` relayed, every local commit in the shared mirror or a merge of mirror commits, no stash or staged change;
+  `out` relayed per `out\\relay_receipt.txt`, which the Board writes when it relays out, or passes as `droprepo <job>
+  <commit> <code> <branch> <tree folder>`, every local commit in the shared mirror or a merge of mirror commits, no stash or staged change;
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone for the janitor (issue 1396). A second publish from the same job folder needs a new ship run.

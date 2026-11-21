@@ -2,10 +2,10 @@
 rem Issue 1497 selftest: a PC job that passes must leave no checkout behind, and must say how much it freed.
 rem Built from tools/pc/jobs/opus_job_template.bat on opus_job_head.bat. Run it only after the PR for issue 1497 has merged
 rem and tools_live has been refreshed from that main (the head and its PowerShell half come from tools_live).
-rem Part 1 of 2. Part 2 is OPUS1497_AFTERRELAY.bat, which the Board runs right after relaying, the usual way, this
-rem job's out_new and out_old folders (as opus1497selftest_out_new/ and opus1497selftest_out_old/) and the ship
-rem stand-in's out folder (as opus1497selftestship_out/), every file in them, on one board/pc-out branch. Checkouts go
-rem only after that relay (Artoo on PR 1498).
+rem Part 1 of 2. Part 2 is OPUS1497_AFTERRELAY.bat <relay branch>, which the Board runs right after relaying, on one
+rem board/pc-out branch, this attempt folder (its out_new and out_old, as <attempt folder name>/out_new/ and .../out_old/)
+rem and the ship stand-in's out folder (as opus1497selftestship_out/), every file in them. Checkouts go only after that
+rem relay, proven against the branch named as the receipt (Artoo on PR 1498).
 rem What part 1 does, all inside its own folders Downloads\voidsworn_test\opus1497selftest and opus1497selftestship
 rem (which it makes; it refuses if that one already exists); nothing else is touched:
 rem   1. NEW and OLD checkouts of two main commits, the ships copy into each (with its copy-time record), a real Godot

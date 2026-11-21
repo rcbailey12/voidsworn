@@ -21,11 +21,15 @@
 #                                              under godot\gen and godot\assets\ships that has the same bytes in the source, so the tail can prove a copy unchanged even
 #                                              after a later publish moves the shared build on (issue 1497)
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
-#   dropcheckouts <attempt folder>             the tail, and the Board right after it relays the results: removes the
+#   dropcheckouts <attempt folder> [<relay branch> <tree folder>]
+#                                              the tail, and the Board right after it relays the results (with the branch
+#                                              and the tree folder that holds the attempt, written to the attempt's
+#                                              relay_receipt.txt): removes the
 #                                              pinned checkouts of this attempt and of the same job's earlier attempts
 #                                              (voidsworn_test\<job>\out_* beside it), each only when its done.txt says
-#                                              PASS and every file in its out_* folders is a blob on a board/pc-out relay
-#                                              branch of the shared mirror (fetched when one is missing). A failed or
+#                                              PASS and its relay_receipt.txt names a board/pc-out branch whose tree holds
+#                                              every file of its out_* folders at <tree folder>/out_<name>/<path> with the
+#                                              same bytes (the mirror is fetched when it does not). A failed or
 #                                              unfinished attempt is never touched here (the janitor's rules cover it).
 #                                              Only folders listed in that attempt's checkouts.txt by this head's checkout
 #                                              step, directly in an attempt folder voidsworn_test\<job>\out_*, that are
@@ -42,8 +46,10 @@
 #                                              never fails the job. Ends with the GB freed and C: free.
 #   dropcache <ship job folder>                ship_job.bat after a PASS: removes only <job>\repo\godot\.godot, Godot's
 #                                              import cache (rebuilt by the next import); the clone stays for the publish
-#   droprepo <ship job folder> <commit> <code> publish_ship.bat after a published PASS: removes the job's own clone
-#                                              <job>\repo when HEAD is <commit>, every file in <job>\out is relayed,
+#   droprepo <ship job folder> <commit> <code> [<relay branch> <tree folder>]
+#                                              publish_ship.bat after a published PASS, or the Board: removes the job's own clone
+#                                              <job>\repo when HEAD is <commit>, every file in <job>\out is relayed
+#                                              (<job>\out\relay_receipt.txt, as above, the tree folder holding out's files),
 #                                              every local branch and HEAD is in the shared mirror (or is a merge of
 #                                              commits that are), there is no stash or staged change, and
 #                                              its files are rebuildable or saved first as above into
@@ -54,7 +60,7 @@
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
 param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropcache', 'droprepo', 'survey')][string]$Action,
-      [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '')
+      [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$E = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
@@ -297,48 +303,62 @@ function Update-Mirror {
     Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
   } finally { $lock.Dispose() }
 }
-function Find-RelayReceipt($want) {
-  # The first relay branch (board/pc-out-*) whose current tree holds every wanted path ("<job>_<out folder>/<file>")
-  # with exactly that blob; $null when none does. One branch must hold them all, so bytes that happen to sit in another
-  # relay or another job's folder prove nothing (Artoo on PR 1498).
-  $prefixes = @($want.Keys | ForEach-Object { ($_ -split '/', 2)[0] } | Sort-Object -Unique)
-  $tips = @(Run-Git --git-dir $mirror for-each-ref '--format=%(objectname) %(refname)' 'refs/heads/board/pc-out-*' | Where-Object { $_ })
-  foreach ($tip in $tips) {
-    $sha, $ref = "$tip" -split ' ', 2
-    $have = @{}
-    foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha @prefixes)) {
-      if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
-    }
-    $ok = $true
-    foreach ($k in $want.Keys) { if ($have[$k] -ne $want[$k]) { $ok = $false; break } }
-    if ($ok) { return $ref }
-  }
-  return $null
+function Read-RelayReceipt($folder) {
+  # relay_receipt.txt, written by the Board when it relays (dropcheckouts and droprepo can write it from their arguments):
+  # one line "<branch> <tree path>": the board/pc-out branch and the folder in its tree that holds this folder's
+  # results, e.g. "board/pc-out-1211r6 out_20261120_223320_23241". $null when there is none or it is not well formed.
+  $file = Join-Path $folder 'relay_receipt.txt'
+  if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
+  $line = [string](Get-Content -LiteralPath $file -TotalCount 1)
+  if ($line -notmatch '\A(board/pc-out-[A-Za-z0-9._-]+) ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z' -or $line.Contains('..')) { return $null }
+  return @{ Ref = $Matches[1]; Path = $Matches[2] }
 }
-function Assert-Relayed($root, [string[]]$dirs, $skip) {
-  # Issue 1497 (Artoo on PR 1498): a checkout goes only once the results are relayed. The Board's relay commits each out
-  # folder <vt>\<job>\...\<out> as <job>_<out>/ on a board/pc-out branch; every file under each of $dirs ($skip names
-  # leftovers folders this file writes after the relay) must be there, at its own path, with the same bytes.
+function Write-RelayReceipt($folder, $ref, $path) {
+  if (-not $ref) { return }
+  if ("$ref $path" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $path.Contains('..')) { throw "relay receipt not accepted: $ref $path" }
+  [IO.File]::WriteAllText((Join-Path $folder 'relay_receipt.txt'), "$ref $path`r`n")
+  Write-Output "relay receipt written: $ref $path"
+}
+function Test-ReceiptTree($receipt, $want) {
+  # Does the receipt's branch tree hold every wanted path (relative to the receipt's folder) with exactly that blob?
+  $ErrorActionPreference = 'Continue'
+  $sha = (& $gitExe --git-dir $mirror rev-parse --verify -q "refs/heads/$($receipt.Ref)^{commit}" 2>$null) | Select-Object -Last 1
+  if ($LASTEXITCODE -ne 0 -or -not $sha) { return $false }
+  $ErrorActionPreference = 'Stop'
+  $have = @{}
+  foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
+    if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
+  }
+  foreach ($k in $want.Keys) { if ($have[$receipt.Path + '/' + $k] -ne $want[$k]) { return $false } }
+  return $true
+}
+function Assert-Relayed($base, [string[]]$dirs, $skip) {
+  # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
+  # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
+  # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
+  # receipt's folder plus its path under $base, with the same bytes. No receipt, no branch or any difference: kept.
+  $receipt = Read-RelayReceipt $base
+  if (-not $receipt) { throw "results not relayed yet: no relay_receipt.txt in $base (the Board writes it when it relays)" }
+  $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
+  $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
   $want = @{}
   foreach ($d in $dirs) {
-    $full = [IO.Path]::GetFullPath($d).TrimEnd('\', '/')
-    $job = ($full.Substring($vt.Length + 1) -split '[\\/]')[0]
-    $prefix = $job + '_' + (Split-Path -Leaf $full)
     $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
-    $pending.Push((Get-Item -LiteralPath $full -Force))
+    $pending.Push((Get-Item -LiteralPath $d -Force))
     while ($pending.Count) {
       foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
         if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
         if ($e -is [IO.DirectoryInfo]) { if ($skip -notcontains $e.Name) { $pending.Push($e) }; continue }
-        $want[$prefix + '/' + $e.FullName.Substring($full.Length + 1).Replace('\', '/')] = Get-BlobSha $e.FullName
+        if ($e.FullName -eq $receiptFile) { continue }
+        $want[$e.FullName.Substring($baseFull.Length + 1).Replace('\', '/')] = Get-BlobSha $e.FullName
       }
     }
   }
-  if (-not $want.Count) { throw "no result files under $root to prove the relay" }
-  $ref = Find-RelayReceipt $want
-  if (-not $ref) { Update-Mirror; $ref = Find-RelayReceipt $want }
-  if (-not $ref) { throw ("results not relayed yet: no board/pc-out branch holds all {0} result file(s) at their paths, e.g. {1}" -f $want.Count, @($want.Keys | Sort-Object)[0]) }
-  Write-Output "results relayed: all $($want.Count) result file(s) are on $ref"
+  if (-not $want.Count) { throw "no result files under $base to prove the relay" }
+  $ok = Test-ReceiptTree $receipt $want
+  if (-not $ok) { Update-Mirror; $ok = Test-ReceiptTree $receipt $want }
+  if (-not $ok) { throw ("results not relayed yet: {0}:{1} does not hold all {2} result file(s) with the same bytes" -f $receipt.Ref, $receipt.Path, $want.Count) }
+  Write-Output "results relayed: all $($want.Count) result file(s) are on $($receipt.Ref) under $($receipt.Path)"
 }
 function Drop-Attempt($attempt) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
@@ -564,6 +584,7 @@ switch ($Action) {
     $problem = Get-AttemptProblem $attempt
     if ($problem) { Write-Output "checkouts kept: $problem"; break }
     $script:freed = [long]0
+    if ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
     Drop-Attempt $attempt
     $jobDir = Split-Path -Parent $attempt
     foreach ($sib in @((Get-Item -LiteralPath $jobDir -Force).EnumerateDirectories('out_*'))) {
@@ -599,7 +620,8 @@ switch ($Action) {
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
-      Assert-Relayed $jobDir @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo')
+      Write-RelayReceipt (Join-Path $jobDir 'out') $D $E
+      Assert-Relayed (Join-Path $jobDir 'out') @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo')
       $work = @(Get-KeptWork $repo $null @{} "godot/assets/ships/$C/" $export)
       if (Test-Paused) { throw 'the Board PC pause is active' }
       if ($work.Count) {

@@ -85,7 +85,7 @@ assert(/function Remove-Owned\(\$path\) \{\n\s*if \(Test-Paused\)[^\n]*\n\s*retu
 assert(/Get-AttemptProblem \$attempt[\s\S]*Drop-Attempt \$attempt[\s\S]*Drop-Attempt \$sib\.FullName/.test(drop), 'the step covers this attempt and the earlier ones of the same job');
 assert(/\$state -ne 'PASS'[\s\S]*Assert-Relayed \$attempt[\s\S]*HEAD is no longer the pin[\s\S]*Assert-Rebuildable \$repo[\s\S]*Get-KeptWork/.test(dropFn), 'only a passed and relayed attempt, then pin, branches and stash, then the files (Artoo on PR 1498)');
 assert(/\$code\[0\] -ne ' '[^\n]*staged: /.test(psCode), 'a staged change is listed as staged, which Save-Leftovers refuses');
-assert(/Assert-Relayed \$jobDir[\s\S]*Get-KeptWork \$repo \$null/.test(psCode.slice(psCode.indexOf("'droprepo' {"))), 'the publish removes the clone only after the relay');
+assert(/Assert-Relayed \(Join-Path \$jobDir 'out'\)[\s\S]*Get-KeptWork \$repo \$null/.test(psCode.slice(psCode.indexOf("'droprepo' {"))), 'the publish removes the clone only after the relay');
 assert(/\[IO\.File\]::AppendAllText\(\(Join-Path \$attempt 'checkouts\.txt'\)/.test(psCode), 'the checkout step lists what it made');
 console.log('PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts');
 
@@ -218,20 +218,21 @@ assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest f
 // first (issue 1497); out_* and logs stay; the Board's pause and a folder outside voidsworn_test\<job>\out_* remove
 // nothing; earlier passed and relayed attempts of the job are cleared too, failed or unfinished ones never.
 let relays = 0;
-const relay = (dirs, otherPrefix) => {
-  // what the Board's relay does: commit each out folder <vt>\<job>\...\<out> as <job>_<out>/ on a new board/pc-out branch
+const relay = entries => {
+  // what the Board's relay does: commit result folders on a new board/pc-out branch of the origin, each [local folder,
+  // folder in the tree]; returns the branch the receipt names
   const rr = path.join(tmp, `relay${++relays}`);
   git(['init', '-q', rr]);
-  for (const d of dirs) {
-    const prefix = otherPrefix || path.relative(vt, d).split(path.sep)[0] + '_' + path.basename(d);
+  for (const [d, treeDir] of entries) {
     const walk = (from, to) => { for (const e of fs.readdirSync(from, { withFileTypes: true })) {
       if (e.isDirectory()) { if (!/^checkout_leftovers/.test(e.name)) walk(path.join(from, e.name), path.join(to, e.name)); }
-      else { fs.mkdirSync(to, { recursive: true }); fs.copyFileSync(path.join(from, e.name), path.join(to, e.name)); } } };
-    walk(d, path.join(rr, prefix));
+      else if (e.name !== 'relay_receipt.txt') { fs.mkdirSync(to, { recursive: true }); fs.copyFileSync(path.join(from, e.name), path.join(to, e.name)); } } };
+    walk(d, path.join(rr, ...treeDir.split('/')));
   }
   git(['add', '-A'], rr);
   git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'relay'], rr);
   git(['push', '-q', source, `HEAD:refs/heads/board/pc-out-t${relays}`], rr);
+  return `board/pc-out-t${relays}`;
 };
 const listed = fs.readFileSync(path.join(attempt, 'checkouts.txt'), 'utf8');
 assert.match(listed, new RegExp(`^old ${one1}\\r?$`, 'm'), 'checkout lists old');
@@ -318,9 +319,9 @@ const earlier = (name, done) => {
 const passedBefore = earlier('out_2', 'PASS');
 const failedBefore = earlier('out_3', 'FAILED: a step');
 const unfinished = earlier('out_4', '');
-relay([path.join(passedBefore, 'out_new')]);
-relay([path.join(failedBefore, 'out_new')]);
-relay([path.join(unfinished, 'out_new')]);
+// the RUN6 layout: the attempt folder itself, out_new inside it (board/pc-out-1211r6)
+write(path.join(passedBefore, 'relay_receipt.txt'), relay([[path.join(passedBefore, 'out_new'), 'out_2/out_new']]) + ' out_2\r\n');
+write(path.join(failedBefore, 'relay_receipt.txt'), relay([[path.join(failedBefore, 'out_new'), 'out_3/out_new']]) + ' out_3\r\n');
 env.PC_TEST_LEFTOVER_CAP = '1000';
 // Before the result is relayed (the tail itself) and before it passed, nothing goes.
 r = run('dropcheckouts', attempt);
@@ -328,18 +329,19 @@ assert.equal(r.status, 0, r.out);
 assert(fs.existsSync(path.join(attempt, 'new')) && /checkouts kept: .*has no result yet/.test(r.out), 'an attempt with no done.txt keeps its checkouts: ' + r.out);
 write(path.join(attempt, 'done.txt'), 'PASS\r\n');
 r = run('dropcheckouts', attempt);
-assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: no board\/pc-out branch holds all 1 result file/.test(r.out), 'a passed attempt keeps its checkouts until the relay: ' + r.out);
-// the same bytes in another job's relay folder, or split across branches, prove nothing (Artoo on PR 1498)
-relay([path.join(attempt, 'out_new')], 'opus9999_out_new');
-r = run('dropcheckouts', attempt);
-assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet/.test(r.out), 'identical bytes under another job\'s relay path keep the checkouts: ' + r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: no relay_receipt\.txt/.test(r.out), 'a passed attempt keeps its checkouts until the relay receipt: ' + r.out);
+// a receipt whose tree folder does not hold this attempt's files (the bytes sit under another folder) proves nothing
+const other = relay([[path.join(attempt, 'out_new'), 'opus9999/out_9/out_new']]);
+r = run('dropcheckouts', attempt, other, 'out_1');
+assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-t\d+:out_1 does not hold all 1 result file/.test(r.out), 'identical bytes under another folder keep the checkouts: ' + r.out);
+assert.notEqual(run('dropcheckouts', attempt, 'main', 'out_1').out.match(/relay receipt not accepted/), null, 'a receipt must name a board/pc-out branch');
 assert(!fs.existsSync(path.join(passedBefore, 'new')), 'an earlier passed and relayed attempt is cleared: ' + r.out);
 assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(unfinished, 'new')), 'failed and unfinished attempts are never touched here: ' + r.out);
-relay([path.join(attempt, 'out_new')]);
+const mine = relay([[path.join(attempt, 'out_new'), 'out_1/out_new']]);
 const pause = path.join(tmp, 'gpu_go.txt');
 write(pause, 'GPU not cleared: paused by the Board for a check\n');
 env.PC_CLEANUP_PAUSE_FILE = pause;
-r = run('dropcheckouts', attempt);
+r = run('dropcheckouts', attempt, mine, 'out_1');
 assert.equal(r.status, 0, r.out);
 assert(fs.existsSync(path.join(attempt, 'new')) && fs.existsSync(path.join(attempt, 'old')), 'the PC pause removes nothing: ' + r.out);
 assert.match(r.out, /checkout new kept: .*pause/);
@@ -420,10 +422,11 @@ write(path.join(sa.repo, 'godot', 'assets', 'ships', 'a4_props.gd'), 'an install
 write(path.join(sa.repo, 'tools', 'scratch.txt'), 'left by a stage');
 r = run('droprepo', sa.j, two, 'S5');
 assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet/.test(r.out), 'an unrelayed ship job keeps its clone: ' + r.out);
-relay([path.join(sa.j, 'out')], 'opus1497z_out');
-r = run('droprepo', sa.j, two, 'S5');
-assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet/.test(r.out), 'the same bytes in another job\'s relay keep the clone: ' + r.out);
-relay([path.join(sa.j, 'out')]);
+const saOther = relay([[path.join(sa.j, 'out'), 'opus1497z_out']]);
+r = run('droprepo', sa.j, two, 'S5', saOther, 'opus1497a_out');
+assert(fs.existsSync(sa.repo) && /ship clone kept: results not relayed yet: .* does not hold/.test(r.out), 'a receipt whose folder does not hold the files keeps the clone: ' + r.out);
+const saRef = relay([[path.join(sa.j, 'out'), 'opus1497a_out']]);
+write(path.join(sa.j, 'out', 'relay_receipt.txt'), `${saRef} opus1497a_out\r\n`);
 r = run('droprepo', sa.j, one1, 'S5');
 assert(fs.existsSync(sa.repo) && /ship clone kept: HEAD is .*not the published commit/.test(r.out), 'another commit keeps the clone: ' + r.out);
 r = run('droprepo', sa.j, two, 'S5');
@@ -441,14 +444,12 @@ write(path.join(sb.repo, 'local.txt'), 'local work');
 git(['add', 'local.txt'], sb.repo);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'local'], sb.repo);
 write(path.join(exportDir(sb.j), 'S5.glb'), 'x');
-relay([path.join(sb.j, 'out')]);
-r = run('droprepo', sb.j, git(['rev-parse', 'HEAD'], sb.repo), 'S5');
+r = run('droprepo', sb.j, git(['rev-parse', 'HEAD'], sb.repo), 'S5', relay([[path.join(sb.j, 'out'), 'opus1497b_out']]), 'opus1497b_out');
 assert(fs.existsSync(sb.repo) && /ship clone kept: commit [0-9a-f]{40} is not in the shared mirror/.test(r.out), 'an unpushed commit keeps the clone: ' + r.out);
 const sm = shipJob('opus1497c', one1);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'merge', '-q', '--no-ff', '--no-edit', two], sm.repo);
 write(path.join(exportDir(sm.j), 'S5.glb'), 'x');
-relay([path.join(sm.j, 'out')]);
-r = run('droprepo', sm.j, git(['rev-parse', 'HEAD'], sm.repo), 'S5');
+r = run('droprepo', sm.j, git(['rev-parse', 'HEAD'], sm.repo), 'S5', relay([[path.join(sm.j, 'out'), 'opus1497c_out']]), 'opus1497c_out');
 assert(!fs.existsSync(sm.repo), 'a merge of two mirror commits is rebuildable: ' + r.out);
 // a merge whose tree git does not rebuild from its parents (its own edits) keeps the clone (Artoo on PR 1498)
 const se = shipJob('opus1497d', one1);
@@ -457,8 +458,7 @@ write(path.join(se.repo, 'godot', 'project.godot'), 'an edit inside the merge\n'
 git(['add', 'godot/project.godot'], se.repo);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'merge with edits'], se.repo);
 write(path.join(exportDir(se.j), 'S5.glb'), 'y');
-relay([path.join(se.j, 'out')]);
-r = run('droprepo', se.j, git(['rev-parse', 'HEAD'], se.repo), 'S5');
+r = run('droprepo', se.j, git(['rev-parse', 'HEAD'], se.repo), 'S5', relay([[path.join(se.j, 'out'), 'opus1497d_out']]), 'opus1497d_out');
 assert(fs.existsSync(se.repo) && /ship clone kept: merge [0-9a-f]{40} is not in the shared mirror and git does not rebuild its exact tree/.test(r.out), 'a merge with its own edits keeps the clone: ' + r.out);
 // a link above the import cache: dropcache refuses, and the folder the link points to survives
 const sl2 = shipJob('opus1497e');

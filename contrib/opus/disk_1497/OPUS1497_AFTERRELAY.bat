@@ -1,8 +1,10 @@
 @echo off
 rem Issue 1497 selftest part 2 of 2. Run it only after OPUS1497_SELFTEST.bat passed and the Board relayed, on one
-rem board/pc-out branch, that attempt's out_new and out_old (as opus1497selftest_out_new/ and opus1497selftest_out_old/)
-rem and opus1497selftestship\out (as opus1497selftestship_out/). It runs the steps the Board runs after every relay:
-rem tools_live's opus_job_head.ps1 dropcheckouts on the attempt, and droprepo as publish_ship.bat does.
+rem board/pc-out branch, that attempt folder (its out_new and out_old, as <attempt folder name>/out_new/ and .../out_old/,
+rem the RUN6 layout) and opus1497selftestship\out (as opus1497selftestship_out/). Then:
+rem   OPUS1497_AFTERRELAY.bat <relay branch>
+rem It runs the steps the Board runs after every relay, with that branch as the receipt: tools_live's
+rem opus_job_head.ps1 dropcheckouts on the attempt, and droprepo as publish_ship.bat does.
 rem What it does, only inside the two folders part 1 made; nothing else on the PC is touched or deleted:
 rem   1. dropcheckouts on the newest passed attempt of opus1497selftest: NEW and OLD must go, with their build_info.json
 rem      and changed .import files saved into out_new\checkout_leftovers and out_old\checkout_leftovers.
@@ -12,6 +14,8 @@ rem   3. the check: PASS only if NEW, OLD and the stand-in clone are gone and th
 rem      opus1497selftest\afterrelay_<time> names the GB freed and C: free.
 rem Once queued, never edited; a change ships under a new name (next: OPUS1497_AFTERRELAY2.bat).
 setlocal EnableExtensions
+set "RELAY=%~1"
+echo %RELAY%| findstr /r /x "board/pc-out-[A-Za-z0-9._-]*" > nul || (echo usage: OPUS1497_AFTERRELAY.bat board/pc-out-^<name^> & exit /b 2)
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "JOBDIR=%VT%\opus1497selftest"
 set "TLV="
@@ -34,10 +38,11 @@ rem the newest attempt whose done.txt says PASS
 set "ATT="
 for /f "delims=" %%D in ('dir /b /ad /o-n "%JOBDIR%\out_*" 2^>nul') do if not defined ATT findstr /b /c:"PASS" "%JOBDIR%\%%D\done.txt" > nul 2>&1 && set "ATT=%JOBDIR%\%%D"
 if not defined ATT (>> "%R%" echo selftest part 2 FAILED: no passed attempt of part 1 in %JOBDIR% & >> "%R%" echo all done & exit /b 1)
->> "%R%" echo attempt %ATT%
+>> "%R%" echo attempt %ATT%, relay %RELAY%
+for %%N in ("%ATT%") do set "ATTNAME=%%~nxN"
 
 rem 1. the step the Board runs after a relay
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" dropcheckouts "%ATT%" > "%AR%\dropcheckouts.txt" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" dropcheckouts "%ATT%" %RELAY% %ATTNAME% > "%AR%\dropcheckouts.txt" 2>&1
 type "%AR%\dropcheckouts.txt" >> "%L%"
 if exist "%ATT%\new\" set "BAD=%BAD% new checkout still there;"
 if exist "%ATT%\old\" set "BAD=%BAD% old checkout still there;"
@@ -52,7 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" dropcache "%SJ%" > "
 type "%AR%\ship_dropcache.txt" >> "%L%"
 if exist "%SJ%\repo\godot\.godot\" set "BAD=%BAD% dropcache left the import cache;"
 if not exist "%SJ%\repo\.git\" (set "BAD=%BAD% dropcache removed more than the import cache;" & goto report)
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" droprepo "%SJ%" b683f7afa5f699ed04e3accf1784d71a45a619d0 SELF1497 > "%AR%\ship_droprepo.txt" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" droprepo "%SJ%" b683f7afa5f699ed04e3accf1784d71a45a619d0 SELF1497 %RELAY% opus1497selftestship_out > "%AR%\ship_droprepo.txt" 2>&1
 type "%AR%\ship_droprepo.txt" >> "%L%"
 if exist "%SJ%\repo\" set "BAD=%BAD% droprepo kept the stand-in clone (see ship_droprepo.txt);"
 if not exist "%SJ%\out\checkout_leftovers_repo\files\tools\selftest_1497_note.txt" set "BAD=%BAD% droprepo did not save the stray file;"
