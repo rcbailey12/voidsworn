@@ -149,8 +149,9 @@ func _run() -> void:
 	var played: Dictionary = await _play_events()
 	var seen := {}
 	for row in rows:
-		var ev := str(row["event"])
-		var live: bool = played.has(ev)
+		var names: Array = []
+		for x in str(row["event"]).split(","):
+			names.append(x.strip_edges())
 		var needs: Array = []
 		for c in row["calls"]:
 			if str(c) == "volley" and not (row["ids"] as Array).is_empty():
@@ -159,10 +160,17 @@ func _run() -> void:
 		for w in row["ids"]:
 			needs.append(["volley weapon_id " + str(w), "volley", str(w)])
 		for n in needs:
+			# Artoo on PR 1523: the evidence is the one event that owns the call. A row naming several events gives each call
+			# to the event of the same name (ability -> ability, command -> command, tick -> tick); otherwise to the row's
+			# single played event.
+			var ev := str(n[1]) if str(n[1]) in names else ""
+			if ev == "":
+				var live_names := names.filter(func(x): return played.has(x))
+				ev = str(live_names[0]) if live_names.size() == 1 else str(row["event"])
 			var key := ev + "|" + str(n[0])
 			var wired: bool
 			var how: String
-			if live:
+			if played.has(ev):
 				wired = _recorded(played[ev], str(n[1]), str(n[2]))
 				how = "playing %s in the battle scene calls %s" % [ev, n[0]]
 			else:
@@ -226,7 +234,7 @@ func _recorded(calls: Array, name: String, weapon: String) -> bool:
 	return false
 
 
-# Plays one of each simple rules event through the live battle scene's own _play_event; returns {API row: calls}.
+# Plays one of each simple rules event through the live battle scene's own _play_event; returns {event kind: calls}.
 func _play_events() -> Dictionary:
 	var out := {}
 	var b = BattleScene.instantiate()
@@ -271,23 +279,22 @@ func _play_events() -> Dictionary:
 	var u0: Dictionary = b.VU.get(mine, {})
 	var here := {"q": int(u0.get("q", 0)), "r": int(u0.get("r", 0)), "f": int(u0.get("facing", 0))}
 	var events := [
-		["shield_down", {"t": "shield_down", "unit": foe, "quad": 0}],
-		["section_down, system, burning, tick", {"t": "tick", "unit": foe, "kind": "fire", "hull": 1}],
-		["ability, command", {"t": "ability", "unit": mine, "ab": ab}],
-		["ability, command", {"t": "command", "unit": mine, "id": cmd, "side": "player"}],
-		["ram", {"t": "ram", "unit": mine, "target": foe, "path": [here], "dmg": 1, "section": "mid", "recoil": 1}],
-		["board", {"t": "board", "unit": mine, "target": foe, "result": "repelled", "kill": 1, "loss": 1}],
-		["fled", {"t": "fled", "unit": foe}],
+		[{"t": "shield_down", "unit": foe, "quad": 0}],
+		[{"t": "tick", "unit": foe, "kind": "fire", "hull": 1}],
+		[{"t": "ability", "unit": mine, "ab": ab}],
+		[{"t": "command", "unit": mine, "id": cmd, "side": "player"}],
+		[{"t": "ram", "unit": mine, "target": foe, "path": [here], "dmg": 1, "section": "mid", "recoil": 1}],
+		[{"t": "board", "unit": mine, "target": foe, "result": "repelled", "kill": 1, "loss": 1}],
+		[{"t": "fled", "unit": foe}],
 	]
-	for pair in events:
+	for row in events:
+		var e: Dictionary = row[0]
 		rec.calls.clear()
-		await b._play_event(pair[1])
-		var got: Array = out.get(pair[0], [])
-		got.append_array(rec.calls)
-		out[pair[0]] = got
+		await b._play_event(e)
+		out[str(e["t"])] = rec.calls.duplicate()   # keyed by the event itself, never pooled across a grouped API row
 		var names: Array = []
 		for c in rec.calls:
 			names.append(c[0])
-		print("INFO %s played, fx calls: %s" % [str(pair[1]["t"]), ", ".join(names) if not names.is_empty() else "none"])
+		print("INFO %s played, fx calls: %s" % [str(e["t"]), ", ".join(names) if not names.is_empty() else "none"])
 	b.gfx = real
 	return out
