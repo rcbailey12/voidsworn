@@ -1200,6 +1200,11 @@ func _play_batch(bt: Dictionary) -> void:
 				grp.append(evs[j])
 				j += 1
 			var tf := game_t
+			# issue 1448 (Artoo): a volley's hits are grouped here and never reach _play_event, so they are counted for the
+			# music now, in batch order, before any delayed impact can land after the next round's reset
+			for g in grp:
+				if g["t"] == "hit":
+					music_hits += 1
 			await _play_fire(e, grp)
 			_tip_completed(e)
 			if enemy:

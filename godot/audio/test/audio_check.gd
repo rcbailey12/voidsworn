@@ -49,6 +49,8 @@ class QuietBattle extends "res://scenes/battle/battle.gd":
 		pass
 	func _float_hit(_id, _sh: float, _hull: float, _crit) -> void:
 		pass
+	func _play_fire(_e: Dictionary, _grp: Array) -> void:
+		pass
 
 # issue 1448: the ui cue sink (OrdersKit.sound) and a music player that records what the battle asked of it
 class UiEar extends Node:
@@ -476,6 +478,18 @@ func _issue_1448(sfx_node: Node, real_music: Node) -> void:
 	b._music_feed()
 	var f2: Dictionary = me.fed[-1]
 	_ok(int(f1.get("shots", -1)) == 5 and int(f2.get("shots", -1)) == 0, "1448 music gets this round's hits as shots, cleared each round (%s then %s)" % [str(f1.get("shots")), str(f2.get("shots"))])
+	# a real grouped volley through _play_batch (Artoo, PR 1478): the fire event takes its hits with it, so they are
+	# counted there; then a round reset in the next batch clears them before that round's own volley
+	b.music_hits = 0
+	var hit := {"t": "hit", "unit": "p", "target": "e1", "shield": 0, "hull": 3, "crit": false}
+	var view: Dictionary = b.V
+	await b._play_batch({"events": [{"t": "fire", "unit": "p", "target": "e1", "kind": "volley"}, hit, hit, {"t": "system", "unit": "e1", "target": "e1"}, hit], "view": view})
+	b._music_feed()
+	var g1: Dictionary = me.fed[-1]
+	await b._play_batch({"events": [{"t": "round", "round": 1}, {"t": "fire", "unit": "p", "target": "e1", "kind": "volley"}, hit], "view": view})
+	b._music_feed()
+	var g2: Dictionary = me.fed[-1]
+	_ok(int(g1.get("shots", -1)) == 3 and int(g2.get("shots", -1)) == 1, "1448 a grouped volley's hits reach the music once each, and a new round starts the tally again (%s then %s)" % [str(g1.get("shots")), str(g2.get("shots"))])
 	# e1 and e3 are 3 hex steps away (the old |dq|+|dr| read 6 and missed them); e2 is 4 away (the old sum read 4, close)
 	_ok(int(f1.get("close", -1)) == 2, "1448 close counts the two enemies 3 hexes away and not the one 4 away (%s)" % str(f1.get("close")))
 	var lift: float = real_music.feed(f1)
