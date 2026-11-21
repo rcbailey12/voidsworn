@@ -1,0 +1,868 @@
+{
+ "ok": false,
+ "problems": [
+  "need exactly 9 hp_breach for a Bio-titan of chorus (8 written)"
+ ],
+ "notes": [
+  "authored interiors: 19344 triangles, 10 surfaces; authored seams: 3",
+  "161148 triangles (110131 on part surfaces), box x -0.498 to 0.502, y -0.136 to 0.165, z -0.125 to 0.126",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 6 written (turret_0 G1, turret_1 G2, turret_2 G3, turret_3 G4, turret_4 G5, turret_5 T1); marked by the kit: ['G1', 'G2', 'G3', 'G4', 'G5', 'T1']"
+ ],
+ "cls": "Bio-titan",
+ "faction": "chorus",
+ "expected_breach": 9,
+ "required": {
+  "weapon_slots": 4,
+  "core": 1,
+  "engine": 1,
+  "bay": 1,
+  "breach": 9,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_bioplasma_F_0"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "hard_points": [
+    "hp_w1_bioplasma_F_0"
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "tendril",
+   "arc": "T",
+   "hard_points": [
+    "hp_w2_tendril_T_0",
+    "hp_w2_tendril_T_1",
+    "hp_w2_tendril_T_2"
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "spores",
+   "arc": "T",
+   "hard_points": [
+    "hp_w3_spores_T_0",
+    "hp_w3_spores_T_1",
+    "hp_w3_spores_T_2",
+    "hp_w3_spores_T_3",
+    "hp_w3_spores_T_4",
+    "hp_w3_spores_T_5",
+    "hp_w3_spores_T_6",
+    "hp_w3_spores_T_7",
+    "hp_w3_spores_T_8",
+    "hp_w3_spores_T_9"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "bay": 6,
+  "board": 2,
+  "breach": 8,
+  "core": 1,
+  "engine": 3,
+  "rcs": 4,
+  "gun": 15
+ },
+ "maps": [],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_bay_0",
+   "p": [
+    0.1774,
+    -0.1326,
+    -0.0913
+   ],
+   "fwd": [
+    -0.041,
+    -0.967,
+    -0.252
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_bay_1",
+   "p": [
+    0.1774,
+    -0.1299,
+    0.0904
+   ],
+   "fwd": [
+    -0.041,
+    -0.967,
+    0.252
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_bay_2",
+   "p": [
+    0.0087,
+    -0.1026,
+    -0.0732
+   ],
+   "fwd": [
+    -0.054,
+    -0.967,
+    -0.25
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_bay_3",
+   "p": [
+    0.0087,
+    -0.1066,
+    0.0766
+   ],
+   "fwd": [
+    -0.054,
+    -0.967,
+    0.25
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_bay_4",
+   "p": [
+    -0.1325,
+    -0.0711,
+    -0.0557
+   ],
+   "fwd": [
+    -0.082,
+    -0.962,
+    -0.259
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_bay_5",
+   "p": [
+    -0.1325,
+    -0.072,
+    0.057
+   ],
+   "fwd": [
+    -0.082,
+    -0.962,
+    0.259
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    0.0714,
+    0.0275,
+    -0.0857
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.0714,
+    0.0284,
+    0.0887
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.3495,
+    -0.0376,
+    -0.1044
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    0.378,
+    -0.926
+   ],
+   "clear": 0.0308
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.2657,
+    -0.0363,
+    0.0927
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    -0.654,
+    0.756
+   ],
+   "clear": 0.0304
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    0.2357,
+    0.0565,
+    -0.0732
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.821,
+    -0.571
+   ],
+   "clear": 0.0927
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    0.1035,
+    -0.0086,
+    0.0949
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.192,
+    0.981
+   ],
+   "clear": 0.0547
+  },
+  {
+   "name": "hp_breach_4",
+   "p": [
+    -0.0358,
+    -0.006,
+    -0.0748
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    -0.26,
+    -0.966
+   ],
+   "clear": 0.0326
+  },
+  {
+   "name": "hp_breach_5",
+   "p": [
+    -0.0786,
+    0.0466,
+    0.0481
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.797,
+    0.603
+   ],
+   "clear": 0.0682
+  },
+  {
+   "name": "hp_breach_6",
+   "p": [
+    -0.1752,
+    0.0023,
+    -0.0548
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.196,
+    -0.981
+   ],
+   "clear": 0.032
+  },
+  {
+   "name": "hp_breach_7",
+   "p": [
+    -0.2234,
+    0.0335,
+    0.041
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.491,
+    0.871
+   ],
+   "clear": 0.0322
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.0036,
+    -0.0018,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.3732,
+    0.0293,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0033
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.3732,
+    0.015,
+    -0.0107
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0026
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.3732,
+    0.015,
+    0.0107
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0025
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.3071,
+    -0.0403,
+    -0.0975
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.3071,
+    -0.0394,
+    0.0952
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_2",
+   "p": [
+    -0.2644,
+    0.0308,
+    -0.027
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_3",
+   "p": [
+    -0.2644,
+    0.0329,
+    0.0309
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_bioplasma_F_0",
+   "p": [
+    0.4585,
+    -0.0107,
+    -0.0486
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0003
+  },
+  {
+   "name": "hp_w1_bioplasma_F_0",
+   "p": [
+    0.4585,
+    -0.0107,
+    0.0486
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0002
+  },
+  {
+   "name": "hp_w3_spores_T_0",
+   "p": [
+    0.2094,
+    -0.1273,
+    0.0021
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_1",
+   "p": [
+    0.2097,
+    -0.1279,
+    -0.0009
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_2",
+   "p": [
+    0.1255,
+    -0.1216,
+    0.0021
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_1",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_3",
+   "p": [
+    0.1258,
+    -0.1222,
+    -0.0009
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_1",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_4",
+   "p": [
+    0.0416,
+    -0.1129,
+    0.0021
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_2",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_5",
+   "p": [
+    0.0419,
+    -0.1135,
+    -0.0009
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_2",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_6",
+   "p": [
+    -0.0691,
+    -0.1035,
+    0.0021
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_3",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_7",
+   "p": [
+    -0.0689,
+    -0.1041,
+    -0.0009
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_3",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_8",
+   "p": [
+    -0.1477,
+    -0.082,
+    0.0021
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_4",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w3_spores_T_9",
+   "p": [
+    -0.1474,
+    -0.0826,
+    -0.0009
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "turret": "turret_4",
+   "off_mesh": 0.0004
+  },
+  {
+   "name": "hp_w2_tendril_T_0",
+   "p": [
+    0.1446,
+    0.148,
+    -0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "turret": "turret_5",
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w2_tendril_T_1",
+   "p": [
+    0.0249,
+    0.1517,
+    -0.0944
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "turret": "turret_5",
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w2_tendril_T_2",
+   "p": [
+    0.0075,
+    0.1255,
+    0.0472
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "turret": "turret_5",
+   "off_mesh": 0.0
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "G1",
+   "socket": "G1",
+   "p": [
+    0.175,
+    -0.0701,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w3_spores_T_0",
+    "hp_w3_spores_T_1"
+   ],
+   "off_mesh": 0.0014
+  },
+  {
+   "name": "turret_1",
+   "id": "G2",
+   "socket": "G2",
+   "p": [
+    0.0911,
+    -0.0644,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w3_spores_T_2",
+    "hp_w3_spores_T_3"
+   ],
+   "off_mesh": 0.0015
+  },
+  {
+   "name": "turret_2",
+   "id": "G3",
+   "socket": "G3",
+   "p": [
+    0.0071,
+    -0.0557,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w3_spores_T_4",
+    "hp_w3_spores_T_5"
+   ],
+   "off_mesh": 0.0014
+  },
+  {
+   "name": "turret_3",
+   "id": "G4",
+   "socket": "G4",
+   "p": [
+    -0.1036,
+    -0.0463,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w3_spores_T_6",
+    "hp_w3_spores_T_7"
+   ],
+   "off_mesh": 0.0014
+  },
+  {
+   "name": "turret_4",
+   "id": "G5",
+   "socket": "G5",
+   "p": [
+    -0.1821,
+    -0.0248,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis": [
+    -0.0,
+    -1.0,
+    -0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w3_spores_T_8",
+    "hp_w3_spores_T_9"
+   ],
+   "off_mesh": 0.0012
+  },
+  {
+   "name": "turret_5",
+   "id": "T1",
+   "socket": "T1",
+   "p": [
+    0.0607,
+    0.0638,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w2_tendril_T_0",
+    "hp_w2_tendril_T_1",
+    "hp_w2_tendril_T_2"
+   ],
+   "off_mesh": 0.002
+  }
+ ]
+}

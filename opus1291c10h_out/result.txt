@@ -1,0 +1,25 @@
+start chorus_C10 B16_23 board/pin-1291-holes4 Sat 11/21/2026  8:37:19.34 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261121_083718_7029370 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+commit=d2a9acd26c3305641229d000d8890ba8a753dcfb
+import exit 0 
+3_trace_hull start  8:42:27.88 
+3_trace_hull exit 0 at  8:44:05.02 
+4_parts_kit start  8:44:05.02 
+4_parts_kit exit 0 at  8:46:18.41 
+5_paint_bake start  8:46:18.41 
+5_paint_bake exit 0 at  8:57:53.25 
+6_lod start  8:57:53.25 
+6_lod exit 0 at  9:02:11.03 
+7_export start  9:02:11.03 
+7_export exit 0 at  9:06:27.69 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\repo\godot\assets\ships\B16_23\B16_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  9:10:38.55 
+all done 

@@ -1,0 +1,45 @@
+{
+ "cell": "C10",
+ "hull_objects": 24,
+ "parts": 132,
+ "interiors": 35,
+ "seconds": 16.4,
+ "notes": [
+  {
+   "route": "build sheet chorus_C10",
+   "contract": {
+    "sheet": "chorus_C10",
+    "game_ship": "b_boss",
+    "variant": "",
+    "model_length": 28.47235,
+    "scale": 0.03512178874547666,
+    "length_world": 28.0,
+    "t_lines": [
+     -0.22478,
+     -0.05619,
+     0.25288
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 8,
+    "guns": 6,
+    "engines": 3,
+    "bays": 6,
+    "points": 16,
+    "turrets": [
+     "G1_turret",
+     "G2_turret",
+     "G3_turret",
+     "T1_turret"
+    ],
+    "interior_objects": 35,
+    "slots": [
+     "0 bioplasma F",
+     "1 bioplasma F",
+     "2 tendril T",
+     "3 spores T"
+    ]
+   }
+  }
+ ]
+}
