@@ -1,16 +1,16 @@
 {
-  "source_commit": "2faa929fa89357c0426a4133186f05fd8a1a24c4",
+  "source_commit": "7bfca5a0bac813eed251cb457483db44227e41f8",
   "source_dirty": true,
-  "source_diff_sha256": "3b51a00bde86c753b80d6f09e2d9de95cf4a4c6072d1c2a5e6517ac527bb51c7",
+  "source_diff_sha256": "7a828486d043f34f63a415fd65a897ec6a922569654c8f37a3a5333464ad1dc4",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "compare.jpg",
-  "date": "2026-11-21T12:59:19Z",
+  "date": "2026-11-21T15:04:32Z",
   "sources": [
     {
-      "source_commit": "2faa929fa89357c0426a4133186f05fd8a1a24c4",
+      "source_commit": "7bfca5a0bac813eed251cb457483db44227e41f8",
       "source_dirty": true,
-      "source_diff_sha256": "3b51a00bde86c753b80d6f09e2d9de95cf4a4c6072d1c2a5e6517ac527bb51c7",
+      "source_diff_sha256": "7a828486d043f34f63a415fd65a897ec6a922569654c8f37a3a5333464ad1dc4",
       "stage": "sheet built"
     }
   ],
@@ -26,11 +26,11 @@
     98
   ],
   "strip_sha256": [
-    "d7e8ed97f48735e5f94c08910cff1b8565b71470c76016137455dd56b5d28e1d"
+    "a71052a153aa3deb0de0b38f0fcc18c4ad0cbba09b9c9b9c1ea395e5ceb064a1"
   ],
-  "stamp_template_sha256": "e6d68770a421ca550b24a4e0b6997b1689d17a014e27b677376f57025e1eff09",
+  "stamp_template_sha256": "cbee9468ec8c37566eca5d191a5bc13229e4769d4ba1617809c8e43e88479e34",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAAB7ElEQVR4nO3VMS6DARjHYf1Mts/Wwa6HkaaOgETEQUTcgVhFYsJxdOslutgNDJr2R57nAG/+w5v8JgeHR3tbdHt3M47j1eX1L+/MZsfPL0/zk9Plx3Ijw/jTNvVX/EvD/nB+cbZYzKfT6Wq1ent9f7h/XK/Xu97lb78z2XKcAOBHw64HAMBX4gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOSIEwA54gRAjjgBkCNOAOR8ArGbHC8hWeIiAAAAAElFTkSuQmCC"
   ],
-  "image_sha256": "5f842095fb126978c3c3d90ad29d960a7d9b20458bfd0c7131d31d72a6acc292"
+  "image_sha256": "4214f011de62d63c152a1702f1800e41542c41e4dffa5d3038387b10d913d97b"
 }
