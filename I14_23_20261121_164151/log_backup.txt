@@ -1,0 +1,1 @@
+[publish] kept I14_23 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I14_23_20261121_164151

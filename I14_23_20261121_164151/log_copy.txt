@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 4:41:55 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\out\recipe\export\I14_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\I14_23_20261121_164151\export\I14_23\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\out\recipe\export\I14_23\
+	    New File  		      25	export_status.txt100%  
+	    New File  		   7.5 m	I14_23.glb  6.6% 13.3% 19.9% 26.6% 33.2% 39.9% 46.5% 53.2% 59.9% 66.5% 73.2% 79.8% 86.5% 93.1% 99.8%100%  
+	    New File  		   1.2 m	I14_23_base.jpg 20%   40%   60%   80%  100%  
+	    New File  		    2901	I14_23_check.json100%  
+	    New File  		  594033	I14_23_emission.jpg 44%   88%  100%  
+	    New File  		    8229	I14_23_export.json100%  
+	    New File  		   4.6 m	I14_23_normal.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		   4.7 m	I14_23_orm.png 10%   20%   31%   41%   52%   62%   73%   83%   93%  100%  
+	    New File  		  686458	I14_23_parts_base.jpg 38%   76%  100%  
+	    New File  		   4.9 m	I14_23_parts_normal.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		   3.7 m	I14_23_parts_orm.png 13%   26%   40%   53%   66%   80%   93%  100%  
+	    New File  		    1427	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\out\recipe\export\I14_23\_gltf_source\
+	    New File  		   2.9 m	GS1_hull_albedo.png 16%   33%   50%   67%   84%  100%  
+	    New File  		   1.6 m	GS1_hull_emission.png 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   4.6 m	GS1_hull_normal.png 10%   21%   32%   42%   53%   64%   74%   85%   96%  100%  
+	    New File  		   4.7 m	GS1_hull_orm.png 10%   20%   31%   41%   52%   62%   73%   83%   93%  100%  
+	    New File  		  495133	GS1_parts_albedo.png 26%   52%   79%  100%  
+	    New File  		   4.9 m	GS1_parts_normal.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		   3.7 m	GS1_parts_orm.png 13%   26%   40%   53%   66%   80%   93%  100%  
+	    New File  		   7.4 m	I14_23.bin  6.6% 13.3% 20.0% 26.7% 33.3% 40.0% 46.7% 53.4% 60.0% 66.7% 73.4% 80.1% 86.7% 93.4%100%  
+	    New File  		   31083	I14_23.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   58.94 m   58.94 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1343592630 Bytes/sec.
+   Speed :            76880.987 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 4:41:55 PM
+
