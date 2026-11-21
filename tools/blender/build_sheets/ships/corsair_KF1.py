@@ -4,7 +4,7 @@ Issue 1373 (R362: anything solid near a ship is built from the ship part kits an
 fighters only in the adaptive enemy wings (rules.gd adaptWings: "launched a fighter wing to hunt your craft"), and the game drew
 a code-built box for them. KF1 is the fighter of Ryan's accepted bomber KB1CC (R259, R273): the same glacis ramp, rails,
 armoured lip and patchwork plating, without the wide shoulders and bomb barrels, so it reads as the light craft of the same
-family. Two salvaged twin guns sit up front on the ramp, the vision slit off to starboard (lopsided, factions.md). Nothing hung
+family. Two cannon booms reach past the bow (port longer), one twin turret sits centred on the ramp, the vision slit off to starboard (lopsided, factions.md). Nothing hung
 under the hull, no canopy, no wings (R254). Size 1.6 (scale.md Squadron row), +X bow.
   blender -b -P tools/blender/build_sheets/build.py -- corsair_KF1 OUT render
 """
@@ -102,20 +102,19 @@ def build(K):
                     'vision_slit', 'vision slit %.2f x %.3f' % (U(0.05), U(0.004)), 'slit', 'designed',
                     'the pilot\'s vision slit in the lip\'s face, off to starboard, looking forward down the ramp', aperture=U(0.2))
 
-    # ---------------- the guns: two salvaged twin mounts up front on the ramp, lopsided ----------------
-    # Ryan, Nov 21 2026: "can we make the weapon more prominent? right now it just looks like a slab shape ... even if we put
-    # the turrets at the front". A big twin mount forward to port and a smaller one behind it to starboard, both firing forward.
-    # an upright mount (normal +Z) on the 14 degree ramp, seated at the ramp's height just ahead of it so no edge floats
-    for fid, (gx, gy, sz, cal, bl, var) in (('G1', (0.235, 0.070, 0.056, 0.0055, 0.115, 1)), ('G2', (0.105, -0.075, 0.044, 0.0045, 0.090, 2))):
-        K.gun(fid, (U(gx), U(gy), top(gx + 0.022)), 0.0, 3.0, barrels=2, cal=U(cal), blen=U(bl), size=U(sz), slot='T', weapon='guns', inv='guns',
-              variant=var, band=(0, 10, 20, 30, 45),
-              note='the fighter\'s guns (data.js guns T): a salvaged twin mount from the Hullbreaker kit on the bow ramp, %s, firing forward' % ('forward to port, the big one' if fid == 'G1' else 'behind it to starboard'))
+    # ---------------- the gun: one salvaged twin turret, centred on the ramp ----------------
+    # Ryan, Nov 21 2026: the two uneven turrets looked odd ("make sure all the detail makes sense"). The booms below are the
+    # fighter's main cannons, fixed forward; this one turret, centred, covers its flanks. Seated at the ramp's height just
+    # ahead of it so no edge floats (an upright mount on the 14 degree ramp).
+    K.gun('G1', (U(0.16), 0.0, top(0.16 + 0.022)), 0.0, 3.0, barrels=2, cal=U(0.0055), blen=U(0.11), size=U(0.058), slot='T', weapon='guns', inv='guns',
+          variant=1, band=(0, 10, 20, 30, 45),
+          note='the fighter\'s guns (data.js guns T): a salvaged twin turret from the Hullbreaker kit, centred on the bow ramp, firing forward over the booms')
 
     # ---------------- the fighter's own shape: long cannon booms past the bow, on armoured sponsons ----------------
     # Ryan, Nov 21 2026: "a bit more dramatic ... so it feels a bit more like the bomber and is clearly a fighting ship", "keep it
     # distinct from the bomber but use that type of detailed approach". The bomber has fat bomb barrels at its corners; the
     # fighter gets two slim banded cannon booms reaching well past the bow, lopsided (port longer and higher), each on a
-    # sponson with exposed machinery, and a ram blade under the bow.
+    # sponson with exposed machinery (the ammunition feed and recoil gear for the boom cannon).
     def octo(x, r, yc, zc):
         c = r * 0.58
         return (U(x), U(r), U(r), U(zc - r), U(zc + r), U(c), U(c), U(yc))
@@ -142,10 +141,6 @@ def build(K):
                                                 for x_ in ((0.22 if side == 'p' else 0.17), xa + 0.01)],
                       dict(PL, seed=37 + sgn, faces=[3 if side == 's' else 7, 5], size=(U(0.035), U(0.08)), inv=[])))
     K.mark('booms', 'pylon', ['web', 'plate'])
-    # the ram blade under the bow
-    K.box('KF1_ram', U(0.40), U(0.585), U(-0.035), U(0.035), U(sec(BODY, 0.45)[2] - 0.004), U(sec(BODY, 0.45)[2] + 0.024), 'iron', ch=U(0.004),
-          taper=U(0.026), grp='hull')
-    K.mark('ram', 'rib', ['rib'])
 
     # ---------------- deck detail: an ammunition locker and a vent box on the level deck, off centre ----------------
     zd = top(-0.12) / LENGTH
@@ -194,7 +189,7 @@ def build(K):
     K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
              'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
     K.change('The vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
-    K.change('Two slim banded cannon booms past the bow (port longer and higher), muzzle brakes, armoured sponsons with machinery slats, a ram blade under the bow',
+    K.change('Two slim banded cannon booms past the bow (port longer and higher), the main guns, with muzzle brakes and armoured sponsons carrying their feed machinery; one centred twin turret on the ramp in place of the two uneven ones; no ram',
              'Ryan, Nov 21 2026: "a bit more dramatic ... clearly a fighting ship", "keep it distinct from the bomber but use that type of detailed approach"')
-    K.change('Two bigger twin mounts up front on the ramp (port forward, starboard behind), an ammunition locker and a vent box on the deck, and smaller plates on the deck, flanks and chamfers so no bare hull shows',
+    K.change('An ammunition locker and a vent box on the deck, and smaller plates on the deck, flanks and chamfers so no bare hull shows',
              'Ryan, Nov 21 2026: "it looks unfinished with the lack of plates" and "can we make the weapon more prominent? right now it just looks like a slab shape"')
