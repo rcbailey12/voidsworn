@@ -1,0 +1,15 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+PASS the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count
+PASS the GPU wait: 3600 s by default for every GPU step, accepted by gpu_slots.js
+PASS the last line: every way out of the job writes done PASS or done FAILED, then all done
+PASS no deletes or moves; logs only under out
+PASS mirror refresh and local clone for ship job and both look bench checkouts
+PASS collect only reports, shots and the requested export
+PASS 1516 real cmd run: fetch failed, stage 1 failed over an old glb, and a fresh export
+PASS 1516: a failed fetch collects nothing; otherwise only files this run wrote reach out\recipe
+PASS the newest two backups stay off the janitor list
+PASS both helper launchers give their tools separate owned TEMP folders
+PASS stage 7 removes the checked export scratch after success and keeps it after a failure
+PASS the wrappers: 5 three-line wrapper(s) set the inputs and call the shared job
+PASS 1194: a staged clone change stops the job before any reset; only the recorded tmo.bat hand-off copy is restored
+PASS ship job checks (12 groups)

@@ -1,0 +1,5 @@
+OPUS1516_COLLECT_PROOF_B start Sat 11/21/2026  8:17:37.92 
+OPUS1516_COLLECT_PROOF_B exit 0 at  8:18:07.73 
+run folder out_20261121_081738_10180
+result: done PASS
+all done Sat 11/21/2026  8:18:08.15 
