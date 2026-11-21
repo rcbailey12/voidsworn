@@ -528,6 +528,42 @@ class Kit:
         self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
         return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
 
+    def open_hull(self, pos, axis, r, reach=1.5, keep_grp=None, depth=0.0):
+        """cut the hull open where an organ's opening goes into the body (Ryan, Nov 21 2026, C14 run H: "There are no actual
+        holes, it's just caps"): faces whose centre lies within r of the opening's axis and within reach of pos along it are
+        removed from the hull and from every other outside mesh there (armour bands, hull detail), so the organ's own bore
+        shows through instead of skin or a plate closing it like a cap. The hull's shell (solidify, rim on) walls the cut.
+        keep_grp: the organ's own group, left whole. depth: how far the organ's bore runs in below pos; inside rooms are cut
+        clear of the bore down to it, so no room shows down an open mouth (the game draws them on an intact hull). Call it
+        after the armour and the inside rooms. Returns the number of faces removed."""
+        import bmesh
+        p0 = Vector(pos); ax = Vector(axis).normalized(); n = 0
+        for ob in [o for o in list(self.coll.objects) + list(self.cin.objects) if o.type == 'MESH' and (keep_grp is None or o.get('grp') != keep_grp)]:
+            inside = bool(ob.get('inside'))
+            if inside and not depth:
+                continue
+            lo = -(depth + 1.0) if inside else -reach
+            # rooms are cleared wider than the cut: a room corner beside the hole would see out through it and read as
+            # outside its plating in the death seam check (C14 run I: 18 such triangles)
+            rr = r * 1.6 if inside else r
+            mw = ob.matrix_world
+            bm = bmesh.new(); bm.from_mesh(ob.data)
+            kill = []
+            for f in bm.faces:
+                # any corner in the opening: a band or a shell sliver half in the bore would show as a shard down the hole
+                for v in f.verts:
+                    d = mw @ v.co - p0
+                    along = d.dot(ax)
+                    if lo < along < reach and (d - ax * along).length < rr:
+                        kill.append(f)
+                        break
+            if kill:
+                bmesh.ops.delete(bm, geom=kill, context='FACES')
+                bm.to_mesh(ob.data); ob.data.update(); n += len(kill)
+                ob['open_cut'] = 1   # export7: the solidify rim round the cut takes the outside material
+            bm.free()
+        return n
+
     def hpt(self, x, th, out=0.0):
         """a point on the rounded hull at station x and section angle th (radians: 0 = port beam, pi/2 = the top, -pi/2 the
         belly), pushed `out` along the outward normal: (point, normal). For laying grown detail on the hull (issue 623)."""
@@ -625,7 +661,12 @@ class Kit:
         part.transform(M)
         groups = {}
         names = []
+        doors = []
         for c in part.comps:
+            if c['role'] == 'door':
+                doors.append(c)
+                names.append(c['name'])
+                continue
             key = (c['role'], c['mat'])
             V, F = groups.setdefault(key, ([], []))
             o = len(V); V.extend(c['verts']); F.extend([tuple(x + o for x in f) for f in c['faces']])
@@ -652,6 +693,19 @@ class Kit:
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
                         ob['gun_fixed'] = 1
+        R3 = M.to_3x3()
+        for c in doors:
+            # issue 1543: a door lobe is its own object (it turns on its hinge in the game), a body part of its organ, with its
+            # hinge point, turning axis (a negative turn opens it), the door's centre and the way out, all in world space;
+            # export7.py hangs it on a door_<n>_lobe_<k> node (HARDPOINTS.md "Doors")
+            k_ = int(''.join(ch for ch in c['name'] if ch.isdigit()) or 0)
+            ob = self._obj('%s_door_%d' % (fid, k_), c['verts'], c['faces'], c['mat'], grp=fid, role='body', smooth=getattr(HP, 'SMOOTH', False))
+            ob['door_lobe'] = 1; ob['door'] = fid; ob['door_k'] = k_
+            ob['door_hinge'] = list(M @ Vector(c['hinge'])); ob['door_axis'] = list((R3 @ Vector(c['axis'])).normalized())
+            ob['door_centre'] = list(M @ Vector(c['centre'])); ob['door_out'] = list((R3 @ Vector((0, 0, 1))).normalized())
+            # the lobe's own vertices where these points were written: the stages after the sheet move and scale the whole ship
+            # into the export frame, so export7 fits that move from these to the lobe's vertices then and carries the hinge with it
+            ob['door_src'] = [float(x) for v in c['verts'] for x in v]
         for ob in [o for o in self.coll.objects if o.get('grp') == fid and o.type == 'MESH']:
             # R226: the part's kind and whether it is a machine, from the faction kit (parts.py MACHINES); the audit reads them
             ob['part_kind'] = part.kind; ob['machine'] = int(part.kind in getattr(HP, 'MACHINES', ()))
