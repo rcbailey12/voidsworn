@@ -1,0 +1,35 @@
+start ithar_GS1 I14_23 board/pin-1415h Sat 11/21/2026 15:04:24.31 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\repo
+commit=ddc85277c0ef733d1ebb46ce95127a262826cf41
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+import exit 0 
+1_concept_in start 15:09:11.22 
+1_concept_in exit 0 at 15:09:14.19 
+2_shape_ref start 15:09:14.20 
+2_shape_ref exit 0 at 15:09:15.09 
+3_trace_hull start 15:09:15.09 
+3_trace_hull exit 0 at 15:10:33.32 
+4_parts_kit start 15:10:33.33 
+4_parts_kit exit 0 at 15:11:06.26 
+5_paint_bake start 15:11:06.26 
+5_paint_bake exit 0 at 15:14:39.41 
+6_lod start 15:14:39.42 
+6_lod exit 0 at 15:15:41.02 
+7_export start 15:15:41.02 
+7_export exit 0 at 15:16:44.56 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\repo\godot\assets\ships\I14_23\I14_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GS1\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 325.4 GB free
+done PASS Sat 11/21/2026 15:17:12.77 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-45d8929cc22b43d78ebf07e373248344

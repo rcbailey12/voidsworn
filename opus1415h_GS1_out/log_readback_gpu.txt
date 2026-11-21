@@ -1,0 +1,9 @@
+GPU: waiting for shared claim, weight 1 (1415)
+GPU: acquired shared claim a6a30f63-af23-4bdd-b9d7-78b6c838d922
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-45d8929cc22b43d78ebf07e373248344\voidsworn-run-46fb0ded535c41a99cecd7079d3d92a0\godot-profile-531a683dd2ec4bada8e58709ae38b314
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+INSTALL READBACK PASS code=I14_23 nodes=10
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-45d8929cc22b43d78ebf07e373248344\voidsworn-run-46fb0ded535c41a99cecd7079d3d92a0\godot-profile-531a683dd2ec4bada8e58709ae38b314
+GPU: released shared claim a6a30f63-af23-4bdd-b9d7-78b6c838d922
