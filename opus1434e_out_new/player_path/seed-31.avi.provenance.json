@@ -1,0 +1,29 @@
+{
+  "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+  "source_commit_date": "2026-11-21T06:50:34Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T12:57:33Z",
+  "seed": 31,
+  "build_sha256": "24bc04c352b9b128e413b4e0d4c797037ecbce5de5b10afbf8c32462f36a0297",
+  "manifest_sha256": "b355d9bc8c5955bd631941c3910c4e4995be7f5ceab6e48aebac6e09759ca4a1",
+  "fps": 30,
+  "picture_name": "seed-31.avi",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "sources": [
+    {
+      "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+      "source_commit_date": "2026-11-21T06:50:34Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": ""
+    }
+  ],
+  "inputs": [],
+  "image_sha256": "d946f62fa0b3265804fc3df7b8c500d048a5a25f1f1fff3c3199a83dc2cd0ad0"
+}

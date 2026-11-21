@@ -1,0 +1,60 @@
+{
+  "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+  "source_commit_date": "2026-11-21T06:50:34Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T13:04:17Z",
+  "seed": 10,
+  "build_sha256": "24bc04c352b9b128e413b4e0d4c797037ecbce5de5b10afbf8c32462f36a0297",
+  "manifest_sha256": "b355d9bc8c5955bd631941c3910c4e4995be7f5ceab6e48aebac6e09759ca4a1",
+  "fps": 30,
+  "battle": 3,
+  "enemy": "hegemony",
+  "objective": "flagship",
+  "picture_name": "navy-b3-p02.mp4",
+  "sources": [
+    {
+      "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+      "source_commit_date": "2026-11-21T06:50:34Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T13:04:17Z",
+      "seed": 10,
+      "build_sha256": "24bc04c352b9b128e413b4e0d4c797037ecbce5de5b10afbf8c32462f36a0297",
+      "manifest_sha256": "b355d9bc8c5955bd631941c3910c4e4995be7f5ceab6e48aebac6e09759ca4a1",
+      "fps": 30,
+      "battle": 3,
+      "enemy": "hegemony",
+      "objective": "flagship"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T13:04:17Z",
+      "image_sha256": "2508102ec518d2f9603ce041ca76dd30e39552f1861e7323bddc7bd4f59ae974",
+      "sources": [
+        {
+          "source_commit": "298b5abe56a48af095e89a62405f1aea78c6e1a2",
+          "source_commit_date": "2026-11-21T06:50:34Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-21T06:50:34Z"
+    }
+  ],
+  "seconds_in_battle": 48,
+  "duration_s": 34.5,
+  "stamp_template_sha256": "1e75be80d8da628c278e436d0d453b53bdd3083dd9896fdc8f5c21befba18bbd",
+  "image_sha256": "e4e63d150a97e0c58527382d1e6bac28384ab2178a087d7a9e04685e0383aad6"
+}
