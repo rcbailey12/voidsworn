@@ -1,0 +1,4 @@
+[undo1450] moved x04 from 1,11 to 2,11; view undo true
+[undo1450] saved UNDO-1_after_move
+[undo1450] after Backspace x04 stands at 1,11 (back); view undo false
+[undo1450] saved UNDO-2_after_backspace

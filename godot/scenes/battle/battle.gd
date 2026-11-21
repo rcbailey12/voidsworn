@@ -9,7 +9,7 @@ extends Node3D
 #   --shots <folder> (screenshot job: saves PNGs at fixed moments and quits) | --quit-after N (seconds)
 #
 # Controls as today's game (index_test.html): click your ship, click a gold hex to move, click an enemy to fire every gun
-# that bears (1-6 pick one), Q/E turn in place, B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
+# that bears (1-6 pick one), Q/E turn in place, Backspace undo a move (issue 1450), B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
 # enemy), Space hurry, Esc cancel, R threat map, V arcs, T top-down, F focus, Home reset view; right-drag orbit,
 # left-drag or WASD pan, wheel zoom.
 
@@ -430,6 +430,7 @@ func start_default() -> void:
 		if e != "":
 			push_error(e)
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
+		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
 		_begin(a)
 		return
 	var rng := RandomNumberGenerator.new()
@@ -3179,6 +3180,8 @@ func _on_key(k: int) -> void:
 		KEY_C:
 			if api.has_method("can_command") and api.phase == "player" and not busy and api.can_command():
 				_on_action("command", null)   # #271 (ui_spec.md follow-up G): Command gets its key
+		KEY_BACKSPACE:
+			_undo("backspace")   # issue 1450: take the last move or turn back, until the ship fires
 		KEY_Q:
 			_rotate(-1)
 		KEY_E:
@@ -3339,6 +3342,33 @@ func _end_ship(how: String) -> void:
 
 func _end_activation() -> void:
 	_end_ship("button")
+
+
+# Issue 1450 (Ryan, Nov 21 2026, R376): Backspace or the Undo move button takes the ship's last move or turn back. The rules
+# allow it only while nothing else has happened since (no shot, ram, boarding, ability, order, Command or dice: view undo).
+# Each press takes back one; after the first move is undone the ship is free again and another may go first.
+func _undo(how: String) -> void:
+	if not _can_act() or not api.has_method("undo"):
+		return
+	var id := _active_id()
+	if id == "":
+		id = sel
+	var u: Dictionary = VU.get(id, {})
+	if u.is_empty() or not bool(u.get("undo", false)):
+		if how == "backspace" and not u.is_empty() and u["side"] == "player":
+			hud.toast("Nothing to undo. A move can be taken back only until the ship fires, rams, boards or uses an ability.")
+		return
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	armed = -1
+	mode = ""
+	if _cmd(func(): return api.undo(id)):
+		plog.act("undo", {"how": how})
+		sfx.play("ui_cancel")
+		sel = id
+		reach_map.clear()   # rebuilt from the restored hex on the next refresh
 
 
 func _classic() -> bool:
@@ -3959,6 +3989,8 @@ func _on_action(name: String, arg) -> void:
 	match name:
 		"end":
 			_end_ship("button")
+		"undo":
+			_undo("button")
 		"next":
 			_next_ship("next_button")
 		"confirm":
@@ -4433,7 +4465,7 @@ func _card_info() -> Dictionary:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
 		say = "Braced: hull damage -40% until its next turn."
 	elif plan != null:
-		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. A move can't be taken back once made." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
+		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. Backspace takes a move back until the ship fires." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		say = "Planned move: %d movement%s." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
@@ -4486,6 +4518,9 @@ func _card_info() -> Dictionary:
 		"tip": "Switch to another ready ship. Once a ship has moved or fired it stays up until it ends."})
 	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
 		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
+	if bool(u.get("undo", false)):
+		btns.append({"text": "Undo move (Backspace)", "act": "undo", "on": true,
+			"tip": "Take back the last move or turn. Allowed until the ship fires, rams, boards or uses an ability."})
 	return {"name": str(u["name"]), "cls": _class_label(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
 		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
 

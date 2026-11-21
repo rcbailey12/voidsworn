@@ -54,6 +54,7 @@ headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|sh
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/undo_test.gd|-|-|issue 1450: undo a move before firing: the whole state and dice come back, a free or pivot turn comes back, battles with every move undone and redone end identical, and undo is refused after a shot, fire on the move, ram, boarding, ability, order, Command, the ship ending, the enemy phase or any other change
 headless|rules/test/arrival_preview_test.gd|-|-|issue 1289: the rules name the reinforcement hull at battle start without changing the battle, and the ship that arrives is that hull
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
