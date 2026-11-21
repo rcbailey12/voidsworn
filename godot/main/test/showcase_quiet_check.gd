@@ -42,6 +42,7 @@ func _run() -> void:
 		var before := _bus()
 		var sc = BattleScene.instantiate()
 		sc.showcase = true
+		sc.title_backdrop = true
 		sc.args["quality"] = "max"
 		sc.args["noworld"] = true
 		var seen: Array = [before]
@@ -68,6 +69,7 @@ func _run() -> void:
 	vp.msaa_3d = Viewport.MSAA_8X
 	var sc2 = BattleScene.instantiate()
 	sc2.showcase = true
+	sc2.title_backdrop = true
 	sc2.args["noworld"] = true
 	root.add_child(sc2)
 	await process_frame
@@ -75,6 +77,16 @@ func _run() -> void:
 	sc2.stop_build()
 	_check(vp.msaa_3d == Viewport.MSAA_8X, "stop_build restored the menu's MSAA (%d)" % vp.msaa_3d)
 	sc2.queue_free()
+	await process_frame
+	# a showcase without title_backdrop (tests and benches: a battle that takes no turns) keeps its tier and its sound
+	var sc3 = BattleScene.instantiate()
+	sc3.showcase = true
+	sc3.args["quality"] = "max"
+	sc3.args["noworld"] = true
+	root.add_child(sc3)
+	await process_frame
+	_check(str(sc3.args.get("quality")) == "max" and not sc3.sfx.silent, "a plain showcase keeps Max and its sound")
+	sc3.queue_free()
 	await process_frame
 	# the sliced build: every ship, the count, and a stop part way
 	var b = BattleScene.instantiate()

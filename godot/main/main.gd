@@ -327,6 +327,7 @@ func _start_showcase() -> void:
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
+	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
 	showcase.args["fac"] = next_showcase_fac()

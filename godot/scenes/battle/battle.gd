@@ -170,6 +170,9 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+# Issue 1434: the title's own backdrop (main.gd sets it with showcase). Tests and benches set showcase alone for a battle
+# that takes no turns; only the title backdrop is capped at High, silent and skips the combat warm-up.
+var title_backdrop := false
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
@@ -195,7 +198,7 @@ var chime_round := -1         # the round whose first hand-over played the "your
 func _ready() -> void:
 	_args()
 	var t_ready := Time.get_ticks_usec()
-	if showcase and str(args.get("quality", "max")) == "max":
+	if title_backdrop and str(args.get("quality", "max")) == "max":
 		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA: SHOWCASE_MSAA)
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
@@ -220,7 +223,7 @@ func _ready() -> void:
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
-	sfx.silent = showcase   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
+	sfx.silent = title_backdrop   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
 	add_child(sfx)
 	sfx.cam = cam
 	death_audio = DeathAudio.new()
@@ -236,7 +239,7 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		tips_off = true
 	if DisplayServer.get_name() != "headless":
-		print("[load] battle scene ready in %d ms%s" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if showcase else ""])
+		print("[load] battle scene ready in %d ms%s" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else ""])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -363,10 +366,10 @@ func _build_world() -> void:
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
-	if showcase and _vp_saved.is_empty():
+	if title_backdrop and _vp_saved.is_empty():
 		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
 		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
-	vp.msaa_3d = SHOWCASE_MSAA if showcase else LOOK.msaa_for_quality(q)
+	vp.msaa_3d = SHOWCASE_MSAA if title_backdrop else LOOK.msaa_for_quality(q)
 	if q == "low":
 		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
@@ -811,7 +814,7 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
-	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not showcase:
+	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
 			arrival_warm = ArrivalWarm.new()
@@ -965,7 +968,7 @@ func _make_views_sliced(gen: int) -> bool:
 	_drop_preload()
 	hud.loading_count(0, 0)
 	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s), effects registration %d ms (worst %d ms), waiting on hull files %d ms" % [
-		total, (Time.get_ticks_usec() - t0) / 1000, st["frames"], " (title backdrop)" if showcase else "", st["worst_stretch"] / 1000,
+		total, (Time.get_ticks_usec() - t0) / 1000, st["frames"], " (title backdrop)" if title_backdrop else "", st["worst_stretch"] / 1000,
 		st["setup"] / 1000, st["worst_setup"] / 1000, st["worst_code"], st["fx"] / 1000, st["worst_fx"] / 1000, st["wait"] / 1000])
 	return true
 
@@ -973,7 +976,7 @@ func _make_views_sliced(gen: int) -> bool:
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
-		if showcase:
+		if title_backdrop:
 			info["shielded"] = false   # issue 1434 (item 10): the backdrop never takes a hit, so it builds no shield skin
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
