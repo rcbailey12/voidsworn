@@ -4623,7 +4623,7 @@ func _open_menu() -> void:
 		if round_on_disk == round_saved:
 			items.append(["Save and quit to title", "save_quit"])
 		else:
-			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "this fight again"), "save_quit_older"])
+			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "from the last checkpoint"), "save_quit_older"])
 	elif not external:
 		items.append(["Fight again", "restart"])
 	items.append(["Copy a problem report", "report"])
