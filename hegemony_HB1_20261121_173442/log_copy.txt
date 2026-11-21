@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 5:34:44 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\out\recipe\export\hegemony_HB1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\hegemony_HB1_20261121_173442\export\hegemony_HB1\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\out\recipe\export\hegemony_HB1\
+	    New File  		      31	export_status.txt100%  
+	    New File  		   1.7 m	hegemony_HB1.glb 14%   28%   42%   57%   71%   85%   99%  100%  
+	    New File  		   1.4 m	hegemony_HB1_base.jpg 17%   35%   52%   70%   87%  100%  
+	    New File  		    2025	hegemony_HB1_check.json100%  
+	    New File  		    5221	hegemony_HB1_export.json100%  
+	    New File  		  152856	hegemony_HB1_glow_emission.jpg 85%  100%  
+	    New File  		   4.6 m	hegemony_HB1_normal.png 10%   21%   32%   43%   54%   65%   75%   86%   97%  100%  
+	    New File  		   6.1 m	hegemony_HB1_orm.png  8.1% 16.2% 24.4% 32.5% 40.7% 48.8% 57.0% 65.1% 73.3% 81.4% 89.6% 97.7%100%  
+	    New File  		  523089	hegemony_HB1_parts_base.jpg 25%   50%   75%  100%  
+	    New File  		   3.5 m	hegemony_HB1_parts_normal.png 14%   28%   42%   57%   71%   85%   99%  100%  
+	    New File  		   3.0 m	hegemony_HB1_parts_orm.png 16%   32%   49%   65%   81%   98%  100%  
+	    New File  		    1508	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\out\recipe\export\hegemony_HB1\_gltf_source\
+	    New File  		  104690	HB1_engine_emission.png100%  
+	    New File  		   5.6 m	HB1_hull_albedo.png  8%   17%   26%   35%   44%   53%   61%   70%   79%   88%   97%  100%  
+	    New File  		   4.6 m	HB1_hull_normal.png 10%   21%   32%   43%   54%   65%   75%   86%   97%  100%  
+	    New File  		   6.1 m	HB1_hull_orm.png  8.1% 16.2% 24.4% 32.5% 40.7% 48.8% 57.0% 65.1% 73.3% 81.4% 89.6% 97.7%100%  
+	    New File  		   3.4 m	HB1_parts_albedo.png 14%   28%   43%   57%   72%   86%  100%  
+	    New File  		   3.5 m	HB1_parts_normal.png 14%   28%   42%   57%   71%   85%   99%  100%  
+	    New File  		   3.0 m	HB1_parts_orm.png 16%   32%   49%   65%   81%   98%  100%  
+	    New File  		   1.7 m	hegemony_HB1.bin 14%   28%   43%   57%   71%   86%  100%  
+	    New File  		   13909	hegemony_HB1.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   49.39 m   49.39 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1438764833 Bytes/sec.
+   Speed :            82326.784 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 5:34:44 PM
+

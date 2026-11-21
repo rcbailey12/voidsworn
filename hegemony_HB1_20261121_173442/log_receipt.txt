@@ -1,0 +1,2 @@
+[publish] receipt ok: hegemony_HB1 hegemony_HB1 commit 7521a69d4299163e965750f87fdd3819097ef158, glb 0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470, 8 listed and 8 checked files
+SHIP=hegemony_HB1

@@ -1,0 +1,27 @@
+start publish opus1413hb1f hegemony_HB1 7521a69d4299163e965750f87fdd3819097ef158 0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470 Sat 11/21/2026 17:34:42.88 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\hegemony_HB1_20261121_173442\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\recipe\publish_ship.py 
+[publish] receipt ok: hegemony_HB1 hegemony_HB1 commit 7521a69d4299163e965750f87fdd3819097ef158, glb 0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470, 8 listed and 8 checked files
+SHIP=hegemony_HB1
+[publish] kept hegemony_HB1 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\hegemony_HB1_20261121_173442
+undo: C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\hegemony_HB1_20261121_173442\UNDO_hegemony_HB1.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) 
+install exit 0 
+INSTALL READBACK PASS code=hegemony_HB1 nodes=4
+[publish] sealed what is now live for hegemony_HB1
+ships cache exit 0 
+[assets] ships refreshed: 46 A4 ships in res://gen/manifest.json
+readback exit 0 
+INSTALL READBACK PASS code=hegemony_HB1 nodes=4
+[publish] sealed what is now live for hegemony_HB1
+shots exit 0 
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+ship clone kept: results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\out (the Board writes it when it relays)
+published hegemony_HB1 from opus1413hb1f at 7521a69d4299163e965750f87fdd3819097ef158 into C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+all done PASS Sat 11/21/2026 17:35:30.67 

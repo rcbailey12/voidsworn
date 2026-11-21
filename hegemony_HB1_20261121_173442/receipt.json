@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1413hb1f",
+ "ship": "hegemony_HB1",
+ "code": "hegemony_HB1",
+ "commit": "7521a69d4299163e965750f87fdd3819097ef158",
+ "glb": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470",
+ "files": {
+  "hegemony_HB1.glb": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470",
+  "hegemony_HB1_base.jpg": "a2fad3774610eaf9446e8fbdeae5f251c2c14b97c793ffac2b3909c5a9f7c7d9",
+  "hegemony_HB1_glow_emission.jpg": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1",
+  "hegemony_HB1_normal.png": "3b1bf79383e667249092cdeb8030db55cb05abd153b3640102a39fbbb28eb5b8",
+  "hegemony_HB1_orm.png": "df649ae42c6f22a97e42ff17b07630049ea8ed1687d356aabf85690836b829cb",
+  "hegemony_HB1_parts_base.jpg": "d33019a6d5da52921e846c64343e4dde15006639a5018d9a04cfcf0161a635b1",
+  "hegemony_HB1_parts_normal.png": "91040dd8021dd84ceac2b92fc18d0592621288441c8df597caa98293a06abdfc",
+  "hegemony_HB1_parts_orm.png": "6f9a63d605b5a2ae4acd948f3e3d03b82b4b00d054fbbe0525e9a47135e32e9b"
+ },
+ "checked": [
+  "hegemony_HB1.glb",
+  "hegemony_HB1_base.jpg",
+  "hegemony_HB1_glow_emission.jpg",
+  "hegemony_HB1_normal.png",
+  "hegemony_HB1_orm.png",
+  "hegemony_HB1_parts_base.jpg",
+  "hegemony_HB1_parts_normal.png",
+  "hegemony_HB1_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 2.36 deg (floor 1.34), albedo contrast 0.159 (floor 0.130), roughness spread 0.146 (floor 0.140), 619185 texels"
+}
