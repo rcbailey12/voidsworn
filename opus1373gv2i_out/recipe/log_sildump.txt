@@ -1,0 +1,4 @@
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\GV2.npz (43706, 3, 3) objects 23
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

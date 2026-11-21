@@ -1,0 +1,338 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 12:20:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2i\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\
+	    New File  		     284	audit.json100%  
+	    New File  		   38489	bow_blink.gif.provenance.json100%  
+	    New File  		     511	concept_camera.json100%  
+	    New File  		    1501	density.json100%  
+	    New File  		    2293	GV2.json100%  
+	    New File  		     417	log_audit.txt100%  
+	    New File  		    3674	log_audit_selftest.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		   13779	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     124	log_blink.txt100%  
+	    New File  		     578	log_build.txt100%  
+	    New File  		      65	log_clay.txt100%  
+	    New File  		      60	log_close.txt100%  
+	    New File  		     451	log_detail.txt100%  
+	    New File  		    1660	log_export.txt100%  
+	    New File  		     472	log_export_check.txt100%  
+	    New File  		     888	log_export_selftest.txt100%  
+	    New File  		    4629	log_godot.txt100%  
+	    New File  		     653	log_install_cache.txt100%  
+	    New File  		     443	log_install_readback.txt100%  
+	    New File  		    2048	log_lod.txt100%  
+	    New File  		  139308	log_render.txt 94%  100%  
+	    New File  		   25786	log_render_concept.txt100%  
+	    New File  		   52834	log_render_far.txt100%  
+	    New File  		    1223	log_sheet_contract.txt100%  
+	    New File  		      98	log_sil.txt100%  
+	    New File  		     183	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   41447	log_surface.txt100%  
+	    New File  		     691	log_thirds.txt100%  
+	    New File  		     691	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     345	audit_into_ship.json100%  
+	    New File  		     347	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     284	audit_no_longitudinal.json100%  
+	    New File  		     224	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\build\
+	    New File  		     628	GV2_build.json100%  
+	    New File  		    1621	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\glb\
+	    New File  		     306	GV2_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\
+	    New File  		   17125	bench209.json100%  
+	    New File  		    6142	GV2_auto_20.png.provenance.json100%  
+	    New File  		    6144	GV2_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	GV2_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	GV2_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	GV2_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	GV2_hand_20.png.provenance.json100%  
+	    New File  		    6144	GV2_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	GV2_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	GV2_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	GV2_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	GV2_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	GV2_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	GV2_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	GV2_off_20.png.provenance.json100%  
+	    New File  		    6143	GV2_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	GV2_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	GV2_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	GV2_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\r\
+	    New File  		   11388	GV2_battle.png.provenance.json100%  
+	    New File  		   41613	GV2_below.png.provenance.json100%  
+	    New File  		   41678	GV2_below_clay.png.provenance.json100%  
+	    New File  		   41654	GV2_concept.png.provenance.json100%  
+	    New File  		   41801	GV2_concept_cl.png.provenance.json100%  
+	    New File  		   41703	GV2_concept_clay.png.provenance.json100%  
+	    New File  		   41798	GV2_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41670	GV2_hero.png.provenance.json100%  
+	    New File  		   41739	GV2_hero_clay.png.provenance.json100%  
+	    New File  		   41680	GV2_hero_s.png.provenance.json100%  
+	    New File  		   41657	GV2_hero_s_clay.png.provenance.json100%  
+	    New File  		   41700	GV2_side.png.provenance.json100%  
+	    New File  		   41689	GV2_side_clay.png.provenance.json100%  
+	    New File  		   41634	GV2_side_s.png.provenance.json100%  
+	    New File  		   41675	GV2_side_s_clay.png.provenance.json100%  
+	    New File  		   41619	GV2_top.png.provenance.json100%  
+	    New File  		   41660	GV2_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\surface\
+	    New File  		     800	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        87        87         0         0         0         0
+   Bytes :    1.09 m    1.09 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            18556693 Bytes/sec.
+   Speed :            1061.822 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 12:20:49 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 12:20:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2i\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\r\
+	    New File  		   81927	GV2_battle.png100%  
+	    New File  		   2.6 m	GV2_below.png 19%   38%   57%   76%   96%  100%  
+	    New File  		   2.0 m	GV2_below_clay.png 23%   47%   71%   95%  100%  
+	    New File  		  897131	GV2_concept.png 29%   58%   87%  100%  
+	    New File  		  899915	GV2_concept_cl.png 29%   58%   87%  100%  
+	    New File  		  774273	GV2_concept_clay.png 33%   67%  100%  
+	    New File  		  768801	GV2_concept_clay_cl.png 34%   68%  100%  
+	    New File  		   1.1 m	GV2_hero.png 22%   44%   66%   88%  100%  
+	    New File  		 1033270	GV2_hero_clay.png 25%   50%   76%  100%  
+	    New File  		   1.1 m	GV2_hero_s.png 21%   43%   65%   87%  100%  
+	    New File  		   1.0 m	GV2_hero_s_clay.png 24%   49%   73%   98%  100%  
+	    New File  		   2.4 m	GV2_side.png 20%   40%   60%   80%  100%  
+	    New File  		   2.0 m	GV2_side_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.4 m	GV2_side_s.png 20%   40%   60%   80%  100%  
+	    New File  		   2.0 m	GV2_side_s_clay.png 24%   48%   72%   96%  100%  
+	    New File  		   2.5 m	GV2_top.png 19%   38%   58%   77%   97%  100%  
+	    New File  		   2.0 m	GV2_top_clay.png 24%   48%   73%   97%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   25.91 m   25.91 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1086955320 Bytes/sec.
+   Speed :            62196.082 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 12:20:49 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 12:20:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2i\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\surface\
+	    New File  		   69047	surface_below.png100%  
+	    New File  		   65045	surface_bow.png100%  
+	    New File  		   67811	surface_port.png100%  
+	    New File  		   67314	surface_starboard.png100%  
+	    New File  		   65081	surface_stern.png100%  
+	    New File  		   69550	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   394.3 k   394.3 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            67308000 Bytes/sec.
+   Speed :            3851.394 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 12:20:49 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 12:20:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2i\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\godot\
+	    New File  		  427673	GV2_auto_20.png 30%   61%   91%  100%  
+	    New File  		  569413	GV2_auto_d1.2.png 46%   92%  100%  
+	    New File  		  202567	GV2_auto_d16.0.png 64%  100%  
+	    New File  		  274312	GV2_auto_d3.0.png 47%   95%  100%  
+	    New File  		  211243	GV2_auto_d8.0.png 62%  100%  
+	    New File  		  438065	GV2_hand_20.png 29%   59%   89%  100%  
+	    New File  		  569386	GV2_hand_d1.2.png 46%   92%  100%  
+	    New File  		  202296	GV2_hand_d17.4.png 64%  100%  
+	    New File  		  201476	GV2_hand_d18.6.png 65%  100%  
+	    New File  		  282250	GV2_hand_d2.9.png 46%   92%  100%  
+	    New File  		  271766	GV2_hand_d3.1.png 48%   96%  100%  
+	    New File  		  212549	GV2_hand_d7.75.png 61%  100%  
+	    New File  		  210297	GV2_hand_d8.25.png 62%  100%  
+	    New File  		  438839	GV2_off_20.png 29%   59%   89%  100%  
+	    New File  		  569165	GV2_off_d1.2.png 46%   92%  100%  
+	    New File  		  202593	GV2_off_d16.0.png 64%  100%  
+	    New File  		  274656	GV2_off_d3.0.png 47%   95%  100%  
+	    New File  		  211440	GV2_off_d8.0.png 61%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.50 m    5.50 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           412141857 Bytes/sec.
+   Speed :           23582.946 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 12:20:49 AM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 12:20:49 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2i\out\recipe\export\ithar_GV2\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2\
+	    New File  		      28	export_status.txt100%  
+	    New File  		   1.0 m	ithar_GV2.glb 23%   46%   69%   93%  100%  
+	    New File  		   1.0 m	ithar_GV2_base.jpg 22%   45%   68%   91%  100%  
+	    New File  		    1909	ithar_GV2_check.json100%  
+	    New File  		  541706	ithar_GV2_emission.jpg 48%   96%  100%  
+	    New File  		    5189	ithar_GV2_export.json100%  
+	    New File  		   1.0 m	ithar_GV2_normal.png 24%   48%   72%   96%  100%  
+	    New File  		   3.3 m	ithar_GV2_orm.png 14%   29%   44%   59%   73%   88%  100%  
+	    New File  		  212055	ithar_GV2_parts_base.jpg 61%  100%  
+	    New File  		   63457	ithar_GV2_parts_normal.png100%  
+	    New File  		   1.1 m	ithar_GV2_parts_orm.png 21%   43%   64%   86%  100%  
+	    New File  		    1487	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2\_gltf_source\
+	    New File  		   2.3 m	GV2_hull_albedo.png 21%   43%   65%   86%  100%  
+	    New File  		   1.5 m	GV2_hull_emission.png 16%   33%   49%   66%   82%   99%  100%  
+	    New File  		   1.0 m	GV2_hull_normal.png 24%   48%   72%   96%  100%  
+	    New File  		   3.3 m	GV2_hull_orm.png 14%   29%   44%   59%   73%   88%  100%  
+	    New File  		  164621	GV2_parts_albedo.png 79%  100%  
+	    New File  		   63457	GV2_parts_normal.png100%  
+	    New File  		   1.1 m	GV2_parts_orm.png 21%   43%   64%   86%  100%  
+	    New File  		   1.0 m	ithar_GV2.bin 23%   47%   70%   94%  100%  
+	    New File  		   14554	ithar_GV2.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   19.24 m   19.24 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1008866450 Bytes/sec.
+   Speed :            57727.801 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 12:20:49 AM
+

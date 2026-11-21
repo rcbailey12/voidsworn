@@ -1,0 +1,6 @@
+chain CA waiting for 1415D GA1 exit in chain_1119bs5.txt Fri 11/20/2026 20:52:14.60 
+mirror fetch exit 0
+84b6e3f481f05d5728ffd407b00e492207db9b91 reachable in the mirror
+1373I GV2 start  0:06:21.85 
+1373I GV2 exit 0 at  0:20:59.37 
+1373I GW4 start  0:20:59.37 

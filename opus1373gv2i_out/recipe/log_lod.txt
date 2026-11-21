@@ -1,0 +1,24 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+00:17:46 | INFO: Starting glTF 2.0 export
+00:17:46 | INFO: Extracting primitive: GV2_lod0
+00:17:46 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+00:17:46 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:17:46 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+00:17:47 | INFO: Primitives created: 5
+00:17:47 | INFO: Extracting primitive: GV2_lod1
+00:17:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:17:47 | INFO: Primitives created: 5
+00:17:47 | INFO: Extracting primitive: GV2_lod2
+00:17:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:17:47 | INFO: Primitives created: 4
+00:17:47 | INFO: Extracting primitive: GV2_lod3
+00:17:47 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:17:47 | INFO: Primitives created: 3
+00:17:47 | INFO: Finished glTF 2.0 export in 0.9228787422180176 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\glb\GV2.glb {"lod0": {"triangles": 29370, "objects": 23, "materials": 5}, "lod1": {"triangles": 29370, "objects": 23, "materials": 5}, "lod2": {"triangles": 14924, "objects": 22, "materials": 4}, "lod3": {"triangles": 5889, "objects": 20, "materials": 3}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\GV2.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-8aa88067c0c64a5886f8f89b16237ab5
