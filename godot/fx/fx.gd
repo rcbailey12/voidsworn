@@ -1766,6 +1766,7 @@ const BOARD_LOOKS := {
 		"reach": 22.0, "lines": 3, "inside": 9, "hold": 1900.0},
 }
 var board_look := "B"
+var board_inside_s := 0.0  # when the last of look C's inside flashes ends (s after the call; checked against the hold)
 var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
 
 
@@ -1831,14 +1832,18 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.6, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
+	board_inside_s = 0.0
 	if int(bl["lines"]) > 0 and from_hatch != Vector3.INF:
 		_board_lines(from_hatch, wp, int(bl["lines"]), hold)
 	for j in int(bl["inside"]):
 		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
 		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
 		var ip: Vector3 = s.to_world(smp["p"])
-		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, T + (0.45 + j * maxf(0.0, hold - 0.6) / maxf(1.0, float(bl["inside"]))) * minf(1.0, pace),
-			0.35, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
+		# staggered over the same hold as the battle's wait and gone by its end at any pace (Artoo, PR 1549)
+		var t_in: float = hold * (0.2 + 0.55 * float(j) / maxf(1.0, float(int(bl["inside"]) - 1)))
+		var life: float = minf(0.35, hold * 0.2)
+		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, now + t_in, life, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
+		board_inside_s = maxf(board_inside_s, t_in + life)
 	return maxf(3.2, hold)
 
 

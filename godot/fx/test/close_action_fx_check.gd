@@ -136,6 +136,14 @@ func _run() -> void:
 		fx.board("a", "b", "fight", pace)
 		var want: float = fx.board_hold_ms() / 1000.0 * pace
 		_check(fx.board_lines_s > 0.0 and fx.board_lines_s <= want + 0.001, "the boarding lines end with the hold at pace %.2f (%.2f s, hold %.2f s)" % [pace, fx.board_lines_s, want])
+	# look C's inside flashes are staggered over the hold and end inside it, at normal and fast pace
+	var was: String = fx.board_look
+	fx.board_look = "C"
+	for pace in [1.0, 0.25]:
+		fx.board("a", "b", "fight", pace)
+		var want: float = fx.board_hold_ms() / 1000.0 * pace
+		_check(fx.board_inside_s > 0.0 and fx.board_inside_s <= want + 0.001, "look C's inside flashes end with the hold at pace %.2f (%.2f s, hold %.2f s)" % [pace, fx.board_inside_s, want])
+	fx.board_look = was
 	fx.calls.clear()
 	# no boarding point to draw at (an unknown target): the pop stands in
 	await battle._play_event({"t": "board", "unit": "a", "target": "nobody", "result": "fight", "kill": 0, "loss": 0})
