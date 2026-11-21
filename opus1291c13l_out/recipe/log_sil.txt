@@ -1,0 +1,1 @@
+[score] C13 {'overlap': 66.4, 'concept_covered': 79.0, 'cell_outside': 19.4, 'triangles': 344058}

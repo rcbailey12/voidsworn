@@ -1,0 +1,12 @@
+[armadillo] 13 bands, 50 runs, 0 steps clamped
+[inside] spine_sac_t1: moved in to (2.00, 0.13, 0.80)
+[inside] spine_sac_t1: shrunk to 97% to stay inside the hull
+[inside] bile_main: shrunk to 86% to stay inside the hull
+[inside] bile_store_2: shrunk to 97% to stay inside the hull
+[inside] regrowth_p: shrunk to 92% to stay inside the hull
+[inside] regrowth_s: shrunk to 88% to stay inside the hull
+Info: Saved as "C13.blend"
+[209] {"cell": "C13", "hull_objects": 7, "parts": 135, "interiors": 25, "seconds": 10.8, "notes": [{"route": "build sheet chorus_C13", "contract": {"sheet": "chorus_C13", "game_ship": "b_spitter", "variant": "", "model_length": 9.53789, "scale": 0.10484495569834278, "length_world": 9.5, "t_lines": [-0.1363, 0.31453], "l_line": [], "l_lines": [], "muzzles": 3, "guns": 3, "engines": 3, "bays": 0, "points": 10, "turrets": [], "interior_objects": 25, "slots": ["0 bioplasma T", "1 bioplasma F"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

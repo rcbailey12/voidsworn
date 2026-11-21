@@ -1,0 +1,8 @@
+chain CH waiting for 1415E GA1 exit in chain_1119cg.txt Sat 11/21/2026  7:57:34.38 
+mirror fetch exit 0
+d2a9acd26c3305641229d000d8890ba8a753dcfb reachable in the mirror
+1291 C13L start  7:59:35.84 
+1291 C13L exit 0 at  8:16:11.79 
+1291 C10H start  8:16:11.79 
+CH STOPPED at the C13L boundary 08:16:32.71 by PC relay (Board, Nov 21 14:15 UTC): KF1 L runs next (chain CI2), then chain CJ reruns C10H, C11G, C12G, C14H. Nothing deleted.
+1291 C10H exit 9 at 08:16:32 (stopped by PC relay about 20 s after its start, during clone/import; reruns in chain CJ after KF1 L)
