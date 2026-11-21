@@ -829,6 +829,23 @@ built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "
 faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
 1217). Detail: docs/playbooks/screens.md section 2.
 
+9.16 **The game is mouse and keyboard only: no controller play in battle or on the map.** Menus may keep their arrow-key and
+Enter focus. Why: Neon's player audit (Nov 21) found menus promise controller focus while battle and map have no gamepad
+input; Ryan scoped the game to mouse and keyboard. Key rebinding, a colorblind mode and an in-game rules reference are later
+work (issue 1454). Set: Ryan (R380).
+
+9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
+an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
+(Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
+
+9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
+menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
+round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
+
+9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
+options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
+come as a design pack first (issue 1453). Set: Ryan (R377, R379).
+
 ## 10. The campaign map, space and the board
 
 10.1 **The battle board is a cinematic scene, not a board game**: no grey plate, living terrain, a faint grid only near the
@@ -894,6 +911,23 @@ Why: a player who reaches the boss on run 6 or later never saw it. Replaces the 
 its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 2 was a big difficulty jump before the first
 shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
 Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
+
+
+11.8 **Retreat returns the fleet to the stop it came from; the fight stays on the map, and the 10% hull cost stays.** A
+retreat never completes the node or clears a Nemesis meeting. Why: an independent audit (Nov 21, F-05) found a round-1
+retreat skipped any non-boss fight for 10% hull and could lock out Nemesis-held service stops. Both rules copies (3.1).
+Set: Ryan (R381, issue 1480).
+
+11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
+Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
+issue 1484).
+
+11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
+kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+(R383, issue 1479).
+
+11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
+checked against issue 1271. Set: Ryan (R384).
 
 ## 12. Automatic checks
 
