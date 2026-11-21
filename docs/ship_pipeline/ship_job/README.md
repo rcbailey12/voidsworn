@@ -44,6 +44,9 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 7. Collects deliverables into `out\recipe` on a pass or a fail. It copies `*.txt`, `*.json`, `*.md` and `*.jpg`,
    the review images from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the requested
    `export\<CODE>\` folder. In-game shots still go straight to `out\shots`.
+8. After a PASS, the clone's Godot import cache `repo\godot\.godot` is removed before the done line (issue 1497); the
+   clone stays for the publish, and `publish_ship.bat` removes it once the ship is live (docs/playbooks/pc.md, RULEBOOK
+   3.3). A failed run keeps everything.
 
 Blender files, loose PNG bake maps, other export codes, the `godot\proj` cache, `sil\`, and `b0.npz` stay under
 `Downloads\voidsworn_test\recipe\<SHIP>` for reruns and diagnosis.

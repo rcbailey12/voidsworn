@@ -23,11 +23,12 @@ rem                                   measured hulls are listed in <OJ_REPO>_shi
 rem                                   must list the same hulls as the first one. Optional OJ_NEED_HULLS: codes that
 rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
-rem   tail                            hashes Ryan's options again (a change fails the job), after a PASS removes the job's
-rem                                   own pinned checkouts that hold no work (a failure keeps all; out_* and logs stay;
-rem                                   OJ_KEEP_CHECKOUTS=1 keeps them), then
-rem                                   job_wrap end: "done PASS" or
-rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
+rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done
+rem                                   PASS" or "done FAILED: ...", then "all done". Exit 0 only on PASS. After that,
+rem                                   a PASS removes the job's own pinned checkouts, saving any small file the job left
+rem                                   in one into out_<name>\checkout_leftovers first (issue 1497); a failure keeps them
+rem                                   a day; earlier attempts of the job are cleared the same way; the GB freed and C:
+rem                                   free go to status.txt (out_* and logs stay; OJ_KEEP_CHECKOUTS=1 keeps them).
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
 rem The tail removes only the job's own pinned checkouts (RULEBOOK 3.3, R326); nothing else is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
 if /i "%~1"=="init" goto oj_init
@@ -125,6 +126,10 @@ rem (Artoo, PR 1324). Every copied ship must match its cache stamp; the measured
 rem OJ_NEED_HULLS (optional, codes split by spaces) names the hulls the job's fixtures draw; each must be a matching ship.
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "ships do not match their cache in %OJ_REPO%, see %OJ_ST%" & exit /b 1)
+rem Issue 1497: the hashes of what was copied, so the tail can prove these files unchanged even after a publish moves
+rem build\godot on during the job. A record that cannot be written only means the tail proves less; it never fails the job.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied.txt" >> "%OJ_ST%" 2>&1
+if errorlevel 1 >> "%OJ_ST%" echo note: the ships copy record could not be written; the tail proves copies against build\godot only
 rem Every checkout in one job must measure the same fleet: a publish between two checkouts (OLD and NEW arms) would
 rem give each a self-consistent but different set of hulls (Artoo, PR 1324). The first checkout's identity is the
 rem reference; any later one that differs fails the job.
@@ -152,14 +157,18 @@ goto oj_tail_end
 :oj_tail_changed
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
-rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so after a
-rem PASS they go, unless one holds work (dropcheckouts checks). A failed job keeps everything for the post-mortem (R326).
-rem out_*, the logs and the ship records always stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
+rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 22 GB each, so after a
+rem PASS they go; any small file the job left in one is saved first into out_<name>\checkout_leftovers (issue 1497: on
+rem Nov 21 every passing job kept its checkout for a build_info.json or a few .import files and C: fell to 55 GB).
+rem A failed attempt keeps its checkouts for a day for the post-mortem; every tail, pass or fail, also clears this job's
+rem earlier attempts (a passed one now, a failed or unfinished one after a day). out_*, the logs and the ship records
+rem always stay. OJ_KEEP_CHECKOUTS=1 keeps everything (logged).
 rem It runs after job_wrap end has written the done line, so a slow or stuck removal can never delay or lose the result.
 set "OJ_DROP=1"
+set "OJ_PASSED=1"
 if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
-if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& set "OJ_DROP=")
+if defined JW_FAILED (>> "%OJ_ST%" echo checkouts of this attempt kept for a day: the job failed& set "OJ_PASSED=0")
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
-if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" %OJ_PASSED% >> "%OJ_ST%" 2>&1
 exit /b %OJ_RC%

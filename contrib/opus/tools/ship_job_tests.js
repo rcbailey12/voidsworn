@@ -107,7 +107,13 @@ pass('the GPU wait: 3600 s by default for every GPU step, accepted by gpu_slots.
 // the last line
 const finish = code.findIndex(l => l.s === ':finish');
 const tailLines = code.slice(finish).map(l => l.s);
-assert.deepEqual(tailLines.slice(1, 8), ['if defined FAILED goto finish_failed', 'echo done PASS %DATE% %TIME% >> "%RES%"',
+// Issue 1497: after a PASS, only the clone's import cache goes, through tools_live's head, before the done line so the
+// publish receipt still reads "done PASS" then "all done" at the end.
+assert.deepEqual(tailLines.slice(1, 6), ['if defined FAILED goto finish_failed', 'set "OJH="',
+  'if defined TLV if exist "%V%\\tools_live\\%TLV%\\pc\\jobs\\opus_job_head.ps1" set "OJH=%V%\\tools_live\\%TLV%\\pc\\jobs\\opus_job_head.ps1"',
+  'if defined OJH powershell -NoProfile -ExecutionPolicy Bypass -File "%OJH%" dropcache "%J%" >> "%RES%" 2>&1',
+  'if not defined OJH echo import cache kept: no opus_job_head.ps1 in tools_live >> "%RES%"']);
+assert.deepEqual([tailLines[1]].concat(tailLines.slice(6, 12)), ['if defined FAILED goto finish_failed', 'echo done PASS %DATE% %TIME% >> "%RES%"',
   'echo all done >> "%RES%"', 'exit /b 0', ':finish_failed', 'echo done FAILED: %FAILED% %DATE% %TIME% >> "%RES%"',
   'echo all done >> "%RES%"']);
 const start = code.findIndex(l => /^echo start /.test(l.s));

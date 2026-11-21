@@ -28,6 +28,8 @@ rem      after the cache rebuild)
 rem   7. in-game shots of CODE from build\godot (battle and close), so the picture names the hull code
 rem Every step runs through tools_live's tmo.bat, and publish_ship.py is tools_live's own copy (fail closed if either is
 rem missing). Writes only build\godot (the ship, its cache, the two manifests, _replaced\) and voidsworn_test\publish\.
+rem   8. after a PASS, the job's own clone JOB_DIR\repo goes (issue 1497, RULEBOOK 3.3), through tools_live's head
+rem      (opus_job_head.ps1 droprepo); nothing else is deleted
 setlocal EnableExtensions
 set "V=%USERPROFILE%\Downloads\voidsworn_test"
 set "JOB_DIR=%~1"
@@ -213,6 +215,13 @@ if defined OPTSBAD if defined FAILED set "FAILED=%FAILED%; %OPTSBAD%"
 if defined OPTSBAD if not defined FAILED set "FAILED=%OPTSBAD%"
 :ending
 if defined FAILED goto failed
+rem (1497) The ship is live, sealed and pictured, so the job's own clone (14 to 16 GB) has done its work: tools_live's head
+rem removes JOB_DIR\repo only when HEAD is COMMIT, every local commit is in the shared mirror and its files are rebuildable
+rem or saved first into JOB_DIR\out\checkout_leftovers_repo. The job's out folder, this publish folder and the undo stay.
+rem A refusal is logged and never fails the publish. A later publish from the same job folder needs a new ship_job run.
+set "OJH=%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1"
+if exist "%OJH%" powershell -NoProfile -ExecutionPolicy Bypass -File "%OJH%" droprepo "%J%" %COMMIT% %CODE% >> "%RES%" 2>&1
+if not exist "%OJH%" echo ship clone kept: no opus_job_head.ps1 in tools_live >> "%RES%"
 echo published %CODE% from %JOB_DIR% at %COMMIT% into %GAME% >> "%RES%"
 echo all done PASS %DATE% %TIME% >> "%RES%"
 exit /b 0

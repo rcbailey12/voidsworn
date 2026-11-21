@@ -25,6 +25,8 @@ rem   4. the installed glb must be this run's (written after the run started), e
 rem   5. the GPU readback, the authored interiors check and the death seam check on the installed glb; all three must pass
 rem   6. the in-game shots at camera 170 and 60, only when everything above passed
 rem   7. logs, reports, shots and export\CODE copied into out\recipe
+rem   8. after a PASS, the clone's Godot import cache godot\.godot goes (issue 1497); the clone stays for the publish,
+rem      which removes it
 rem The earlier out folder becomes out_before_<time>. Backups older than the newest two are listed for the janitor.
 if "%~1"=="ship" goto ship
 setlocal EnableExtensions
@@ -281,6 +283,13 @@ if not exist "%O%\recipe\export\%CODE%\%CODE%.glb" if not defined FAILED set "FA
 :finish
 rem no parenthesised block here: FAILED can hold a ")" that would end the block early
 if defined FAILED goto finish_failed
+rem (1497) A PASS no longer needs the clone's Godot import cache: the publish installs from the export and the clone's
+rem tools, never from it. Removing it here, before the done line, keeps result.txt's tail as the publish receipt reads
+rem it. The clone itself stays until the publish (publish_ship.bat removes it then). A refusal never fails the job.
+set "OJH="
+if defined TLV if exist "%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1" set "OJH=%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1"
+if defined OJH powershell -NoProfile -ExecutionPolicy Bypass -File "%OJH%" dropcache "%J%" >> "%RES%" 2>&1
+if not defined OJH echo import cache kept: no opus_job_head.ps1 in tools_live >> "%RES%"
 echo done PASS %DATE% %TIME% >> "%RES%"
 echo all done >> "%RES%"
 exit /b 0
