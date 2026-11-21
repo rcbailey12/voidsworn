@@ -225,7 +225,8 @@ $grades['1434 load (warm bench, cold COVER)'] = if ($bench['warm'].pass -and $be
 # while the title backdrop loads; both are also inside the lines around them
 $grades['target a: warm title backdrop frame (bench title line)'] = if ($bench['warm'].title_pass) { 'PASS' } else { 'FAIL' }
 $tl = @($rows | Where-Object { $_.set -eq 'cold' -and $_.case -eq 'title_load_5s' })
-$grades['target b: cold close during the title load hides within 500 ms'] = if ($tl.Count -eq 1) { $(if ($tl[0].g1518 -like 'FAIL*') { 'FAIL' } elseif ($tl[0].g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } else { 'PASS' }) } else { 'FAIL' }
+# target b counts only when the backdrop itself was loading at the close; a world bake alone is UNVERIFIED (Artoo on PR 1445)
+$grades['target b: cold close during the title load hides within 500 ms'] = if ($tl.Count -eq 1) { $(if ($tl[0].g1518 -like 'FAIL*') { 'FAIL' } elseif ($tl[0].g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } elseif ([string]$tl[0].loading_at_close -notmatch '(^|, )backdrop ') { 'UNVERIFIED (the backdrop was not loading at the close)' } else { 'PASS' }) } else { 'FAIL' }
 foreach ($set in @('cold', 'warm')) {
   $grades["1518 close hides within 500 ms, $set"] = Set-Grade $set 'g1518'
   $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
