@@ -548,9 +548,10 @@ switch ($Action) {
     try {
       $repo = Test-ShipClone ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
       $cache = Join-Path (Join-Path $repo 'godot') '.godot'
-      $c = Get-Item -LiteralPath $cache -Force -ErrorAction SilentlyContinue
-      if ($null -eq $c) { Write-Output "no import cache in $repo"; break }
-      if (-not (Test-PlainDir $c)) { throw "$cache is not a plain folder" }
+      # (not $c: PowerShell names are case-blind, and $C is the [string] parameter)
+      $cacheDir = Get-Item -LiteralPath $cache -Force -ErrorAction SilentlyContinue
+      if ($null -eq $cacheDir) { Write-Output "no import cache in $repo"; break }
+      if (-not (Test-PlainDir $cacheDir)) { throw "$cache is not a plain folder" }
       $gone = Remove-Owned $cache
       Write-Output ("import cache removed after the PASS ({0:N1} GB): {1}; the clone stays for the publish" -f ($gone / 1GB), $cache)
       Write-Free $gone
