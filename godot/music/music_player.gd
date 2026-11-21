@@ -353,6 +353,20 @@ func stop(dur := 2.0) -> void:
 	_mode = ""
 
 
+# Issue 1457: quit_clean calls this before the tree quits. A player still playing at exit keeps its
+# AudioStreamPlayback, so the title track was reported as a resource in use at exit.
+func release() -> void:
+	set_process(false)
+	# every player child, including faded ones already queued for freeing
+	for p in get_children():
+		if p is AudioStreamPlayer:
+			p.stop()
+			p.stream = null
+	_old.clear()
+	_streams.clear()
+	_mode = ""
+
+
 # ---------- per frame: volumes ----------
 
 func _process(dt: float) -> void:

@@ -382,14 +382,15 @@ def _dome_section(tree, centre, axis, radius):
     return at
 
 
-def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide', flat=False):
+def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide', flat=False, counts=None):
     """R341 (the Board, Nov 19): small scutes capping the top of each grown dome the shell leaves open (sacs, knolls), lips down
     the dome, so the armour wraps them; never on a gland, maw or vent. domes = [(prefixes, centre, axis, radius, reach)], with
     the hull objects or fittings whose names start with `prefixes` as the dome's surface and `reach` the polar angle (radians
     from the crown) the cap comes down to; an optional sixth value starts the cap that far from the crown, so a gland's knoll is
     armoured round its slopes with its vent and spines open. flat (issue 1291 round G, Ryan: "caps, but flatter"): two rings of
     fewer, wider, thin plates lying close on the dome instead of three rings of keeled scutes, so a cap reads as a shell, not a
-    pinecone. One hull-detail object for the ship; returns it."""
+    pinecone. counts (opt-in, C14's many small sacs): the plates in each ring, crown first, in place of the defaults. One
+    hull-detail object for the ship; returns it."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     register(kit_module)
@@ -411,7 +412,7 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
         t = (0.032 if flat else 0.075) * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
         k = 0
         ph = start
-        rings = ((5, 8) if flat else (4, 8, 12)) if not start else ((7, 10) if flat else (10, 13, 16))
+        rings = counts or (((5, 8) if flat else (4, 8, 12)) if not start else ((7, 10) if flat else (10, 13, 16)))
         step = (reach - start) / len(rings)
         for n_ in rings:
             off = rng.uniform(0, math.tau)
@@ -492,7 +493,7 @@ def _band(section, root, length, lo, hi, t, rng, nu=12, nv=None, sink=0.012):
     return vertices, [f[::-1] for f in faces], growth, ridge
 
 
-def _skirt(section, pts_xt, w, h, rng, creases=True):
+def _skirt(section, pts_xt, w, h, rng, creases=True, ln_k=1.0):
     """the hide gathered against a plate's edge (issue 1291): a soft roll of skin along the edge (x, t points) and short crease
     welts running off it into the flesh. Returns (vertices, faces) in the welt kit's shape."""
     from chorus import parts
@@ -506,7 +507,7 @@ def _skirt(section, pts_xt, w, h, rng, creases=True):
     if creases:
         for k in range(1, len(pts_xt) - 1, 2):
             x, t_ = pts_xt[k]
-            ln = rng.uniform(0.1, 0.22); dt = rng.uniform(-0.05, 0.05)
+            ln = rng.uniform(0.1, 0.22) * ln_k; dt = rng.uniform(-0.05, 0.05)
             q = [section(x + ln * f, t_ + dt * f, out=0.0) for f in (0.1, 0.5, 1.0)]
             add(parts.welt([p for p, _ in q], [n for _, n in q], [w * 0.5, w * 0.4, w * 0.15], [h * 0.6, h * 0.45, h * 0.1], n=4))
     return V, F
@@ -519,7 +520,7 @@ KEEL = -math.pi / 2 + 0.02
 
 
 def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
-              close_gaps=True, fill=True):
+              close_gaps=True, fill=True, scale=1.0, res=1.0):
     """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
     wrapping the body (lo=-1.2 runs each band from belly edge to belly edge; the default wraps to the keel), bands of grown chitin
     running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
@@ -530,11 +531,16 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, th
     lo=None (the default, Ryan Nov 20: "cover the chorus ships in armor almost everywhere") is WRAP: each band runs down both
     flanks to the keel, where the two ends meet; a band never crosses the keel. fill (default on): where a fitting cuts a band,
     a half band still grows ahead of it or behind it, so the shell hugs the fittings instead of leaving a band-long gap.
+    scale (issue 1373, R362): the absolute sizes below (keep-out cells and reach, the band's sink, the hide skirt) are tuned
+    for a ship about 9.5 long; a strike craft passes its length over 9.5 so its shell keeps the same proportions. 1.0 (every
+    ship) multiplies by one and builds the same bytes as before. res (issue 1373): the share of the bands' mesh density a
+    small, many-on-screen object keeps (a craft: about 0.3, with the hide skirt's crease welts left out); 1.0 builds as before.
     Returns the shell object and the skirt object."""
     register(kit_module)
     rng = random.Random(seed)
     lo = WRAP if lo is None else lo
-    blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18, 3 * thick))
+    blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18 * scale, 3 * thick),
+                            bury=0.06 * scale, cell=(0.1 * scale, 0.06))
     mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
     skirt = ([], [])
     x = x_bow; nb = 0; runs_n = 0; clamped = 0
@@ -584,7 +590,8 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, th
                     for q in range(j0, k0 + 1):
                         covered[q] = True
         for xr, Lr, a_, b_ in pieces:
-            vv, ff, gg, rr = _band(K.hpt, xr, Lr, a_, b_, thick * rng.uniform(0.9, 1.1), rng)
+            dens = {} if res == 1.0 else dict(nu=max(4, int(round(12 * res))), nv=max(6, int((b_ - a_) / (0.05 / res))))
+            vv, ff, gg, rr = _band(K.hpt, xr, Lr, a_, b_, thick * rng.uniform(0.9, 1.1), rng, sink=0.012 * scale, **dens)
             _append(mesh, vv, ff)
             attrs['scute_tone'].extend([rng.uniform(0.2, 0.8)] * len(vv))
             attrs['scute_progress'].extend(gg)
@@ -593,7 +600,7 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, th
             # the hide gathered at the band's ends (its lower edge on each flank, or where it breaks round a fitting)
             for tt in (a_, b_):
                 pts = [(xr - Lr * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
-                _append(skirt, *_skirt(K.hpt, pts, 0.14, 0.014, rng))
+                _append(skirt, *_skirt(K.hpt, pts, 0.14 * scale, 0.014 * scale, rng, creases=res == 1.0, ln_k=scale))
         step = band * rng.uniform(0.65, 1.35)
         if close_gaps and step > L_:
             # issue 1291: a long step after a short band would leave a bare strip across the back; the next band starts under

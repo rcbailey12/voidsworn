@@ -1,0 +1,27 @@
+# Issue 1487 (audit GH-03, GH-05, GH-11): one copy of the "test the branch as it would land" step for every checks.yml job.
+# The job's checkout step comes first (a local action cannot check itself out): actions/checkout with fetch-depth 1 and
+# filter blob:none, so only the files of this one commit download, not the 10 GB history the old fetch-depth 0 pulled.
+# This step then fetches the full history of this commit and of main without file contents (a few MB; git fetches a file
+# only when the merge or a check needs it), and merges main in. A conflict now FAILS the job (it used to warn and test the
+# branch alone, so a conflicting branch could still go green).
+name: Merge main in
+description: Fetch history without file contents and merge main into the checkout; a conflict fails the job.
+runs:
+  using: composite
+  steps:
+    - name: Merge main in (test the branch as it would land)
+      shell: bash
+      run: |
+        git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+        deepen=""; [ "$(git rev-parse --is-shallow-repository)" = true ] && deepen="--unshallow"
+        git fetch -q --no-tags --filter=blob:none $deepen origin "+refs/heads/main:refs/remotes/origin/main"
+        if [ "$GITHUB_REF" = refs/heads/main ]; then echo "Running on main: nothing to merge."; exit 0; fi
+        if git merge -q --no-edit origin/main; then
+          echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+        else
+          git diff --name-only --diff-filter=U | sed 's/^/  conflict: /'
+          git merge --abort 2>/dev/null || true
+          msg="main cannot be merged into this branch (a conflict), so these checks did not run. Merge main into the branch, fix the conflict and push again."
+          echo "::error::$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        fi

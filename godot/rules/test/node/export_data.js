@@ -19,7 +19,7 @@ for (const s of srcs) { const re = /^(?:const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm; 
 for (const extra of ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD']) if (!names.includes(extra)) names.push(extra);
 vm.runInThisContext(srcs.join('\n') + '\nglobalThis.__T={' + names.map(n => JSON.stringify(n) + ':(typeof ' + n + "!=='undefined'?" + n + ':undefined)').join(',') + '};', { filename: 'export_bundle.js' });
 // live game state, not tables (the port starts these itself)
-const STATE = ['RNG_S', 'SPEED', 'UID', 'SAVED_RUN', 'RUN', 'B', 'ARENA', 'CUT', 'SOLID', 'TERRAIN_META'];
+const STATE = ['RNG_S', 'SPEED', 'UID', 'SAVED_RUN', 'RUN', 'B', 'ARENA', 'CUT', 'SOLID', 'TERRAIN_META', 'UNDO_ON', 'UNDO', 'UNDO_KEYS', 'UNDO_SKIP_B']; // issue 1450: the undo state and its key lists are code, not data
 const out = {}, skipped = [];
 const enc = v => {
   if (typeof v === 'function') return undefined;

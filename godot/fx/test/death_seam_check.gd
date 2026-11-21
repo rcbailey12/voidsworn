@@ -1,4 +1,5 @@
 extends SceneTree
+const CRAFT_GLB = preload("res://tools/ci/craft_glb.gd")
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 600 (RULEBOOK 5.17, R226; RULEBOOK 6.5, R186 "blown apart, never sliced"): kill A16 (C19_51) and count two things.
 # Both must be zero:
@@ -106,6 +107,12 @@ func _load_ship() -> Node3D:
 
 
 func _run() -> void:
+	var args := OS.get_cmdline_user_args()
+	if not args.is_empty() and CRAFT_GLB.is_craft(args[0]):
+		print("DEATH_SEAM skipped: %s is a strike craft (cls Squadron): no seams, its death is a hidden spark (fx_death.gd _wing_death)" % args[0])
+		print("DEATH_SEAM failures=0")
+		quit(0)
+		return
 	var world := Node3D.new()
 	root.add_child(world)
 	var ship := _load_ship()

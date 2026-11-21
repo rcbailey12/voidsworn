@@ -70,32 +70,32 @@
    "turrets": 0,
    "files": {
     "B19_11.glb": {
-     "bytes": 7801680,
-     "sha256": "16d785163cf7899128f966508929484904f4031051a321d86df746b72b9ba0c1"
+     "bytes": 7963164,
+     "sha256": "23d8807b9be59d7aacd71ea1cf75d477e2b998caf92ca2bfc01d882044aa589a"
     },
     "B19_11_base.jpg": {
-     "bytes": 794891,
-     "sha256": "1639d80b6ad653d81b5c0d7c90caf24470fdd67b402c527c395cf77b44023484"
+     "bytes": 804493,
+     "sha256": "83f342d4441617615b70a3708e3424fd4648e2169eda80fd1b4a17c861287191"
     },
     "B19_11_normal.png": {
-     "bytes": 6785731,
-     "sha256": "2a06a3fedb9fe931cb12c6550f8dcee974591829ace3da7c09041d114d8e9799"
+     "bytes": 6740826,
+     "sha256": "11a6b232d0536657400bd56af2b9ec4d2c09deae2878df294f238fddfc112e97"
     },
     "B19_11_orm.png": {
-     "bytes": 4640641,
-     "sha256": "1a0620c6318f4f8d40e7c51592ff2511c7db15e0e0b552ab671c33b1a0246732"
+     "bytes": 4639364,
+     "sha256": "6b535c9b03087c4487ab9732ce2737f93bd466e2082f0a29ad7629e259291017"
     },
     "B19_11_parts_base.jpg": {
-     "bytes": 1018874,
-     "sha256": "91a4b1d2cef7c2be9e3802129ef7c3bc68ba45564d6a22b502085bf1535f8ddb"
+     "bytes": 1024223,
+     "sha256": "4895e58ca38e67e77ba963671fe3b2a27c406c115f0865e1726473ccac921732"
     },
     "B19_11_parts_normal.png": {
-     "bytes": 6204248,
-     "sha256": "6ba78b2c8b5d64cb7699e528f41741137a49a036df6013df2640ff2026fb005d"
+     "bytes": 6180319,
+     "sha256": "43f284b441cfe0b2387ab7123fdae1053a18b36ecdbf4ed6f86aec497185f844"
     },
     "B19_11_parts_orm.png": {
-     "bytes": 5552891,
-     "sha256": "1844bec50597729f558ba6a1a449722872530cc26ab3feafb7e06a12b53110b8"
+     "bytes": 5565703,
+     "sha256": "33ce6f800defe4928f63646b47acdc38525f443779b0dc56177d2a36b5ddafad"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\"
@@ -199,53 +199,54 @@
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B21_11\\"
   },
   "B22_11": {
-   "name": "Chorus brood-sac",
+   "name": "The brood-sac, the Chorus carrier (The Chorus)",
    "faction": "chorus",
    "cls": "Carrier",
    "band": "L",
+   "game_ship": "b_brood",
    "length_world": 16.5,
    "hardpoints": {
-    "gun": 2,
-    "bay": 2,
-    "engine": 2,
-    "breach": 8,
-    "core": 1
+    "gun": 4,
+    "engine": 4,
+    "bay": 5,
+    "breach": 7,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 7,
+   "turrets": 1,
    "files": {
     "B22_11.glb": {
-     "bytes": 6462312,
-     "sha256": "76f8c644b15962bf46125a723890e738bcba61ee6a0a695aca273307a8749927"
+     "bytes": 18580540,
+     "sha256": "ea4731103e4f12f0248f68d2a09c16a7dc9d89fd41de1baa1999c417c5934d07"
     },
     "B22_11_base.jpg": {
-     "bytes": 4341957,
-     "sha256": "980337a315f470995f5fd69ab0ee758d3cf1712d1c3846c2acacac01da0ad860"
+     "bytes": 922766,
+     "sha256": "8f6ba5b1afe4e96e37543daa9d79696419ede0c59ce37bf22cf8bd12c724e32b"
     },
-    "B22_11_damage.glb": {
-     "bytes": 22571492,
-     "sha256": "97fee6b16bc1bbc39e1ef96731185e04ff387cf708e51d413c194b9fed9b08cb"
+    "B22_11_normal.png": {
+     "bytes": 6785651,
+     "sha256": "410d55b7242ee86525aa5d6f1a693d654b16d9dd9405d632b6db5245920d968c"
     },
-    "B22_11_emissive.jpg": {
-     "bytes": 269154,
-     "sha256": "a066c0a06058fd3bf032425c416f496afd6c53957a58ec24d84d4df939e5fab6"
+    "B22_11_orm.png": {
+     "bytes": 5467204,
+     "sha256": "0fbf563cadd06fc74d880c726ad36651ef52c18aacb12bc484e7830456bdc8fe"
     },
-    "B22_11_normal.jpg": {
-     "bytes": 7227908,
-     "sha256": "ef2e4a0186b0fdedff38c406b80f6749a26ec5845c9339eacab111680dc066e7"
+    "B22_11_parts_base.jpg": {
+     "bytes": 1047578,
+     "sha256": "41cfb1aede88177bc64080976a16a5c17b67e0e15a50aed87796f9109d7c0d5c"
     },
-    "B22_11_orm.jpg": {
-     "bytes": 3025965,
-     "sha256": "4f1658c746f55c1644f7b19f9baae38d26a4258196f267f76b9fead71131e313"
+    "B22_11_parts_normal.png": {
+     "bytes": 6286931,
+     "sha256": "3c36d4009d250e3c5aae542d8a39bfab869b591c6cb9e85405103fb518131e35"
     },
-    "B22_11_wreck.glb": {
-     "bytes": 3945948,
-     "sha256": "6195c6aa135d7f02e462d7a51ddf8b8997ccc568d9a74bc2c1071e4f1a6e9c29"
+    "B22_11_parts_orm.png": {
+     "bytes": 6060336,
+     "sha256": "e4d259e9896944ddc98744d8c19217af9a7ffb160156e2ed24b2c0ac45d768c7"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B22_11\\",
-   "preview": "previews/B22_11.jpg",
-   "damage_preview": "previews/B22_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B22_11\\"
   },
   "B23_51": {
    "name": "Spore wing",
@@ -1536,52 +1537,57 @@
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\"
   },
   "V15_37": {
-   "name": "Harrow-class destroyer",
+   "name": "Harrow-class destroyer (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "harrow",
    "length_world": 9.5,
    "hardpoints": {
-    "gun": 2,
+    "gun": 4,
     "engine": 2,
-    "breach": 6,
-    "core": 1
+    "breach": 3,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 3,
+   "turrets": 2,
    "files": {
     "V15_37.glb": {
-     "bytes": 3610880,
-     "sha256": "57eaedaf968d3f57232818459d11c44402034f6607307c9c65d27560b35c4c16"
+     "bytes": 6687360,
+     "sha256": "e18f3f0c3e99cda1489d32c01f7f40654b87dce34cb7fa83561a8290ac54f38b"
     },
     "V15_37_base.jpg": {
-     "bytes": 1017243,
-     "sha256": "a39628075dd61d88f325e18f1b6da2caa0507a0da4fc7445717003c3155aa212"
+     "bytes": 1221524,
+     "sha256": "065003d6097cb5b5267fe2c6306a74432e0c02cebe39023c2244e987e332db2f"
     },
-    "V15_37_damage.glb": {
-     "bytes": 19922576,
-     "sha256": "5e6d8bfd318765c34c255e6dcc3c99b9bef21062e128dbc3940ae9b7ab43e84f"
+    "V15_37_glow_emission.jpg": {
+     "bytes": 540850,
+     "sha256": "0ab9f242c3dbd00936cdc06ba3ccbb57a14dfd2b2a6c1e855b3eadd0291d74a5"
     },
-    "V15_37_emissive.jpg": {
-     "bytes": 138361,
-     "sha256": "a64cac7e3c10f5268ef757600ff3911e408eea3fafe41f23c08babc9f1e9cd96"
+    "V15_37_normal.png": {
+     "bytes": 4580160,
+     "sha256": "6fa5e5022c117cdb6fed2d962b5b58f9a70a3a1fad572e2b30901e6762ca34cb"
     },
-    "V15_37_normal.jpg": {
-     "bytes": 2243917,
-     "sha256": "a5600baa05ab306d59417614bf25957dc4ffef124298686849251c378fb2d661"
+    "V15_37_orm.png": {
+     "bytes": 6578515,
+     "sha256": "2f27168e46e230093e311c16228311bbf9b8825288d44b1684a1b49013d302c3"
     },
-    "V15_37_orm.jpg": {
-     "bytes": 1477152,
-     "sha256": "33aa02d2b75a797a4914207f27596cd9140be8c20cac89ac66d8413671081a44"
+    "V15_37_parts_base.jpg": {
+     "bytes": 1040489,
+     "sha256": "4120f59c9871d7aa5c14404475250eb95866f90c4992495344948fb76a227b89"
     },
-    "V15_37_wreck.glb": {
-     "bytes": 2076036,
-     "sha256": "c476d0e8da9420a637f71a91efad83867e8ffa1fc5e379265d497f3a91c26140"
+    "V15_37_parts_normal.png": {
+     "bytes": 3192503,
+     "sha256": "62193428e02291179f38ce0a20519a15b4e4ce8ce5a815383f26c39ab4a9bd99"
+    },
+    "V15_37_parts_orm.png": {
+     "bytes": 6255295,
+     "sha256": "2ce5e4a4b05ea01f32abf6bbcc7b7e352648ba5213a8fdf291fe6b9eb849263a"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V15_37\\",
-   "preview": "previews/V15_37.jpg",
-   "damage_preview": "previews/V15_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V15_37\\"
   },
   "V16_37": {
    "name": "Vigil-class cruiser (Sunward Crusade)",

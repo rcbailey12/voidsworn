@@ -87,6 +87,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `end_activation(id = null)` | End the active ship's activation, or pass ship `id`. Starts the enemy phase. (Alternating mode only.) |
 | `end_turn()` | Classic mode only: end your whole turn. |
 | `rotate(id, dir)` | Turn in place one step (`dir` = +1 or -1), costing one movement point and one turn (free for ships that pivot). As in the game, the ship becomes the active one even when it cannot turn; returns whether it turned. |
+| `undo(id) -> bool`, `can_undo(id) -> bool`, `set_undo(on)` | Issue 1450 (R376): take back the ship's last move or turn, one per call, while nothing else has happened since: no shot, ram, boarding, ability, order, Command, dice drawn or other change anywhere in the battle (rules.gd `canUndo`, twin battle.js). Undoing the ship's first move also frees it, so another ship may go first. `view().units[i].undo` says when it is allowed. The battle version moves on, so every per-version cache is rebuilt. Emits `undo`. A new battle or a restored save drops what can be undone. `new_battle` turns undo on; a test scenario turns it on only with `undo: true`, and `set_undo(on)` sets it (the battle scene turns it on for `--scenario`). |
 | `stance(id, st)` | A carrier's wing stance: `"strike"` (default), `"screen"` (wings stay within 2 hexes of the carrier, hunt craft first, shoot down torpedoes aimed at ships beside them) or `"hunt"` (4 hexes more leash, +20% against crippled ships, easier to hit). One free change per round; `view()` shows `stance` and `canStance`. |
 | `can_command() -> bool`, `command()` | The Admiral's Command: once per battle, from round 1, during your phase, no ship needed. The game asks for a confirming second tap; that is UI only. |
 | `ai_activate(id)` | The game's own player-side AI plays this ship's activation (the battle sim's `botUnit`: Command when it pays, ability, ram, the best move for its guns and the objective, boarding, every gun at its best target, brace when hurt; plus one turn in place when no gun bears), through these same commands. Use it for auto-play or a full-run bot. It stops when the activation ends; in alternating mode the enemy phase then starts as usual. (The enemy AI, `aiUnit`, only ever plays the enemy side in the game, so it is not offered for your ships.) |
@@ -116,7 +117,8 @@ All return `true` when the action happened. They do nothing (return `false`) whe
           weapons: [{i, id, name, kind, arc, range, ready, cd, off}],
           moveLeft (movement still usable: after a ship fires only the Ithar fade allows half), fired, stance, canStance (carriers),
           anchor, inSync (Hegemony synchronized fire), rising (a Deathless wreck reassembling: the round it stands up, or null),
-          nemesis (the Nemesis flagship), covered (id of the bracing Voidsworn neighbour covering it)}]}
+          nemesis (the Nemesis flagship), covered (id of the bracing Voidsworn neighbour covering it),
+          undo (issue 1450: its last move or turn can be taken back now)}]}
 ```
 
 - **Hexes** are axial `(q, r)`, pointy-top.
@@ -172,6 +174,7 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `risen` | `unit, q, r` | A Deathless wreck reassembles (the endless legion). |
 | `stance` | `unit, stance` | A carrier's wing stance changed. |
 | `nem_signature` | `kind` | Your Nemesis's faction behaviour fired (R42, for his battle voice): `challenge`, `duel`, `line` (at setup), `flee_battle` (he withdraws; his ships then leave as `fled`), `reinforce` (the round 3 reinforcements are his). `B.nemSigs` keeps them with the round, `B.nemFound` the weaknesses found in this battle (with a log line each). |
+| `undo` | `unit, q, r, f, active` | Issue 1450: the ship's last move or turn was taken back; it now stands at `q, r` facing `f` (snap it there). `active` false: no ship is mid-activation any more. |
 | `end` | `result` | The battle is over. |
 
 Presentation events (no rules meaning; draw them or not):
@@ -182,6 +185,12 @@ Presentation events (no rules meaning; draw them or not):
 - **No shared scratch state in the maths.** `jsm.gd` converts floats with a fresh 8-byte buffer per call (the old shared static buffer was a data race).
 - **`version`** goes up after every call that can change the battle (commands, `step()`, `end_turn()`, `new_battle`). `ui_info(id)` and `threat_map()` are cached per version, so asking again before anything changes is instant. Both still return fresh copies.
 - **Checked by** `rules/test/thread_test.gd` (in `parity.bat` and `run_parity.sh`): s4 and s23 played twice, once on one thread and once with every `step()` on a worker while the main thread calls `view()`, `ui_info()`, `threat_map()`, `compute_reach()` and `preview_fire()`; both runs must end identical.
+
+## Round-start snapshots (issue 1451, Nov 21)
+
+- **`round_saves = true`** (set before `new_battle`; campaign battles): at the start of every round (round 1 right after setup, then after each round-start tick, swarm phase and round hook, when the player is about to act; Classic mode too) the whole rules state is packed into `round_snap` (bytes, `battle_snapshot.gd`): the run, `B`, the arena, board cut-outs, terrain meta, ids, AI level, the API's own turn state and the shared random stream (`JSM.rng_s`). `round_snap_round` says which round it holds and may be read without the lock. Packing keeps shared containers shared (a unit in `B.units` and `B.aiFocus`, a campaign ship in `RUN.fleet` and in its unit) and numbers bit for bit.
+- **`take_round_snapshot()`** returns `{round, bytes, size, fp, ms}` (or `{}`), `fp` being `snapshot_fingerprint()`: the snapshot version, the tables and rules sources and the build commit when present.
+- **`restore_round(bytes, size, fp)`** on a fresh API after `load_rules()`: returns `""` or why not (other rules, a damaged copy). The battle is then at that round's start with the player to act, and `take_events()` gives `round` and `side`, as at any round start. From there it plays exactly as the battle that was saved (`campaign/test/round_save_stress.gd`).
 
 ## Errors and the hard stop (Oct 26)
 
