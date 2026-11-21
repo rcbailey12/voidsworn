@@ -1403,6 +1403,7 @@ func _finish(r: Dictionary) -> void:
 # issue 1434: how long the last battle's _exit_tree took on the main thread, and whether it left a build part way
 static var last_exit_us := 0
 static var last_exit_mid_build := false
+static var last_exit_id := 0   # which battle the two above belong to (the bench ties them to the backdrop it clicked away from)
 
 
 func _exit_tree() -> void:
@@ -1423,6 +1424,7 @@ func _exit_tree() -> void:
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
 	last_exit_us = Time.get_ticks_usec() - t_exit
+	last_exit_id = get_instance_id()
 
 
 # Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live

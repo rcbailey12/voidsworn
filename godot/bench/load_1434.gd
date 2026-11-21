@@ -17,7 +17,8 @@ extends SceneTree
 #   click   the title's Settings link, clicked by a real mouse press and release while the backdrop is still building,
 #           opens its drawer within 500 ms
 #   bus     the title's shared sfx bus never moved
-#   leave   New run clicked while the title backdrop builds: the backdrop's exit under 100 ms on the main thread (_leave)
+#   leave   New run clicked (real mouse) while the title backdrop has a load or kit instance pending: that backdrop's exit
+#           under 100 ms on the main thread, and the campaign painted; no try caught pending is INCONCLUSIVE, not PASS
 # Run: godot --path godot [--fullscreen] --script res://bench/load_1434.gd -- --out <folder>
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
@@ -25,6 +26,7 @@ const LIMIT_MS := 500
 var out_dir := ""
 var lines: Array = []
 var pass_all := true
+var finished: Array = []   # each case adds its name as its last step, so a case cut short by a script error fails the run
 var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3"])
 
 
@@ -100,6 +102,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 	b.queue_free()
 	for i in 30:
 		await process_frame
+	finished.append(tag)
 
 
 func _title() -> void:
@@ -158,6 +161,7 @@ func _title() -> void:
 	m.queue_free()
 	for i in 10:
 		await process_frame
+	finished.append("title")
 
 
 func _find_button(n: Node, text: String) -> Button:
@@ -186,42 +190,98 @@ func _click(at: Vector2) -> void:
 		root.push_input(e)
 
 
-# leave: a cold title, then New run (main.new_run, what the button calls) while the backdrop is still building, ideally
-# with a kit hull instance in flight on a worker (Artoo on PR 1445). Graded: the backdrop battle's own _exit_tree on the
-# main thread under 100 ms (it hands running work on instead of waiting). Reported: the whole transition through the next
-# painted frame, which includes the campaign's own start.
+# leave: a fresh title, then its New run button clicked by a real mouse press and release while the backdrop is still
+# building, with a hull load or a kit hull instance still running (Artoo on PR 1445). Up to LEAVE_TRIES titles are tried
+# until one is caught with that work pending. Graded on that attempt only: the exit record must be that same backdrop
+# (its instance id), it must have left work pending, and its _exit_tree on the main thread must be under 100 ms. If no
+# attempt catches work pending, the case is INCONCLUSIVE and the run does not pass. Reported for the same attempt: click
+# to the first painted frame with the campaign in the tree, and the worst frame over the next 2 s.
+const LEAVE_TRIES := 4
+
+
+func _pending(sc) -> bool:
+	return not sc._inst_tasks.is_empty() or sc._preload.values().has(null)
+
+
 func _leave() -> void:
-	var m = MainScript.new()
-	root.add_child(m)
-	var w0 := Time.get_ticks_msec()
-	var in_flight := false
-	while Time.get_ticks_msec() - w0 < 240000:
-		await process_frame
-		var sc = m.showcase
-		if sc == null or not is_instance_valid(sc) or sc.api == null:
-			continue
-		if not sc.load_stats.is_empty() or sc.showcase_ready:
-			break
-		if not sc._inst_tasks.is_empty():
-			in_flight = true
-			break
-	var building: bool = m.showcase != null and is_instance_valid(m.showcase) and m.showcase.load_stats.is_empty()
-	var t0 := Time.get_ticks_usec()
-	m.new_run()
-	await RenderingServer.frame_post_draw
-	var total_ms := (Time.get_ticks_usec() - t0) / 1000
-	for i in 3:
-		await process_frame
 	var BS = load("res://scenes/battle/battle.gd")
-	var exit_ms: int = int(BS.last_exit_us) / 1000
-	var ok: bool = building and exit_ms < 100
-	pass_all = pass_all and ok
-	_say("[load1434] leave %s: New run clicked %s (a kit instance on a worker %s); backdrop exit %d ms on the main thread (limit 100); title to next painted frame %d ms (includes the campaign's own start); work handed on %d" % [
-		"PASS" if ok else "FAIL", "while the backdrop was building" if building else "after the backdrop finished (not a valid test)",
-		"in flight" if in_flight else "not caught in flight", exit_ms, total_ms, load("res://render/ship_view.gd").retired_build_count()])
-	m.queue_free()
-	for i in 30:
-		await process_frame
+	var SVs = load("res://render/ship_view.gd")
+	var graded := false
+	for attempt in range(1, LEAVE_TRIES + 1):
+		var m = MainScript.new()
+		root.add_child(m)
+		var w0 := Time.get_ticks_msec()
+		var caught := false
+		var sc = null
+		while Time.get_ticks_msec() - w0 < 120000:
+			await process_frame
+			sc = m.showcase
+			if sc == null or not is_instance_valid(sc) or sc.api == null:
+				continue
+			if not sc.load_stats.is_empty() or sc.showcase_ready:
+				break
+			if _pending(sc):
+				caught = true
+				break
+		if not caught or sc == null or not is_instance_valid(sc):
+			_say("[load1434] leave try %d: the backdrop finished before any work could be caught pending; trying a fresh title" % attempt)
+			m.queue_free()
+			for i in 10:
+				await process_frame
+			continue
+		var sc_id: int = sc.get_instance_id()
+		var what := "a kit instance" if not sc._inst_tasks.is_empty() else "a hull load"   # read now: the backdrop is freed after the click
+		var btn := _find_button(m, "New run")
+		var how := "New run button"
+		if btn == null:
+			btn = _find_button(m, "Continue run")
+			how = "Continue run button"
+		var t0 := Time.get_ticks_usec()
+		if btn != null:
+			_click(btn.get_global_rect().get_center())
+		else:
+			how = "main.new_run (no button found)"
+			m.new_run()
+		# the first painted frame with the campaign in the tree
+		var first_ms := -1
+		var f0 := Time.get_ticks_usec()
+		while Time.get_ticks_usec() - f0 < 20000000:
+			await RenderingServer.frame_post_draw
+			if m.campaign != null and is_instance_valid(m.campaign) and m.campaign.is_inside_tree():
+				first_ms = (Time.get_ticks_usec() - t0) / 1000
+				break
+		var worst := 0
+		var last := Time.get_ticks_usec()
+		var e0 := last
+		while Time.get_ticks_usec() - e0 < 2000000:
+			await process_frame
+			var now := Time.get_ticks_usec()
+			worst = maxi(worst, now - last)
+			last = now
+		var same: bool = int(BS.last_exit_id) == sc_id
+		var mid: bool = same and bool(BS.last_exit_mid_build)
+		var exit_ms: int = int(BS.last_exit_us) / 1000
+		var shown := "the backdrop's own exit %s" % ("%d ms on the main thread (limit 100)" % exit_ms if same else "never recorded (the last exit was another battle)")
+		_say("[load1434] leave try %d: %s clicked with %s pending; %s; it left work %s; click to first campaign frame %s; worst frame over the next 2 s %d ms; work handed on %d" % [
+			attempt, how, what, shown,
+			"pending (handed on)" if mid else "finished (not a valid test)",
+			("%d ms" % first_ms) if first_ms >= 0 else "never (20 s)", worst / 1000, SVs.retired_build_count()])
+		if m.campaign != null and is_instance_valid(m.campaign):
+			m.campaign.queue_free()
+		m.queue_free()
+		for i in 30:
+			await process_frame
+		if mid:
+			var ok: bool = exit_ms < 100 and first_ms >= 0
+			pass_all = pass_all and ok
+			_say("[load1434] leave %s (try %d: exit %d ms, click to first campaign frame %s)" % ["PASS" if ok else "FAIL", attempt, exit_ms,
+				("%d ms" % first_ms) if first_ms >= 0 else "never"])
+			graded = true
+			break
+	if not graded:
+		pass_all = false
+		_say("[load1434] leave INCONCLUSIVE: no try in %d caught the backdrop with a load or kit instance pending, so the hand-off is unproven" % LEAVE_TRIES)
+	finished.append("leave")
 
 
 func _run() -> void:
@@ -232,7 +292,11 @@ func _run() -> void:
 	if "b1" in cases: await _battle("b1", {"seed": 101})
 	if "b2" in cases: await _battle("b2", {"seed": 202})
 	if "b3" in cases: await _battle("b3", {"seed": 303})
-	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, bus)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
+	for c in cases:
+		if not c in finished:
+			pass_all = false
+			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
+	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, bus; leave exit limit 100 ms)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var f := FileAccess.open(out_dir.path_join("load_result.txt"), FileAccess.WRITE)
