@@ -13,7 +13,19 @@ const GUARD := preload("res://tools/ci/check_guard.gd")
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const SPEED := 0.25
 var failures := 0
-var log: Array = []   # [frame, ms, who, name, args]
+var log: Array = []   # [frame, ms, who, name, args, game clock ms]
+var clock: Clock
+
+
+# The game clock the battle's waits run on: the sum of frame deltas (a wait's timer counts the same deltas, so a hold
+# measured here is exact to one frame; wall time is not: SHOTS3 on the PC read 105 ms for a 130 ms wait, because the
+# timer's first delta includes the frame time spent before the wait began).
+class Clock extends Node:
+	var ms := 0.0
+	var max_dt := 0.0
+	func _process(dt: float) -> void:
+		ms += dt * 1000.0
+		max_dt = maxf(max_dt, dt * 1000.0)
 
 
 func _init() -> void:
@@ -29,7 +41,7 @@ func _check(ok: bool, message: String) -> void:
 
 
 func _note(who: String, n: String, a: Array) -> void:
-	log.append([Engine.get_process_frames(), Time.get_ticks_msec(), who, n, a])
+	log.append([Engine.get_process_frames(), Time.get_ticks_msec(), who, n, a, clock.ms])
 
 
 class RecFx extends Node:
@@ -92,14 +104,23 @@ func _play(b, e: Dictionary, effect: String) -> float:
 	b.speed = SPEED
 	b.user_speed = SPEED
 	log.clear()
+	clock.max_dt = 0.0   # the band is two of this event's own frames
 	await b._play_event(e)
 	_check(is_equal_approx(float(b.speed), SPEED), "nothing changed the pace while %s played (%.3f)" % [str(e["t"]), float(b.speed)])
-	var end := Time.get_ticks_msec()
 	var r := _first("fx", effect)
-	return float(end - int(r[1])) if not r.is_empty() else -1.0
+	return clock.ms - float(r[5]) if not r.is_empty() else -1.0
+
+
+# a hold is right when the game clock ran at least the wait and at most two frames past it (the timer fires on the
+# frame its deltas reach the wait; the event returns on that frame or the next)
+func _held_ok(held: float, want: float) -> bool:
+	return held >= want - 0.5 and held <= want + 2.0 * clock.max_dt + 0.5
 
 
 func _run() -> void:
+	clock = Clock.new()
+	clock.process_priority = -1000
+	root.add_child(clock)
 	var b = BattleScene.instantiate()
 	b.tips_off = true
 	b.external = true
@@ -155,7 +176,6 @@ func _run() -> void:
 	b.speed = SPEED
 	b.user_speed = SPEED
 	var fac := str(u0.get("fac", ""))
-	var slack := 80.0   # ms: frame steps around a timer in a headless run
 
 	print("-- ram (a one-hex charge, then the hit)")
 	var held := await _play(b, {"t": "ram", "unit": mine, "target": foe, "path": [step], "dmg": 1, "section": "mid", "recoil": 1}, "volley")
@@ -168,7 +188,7 @@ func _run() -> void:
 	_check(not bm.is_empty() and is_equal_approx(float((bm[4] as Array)[0]), 0.8), "the ram's approved sound: boom at 0.8")
 	_check(not bm.is_empty() and not v.is_empty() and int(bm[0]) == int(v[0]), "the boom and the crumple land on the same frame")
 	_check(_first("fx", "pop").is_empty(), "no placeholder pop")
-	_check(absf(held - 500.0 * SPEED) <= slack, "the ram keeps its 500 ms hold (%.0f ms at pace %.2f, want %.0f)" % [held, SPEED, 500.0 * SPEED])
+	_check(_held_ok(held, 500.0 * SPEED), "the ram keeps its 500 ms hold (%.1f game ms at pace %.2f, want %.0f to %.0f)" % [held, SPEED, 500.0 * SPEED, 500.0 * SPEED + 2.0 * clock.max_dt])
 	_check(_sounds() == ["boom"], "the ram plays only its boom (%s)" % str(_sounds()))
 
 	print("-- board")
@@ -179,7 +199,7 @@ func _run() -> void:
 	_check(not gr.is_empty() and str(((gr[4] as Array)[0] as Dictionary).get("variant", "?")) == fac, "the boarding's approved sound: board_grapple, the boarder's variant (%s)" % fac)
 	_check(not gr.is_empty() and not bd.is_empty() and int(gr[0]) == int(bd[0]), "the grapple and the breach start on the same frame")
 	_check(_first("fx", "pop").is_empty(), "no placeholder pop")
-	_check(absf(held - 600.0 * SPEED) <= slack, "the boarding keeps its 600 ms hold (%.0f ms, want %.0f)" % [held, 600.0 * SPEED])
+	_check(_held_ok(held, 600.0 * SPEED), "the boarding keeps its 600 ms hold (%.1f game ms, want %.0f to %.0f)" % [held, 600.0 * SPEED, 600.0 * SPEED + 2.0 * clock.max_dt])
 	_check(_sounds() == ["board_grapple"], "the boarding plays only its grapple (%s)" % str(_sounds()))
 
 	print("-- command (the player's: names no unit)")
@@ -194,13 +214,14 @@ func _run() -> void:
 	_check(not cm.is_empty() and (cm[4] as Array).slice(0, 2) == [flag, cmd], "the command pulses the player's flagship (%s)" % (str(cm[4]) if not cm.is_empty() else "none"))
 	_check(_sounds().is_empty(), "the command adds no sound of its own (%s)" % str(_sounds()))
 	var want := (float(b.PACE["banner"]) + 140.0) * SPEED
-	_check(absf(held - want) <= slack, "the command keeps its banner hold (%.0f ms, want %.0f)" % [held, want])
+	_check(_held_ok(held, want), "the command keeps its banner hold (%.1f game ms, want %.0f to %.0f)" % [held, want, want + 2.0 * clock.max_dt])
 
 	b.gfx = real_fx
 	b.sfx = real_sfx
 	rs.queue_free()
 	rec.queue_free()
 	b.queue_free()
+	clock.queue_free()
 	await process_frame
 	await process_frame
 	print("CLOSE_ACTION_MOMENTS %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
