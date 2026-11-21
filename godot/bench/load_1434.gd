@@ -54,13 +54,23 @@ func _battle(tag: String, args: Dictionary) -> void:
 	root.add_child(b)
 	var ready_ms := (Time.get_ticks_usec() - t0) / 1000
 	var worst := 0
+	var frames: Array = []   # [ms, phase before -> phase after] for every frame under the cover
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
+		var ph0: String = b.load_phase
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
+		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase]])
 		last = now
+	frames.sort_custom(func(x, y): return x[0] > y[0])
+	var top := PackedStringArray()
+	for f in frames.slice(0, 5):
+		top.append("%d ms %s" % [f[0], f[1]])
+	var per := {}
+	for f in frames:
+		per[f[1]] = int(per.get(f[1], 0)) + int(f[0])
 	var st: Dictionary = b.load_stats
 	var ready: bool = not b.warming
 	if st.is_empty():
@@ -77,6 +87,10 @@ func _battle(tag: String, args: Dictionary) -> void:
 			tag, st["ships"], st["ms"], st["frames"], int(st["worst_stretch"]) / 1000,
 			int(st["worst_setup"]) / 1000, st["worst_code"], int(st["worst_fx"]) / 1000, int(st["wait"]) / 1000, ready_ms,
 			worst / 1000, Time.get_ticks_msec() - w0])
+	_say("[load1434] %s cover frames: worst %s; time by phase %s" % [tag, ", ".join(top), str(per)])
+	if not st.is_empty():
+		_say("[load1434] %s worst ship %s setup stages (us) %s; worst effects registration %s parts (us) %s" % [tag, st.get("worst_code", ""),
+			str(st.get("worst_stages", {})), st.get("worst_fx_code", ""), str(st.get("worst_fx_parts", {}))])
 	b.queue_free()
 	for i in 30:
 		await process_frame

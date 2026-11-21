@@ -9,6 +9,7 @@ extends SceneTree
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Sfx := preload("res://audio/sfx.gd")
+const SV := preload("res://render/ship_view.gd")
 
 var fails := 0
 
@@ -100,9 +101,63 @@ func _run() -> void:
 	while b.views.size() < units and Time.get_ticks_msec() - t0 < 20000:
 		await process_frame
 	_check(units > 0 and b.views.size() == units, "sliced build made every ship (%d of %d)" % [b.views.size(), units])
+	# the same fight with every hull a kit ship (a stand-in scene): threaded load, worker instances, setup in two steps
+	var codes := {}
+	var hulls_n := 0
+	for id in b.views:
+		if not b.views[id].squad_kind.is_empty():
+			continue
+		codes[b.views[id].code] = true
+		hulls_n += 1
 	b.stop_build()
 	b.queue_free()
 	await process_frame
+	var fixture := "user://showcase_quiet_hull_%d.tscn" % OS.get_process_id()
+	var hull := Node3D.new()
+	var part := MeshInstance3D.new()
+	var mesh := ArrayMesh.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(12.0, 3.0, 4.0)
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
+	part.mesh = mesh
+	hull.add_child(part)
+	part.owner = hull
+	var core := Node3D.new()
+	core.name = "hp_core"
+	hull.add_child(core)
+	core.owner = hull
+	var scene := PackedScene.new()
+	_check(scene.pack(hull) == OK and ResourceSaver.save(scene, fixture) == OK, "saved a stand-in kit hull")
+	hull.free()
+	var ships := {}
+	for code in codes:
+		ships[code] = {"res": fixture}
+	SV._manifest = {"ships": ships}
+	var k = BattleScene.instantiate()
+	k.args["sliced-load"] = true
+	k.args["noworld"] = true
+	k.args["seed"] = 7
+	k.bot = true
+	root.add_child(k)
+	t0 = Time.get_ticks_msec()
+	while k.views.size() < units and Time.get_ticks_msec() - t0 < 20000:
+		await process_frame
+	var kits := 0
+	var staged := 0
+	for id in k.views:
+		if k.views[id].a4:
+			kits += 1
+			if k.views[id].stage_us.has("inst") and k.views[id].stage_us.has("look"):
+				staged += 1
+	_check(k.views.size() == units and kits == hulls_n and hulls_n > 0 and k._inst_tasks.is_empty(),
+		"kit hulls built from worker instances (%d views, %d kit ships of %d expected, %d tasks left)" % [k.views.size(), kits, hulls_n, k._inst_tasks.size()])
+	_check(staged == kits, "every kit ship timed its setup stages (%d of %d)" % [staged, kits])
+	_check(int(k.load_stats.get("worker_insts", 0)) == kits, "every kit hull was instanced on a worker (%d of %d)" % [int(k.load_stats.get("worker_insts", 0)), kits])
+	k.stop_build()
+	k.queue_free()
+	await process_frame
+	SV._manifest = null
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture))
 	var c = BattleScene.instantiate()
 	c.args["sliced-load"] = true
 	c.args["noworld"] = true

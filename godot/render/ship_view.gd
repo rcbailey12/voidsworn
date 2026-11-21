@@ -76,6 +76,15 @@ static func yaw_of(f) -> float:
 # Issue 1434: the hull resource setup() will load for this unit (the same choice: named variant, the unit's own code, then
 # the A4 kit ship, the hi model, the plain hull), or "" for a strike wing or a unit with no built hull. The battle asks the
 # loader for these on a worker thread as soon as the roster is known, so setup() finds them in the cache.
+# issue 1434: true when this resource is an A4 kit ship (setup takes a worker-made instance of it as pre_inst)
+static func is_kit_res(path: String) -> bool:
+	for k in manifest().get("ships", {}):
+		var e = manifest()["ships"][k]
+		if e is Dictionary and str(e.get("res", "")) == path:
+			return true
+	return false
+
+
 static func hull_res(unit: Dictionary, use_hi := true) -> String:
 	var fac := str(unit.get("fac", "hegemony"))
 	if not FLOOK.has(fac):
@@ -95,8 +104,25 @@ static func hull_res(unit: Dictionary, use_hi := true) -> String:
 	return ""
 
 
+# Issue 1434: the battle's sliced build may hand over the A4 hull already instantiated on a worker thread (pre_inst, a
+# node not in the tree), and calls setup_begin and setup_end in separate frames when a stretch runs long. setup() runs
+# both at once as before. stage_us holds the last setup's time per stage in microseconds (inst, look, fit, rest).
+var pre_inst: Node3D = null
+var stage_us := {}
+var _end_pending := false
+var _end_pos := Vector3.ZERO
+var _proc_was := true
+
+
 # unit: a ship from the rules API's view() (id, fac, cls, facing ...)
 func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
+	setup_begin(unit, world_pos, use_hi)
+	setup_end()
+
+
+func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
+	var t0 := Time.get_ticks_usec()
+	stage_us = {}
 	u = unit
 	fac = str(u.get("fac", "hegemony"))
 	if not FLOOK.has(fac):
@@ -143,12 +169,20 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var made := false
 	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
 	if man.has("ships") and man["ships"].has(code):
-		var ps0 = load(man["ships"][code]["res"])
-		if ps0 is PackedScene:
-			var inst0: Node3D = (ps0 as PackedScene).instantiate()
-			hull.add_child(inst0)
+		if pre_inst != null and is_instance_valid(pre_inst):
+			hull.add_child(pre_inst)   # issue 1434: instantiated on a worker from this same resource
 			made = true
 			a4 = true
+		else:
+			var ps0 = load(man["ships"][code]["res"])
+			if ps0 is PackedScene:
+				var inst0: Node3D = (ps0 as PackedScene).instantiate()
+				hull.add_child(inst0)
+				made = true
+				a4 = true
+	elif pre_inst != null and is_instance_valid(pre_inst):
+		pre_inst.free()   # not this unit's kit ship after all
+	pre_inst = null
 	if not made and use_hi and man.has("hi") and man["hi"].has(code):
 		var ps = load(man["hi"][code]["res"])
 		if ps is PackedScene:
@@ -176,15 +210,34 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		mi.mesh = am
 		hull.add_child(mi)
 	_collect(hull)
+	stage_us["inst"] = Time.get_ticks_usec() - t0
+	_end_pos = world_pos
+	_end_pending = true
+	_proc_was = is_processing()
+	set_process(false)   # no ring, engines or fit yet: _process waits for setup_end
+
+
+# the rest of setup: the faction look on every surface, the fit to the hex, the engines and the ring
+func setup_end() -> void:
+	if not _end_pending:
+		return
+	_end_pending = false
+	set_process(_proc_was)
+	var t0 := Time.get_ticks_usec()
 	_look()
+	var t1 := Time.get_ticks_usec()
+	stage_us["look"] = t1 - t0
 	_fit()
+	var t2 := Time.get_ticks_usec()
+	stage_us["fit"] = t2 - t1
 	if fac == "deathless":
 		_remember_live_hull()
 	_engines()
 	_ring()
-	position = world_pos
+	position = _end_pos
 	cur_yaw = yaw_of(u["facing"])
 	rotation.y = cur_yaw
+	stage_us["rest"] = Time.get_ticks_usec() - t2
 
 
 # G4's per-faction hull fix (render/look.gd: rim light and albedo lift for the dark hulls), one material copy per hull

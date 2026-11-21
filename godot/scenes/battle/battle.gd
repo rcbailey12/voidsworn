@@ -532,12 +532,17 @@ func _begin(a) -> void:
 	api = a
 	_build_gen += 1
 	var gen := _build_gen
+	load_phase = "start"
 	warming = true
 	hud.loading(true)
 	# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
 	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
+		if "defer_shields" in gfx:
+			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
+		if "warmup_batch" in gfx:
+			gfx.warmup_batch = 4 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame
 	if sliced:
 		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
 		_preload_hulls(a.view())
@@ -628,7 +633,9 @@ func _begin(a) -> void:
 	V = api.view()
 	_index_view()
 	if sliced:
+		load_phase = "ships"
 		var built: bool = await _make_views_sliced(gen)
+		load_phase = "after_ships"
 		if not built:
 			return
 	else:
@@ -811,10 +818,16 @@ const ArrivalWarm := preload("res://render/arrival_warm.gd")
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
+# issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
+var load_phase := ""
+
+
 func _warmup() -> void:
 	warming = true
 	hud.loading(true)
+	load_phase = "world"
 	if world != null: await world.wait_ready()
+	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -826,11 +839,14 @@ func _warmup() -> void:
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
+			load_phase = "arrival_warm"
 			arrival_warm = ArrivalWarm.new()
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
+		load_phase = "prepare_hulls"
 		await gfx.prepare_battle_hulls()
+		load_phase = "fx_warmup"
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
 		var run := func() -> void:
@@ -842,6 +858,7 @@ func _warmup() -> void:
 			await get_tree().process_frame
 		if arrival_warm != null:
 			arrival_warm.park()
+	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
@@ -850,7 +867,9 @@ func _warmup() -> void:
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	load_phase = "settle"
 	await load("res://main/load_screen.gd").settle(get_tree())
+	load_phase = ""
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
@@ -917,73 +936,160 @@ func _preload_hulls(v: Dictionary) -> void:
 			_preload[p] = null
 
 
-# every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process)
+# every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process), and
+# every worker instantiation is waited for; an instance never handed to a ship is freed
 func _drop_preload() -> void:
 	for p in _preload:
 		if _preload[p] == null:
 			ResourceLoader.load_threaded_get(p)
 	_preload.clear()
+	for k in _inst_tasks:
+		var e: Dictionary = _inst_tasks[k]
+		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+		var n = e["out"][0]
+		if n != null and is_instance_valid(n) and not (n as Node).is_inside_tree() and (n as Node).get_parent() == null:
+			(n as Node).free()
+	_inst_tasks.clear()
+
+
+# Issue 1434, PC run 1 (OPUS1434_LOAD2): one ship's build still took up to 566 ms (V16_37 setup, about 520 ms in every
+# battle) and one effects registration up to 518 ms. So a kit hull is now instantiated on a worker thread (a node that is
+# not in the tree yet; it joins the tree on the main thread in setup_begin), a few ships ahead of the build; setup is
+# split in two (setup_begin: the hull node; setup_end: look, fit, engines, ring) with a frame between them when the
+# stretch is long; and the worst ship's stages and effects parts are logged.
+const INST_AHEAD := 3
+var _inst_tasks := {}   # unit index -> {"tid", "out": [instance]}
+var _ls := {}           # the sliced build's stats in progress
+var _ls_t := 0          # start of the current main-thread stretch
+
+
+func _start_inst(units: Array, from: int) -> void:
+	for j in range(from, mini(from + INST_AHEAD, units.size())):
+		if _inst_tasks.has(j):
+			continue
+		var p := ShipView.hull_res(units[j])
+		if not _preload.has(p) or not ShipView.is_kit_res(p):
+			continue
+		if _preload[p] == null:
+			if ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_LOADED:
+				continue
+			_preload[p] = ResourceLoader.load_threaded_get(p)
+		var ps = _preload[p]
+		if not (ps is PackedScene):
+			continue
+		var out := [null]
+		var tid := WorkerThreadPool.add_task(func() -> void: out[0] = (ps as PackedScene).instantiate())
+		_inst_tasks[j] = {"tid": tid, "out": out}
+
+
+# a frame for the cover when the current stretch has run past LOAD_SLICE_MS; false when the build was stopped
+func _ls_yield(gen: int, force := false) -> bool:
+	var now := Time.get_ticks_usec()
+	if not force and now - _ls_t <= LOAD_SLICE_MS * 1000.0:
+		return true
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], now - _ls_t)
+	await get_tree().process_frame
+	_ls["frames"] += 1
+	_ls_t = Time.get_ticks_usec()
+	return gen == _build_gen
 
 
 func _make_views_sliced(gen: int) -> bool:
 	var units: Array = V["units"]
 	var total := units.size()
 	var t0 := Time.get_ticks_usec()
-	var stretch_t := t0
-	var st := {"worst_stretch": 0, "frames": 0, "wait": 0, "setup": 0, "fx": 0, "worst_setup": 0, "worst_fx": 0, "worst_code": ""}
-	var n := 0
+	_ls_t = t0
+	_ls = {"worst_stretch": 0, "frames": 0, "wait": 0, "setup": 0, "fx": 0, "worst_setup": 0, "worst_fx": 0, "worst_code": "",
+		"worst_stages": {}, "worst_fx_code": "", "worst_fx_parts": {}, "worker_insts": 0}
+	var ok := true
 	hud.loading_count(0, total)
-	for u in units:
+	for i in total:
+		var u: Dictionary = units[i]
+		if views.has(u["id"]):
+			continue
+		_start_inst(units, i)
 		var p := ShipView.hull_res(u)
+		var tw := Time.get_ticks_usec()
+		# the hull file, then its worker instance (the cover keeps drawing while either is still running)
+		while (_preload.has(p) and _preload[p] == null and ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS) \
+				or (_inst_tasks.has(i) and not WorkerThreadPool.is_task_completed(int(_inst_tasks[i]["tid"]))):
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			_start_inst(units, i)
 		if _preload.has(p) and _preload[p] == null:
-			var tw := Time.get_ticks_usec()
-			while ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-				st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
-				await get_tree().process_frame
-				st["frames"] += 1
-				if gen != _build_gen:
-					return false
-				stretch_t = Time.get_ticks_usec()
 			_preload[p] = ResourceLoader.load_threaded_get(p)   # held until the views are built, so setup's load() is a cache hit
-			st["wait"] += Time.get_ticks_usec() - tw
+		var inst: Node3D = null
+		if _inst_tasks.has(i):
+			WorkerThreadPool.wait_for_task_completion(int(_inst_tasks[i]["tid"]))
+			inst = _inst_tasks[i]["out"][0]
+			_inst_tasks.erase(i)
+			if inst != null:
+				_ls["worker_insts"] += 1
+		_ls["wait"] += Time.get_ticks_usec() - tw
 		var ts := Time.get_ticks_usec()
-		var sv := _make_view_node(u)
-		var tf := Time.get_ticks_usec()
-		st["setup"] += tf - ts
-		if tf - ts > st["worst_setup"]:
-			st["worst_setup"] = tf - ts
-			st["worst_code"] = sv.code if sv != null else ""
-		if sv != null and Time.get_ticks_usec() - stretch_t > LOAD_SLICE_MS * 1000.0:
-			st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
-			await get_tree().process_frame
-			st["frames"] += 1
-			if gen != _build_gen:
-				return false
-			stretch_t = Time.get_ticks_usec()
-		if sv != null and is_instance_valid(sv):
-			var tr := Time.get_ticks_usec()
-			_register_fx_ship(u, sv)
-			st["fx"] += Time.get_ticks_usec() - tr
-			st["worst_fx"] = maxi(st["worst_fx"], Time.get_ticks_usec() - tr)
-		n += 1
-		hud.loading_count(n, total)
-		if Time.get_ticks_usec() - stretch_t > LOAD_SLICE_MS * 1000.0:
-			st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
-			await get_tree().process_frame
-			st["frames"] += 1
-			if gen != _build_gen:
-				return false
-			stretch_t = Time.get_ticks_usec()
-	st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
-	st["ships"] = total
-	st["ms"] = (Time.get_ticks_usec() - t0) / 1000
-	load_stats = st   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
+		var sv = ShipView.new()
+		sv.name = "ship_" + str(u["id"])
+		add_child(sv)
+		sv.pre_inst = inst
+		sv.setup_begin(u, board.hex_world(u["q"], u["r"]), true)
+		var used := Time.get_ticks_usec() - ts
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		var te := Time.get_ticks_usec()
+		sv.setup_end()
+		sv.set_marker(u["side"] == "player")
+		views[u["id"]] = sv
+		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+		used += Time.get_ticks_usec() - te
+		_ls["setup"] += used
+		if used > _ls["worst_setup"]:
+			_ls["worst_setup"] = used
+			_ls["worst_code"] = sv.code
+			_ls["worst_stages"] = sv.stage_us.duplicate()
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
+		var tr := Time.get_ticks_usec()
+		_register_fx_ship(u, sv)
+		var fx_us := Time.get_ticks_usec() - tr
+		_ls["fx"] += fx_us
+		if fx_us > _ls["worst_fx"]:
+			_ls["worst_fx"] = fx_us
+			_ls["worst_fx_code"] = sv.code
+			var parts := {}
+			if gfx != null and "prof" in gfx:
+				for k in gfx.prof:
+					if str(k).begins_with("add:"):
+						var d := int(gfx.prof[k]) - int(prof0.get(k, 0))
+						if d > 0:
+							parts[k] = d
+			_ls["worst_fx_parts"] = parts
+		hud.loading_count(i + 1, total)
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], Time.get_ticks_usec() - _ls_t)
+	_ls["ships"] = total
+	_ls["ms"] = (Time.get_ticks_usec() - t0) / 1000
+	load_stats = _ls   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
 	_drop_preload()
 	hud.loading_count(0, 0)
-	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s), effects registration %d ms (worst %d ms), waiting on hull files %d ms" % [
-		total, (Time.get_ticks_usec() - t0) / 1000, st["frames"], " (title backdrop)" if title_backdrop else "", st["worst_stretch"] / 1000,
-		st["setup"] / 1000, st["worst_setup"] / 1000, st["worst_code"], st["fx"] / 1000, st["worst_fx"] / 1000, st["wait"] / 1000])
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
+		total, _ls["ms"], _ls["frames"], " (title backdrop)" if title_backdrop else "", _ls["worst_stretch"] / 1000,
+		_ls["setup"] / 1000, _ls["worst_setup"] / 1000, _ls["worst_code"], _us_ms(_ls["worst_stages"]),
+		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]), _ls["wait"] / 1000, _ls["worker_insts"]])
 	return true
+
+
+# {"inst": 412345, ...} in microseconds -> "inst 412, ..." in milliseconds (the load log)
+static func _us_ms(d: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for k in d:
+		parts.append("%s %d" % [str(k).trim_prefix("add:"), int(d[k]) / 1000])
+	return ", ".join(parts) if not parts.is_empty() else "-"
 
 
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
