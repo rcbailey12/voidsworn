@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7cde9b0e93bf42f49c572d66a31baa48\godot-profile-dab174665bca4914a7ab60a0df6f4d1c
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUTHORED_INTERIORS skipped: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo\godot\assets\ships\corsair_KF1\corsair_KF1.glb is a strike craft (cls Squadron): no rooms, its death is a hidden spark (fx_death.gd _wing_death)
+AUTHORED_INTERIORS failures=0 interior_triangles=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7cde9b0e93bf42f49c572d66a31baa48\godot-profile-dab174665bca4914a7ab60a0df6f4d1c

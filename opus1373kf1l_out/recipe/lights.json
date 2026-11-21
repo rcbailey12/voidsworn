@@ -1,0 +1,11 @@
+{
+ "lights": {
+  "running": {
+   "px": 0.8,
+   "count": 16,
+   "point": true,
+   "world": 0.018,
+   "source": "measured: the lens size the stack built, on a 70 px ship; point lights (R228 item 4): brightness, not size, carries the read"
+  }
+ }
+}

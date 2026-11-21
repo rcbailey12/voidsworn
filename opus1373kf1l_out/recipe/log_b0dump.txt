@@ -1,0 +1,12 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: still waiting for shared claim
+GPU: acquired shared claim 51d9a814-e70b-49df-9f21-1397a81cab08
+08:22:42 | INFO: Data are loaded, start creating Blender stuff
+08:22:42 | INFO: Blender create Mesh node geometry_0
+08:22:43 | INFO: glTF import finished in 0.56s
+[ai_align] measured shape_ref_yaw -179.9 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\b0.npz (563104, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim 51d9a814-e70b-49df-9f21-1397a81cab08

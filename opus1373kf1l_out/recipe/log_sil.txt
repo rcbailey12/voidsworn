@@ -1,0 +1,1 @@
+[score] KF1 {'overlap': 38.7, 'concept_covered': 41.3, 'cell_outside': 14.0, 'triangles': 84756}

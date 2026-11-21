@@ -1,0 +1,2 @@
+  battle camera KF1: game bow 52.4 midship 38.5 stern 54.2 whole 45.8, studio bow 45.0 midship 35.3 stern 43.0 whole 39.5
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

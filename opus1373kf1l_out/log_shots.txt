@@ -1,0 +1,11 @@
+GPU: waiting for shared claim, weight 1 (1373)
+GPU: acquired shared claim 0faed7c3-573f-4280-bb87-e67149560649
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fde347fff3a64bc8a22ab33ba072e5e5\godot-profile-5976d9f405524fb3886f7ea5e65076f1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\out\shots facs ["corsair"] sets ["close"]
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fde347fff3a64bc8a22ab33ba072e5e5\godot-profile-5976d9f405524fb3886f7ea5e65076f1
+GPU: released shared claim 0faed7c3-573f-4280-bb87-e67149560649

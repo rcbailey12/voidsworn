@@ -1,0 +1,815 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 7ad871d2-54fb-408d-9bb3-88633190b244
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\KF1.blend"
+Fra:1 Mem:205.90M (Peak 205.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:205.95M (Peak 205.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_rail_p
+Fra:1 Mem:205.96M (Peak 205.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1_mount_iron
+Fra:1 Mem:205.98M (Peak 205.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_iron
+Fra:1 Mem:205.99M (Peak 205.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_steel
+Fra:1 Mem:206.03M (Peak 206.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p2
+Fra:1 Mem:206.10M (Peak 206.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p3
+Fra:1 Mem:206.13M (Peak 206.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p
+Fra:1 Mem:206.12M (Peak 206.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:206.13M (Peak 206.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p3
+Fra:1 Mem:206.14M (Peak 206.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p4
+Fra:1 Mem:206.16M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_s
+Fra:1 Mem:206.15M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_s
+Fra:1 Mem:206.15M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s1
+Fra:1 Mem:206.15M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s2
+Fra:1 Mem:206.16M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:206.16M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s
+Fra:1 Mem:206.16M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s1
+Fra:1 Mem:206.16M (Peak 206.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s3
+Fra:1 Mem:206.17M (Peak 206.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s4
+Fra:1 Mem:206.17M (Peak 206.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo
+Fra:1 Mem:206.18M (Peak 206.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent
+Fra:1 Mem:206.18M (Peak 206.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat1
+Fra:1 Mem:206.18M (Peak 206.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat2
+Fra:1 Mem:206.19M (Peak 206.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat3
+Fra:1 Mem:206.21M (Peak 206.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_steel
+Fra:1 Mem:206.21M (Peak 206.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_glow
+Fra:1 Mem:206.24M (Peak 206.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_iron
+Fra:1 Mem:206.25M (Peak 206.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_steel
+Fra:1 Mem:206.26M (Peak 206.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_steel
+Fra:1 Mem:206.26M (Peak 206.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_glow
+Fra:1 Mem:206.26M (Peak 206.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_soot
+Fra:1 Mem:206.27M (Peak 206.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_iron
+Fra:1 Mem:206.27M (Peak 206.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_steel
+Fra:1 Mem:206.28M (Peak 206.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:206.29M (Peak 206.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_ember
+Fra:1 Mem:206.29M (Peak 206.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_iron
+Fra:1 Mem:206.32M (Peak 206.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_soot
+Fra:1 Mem:206.35M (Peak 206.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_iron
+Fra:1 Mem:206.37M (Peak 206.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bankhood
+Fra:1 Mem:206.38M (Peak 206.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:206.39M (Peak 206.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_rust
+Fra:1 Mem:206.40M (Peak 206.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_steel
+Fra:1 Mem:206.40M (Peak 206.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_violet
+Fra:1 Mem:206.46M (Peak 206.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_rivets
+Fra:1 Mem:206.51M (Peak 206.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_body_light
+Fra:1 Mem:206.53M (Peak 206.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_rust
+Fra:1 Mem:206.53M (Peak 206.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_pale
+Fra:1 Mem:206.53M (Peak 206.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:206.60M (Peak 206.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_rust
+Fra:1 Mem:207.72M (Peak 207.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_blood
+Fra:1 Mem:207.82M (Peak 207.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:208.71M (Peak 208.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_body_light
+Fra:1 Mem:209.28M (Peak 209.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_mount_iron
+Fra:1 Mem:209.54M (Peak 209.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:209.59M (Peak 209.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_body_light
+Fra:1 Mem:209.98M (Peak 209.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:210.24M (Peak 210.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_rivets
+Fra:1 Mem:210.34M (Peak 210.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_body_light
+Fra:1 Mem:210.63M (Peak 210.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:210.84M (Peak 210.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_rust
+Fra:1 Mem:210.88M (Peak 210.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_body_light
+Fra:1 Mem:211.01M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:210.98M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_body_light
+Fra:1 Mem:210.98M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_mount_iron
+Fra:1 Mem:210.97M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_body_light
+Fra:1 Mem:210.97M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_blood
+Fra:1 Mem:210.97M (Peak 211.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:211.10M (Peak 211.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_pale
+Fra:1 Mem:211.12M (Peak 211.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_violet
+Fra:1 Mem:211.18M (Peak 211.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_body_light
+Fra:1 Mem:211.38M (Peak 211.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_mount_iron
+Fra:1 Mem:211.40M (Peak 211.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_body_light
+Fra:1 Mem:211.50M (Peak 211.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_rust
+Fra:1 Mem:211.42M (Peak 211.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_mount_iron
+Fra:1 Mem:211.45M (Peak 211.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_pale
+Fra:1 Mem:211.56M (Peak 211.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_violet
+Fra:1 Mem:211.57M (Peak 211.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_body_light
+Fra:1 Mem:211.79M (Peak 211.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_rust
+Fra:1 Mem:211.86M (Peak 211.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_mount_iron
+Fra:1 Mem:212.04M (Peak 212.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_body_light
+Fra:1 Mem:212.18M (Peak 212.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_blood
+Fra:1 Mem:212.07M (Peak 212.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_mount_iron
+Fra:1 Mem:212.10M (Peak 212.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_steel
+Fra:1 Mem:212.19M (Peak 212.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_body_light
+Fra:1 Mem:212.23M (Peak 212.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:212.29M (Peak 212.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_magazine
+Fra:1 Mem:212.31M (Peak 212.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew
+Fra:1 Mem:212.33M (Peak 212.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_mount_iron
+Fra:1 Mem:212.34M (Peak 212.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_drive_room
+Fra:1 Mem:212.35M (Peak 212.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_mount_iron
+Fra:1 Mem:212.49M (Peak 212.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:211.82M (Peak 212.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_hull_albedo
+Fra:1 Mem:211.82M (Peak 212.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_normal
+Fra:1 Mem:595.17M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.17M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.17M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.17M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.25M (Peak 791.87M) | Time:00:00.39 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.29M (Peak 791.87M) | Time:00:00.39 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.29M (Peak 791.87M) | Time:00:00.39 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.29M (Peak 791.87M) | Time:00:00.39 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.29M (Peak 791.87M) | Time:00:00.39 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.29M (Peak 791.87M) | Time:00:00.39 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.33M (Peak 791.87M) | Time:00:00.39 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.30M (Peak 791.87M) | Time:00:00.39 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.31M (Peak 791.87M) | Time:00:00.39 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.31M (Peak 791.87M) | Time:00:00.39 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.31M (Peak 791.87M) | Time:00:00.40 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.31M (Peak 791.87M) | Time:00:00.40 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.80M (Peak 791.87M) | Time:00:00.40 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.75M (Peak 791.87M) | Time:00:00.47 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.75M (Peak 791.87M) | Time:00:00.47 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.75M (Peak 791.87M) | Time:00:00.47 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.75M (Peak 791.87M) | Time:00:00.47 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.75M (Peak 791.87M) | Time:00:00.47 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.76M (Peak 791.87M) | Time:00:00.47 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.10M (Peak 791.87M) | Time:00:00.48 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.10M (Peak 791.87M) | Time:00:00.48 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_top.png'
+Time: 00:00.52 (Saving: 00:00.01)
+
+Fra:1 Mem:209.50M (Peak 209.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:209.50M (Peak 209.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_rail_s
+Fra:1 Mem:209.51M (Peak 209.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip
+Fra:1 Mem:209.56M (Peak 209.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_mount_iron
+Fra:1 Mem:209.57M (Peak 209.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_soot
+Fra:1 Mem:209.57M (Peak 209.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_rust
+Fra:1 Mem:209.58M (Peak 209.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_steel
+Fra:1 Mem:209.58M (Peak 209.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_p
+Fra:1 Mem:209.59M (Peak 209.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p2
+Fra:1 Mem:209.59M (Peak 209.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p
+Fra:1 Mem:209.60M (Peak 209.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p0
+Fra:1 Mem:209.60M (Peak 209.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:209.61M (Peak 209.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p3
+Fra:1 Mem:209.61M (Peak 209.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p4
+Fra:1 Mem:209.64M (Peak 209.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_s
+Fra:1 Mem:209.64M (Peak 209.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s0
+Fra:1 Mem:209.64M (Peak 209.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s1
+Fra:1 Mem:209.64M (Peak 209.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:209.64M (Peak 209.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s0
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s1
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s2
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s3
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo_lid
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat1
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat2
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_steel
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_ember
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_soot
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_iron
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_steel
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_glow
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_soot
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_iron
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_glow
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_soot
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_iron
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_steel
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bankhood
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_blood
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_steel
+Fra:1 Mem:209.88M (Peak 209.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_pale
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_rivets
+Fra:1 Mem:210.07M (Peak 210.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_blood
+Fra:1 Mem:210.07M (Peak 210.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_pale
+Fra:1 Mem:210.23M (Peak 210.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:210.28M (Peak 210.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_rivets
+Fra:1 Mem:210.29M (Peak 210.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:210.33M (Peak 210.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:210.34M (Peak 210.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_rust
+Fra:1 Mem:210.36M (Peak 210.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_body_light
+Fra:1 Mem:210.36M (Peak 210.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_blood
+Fra:1 Mem:210.52M (Peak 210.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_pale
+Fra:1 Mem:211.12M (Peak 211.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_violet
+Fra:1 Mem:211.30M (Peak 211.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_rust
+Fra:1 Mem:211.33M (Peak 211.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_steel
+Fra:1 Mem:211.33M (Peak 211.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_violet
+Fra:1 Mem:211.56M (Peak 211.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_rivets
+Fra:1 Mem:211.69M (Peak 211.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_rust
+Fra:1 Mem:211.81M (Peak 211.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_blood
+Fra:1 Mem:211.85M (Peak 211.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_steel
+Fra:1 Mem:211.98M (Peak 211.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_pale
+Fra:1 Mem:211.93M (Peak 211.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:212.09M (Peak 212.09M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew
+Fra:1 Mem:212.16M (Peak 212.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_mount_iron
+Fra:1 Mem:212.27M (Peak 212.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_body_light
+Fra:1 Mem:212.35M (Peak 212.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_mount_iron
+Fra:1 Mem:212.35M (Peak 212.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_body_light
+Fra:1 Mem:212.35M (Peak 212.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_mount_iron
+Fra:1 Mem:212.39M (Peak 212.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_body_light
+Fra:1 Mem:212.39M (Peak 212.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_body_light
+Fra:1 Mem:212.39M (Peak 212.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:212.39M (Peak 212.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_body_light
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_body_light
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_body_light
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_body_light
+Fra:1 Mem:212.41M (Peak 212.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_body_light
+Fra:1 Mem:212.41M (Peak 212.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_mount_iron
+Fra:1 Mem:212.52M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:211.86M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_engine_emission
+Fra:1 Mem:211.86M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_albedo
+Fra:1 Mem:211.86M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_normal
+Fra:1 Mem:595.19M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.19M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.19M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.19M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.27M (Peak 791.90M) | Time:00:00.37 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.31M (Peak 791.90M) | Time:00:00.37 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.31M (Peak 791.90M) | Time:00:00.37 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.31M (Peak 791.90M) | Time:00:00.37 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.31M (Peak 791.90M) | Time:00:00.37 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.31M (Peak 791.90M) | Time:00:00.37 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.35M (Peak 791.90M) | Time:00:00.37 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.33M (Peak 791.90M) | Time:00:00.37 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.33M (Peak 791.90M) | Time:00:00.37 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.33M (Peak 791.90M) | Time:00:00.37 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.33M (Peak 791.90M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.33M (Peak 791.90M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.82M (Peak 791.90M) | Time:00:00.37 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.77M (Peak 791.90M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.77M (Peak 791.90M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.77M (Peak 791.90M) | Time:00:00.43 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.77M (Peak 791.90M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.77M (Peak 791.90M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.78M (Peak 791.90M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.12M (Peak 791.90M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.12M (Peak 791.90M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_below.png'
+Time: 00:00.47 (Saving: 00:00.00)
+
+Fra:1 Mem:209.54M (Peak 209.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:209.54M (Peak 209.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_rail_s
+Fra:1 Mem:209.57M (Peak 209.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1_mount_iron
+Fra:1 Mem:209.60M (Peak 209.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_mount_steel
+Fra:1 Mem:209.62M (Peak 209.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_iron
+Fra:1 Mem:209.62M (Peak 209.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_steel
+Fra:1 Mem:209.63M (Peak 209.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_brake_p
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p0
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p4
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p1
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p4
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_s
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_s
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s0
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s2
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s0
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s2
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s3
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s4
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo_lid
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat0
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat1
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat2
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_steel
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_ember
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_iron
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_soot
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_body_light
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_steel
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_mount_iron
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_steel
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_ember
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_iron
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_soot
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_iron
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_steel
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_ember
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_iron
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_soot
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_steel
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_rust
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_blood
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_pale
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_violet
+Fra:1 Mem:210.04M (Peak 210.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_rivets
+Fra:1 Mem:210.06M (Peak 210.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_rust
+Fra:1 Mem:210.06M (Peak 210.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_blood
+Fra:1 Mem:210.22M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:210.30M (Peak 210.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_rivets
+Fra:1 Mem:210.30M (Peak 210.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_rust
+Fra:1 Mem:210.30M (Peak 210.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:210.40M (Peak 210.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:210.46M (Peak 210.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_rust
+Fra:1 Mem:210.47M (Peak 210.47M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_blood
+Fra:1 Mem:210.48M (Peak 210.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_rust
+Fra:1 Mem:210.50M (Peak 210.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_violet
+Fra:1 Mem:210.51M (Peak 210.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_blood
+Fra:1 Mem:210.57M (Peak 210.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_steel
+Fra:1 Mem:211.31M (Peak 211.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_pale
+Fra:1 Mem:211.63M (Peak 211.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_violet
+Fra:1 Mem:211.88M (Peak 211.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_rivets
+Fra:1 Mem:211.86M (Peak 211.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_rust
+Fra:1 Mem:211.87M (Peak 211.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:211.87M (Peak 211.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_magazine
+Fra:1 Mem:211.89M (Peak 211.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew
+Fra:1 Mem:211.89M (Peak 211.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:211.91M (Peak 211.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_drive_room
+Fra:1 Mem:211.94M (Peak 211.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_mount_iron
+Fra:1 Mem:211.95M (Peak 211.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_body_light
+Fra:1 Mem:212.14M (Peak 212.14M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_mount_iron
+Fra:1 Mem:212.15M (Peak 212.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_mount_iron
+Fra:1 Mem:212.15M (Peak 212.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_mount_iron
+Fra:1 Mem:212.15M (Peak 212.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_body_light
+Fra:1 Mem:212.15M (Peak 212.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_body_light
+Fra:1 Mem:212.16M (Peak 212.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:212.16M (Peak 212.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_body_light
+Fra:1 Mem:212.26M (Peak 212.26M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_mount_iron
+Fra:1 Mem:212.29M (Peak 212.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_mount_iron
+Fra:1 Mem:212.29M (Peak 212.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_body_light
+Fra:1 Mem:212.29M (Peak 212.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_mount_iron
+Fra:1 Mem:212.36M (Peak 212.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_body_light
+Fra:1 Mem:212.57M (Peak 212.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:211.90M (Peak 212.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_engine_emission
+Fra:1 Mem:211.90M (Peak 212.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_normal
+Fra:1 Mem:595.22M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.22M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.22M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.22M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.30M (Peak 791.95M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.33M (Peak 791.95M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.33M (Peak 791.95M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.33M (Peak 791.95M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.33M (Peak 791.95M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.33M (Peak 791.95M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.37M (Peak 791.95M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.35M (Peak 791.95M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.35M (Peak 791.95M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.35M (Peak 791.95M) | Time:00:00.36 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.35M (Peak 791.95M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.35M (Peak 791.95M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.85M (Peak 791.95M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.80M (Peak 791.95M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.15M (Peak 791.95M) | Time:00:00.43 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.15M (Peak 791.95M) | Time:00:00.43 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_port.png'
+Time: 00:00.58 (Saving: 00:00.12)
+
+Fra:1 Mem:209.58M (Peak 209.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:209.58M (Peak 209.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip
+Fra:1 Mem:209.59M (Peak 209.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1_mount_dark
+Fra:1 Mem:209.63M (Peak 209.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_soot
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_rust
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_steel
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_p
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p2
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p3
+Fra:1 Mem:209.67M (Peak 209.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p0
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p3
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p4
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_s
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s0
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s2
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s0
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s1
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s3
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s4
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo_lid
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat0
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat2
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat3
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_steel
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_iron
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_soot
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_iron
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_steel
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_glow
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_iron
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_soot
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_steel
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:209.83M (Peak 209.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_ember
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_glow
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_iron
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_steel
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_rust
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_blood
+Fra:1 Mem:209.92M (Peak 209.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_steel
+Fra:1 Mem:209.93M (Peak 209.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_pale
+Fra:1 Mem:210.02M (Peak 210.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_violet
+Fra:1 Mem:210.09M (Peak 210.09M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_rivets
+Fra:1 Mem:210.09M (Peak 210.09M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_rust
+Fra:1 Mem:210.13M (Peak 210.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_blood
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_steel
+Fra:1 Mem:210.48M (Peak 210.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:210.57M (Peak 210.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_rivets
+Fra:1 Mem:210.67M (Peak 210.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_blood
+Fra:1 Mem:210.63M (Peak 210.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:210.79M (Peak 210.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:210.86M (Peak 210.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_rivets
+Fra:1 Mem:210.86M (Peak 210.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_blood
+Fra:1 Mem:210.87M (Peak 210.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_pale
+Fra:1 Mem:211.17M (Peak 211.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_body_light
+Fra:1 Mem:211.44M (Peak 211.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_blood
+Fra:1 Mem:211.55M (Peak 211.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_steel
+Fra:1 Mem:211.63M (Peak 211.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_violet
+Fra:1 Mem:211.86M (Peak 211.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_rivets
+Fra:1 Mem:212.06M (Peak 212.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_rust
+Fra:1 Mem:212.11M (Peak 212.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_blood
+Fra:1 Mem:212.11M (Peak 212.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_pale
+Fra:1 Mem:212.15M (Peak 212.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:212.18M (Peak 212.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_drive_room
+Fra:1 Mem:212.18M (Peak 212.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_mount_iron
+Fra:1 Mem:212.18M (Peak 212.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_mount_iron
+Fra:1 Mem:212.18M (Peak 212.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_body_light
+Fra:1 Mem:212.33M (Peak 212.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_mount_iron
+Fra:1 Mem:212.50M (Peak 212.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_body_light
+Fra:1 Mem:212.53M (Peak 212.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_mount_iron
+Fra:1 Mem:212.51M (Peak 212.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_mount_iron
+Fra:1 Mem:212.52M (Peak 212.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_body_light
+Fra:1 Mem:212.53M (Peak 212.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_mount_iron
+Fra:1 Mem:212.53M (Peak 212.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_mount_iron
+Fra:1 Mem:212.54M (Peak 212.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_body_light
+Fra:1 Mem:212.54M (Peak 212.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:212.54M (Peak 212.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_body_light
+Fra:1 Mem:212.54M (Peak 212.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:212.55M (Peak 212.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_body_light
+Fra:1 Mem:212.55M (Peak 212.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:212.55M (Peak 212.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:212.55M (Peak 212.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_body_light
+Fra:1 Mem:212.61M (Peak 212.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:211.94M (Peak 212.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_hull_albedo
+Fra:1 Mem:211.94M (Peak 212.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_normal
+Fra:1 Mem:595.24M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.24M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.24M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.24M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.32M (Peak 856.00M) | Time:00:00.35 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.36M (Peak 856.00M) | Time:00:00.35 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.36M (Peak 856.00M) | Time:00:00.35 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.36M (Peak 856.00M) | Time:00:00.35 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.36M (Peak 856.00M) | Time:00:00.35 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.36M (Peak 856.00M) | Time:00:00.35 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.40M (Peak 856.00M) | Time:00:00.35 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.37M (Peak 856.00M) | Time:00:00.35 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.38M (Peak 856.00M) | Time:00:00.35 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.38M (Peak 856.00M) | Time:00:00.35 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.38M (Peak 856.00M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.38M (Peak 856.00M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.87M (Peak 856.00M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.82M (Peak 856.00M) | Time:00:00.42 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.82M (Peak 856.00M) | Time:00:00.42 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.82M (Peak 856.00M) | Time:00:00.42 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.82M (Peak 856.00M) | Time:00:00.42 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.82M (Peak 856.00M) | Time:00:00.42 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.83M (Peak 856.00M) | Time:00:00.42 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.17M (Peak 856.00M) | Time:00:00.43 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.17M (Peak 856.00M) | Time:00:00.43 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_starboard.png'
+Time: 00:00.47 (Saving: 00:00.01)
+
+Fra:1 Mem:209.62M (Peak 209.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:209.62M (Peak 209.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_iron
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_rust
+Fra:1 Mem:209.68M (Peak 209.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_brake_p
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_p
+Fra:1 Mem:209.70M (Peak 209.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p0
+Fra:1 Mem:209.71M (Peak 209.71M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p3
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p4
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p1
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p3
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p4
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_s
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_s
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s0
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s1
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s0
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s1
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s2
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s4
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo_lid
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat0
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat1
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat3
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_steel
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_ember
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_glow
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_iron
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_iron
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_steel
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_steel
+Fra:1 Mem:209.83M (Peak 209.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_glow
+Fra:1 Mem:209.83M (Peak 209.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_iron
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_soot
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_iron
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_ember
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_glow
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_soot
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_iron
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_steel
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_rust
+Fra:1 Mem:209.95M (Peak 209.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_blood
+Fra:1 Mem:209.96M (Peak 209.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_steel
+Fra:1 Mem:209.96M (Peak 209.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_pale
+Fra:1 Mem:209.97M (Peak 209.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_violet
+Fra:1 Mem:209.97M (Peak 209.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_rust
+Fra:1 Mem:210.15M (Peak 210.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_blood
+Fra:1 Mem:210.21M (Peak 210.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_pale
+Fra:1 Mem:210.21M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:210.22M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_rust
+Fra:1 Mem:210.22M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_blood
+Fra:1 Mem:210.22M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_mount_iron
+Fra:1 Mem:210.22M (Peak 210.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:210.61M (Peak 210.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:210.70M (Peak 210.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_rivets
+Fra:1 Mem:210.82M (Peak 210.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_pale
+Fra:1 Mem:210.99M (Peak 210.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_rust
+Fra:1 Mem:210.99M (Peak 210.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_steel
+Fra:1 Mem:211.41M (Peak 211.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_pale
+Fra:1 Mem:211.65M (Peak 211.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_violet
+Fra:1 Mem:211.65M (Peak 211.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_body_light
+Fra:1 Mem:211.80M (Peak 211.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_rivets
+Fra:1 Mem:211.92M (Peak 211.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_blood
+Fra:1 Mem:212.00M (Peak 212.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_steel
+Fra:1 Mem:212.17M (Peak 212.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:212.24M (Peak 212.24M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew
+Fra:1 Mem:212.26M (Peak 212.26M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:212.29M (Peak 212.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_body_light
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_mount_iron
+Fra:1 Mem:212.38M (Peak 212.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_body_light
+Fra:1 Mem:212.39M (Peak 212.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL14_mount_iron
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_body_light
+Fra:1 Mem:212.46M (Peak 212.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_body_light
+Fra:1 Mem:212.48M (Peak 212.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_mount_iron
+Fra:1 Mem:212.48M (Peak 212.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_body_light
+Fra:1 Mem:212.52M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL6_mount_iron
+Fra:1 Mem:212.52M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_mount_iron
+Fra:1 Mem:212.52M (Peak 212.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_body_light
+Fra:1 Mem:212.56M (Peak 212.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_mount_iron
+Fra:1 Mem:212.56M (Peak 212.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:212.61M (Peak 212.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_mount_iron
+Fra:1 Mem:212.62M (Peak 212.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_body_light
+Fra:1 Mem:212.62M (Peak 212.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:212.62M (Peak 212.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:212.62M (Peak 212.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_body_light
+Fra:1 Mem:212.62M (Peak 212.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:212.63M (Peak 212.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_body_light
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:211.98M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_engine_emission
+Fra:1 Mem:211.98M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_orm
+Fra:1 Mem:211.98M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_normal
+Fra:1 Mem:595.26M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.26M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.26M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.26M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.35M (Peak 792.03M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.38M (Peak 792.03M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.38M (Peak 792.03M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.38M (Peak 792.03M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.38M (Peak 792.03M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.38M (Peak 792.03M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.42M (Peak 792.03M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.40M (Peak 792.03M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.40M (Peak 792.03M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.40M (Peak 792.03M) | Time:00:00.36 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.40M (Peak 792.03M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.40M (Peak 792.03M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.89M (Peak 792.03M) | Time:00:00.37 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.84M (Peak 792.03M) | Time:00:00.44 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.84M (Peak 792.03M) | Time:00:00.44 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.85M (Peak 792.03M) | Time:00:00.44 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.85M (Peak 792.03M) | Time:00:00.44 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.85M (Peak 792.03M) | Time:00:00.44 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.85M (Peak 792.03M) | Time:00:00.44 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.19M (Peak 792.03M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.19M (Peak 792.03M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_bow.png'
+Time: 00:00.48 (Saving: 00:00.00)
+
+Fra:1 Mem:209.65M (Peak 209.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body
+Fra:1 Mem:209.66M (Peak 209.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip
+Fra:1 Mem:209.69M (Peak 209.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1_mount_dark
+Fra:1 Mem:209.72M (Peak 209.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_iron
+Fra:1 Mem:209.73M (Peak 209.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | G1_turn_rust
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_p
+Fra:1 Mem:209.74M (Peak 209.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_p
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p2
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_p3
+Fra:1 Mem:209.75M (Peak 209.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p0
+Fra:1 Mem:209.76M (Peak 209.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p1
+Fra:1 Mem:209.77M (Peak 209.77M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p2
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_p3
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_boom_s
+Fra:1 Mem:209.78M (Peak 209.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_brake_s
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bore_s
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s1
+Fra:1 Mem:209.79M (Peak 209.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s2
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_band_s3
+Fra:1 Mem:209.80M (Peak 209.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s1
+Fra:1 Mem:209.80M (Peak 209.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s2
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s3
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_spslat_s4
+Fra:1 Mem:209.82M (Peak 209.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_ammo_lid
+Fra:1 Mem:209.83M (Peak 209.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent
+Fra:1 Mem:209.83M (Peak 209.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat0
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat2
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_vent_slat3
+Fra:1 Mem:209.84M (Peak 209.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_ember
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_glow
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_iron
+Fra:1 Mem:209.85M (Peak 209.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_soot
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_iron
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_steel
+Fra:1 Mem:209.86M (Peak 209.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_ember
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_iron
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_glow
+Fra:1 Mem:209.87M (Peak 209.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_steel
+Fra:1 Mem:209.88M (Peak 209.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_steel
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_glow
+Fra:1 Mem:209.90M (Peak 209.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_iron
+Fra:1 Mem:209.91M (Peak 209.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_soot
+Fra:1 Mem:209.91M (Peak 209.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_bankhood
+Fra:1 Mem:209.93M (Peak 209.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_banksill
+Fra:1 Mem:209.93M (Peak 209.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_rust
+Fra:1 Mem:209.97M (Peak 209.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_steel
+Fra:1 Mem:209.99M (Peak 209.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_pale
+Fra:1 Mem:210.00M (Peak 210.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL15_mount_iron
+Fra:1 Mem:210.01M (Peak 210.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_body_plates_violet
+Fra:1 Mem:210.01M (Peak 210.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_rust
+Fra:1 Mem:210.18M (Peak 210.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_blood
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_steel
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_plates_violet
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_deck_rivets
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_rust
+Fra:1 Mem:210.25M (Peak 210.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_steel
+Fra:1 Mem:210.39M (Peak 210.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_pale
+Fra:1 Mem:210.78M (Peak 210.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_plates_violet
+Fra:1 Mem:211.00M (Peak 211.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | corsair_KF1_flank_rivets
+Fra:1 Mem:211.03M (Peak 211.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_rust
+Fra:1 Mem:211.20M (Peak 211.20M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_pale
+Fra:1 Mem:211.50M (Peak 211.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_lip_plates_violet
+Fra:1 Mem:211.66M (Peak 211.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_blood
+Fra:1 Mem:211.80M (Peak 211.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_plates_steel
+Fra:1 Mem:212.08M (Peak 212.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_p_rivets
+Fra:1 Mem:212.12M (Peak 212.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_rust
+Fra:1 Mem:212.12M (Peak 212.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_steel
+Fra:1 Mem:212.13M (Peak 212.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | KF1_sponson_s_plates_violet
+Fra:1 Mem:212.13M (Peak 212.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew
+Fra:1 Mem:212.16M (Peak 212.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:212.16M (Peak 212.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_drive_room
+Fra:1 Mem:212.34M (Peak 212.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_mount_iron
+Fra:1 Mem:212.40M (Peak 212.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL0_body_light
+Fra:1 Mem:212.50M (Peak 212.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL1_mount_iron
+Fra:1 Mem:212.50M (Peak 212.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_mount_iron
+Fra:1 Mem:212.54M (Peak 212.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL2_body_light
+Fra:1 Mem:212.58M (Peak 212.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_mount_iron
+Fra:1 Mem:212.61M (Peak 212.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL3_body_light
+Fra:1 Mem:212.63M (Peak 212.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL4_body_light
+Fra:1 Mem:212.64M (Peak 212.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_mount_iron
+Fra:1 Mem:212.64M (Peak 212.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL5_body_light
+Fra:1 Mem:212.64M (Peak 212.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_mount_iron
+Fra:1 Mem:212.64M (Peak 212.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL7_body_light
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_mount_iron
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL8_body_light
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_mount_iron
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL9_body_light
+Fra:1 Mem:212.65M (Peak 212.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL10_body_light
+Fra:1 Mem:212.66M (Peak 212.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL11_mount_iron
+Fra:1 Mem:212.66M (Peak 212.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_mount_iron
+Fra:1 Mem:212.66M (Peak 212.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL12_body_light
+Fra:1 Mem:212.66M (Peak 212.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | RL13_mount_iron
+Fra:1 Mem:212.68M (Peak 212.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:212.02M (Peak 212.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_engine_emission
+Fra:1 Mem:212.02M (Peak 212.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading KF1_parts_orm
+Fra:1 Mem:595.28M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:595.28M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:595.28M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:595.28M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:595.37M (Peak 792.07M) | Time:00:00.36 | Mem:388.00M, Peak:388.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:595.40M (Peak 792.07M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:595.40M (Peak 792.07M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:595.40M (Peak 792.07M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:595.40M (Peak 792.07M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:595.40M (Peak 792.07M) | Time:00:00.36 | Mem:388.03M, Peak:388.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:595.44M (Peak 792.07M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:595.42M (Peak 792.07M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:595.42M (Peak 792.07M) | Time:00:00.36 | Mem:388.05M, Peak:388.05M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:595.42M (Peak 792.07M) | Time:00:00.36 | Mem:390.69M, Peak:390.69M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:595.42M (Peak 792.07M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:595.42M (Peak 792.07M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:393.83M, Peak:396.46M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.32M, Peak:396.46M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:597.91M (Peak 792.07M) | Time:00:00.36 | Mem:396.40M, Peak:396.46M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:613.86M (Peak 792.07M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:613.86M (Peak 792.07M) | Time:00:00.43 | Mem:412.35M, Peak:412.35M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:613.87M (Peak 792.07M) | Time:00:00.43 | Mem:412.27M, Peak:412.35M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:613.87M (Peak 792.07M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:613.87M (Peak 792.07M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:613.87M (Peak 792.07M) | Time:00:00.43 | Mem:412.36M, Peak:412.36M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:624.22M (Peak 792.07M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:624.22M (Peak 792.07M) | Time:00:00.44 | Mem:419.40M, Peak:419.40M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\surface_stern.png'
+Time: 00:00.47 (Saving: 00:00.00)
+
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+
+Blender quit
+GPU: released shared claim 7ad871d2-54fb-408d-9bb3-88633190b244

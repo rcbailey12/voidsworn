@@ -1,0 +1,28 @@
+{
+ "problems": [],
+ "parts": 30,
+ "crossing_break_lines": [],
+ "structure_across_seams": [],
+ "guns_with_normals": 1,
+ "guns_into_ship": 0,
+ "guns": 1,
+ "break_lines": {
+  "t_lines": [
+   -0.19037444078902185
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "PASS"
+}REPORT KF1 outline overlap 38.7 percent, outline_gate 90 is context only (not a pass bar)
+  outline KF1: bow 42.2, midship 42.2, stern 29.5, whole 38.7 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 44.9, midship 47.0, stern 66.0
+  REPORT bow overlap 42.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 42.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 29.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 38.7 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera KF1: game bow 52.4 midship 38.5 stern 54.2 whole 45.8, studio bow 45.0 midship 35.3 stern 43.0 whole 39.5
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+Stage 4: skipped C15s clay close-ups for sheet ship corsair_KF1. 
+Stage 4 done: audit PASS, outline overlap reported above (not a pass bar, RULEBOOK 5.8)

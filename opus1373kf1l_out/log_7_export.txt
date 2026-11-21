@@ -1,0 +1,35 @@
+  outline KF1: bow 42.2, midship 42.2, stern 29.5, whole 38.7 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 44.9, midship 47.0, stern 66.0
+  REPORT bow overlap 42.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 42.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 29.5 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 38.7 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera KF1: game bow 52.4 midship 38.5 stern 54.2 whole 45.8, studio bow 45.0 midship 35.3 stern 43.0 whole 39.5
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: every declared window and trim light is at least 2.0 px across on a 70 px ship; point lights (R228, read by brightness, not held to the size floor): running 16 at 0.8 px
+PASS every standing check
+[export7] corsair_KF1 triangles 84264 hard points {"gun": 2, "engine": 3, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 1 (1440 triangles) files ['corsair_KF1.glb', 'corsair_KF1_base.jpg', 'corsair_KF1_glow_emission.jpg', 'corsair_KF1_normal.png', 'corsair_KF1_orm.png', 'corsair_KF1_parts_base.jpg', 'corsair_KF1_parts_normal.png', 'corsair_KF1_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1
+[check] 85704 triangles (7204 on part surfaces), box x -0.440 to 0.560, y -0.041 to 0.128, z -0.198 to 0.190
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 1 written (turret_0 G1); marked by the kit: ['G1']
+[check] slot 0 guns T: 2 hard points
+[check] hard points: {"core": 1, "engine": 3, "gun": 2}
+PASS corsair_KF1 game export: every required point is there and every hard point passes the mesh checks
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 0 (guns T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_guns_T_0 is 0.1065 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w0_guns_T_0 rests aimed backward (x -1.00)
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_socket: the check failed as it must | hp_w0_guns_T_0 has no extras.socket
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   turret_merged: the check failed as it must | turret G1 is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+PASS the export check fails when it should
+INSTALL READBACK PASS code=corsair_KF1 nodes=8
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo\godot\assets\ships\corsair_KF1; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo\godot\.stage7-replaced-4axytuo1\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1

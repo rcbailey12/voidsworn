@@ -1,0 +1,9 @@
+chain CI waiting for 1291 C14H exit in chain_1119ch.txt Sat 11/21/2026  8:15:20.64 
+retired while only waiting 08:16:12 (Board, Nov 21 14:15 UTC): replaced by HELPERS_CHAIN_1119CI2.bat, which runs KF1 L at the C13L boundary.
+chain CI2 waiting for CH STOPPED at the C13L boundary in chain_1119ch.txt Sat 11/21/2026  8:16:13.67 
+mirror fetch exit 0
+237fd5b2 reachable in the mirror
+1373L KF1 start  8:16:34.11 
+1373L KF1 exit 0 at  8:36:41.03 
+after-job janitor ran  8:36:41.57 
+all done Sat 11/21/2026  8:36:41.58 

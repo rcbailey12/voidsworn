@@ -1,0 +1,29 @@
+start corsair_KF1 corsair_KF1 board/pin-1373l Sat 11/21/2026  8:16:35.17 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=corsair PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo
+commit=237fd5b260efe1be2df04aba5492ed7d41e505c6
+import exit 0 
+1_concept_in start  8:21:01.94 
+1_concept_in exit 0 at  8:21:04.46 
+2_shape_ref start  8:21:04.46 
+2_shape_ref exit 0 at  8:21:05.19 
+3_trace_hull start  8:21:05.19 
+3_trace_hull exit 0 at  8:29:53.04 
+4_parts_kit start  8:29:53.04 
+4_parts_kit exit 0 at  8:30:16.49 
+5_paint_bake start  8:30:16.50 
+5_paint_bake exit 0 at  8:34:37.67 
+6_lod start  8:34:37.68 
+6_lod exit 0 at  8:35:39.71 
+7_export start  8:35:39.71 
+7_export exit 0 at  8:36:26.08 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo\godot\assets\ships\corsair_KF1\corsair_KF1.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  8:36:41.02 
+all done 

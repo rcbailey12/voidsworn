@@ -1,0 +1,16 @@
+{
+ "textures": [
+  {
+   "file": "hullbreakers_trim.png",
+   "source": "own work, drawn by tools/blender/kits/hullbreakers/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "trim sheet: rivet rows, scuffs, warning stripes, tread, weld (rows: rivets, scuffs, stripes, tread, weld)"
+  },
+  {
+   "file": "hullbreakers_decals.png",
+   "source": "own work, drawn by tools/blender/kits/hullbreakers/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "decal atlas: clan mark, hull code, kill tallies, warning chevrons"
+  }
+ ]
+}

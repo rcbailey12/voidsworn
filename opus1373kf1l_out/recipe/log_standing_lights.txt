@@ -1,0 +1,1 @@
+PASS lights: every declared window and trim light is at least 2.0 px across on a 70 px ship; point lights (R228, read by brightness, not held to the size floor): running 16 at 0.8 px
