@@ -1,0 +1,16 @@
+{
+ "textures": [
+  {
+   "file": "hegemony_trim.png",
+   "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "trim sheet: machining and handling marks (rows: scuffs)"
+  },
+  {
+   "file": "hegemony_decals.png",
+   "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+   "licence": "CC0",
+   "used": "decal atlas: hull number, module corner tick, module index bars, registry plate"
+  }
+ ]
+}

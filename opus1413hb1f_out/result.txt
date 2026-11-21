@@ -1,0 +1,49 @@
+start hegemony_HB1 hegemony_HB1 board/pin-1413f Sat 11/21/2026 16:46:12.46 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1121motp  -> board/pc-out-1121motp
+ * [new branch]          board/pc-out-1413f-o2  -> board/pc-out-1413f-o2
+ * [new branch]          board/pc-out-1415h-ga1 -> board/pc-out-1415h-ga1
+   b9de518b3..fa0ec54fe  claude/project-thread-3i2fya -> claude/project-thread-3i2fya
+   66b983f50..f1e979954  main                   -> main
+   9f8bb065b..f5b36f9da  neon/issue-1551        -> neon/issue-1551
+   08e42437c..c102aec65  opus/issue-1448        -> opus/issue-1448
+   08e42437c..c102aec65  refs/pull/1478/head    -> refs/pull/1478/head
+ + 3d7f6554f...0023bcffc refs/pull/1478/merge   -> refs/pull/1478/merge  (forced update)
+   b9de518b3..fa0ec54fe  refs/pull/1548/head    -> refs/pull/1548/head
+ + e34d08f9a...c944f29d2 refs/pull/1548/merge   -> refs/pull/1548/merge  (forced update)
+   9f8bb065b..f5b36f9da  refs/pull/1552/head    -> refs/pull/1552/head
+ + 49369bb41...d2d51523e refs/pull/1552/merge   -> refs/pull/1552/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\repo
+commit=7521a69d4299163e965750f87fdd3819097ef158
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+import exit 0 
+1_concept_in start 16:50:56.32 
+1_concept_in exit 0 at 16:50:58.53 
+2_shape_ref start 16:50:58.53 
+2_shape_ref exit 0 at 16:50:59.34 
+3_trace_hull start 16:50:59.34 
+3_trace_hull exit 0 at 16:52:10.94 
+4_parts_kit start 16:52:10.94 
+4_parts_kit exit 0 at 16:52:29.91 
+5_paint_bake start 16:52:29.91 
+5_paint_bake exit 0 at 16:56:53.95 
+6_lod start 16:56:53.95 
+6_lod exit 0 at 16:57:45.86 
+7_export start 16:57:45.86 
+7_export exit 0 at 16:58:26.20 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\repo\godot\assets\ships\hegemony_HB1\hegemony_HB1.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\picture_provenance.py 
+shots exit 0 
+collected 152 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 258.4 GB free
+done PASS Sat 11/21/2026 16:58:42.71 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0c932c22537242ab9480e01de7d19941

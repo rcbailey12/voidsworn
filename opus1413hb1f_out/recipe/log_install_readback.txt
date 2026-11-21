@@ -1,0 +1,5 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0c932c22537242ab9480e01de7d19941\voidsworn-run-2f541a2ae1e4499e9c2a7080a713703f\godot-profile-a335e98ee056498d85503230f57b6e85
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+INSTALL READBACK PASS code=hegemony_HB1 nodes=4
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0c932c22537242ab9480e01de7d19941\voidsworn-run-2f541a2ae1e4499e9c2a7080a713703f\godot-profile-a335e98ee056498d85503230f57b6e85

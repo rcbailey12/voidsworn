@@ -1,0 +1,51 @@
+{
+ "name": "Navy bomber, the Hegemony bomber wing craft (Hegemony Navy)",
+ "faction": "hegemony",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "bomber",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 1,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 0,
+ "files": {
+  "hegemony_HB1.glb": {
+   "bytes": 1838088,
+   "sha256": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470"
+  },
+  "hegemony_HB1_base.jpg": {
+   "bytes": 1493372,
+   "sha256": "a2fad3774610eaf9446e8fbdeae5f251c2c14b97c793ffac2b3909c5a9f7c7d9"
+  },
+  "hegemony_HB1_glow_emission.jpg": {
+   "bytes": 152856,
+   "sha256": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1"
+  },
+  "hegemony_HB1_normal.png": {
+   "bytes": 4834199,
+   "sha256": "3b1bf79383e667249092cdeb8030db55cb05abd153b3640102a39fbbb28eb5b8"
+  },
+  "hegemony_HB1_orm.png": {
+   "bytes": 6434252,
+   "sha256": "df649ae42c6f22a97e42ff17b07630049ea8ed1687d356aabf85690836b829cb"
+  },
+  "hegemony_HB1_parts_base.jpg": {
+   "bytes": 523089,
+   "sha256": "d33019a6d5da52921e846c64343e4dde15006639a5018d9a04cfcf0161a635b1"
+  },
+  "hegemony_HB1_parts_normal.png": {
+   "bytes": 3675628,
+   "sha256": "91040dd8021dd84ceac2b92fc18d0592621288441c8df597caa98293a06abdfc"
+  },
+  "hegemony_HB1_parts_orm.png": {
+   "bytes": 3197489,
+   "sha256": "6f9a63d605b5a2ae4acd948f3e3d03b82b4b00d054fbbe0525e9a47135e32e9b"
+  }
+ },
+ "pc_path": "godot/assets/ships/hegemony_HB1/",
+ "wing_role": "bomber"
+}

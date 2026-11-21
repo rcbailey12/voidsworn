@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0c932c22537242ab9480e01de7d19941\voidsworn-run-bb20ef340bf74ce59a4e5ae0ae5927ac\godot-profile-374f76ec66d94652bd042e1897aa6651
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+DEATH_SEAM skipped: C:\Users\rcbai\Downloads\voidsworn_test\opus1413hb1f\repo\godot\assets\ships\hegemony_HB1\hegemony_HB1.glb is a strike craft (cls Squadron): no seams, its death is a hidden spark (fx_death.gd _wing_death)
+DEATH_SEAM failures=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0c932c22537242ab9480e01de7d19941\voidsworn-run-bb20ef340bf74ce59a4e5ae0ae5927ac\godot-profile-374f76ec66d94652bd042e1897aa6651
