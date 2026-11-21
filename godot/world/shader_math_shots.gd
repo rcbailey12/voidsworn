@@ -27,12 +27,21 @@ func _frames(n: int) -> void:
 	for i in n:
 		await process_frame
 
-func _save(name: String) -> void:
+func _save(name: String) -> bool:
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
 	var path := out.path_join("%s_%s.png" % [name, tag])
-	if preload("res://tools/picture_provenance.gd").save_png(img, path) != OK: printerr("shader math shots: could not save ", path)
+	return _stamp(img, path)
+
+# every still goes through the shared stamp; a failed save (or a missing sidecar) fails the whole run
+func _stamp(img: Image, path: String) -> bool:
+	if preload("res://tools/picture_provenance.gd").save_png(img, path) != OK or not FileAccess.file_exists(path) \
+			or not FileAccess.file_exists(path + ".provenance.json"):
+		printerr("shader math shots: FAILED to save ", path)
+		quit(1)
+		return false
 	print("shader math shots: wrote ", path)
+	return true
 
 func _run() -> void:
 	root.mode = Window.MODE_WINDOWED
@@ -42,6 +51,12 @@ func _run() -> void:
 		if argv[i] == "--out" and i + 1 < argv.size(): out = argv[i + 1]
 		if argv[i] == "--tag" and i + 1 < argv.size(): tag = argv[i + 1]
 	DirAccess.make_dir_recursive_absolute(out)
+	# a fresh set only: an earlier capture with the same tag must never pass as this one
+	for f in DirAccess.get_files_at(out):
+		if f.ends_with("_%s.png" % tag) or f.ends_with("_%s.png.provenance.json" % tag):
+			printerr("shader math shots: FAILED, %s already holds %s; use a fresh folder or tag" % [out, f])
+			quit(1)
+			return
 	var small := OS.has_environment("VS_WORLD_PREVIEW")
 	var baker = BAKER.service(self)
 
@@ -62,8 +77,7 @@ func _run() -> void:
 	var p2 := pano.duplicate()
 	p2.convert(Image.FORMAT_RGBA8)
 	p2.resize(1280, 640, Image.INTERPOLATE_LANCZOS)
-	preload("res://tools/picture_provenance.gd").save_png(p2, out.path_join("sky_panorama_%s.png" % tag))
-	print("shader math shots: wrote sky panorama")
+	if not _stamp(p2, out.path_join("sky_panorama_%s.png" % tag)): return
 
 	var scene := Node3D.new()
 	root.add_child(scene)
@@ -96,7 +110,7 @@ func _run() -> void:
 	cam.look_at_from_position(Vector3.ZERO, along, bn)
 	cam.make_current()
 	await _frames(6)
-	await _save("sky_band_view")
+	if not await _save("sky_band_view"): return
 
 	# ---- the planet: barren cratered (kind 4), sun from world +X, camera in front (+Z) and behind (-Z)
 	env.background_mode = Environment.BG_COLOR
@@ -141,14 +155,14 @@ func _run() -> void:
 			cam.fov = 40.0
 			cam.look_at_from_position(Vector3(0.0, 0.0, z), Vector3.ZERO, Vector3.UP)
 			await _frames(6)
-			await _save("planet_%s_%s" % [look, side])
+			if not await _save("planet_%s_%s" % [look, side]): return
 		# the check: the front view's whole scene (planet, sun and camera) turned half way round the view axis. A correct
 		# shader draws exactly the front picture; the old one lit ridges by the world's axes, not the planet's
 		mi.transform = Transform3D(Basis(Vector3.BACK, PI), Vector3.ZERO)
 		pm.set_shader_parameter("sun", Vector3(-1.0, -0.25, 0.0).normalized())
 		cam.look_at_from_position(Vector3(0.0, 0.0, 2.6), Vector3.ZERO, Vector3.DOWN)
 		await _frames(6)
-		await _save("planet_%s_turned" % look)
+		if not await _save("planet_%s_turned" % look): return
 		mi.transform = Transform3D.IDENTITY
 	print("shader math shots: done")
 	quit(0)
