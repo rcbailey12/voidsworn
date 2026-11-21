@@ -28,6 +28,8 @@ const W = {
   sporeb:{n:'Spore burst',k:'sq',shots:2,dmg:10,r:1,opt:1,acc:78,fall:0,pierce:.6,vsSq:.3,crit:8},
 };
 const ARC_NAME = {F:'Fore',P:'Port flank',S:'Starboard flank',T:'Turret (all arcs)',R:'Aft'};
+// usage.fire keys: fixed per arc (the pre-rename labels) so saved careers and story reads never move with display words (issue 1551)
+const ARC_USAGE_KEY = {F:'Prow',P:'Port broadside',S:'Starboard broadside',T:'Turret (all arcs)',R:'Rear'};
 const KIND_NAME = {battery:'Battery',lance:'Lance',torp:'Torpedo',flak:'Point defense',bio:'Bio-weapon',gauss:'Null',sq:'Squadron'};
 
 // Ship templates. size = draw scale; cp = command points.

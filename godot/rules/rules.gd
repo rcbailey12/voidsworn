@@ -16,6 +16,7 @@ extends RefCounted
 const JSM = preload("res://rules/jsm.gd")
 
 var TB: Dictionary = {}
+const ARC_USAGE_KEY := {"F": "Prow", "P": "Port broadside", "S": "Starboard broadside", "T": "Turret (all arcs)", "R": "Rear"}   # usage.fire keys, fixed per arc; ARC_NAME is display only (issue 1551)
 var WPN; var ARC_NAME; var FAC_WNAMES; var FAC_WTRAIT; var HULLS; var MOVE_RULES; var FACTIONS; var ABILITIES; var ORDERS; var MODULES; var PERKS
 var RANK_XP; var RELICS; var ADMIRALS; var SHIP_NAMES; var CAPTAINS; var MORE_SHIP_NAMES; var SECTOR_CONDS; var RARITY; var ASPECTS
 var DIRS; var PACE; var BLOCKING; var SHAPES; var BEVENTS; var ENC_ARENA; var FAC_MAP; var ENCOUNTERS; var CREW_MULT; var BOARD_MULT; var RAM_FAC
@@ -3234,7 +3235,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 		if u["side"] == "player" and not jt(u.get("isSq")):
 			u["sureUsed"] = z0(u.get("sureUsed")) + 1; u["treeHasFired"] = 1; u["treeRoundFired"] = 1
 	if jt(B.get("usage")) and u["side"] == "player" and not jt(opts.get("intercept")) and not jt(u.get("isSq")):
-		var k = ARC_NAME[w["arc"]] if jt(ARC_NAME.get(w["arc"])) else str(w["arc"])
+		var k = ARC_USAGE_KEY[w["arc"]] if ARC_USAGE_KEY.has(w["arc"]) else str(w["arc"])
 		B["usage"]["fire"][k] = z0(B["usage"]["fire"].get(k)) + 1
 		if jt(opts.get("called")): B["usage"]["aim"] = B["usage"]["aim"] + 1
 	if jt(B.get("usage")) and u["side"] == "player" and not jt(opts.get("intercept")):
