@@ -320,6 +320,17 @@ each slot like a board lane's, and accepts a runner-managed sparse copy under th
 checkout per run and picture folders in code jobs drove up disk use (issue 1186).
 
 
+Helper PC jobs (`opus_job_head.bat`) remove their own pinned checkouts once the attempt passed and every result file is
+on a relay branch: the Board runs the job head's checkout step right after each relay, and the same job's later tails
+repeat it. A file the job left in a checkout that is not a proven rebuildable leftover is saved into the job's own
+`out_<name>\checkout_leftovers` first (at most 200 MB, read back by SHA-256); more, a staged change, a stash or a local
+commit keeps the checkout. Failed and unfinished attempts are left to the janitor's rules. A ship job drops only its
+clone's import cache on PASS; its publish removes the clone after the relay, saving leftovers the same way. Nothing
+outside the job's own folders is touched. Why: on Nov 21 every passing job kept a 14 to 22 GB checkout for a
+build_info.json or a few .import files, and C: fell from 176 to 55 GB in three hours (issue 1497; relay and Git-state
+checks from Artoo on PR 1498).
+Set: Board, Nov 21, under R326; playbook detail in docs/playbooks/pc.md.
+
 Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
@@ -372,7 +383,10 @@ after a PASS (RUNNER_SELFTEST_KEEP=1 keeps it). The watchdog removes the Godot p
 every process of that launch has exited, links as links, never a job's own profile (PC_KEEP_GODOT_PROFILE=1 keeps it).
 Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
 a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
-janitor keeps for one day. When a job_wrap job ends, the janitor runs once more with `--after-job` in a
+janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access, and the picture
+provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
+private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21; the PC proof board/pc-out-1535 showed that private list alone is the cause, with no elevation involved). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
 janitor holds its lock, any `gpu_slot_N` or `gpu_solo` claim file is non-empty or the Board's pause is on, and stops
 between folders if a GPU claim starts, so a solo measurement is never timed alongside it. The watchdog and scratch_done.ps1 check the

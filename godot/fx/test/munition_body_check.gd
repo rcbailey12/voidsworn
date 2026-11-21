@@ -1,6 +1,6 @@
 extends SceneTree
 # Issue 1379 run 2 (R362, docs/playbooks/ships.md section 9): torpedoes and rockets are built from the faction part kits and
-# take the hull finish. Checks, headless: each body file in fx/munitions/ loads, keeps the code casing's frame (+X the nose,
+# take the hull finish. Checks, headless: each body file in fx/munition_bodies/ loads, keeps the code casing's frame (+X the nose,
 # about 2.3 long, round about X), every surface carries the faction's hull look (LOOK.hull's "look_hull" mark), a projectile
 # of that faction and look uses the kit body (no code casing mesh in it), and a faction with no file keeps the code casing.
 # Rebuild the files: tools/blender/build_sheets/munitions/munitions.py.
@@ -63,6 +63,44 @@ func _init() -> void:
 	_ok(star.find_child("kit_body", true, false) == null, "the Glasswright star torpedo stays an effect")
 	for n in [kit, old, star]:
 		n.free()
+	# Issue 1531 (Artoo on PR 1532): through the push out the nozzle's baked glow is dark on this shot only; ignition lights it;
+	# the cached (shared) materials never change and the marker lights keep their glow.
+	for f in BODIES:
+		var shot: Node3D = W._projectile_body(fx, f[1], 1.0, Color(1, 0.5, 0.2), f[0])
+		var kb: Node = shot.find_child("kit_body", true, false)
+		var rows: Array = kb.get_meta("nozzles", []) if kb != null else []
+		_ok(rows.size() > 0, "%s %s: the nozzle glow surfaces are found (%d)" % [f[0], f[1], rows.size()])
+		W._kit_nozzle_dark(shot, true)
+		var dark_ok := true
+		var shared_lit := true
+		for r in rows:
+			var cur := (r[0] as MeshInstance3D).get_surface_override_material(int(r[1])) as BaseMaterial3D
+			dark_ok = dark_ok and cur != null and not cur.emission_enabled and cur != r[2]
+			shared_lit = shared_lit and (r[2] as BaseMaterial3D).emission_enabled
+		_ok(dark_ok, "%s %s: before ignition every nozzle surface is unlit" % f)
+		_ok(shared_lit, "%s %s: the shared nozzle materials keep their glow" % f)
+		var markers := 0
+		var markers_lit := 0
+		for m in _meshes(kb):
+			for i in m.mesh.get_surface_count():
+				var mt := m.get_surface_override_material(i) as BaseMaterial3D
+				if mt != null and not rows.any(func(r): return r[0] == m and int(r[1]) == i) and mt.emission_enabled:
+					markers_lit += 1
+				if mt != null and not rows.any(func(r): return r[0] == m and int(r[1]) == i):
+					markers += 1
+		var cached_markers := 0
+		for part in W._load_munition(W.MUNITIONS_DIR + "%s_%s.glb" % f, f[0]):
+			for i in (part["mats"] as Array).size():
+				var cm := part["mats"][i] as BaseMaterial3D
+				if cm != null and cm.emission_enabled and part["dark"][i] == null:
+					cached_markers += 1
+		_ok(markers_lit == cached_markers, "%s %s: marker lights stay lit (%d of %d surfaces)" % [f[0], f[1], markers_lit, markers])
+		W._kit_nozzle_dark(shot, false)
+		var lit_ok := true
+		for r in rows:
+			lit_ok = lit_ok and (r[0] as MeshInstance3D).get_surface_override_material(int(r[1])) == r[2]
+		_ok(lit_ok, "%s %s: ignition puts the lit nozzle back" % f)
+		shot.free()
 	# Artoo on PR 1416: the cache holds no node, so nothing outlives a battle. Two FX lifecycles each load and fire a body; after
 	# each release no kit_body node is left anywhere and the node count is back where it started.
 	var cached_nodes := 0
