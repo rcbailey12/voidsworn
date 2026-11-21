@@ -84,9 +84,16 @@ func _sounds() -> Array:
 
 
 # plays one event; returns the ms from the effect call to the end of the event
+# (the battle's own runner is held, and the pace reset, so nothing else changes the pace mid-event: on the PC an
+# enemy batch once started under the check and cut the command's hold to 19 ms, SHOTS2)
 func _play(b, e: Dictionary, effect: String) -> float:
+	b.hold = true
+	b.skip = false
+	b.speed = SPEED
+	b.user_speed = SPEED
 	log.clear()
 	await b._play_event(e)
+	_check(is_equal_approx(float(b.speed), SPEED), "nothing changed the pace while %s played (%.3f)" % [str(e["t"]), float(b.speed)])
 	var end := Time.get_ticks_msec()
 	var r := _first("fx", effect)
 	return float(end - int(r[1])) if not r.is_empty() else -1.0
@@ -107,6 +114,7 @@ func _run() -> void:
 	if b.api == null:
 		quit(1)
 		return
+	b.hold = true   # the battle's own runner waits while the check plays its events
 	var R = b.api.R
 	var mine := ""
 	var foe := ""
@@ -190,5 +198,10 @@ func _run() -> void:
 
 	b.gfx = real_fx
 	b.sfx = real_sfx
+	rs.queue_free()
+	rec.queue_free()
+	b.queue_free()
+	await process_frame
+	await process_frame
 	print("CLOSE_ACTION_MOMENTS %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
 	quit(0 if failures == 0 else 1)
