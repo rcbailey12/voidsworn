@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c837cb2734f43b4a18da8e0a60ea136\voidsworn-run-d912da10b7df4224ba16a03059baa5a6\godot-profile-9c226b48eace47e89f9a2b1a8467f9df
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 (O1) on I16_11: arc -180 to 180, trains all round
+INSTALL READBACK PASS code=I16_11 nodes=17
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c837cb2734f43b4a18da8e0a60ea136\voidsworn-run-d912da10b7df4224ba16a03059baa5a6\godot-profile-9c226b48eace47e89f9a2b1a8467f9df

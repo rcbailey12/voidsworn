@@ -1,0 +1,75 @@
+{
+ "summary": {
+  "paint_flags": [
+   "gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "part: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "engine: tris_per_unit2 58276.6 is 0.46 of the hull's 125564.9",
+   "engine: edges_per_unit2 1821.1 is 0.08 of the hull's 23032.4"
+  ],
+  "hull": {
+   "area": 2.53421,
+   "triangles": 318208,
+   "tris_per_unit2": 125564.9,
+   "edges_per_unit2": 23032.4,
+   "texels_per_unit2": 1673234.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 55.81,
+  "paint_top": 0.3
+ },
+ "types": {
+  "hull": {
+   "area": 2.53421,
+   "triangles": 318208,
+   "tris_per_unit2": 125564.9,
+   "edges_per_unit2": 23032.4,
+   "texels_per_unit2": 1673234.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "gun": {
+   "area": 0.03909,
+   "triangles": 9456,
+   "tris_per_unit2": 241878.9,
+   "edges_per_unit2": 66608.8,
+   "texels_per_unit2": 25572177.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.0,
+   "tris_per_unit2_vs_hull": 1.93,
+   "edges_per_unit2_vs_hull": 2.89,
+   "texels_per_unit2_vs_hull": 15.28,
+   "paint_detail_share_vs_hull": 0.0
+  },
+  "part": {
+   "area": 0.19725,
+   "triangles": 23886,
+   "tris_per_unit2": 121094.5,
+   "edges_per_unit2": 45089.8,
+   "texels_per_unit2": 25725025.6,
+   "atlas": "parts",
+   "paint_detail_share": 0.0,
+   "tris_per_unit2_vs_hull": 0.96,
+   "edges_per_unit2_vs_hull": 1.96,
+   "texels_per_unit2_vs_hull": 15.37,
+   "paint_detail_share_vs_hull": 0.0
+  },
+  "engine": {
+   "area": 0.07029,
+   "triangles": 4096,
+   "tris_per_unit2": 58276.6,
+   "edges_per_unit2": 1821.1,
+   "texels_per_unit2": 25213442.8,
+   "atlas": "parts",
+   "paint_detail_share": 0.0,
+   "tris_per_unit2_vs_hull": 0.46,
+   "edges_per_unit2_vs_hull": 0.08,
+   "texels_per_unit2_vs_hull": 15.07,
+   "paint_detail_share_vs_hull": 0.0
+  }
+ }
+}
