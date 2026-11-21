@@ -9,7 +9,13 @@ extends SceneTree
 # Per battle: the longest main-thread stretch of the ship build (battle.gd load_stats: one ship's setup or its effects
 # registration at most), the worst single ship's setup and registration, and the worst frame from the cover to play
 # (that one includes the existing shader warm-up and is reported, not graded).
-# PASS when every case's longest build stretch is under 500 ms and the title's bus never moved.
+# Graded separately (Artoo on PR 1445), every one must hold for PASS:
+#   slice   the longest ship build stretch under 500 ms
+#   ready   the battle reached play (warming cleared) / the backdrop reached showcase_ready before its time limit
+#   cover   the worst frame from the cover to play under 500 ms (it includes the existing shader warm-up)
+#   click   the title's Settings link, clicked by a real mouse press and release while the backdrop is still building,
+#           opens its drawer within 500 ms
+#   bus     the title's shared sfx bus never moved
 # Run: godot --path godot [--fullscreen] --script res://bench/load_1434.gd -- --out <folder>
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
@@ -56,14 +62,19 @@ func _battle(tag: String, args: Dictionary) -> void:
 		worst = maxi(worst, now - last)
 		last = now
 	var st: Dictionary = b.load_stats
+	var ready: bool = not b.warming
 	if st.is_empty():
 		pass_all = false
 		_say("[load1434] %s FAIL: no sliced build recorded (warming %s after %d ms)" % [tag, b.warming, Time.get_ticks_msec() - w0])
 	else:
-		var ok: bool = int(st["worst_stretch"]) / 1000 < LIMIT_MS
+		var slice_ok: bool = int(st["worst_stretch"]) / 1000 < LIMIT_MS
+		var cover_ok: bool = worst / 1000 < LIMIT_MS
+		var ok: bool = slice_ok and ready and cover_ok
 		pass_all = pass_all and ok
-		_say("[load1434] %s %s: %d ships in %d ms over %d frames; longest build stretch %d ms; worst ship setup %d ms (%s), worst effects registration %d ms; waiting on hull files %d ms; scene ready %d ms; worst frame cover to play %d ms; to play %d ms" % [
-			tag, "PASS" if ok else "FAIL", st["ships"], st["ms"], st["frames"], int(st["worst_stretch"]) / 1000,
+		_say("[load1434] %s %s (slice %s, ready %s, cover %s)" % [tag, "PASS" if ok else "FAIL", "PASS" if slice_ok else "FAIL",
+			"PASS" if ready else "FAIL (timed out still warming)", "PASS" if cover_ok else "FAIL"])
+		_say("[load1434] %s: %d ships in %d ms over %d frames; longest build stretch %d ms; worst ship setup %d ms (%s), worst effects registration %d ms; waiting on hull files %d ms; scene ready %d ms; worst frame cover to play %d ms; to play %d ms" % [
+			tag, st["ships"], st["ms"], st["frames"], int(st["worst_stretch"]) / 1000,
 			int(st["worst_setup"]) / 1000, st["worst_code"], int(st["worst_fx"]) / 1000, int(st["wait"]) / 1000, ready_ms,
 			worst / 1000, Time.get_ticks_msec() - w0])
 	b.queue_free()
@@ -85,29 +96,74 @@ func _title() -> void:
 	var worst := 0
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
-	while (m.showcase == null or not is_instance_valid(m.showcase) or not m.showcase.showcase_ready) and Time.get_ticks_msec() - w0 < 120000:
+	var click_ms := -1        # -1: never clicked while building; -2: clicked, drawer never opened
+	var click_t := -1
+	var link: Button = _find_button(m.title, "Settings")
+	while (m.showcase == null or not is_instance_valid(m.showcase) or not m.showcase.showcase_ready) and Time.get_ticks_msec() - w0 < 240000:
+		if click_t < 0 and link != null and m.showcase != null and is_instance_valid(m.showcase) and m.showcase.api != null and m.showcase.load_stats.is_empty():
+			# the backdrop has its fleet and is building ships now: click the menu like a player
+			click_t = Time.get_ticks_msec()
+			_click(link.get_global_rect().get_center())
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
 		last = now
 		if _bus() != before: moved.append(_bus())
+		if click_t >= 0 and click_ms == -1 and m.title.settings_panel != null:
+			click_ms = Time.get_ticks_msec() - click_t
+	if click_t >= 0 and click_ms == -1:
+		click_ms = -2
 	var sc = m.showcase
+	var ready: bool = sc != null and is_instance_valid(sc) and sc.showcase_ready
 	var st: Dictionary = sc.load_stats if sc != null and is_instance_valid(sc) else {}
 	for i in 60:
 		await process_frame
 		if _bus() != before: moved.append(_bus())
+	if m.title != null and m.title.settings_panel != null:
+		m.title._close_settings()
 	m._clear()   # leaving the title: stop_build, then free
 	for i in 30:
 		await process_frame
 		if _bus() != before: moved.append(_bus())
-	var ok: bool = not st.is_empty() and int(st["worst_stretch"]) / 1000 < LIMIT_MS and moved.is_empty()
+	var slice_ok: bool = not st.is_empty() and int(st["worst_stretch"]) / 1000 < LIMIT_MS
+	var click_ok: bool = click_ms >= 0 and click_ms < LIMIT_MS
+	var ok: bool = slice_ok and ready and click_ok and moved.is_empty()
 	pass_all = pass_all and ok
-	_say("[load1434] title %s: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms (the menu's click latency); backdrop ready after %d ms; sfx bus %s before, %s" % [
-		"PASS" if ok else "FAIL", "%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
+	_say("[load1434] title %s (slice %s, ready %s, click %s, bus %s)" % ["PASS" if ok else "FAIL", "PASS" if slice_ok else "FAIL",
+		"PASS" if ready else "FAIL (timed out)", ("PASS (%d ms)" % click_ms) if click_ok else ("FAIL (%s)" % ("no click while building" if click_ms == -1 else "drawer never opened" if click_ms == -2 else "%d ms" % click_ms)),
+		"PASS" if moved.is_empty() else "FAIL"])
+	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
+		"%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
 		worst / 1000, Time.get_ticks_msec() - w0, before, "never moved" if moved.is_empty() else "moved to %s" % [moved.slice(0, 3)]])
 	m.queue_free()
 	for i in 10:
 		await process_frame
+
+
+func _find_button(n: Node, text: String) -> Button:
+	if n == null:
+		return null
+	if n is Button and (n as Button).text.strip_edges().to_lower() == text.to_lower() and (n as Button).is_visible_in_tree():
+		return n
+	for c in n.get_children():
+		var r := _find_button(c, text)
+		if r != null:
+			return r
+	return null
+
+
+func _click(at: Vector2) -> void:
+	var mv := InputEventMouseMotion.new()
+	mv.position = at
+	mv.global_position = at
+	root.push_input(mv)
+	for down in [true, false]:
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT
+		e.pressed = down
+		e.position = at
+		e.global_position = at
+		root.push_input(e)
 
 
 func _run() -> void:
@@ -117,7 +173,7 @@ func _run() -> void:
 	await _battle("b1", {"seed": 101})
 	await _battle("b2", {"seed": 202})
 	await _battle("b3", {"seed": 303})
-	_say("[load1434] RESULT %s (limit %d ms per build stretch: one ship's setup or its effects registration)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
+	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, bus)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var f := FileAccess.open(out_dir.path_join("load_result.txt"), FileAccess.WRITE)
