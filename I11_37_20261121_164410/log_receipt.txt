@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_GL1 I11_37 commit ddc85277c0ef733d1ebb46ce95127a262826cf41, glb df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d, 8 listed and 8 checked files
+SHIP=ithar_GL1

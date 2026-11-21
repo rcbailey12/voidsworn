@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 4:44:12 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GL1\out\recipe\export\I11_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\I11_37_20261121_164410\export\I11_37\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GL1\out\recipe\export\I11_37\
+	    New File  		      25	export_status.txt100%  
+	    New File  		   9.4 m	I11_37.glb 10.6% 21.2% 31.8% 42.4% 53.0% 63.6% 74.2% 84.8% 95.4%100%  
+	    New File  		   1.2 m	I11_37_base.jpg 19%   38%   57%   77%   96%  100%  
+	    New File  		    3439	I11_37_check.json100%  
+	    New File  		  651960	I11_37_emission.jpg 40%   80%  100%  
+	    New File  		    9944	I11_37_export.json100%  
+	    New File  		   4.5 m	I11_37_normal.png 11%   22%   33%   44%   55%   66%   77%   88%   99%  100%  
+	    New File  		   4.7 m	I11_37_orm.png 10%   21%   31%   42%   53%   63%   74%   85%   95%  100%  
+	    New File  		  951454	I11_37_parts_base.jpg 27%   55%   82%  100%  
+	    New File  		   5.7 m	I11_37_parts_normal.png  8.6% 17.3% 25.9% 34.6% 43.2% 51.9% 60.5% 69.2% 77.9% 86.5% 95.2%100%  
+	    New File  		   4.7 m	I11_37_parts_orm.png 10%   21%   31%   42%   52%   63%   73%   84%   94%  100%  
+	    New File  		    1430	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GL1\out\recipe\export\I11_37\_gltf_source\
+	    New File  		   3.2 m	GL1_hull_albedo.png 15%   30%   45%   61%   76%   91%  100%  
+	    New File  		   1.7 m	GL1_hull_emission.png 14%   28%   42%   56%   71%   85%   99%  100%  
+	    New File  		   4.5 m	GL1_hull_normal.png 11%   22%   33%   44%   55%   66%   77%   88%   99%  100%  
+	    New File  		   4.7 m	GL1_hull_orm.png 10%   21%   31%   42%   53%   63%   74%   85%   95%  100%  
+	    New File  		  683142	GL1_parts_albedo.png 38%   76%  100%  
+	    New File  		   5.7 m	GL1_parts_normal.png  8.6% 17.3% 25.9% 34.6% 43.2% 51.9% 60.5% 69.2% 77.9% 86.5% 95.2%100%  
+	    New File  		   4.7 m	GL1_parts_orm.png 10%   21%   31%   42%   52%   63%   73%   84%   94%  100%  
+	    New File  		   9.3 m	I11_37.bin 10.6% 21.2% 31.9% 42.5% 53.1% 63.8% 74.4% 85.1% 95.7%100%  
+	    New File  		   35543	I11_37.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   66.88 m   66.88 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1895622945 Bytes/sec.
+   Speed :           108468.415 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 4:44:12 PM
+
