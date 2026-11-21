@@ -1,0 +1,85 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1460)
+GPU: acquired solo claim 4a06e778-85a8-4ecc-964e-cd532d9970c0
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-69b8f78fa2f343d9aa74a36c46adb328\godot-profile-1086d1b47bc64bf1949cb6f99ba15bbd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world_shots] debanding false
+[sfx] 71 cues, 67 clip sets, loaded in 335 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf 4096x2048 in 6849 ms (worker)
+[world] baked 269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db 4096x2048 in 9232 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 9649 ms (worker)
+[world] baked 04a596a828fed691583b58022709b95f3d020e6d603ddcf6fedc3df1c6c4a941 1024x512 in 10061 ms (worker)
+[world] baked 1cc730ea14ee372aa5f25d7a79f468a83be64cdc653280721129e8bbe9e1ad33 4096x2048 in 2026 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 1996 ms (worker)
+[world] baked 5216a2b099522b47e00358f3fbfd1bdf4dbd70ae7f38841c71baff49e061ff35 1024x512 in 1901 ms (worker)
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[world_shots] nebula_storm: scene build 1 ms; system: planet 7, 2 moons; fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains; wisps: 60 gas clouds at middle distance; setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar; rocks: 169 in all (5 rock hexes, 0 debris hexes); clouds on 8 nebula and 25 storm hexes; built in 349 ms; living terrain built in 265 ms
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/nebula_storm_1_default.png
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/nebula_storm_2_zoomed_out.png
+[attach] hp_rcs missing on I16_11; using the surface ray
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/nebula_storm_3_low.png
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/nebula_storm_4_rocks_close.png
+[attach] battle x05 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 1561 33647.6 ms
+[fx] late shader: mat STREAK frame 1561 33726.5 ms
+[fx] late shader: mat RING frame 1561 33781.3 ms
+[fx] late shader: mat RIBBON frame 1561 33819.2 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1561 33871.4 ms
+[fx] late shader: mat NULL_SLUG frame 1561 33910.8 ms
+[fx] late shader: mat SHARD frame 1561 33941.0 ms
+[fx] late shader: hit fragments frame 1561 34047.2 ms
+[fx] late shader: mat DISTORT frame 1561 34153.1 ms
+[fx] late shader: death debris body frame 1561 34185.6 ms
+[fx] late shader: mat TEAR frame 1561 34279.4 ms
+[fx] late shader: death strain tear frame 1561 34307.7 ms
+[sfx] 71 cues, 67 clip sets, loaded in 286 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.251, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 1563 38121.2 ms
+[fx] late shader: mat SHIELD frame 1563 38243.3 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[world] baked 1c53ecafd17ed6ffaf8bb4985cf5313fd54fe3879efcacc6ba2699848f4ccac1 4096x2048 in 7545 ms (worker)
+[world] baked 9ccaba170e4f851f210f8686133bee35220a9da14e0ca74905f7cc57de5cb90c 4096x2048 in 10283 ms (worker)
+[world] baked 1e9dae7b38395cbb9153e8267eb41e58b3c1599071b58a204f1576ffbeecd568 1024x512 in 10685 ms (worker)
+[world] baked a16a410ae8cc416db64ee1cbf2f89ca29ba77487efa8246f25b900b3e951c966 4096x2048 in 1659 ms (worker)
+[world] baked 040af198134596e8808de65fbb338278307c35cf13ccdd4c4e1d1bb4d0376ed1 1024x512 in 1580 ms (worker)
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+[world_shots] deep_storm: scene build 0 ms; system: planet 6, 1 moons; fields: 15 edge rocks, 75 deep, 0 belt, 4 mountains; wisps: 33 gas clouds at middle distance; setting: deep region, storm map, carbon rock, planet 6 (ice world), sky for deathless; rocks: 108 in all (3 rock hexes, 0 debris hexes); clouds on 11 nebula and 19 storm hexes; built in 521 ms; living terrain built in 365 ms
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/deep_storm_1_default.png
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/deep_storm_2_zoomed_out.png
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/deep_storm_3_low.png
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1460\out_20261121_061436_18842\out_new\before/deep_storm_4_rocks_close.png
+[attach] battle x05 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x010 D20_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x011 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x012 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x013 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x014 D9_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[world_shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-69b8f78fa2f343d9aa74a36c46adb328\godot-profile-1086d1b47bc64bf1949cb6f99ba15bbd
+GPU: released solo claim 4a06e778-85a8-4ecc-964e-cd532d9970c0

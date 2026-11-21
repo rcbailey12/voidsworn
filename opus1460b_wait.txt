@@ -1,0 +1,6 @@
+OPUS1460B_WAIT.bat waiting for OPUS1460_DEBAND exit in opus1460_wait.txt Sat 11/21/2026  6:14:35.45 
+OPUS1460_DEBAND_B start  6:14:35.46 
+OPUS1460_DEBAND_B exit 0 at  6:31:59.30 
+run folder out_20261121_061436_18842
+result: done PASS
+all done Sat 11/21/2026  6:31:59.75 
