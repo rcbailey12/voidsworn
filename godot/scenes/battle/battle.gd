@@ -194,6 +194,9 @@ var chime_round := -1         # the round whose first hand-over played the "your
 
 func _ready() -> void:
 	_args()
+	var t_ready := Time.get_ticks_usec()
+	if showcase and str(args.get("quality", "max")) == "max":
+		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA: SHOWCASE_MSAA)
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
@@ -217,6 +220,7 @@ func _ready() -> void:
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
+	sfx.silent = showcase   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
 	add_child(sfx)
 	sfx.cam = cam
 	death_audio = DeathAudio.new()
@@ -231,6 +235,8 @@ func _ready() -> void:
 		cam.input_enabled = false
 		set_process_unhandled_input(false)
 		tips_off = true
+	if DisplayServer.get_name() != "headless":
+		print("[load] battle scene ready in %d ms%s" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if showcase else ""])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -357,12 +363,33 @@ func _build_world() -> void:
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
-	vp.msaa_3d = LOOK.msaa_for_quality(q)
+	if showcase and _vp_saved.is_empty():
+		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
+		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
+	vp.msaa_3d = SHOWCASE_MSAA if showcase else LOOK.msaa_for_quality(q)
 	if q == "low":
 		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	# Temporal AA (settings, off by default as in the browser): Max and High only
 	vp.use_taa = _jt(args.get("taa", false)) and q != "low"
+
+
+# Issue 1434 (item 10): the title backdrop's own anti-aliasing, set apart from the Graphics setting it is capped by
+const SHOWCASE_MSAA := Viewport.MSAA_2X
+var _vp_saved := {}
+# Issue 1434: each _begin takes a build number; stop_build() (main.gd, leaving the title) moves it on, so a build still
+# under way stops at its next frame and does no more work.
+var _build_gen := 0
+
+
+func stop_build() -> void:
+	_build_gen += 1
+	if not _vp_saved.is_empty():
+		var vp := get_viewport()
+		if vp != null:
+			for k in _vp_saved:
+				vp.set(k, _vp_saved[k])
+		_vp_saved.clear()
 
 
 func _post_quality(q: String) -> void:
@@ -493,13 +520,21 @@ func _begin(a) -> void:
 	_api_join()
 	_threat_version = -1
 	api = a
+	_build_gen += 1
+	var gen := _build_gen
 	warming = true
 	hud.loading(true)
+	# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
+	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
-	if DisplayServer.get_name() != "headless":
+	if sliced:
+		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
+		_preload_hulls(a.view())
 		await get_tree().process_frame
 		await get_tree().process_frame
+		if gen != _build_gen:
+			return
 	TBL = _api_tables()
 	if ai_level != "":
 		_api_set_ai(ai_level)
@@ -580,8 +615,13 @@ func _begin(a) -> void:
 		backdrop.build(cam.bounds, env)
 	V = api.view()
 	_index_view()
-	for u in V["units"]:
-		_make_view(u)
+	if sliced:
+		var built: bool = await _make_views_sliced(gen)
+		if not built:
+			return
+	else:
+		for u in V["units"]:
+			_make_view(u)
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
@@ -635,6 +675,8 @@ func _begin(a) -> void:
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
 	await _warmup()
+	if gen != _build_gen:
+		return
 	if music != null:
 		var pf := "voidsworn"
 		for u in V["units"]:
@@ -768,7 +810,8 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
-	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
+	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not showcase:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
 			arrival_warm = ArrivalWarm.new()
@@ -822,8 +865,15 @@ func _index_view() -> void:
 
 
 func _make_view(u: Dictionary) -> void:
+	var sv = _make_view_node(u)
+	if sv != null:
+		_register_fx_ship(u, sv)
+
+
+# the ship's node, hull and marker (no effects registration yet)
+func _make_view_node(u: Dictionary) -> ShipView:
 	if views.has(u["id"]):
-		return
+		return null
 	var sv = ShipView.new()
 	sv.name = "ship_" + str(u["id"])
 	add_child(sv)
@@ -831,12 +881,100 @@ func _make_view(u: Dictionary) -> void:
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
-	_register_fx_ship(u, sv)
+	return sv
+
+
+# Issue 1434 (Astra item 2): a cold 24-ship load spent about 5 s building every ship in one main-thread call under the
+# cover (worst ship 679 ms). Now the hull files load on worker threads from the moment the roster is known
+# (_preload_hulls), and the ships are built here a few per frame: the cover draws between them with a count, and no
+# stretch runs past LOAD_SLICE_MS except one ship's own build. Scene attachment, the look overrides and the effects
+# registration stay on the main thread, in that order, as _make_view does them. The log line names the stage that costs
+# most, so the next slice goes where the time is.
+const LOAD_SLICE_MS := 40.0
+var _preload := {}   # hull resource path -> the loaded resource (null while its threaded load runs)
+
+
+func _preload_hulls(v: Dictionary) -> void:
+	_drop_preload()
+	for u in v.get("units", []):
+		var p := ShipView.hull_res(u)
+		if p == "" or _preload.has(p) or not ResourceLoader.exists(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_preload[p] = null
+
+
+# every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process)
+func _drop_preload() -> void:
+	for p in _preload:
+		if _preload[p] == null:
+			ResourceLoader.load_threaded_get(p)
+	_preload.clear()
+
+
+func _make_views_sliced(gen: int) -> bool:
+	var units: Array = V["units"]
+	var total := units.size()
+	var t0 := Time.get_ticks_usec()
+	var stretch_t := t0
+	var st := {"worst_stretch": 0, "frames": 0, "wait": 0, "setup": 0, "fx": 0, "worst_setup": 0, "worst_fx": 0, "worst_code": ""}
+	var n := 0
+	hud.loading_count(0, total)
+	for u in units:
+		var p := ShipView.hull_res(u)
+		if _preload.has(p) and _preload[p] == null:
+			var tw := Time.get_ticks_usec()
+			while ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
+				await get_tree().process_frame
+				st["frames"] += 1
+				if gen != _build_gen:
+					return false
+				stretch_t = Time.get_ticks_usec()
+			_preload[p] = ResourceLoader.load_threaded_get(p)   # held until the views are built, so setup's load() is a cache hit
+			st["wait"] += Time.get_ticks_usec() - tw
+		var ts := Time.get_ticks_usec()
+		var sv := _make_view_node(u)
+		var tf := Time.get_ticks_usec()
+		st["setup"] += tf - ts
+		if tf - ts > st["worst_setup"]:
+			st["worst_setup"] = tf - ts
+			st["worst_code"] = sv.code if sv != null else ""
+		if sv != null and Time.get_ticks_usec() - stretch_t > LOAD_SLICE_MS * 1000.0:
+			st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
+			await get_tree().process_frame
+			st["frames"] += 1
+			if gen != _build_gen:
+				return false
+			stretch_t = Time.get_ticks_usec()
+		if sv != null and is_instance_valid(sv):
+			var tr := Time.get_ticks_usec()
+			_register_fx_ship(u, sv)
+			st["fx"] += Time.get_ticks_usec() - tr
+			st["worst_fx"] = maxi(st["worst_fx"], Time.get_ticks_usec() - tr)
+		n += 1
+		hud.loading_count(n, total)
+		if Time.get_ticks_usec() - stretch_t > LOAD_SLICE_MS * 1000.0:
+			st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
+			await get_tree().process_frame
+			st["frames"] += 1
+			if gen != _build_gen:
+				return false
+			stretch_t = Time.get_ticks_usec()
+	st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
+	_drop_preload()
+	hud.loading_count(0, 0)
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s), effects registration %d ms (worst %d ms), waiting on hull files %d ms" % [
+		total, (Time.get_ticks_usec() - t0) / 1000, st["frames"], " (title backdrop)" if showcase else "", st["worst_stretch"] / 1000,
+		st["setup"] / 1000, st["worst_setup"] / 1000, st["worst_code"], st["fx"] / 1000, st["worst_fx"] / 1000, st["wait"] / 1000])
+	return true
 
 
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
+		if showcase:
+			info["shielded"] = false   # issue 1434 (item 10): the backdrop never takes a hit, so it builds no shield skin
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
 		gfx.add_ship(str(u["id"]), sv, info)
@@ -1055,6 +1193,7 @@ func _api_join() -> bool:
 
 
 func _exit_tree() -> void:
+	_drop_preload()   # issue 1434: a build stopped part way still collects its threaded hull loads
 	if _threat_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_threat_tid)
 		_threat_tid = -1

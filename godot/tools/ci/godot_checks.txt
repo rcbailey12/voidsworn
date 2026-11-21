@@ -125,6 +125,7 @@ headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target previe
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
+headless|main/test/showcase_quiet_check.gd|-|-|issue 1434: the title backdrop loads no sound bank and leaves the shared sfx bus alone at 0.25 and muted, is capped at High and gives the menu its MSAA back; the sliced battle build makes every ship and stops when told
 headless|main/test/finale_runs_check.gd|-|-|issue 1271: the dawn finale flag is off on run 4 and on for runs 5, 6 and 9, and battle.gd lights dawn only for the sector 3 boss
 headless|world/test/stop_sky_check.gd|-|-|issue 1272: 40 seeded campaigns through three sectors: rival, boss and wreck-field stops each change the sky from a plain stop, the anchor planet stays, vistas per campaign rise from 3 and more than eight planet looks appear; no stop means no change
 headless|main/test/ai_level_fleet_check.gd|-|-|issue 1336: the campaign host rolls enemy fleets at the player's AI setting, and the map danger bands follow it with RAMP.vet on Veteran

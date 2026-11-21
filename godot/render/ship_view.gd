@@ -73,6 +73,28 @@ static func yaw_of(f) -> float:
 	return -deg_to_rad(60.0 * float(f))
 
 
+# Issue 1434: the hull resource setup() will load for this unit (the same choice: named variant, the unit's own code, then
+# the A4 kit ship, the hi model, the plain hull), or "" for a strike wing or a unit with no built hull. The battle asks the
+# loader for these on a worker thread as soon as the roster is known, so setup() finds them in the cache.
+static func hull_res(unit: Dictionary, use_hi := true) -> String:
+	var fac := str(unit.get("fac", "hegemony"))
+	if not FLOOK.has(fac):
+		fac = "hegemony"
+	var cls := str(unit.get("cls", "Frigate")) if unit.get("cls") != null else "Frigate"
+	if cls == "Squadron" or bool(unit.get("squadron", false)):
+		return ""
+	var man := manifest()
+	var code := HT.code_for(fac, cls)
+	if man.get("ships", {}).has(str(unit.get("tpl", ""))):
+		code = str(unit.get("tpl", ""))
+	if unit.has("code"):
+		code = str(unit["code"])
+	for k in (["ships", "hi", "hulls"] if use_hi else ["ships", "hulls"]):
+		if man.get(k) is Dictionary and man[k].has(code) and man[k][code] is Dictionary:
+			return str(man[k][code].get("res", ""))
+	return ""
+
+
 # unit: a ship from the rules API's view() (id, fac, cls, facing ...)
 func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	u = unit
