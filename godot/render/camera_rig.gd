@@ -26,6 +26,9 @@ var keyboard_enabled := true
 var slow_until := 0.0
 var _clock := 0.0
 var shake := Vector3.ZERO
+# issue 1460: the trauma shake from fx.gd, as the camera's own h and v offsets in world units. fx writes it here and
+# _apply adds it on top of screen_shift, so the sideways part is no longer wiped when the rig runs after fx.
+var shake_offset := Vector2.ZERO
 # issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
 # looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
 var screen_shift := 0.0
@@ -239,4 +242,5 @@ func _apply() -> void:
 	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
 	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
-	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5)
+	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
+	v_offset = shake_offset.y

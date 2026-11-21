@@ -8,7 +8,7 @@
 //   the GPU wait default (3600, the gpu_slots.js MAX_WAIT_SECONDS that every ship checkout's helper accepts) is set before any GPU step;
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
 //   both jobs refresh and clone from the local mirror under the runner's lock;
-//   the ship job collects only deliverables and lists backups older than the newest two for the janitor;
+//   the ship job collects only deliverables, and nothing when no recipe stage ran (1516); it lists backups older than the newest two for the janitor;
 //   no delete or move commands, and output only under the job folder and the helper's own TEMP;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
 const assert = require('assert');
@@ -129,7 +129,7 @@ for (let i = start; i < subs; i++) {
   if (/exit \/b/i.test(code[i].s)) assert(i > finish, `line ${code[i].n} leaves the job before the done and all done lines`);
 }
 for (const l of code.slice(start, finish)) {
-  if (/goto (\w+)/i.test(l.s)) assert(['collect', 'finish', 'based'].includes(/goto (\w+)/i.exec(l.s)[1]), `line ${l.n}: ${l.s}`);
+  if (/goto (\w+)/i.test(l.s)) assert(['collect', 'collect_skipped', 'finish', 'based'].includes(/goto (\w+)/i.exec(l.s)[1]), `line ${l.n}: ${l.s}`);
 }
 pass('the last line: every way out of the job writes done PASS or done FAILED, then all done');
 
@@ -170,21 +170,104 @@ assert(look.includes('foreach ($checkout in @($env:TOOL, $env:R))') &&
 pass('mirror refresh and local clone for ship job and both look bench checkouts');
 
 const collect = code.slice(at(/^:collect$/), finish).map(l => l.s);
-const copies = collect.filter(s => /^robocopy /i.test(s));
-assert.equal(copies.length, 3, 'collect uses separate report, shot and export copies');
-assert(copies[0].startsWith('robocopy "%RECIPE%" "%O%\\recipe" *.txt *.json *.md *.jpg /S ') &&
-  copies[0].includes('/XD sil "%RECIPE%\\godot\\proj" "%RECIPE%\\export"'), 'collect only the approved report types outside excluded folders');
-assert(collect.some(s => s.startsWith('for /d %%D in ("%RECIPE%\\clay" "%RECIPE%\\r" "%RECIPE%\\close" "%RECIPE%\\surface" "%RECIPE%\\godot" "%RECIPE%\\shots" "%RECIPE%\\shots_*")')) &&
-  copies[1].includes('"%O%\\recipe\\%%~nxD" *.png *.jpg *.jpeg *.gif /S ') &&
-  copies[1].includes('/XD sil "%RECIPE%\\godot\\proj"'), 'copy images from shot folders, excluding the Godot project cache');
-assert(copies[2].startsWith('robocopy "%RECIPE%\\export\\%CODE%" "%O%\\recipe\\export\\%CODE%" /E ') &&
-  copies[2].includes('/XD sil "%RECIPE%\\export\\%CODE%\\godot\\proj" /XF *.blend b0.npz'),
-  'copy only the requested export folder and omit build scratch even there');
-assert(copies.every(s => s.includes('/XJ')) && !collect.some(s => /^xcopy /i.test(s)), 'collect avoids junctions and never copies the whole recipe');
-assert(copies.every(s => /^if errorlevel 8 if not defined FAILED set "FAILED=collect/.test(collect[collect.indexOf(s) + 1])),
+const collectScript = text.slice(text.indexOf(':collect'), text.indexOf(':collect_skipped'));
+assert(!collect.some(s => /^(robocopy|xcopy) /i.test(s)), 'collect copies through the one filtered PowerShell step, never a whole-folder copy');
+for (const want of ["$exp = 'export\\' + $env:CODE.ToLower() + '\\'", "$low.StartsWith('godot\\proj\\')",
+  "-not $low.StartsWith($exp + 'godot\\proj\\') -and $ext -ne '.blend' -and $e.File.Name -ne 'b0.npz'",
+  "@('.txt', '.json', '.md') -contains $ext", "$pics = @('clay', 'r', 'close', 'surface', 'godot', 'shots')", "($top -like 'shots_*')",
+  "[IO.FileAttributes]::ReparsePoint) -or ($i.Name -eq 'sil')"]) {
+  assert(collectScript.includes(want), 'the collect filter keeps: ' + want);
+}
+assert(collect.some(s => s === 'if errorlevel 1 if not defined FAILED set "FAILED=collect (see log_collect.txt)"'),
   'a failed copy sets FAILED without hiding an earlier build failure');
 assert(collect.some(s => /if not exist "%O%\\recipe\\export\\%CODE%\\%CODE%.glb" if not defined FAILED/.test(s)), 'the stage 7 export guard still checks for the collected GLB');
 pass('collect only reports, shots and the requested export');
+
+// Issue 1516 (1415E GP1 and GA1, Nov 21): the mirror fetch failed, yet collect copied the earlier 1415D build's files from
+// the shared recipe folder into out\recipe, and the relay looked like a build of the new pin. Collect now runs only when a
+// recipe stage ran in this run, and the result names the fetch as the failed step.
+{
+  const stagesCmd = main.findIndex(l => /cmd \/c ""%~f0" ship"/.test(l.s));
+  const ranSet = code.filter(l => /STAGES_RAN=/.test(l.s));
+  assert.deepEqual(ranSet.map(l => l.s), ['set STAGES_RAN=', 'set "STAGES_RAN=1"'], 'STAGES_RAN is cleared once and set once');
+  const clear = main.findIndex(l => l.s === 'set STAGES_RAN=');
+  assert(clear > 0 && clear < main.findIndex(l => guard.test(l.s)), 'STAGES_RAN is cleared before the first way to collect');
+  assert(main[stagesCmd - 1].s === 'set "STAGES_RAN=1"' && guard.test(main[stagesCmd - 2].s),
+    'STAGES_RAN is set right before the stages run, after the import guard');
+  const col = code.slice(at(/^:collect$/)).map(l => l.s);
+  assert.equal(col[1], 'if not defined STAGES_RAN goto collect_skipped', 'the first thing collect does is skip when no stage ran');
+  const skipped = col.indexOf(':collect_skipped');
+  const fin = col.indexOf(':finish');
+  assert(skipped > 0 && fin === skipped + 3, 'the skip branch falls straight into :finish');
+  assert(/^echo collect SKIPPED: no recipe stage ran/.test(col[skipped + 1]), 'the skip is written to result.txt');
+  assert.equal(col[skipped + 2], 'if not defined FAILED set "FAILED=collect (no recipe stage ran)"', 'a skipped collect never passes');
+  assert.equal(col[skipped - 1], 'goto finish', 'a normal collect does not run into the skip branch');
+  assert(!col.slice(skipped, fin).some(s => /robocopy|copy |xcopy/i.test(s)), 'the skip branch copies nothing');
+  const fetchFail = main.find(l => /if errorlevel 1 set "FAILED=mirror fetch: /.test(l.s));
+  assert(fetchFail && guard.test(main[main.indexOf(fetchFail) + 1].s), 'a failed fetch says "mirror fetch" and goes straight to collect');
+  assert(text.includes("if ($try -ge 3) { throw ('mirror fetch failed ' + $try + ' times') }"), 'the mirror fetch tries three times, then fails');
+  assert(/\$wait = 30 \* \$try \* \$try;[^\r\n]*Start-Sleep -Seconds \$wait/.test(text), 'with backoff between tries (30 s, then 120 s)');
+  // Artoo on PR 1520 (574445c7): a first-stage failure still copied an older export into out\recipe\export. Only files this
+  // run wrote go to out\recipe; older reports go to out\recipe_from_earlier_runs; older pictures and exports are not copied.
+  assert(collectScript.includes("if ($e.File.LastWriteTimeUtc.Ticks -ge $t) { $dest = Join-Path (Join-Path $env:O 'recipe') $e.Rel"),
+    'only files written after the run started go to out\\recipe');
+  assert(collectScript.includes("if ($kind -eq 'report') { $dest = Join-Path (Join-Path $env:O 'recipe_from_earlier_runs') $e.Rel"),
+    'an older report goes to out\\recipe_from_earlier_runs, and nothing else older is copied');
+  assert(collectScript.includes("[IO.File]::WriteAllLines((Join-Path $env:O 'recipe_from_earlier_runs.txt'), [string[]]$old)"), 'every older file is listed');
+  assert(/\$t = \[long\]\$env:START_TICKS/.test(collectScript) && code.findIndex(l => /START_TICKS=%%T/.test(l.s)) < code.findIndex(l => l.s === ':run_tools'),
+    'the cut is the run start, taken before any step');
+}
+if (process.platform === 'win32') {
+  // the real collect section under cmd: stale recipe files, a failed fetch, then a run whose stages ran
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'shipjob1516-'));
+  try {
+    const recipe = path.join(tmp, 'recipe', 'ithar_GP1');
+    const put = (f, body, age) => {
+      const p = path.join(recipe, f); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, body);
+      if (age) { const t = new Date(Date.now() - age); fs.utimesSync(p, t, t); }
+    };
+    // the 1415D build left a report, a review picture and an export; this run wrote only its stage 1 report
+    put('build_report.txt', 'the 1415D build\n', 3600e3);
+    put('clay/front.png', 'old picture', 3600e3);
+    put('export/G1/G1.glb', 'old glb', 3600e3);
+    const ticks = (BigInt(Date.now() - 60e3) * 10000n + 621355968000000000n).toString();
+    put('concept_in_report.json', '{"run":"this"}\n', 0);
+    const section = lines.slice(lines.findIndex(l => l.trim() === ':collect'), lines.findIndex(l => l.trim() === ':ship'));
+    const runCase = (name, extra) => {
+      const o = path.join(tmp, name);
+      fs.mkdirSync(o);
+      const probe = path.join(tmp, name + '.bat');
+      const head = ['@echo off', 'setlocal', `set "O=${o}"`, 'set "RES=%O%\\result.txt"', `set "RECIPE=${recipe}"`,
+        'set "SHIP=ithar_GP1"', 'set "CODE=G1"', 'set "STAGES=1_concept_in 7_export"', `set "START_TICKS=${ticks}"`, ...extra];
+      fs.writeFileSync(probe, [...head, ...section].join('\r\n') + '\r\n');
+      const run = spawnSync('cmd.exe', ['/d', '/c', probe], { encoding: 'utf8', timeout: 60000 });
+      return { status: run.status, o, res: fs.readFileSync(path.join(o, 'result.txt'), 'utf8') };
+    };
+    const failed = runCase('fetch_failed', ['set "FAILED=mirror fetch: clone or fetch of opus/issue-1415 failed, see the Git output above"']);
+    assert.equal(failed.status, 1, failed.res);
+    assert(!fs.existsSync(path.join(failed.o, 'recipe')), 'a failed fetch copies nothing from the shared recipe folder');
+    assert(/collect SKIPPED: no recipe stage ran/.test(failed.res) && /done FAILED: mirror fetch: /.test(failed.res), failed.res);
+    const early = runCase('stage1_failed', ['set "STAGES_RAN=1"', 'set "FAILED=1_concept_in"']);
+    assert.equal(early.status, 1, early.res);
+    assert(fs.existsSync(path.join(early.o, 'recipe', 'concept_in_report.json')), "this run's report is collected");
+    for (const f of ['build_report.txt', 'clay/front.png', 'export/G1/G1.glb']) {
+      assert(!fs.existsSync(path.join(early.o, 'recipe', f)), `the earlier run's ${f} stays out of out\\recipe\n${early.res}`);
+    }
+    assert(fs.existsSync(path.join(early.o, 'recipe_from_earlier_runs', 'build_report.txt')), 'the older report is kept apart for diagnosis');
+    assert(!fs.existsSync(path.join(early.o, 'recipe_from_earlier_runs', 'export')), 'the older export is not copied anywhere');
+    const list = fs.readFileSync(path.join(early.o, 'recipe_from_earlier_runs.txt'), 'utf8');
+    assert(/export export\\G1\\G1\.glb \(not copied\)/.test(list) && /picture clay\\front\.png \(not copied\)/.test(list), list);
+    assert(/done FAILED: 1_concept_in /.test(early.res), early.res);
+    put('export/G1/G1.glb', 'fresh glb', 0);
+    const passed1516 = runCase('stages_passed', ['set "STAGES_RAN=1"']);
+    assert.equal(passed1516.status, 0, passed1516.res);
+    assert(fs.existsSync(path.join(passed1516.o, 'recipe', 'export', 'G1', 'G1.glb')), "this run's export is collected");
+    console.log('PASS 1516 real cmd run: fetch failed, stage 1 failed over an old glb, and a fresh export');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+pass('1516: a failed fetch collects nothing; otherwise only files this run wrote reach out\\recipe');
 
 assert(main.some(l => /^ren "%O%" "out_before_%STAMP%" \|\| exit \/b 1$/.test(l.s)), 'stop if the earlier out folder could not be renamed');
 const janitor = main.findIndex(l => /out_before_for_janitor\.txt/.test(l.s));
@@ -217,21 +300,25 @@ if (process.platform === 'win32') {
   try {
     for (const [number, setup] of setups.entries()) {
       const probe = path.join(tmp, `helper${number}.bat`);
-      const lines = ['@echo off', 'setlocal', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
+      // (1516 PC proof, Nov 21) the probe's run passes, and the setup's scratch_done.ps1 then removes a passed scratch when
+      // the PC has tools_live (V is inherited on the PC). So V points at the proof folder, and the owner token is read
+      // while the run is live instead of from disk afterwards.
+      const lines = ['@echo off', 'setlocal', 'set "V=%PROOF_HOME%"', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
         'set "RES=%PROOF_HOME%\\setup.log"', 'set "ST=%RES%"', setup,
         ':run_tools', 'powershell -NoProfile -Command "try { [IO.File]::Open((Join-Path $env:TEMP \'.voidsworn-run-active\'),\'Open\',\'Read\',\'None\').Dispose(); exit 1 } catch [IO.IOException] { exit 0 }"',
-        'if errorlevel 1 exit /b 1', 'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%',
+        'if errorlevel 1 exit /b 1', 'set "OWNER="', 'set /p OWNER=<"%TEMP%\\.voidsworn-run-owner"',
+        'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%', 'echo OWNER=%OWNER%',
         'exit /b 0', ':collect', ':finish', 'exit /b 1'];
       fs.writeFileSync(probe, lines.map(line => line.replace(/\r?\n/g, '\r\n')).join('\r\n') + '\r\n');
       const run = spawnSync('cmd.exe', ['/d', '/c', probe], { env: { ...process.env, TEMP: tmp, PROOF_HOME: tmp }, encoding: 'utf8', timeout: 15000 });
       assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}\n${fs.readFileSync(path.join(tmp, 'setup.log'), 'utf8')}`);
-      const fromEnv = run.stdout.trim().split(/\r?\n/).map(line => line.split('=')[1]);
-      assert.equal(fromEnv.length, 3);
-      const [dir] = fromEnv;
-      assert(fromEnv.every(value => value === dir));
+      const got = Object.fromEntries(run.stdout.trim().split(/\r?\n/).filter(line => /^(TMP|TEMP|TMPDIR|OWNER)=/.test(line))
+        .map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]));
+      const dir = got.TEMP;
+      assert(dir && got.TMP === dir && got.TMPDIR === dir, run.stdout);
       assert.equal(path.dirname(dir), tmp);
-      assert.equal(fs.readFileSync(path.join(dir, '.voidsworn-run-owner'), 'utf8'), path.basename(dir).slice('voidsworn-run-'.length));
-      assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')));
+      // the active marker was proven open inside the run (the PowerShell probe above); the owner token is read there too
+      assert.equal(got.OWNER, path.basename(dir).slice('voidsworn-run-'.length), run.stdout);
     }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });

@@ -1629,7 +1629,9 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 					var cap := float(ru["sec"][key]["max"])
 					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
+	# not the old lime green
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -5775,10 +5777,13 @@ func _bot_step() -> void:
 		var aid := u_id
 		bot_tried[aid] = V.get("round")
 		_cmd(func():
+			var r0 = api.R.B["round"]
 			api.ai_activate(aid)
 			# a ship the AI leaves idle (nothing in reach, nothing to launch) never starts its activation: pass it, as the
-			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1)
-			if api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
+			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1).
+			# Only in the same round: if the AI's action ended the round, the rules reset every activation flag and gave the
+			# turn back to the player, so a pass now would spend this ship's first move of the new round (issue 1499)
+			if api.R.B["round"] == r0 and api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
 				api.end_activation(aid)
 			return true)
 		return

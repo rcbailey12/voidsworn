@@ -7,13 +7,12 @@
  "knownFindingsFailures": [
   "EVT-1",
   "KIT-1",
-  "KIT-3",
   "MOD-2",
   "NEM-6",
   "ROS-9",
   "UI-5"
  ],
- "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the 3 ruled-not-built ids as the only accepted failures. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
+ "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the ruled-not-built ids as the only accepted failures. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
  "knownFindingsTriage": {
   "ADM-1": {
    "tag": "opinion",
@@ -114,10 +113,6 @@
   "KIT-2": {
    "tag": "opinion",
    "reason": "ionpulse does nothing against two shieldless factions: balance and roster design"
-  },
-  "KIT-3": {
-   "tag": "ruled-not-built",
-   "reason": "Eclipse still carries the banned green tomb styling in data.js; colours are settled with the concept redo (issue 276)"
   },
   "KIT-4": {
    "tag": "opinion",

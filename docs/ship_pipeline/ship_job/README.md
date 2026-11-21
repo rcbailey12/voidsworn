@@ -26,7 +26,8 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 
 1. Runs from its own copy, `JOB_DIR\ship_job_running.bat`: cmd reads a .bat as it goes, so a checkout must never rewrite the
    file that is running.
-2. Refreshes `Downloads\voidsworn_test\repo-mirror.git` under the same lock as the PC runner. A fresh
+2. Refreshes `Downloads\voidsworn_test\repo-mirror.git` under the same lock as the PC runner. The refresh tries three
+   times (waits 30 s, then 120 s) before the job fails with `done FAILED: mirror fetch: ...` (issue 1516). A fresh
    `JOB_DIR\repo` uses `git clone --local`, which hardlinks Git objects on the same drive. The job fetches `BRANCH`
    and optional `PAINT_BASE` from the refreshed mirror. Every tracked change in the clone is listed and saved first
    (`out\clone_changes_before_checkout.txt` and `.patch`). A tracked change outside `godot/assets/ships/` (a hand fix left
@@ -39,11 +40,19 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
    Stage 7 installs into the clone's own godot folder, never into Ryan's game.
 4. The installed glb must be this run's: written after the run started. An older one counts as a failed install.
 5. The GPU readback, the authored interiors check and the death seam check on the installed glb. All three must pass (the old
-   S10_RUN_1157.bat let a failed death seam through to the shots).
+   S10_RUN_1157.bat let a failed death seam through to the shots). A strike craft (cls Squadron in the glb, issue 1373) passes
+   the interiors and death seam checks with a "skipped" line (godot/tools/ci/craft_glb.gd): a craft has no rooms and the game
+   hides its death as a spark (fx_death.gd _wing_death).
 6. The in-game shots at camera 170 and 60, only when everything above passed.
-7. Collects deliverables into `out\recipe` on a pass or a fail. It copies `*.txt`, `*.json`, `*.md` and `*.jpg`,
-   the review images from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the requested
-   `export\<CODE>\` folder. In-game shots still go straight to `out\shots`.
+7. Collects deliverables into `out\recipe` on a pass or a fail, but only when a recipe stage ran in this run. A job that
+   stopped earlier (a failed mirror fetch, checkout or import) copies nothing and writes `collect SKIPPED: no recipe stage
+   ran` (issue 1516: 1415E collected the 1415D GP1 build after its fetch failed, and the relay looked like a build of the
+   new pin). Only files this run wrote (newer than its start) go to `out\recipe`: `*.txt`, `*.json`, `*.md` and `*.jpg`,
+   the review images (png, jpg, jpeg, gif) from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the
+   requested `export\<CODE>\` folder. An older report (from a stage this run skipped or never reached) goes to
+   `out\recipe_from_earlier_runs` for diagnosis; an older picture or export is not copied at all (Artoo on PR 1520: a
+   first-stage failure still copied the old export). Every older file is listed in `out\recipe_from_earlier_runs.txt`.
+   In-game shots still go straight to `out\shots`.
 8. After a PASS, the clone's Godot import cache `repo\godot\.godot` is removed before the done line (issue 1497); the
    clone stays for the publish, and `publish_ship.bat` removes it once the ship is live (docs/playbooks/pc.md, RULEBOOK
    3.3). A failed run keeps everything.
@@ -65,7 +74,8 @@ per ship.
 Static test: `contrib/opus/tools/ship_job_tests.js` (in the standing checks, fast): the FAILED guard after every step that
 can fail and right before the shots, all three checks counted, the installed glb's age checked before the checks, the 3600
 default before the first GPU step, `done` then `all done` on every way out, no delete or move, logs only under `out`,
-the mirror refresh and local clones, the deliverable filters, the two backups protected from the janitor list, and every
+the mirror refresh and local clones, the deliverable filters, no collect when no stage ran and only this run's files in `out\recipe` (with a
+real cmd run of the collect section on Windows: failed fetch, stage 1 failed over an old glb, fresh export), the two backups protected from the janitor list, and every
 wrapper in `wrappers/` three lines long. Removing a guard line or the death seam's CHECKFAIL line makes it fail.
 
 `tools\pc\jobs\look_bench.bat` uses the same mirror for its separate tool and game checkouts. It refreshes the mirror
