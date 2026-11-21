@@ -115,6 +115,7 @@ headless|fx/test/hit_fragments_check.gd|-|-|issue 1000: closed hull fragment mes
 headless|fx/test/frame_rate_steady_check.gd|-|-|issue 1467 (Astra pass 2, findings 4, 5, 8): over one effect second at 15, 30 and 144 fps, hull recoil integrates 1.00 s and ends in the same pose, the fallback torpedo exhaust gives 14 puffs (rockets 10) within 1 and a hitch drops overdue puffs; the hit-fragment pool uploads once per volley, never on an expiry or when empty
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
+headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
