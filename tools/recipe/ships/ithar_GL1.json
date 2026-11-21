@@ -1,0 +1,20 @@
+{
+ "ship": "ithar_GL1",
+ "name": "Glasswright lancet GL1",
+ "faction": "ithar",
+ "game_ship": "i_blade",
+ "game_code": "I11_37",
+ "sheet": "ithar_GL1",
+ "concept": "docs/ship_pipeline/build_sheets/ithar_GL1/concept.jpg",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "GL1",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5,
+ "lights": {},
+ "light_min_px": 2,
+ "notes": "Issue 1415 (R368): built from Ryan's Nov 16 pick Step 1 on the shared Glasswright kit (tools/blender/kits/ithar, hull.py) in the R337 finish: pearl ribbons, silver edges, glowing mosaic (the hull's emission atlas), cut glowing stones; nothing see-through; no wear. Replaces the Nov 1 hull I11_37.",
+ "parts": []
+}

@@ -1,0 +1,336 @@
+{
+  "code": "ithar_GP1",
+  "sheet_version": 1,
+  "design": "tools/blender/build_sheets/ships/ithar_GP1.py",
+  "design_sha256": "9c1ff5aaf65b61c0467f804c651ef0815f33fd599b72146dce40863c47ff1738",
+  "kit": "tools/blender/kits/ithar/hull.py",
+  "game_ship": "i_song",
+  "cls": "Cruiser",
+  "length_world": 14.5,
+  "routes_note": "Every visible part is hand-built in the sheet on the shared Glasswright kit (tools/blender/kits/ithar).",
+  "parts": [
+    {
+      "id": "L1",
+      "kind": "gun",
+      "what": "grown lens point at the port bow / pulsar",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "forward_lances"
+      ],
+      "weapon": "pulsar",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "stern_drive"
+      ],
+      "weapon": null,
+      "arc": null
+    },
+    {
+      "id": "L2",
+      "kind": "gun",
+      "what": "grown lens point at the stbd bow / pulsar",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "forward_lances"
+      ],
+      "weapon": "pulsar",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "E2",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "stern_drive"
+      ],
+      "weapon": null,
+      "arc": null
+    },
+    {
+      "id": "O1",
+      "kind": "gun",
+      "what": "violet grown optic / turret",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "optics"
+      ],
+      "weapon": "turret",
+      "arc": "T",
+      "turret": true,
+      "pivot_object": "O1_turret",
+      "arc_lo": -180.0,
+      "arc_hi": 180.0
+    }
+  ],
+  "masses": [
+    {
+      "name": "Port pane hull",
+      "route": "hand-built"
+    },
+    {
+      "name": "Stbd pane hull",
+      "route": "hand-built"
+    },
+    {
+      "name": "Arched bridge aft",
+      "route": "hand-built"
+    },
+    {
+      "name": "Arched bridge fwd",
+      "route": "hand-built"
+    }
+  ],
+  "break_pieces": [
+    {
+      "name": "bow piece",
+      "stations": "0.000 to 22.069 percent",
+      "bounded_by": [
+        "B2"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "midships piece 1",
+      "stations": "22.069 to 80.000 percent",
+      "bounded_by": [
+        "B2",
+        "B1"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "stern piece",
+      "stations": "80.000 to 100.000 percent",
+      "bounded_by": [
+        "B1"
+      ],
+      "full_interior": true
+    }
+  ],
+  "whole_optics": [
+    {
+      "name": "L1 whole part",
+      "part": "L1",
+      "objects": [
+        "L1_mount_gw_light",
+        "L1_mount_gw_pearl",
+        "L1_mount_gw_silver",
+        "L1_mount_gw_lance",
+        "L1_mount_gw_beam",
+        "L1_mount_gw_gem_amber",
+        "L1_mount_gw_gem_green",
+        "L1_mount_gw_gem_violet",
+        "L1_mount_gw_tip"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "E1 whole part",
+      "part": "E1",
+      "objects": [
+        "E1_grown_stern",
+        "E1_deep_lens",
+        "E1_white_bloom",
+        "E1_cut_face",
+        "E1_silver_flow_00",
+        "E1_silver_flow_01",
+        "E1_silver_flow_02",
+        "E1_silver_flow_03",
+        "E1_silver_flow_04",
+        "E1_silver_flow_05",
+        "E1_silver_flow_06",
+        "E1_silver_flow_07",
+        "E1_silver_flow_08",
+        "E1_silver_flow_09",
+        "E1_silver_flow_10"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "L2 whole part",
+      "part": "L2",
+      "objects": [
+        "L2_mount_gw_light",
+        "L2_mount_gw_pearl",
+        "L2_mount_gw_silver",
+        "L2_mount_gw_lance",
+        "L2_mount_gw_beam",
+        "L2_mount_gw_gem_amber",
+        "L2_mount_gw_gem_green",
+        "L2_mount_gw_gem_violet",
+        "L2_mount_gw_tip"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "E2 whole part",
+      "part": "E2",
+      "objects": [
+        "E2_grown_stern",
+        "E2_deep_lens",
+        "E2_white_bloom",
+        "E2_cut_face",
+        "E2_silver_flow_00",
+        "E2_silver_flow_01",
+        "E2_silver_flow_02",
+        "E2_silver_flow_03",
+        "E2_silver_flow_04",
+        "E2_silver_flow_05",
+        "E2_silver_flow_06",
+        "E2_silver_flow_07",
+        "E2_silver_flow_08",
+        "E2_silver_flow_09",
+        "E2_silver_flow_10"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "O1 whole part",
+      "part": "O1",
+      "objects": [
+        "O1_mount_gw_pearl",
+        "O1_turn_gw_gem_violet",
+        "O1_mount_gw_light",
+        "O1_mount_gw_silver"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    }
+  ],
+  "hull_fractures": [
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -4.35,
+      "note": "ragged shatter path through both hulls aft of the aft bridge; the stern optics stay whole",
+      "path": [
+        [
+          -4.35,
+          -6.64
+        ],
+        [
+          -4.06,
+          -3.32
+        ],
+        [
+          -4.617692307692307,
+          -1.5493333333333332
+        ],
+        [
+          -4.149230769230769,
+          0.0
+        ],
+        [
+          -4.662307692307692,
+          1.4386666666666665
+        ],
+        [
+          -4.082307692307692,
+          3.32
+        ],
+        [
+          -4.35,
+          6.64
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": 4.05,
+      "note": "ragged shatter path through both hulls forward of the forward bridge; the bow lances stay whole",
+      "path": [
+        [
+          4.05,
+          -6.64
+        ],
+        [
+          4.34,
+          -3.32
+        ],
+        [
+          3.7823076923076924,
+          -1.5493333333333332
+        ],
+        [
+          4.25076923076923,
+          0.0
+        ],
+        [
+          3.7376923076923076,
+          1.4386666666666665
+        ],
+        [
+          4.317692307692307,
+          3.32
+        ],
+        [
+          4.05,
+          6.64
+        ]
+      ],
+      "orient": "trans"
+    }
+  ],
+  "insides": "Each hull: two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
+  "budget": {
+    "outside": {
+      "triangles": 383514,
+      "unjoined_surfaces": 130,
+      "material_surfaces": 13,
+      "materials": [
+        "gw_beam",
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_green",
+        "gw_gem_violet",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 20280,
+      "unjoined_surfaces": 44,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "stage": "sheet built",
+  "paint_stack": "tools/blender/kits/ithar/stack.py"
+}
