@@ -12,9 +12,9 @@
     {"ruling": "R375", "what": "Sunward death smoke cut to a tenth", "probe": "death_smoke", "want": {"voidsworn": 0.1}}
   ],
   "unwired": [
-    {"event": "ram", "call": "volley weapon_id ram", "what": "ram crumple on the target, smaller one on the rammer, the biggest shove and the 1.4% zoom punch; battle.gd plays only a generic pop", "job": "Board to file"},
-    {"event": "board", "call": "board", "what": "boarding breach: pried hatch, gas venting, inside light for about 3 s, then a dark gash; battle.gd plays only a generic pop", "job": "Board to file"},
-    {"event": "ability, command", "call": "command", "what": "the flagship's command pulse; battle.gd shows the banner only", "job": "Board to file"}
+    {"event": "ram", "call": "volley weapon_id ram", "what": "ram crumple on the target, smaller one on the rammer, the biggest shove and the 1.4% zoom punch; battle.gd plays only a generic pop", "job": "#1524"},
+    {"event": "board", "call": "board", "what": "boarding breach: pried hatch, gas venting, inside light for about 3 s, then a dark gash; battle.gd plays only a generic pop", "job": "#1524"},
+    {"event": "ability, command", "call": "command", "what": "the flagship's command pulse; battle.gd shows the banner only", "job": "#1524"}
   ],
   "waiting": [
     {"what": "R392 shot-down torpedoes and rockets use PD-C; kit-built torpedo bodies VT-A and KR-B (R362)", "pr": 1416},
