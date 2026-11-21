@@ -106,7 +106,7 @@ def proof(path, job_out, info, stage):
 #   tools/pc/tmo.bat                      the watchdog hand-off: its blob must equal the hash in tmo_handoff.txt
 #   godot/assets/ships/manifest.json      must equal installed_manifest.json and differ from the commit's manifest
 #                                         (base_manifest.json, or git) only in this job's own "ships" row
-#   godot/assets/ships/**/CODE.* or CODE_*  this job's own ship files (previews and the like), named by its code
+#   godot/assets/ships/.../CODE[._]...   this job's own ship files (its CODE folder, previews), named by its code
 def job_install(path, blob, job_out, info):
     path = path.replace('\\', '/')
     out = Path(job_out)
@@ -118,9 +118,9 @@ def job_install(path, blob, job_out, info):
     if path == 'godot/assets/ships/manifest.json':
         return blob is not None and manifest_row_only(out, info, blob)
     if path.startswith('godot/assets/ships/'):
-        name = path.rsplit('/', 1)[-1]
         code = info.get('code', '')
-        return bool(code) and code != '?' and (name.startswith(code + '.') or name.startswith(code + '_'))
+        parts = path[len('godot/assets/ships/'):].split('/')
+        return bool(code) and code != '?' and any(p == code or p.startswith((code + '.', code + '_')) for p in parts)
     return False
 
 
