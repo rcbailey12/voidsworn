@@ -184,7 +184,9 @@ def to_recipe(K, ship):
             hp['bays'].append(dict(name=p['name'], pos=P(p['pos']), dir=list(p['dir']), hangar=hangar))
         else:
             pts.append(dict(kind=p['kind'], name=p['name'], pos=P(p['pos']), side=side, section=p.get('section') or ''))
-    if not hp['engines']: raise ContractError('the sheet has no engine')
+    # a placed object (the relay beacon, a station: hardpoints.required_points) has no drive; every ship needs one
+    placed = str(gamedata.ship_attr(game, 'cls', default='') or '') in ('beacon', 'station')
+    if not hp['engines'] and not placed: raise ContractError('the sheet has no engine')
     sc['r209_hp'] = json.dumps(hp); sc['r209_guns'] = json.dumps(guns); sc['r209_points'] = json.dumps(pts)
 
     # turret pivots: the data.js slot index in place of the sheet's arc letter

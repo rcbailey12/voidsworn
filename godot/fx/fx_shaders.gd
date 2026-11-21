@@ -2321,13 +2321,13 @@ void fragment() {
 	float branch = (mod(lane, 2.0) * 2.0 - 1.0) * (3.0 + sqrt(q) * 25.0);
 	branch += sin(q * 27.0 + lane) * 1.5;
 	float fork = exp(-pow((y - branch) / 0.65, 2.0)) * (1.0 - smoothstep(0.32, 0.65, q)) * alive;
-	vec3 green = vCol.rgb;
-	// Keep green-white confined to hot strands; the surrounding flow is violet.
+	vec3 core_col = vCol.rgb;
+	// The weapon_core colour (deep violet since issue 1503) stays on the hot strands; the surrounding flow is violet.
 	vec3 violet = eclipse_sheath / max(max(eclipse_sheath.r, eclipse_sheath.g), max(eclipse_sheath.b, 0.0001));
 	vec3 colour = eclipse_sheath * (0.45 + grain * 1.3);
 	colour += violet * (sheath * (0.18 + wisps * 0.28 + grain * 0.22) + haze * 0.22);
-	colour += green * (glow * 0.5 + filaments * (2.0 + pulse * 1.5) + fork * 2.0);
-	colour += vec3(0.90, 1.0, 0.94) * white * (0.5 + pulse * 0.8);
+	colour += core_col * (glow * 0.5 + filaments * (2.0 + pulse * 1.5) + fork * 2.0);
+	colour += vec3(0.95, 0.90, 1.0) * white * (0.5 + pulse * 0.8);
 	ALBEDO = colour * fx_gain;
 	ALPHA = clamp((sheath * 0.85 + haze + filaments + fork) * env * ends * min(vCol.a, 1.0), 0.0, 0.98);
 }

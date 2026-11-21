@@ -32,7 +32,7 @@ Sound is not reviewed. Clips go to Fable and Muse with the audio stripped.
 - docs/playbooks/screens.md, factions.md, scale.md, effects.md, deaths_and_hits.md.
 - godot/story/ (README.md, outlines.md, outlines_variants.md, data/), docs/words/ and the in-game help text.
 - Faction names: contrib/opus/compute/rename_map_final.md (ids never change; display names do).
-- What is already known, so nobody repeats it: contrib/opus/reviews/codebase_audit_1120.md on branch claude/project-thread-r8cctm, PR 1339 (bugs 1336 to 1338), the Neon
+- What is already known, so nobody repeats it: contrib/opus/reviews/codebase_audit_1120.md (repros on commit 1c7d1a75, closed PR 1339) (bugs 1336 to 1338), the Neon
   audits in /mnt/project-files/audits/ (front-end UI, weapon fx readability, ship destruction, backdrops, codebase health,
   all Nov 19), Neon's Nov 20 reviews (PR 1380 late campaign balance, follow-ups issue 1384, including the Battle 2 spike:
   teachingBattle 2 forces a Hullbreaker fight with round 3 to 4 reinforcements before the first shipyard; PR 1383 faction

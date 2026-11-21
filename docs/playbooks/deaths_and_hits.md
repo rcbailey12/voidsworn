@@ -168,8 +168,8 @@ body and the wreck.
   with a rainbow fringe, the only coloured flash in the game. Whole panes and rings shear off and tumble, glinting. No fire
   and no smoke: glittering dust. The light inside the shards fades slowly.
 - **Eclipse.** It peels. Shade plates lift away band by band, a beat apart, during the tell. The trapped core gutters
-  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white,
-  which is only the Doom gun's core, R263), the scene around it dims for an instant, then one small hard flash and it is
+  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white;
+  the Doom gun's core was the last green and is deep violet since Nov 21, issue 1503), the scene around it dims for an instant, then one small hard flash and it is
   out. No fire. The plates drift.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.

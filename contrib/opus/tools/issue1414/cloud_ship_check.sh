@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cloud run of the PC ship job's checks before a pin is frozen (issue 1414: the Harrow's first PC run failed stage 4 on six
 # floating louvres the sheet fit check does not see). Runs, in order: the sheet fit check, recipe stage 4's parts build, its
-# audit (floating parts, machines across seams), the build sheet contract, an unbaked stage 7 export, check_export, and the
+# audit (floating parts, machines across seams), the build sheet contract, an unbaked stage 7 export, check_export and its self-test, and the
 # Godot death seam check, plus the concept, camera fit and outline steps of stages 1, 3 and 4. A first PC run of a sheet ship
 # needs all seven stages in its bat (stage 3 writes concept_camera.json). Needs the bpy venv (pip bpy 4.5.4) and Godot headless at /opt/godot.
 #   sh contrib/opus/tools/issue1414/cloud_ship_check.sh <venv python> <ship json> <sheet code> <cell> <game code> <out dir>
@@ -36,6 +36,8 @@ echo 'PASS stage 1/3/4 outline steps (stage 2 TRELLIS stand-in: the build outlin
 echo 'PASS sheet contract'
 "$BL" -b "$OUT/build/$CELL.blend" --python-exit-code 1 -P tools/recipe/export7.py -- "$SHIP" "$OUT/export" maps=1024 unbaked=1 > "$OUT/log_export.txt" 2>&1 || { cat "$OUT/export/export_status.txt"; echo 'FAILED: stage 7 export'; exit 1; }
 "$PY" tools/recipe/check_export.py "$SHIP" "$OUT/export" unbaked=1 > "$OUT/log_check.txt" 2>&1 || { tail -5 "$OUT/log_check.txt"; echo 'FAILED: check_export'; exit 1; }
+"$PY" tools/recipe/check_export_selftest.py "$SHIP" "$OUT/export" unbaked=1 > "$OUT/log_export_selftest.txt" 2>&1 || { tail -8 "$OUT/log_export_selftest.txt"; echo 'FAILED: check_export_selftest'; exit 1; }
+echo 'PASS check_export and its self-test'
 tail -1 "$OUT/log_check.txt"
 /opt/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path godot --script res://fx/test/death_seam_check.gd -- "$OUT/export/$GAME.glb" > "$OUT/log_seam.txt" 2>&1 || true
 grep -q 'DEATH_SEAM failures=0' "$OUT/log_seam.txt" || { grep DEATH_SEAM "$OUT/log_seam.txt"; echo 'FAILED: death seam'; exit 1; }

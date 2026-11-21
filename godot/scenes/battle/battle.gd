@@ -5777,10 +5777,13 @@ func _bot_step() -> void:
 		var aid := u_id
 		bot_tried[aid] = V.get("round")
 		_cmd(func():
+			var r0 = api.R.B["round"]
 			api.ai_activate(aid)
 			# a ship the AI leaves idle (nothing in reach, nothing to launch) never starts its activation: pass it, as the
-			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1)
-			if api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
+			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1).
+			# Only in the same round: if the AI's action ended the round, the rules reset every activation flag and gave the
+			# turn back to the player, so a pass now would spend this ship's first move of the new round (issue 1499)
+			if api.R.B["round"] == r0 and api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
 				api.end_activation(aid)
 			return true)
 		return
