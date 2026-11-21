@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1413o3f",
+ "ship": "hegemony_O3",
+ "code": "O3_11",
+ "commit": "7521a69d4299163e965750f87fdd3819097ef158",
+ "glb": "8ff62d4b73ac244074c0d463f7759674807099639ba84ae08a5201656bec5a85",
+ "files": {
+  "O3_11.glb": "8ff62d4b73ac244074c0d463f7759674807099639ba84ae08a5201656bec5a85",
+  "O3_11_base.jpg": "dabe78c20f0ae5e16910899d7383ea56f995ee6486122f45ae2e77308ad98cdb",
+  "O3_11_glow_emission.jpg": "56660831dab44fda681065c2c6914b51fa681c7647d048e0ab5000744d8986a0",
+  "O3_11_normal.png": "c355a29cf5b4812103c1896eee413ba103874e77d1f8d9ad7a2cf092219d54ee",
+  "O3_11_orm.png": "54fc1b2c510d38329d1756959a72e9aff4611292e0ebf9edf78331593d1fca97",
+  "O3_11_parts_base.jpg": "f8f31ff0eb321fd3a5810c128e3879e74d16a526bb2ad09f02bf30e6f592e0df",
+  "O3_11_parts_normal.png": "3965e08b8cafbd206ca9338e4f94f27cfee1f9353b8a8ed408203a53f4c5de02",
+  "O3_11_parts_orm.png": "5b93ec2f966303cbb16a3d16862357996477e2a1add5eb49e716c395c7930560"
+ },
+ "checked": [
+  "O3_11.glb",
+  "O3_11_base.jpg",
+  "O3_11_glow_emission.jpg",
+  "O3_11_normal.png",
+  "O3_11_orm.png",
+  "O3_11_parts_base.jpg",
+  "O3_11_parts_normal.png",
+  "O3_11_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 2.50 deg (floor 1.34), albedo contrast 0.136 (floor 0.130), roughness spread 0.184 (floor 0.140), 896059 texels"
+}

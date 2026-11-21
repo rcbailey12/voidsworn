@@ -1,0 +1,2 @@
+[publish] receipt ok: hegemony_O3 O3_11 commit 7521a69d4299163e965750f87fdd3819097ef158, glb 8ff62d4b73ac244074c0d463f7759674807099639ba84ae08a5201656bec5a85, 8 listed and 8 checked files
+SHIP=hegemony_O3
