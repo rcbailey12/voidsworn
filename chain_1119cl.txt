@@ -1,0 +1,10 @@
+chain CL waiting for 1413 HB1 exit in chain_1119ck.txt Sat 11/21/2026  9:16:03.81 
+swapped out while only waiting 09:19:03: CL replaced by HELPERS_CHAIN_1119CL2.bat (waits for 1291 C14H exit; Board Nov 21 15:18 UTC)
+chain CL2 waiting for 1291 C14H exit in chain_1119cj.txt Sat 11/21/2026  9:19:04.01 
+mirror fetch exit 0
+b8c7097f29938e73a444a462e958f304ee7a7e7c reachable in the mirror
+1415F GS1 start 10:13:13.02 
+1415F GS1 exit 0 at 10:28:07.52 
+1415F GL1 start 10:28:07.52 
+1415F GL1 exit 0 at 11:08:13.33 
+1415F GP1 start 11:08:13.33 
