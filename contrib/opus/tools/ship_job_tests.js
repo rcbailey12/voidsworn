@@ -294,21 +294,25 @@ if (process.platform === 'win32') {
   try {
     for (const [number, setup] of setups.entries()) {
       const probe = path.join(tmp, `helper${number}.bat`);
-      const lines = ['@echo off', 'setlocal', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
+      // (1516 PC proof, Nov 21) the probe's run passes, and the setup's scratch_done.ps1 then removes a passed scratch when
+      // the PC has tools_live (V is inherited on the PC). So V points at the proof folder, and the owner token is read
+      // while the run is live instead of from disk afterwards.
+      const lines = ['@echo off', 'setlocal', 'set "V=%PROOF_HOME%"', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
         'set "RES=%PROOF_HOME%\\setup.log"', 'set "ST=%RES%"', setup,
         ':run_tools', 'powershell -NoProfile -Command "try { [IO.File]::Open((Join-Path $env:TEMP \'.voidsworn-run-active\'),\'Open\',\'Read\',\'None\').Dispose(); exit 1 } catch [IO.IOException] { exit 0 }"',
-        'if errorlevel 1 exit /b 1', 'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%',
+        'if errorlevel 1 exit /b 1', 'set "OWNER="', 'set /p OWNER=<"%TEMP%\\.voidsworn-run-owner"',
+        'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%', 'echo OWNER=%OWNER%',
         'exit /b 0', ':collect', ':finish', 'exit /b 1'];
       fs.writeFileSync(probe, lines.map(line => line.replace(/\r?\n/g, '\r\n')).join('\r\n') + '\r\n');
       const run = spawnSync('cmd.exe', ['/d', '/c', probe], { env: { ...process.env, TEMP: tmp, PROOF_HOME: tmp }, encoding: 'utf8', timeout: 15000 });
       assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}\n${fs.readFileSync(path.join(tmp, 'setup.log'), 'utf8')}`);
-      const fromEnv = run.stdout.trim().split(/\r?\n/).map(line => line.split('=')[1]);
-      assert.equal(fromEnv.length, 3);
-      const [dir] = fromEnv;
-      assert(fromEnv.every(value => value === dir));
+      const got = Object.fromEntries(run.stdout.trim().split(/\r?\n/).filter(line => /^(TMP|TEMP|TMPDIR|OWNER)=/.test(line))
+        .map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]));
+      const dir = got.TEMP;
+      assert(dir && got.TMP === dir && got.TMPDIR === dir, run.stdout);
       assert.equal(path.dirname(dir), tmp);
-      assert.equal(fs.readFileSync(path.join(dir, '.voidsworn-run-owner'), 'utf8'), path.basename(dir).slice('voidsworn-run-'.length));
-      assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')));
+      // the active marker was proven open inside the run (the PowerShell probe above); the owner token is read there too
+      assert.equal(got.OWNER, path.basename(dir).slice('voidsworn-run-'.length), run.stdout);
     }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
