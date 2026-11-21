@@ -434,10 +434,20 @@ function Assert-Rebuildable($repo) {
   # Every local branch and HEAD is a commit the shared mirror holds, or a two-parent merge (PAINT_BASE) of mirror commits
   # that git merges again to exactly the same tree (Artoo on PR 1498: a merge with its own conflict edits is work).
   # Every ref the checkout has (branches, tags, notes, any other; HEAD too) is checked, peeled to its commit. Only
-  # refs/remotes/ is left out: those are copies of the mirror's own refs, never local work.
+  # refs/remotes/ is left out: those are copies of the mirror's own refs, never local work. A ref that is not a branch
+  # (a tag, notes, anything else) carries its own name and object (an annotated tag's message), so the mirror must hold
+  # that same ref name with that exact object, or the checkout stays (Artoo on PR 1498).
   $stash = @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/stash | Where-Object { $_ })
   if ($stash.Count) { throw 'it has a stash' }
   $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
+  foreach ($line in @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' | Where-Object { $_ })) {
+    $own, $name = "$line".Trim() -split ' ', 2
+    if ($name.StartsWith('refs/remotes/') -or $name.StartsWith('refs/heads/')) { continue }
+    $ErrorActionPreference = 'Continue'
+    $theirs = @(& $gitExe --git-dir $mirror show-ref --verify $name 2>$null)
+    $ErrorActionPreference = 'Stop'
+    if ($LASTEXITCODE -ne 0 -or -not $theirs.Count -or "$($theirs[0])".Trim() -ne "$own $name") { throw "ref $name is not in the shared mirror with the same object" }
+  }
   foreach ($ref in @(Run-Git -C $repo for-each-ref '--format=%(refname)' | Where-Object { $_ -and -not "$_".StartsWith('refs/remotes/') })) {
     $peeled = $null
     try { $peeled = (Run-Git -C $repo rev-parse --verify -q "$ref^{commit}") | Select-Object -Last 1 } catch { $peeled = $null }

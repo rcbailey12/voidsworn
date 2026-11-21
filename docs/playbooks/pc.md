@@ -58,7 +58,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   (`opus_job_head.ps1 dropcache`); the clone stays because the publish installs with its tools. `publish_ship.bat`
   removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every file in the job's
   `out` relayed per `out\\relay_receipt.txt`, which the Board writes when it relays out, or passes as `droprepo <job>
-  <commit> <code> <branch> <tree folder>`, every local commit in the shared mirror or a merge of mirror commits, no stash or staged change;
+  <commit> <code> <branch> <tree folder>`, every local commit in the shared mirror or a merge of mirror commits, every tag or other non-branch ref in the mirror under the same name and object, no stash or staged change;
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone for the janitor (issue 1396). A second publish from the same job folder needs a new ship run.

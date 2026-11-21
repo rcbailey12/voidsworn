@@ -481,8 +481,15 @@ git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'com
 git(['tag', 'keepme'], st.repo);
 git(['reset', '-q', '--hard', two], st.repo);
 r = run('droprepo', st.j, two, 'S5', relay([[path.join(sa.j, 'out'), 'opus1497g_out']]), 'opus1497g_out');
-assert(fs.existsSync(st.repo) && /ship clone kept: commit [0-9a-f]{40} is on no branch or tag of the shared mirror/.test(r.out), 'a local-only tag keeps the clone: ' + r.out);
+assert(fs.existsSync(st.repo) && /ship clone kept: ref refs\/tags\/keepme is not in the shared mirror with the same object/.test(r.out), 'a local-only tag keeps the clone: ' + r.out);
 assert.equal(git(['rev-parse', 'keepme'], st.repo).length, 40, 'the tag survives');
+// a local-only annotated tag on a commit the mirror already has also keeps the clone: its name and message are work
+const sat = shipJob('opus1497h');
+git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'tag', '-a', 'note1497', '-m', 'a note only here', two], sat.repo);
+git(['reset', '-q', '--hard', two], sat.repo);
+r = run('droprepo', sat.j, two, 'S5', relay([[path.join(sa.j, 'out'), 'opus1497h_out']]), 'opus1497h_out');
+assert(fs.existsSync(sat.repo) && /ship clone kept: ref refs\/tags\/note1497 is not in the shared mirror with the same object/.test(r.out), 'a local annotated tag on a mirrored commit keeps the clone: ' + r.out);
+assert.equal(git(['cat-file', '-p', 'note1497'], sat.repo).includes('a note only here'), true, 'the annotation survives');
 // a link above the import cache: dropcache refuses, and the folder the link points to survives
 const sl2 = shipJob('opus1497e');
 const elsewhereGodot = path.join(tmp, 'elsewhere_godot');
