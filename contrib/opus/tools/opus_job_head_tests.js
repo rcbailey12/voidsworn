@@ -453,7 +453,7 @@ r = run('droprepo', sm.j, git(['rev-parse', 'HEAD'], sm.repo), 'S5', relay([[pat
 assert(!fs.existsSync(sm.repo), 'a merge of two mirror commits is rebuildable: ' + r.out);
 // a merge whose tree git does not rebuild from its parents (its own edits) keeps the clone (Artoo on PR 1498)
 const se = shipJob('opus1497d', one1);
-git(['merge', '-q', '--no-ff', '--no-commit', two], se.repo);
+git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'merge', '-q', '--no-ff', '--no-commit', two], se.repo);
 write(path.join(se.repo, 'godot', 'project.godot'), 'an edit inside the merge\n');
 git(['add', 'godot/project.godot'], se.repo);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'merge with edits'], se.repo);
