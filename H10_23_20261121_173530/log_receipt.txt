@@ -1,0 +1,2 @@
+[publish] receipt ok: hegemony_H10 H10_23 commit 7521a69d4299163e965750f87fdd3819097ef158, glb 7b04efd4b3bcded22a9d744cf1b1d08f1861cb243f681f7f0882c1315f1e8f09, 8 listed and 8 checked files
+SHIP=hegemony_H10

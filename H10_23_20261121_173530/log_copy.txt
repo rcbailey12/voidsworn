@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 5:35:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\out\recipe\export\H10_23\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\export\H10_23\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\out\recipe\export\H10_23\
+	    New File  		      25	export_status.txt100%  
+	    New File  		   5.9 m	H10_23.glb  8.3% 16.7% 25.1% 33.5% 41.9% 50.3% 58.7% 67.1% 75.5% 83.9% 92.3%100%  
+	    New File  		   1.4 m	H10_23_base.jpg 16%   33%   50%   67%   83%  100%  
+	    New File  		    9136	H10_23_check.json100%  
+	    New File  		   21791	H10_23_export.json100%  
+	    New File  		  599093	H10_23_glow_emission.jpg 43%   87%  100%  
+	    New File  		   4.2 m	H10_23_normal.png 11%   23%   35%   47%   59%   71%   82%   94%  100%  
+	    New File  		   6.3 m	H10_23_orm.png  7.8% 15.7% 23.6% 31.5% 39.4% 47.3% 55.2% 63.1% 71.0% 78.8% 86.7% 94.6%100%  
+	    New File  		   1.0 m	H10_23_parts_base.jpg 24%   48%   72%   97%  100%  
+	    New File  		   4.2 m	H10_23_parts_normal.png 11%   23%   34%   46%   58%   69%   81%   93%  100%  
+	    New File  		   5.1 m	H10_23_parts_orm.png  9%   19%   28%   38%   48%   57%   67%   77%   86%   96%  100%  
+	    New File  		    1505	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\out\recipe\export\H10_23\_gltf_source\
+	    New File  		   5.8 m	H10_23.bin  8.4% 16.9% 25.4% 33.9% 42.3% 50.8% 59.3% 67.8% 76.2% 84.7% 93.2%100%  
+	    New File  		   82135	H10_23.gltf100%  
+	    New File  		  912080	H10_engine_emission.png 28%   57%   86%  100%  
+	    New File  		   5.6 m	H10_hull_albedo.png  8%   17%   26%   35%   44%   53%   62%   71%   80%   88%   97%  100%  
+	    New File  		   4.2 m	H10_hull_normal.png 11%   23%   35%   47%   59%   71%   82%   94%  100%  
+	    New File  		   6.3 m	H10_hull_orm.png  7.8% 15.7% 23.6% 31.5% 39.4% 47.3% 55.2% 63.1% 71.0% 78.8% 86.7% 94.6%100%  
+	    New File  		   4.7 m	H10_parts_albedo.png 10%   20%   31%   41%   52%   62%   73%   83%   94%  100%  
+	    New File  		   4.2 m	H10_parts_normal.png 11%   23%   34%   46%   58%   69%   81%   93%  100%  
+	    New File  		   5.1 m	H10_parts_orm.png  9%   19%   28%   38%   48%   57%   67%   77%   86%   96%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   66.38 m   66.38 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1546948888 Bytes/sec.
+   Speed :            88517.125 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 5:35:33 PM
+

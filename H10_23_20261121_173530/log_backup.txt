@@ -1,0 +1,1 @@
+[publish] kept H10_23 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\H10_23_20261121_173530

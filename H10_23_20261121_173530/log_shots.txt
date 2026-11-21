@@ -1,0 +1,19 @@
+GPU: waiting for shared claim, weight 1 (1413)
+GPU: acquired shared claim 810c01f8-336e-40b8-94b2-9b0b49691e83
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-d1c96878089b4118a016405f33f7e512\godot-profile-628123be98124448abd6e37cc1c037bf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots facs ["hegemony"] sets ["battle", "close"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/hegemony_battle.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/hegemony_battle_near.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_q.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_s.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_b.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_t.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_d.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\publish\H10_23_20261121_173530\shots/H10_23_u.jpg
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-d1c96878089b4118a016405f33f7e512\godot-profile-628123be98124448abd6e37cc1c037bf
+GPU: released shared claim 810c01f8-336e-40b8-94b2-9b0b49691e83

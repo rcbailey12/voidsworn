@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1413h10f",
+ "ship": "hegemony_H10",
+ "code": "H10_23",
+ "commit": "7521a69d4299163e965750f87fdd3819097ef158",
+ "glb": "7b04efd4b3bcded22a9d744cf1b1d08f1861cb243f681f7f0882c1315f1e8f09",
+ "files": {
+  "H10_23.glb": "7b04efd4b3bcded22a9d744cf1b1d08f1861cb243f681f7f0882c1315f1e8f09",
+  "H10_23_base.jpg": "0f7e0348e3daf8bb90c94f6666dddf67c96d4dde51a0159430927f9032df592b",
+  "H10_23_glow_emission.jpg": "7b5124ee4ac48a246fee1703844449d5620f14a64977faff599c1b6d667a399a",
+  "H10_23_normal.png": "90211e01fa0c5c094bf86f7b5734c861f8a1022d168a447ccb3608bd100e832c",
+  "H10_23_orm.png": "af492bfb6e0e561a22a64d7b402770ba6c20765518c630305b8464849ffce957",
+  "H10_23_parts_base.jpg": "bcd0bcb46cc8fd94be8f312054940380d31ec66c5d0bcea54ed1211cec3ef99f",
+  "H10_23_parts_normal.png": "af81638f4f281324e6a89135b328b8368ebe0cf40e8704de8d39e447b2610cd9",
+  "H10_23_parts_orm.png": "85b1de3119596e047e39a94d805bd6ce5bb1190359922ab47675571ddc7703b7"
+ },
+ "checked": [
+  "H10_23.glb",
+  "H10_23_base.jpg",
+  "H10_23_glow_emission.jpg",
+  "H10_23_normal.png",
+  "H10_23_orm.png",
+  "H10_23_parts_base.jpg",
+  "H10_23_parts_normal.png",
+  "H10_23_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 2.01 deg (floor 1.34), albedo contrast 0.197 (floor 0.130), roughness spread 0.183 (floor 0.140), 621041 texels"
+}
