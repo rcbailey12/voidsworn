@@ -918,11 +918,11 @@ static func _casing(fx, rocket: bool) -> ArrayMesh:
 
 
 # R362 (docs/playbooks/ships.md section 9): a torpedo or rocket is a solid object beside the ships, so it is built from its
-# faction's part kit (tools/blender/build_sheets/munitions/munitions.py writes fx/munitions/<faction>_<look>.glb, the same
+# faction's part kit (tools/blender/build_sheets/munitions/munitions.py writes fx/munition_bodies/<faction>_<look>.glb, the same
 # frame and length as the code casing: +X the nose, x -1.15 to 1.15) and takes the hull finish (LOOK.hull: the faction's
 # brightness band, the material rim and the "look_hull" mark the rim light reads). A faction with no body file keeps the
 # code casing. Loaded once per body and faction; every shot shares the finished meshes.
-const MUNITIONS_DIR := "res://fx/munitions/"
+const MUNITIONS_DIR := "res://fx/munition_bodies/"
 
 
 static func _kit_body(fx, lk: String, faction: String) -> Node3D:

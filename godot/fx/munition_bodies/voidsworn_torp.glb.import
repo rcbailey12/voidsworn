@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cg7jhfvcs3um1"
-path="res://.godot/imported/corsair_rockets.glb-b20415c54f460f8b67e001cf2b0c0282.scn"
+uid="uid://l81ahpnrhxcy"
+path="res://.godot/imported/voidsworn_torp.glb-d624a0d55c64700f0b631a927af66171.scn"
 
 [deps]
 
-source_file="res://fx/munitions/corsair_rockets.glb"
-dest_files=["res://.godot/imported/corsair_rockets.glb-b20415c54f460f8b67e001cf2b0c0282.scn"]
+source_file="res://fx/munition_bodies/voidsworn_torp.glb"
+dest_files=["res://.godot/imported/voidsworn_torp.glb-d624a0d55c64700f0b631a927af66171.scn"]
 
 [params]
 

@@ -112,8 +112,8 @@ write(path.join(work, 'godot', 'project.godot'), 'fixture\n');
 write(path.join(work, 'godot', 'assets', 'ships', 'a4_props.gd'), 'extends Node\n');
 // Issue 1379 (Artoo on PR 1529): a tracked munition body. Its maps stay embedded on import (the committed .glb.import), so any
 // image file beside it is somebody's work, even an ignored one whose name starts with the body's.
-write(path.join(work, 'godot', 'fx', 'munitions', 'corsair_rockets.glb'), 'body\n');
-write(path.join(work, 'godot', 'fx', 'munitions', '.gitignore'), '*.jpg\n*.png\n');
+write(path.join(work, 'godot', 'fx', 'munition_bodies', 'corsair_rockets.glb'), 'body\n');
+write(path.join(work, 'godot', 'fx', 'munition_bodies', '.gitignore'), '*.jpg\n*.png\n');
 git(['add', '-A'], work);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-q', '-m', 'one'], work);
 const one1 = git(['rev-parse', 'HEAD'], work);
@@ -244,7 +244,7 @@ write(path.join(so, 'gen', 'orphan.res.import'), 'a sidecar with no proven file'
 // named like the body's. Their own checkout, so the shipout list above keeps its five examples.
 r = run('checkout', attempt, 'mapsout', two);
 assert.equal(r.status, 0, r.out);
-const mo = path.join(attempt, 'mapsout', 'godot', 'fx', 'munitions');
+const mo = path.join(attempt, 'mapsout', 'godot', 'fx', 'munition_bodies');
 write(path.join(mo, 'stray_albedo.jpg'), 'an ignored map with no tracked body');
 write(path.join(mo, 'corsair_rockets_corsair_rockets_hull_albedo.jpg'), 'a hand-painted map named like an extracted one');
 // Same size and same time, different bytes: only a hash match proves a copy.
