@@ -1,0 +1,21 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1468)
+GPU: acquired shared claim e3e55aab-06ef-4964-af5a-9cbd511668c2
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2426f6992cbd4785ba999fc7517eb845\godot-profile-1f725f405c2545dca544e3016168ba44
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] baked d589e89fb56ccff4200371eaab725f08cf73b156c98f2eb7ef619bf5d9bf3255 4096x2048 in 3749 ms (worker)
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/sky_panorama_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/sky_band_view_old.png
+[world] baked a9308848df872222442f0700010196427fbe0db754356fced43d8dcaa2c8a7b1 2048x1024 in 927 ms (worker)
+[world] baked 30b93f965a6f583ad41d42127a434b8e6ef1ba8a75a373e0f057a7bdca9ae743 2048x1024 in 640 ms (worker)
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_game_front_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_game_back_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_game_turned_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_relief_front_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_relief_back_old.png
+shader math shots: wrote C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/planet_relief_turned_old.png
+shader math shots: done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2426f6992cbd4785ba999fc7517eb845\godot-profile-1f725f405c2545dca544e3016168ba44
+GPU: released shared claim e3e55aab-06ef-4964-af5a-9cbd511668c2

@@ -1,0 +1,28 @@
+OPUS1468C_WAIT.bat waiting for OPUS1435_CLOSE5 exit in opus1435g_wait.txt Fri 11/20/2026 20:28:15.95 
+HELD 20:47:53 by PC relay (Board, Nov 21 02:47 UTC): waiter stopped while only waiting, disk under 60 GB; Board will requeue after cleanup.
+OPUS1468C_WAIT2.bat waiting for OPUS1435_CLOSE5 exit in opus1435g_wait.txt Fri 11/20/2026 20:52:14.21 
+HELD 00:07:19 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule). Requeue after space is freed.
+OPUS1468C_WAIT3.bat waiting for OPUS1435_CLOSE5 exit in opus1435g_wait.txt Sat 11/21/2026  6:14:35.38 
+swapped out while only waiting 07:54:26: WAIT3 replaced by OPUS1468C_WAIT4.bat (waits for OPUS1434_LOAD6 exit; Board Nov 21 13:46 UTC)
+OPUS1468C_WAIT4.bat waiting for OPUS1434_LOAD6 exit in opus1434f_wait.txt Sat 11/21/2026  7:54:26.82 
+swapped out while only waiting 07:55:20: WAIT4 replaced by OPUS1468C_WAIT5.bat (waits for OPUS1379_BODY_RUN8 exit; Board Nov 21 13:54 UTC)
+OPUS1468C_WAIT5.bat waiting for OPUS1379_BODY_RUN8 exit in opus1379i_wait.txt Sat 11/21/2026  7:55:20.96 
+swapped out while only waiting 08:38:59: WAIT5 replaced by OPUS1468C_WAIT6.bat (waits for OPUS1399_SMALLAFTER exit; Board Nov 21 14:38 UTC)
+OPUS1468C_WAIT6.bat waiting for OPUS1399_SMALLAFTER exit in opus1399s_wait.txt Sat 11/21/2026  8:38:59.44 
+HELD 08:40:04 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule).
+OPUS1468C_WAIT6.bat waiting for OPUS1399_SMALLAFTER exit in opus1399s_wait.txt Sat 11/21/2026  8:42:55.15 
+swapped out while only waiting 08:46:22: WAIT6 replaced by OPUS1468C_WAIT7.bat (waits for 1373L PROBE17 exit; Board Nov 21 14:45 UTC)
+OPUS1468C_WAIT7.bat waiting for 1373L PROBE17 exit in opus1373p17_wait.txt Sat 11/21/2026  8:46:23.06 
+swapped out while only waiting 09:08:41: WAIT7 replaced by OPUS1468C_WAIT8.bat (waits for OPUS1434_LOAD8 exit; Board Nov 21 15:08 UTC)
+OPUS1468C_WAIT8.bat waiting for OPUS1434_LOAD8 exit in opus1434h_wait.txt Sat 11/21/2026  9:08:42.01 
+swapped out while only waiting 09:15:17: WAIT8 replaced by OPUS1468C_WAIT9.bat (waits for OPUS1524_SHOTS exit; Board Nov 21 15:14 UTC)
+OPUS1468C_WAIT9.bat waiting for OPUS1524_SHOTS exit in opus1524_wait.txt Sat 11/21/2026  9:15:17.16 
+swapped out while only waiting 09:16:35: WAIT9 replaced by OPUS1468C_WAIT10.bat (waits for OPUS1121M_MOTION exit; Board Nov 21 15:16 UTC)
+OPUS1468C_WAIT10.bat waiting for OPUS1121M_MOTION exit in opus1121mot_wait.txt Sat 11/21/2026  9:16:35.31 
+swapped out while only waiting 09:20:38: WAIT10 replaced by OPUS1468C_WAIT11.bat (waits for OPUS1121N_MOTION exit)
+OPUS1468C_WAIT11.bat waiting for OPUS1121N_MOTION exit in opus1121motn_wait.txt Sat 11/21/2026  9:20:39.38 
+OPUS1468_SHADER3 start 14:29:50.17 
+OPUS1468_SHADER3 exit 0 at 15:04:14.76 
+run folder out_20261121_142951_22531
+result: done PASS
+all done Sat 11/21/2026 15:04:15.12 

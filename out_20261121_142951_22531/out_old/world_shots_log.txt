@@ -1,0 +1,76 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1468)
+GPU: acquired solo claim 46b9db17-fb15-487d-8b74-66dfd81dd2e0
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-dcca289103414ad6b8923438b7872c73\godot-profile-c0b23c5be8b64060985d0cf30fd3da28
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 339 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.372, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 2018f7126475a2cd197c2e8d62054e713b025c6cfc993a0aa0a8ab14f6f0abaa 4096x2048 in 9438 ms (worker)
+[world] baked 63d491c3e7f8ba9ed2db2ed7b37e04254ef20d86fa3b04609c746cc5bcbacd2d 4096x2048 in 12059 ms (worker)
+[world] baked fb838765029938b9809af04d56ad3a270f2d3451ae2adc725309ade8531e45c9 1024x512 in 12495 ms (worker)
+[world] baked 85426926329e06a5dfb645e3745b16e3671e072534380d4342300bc2ef9d6062 1024x512 in 12912 ms (worker)
+[world] baked 12f5ae6072528ff27fc986abcb88008108ff941c18f8b2aacb5ba1b3fbb36278 4096x2048 in 2012 ms (worker)
+[world] baked 95a9fd0cbc3ea970d504a07c3bf764640f562865077f674b5b4a56222ddfe654 1024x512 in 1992 ms (worker)
+[world] baked c5d28521ea944680a0c5ce4354a6cb10c40ec573dd2f912987e5971be5531009 1024x512 in 1890 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[world_shots] frontier_station: scene build 1 ms; system: planet 4, 2 moons; fields: 34 edge rocks, 150 deep, 0 belt, 4 mountains; wisps: 44 gas clouds at middle distance; setting: frontier region, station map, iron rock, planet 4 (volcanic), sky for hegemony; rocks: 433 in all (4 rock hexes, 21 debris hexes); clouds on 0 nebula and 0 storm hexes; built in 331 ms; living debris: 486 rocks and wreck pieces on 21 hexes; debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 1058, sun glints, three hot points per heated kit piece; legacy debris: 2 materials hidden in living/cine and restored in today/holo; living terrain built in 170 ms; painted hull debris: 8 cached chunks, 21 instances
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/frontier_station_1_default.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/frontier_station_2_zoomed_out.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/frontier_station_3_low.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/frontier_station_4_rocks_close.jpg
+[attach] battle x014 H7_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[fx] late shader: mat SPRITE #define SOFT frame 1105 27219.2 ms
+[fx] late shader: mat STREAK frame 1105 27299.3 ms
+[fx] late shader: mat RING frame 1105 27354.2 ms
+[fx] late shader: mat RIBBON frame 1105 27391.7 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1105 27443.2 ms
+[fx] late shader: mat NULL_SLUG frame 1105 27482.3 ms
+[fx] late shader: mat SHARD frame 1105 27512.8 ms
+[fx] late shader: hit fragments frame 1105 27622.2 ms
+[fx] late shader: mat DISTORT frame 1105 27741.6 ms
+[fx] late shader: death debris body frame 1105 27771.4 ms
+[fx] late shader: mat TEAR frame 1105 27864.3 ms
+[fx] late shader: death strain tear frame 1105 27892.4 ms
+[sfx] 71 cues, 67 clip sets, loaded in 281 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 1107 31462.0 ms
+[fx] late shader: mat SHIELD frame 1107 31574.1 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[fx] late shader: exterior frame 1108 33530.4 ms
+[fx] late shader: damage 444838022 frame 1108 33622.1 ms
+[fx] late shader: death piece slag frame 1108 34668.8 ms
+[world] baked c12d6d26312b996f71d3116744d2c1500299e78901bc571a29953aeff6b32f98 4096x2048 in 10764 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 11108 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 415 ms (worker)
+[world_shots] world_planet: scene build 0 ms; system: no backdrop planet (the board has one), 1 moons; fields: 18 edge rocks, 84 deep, 0 belt, 3 mountains; wisps: 43 gas clouds at middle distance; setting: world region, planet map, stone rock, planet 3 (terran), sky for hegemony; rocks: 150 in all (6 rock hexes, 2 debris hexes); clouds on 3 nebula and 0 storm hexes; built in 397 ms; living debris: 51 rocks and wreck pieces on 2 hexes; debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 101, sun glints, three hot points per heated kit piece; legacy debris: 2 materials hidden in living/cine and restored in today/holo; living terrain built in 225 ms; painted hull debris: 8 cached chunks, 2 instances
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/world_planet_1_default.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/world_planet_2_zoomed_out.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/world_planet_3_low.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/world_planet_4_rocks_close.jpg
+[sfx] 71 cues, 67 clip sets, loaded in 287 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[fx] late shader: mat CRAFT_TRAIL frame 1847 54910.7 ms
+[fx] late shader: exterior_alpha frame 1848 60861.1 ms
+[fx] late shader: damage 3492720230 frame 1848 60955.3 ms
+[world] baked 7813791241f838ad72e006eb031e091cc6a13ff14b13fa3df716b612d07d2917 4096x2048 in 13110 ms (worker)
+[world_shots] deadstar: scene build 0 ms; dead star: core, lensing on, accretion disc; fields: 21 edge rocks, 105 deep, 0 belt, 4 mountains; wisps: 37 gas clouds at middle distance; setting: deadstar region, storm map, ice rock, planet 7 (gas giant), sky for ithar; rocks: 230 in all (4 rock hexes, 8 debris hexes); clouds on 14 nebula and 29 storm hexes; built in 641 ms; living debris: 194 rocks and wreck pieces on 8 hexes; debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 405, sun glints, three hot points per heated kit piece; legacy debris: 2 materials hidden in living/cine and restored in today/holo; well: background-only lens, 3.5 s inward ripples, cold inner rim, 45 s warm hint, 182 infall motes; living terrain built in 719 ms; painted hull debris: 8 cached chunks, 8 instances
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/deadstar_1_default.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/deadstar_2_zoomed_out.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/deadstar_3_low.jpg
+[world_shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1468\out_20261121_142951_22531\out_old/deadstar_4_rocks_close.jpg
+[world_shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-dcca289103414ad6b8923438b7872c73\godot-profile-c0b23c5be8b64060985d0cf30fd3da28
+GPU: released solo claim 46b9db17-fb15-487d-8b74-66dfd81dd2e0

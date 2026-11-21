@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAadJREFUeJzt1cEJACAQwLDT/XfWJQShJBP01zUzZwCAlP07AAB4z+ABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEgyOABIMjgASDI4AEg6ALxjQHDQeAVIAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-21T20:47:25Z",
+	"image_sha256": "6a3cdbe5300ef4cfc4cab2ccf335a6640e97fba3df73d9367fe4e33caf11fb32",
+	"inputs": [],
+	"picture_name": "planet_game_turned_new.png",
+	"schema": 1,
+	"source_commit": "b33f782040f3fad735371411d63263062cde2f11",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "b33f782040f3fad735371411d63263062cde2f11",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		504,
+		720
+	],
+	"stamp_template_sha256": "309917d40fe6b8ebba52c4a01c1956028f1c0418b5346d4cb516625c76c68e2f",
+	"strip_sha256": [
+		"309917d40fe6b8ebba52c4a01c1956028f1c0418b5346d4cb516625c76c68e2f"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}
