@@ -70,9 +70,15 @@ foreach ($pass in @('cold', 'warm')) {
     cover = [regex]::Match($r, '\[load1434\] COVER [^\r\n]*').Value
     pass = $r -match '\[load1434\] RESULT PASS'
     cover_pass = $r -match '\[load1434\] COVER PASS'
+    title = [regex]::Match($r, '\[load1434\] title (PASS|FAIL)[^\r\n]*').Value
+    title_pass = $r -match '\[load1434\] title PASS'
+    title_split = [regex]::Match($r, '\[load1434\] title worst frames split: [^\r\n]*').Value
   }
   if (-not $r) { Say "load $pass`: FAIL: no load_result.txt (see load_$pass\log.txt)" }
-  else { Say "load $pass`: $($bench[$pass].result)"; Say "load $pass`: $($bench[$pass].cover)" }
+  else {
+    Say "load $pass`: $($bench[$pass].result)"; Say "load $pass`: $($bench[$pass].cover)"
+    Say "load $pass`: $($bench[$pass].title)"; Say "load $pass`: $($bench[$pass].title_split)"
+  }
   Start-Sleep -Seconds 3
 }
 
@@ -171,6 +177,8 @@ foreach ($set in @('cold', 'warm')) {
         if ($mw.Success) { $row.title_worst_first_second_ms = [double]$mw.Groups[1].Value }
         $ml = [regex]::Match($text, '\[main\] loading at the close: ([^\r\n]*)')
         $row.loading_at_close = if ($ml.Success) { $ml.Groups[1].Value } else { $null }
+        $mf = [regex]::Match($text, '\[main\] frames before the close, oldest first: ([^\r\n]*)')
+        $row.frames_before_close = if ($mf.Success) { $mf.Groups[1].Value } else { $null }
         $mp = [regex]::Match($text, 'battle to title parts \(ms\): [^\r\n]*')
         if ($mp.Success) { $row.title_parts = $mp.Value }
         $row.crash = $text -match 'CrashHandlerException|Program crashed|access violation|RenderingServer is null|SCRIPT ERROR'
@@ -193,6 +201,7 @@ foreach ($set in @('cold', 'warm')) {
     }
     $row.result = if ($row.clean -ne 'PASS' -or $row.g1518 -like 'FAIL*' -or $row.g1519 -like 'FAIL*') { 'FAIL' } elseif ($row.skip -or $row.g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } else { 'PASS' }
     $rows += New-Object psobject -Property $row
+    if ($row.frames_before_close) { Say ("close {0} {1}: frames before the close: {2}" -f $set, $row.case, $row.frames_before_close) }
     Say ("close {0} {1}: {2}{3} clean={11} 1518={12} 1519={13}{14} sent={4} loading_at_close=[{15}] hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
       '', $row.result, $row.sent, $row.hidden_ms, $row.title_first_frame_ms, $row.title_worst_first_second_ms,
       $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' }), $row.loading_at_close)
@@ -212,6 +221,11 @@ function Set-Grade($set, $key) {
 }
 $grades = [ordered]@{}
 $grades['1434 load (warm bench, cold COVER)'] = if ($bench['warm'].pass -and $bench['cold'].cover_pass) { 'PASS' } else { 'FAIL' }
+# the two LOAD13 targets on lines of their own (Board, Nov 21): (a) the warm title backdrop's frame, (b) the cold close
+# while the title backdrop loads; both are also inside the lines around them
+$grades['target a: warm title backdrop frame (bench title line)'] = if ($bench['warm'].title_pass) { 'PASS' } else { 'FAIL' }
+$tl = @($rows | Where-Object { $_.set -eq 'cold' -and $_.case -eq 'title_load_5s' })
+$grades['target b: cold close during the title load hides within 500 ms'] = if ($tl.Count -eq 1) { $(if ($tl[0].g1518 -like 'FAIL*') { 'FAIL' } elseif ($tl[0].g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } else { 'PASS' }) } else { 'FAIL' }
 foreach ($set in @('cold', 'warm')) {
   $grades["1518 close hides within 500 ms, $set"] = Set-Grade $set 'g1518'
   $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
