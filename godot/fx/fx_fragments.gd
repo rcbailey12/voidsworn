@@ -336,26 +336,50 @@ class Pool:
 		particle.append_array(PackedFloat32Array([uv.x, uv.y, u.x, u.y, v.x, v.y, slot, finish.get("normal_scale", 0.0),
 			tint.r, tint.g, tint.b, factors.x, factors.y, factors.z, factors.w, 0.0]))
 		if particles.size() == cap:
+			_drop_expired(_now)
+		if particles.size() == cap:
 			particles.pop_front()
 		particles.append(particle)
 		emitted += 1
 		_dirty = true
 
+	# Issue 1467: rows stay put between emissions. The shader already hides a row past its life, so an expiry only
+	# trims dead rows off the end of the draw (no texture work); the texture is rebuilt and uploaded only when pieces
+	# are added, and nothing is uploaded once every piece is gone.
+	var uploads := 0   # texture uploads so far (the frame-rate check counts them)
+	var _now := 0.0
+
+	func _drop_expired(now: float) -> void:
+		var live: Array[PackedFloat32Array] = []
+		for particle in particles:
+			if particle[7] + particle[11] > now:
+				live.append(particle)
+		particles = live
+
 	func flush(now: float) -> void:
+		_now = now
 		if not _dirty and now < _next_end:
 			return
+		if _dirty:
+			_drop_expired(now)
+		_commit(now)
+
+	func _commit(now: float) -> void:
+		var upload := _dirty
 		_dirty = false
 		_next_end = INF
-		var live: Array[PackedFloat32Array] = []
-		var data := PackedFloat32Array()
-		for particle in particles:
-			var expires := particle[7] + particle[11]
+		var last_live := -1
+		for i in particles.size():
+			var expires := particles[i][7] + particles[i][11]
 			if expires > now:
-				live.append(particle)
-				data.append_array(particle)
+				last_live = i
 				_next_end = minf(_next_end, expires)
-		particles = live
-		mi.multimesh.visible_instance_count = live.size()
-		if not live.is_empty():
+		particles.resize(last_live + 1)
+		mi.multimesh.visible_instance_count = particles.size()
+		if upload and not particles.is_empty():
+			var data := PackedFloat32Array()
+			for particle in particles:
+				data.append_array(particle)
 			data.resize(cap * DATA_COLUMNS * 4)
 			_data.update(Image.create_from_data(DATA_COLUMNS, cap, false, Image.FORMAT_RGBAF, data.to_byte_array()))
+			uploads += 1

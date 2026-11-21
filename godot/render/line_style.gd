@@ -42,6 +42,13 @@ const ROLE := {
 	"target_on": Color(1.0, 0.85, 0.75, 1.0),
 	"board": Color(1.0, 0.75, 0.3, 1.0),
 	"ability": Color(1.0, 1.0, 1.0, 0.85),
+	# issue 1444 forecasts: the armed ram's run, the nova shell's blast, and a friendly ship that would be hit (fills are
+	# the see-through hex tint under the edge)
+	"ram": Color(1.0, 0.55, 0.2, 0.95),
+	"ram_fill": Color(1.0, 0.45, 0.15, 0.28),
+	"blast": Color(1.0, 0.82, 0.45, 0.9),
+	"blast_fill": Color(1.0, 0.7, 0.3, 0.3),
+	"danger": Color(1.0, 0.12, 0.18, 1.0),
 	"blocker": Color(1.0, 0.38, 0.08, 1.0),
 	# terrain, hazard and objective edges, by kind
 	"edge_neb": Color(0.72, 0.52, 1.0, 0.75),
@@ -63,7 +70,7 @@ const ROLE := {
 
 # roles drawn as a core line only (no glow band)
 const NO_GLOW := ["grid", "grid_holo", "grid_ghost", "grid_tactical", "target", "target_plan", "target_on", "board",
-	"ability", "hover"]
+	"ability", "hover", "ram", "blast", "danger"]
 
 
 static func col(role: String) -> Color:

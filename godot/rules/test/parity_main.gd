@@ -83,6 +83,7 @@ func pBot(u) -> void:
 	R.eval_end()
 	if best != null and best.path.size() > 0: api.move(u["id"], best)
 	run_enemy()
+	if UNDO_FIX: undo_fix(u, best if best != null and best.path.size() > 0 else null)
 	for i in range(u["weapons"].size()):
 		if R.jt(R.B.get("over")) or R.B["side"] != "player" or R.jt(u.get("activated")): break
 		var bt = null; var bv = 0.0
@@ -93,8 +94,23 @@ func pBot(u) -> void:
 					bv = v; bt = t
 		if bt != null: api.fire(u["id"], i, bt["id"])
 		run_enemy()
+	if UNDO_FIX: undo_probe(u)
 	if not R.jt(R.B.get("over")) and R.B["side"] == "player" and not R.jt(u.get("activated")): api.end_activation(u["id"])
 	run_enemy()
+
+# issue 1450 fixtures (scenarios with undo), golden.js undoFixF and undoProbeF: move, undo, the same move again; a turn (round 1:
+# a free one), undo; after any shot or fire on the move, undo must be refused. The hook names carry canUndo, so the twins agree.
+var UNDO_FIX := false
+func _undo_hook(u) -> void: R.hook("undo ready" if R.canUndo(u) else "undo none", u)
+func undo_probe(u) -> void:
+	_undo_hook(u); api.undo(u["id"]); run_enemy()
+func undo_fix(u, best) -> void:
+	_undo_hook(u)
+	if best != null and api.undo(u["id"]):
+		run_enemy(); api.move(u["id"], best); run_enemy(); _undo_hook(u)
+	if not R.jt(u.get("activated")) and not R.jt(u.get("dead")) and not R.jt(R.B.get("over")) and R.B["side"] == "player" and R.canRotate(u) and api._can_use(u):
+		if int(R.B["round"]) == 1: u["treeFreeTurn"] = 1
+		api.rotate(u["id"], 1); run_enemy(); _undo_hook(u); api.undo(u["id"]); run_enemy()
 
 # the full bot (golden.js pBotFull, sim3d.js botUnit), through the same API calls the scene uses
 func attackFirst(u) -> void: # golden.js attackFirstF, through api.attack_move
@@ -114,6 +130,7 @@ func attackFirst(u) -> void: # golden.js attackFirstF, through api.attack_move
 func bot(u, S) -> void:
 	if S.get("attack_move") == true:
 		attackFirst(u)
+		if UNDO_FIX and R.z0(u.get("hexMoved")) > 0: undo_probe(u)
 		if R.jt(R.B.get("over")) or R.jt(u.get("dead")) or R.jt(u.get("activated")) or R.B["side"] != "player": return
 	if S.get("bot") == "full": pBotFull(u)
 	else: pBot(u)
@@ -174,6 +191,7 @@ func scenario(name: String, out: String, seed_override: int = -1, file: String =
 			rec.append(snap(turn[0], kind + (" " + String(u["id"]) if u != null else ""))); turn[0] += 1
 			snap_us += Time.get_ticks_usec() - t0
 	api.new_battle_scenario(S, -1)
+	UNDO_FIX = S.get("undo") == true
 	var g := 0
 	var full: bool = S.get("bot") == "full"
 	if R.jt(R.B.get("alt")):

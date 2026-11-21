@@ -1651,6 +1651,38 @@ func _fleet(d: Dictionary) -> Control:
 		_fleet_run = C.RUN; fleet_state = {"uid": "", "mode": "", "held": {}}
 	fleet_manifest = FleetManifest.new(); fleet_manifest.setup(self, d, fleet_state)
 	return fleet_manifest
+# Issue 1449: a "Full specs" link under a shipyard card opens the full specification (FleetManifest.spec_lines) in place.
+# Open drawers are UI state only (no campaign action), so the card stays short until the player asks.
+var spec_open := {}
+# The short card lines read the same derived ship as the drawer, so the card and its specs never disagree (faction weapon
+# names, fleet-wide bonuses): CP, hull, shields, speed, turns, guns with arcs, the ability name.
+func _hull_summary(parent: VBoxContainer, ship: Dictionary, key: String) -> void:
+	var t = C.HULLS[ship["tpl"]]; var d = C.derive(ship)
+	parent.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(d["maxHp"]) + ", shields " + C.numstr(d["shMax"]) + ", speed " + C.numstr(d["speed"]) + ", turns " + C.numstr(d["turns"]) + ".", 17, BONE2))
+	var ws = []
+	for w in d["weapons"]: ws.append(str(w["n"]) + " (" + ("turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"])).to_lower()) + ")")
+	parent.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+	parent.add_child(lbl("Ability: " + (str(C.ABILITIES[t["ab"]]["n"]) if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]) else "none"), 17, BONE3))
+	_spec_drawer(parent, ship, key)
+func _spec_drawer(parent: VBoxContainer, ship: Dictionary, key: String) -> void:
+	var open: bool = spec_open.get(key, false)
+	var b = Button.new(); b.text = ("Hide specs" if open else "Full specs") + "  " + ("▴" if open else "▾"); b.flat = true
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.focus_mode = Control.FOCUS_ALL; b.add_theme_font_size_override("font_size", int(px(17)))
+	b.add_theme_color_override("font_color", BLUE); b.add_theme_color_override("font_hover_color", BONE)
+	b.set_meta("spec_key", key)
+	parent.add_child(b)
+	var box = vbox(3); box.visible = open; parent.add_child(box)
+	b.pressed.connect(func():
+		spec_open[key] = not spec_open.get(key, false); box.visible = spec_open[key]
+		b.text = ("Hide specs" if box.visible else "Full specs") + "  " + ("▴" if box.visible else "▾"))
+	for line in FleetManifest.spec_lines(C, ship):
+		match line["k"]:
+			"shield": box.add_child(lbl(line["t"], 17, GS.GLACIER))
+			"captain": box.add_child(lbl(line["t"], 17, VERD))
+			"ability": box.add_child(lbl("Ability: " + str(line["t"]), 17, BONE, font_semi))
+			"ability_d": box.add_child(lbl(line["t"], 17, BONE2))
+			"weapon": box.add_child(lbl(line["t"], 17, BONE, font_semi))
+			_: box.add_child(lbl(line["t"], 17, BONE2))
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1672,7 +1704,12 @@ func _shipyard() -> Control:
 		v.add_child(sec_head("Recovered cores"))
 		v.add_child(lbl("Each core regrows its ship at Mk I, full hull, no refits.", 17, BONE3))
 		var crow = flow(8)
-		for i in range(cores.size()): add(crow, abtn("Regrow the " + str(C.HULLS[cores[i]]["n"]) + " for " + C.numstr(C.coreCost(cores[i])), "restoreCore", i))
+		for i in range(cores.size()):
+			var cc = card(false, 320)
+			cc[1].add_child(rich("[b]" + esc(C.HULLS[cores[i]]["n"]) + "[/b]", 20))
+			_hull_summary(cc[1], FleetManifest.preview_ship(C, cores[i]), "core:" + str(i))
+			add(cc[1], abtn("Regrow the " + str(C.HULLS[cores[i]]["n"]) + " for " + C.numstr(C.coreCost(cores[i])), "restoreCore", i))
+			crow.add_child(cc[0])
 		v.add_child(crow)
 	if st.get("late") is Dictionary:   # issue 1178: the Sector 3 market
 		v.add_child(sec_head("Late market"))
@@ -1705,11 +1742,7 @@ func _shipyard() -> Control:
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
 		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
-		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
-		var ws = []
-		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
-		cvv.add_child(lbl("Ability: " + (str(C.ABILITIES[t["ab"]]["n"]) if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]) else "none"), 17, BONE3))
+		_hull_summary(cvv, FleetManifest.preview_ship(C, h), "yard:" + str(h))
 		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost) + hw, "buyHull", h))
 		if not fits: fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
 		elif uniq: fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
@@ -1724,11 +1757,7 @@ func _shipyard() -> Control:
 			var cv3 = card(false, 320); var cvv3 = cv3[1]
 			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
 			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.hull_text(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
-			var ws2 = []
-			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
-			cvv3.add_child(lbl("Ability: " + (str(C.ABILITIES[t2["ab"]]["n"]) if C.jt(t2.get("ab")) and C.ABILITIES.has(t2["ab"]) else "none"), 17, BONE3))
+			_hull_summary(cvv3, FleetManifest.preview_ship(C, h, true), "cap:" + str(h))
 			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2) + hw, "buyHull", h))
 			if not fits2: fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
 			cvv3.add_child(fr2); cs.add_child(cv3[0])
@@ -1877,7 +1906,7 @@ const HELP := [
 	["Brace, abilities and Command", "Brace is the alternative to firing: a ship that hasn’t fired can brace to take 40% less hull damage until your next turn (it can still move first). To ram, point your bow at an enemy ship with at least one clear hex between you and enough movement left to cross the gap: a red lane shows when a ram is ready, and red-ringed move hexes line one up. A longer run-up hits harder; a ram can’t take more than 40% of a healthy ship’s hull without protocols. Boarding an adjacent enemy can capture it for your fleet; enemy boarders can cripple your ships, but never take them. Carriers start every battle with their wings already flying; the wings fight on their own unless you order them: click a wing, then click an enemy ship to strike it or one of your ships to guard it. At round start, each ready carrier automatically replaces one lost wing if it has a spare and an open hex beside it. Replacements fight from the following round. Most hulls have an ability with a cooldown, and each faction has its own. Enemy flagships carry a Command too: they announce it a round ahead, so you can brace or scatter. Once per battle, your admiral’s Command is a fleet-wide signature move. It gets stronger each round you hold it (power 1 in round 1, 2 in round 2, full power from round 3, and losing a ship charges it a level), so the choice is a smaller boost now or a bigger one later, if the fight lasts that long. The ship panel shows exactly what the next level adds."],
 	["Cores, protocols and your flagship", "Each run, four of the six cores are in range. Battles on the map carry a core’s signal: win there and that core offers three protocols, and you take one. Protocols change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold protocols from two cores and a duo protocol can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector’s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones."],
 	["Between battles", "Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship’s Mark. Captains earn experience and pick a perk at each promotion. Salvage gives fleet-wide bonuses that last for the run."],
-	["Keys", "Tab next ship, Q/E turn, 1 to 6 arm a weapon, B brace, A toggle arcs, Esc or right-click to cancel, Enter end turn. On campaign screens: Tab and the arrow keys move between buttons, Enter presses, Esc closes a dialog, 1 to 9 pick a dialog's choices."]]
+	["Keys", "Tab next ship, Q/E turn, Backspace take back a move (until the ship fires), 1 to 6 arm a weapon, B brace, A toggle arcs, Esc or right-click to cancel, Enter end turn. On campaign screens: Tab and the arrow keys move between buttons, Enter presses, Esc closes a dialog, 1 to 9 pick a dialog's choices."]]
 # How to play: an index of the sections on the left (a link scrolls to its section), the text in one readable column.
 func _help() -> Control:
 	var outer = hbox(40)
@@ -2305,7 +2334,13 @@ func _modal(md: Dictionary) -> void:
 			for i in range(ev["o"].size()):
 				var o = ev["o"][i]; var cost = o["r"].get("cost") if o["r"] is Dictionary else null; var ok = not C.jt(cost) or float(R["credits"]) >= float(cost)
 				var blue = C.jt(o.get("need"))   # B4 blue options: the requirement in plain words, shown either way
-				add(v, choice(o["l"], str(o["s"]) + ("" if ok else " (not enough credits)"), "eventChoice", i, acts, BLUE if blue else null, ("[" + C.needText(o["need"]) + "]") if blue else "", BLUE))
+				add(v, choice(o["l"], str(o["s"]) + C.relicTradeNote(o) + ("" if ok else " (not enough credits)"), "eventChoice", i, acts, BLUE if blue else null, ("[" + C.needText(o["need"]) + "]") if blue else "", BLUE))
+		"relic_pick":   # issue 1449: the player picks which piece of salvage a trade takes
+			h2.call(d["ev"]["t"]); p.call("Which piece of salvage do you give up?")
+			for j in range(d["relics"].size()):
+				var rl = d["relics"][j]
+				add(v, choice(C.relicName(rl), str(C.RELICS[rl]["d"]), "eventChoice", str(d["i"]) + ":" + str(j), acts))
+			v.add_child(foot([abtn("Back", "eventBack", "", false, false, acts)]))
 		"event_result":
 			h2.call(d["ev"]["t"])
 			for l in d["lines"]: p.call(l)
@@ -2356,6 +2391,7 @@ func _modal(md: Dictionary) -> void:
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
 				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 18))
 				if C.jt(r.get("rip")) and not C.jt(r.get("cinder")): pv.add_child(lbl("Kept, she joins with her links ripped out.", 17, VERD))
+				_spec_drawer(pv, FleetManifest.preview_ship(C, r["p"]["tpl"], C.jt(r.get("rip")), rows.slice(0, i).filter(func(x): return x["k"] == "add").size()), "prize:" + str(i) + ":" + str(r["p"]["tpl"]))   # issue 1449
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				var sm2 = (C.modName(r["o"]["strip"]["mod"]) + " + ") if C.jt(r["o"]["strip"]["mod"]) else ""
 				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("The Cinder Line opens from run 3" if C.jt(r.get("cinder")) else ("Your faction cannot field it" if r.get("gate") != null else "No command points left"))], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:

@@ -8,6 +8,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   deathless (peel): violet-white fire, plates peel off band by band before the split, the scene dims at its core flash;
 #   voidsworn (drumbeat, round 2): ember fire, a row of magazine pops down the broadside before the split;
 #   hegemony (arc, round 2): blue-white fire, lightning ribbons jump the gap as the pieces part;
+#     and again with its cut held 1.5 s past the split (a late cold cut): the arcs still strike (Artoo on 1399);
 #   corsair (patch, round 2): red fire, patch plates tear loose before the split.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
@@ -37,6 +38,8 @@ func _run() -> void:
 	var sun := await _kill("voidsworn")
 	var heg := await _kill("hegemony")
 	var ash := await _kill("corsair")
+	# Artoo on 1399: a cold cut that finishes well after the nominal split (held 1.5 s here) must still get its arcs
+	var heg_cold := await _kill("hegemony", true)
 	LOOK.reload()
 	# today's (no death entry)
 	check(today["styled"] == 0 and today["pics"] > 0, "plain: its %d death pictures keep the baked orange (%d styled)" % [today["pics"], today["styled"]])
@@ -64,6 +67,7 @@ func _run() -> void:
 	# Hegemony
 	check(int(heg["ribbons"]) >= int(today["ribbons"]) + 6, "hegemony: arcs jump the gap (%d ribbons against plain %d)" % [heg["ribbons"], today["ribbons"]])
 	check(int(heg.get("arcs", 0)) >= 6 and int(heg.get("arcs_pinned", 0)) == int(heg.get("arcs", 0)), "hegemony: every arc ran from one piece's torn face to the other's (%d of %d pinned)" % [heg.get("arcs_pinned", 0), heg.get("arcs", 0)])
+	check(bool(heg_cold.get("held", false)) and int(heg_cold.get("arcs", 0)) >= 6 and int(heg_cold.get("arcs_pinned", 0)) == int(heg_cold.get("arcs", 0)), "hegemony, cold cut split 1.5 s late: arcs still jump the gap (%d of %d pinned, held %s)" % [heg_cold.get("arcs_pinned", 0), heg_cold.get("arcs", 0), heg_cold.get("held", false)])
 	check((heg["ember"] as Vector3).z > 0.9 if heg.get("ember") is Vector3 else false, "hegemony: its tear is blue-white")
 	# Hullbreakers
 	check(int(ash["plates_before_split"]) > int(today["plates_before_split"]), "corsair: patch plates tear loose before the split (%d against plain %d)" % [ash["plates_before_split"], today["plates_before_split"]])
@@ -71,7 +75,13 @@ func _run() -> void:
 	quit(1 if failures else 0)
 
 
-func _kill(fac: String) -> Dictionary:
+# a stand-in for a cut still running on its worker: it finishes once the test lets it
+var _cut_hold := false
+func _held_cut() -> void:
+	while _cut_hold: OS.delay_msec(2)
+
+
+func _kill(fac: String, cold := false) -> Dictionary:
 	var world := Node3D.new()
 	root.add_child(world)
 	var cam := Camera3D.new()
@@ -104,7 +114,18 @@ func _kill(fac: String) -> Dictionary:
 	var streaks0: int = _emitted(fx, "stk")
 	var spr0: int = _emitted(fx, "spr")
 	var rib0: int = _emitted(fx, "rib")
+	var hold_task := -1
+	if cold:
+		# the built cut stays in cut_job, but its worker reads as still running until released, so the hull holds its
+		# tell past the nominal cut, as a late cold cut does in the game (fx_death._break_up_when_ready)
+		if s.has_meta("cut_task"): fx.join_death_cut(int(s.get_meta("cut_task")))
+		s.remove_meta("cut_prev")
+		_cut_hold = true
+		hold_task = WorkerThreadPool.add_task(_held_cut)
+		fx._death_cut_tasks[hold_task] = true   # the death code joins it, as it joins a real cut
+		s.set_meta("cut_task", hold_task)
 	fx.death("k", "blast")
+	var t_kill: float = fx.now
 	var seen := {}
 	var res := {"fac": fac, "pics": 0, "styled": 0, "prism": false, "smoke": 0, "n_frag": int(plan.get("n_frag", 0)),
 		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0, "sprites_before_split": 0, "ribbons": 0}
@@ -114,6 +135,10 @@ func _kill(fac: String) -> Dictionary:
 	for i in 7 * 60:
 		fx.step(1.0 / 60.0)
 		await process_frame
+		if hold_task >= 0 and fx.now >= t_kill + float(s.get_meta("death_timeline").cut) + 1.5:
+			res["held"] = not s.has_meta("death_hidden")
+			_cut_hold = false
+			hold_task = -1
 		if fx.get("_dim_t0") != null and float(fx.get("_dim_t0")) >= 0.0: res["dimmed"] = true
 		if res.get("ember") == null:
 			for mm in s.meshes:
