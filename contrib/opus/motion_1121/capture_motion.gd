@@ -21,8 +21,25 @@ func _init() -> void:
 	kind = a[a.find("--kind") + 1]
 	every = int(a[a.find("--every") + 1]) if a.has("--every") else 2
 	allow_placeholder = a.has("--allow-placeholder")
+	# Artoo on PR 1523: a reused folder could pass old frames off as new; refuse anything but a fresh one
+	if DirAccess.dir_exists_absolute(out) and (not DirAccess.get_files_at(out).is_empty() or not DirAccess.get_directories_at(out).is_empty()):
+		print("MOTION_FAILED output folder is not fresh: ", out)
+		quit(1)
+		return
 	DirAccess.make_dir_recursive_absolute(out)
 	run.call_deferred()
+
+
+var save_errors: Array = []
+var expected: Dictionary = {}   # folder -> frames saved
+
+
+func _save(folder: String, name: String) -> void:
+	var path := folder.path_join(name)
+	var err := root.get_texture().get_image().save_jpg(path, 0.9)
+	if err != OK or not FileAccess.file_exists(path):
+		save_errors.append("%s (error %d)" % [path, err])
+	expected[folder] = int(expected.get(folder, 0)) + 1
 
 
 func _f(o, k: String) -> float:
@@ -79,10 +96,27 @@ func run() -> void:
 		result = await _kill()
 	else:
 		result = await _moves()
+	# every frame saved and on disk, counted per folder, before the json and the done line
+	for folder in expected:
+		var n_jpg := 0
+		for fn in DirAccess.get_files_at(folder):
+			n_jpg += 1 if fn.ends_with(".jpg") else 0
+		if n_jpg != int(expected[folder]):
+			save_errors.append("%s holds %d frames, %d saved" % [folder, n_jpg, int(expected[folder])])
+	if not save_errors.is_empty():
+		for e in save_errors:
+			print("MOTION_SAVE_ERROR ", e)
+		print("MOTION_FAILED ", kind)
+		quit(1)
+		return
 	var f := FileAccess.open(out.path_join("motion.json"), FileAccess.WRITE)
+	if f == null:
+		print("MOTION_FAILED cannot write motion.json")
+		quit(1)
+		return
 	f.store_string(JSON.stringify(result))
 	f.close()
-	print("MOTION_DONE ", kind)
+	print("MOTION_DONE ", kind, " frames ", expected.values().reduce(func(a, b): return a + b, 0))
 	battle._quit()
 
 
@@ -140,7 +174,7 @@ func _moves() -> Array:
 			shot = false
 			if every > 0 and n % every == 0 and not allow_placeholder:
 				await RenderingServer.frame_post_draw
-				root.get_texture().get_image().save_jpg(folder.path_join("%05d.jpg" % saved), 0.9)   # consecutive, for ffmpeg
+				_save(folder, "%05d.jpg" % saved)   # consecutive, for ffmpeg
 				saved += 1
 				us = Time.get_ticks_usec()
 				shot = true
@@ -187,6 +221,6 @@ func _kill() -> Array:
 			"screen": [battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).x, battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).y]})
 		if n % 3 == 0:
 			await RenderingServer.frame_post_draw
-			root.get_texture().get_image().save_jpg(folder.path_join("%05d.jpg" % n), 0.9)
+			_save(folder, "%05d.jpg" % n)
 		n += 1
 	return [{"cls": cls, "kind": kind, "target": tid, "by": by, "hull_L": float(sv.L), "core_flash_fx_s": core_at, "telemetry": tel}]
