@@ -161,6 +161,9 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+# issue 1434 (LOAD13: the title backdrop built hull damage and death piece shaders in one 7.7 s frame): the title backdrop
+# never fights, so a passive fx cuts no hull for a death and builds no damage surfaces
+var passive := false
 # issue 1434: with defer_initial_cuts, add_ship leaves each shield for prepare_battle_hulls (battle.gd sets it for its load)
 var defer_shields := false
 var warmup_batch := 0   # issue 1434: warm meshes revealed this many per frame (0: all at once); battle.gd sets 4

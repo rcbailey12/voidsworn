@@ -26,6 +26,7 @@ extends SceneTree
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
 const BAKER = preload("res://world/world_bake.gd")
+const HULL = preload("res://fx/fx_hull.gd")
 
 
 func _stage_name(w: int) -> String:
@@ -48,7 +49,56 @@ var cover_ok_all := true
 var cover_notes: Array = []
 
 
+# issue 1434 (Board on LOAD13): each frame's wall time split into the renderer's draw (frame_pre_draw to frame_post_draw)
+# and everything before it on the main thread (scripts, physics, waits), plus the effects work it named (fx.prof)
+var _pre_us := 0
+var _draw_us := 0
+
+
+func _on_pre_draw() -> void:
+	_pre_us = Time.get_ticks_usec()
+
+
+func _on_post_draw() -> void:
+	if _pre_us > 0:
+		_draw_us += Time.get_ticks_usec() - _pre_us
+	_pre_us = 0
+
+
+func _take_draw() -> float:
+	var d := _draw_us / 1000.0
+	_draw_us = 0
+	return d
+
+
+# the three biggest named effects costs since the last frame, "prep:shield 210 ms, ..." ("-" when none)
+static func _fx_work(node) -> String:
+	if node == null or not is_instance_valid(node):
+		return "-"
+	var fx = node.get("gfx")
+	if fx == null or not is_instance_valid(fx) or not fx.has_method("prof_take"):
+		return "-"
+	var p: Dictionary = fx.prof_take()
+	var keys := p.keys()
+	keys.sort_custom(func(x, y): return int(p[x]) > int(p[y]))
+	var out := PackedStringArray()
+	for k in keys.slice(0, 3):
+		if int(p[k]) >= 1000:
+			out.append("%s %d ms" % [str(k), int(p[k]) / 1000])
+	return ", ".join(out) if not out.is_empty() else "-"
+
+
+# Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
+# bench in the same signal), so each row takes the process time read on the row after it
+static func _shift_process(fs: Array) -> void:
+	for i in fs.size():
+		fs[i][6] = fs[i + 1][6] if i + 1 < fs.size() else -1.0
+
+
 func _init() -> void:
+	HULL.late_stacks = true
+	RenderingServer.frame_pre_draw.connect(_on_pre_draw)
+	RenderingServer.frame_post_draw.connect(_on_post_draw)
 	var a := OS.get_cmdline_user_args()
 	var i := a.find("--out")
 	if i >= 0 and i + 1 < a.size():
@@ -80,8 +130,8 @@ func _pipes() -> int:
 func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
-		out.append("%d ms %s (began at %d ms): render cpu %.0f ms, gpu %.0f ms, rest %.0f ms of which the process step %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[7], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[6], f[4], f[5]] + (", bake worker %s" % f[8] if f.size() > 8 else ""))
+		out.append("%d ms %s (began at %d ms): draw %.0f ms, before the draw %.0f ms (process step %.0f ms), render cpu %.0f ms, gpu %.0f ms, %d pipelines compiled, %d world bakes pending" % [
+			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]))
 	return out
 
 
@@ -104,6 +154,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 	# [ms, phase before -> phase after, render cpu ms, gpu ms, pipelines compiled, world bakes pending] per frame under
 	# the cover (LOAD5: the long "world" frames were not script time the bench could name; this splits them)
 	var frames: Array = []
+	_take_draw()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
 	var vp_rid := root.get_viewport_rid()
@@ -128,9 +179,11 @@ func _battle(tag: String, args: Dictionary) -> void:
 		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
-			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage)])
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
+			_take_draw(), _fx_work(b)])
 		pipes0 = pipes
 		last = now
+	_shift_process(frames)
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	var top := PackedStringArray()
 	for f in frames.slice(0, 5):
@@ -193,6 +246,7 @@ func _title() -> void:
 	var vp_rid := root.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
+	_take_draw()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
 	var click_ms := -1        # -1: never clicked while building; -2: clicked, drawer never opened
@@ -216,7 +270,8 @@ func _title() -> void:
 		frames.append([(now - last) / 1000, ph0 if ph0 == ph1 else "%s->%s" % [ph0, ph1],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
-			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage)])
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
+			_take_draw(), _fx_work(sc1)])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
@@ -250,6 +305,7 @@ func _title() -> void:
 	for f in frames:
 		if int(f[0]) >= STALL_MS: stalls += 1
 	_cover_note("title", 0, stalls, worst / 1000)   # the title has no cover: its menu stays drawn, so only stalls count
+	_shift_process(frames)
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	_say("[load1434] title worst frames split: %s" % "; ".join(_split(frames.slice(0, 5))))
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [

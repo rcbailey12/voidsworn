@@ -1534,7 +1534,7 @@ func _plan(fx, i: int, st: int) -> Array:
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
-	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+	if fx.get("closed") == true or fx.get("passive") == true:   # issue 1435: a released fx takes no new jobs; 1434: nor the backdrop's
 		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true

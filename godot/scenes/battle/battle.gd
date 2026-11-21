@@ -543,6 +543,8 @@ func _begin(a) -> void:
 	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
+		if "passive" in gfx:
+			gfx.passive = title_backdrop   # issue 1434: the backdrop takes no death cuts
 		if "defer_shields" in gfx:
 			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
 		if "warmup_batch" in gfx:
@@ -613,9 +615,13 @@ func _begin(a) -> void:
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
-	board.build(api)
+	await board.build(api, sliced)   # issue 1434: sliced, the board's steps take a frame each
+	if gen != _build_gen:
+		return
 	cam.bounds = board.bounds()
 	begin_us["board"] = Time.get_ticks_usec() - tb1
+	for k in board.build_us:
+		begin_us["board:" + str(k)] = board.build_us[k]
 	if sliced:
 		load_phase = "board_build"
 		await get_tree().process_frame   # issue 1434 (LOAD6: start to board 1.4 to 1.6 s): the board, then the look

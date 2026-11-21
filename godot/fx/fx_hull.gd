@@ -184,6 +184,7 @@ static func exterior_alpha_code() -> String:
 # per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
 # warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
 static var late_watch := false
+static var late_stacks := false   # issue 1434: bench/load_1434.gd turns it on, so each late shader names its caller
 static var _late := {}   # not GPU: shader names -> frame and time
 static var _late_lines: Array = []   # not GPU: log lines
 
@@ -217,6 +218,13 @@ static func note_late(name: String) -> void:
 	var ms := Time.get_ticks_usec() / 1000.0
 	_late[name] = [frame, ms]
 	var line := "%s frame %d %.1f ms" % [name, frame, ms]
+	if late_stacks:
+		# issue 1434: name the caller (a debug build has the stack; an export prints nothing more)
+		var at := PackedStringArray()
+		for fr in get_stack().slice(1, 7):
+			at.append("%s:%d %s" % [str(fr["source"]).get_file(), int(fr["line"]), str(fr["function"])])
+		if not at.is_empty():
+			line += " from " + " < ".join(at)
 	_late_lines.append(line)
 	print("[fx] late shader: " + line)
 

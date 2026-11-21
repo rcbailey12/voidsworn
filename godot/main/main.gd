@@ -34,6 +34,26 @@ var quitting := false
 var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
 
 
+# issue 1434 (LOAD13 cold title_load_5s: the window hid 5.2 s after the close): the last frames before a close, each
+# with what was loading, so a close that waited on one long frame names it. A few numbers a frame, kept for 8 frames.
+var _frame_t := 0
+var _frames: Array = []
+
+
+func _process(_dt: float) -> void:
+	var now := Time.get_ticks_usec()
+	if _frame_t > 0:
+		var what := "-"
+		if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
+			what = "battle " + str(battle.get("load_phase"))
+		elif showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
+			what = "backdrop " + str(showcase.get("load_phase"))
+		_frames.append("%d ms (%s)" % [(now - _frame_t) / 1000, what])
+		if _frames.size() > 8:
+			_frames.pop_front()
+	_frame_t = now
+
+
 func quit_clean(code := 0, route := "menu") -> void:
 	if quitting:
 		return
@@ -41,6 +61,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 	quit_route = route
 	var t0 := Time.get_ticks_msec()
 	print("[main] quit (%s) at %d ms" % [route, t0])
+	if _frame_t > 0:
+		_frames.append("%d ms so far (this frame)" % ((Time.get_ticks_usec() - _frame_t) / 1000))
+	print("[main] frames before the close, oldest first: %s" % ", ".join(_frames))
 	# issue 1518 (Artoo on PR 1445): what was loading when the close came, so a close timed "during a load" is proven
 	var loading := PackedStringArray()
 	if battle != null and is_instance_valid(battle) and battle.get("warming") == true:

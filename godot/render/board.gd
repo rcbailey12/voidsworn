@@ -247,7 +247,14 @@ func key(q, r) -> String:
 	return str(int(q)) + "," + str(int(r))
 
 
-func build(rules) -> void:
+# issue 1434 (LOAD13: start to board 0.9 to 1.4 s in one frame): the battle load passes slice, so each step below gets
+# its own frame; build_us names each step's main-thread time for the load bench
+var build_us := {}
+
+
+func build(rules, slice := false) -> void:
+	build_us = {}
+	var t := Time.get_ticks_usec()
 	api = rules
 	VW = api.view()
 	wrecks.clear()
@@ -271,6 +278,7 @@ func build(rules) -> void:
 	index.clear()
 	for i in cells.size():
 		index[key(cells[i].q, cells[i].r)] = i
+	t = _step("cells", t)
 	fills = _mm(_hex_mesh(HS * 0.985, false), FILL_SHADER)
 	rings = _mm(_hex_mesh(HS, true), RING_SHADER)
 	outline = MeshInstance3D.new()
@@ -286,7 +294,15 @@ func build(rules) -> void:
 	props = Node3D.new()
 	props.name = "Terrain"
 	add_child(props)
+	t = _step("grid", t)
+	if slice:
+		await get_tree().process_frame
+		t = Time.get_ticks_usec()
 	_terrain()
+	t = _step("terrain", t)
+	if slice:
+		await get_tree().process_frame
+		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
 	blocker_visuals.build(VW, hex_world)
@@ -294,8 +310,23 @@ func build(rules) -> void:
 	add_child(blocker_highlights)
 	_zones()
 	_well_info()
+	t = _step("blockers", t)
+	if slice:
+		await get_tree().process_frame
+		t = Time.get_ticks_usec()
 	_terrain_edges()
+	t = _step("edges", t)
+	if slice:
+		await get_tree().process_frame
+		t = Time.get_ticks_usec()
 	apply_look(false)
+	_step("look", t)
+
+
+func _step(name: String, t0: int) -> int:
+	var t1 := Time.get_ticks_usec()
+	build_us[name] = int(build_us.get(name, 0)) + t1 - t0
+	return t1
 
 
 func bounds() -> Vector2:
