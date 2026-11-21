@@ -5,6 +5,13 @@ const Sfx := preload("res://audio/sfx.gd")
 const Music := preload("res://music/music_player.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
 const API := preload("res://rules/battle_api.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")
+const Campaign := preload("res://campaign/campaign.gd")
+const CampaignUI := preload("res://ui/campaign/campaign_ui.gd")
+const ChoiceScript := preload("res://ui/campaign/choice_button.gd")
+const StoryScript := preload("res://story/story.gd")
+const Career := preload("res://story/career.gd")
+const JSM := preload("res://rules/jsm.gd")
 # RULEBOOK 8.4 and the sound playbook: count cues by family, never by one exact table total. Each family below lists the
 # takes it has now and is a floor: adding a cue to a family passes, removing one fails. A new cue id with no family fails.
 const CUE_FAMILIES := {
@@ -35,6 +42,42 @@ class QuietBattle extends "res://scenes/battle/battle.gd":
 	func _flash(_p: Vector3, _size: float, _col: Color, _dur := 0.35, _delay := 0.0, _light := true) -> void:
 		pass
 	func _log(_m: String, _c: String) -> void:
+		pass
+	func _apply_hit(_h: Dictionary, _show := true) -> void:
+		pass
+	func _impact(_t, _h: Dictionary, _col: Color) -> void:
+		pass
+	func _float_hit(_id, _sh: float, _hull: float, _crit) -> void:
+		pass
+
+# issue 1448: the ui cue sink (OrdersKit.sound) and a music player that records what the battle asked of it
+class UiEar extends Node:
+	var heard: Array = []
+	func play(n: String, _o := {}) -> void:
+		heard.append(n)
+
+class MusicEar extends Node:
+	var plays := true
+	var fed: Array = []
+	var stings: Array = []
+	func feed(d: Dictionary) -> float:
+		fed.append(d)
+		return 0.0
+	func victory(_boss := false) -> bool:
+		stings.append("victory")
+		return plays
+	func defeat() -> bool:
+		stings.append("defeat")
+		return plays
+
+class HudEar extends CanvasLayer:
+	func set_phase(_a, _b) -> void:
+		pass
+	func banner(_t, _c = null, _d = 0.0) -> void:
+		pass
+
+class QuietHost extends "res://main/campaign_host.gd":
+	func _play_battle() -> void:
 		pass
 
 class FakeShip extends RefCounted:
@@ -251,9 +294,197 @@ func _run() -> void:
 	ship.root.free()
 	d.free()
 	fx.free()
+	await _issue_1448(s, m)
 	s.free()
 	m.free()
 	# Let the audio server release the playback objects before shutdown.
 	await create_timer(0.15).timeout
 	print("AUDIO CHECK ", "PASS" if fails.is_empty() else "FAIL (%d)" % fails.size())
 	quit(0 if fails.is_empty() else 1)
+
+
+# ---------------------------------------------------------------- issue 1448: wiring, no new sounds
+# Campaign screens click (one shared hook, OrdersKit.watch_sound), the built ui_reward and ui_boss cues play, a battle
+# ends on one sound, and the battle music hears gunfire (shots) and counts close enemies by true hex distance.
+func _press(c: Control) -> void:
+	c.emit_signal("pressed")
+
+func _pressables(under: Node) -> Array:
+	var out: Array = []
+	for n in under.find_children("*", "Control", true, false):
+		if (n is BaseButton or (n.has_signal("pressed") and "disabled" in n)) and (n as Control).is_visible_in_tree():
+			out.append(n)
+	return out
+
+func _unwired(under: Node) -> Array:
+	return _pressables(under).filter(func(n): return not n.has_meta("kit_sound") and not n.has_meta("kit_silent")).map(func(n): return str(n.get("text")) if "text" in n else n.get_class())
+
+func _issue_1448(sfx_node: Node, real_music: Node) -> void:
+	var ear := UiEar.new()
+	root.add_child(ear)
+	var old_sound = Kit.sound
+	Kit.sound = ear
+	# 1. the hook itself: a plain button and a choice well added under a watched root click and hover; a maker's own
+	# role sticks; kit_silent opts out; a button outside the root is left alone
+	var host := Control.new()
+	root.add_child(host)
+	Kit.watch_sound(host)
+	var plain := Button.new()
+	host.add_child(plain)
+	var well := ChoiceScript.new()
+	host.add_child(well)
+	var ruled := Button.new()
+	Kit.wire_sound(ruled, "reward")
+	host.add_child(ruled)
+	var quiet := Button.new()
+	quiet.set_meta("kit_silent", true)
+	host.add_child(quiet)
+	var outside := Button.new()
+	root.add_child(outside)
+	ear.heard.clear()
+	_press(plain); plain.mouse_entered.emit(); _press(well); _press(ruled); _press(quiet); _press(outside)
+	_ok(ear.heard == ["ui_click", "ui_select", "ui_click", "ui_reward"], "1448 the shared hook: a plain button clicks and hovers, a choice well clicks, a reward confirm chimes, opted-out and outside buttons stay silent (%s)" % str(ear.heard))
+	host.free(); outside.free()
+	# 2. the real campaign screens: every button and choice is wired, and a press plays its cue
+	root.size = Vector2i(1920, 1080)
+	var C = Campaign.new()
+	_ok(C.load_tables() == "", "1448 campaign tables load")
+	C.persist_on = false; C.fixed_clock = true; C.teaching_tips = false
+	var ui = CampaignUI.new()
+	root.add_child(ui); ui.bind(C); ui.use_3d_map = false
+	await process_frame
+	JSM.rnd_seed(868)
+	var adm := ""
+	for id in C.ADMIRALS:
+		if str(C.ADMIRALS[id].get("fac", "")) == "voidsworn": adm = str(id); break
+	C.newRun(adm, "voidsworn"); C.modal_d = null
+	var screens := {}
+	C.mapScreen(); await _frames(4)
+	screens["map"] = [_pressables(ui).size(), _unwired(ui)]
+	ear.heard.clear()
+	var route = ui._routes[0]["id"] if not ui._routes.is_empty() else ""
+	var rb: Array = ui.find_children("Route*", "Button", true, false)
+	if not rb.is_empty(): _press(rb[0])
+	var jb: Array = ui.find_children("JumpAction", "Button", true, false)
+	_ok(not rb.is_empty() and ear.heard.has("ui_click") and not jb.is_empty() and str(jb[0].get_meta("kit_sound", "")) == "primary", "1448 map: a route row clicks and the jump button confirms (%s, route %s)" % [str(ear.heard), str(route)])
+	C.fleetScreen("map"); await _frames(4)
+	screens["fleet"] = [_pressables(ui).size(), _unwired(ui)]
+	ear.heard.clear()
+	var fl: Array = _pressables(ui.fleet_manifest) if is_instance_valid(ui.fleet_manifest) else []
+	if not fl.is_empty(): _press(fl[0])
+	_ok(not fl.is_empty() and not ear.heard.is_empty() and str(ear.heard[0]).begins_with("ui_"), "1448 fleet: a fleet page button plays a ui cue (%s)" % str(ear.heard))
+	var yard = null
+	for col in C.RUN["map"]["cols"]:
+		for n in col:
+			if yard == null and str(n.get("type", "")) == "shipyard": yard = n
+	if yard != null:
+		C.RUN["credits"] = 5000
+		C.shipyardScreen(yard); await _frames(4)
+		screens["shipyard"] = [_pressables(ui).size(), _unwired(ui)]
+		var buys: Array = _pressables(ui).filter(func(n): return str(n.get_meta("kit_sound", "")) == "reward" and not bool(n.get("disabled")))
+		ear.heard.clear()
+		if not buys.is_empty(): _press(buys[0])
+		_ok(not buys.is_empty() and ear.heard.has("ui_reward") and not ear.heard.has("ui_confirm"), "1448 shipyard: buying a hull chimes ui_reward, not the plain confirm (%d buy buttons, %s)" % [buys.size(), str(ear.heard)])
+	else:
+		_ok(false, "1448 a shipyard stop exists on the first map")
+	C.mapScreen(); await _frames(2)
+	C.act("enterNode", "0-0"); C.act("battle", "win"); await _frames(4)
+	var prize_ok := C.modal_d != null and str(C.modal_d["kind"]) == "prize"
+	screens["reward"] = [_pressables(ui).size(), _unwired(ui)]
+	var takes: Array = _pressables(ui).filter(func(n): return str(n.get_meta("kit_sound", "")) == "reward" and not bool(n.get("disabled")))
+	ear.heard.clear()
+	if not takes.is_empty(): _press(takes[0])
+	_ok(prize_ok and not takes.is_empty() and ear.heard.has("ui_reward") and not ear.heard.has("ui_confirm"), "1448 reward: confirming the prize chimes ui_reward, not the plain confirm (%s)" % str(ear.heard))
+	# number keys in a dialog sound like the button they press
+	var picked := false
+	for k in 6:
+		await _frames(3)
+		if C.modal_d == null: break
+		var on = (C.modal_d["acts"] as Array).filter(func(a): return a[2] == 1)
+		var ri := -1
+		for i in mini(9, on.size()):
+			if str(on[i][0]) in CampaignUI.REWARD_ACTS: ri = i; break
+		if ri < 0: break
+		ear.heard.clear()
+		var e := InputEventKey.new(); e.keycode = KEY_1 + ri; e.pressed = true
+		ui._unhandled_input(e)
+		picked = ear.heard.has("ui_reward")
+		break
+	_ok(picked or C.modal_d == null, "1448 a number key that takes a reward chimes too (%s)" % str(ear.heard))
+	var bad := []
+	for sc in screens:
+		if screens[sc][0] == 0 or not (screens[sc][1] as Array).is_empty(): bad.append("%s: %d pressable, unwired %s" % [sc, screens[sc][0], str(screens[sc][1])])
+	_ok(bad.is_empty(), "1448 map, fleet, shipyard and reward: every button and choice plays a ui cue (%s)" % str(bad))
+	print("AUDIO 1448 SCREENS " + ", ".join(screens.keys().map(func(k): return "%s=%d" % [k, screens[k][0]])))
+	ui.free()
+	# 3. the Career screen
+	var S = StoryScript.new()
+	root.add_child(S)
+	S.career.persist = false
+	S.career.P = Career.default_profile()
+	var scr = S.open_career()
+	await _frames(3)
+	var cu: Array = _unwired(scr) if scr != null else ["no screen"]
+	var close_role := ""
+	if scr != null:
+		for b in scr.find_children("Close", "Button", true, false): close_role = str(b.get_meta("kit_sound", ""))
+	_ok(scr != null and _pressables(scr).size() > 0 and cu.is_empty() and close_role == "back", "1448 Career: every tab and button plays a ui cue, Close plays back (%s, close %s)" % [str(cu), close_role])
+	S.free()
+	# 4. ui_boss when a boss or Nemesis fight is entered, not for an ordinary fight
+	var hostc := QuietHost.new()
+	root.add_child(hostc)
+	hostc.C = Campaign.new()
+	var boss_heard := []
+	for cfg in [{"kind": "boss"}, {"kind": "elite", "nemesis": {"name": "x"}}, {"kind": "battle"}]:
+		ear.heard.clear(); hostc.in_battle = false; hostc.C.pending_battle = cfg
+		hostc._on_battle()
+		boss_heard.append(ear.heard.has("ui_boss"))
+	_ok(boss_heard == [true, true, false], "1448 ui_boss plays on entering a boss or Nemesis fight, not an ordinary one (%s)" % str(boss_heard))
+	hostc.free()
+	# 5. one end sound: the music fanfare, or the synth sting only when the music cannot play
+	var b := QuietBattle.new()
+	b.sfx = sfx_node
+	var hud_ear := HudEar.new()
+	root.add_child(hud_ear)
+	b.hud = hud_ear
+	var me := MusicEar.new()
+	root.add_child(me)
+	b.music = me
+	heard.clear()
+	var r1: String = b._end_sound(true)
+	await create_timer(0.05).timeout
+	_ok(r1 == "music" and me.stings == ["victory"] and not heard.has("sting_win"), "1448 a won battle with music on plays the fanfare only, no synth sting (%s, %s)" % [r1, str(heard)])
+	me.plays = false; heard.clear()
+	var r2: String = b._end_sound(false)
+	await create_timer(0.05).timeout
+	_ok(r2 == "sting" and heard.has("sting_loss"), "1448 with the music unable to play, the synth sting stands in (%s, %s)" % [r2, str(heard)])
+	real_music.set_on(false)
+	_ok(not real_music.victory(false), "1448 the real music player reports no fanfare while music is off")
+	real_music.set_on(true)
+	# 6. the music hears gunfire: hits this round go in as shots, a new round clears them; close is true hex distance
+	b.V = {"round": 1, "units": [
+		{"id": "p", "side": "player", "dead": false, "squadron": false, "flagship": true, "hp": 100, "maxHp": 100, "q": 0, "r": 0},
+		{"id": "e1", "side": "enemy", "dead": false, "squadron": false, "flagship": false, "hp": 100, "maxHp": 100, "q": 3, "r": -3},
+		{"id": "e2", "side": "enemy", "dead": false, "squadron": false, "flagship": false, "hp": 100, "maxHp": 100, "q": 2, "r": 2},
+		{"id": "e3", "side": "enemy", "dead": false, "squadron": false, "flagship": false, "hp": 100, "maxHp": 100, "q": -3, "r": 3}]}
+	for i in 5:
+		await b._play_event({"t": "hit", "unit": "e1", "target": null, "shield": 0, "hull": 3, "crit": false})
+	b._music_feed()
+	var f1: Dictionary = me.fed[-1]
+	b.bot = true   # the round banner waits on the battle's pacing table, which a headless battle never loads
+	await b._play_event({"t": "round", "round": 1})
+	b._music_feed()
+	var f2: Dictionary = me.fed[-1]
+	_ok(int(f1.get("shots", -1)) == 5 and int(f2.get("shots", -1)) == 0, "1448 music gets this round's hits as shots, cleared each round (%s then %s)" % [str(f1.get("shots")), str(f2.get("shots"))])
+	# e1 and e3 are 3 hex steps away (the old |dq|+|dr| read 6 and missed them); e2 is 4 away (the old sum read 4, close)
+	_ok(int(f1.get("close", -1)) == 2, "1448 close counts the two enemies 3 hexes away and not the one 4 away (%s)" % str(f1.get("close")))
+	var lift: float = real_music.feed(f1)
+	var flat: float = real_music.feed({"close": f1["close"], "shots": 0, "hull": f1["hull"], "flagship": f1["flagship"], "mine": f1["mine"], "enemy": f1["enemy"]})
+	_ok(lift > flat + 0.05, "1448 gunfire lifts the real music intensity (%.2f with fire, %.2f without)" % [lift, flat])
+	b.free(); me.free(); hud_ear.free()
+	Kit.sound = old_sound
+	ear.free()
+
+func _frames(n := 3) -> void:
+	for i in n:
+		await process_frame

@@ -309,17 +309,19 @@ func feed(d: Dictionary) -> float:
 
 # ---------- stings ----------
 
-func victory(boss := false) -> void:
+func victory(boss := false) -> bool:
 	# a boss win (or any win in a battle started with boss = true) gets the champion fanfare when one is listed
 	# (sting_finished still reports "victory")
-	_sting_play("victory", "victory_boss" if (boss or _boss) and _slot(["stings", "victory_boss"]) != "" else "victory")
+	return _sting_play("victory", "victory_boss" if (boss or _boss) and _slot(["stings", "victory_boss"]) != "" else "victory")
 
 
-func defeat() -> void:
-	_sting_play("defeat")
+func defeat() -> bool:
+	return _sting_play("defeat")
 
 
-func _sting_play(kind: String, slot := "") -> void:
+# Issue 1448: true when the player will hear this music sting (music on, volume up and the track found), so the battle
+# plays its own synth sting only when the music cannot (two victory sounds at once before).
+func _sting_play(kind: String, slot := "") -> bool:
 	_stop_sting()
 	_battle_target = 0.0
 	_fade_out_single(1.2)
@@ -328,11 +330,12 @@ func _sting_play(kind: String, slot := "") -> void:
 	var s := _stream(id, false)
 	if s == null:
 		sting_finished.emit(kind)
-		return
+		return false
 	_sting.stream = s
 	_sting.volume_db = _gain(id)
 	_sting.set_meta("kind", kind)
 	_sting.play()
+	return on and vol > 0.001
 
 
 func _on_sting_done() -> void:

@@ -171,6 +171,7 @@ var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
+var music_hits := 0        # issue 1448: hits landed this round by either side, fed to the music as `shots`
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
@@ -870,10 +871,17 @@ func _music_feed() -> void:
 			if u["flagship"] and boss_fight:
 				boss = true
 			for m in V["units"]:
-				if m["side"] == "player" and not m["dead"] and absi(int(m["q"]) - int(u["q"])) + absi(int(m["r"]) - int(u["r"])) <= 4:
+				if m["side"] == "player" and not m["dead"] and hex_distance(m, u) <= 3:
 					close += 1
 					break
-	music.feed({"close": close, "hull": hp / maxf(1.0, mhp), "flagship": flag, "mine": mine, "enemy": foes, "boss": boss})
+	music.feed({"close": close, "shots": music_hits, "hull": hp / maxf(1.0, mhp), "flagship": flag, "mine": mine, "enemy": foes, "boss": boss})
+
+
+# True hex steps between two units on the axial grid (rules.gd hdist); the music counts an enemy within 3 as close.
+static func hex_distance(a: Dictionary, b: Dictionary) -> int:
+	var dq := int(a["q"]) - int(b["q"])
+	var dr := int(a["r"]) - int(b["r"])
+	return int((absi(dq) + absi(dr) + absi(dq + dr)) / 2.0)
 
 
 func _sync(v: Dictionary) -> void:
@@ -1269,6 +1277,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				adaptation_heard = true
 				sfx.play("adapt_shift")
 		"round":
+			music_hits = 0
 			_log("Round %d." % int(e["round"]), "x")
 			if finale_fight and world != null and world.has_method("finale_for_round"):
 				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
@@ -1345,6 +1354,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			_float(e["unit"], "Pulled in", Color("#c79bff"))
 		"hit":
 			_apply_hit(e)
+			music_hits += 1
 			if e.get("target") != null:
 				_impact(e["target"], e, Color(1, 0.6, 0.3))
 				_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
@@ -2437,6 +2447,15 @@ func _play_death(e: Dictionary) -> void:
 
 # ---------------------------------------------------------------- end of battle
 
+# One end sound (issue 1448): the music's fanfare, or the synth sting only when the music cannot play one (music off,
+# volume at zero or no track). Both used to start in the same moment. Returns which one played: "music" or "sting".
+func _end_sound(win: bool) -> String:
+	if music != null and (music.victory(boss_fight) if win else music.defeat()):
+		return "music"
+	sfx.sting(win)
+	return "sting"
+
+
 func _end_flow() -> void:
 	ended = true
 	var outcome: String = api.battle_result()
@@ -2445,12 +2464,7 @@ func _end_flow() -> void:
 	var heading := "Withdrawal" if withdrawal else ("Victory" if win else "Defeat")
 	await wait(500.0)
 	if not withdrawal:
-		sfx.sting(win)
-		if music != null:
-			if win:
-				music.victory(boss_fight)
-			else:
-				music.defeat()
+		_end_sound(win)
 	hud.banner(heading, Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
