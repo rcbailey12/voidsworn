@@ -1,0 +1,6 @@
+OPUS1433PP_WAIT.bat waiting for OPUS1435_CLOSE3 exit in opus1435e_wait.txt Fri 11/20/2026 19:28:12.28 
+OPUS1433_PP start 19:40:13.19 
+OPUS1433_PP exit 1 at 19:56:34.52 
+run folder out_20261120_194014_23265
+result: done FAILED: new player_path: exit 1, see player_path_log.txt
+all done Fri 11/20/2026 19:56:34.94 
