@@ -316,21 +316,35 @@ func _play_events() -> Dictionary:
 
 
 # R392 (PD-C): a torpedo the point defence stops is drawn shot down: the round is marked to die short of the hull and,
-# when it does, it tumbles away (fx_weapons._shot_down). Played as a real fire event through battle.gd with the real fx,
+# when it does, the same round's body turns as it tumbles away (fx_weapons._shot_down and _shot_down_step). Torpedoes only:
+# rockets share the code but are not played here. Played as a real fire event through battle.gd with the real fx,
 # so the check also proves the battle hands the rules' pd count to the volley.
 func _pd_probe(b, mine: String, foe: String) -> String:
 	var e := {"t": "fire", "unit": mine, "target": foe, "kind": "torp", "name": "PD probe", "weapon": 0, "weapon_id": "",
 		"shots": [false, false], "quad": 0, "pd": 2}
 	b._play_fire(e, [])   # not awaited: the rounds are read while they fly
-	var marked := 0
-	var tumbled := false
+	var marked := false
+	var down: Dictionary = {}
 	for i in 1200:
 		for p in b.gfx.dstate.get("proj", []):
 			if str(p.get("lk", "")) == "torp" and float(p.get("dead_at", INF)) < float(p.get("t1", 0.0)):
-				marked = maxi(marked, 1)
-			if p.has("down_p"):
-				tumbled = true
-		if tumbled:
+				marked = true
+			if down.is_empty() and p.has("down_p") and is_instance_valid(p.get("mesh")):
+				down = p
+		if not down.is_empty():
 			break
 		await process_frame
-	return "marked %s, tumbles %s" % [marked > 0, tumbled]
+	# Artoo on PR 1548: entering the shot-down state is not the tumble. Follow that same round's body over the next
+	# frames: its orientation (scale taken out, the fade shrinks it) must turn.
+	var turned := false
+	if not down.is_empty():
+		var n3 := down["mesh"] as Node3D
+		var q0 := n3.global_basis.orthonormalized().get_rotation_quaternion()
+		for i in 20:
+			await process_frame
+			if not is_instance_valid(n3):
+				break
+			if n3.global_basis.orthonormalized().get_rotation_quaternion().angle_to(q0) > 0.05:
+				turned = true
+				break
+	return "marked %s, shot down %s, body turns %s" % [marked, not down.is_empty(), turned]
