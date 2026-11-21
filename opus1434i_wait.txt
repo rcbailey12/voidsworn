@@ -1,0 +1,6 @@
+OPUS1434I_WAIT.bat waiting for 1373L PROBE17 exit in opus1373p17_wait.txt Sat 11/21/2026  9:20:39.31 
+OPUS1434_LOAD9 start  9:21:39.21 
+OPUS1434_LOAD9 exit 1 at  9:58:09.97 
+run folder out_20261121_092140_22531
+result: done FAILED: new load, new load: a graded item failed, see load\load_result.txt
+all done Sat 11/21/2026  9:58:10.39 
