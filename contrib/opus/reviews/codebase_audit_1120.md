@@ -1,7 +1,7 @@
 # Codebase audit, Nov 20 2026 (issue 1333)
 
 Read-only audit by an Opus worker of rules parity, saves, battle state and campaign flow. No game code changed. Every finding
-below was confirmed by a headless run; the repro scripts are in `contrib/opus/reviews/codebase_audit_1120/`. Base: main at
+below was confirmed by a headless run; the repro scripts were in `contrib/opus/reviews/codebase_audit_1120/` and stay on commit 1c7d1a75 (closed PR 1339), not on main. Base: main at
 0ac29b17.
 
 ## Answer first
@@ -16,7 +16,7 @@ Three confirmed bugs, one of them worth fixing soon:
 
 Everything else I checked held up: battle parity, save round trips under heavy reload stress, bot campaigns with no soft-locks.
 
-## F2 (high): Standard players fight Veteran-sized fleets
+## F2 (high): Standard players fight Veteran-sized fleets (fixed by PR 1349)
 
 - Where: `godot/main/campaign_host.gd:133-138` (`_setup_battle` makes a new `battle_api`, calls `load_rules` and
   `new_battle`, never sets the AI level). `godot/rules/battle_api.gd:191-202` (`new_battle` calls `R.startBattle`, which rolls
