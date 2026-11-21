@@ -240,8 +240,13 @@ write(path.join(shipsSrc, 'assets', 'ships', 'S2', 'S2.glb'), 'published ship');
 write(path.join(so, 'assets', 'ships', 'S2', 'S2.glb'), 'a re-export the job wrote over the copy');
 write(path.join(so, 'assets', 'ships', 'S9', 'S9.glb'), 'a new ship the job made');
 write(path.join(so, 'gen', 'orphan.res.import'), 'a sidecar with no proven file');
-write(path.join(so, 'fx', 'munitions', 'stray_albedo.jpg'), 'an ignored map with no tracked body');
-write(path.join(so, 'fx', 'munitions', 'corsair_rockets_corsair_rockets_hull_albedo.jpg'), 'a hand-painted map named like an extracted one');
+// Ignored images beside the munition bodies are work (Artoo on PR 1529): a root image with no body, and a hand-painted map
+// named like the body's. Their own checkout, so the shipout list above keeps its five examples.
+r = run('checkout', attempt, 'mapsout', two);
+assert.equal(r.status, 0, r.out);
+const mo = path.join(attempt, 'mapsout', 'godot', 'fx', 'munitions');
+write(path.join(mo, 'stray_albedo.jpg'), 'an ignored map with no tracked body');
+write(path.join(mo, 'corsair_rockets_corsair_rockets_hull_albedo.jpg'), 'a hand-painted map named like an extracted one');
 // Same size and same time, different bytes: only a hash match proves a copy.
 write(path.join(shipsSrc, 'gen', 'same.res'), 'AAAA'); write(path.join(so, 'gen', 'same.res'), 'BBBB');
 fs.utimesSync(path.join(shipsSrc, 'gen', 'same.res'), 1700000000, 1700000000); fs.utimesSync(path.join(so, 'gen', 'same.res'), 1700000000, 1700000000);
@@ -274,8 +279,10 @@ assert(fs.existsSync(path.join(attempt, 'old')) && /checkout old kept: .*no long
 assert(/checkout stray kept: .*not a plain folder/.test(r.out) && fs.existsSync(path.join(attempt, 'stray')), 'a listed name that is not a checkout folder is kept');
 assert(/line not accepted, ignored: \.\.\/escape/.test(r.out), 'a path in checkouts.txt is never followed');
 assert(/checkout work kept: .*not rebuildable leftovers.*changed: godot\/project\.godot.*new: godot\/notes\.txt/.test(r.out), 'an edit and a new file with HEAD unchanged keep the checkout: ' + r.out);
-assert(/checkout shipout kept: .*not rebuildable leftovers/.test(r.out) && /S2\.glb/.test(r.out) && /S9\.glb/.test(r.out) && /orphan\.res\.import/.test(r.out) && /same\.res/.test(r.out) && /stray_albedo\.jpg/.test(r.out) && /corsair_rockets_corsair_rockets_hull_albedo\.jpg/.test(r.out), 'a changed copy, a new ship file, an unproven sidecar, a same-size same-time different-bytes file and ignored munition images (no body, or named like the body) keep the checkout: ' + r.out);
-for (const f of ['assets/ships/S2/S2.glb', 'assets/ships/S9/S9.glb', 'gen/orphan.res.import', 'gen/same.res', 'fx/munitions/stray_albedo.jpg', 'fx/munitions/corsair_rockets_corsair_rockets_hull_albedo.jpg']) assert(fs.existsSync(path.join(so, ...f.split('/'))), f + ' survives');
+assert(/checkout shipout kept: .*not rebuildable leftovers/.test(r.out) && /S2\.glb/.test(r.out) && /S9\.glb/.test(r.out) && /orphan\.res\.import/.test(r.out) && /same\.res/.test(r.out), 'a changed copy, a new ship file, an unproven sidecar and a same-size same-time different-bytes file keep the checkout: ' + r.out);
+assert(/checkout mapsout kept: .*not rebuildable leftovers.*munitions\/(stray_albedo|corsair_rockets_corsair_rockets_hull_albedo)\.jpg.*munitions\/(stray_albedo|corsair_rockets_corsair_rockets_hull_albedo)\.jpg/.test(r.out), 'ignored munition images (no body, or named like the body) keep the checkout: ' + r.out);
+for (const f of ['stray_albedo.jpg', 'corsair_rockets_corsair_rockets_hull_albedo.jpg']) assert(fs.existsSync(path.join(mo, f)), 'munitions/' + f + ' survives');
+for (const f of ['assets/ships/S2/S2.glb', 'assets/ships/S9/S9.glb', 'gen/orphan.res.import', 'gen/same.res']) assert(fs.existsSync(path.join(so, ...f.split('/'))), f + ' survives');
 assert.equal(fs.readFileSync(path.join(attempt, 'work', 'godot', 'project.godot'), 'utf8'), 'an edit left by a step\n', 'the edit survives');
 assert(fs.existsSync(path.join(attempt, 'work', 'godot', 'notes.txt')), 'the new file survives');
 for (const keep of ['out_new/samples.jsonl', 'new_ships_identity.txt', 'checkouts.txt']) assert(fs.existsSync(path.join(attempt, keep)), keep + ' stays');
