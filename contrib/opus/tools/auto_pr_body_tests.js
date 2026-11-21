@@ -15,24 +15,38 @@ const bash = windows ? path.join(process.env.ProgramFiles, 'Git', 'bin', 'bash.e
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-pr-1098-'));
 const event = path.join(tmp, 'event.json');
 const branch = 'work/issue-1098-openai';
+// The test runs with the workflow's own STANDING list, so a change there is exercised here (issue 1488 added 906).
+const standingMatch = /^ +STANDING: '([0-9 ]+)'/m.exec(workflow);
+assert.ok(standingMatch, 'auto_pr.yml is missing its STANDING list');
+const standingList = standingMatch[1];
+assert.deepEqual(standingList.split(' ').filter(Boolean).sort(), ['256', '906'], 'STANDING must list 256 and 906');
 
+// Issue 1488: the step uses REST (gh api) only. This fake answers exactly the calls it makes and fails any other call,
+// so a gh pr (GraphQL) call coming back fails this test.
 const fakeGh = [
   'gh() {',
-  '  case "$1 $2" in',
-  '    "pr list")',
-  '      case "${!#}" in',
-  '        length) if [ "$PR_ACTION" = edit ]; then echo 1; else echo 0; fi ;;',
-  '        \' .[0].number\') return 2 ;;',
-  '        \'.[0].number\') echo 42 ;;',
-  '        *) return 2 ;;',
-  '      esac ;;',
-  '    "api repos/example/voidsworn/issues/1098") echo "Fixture title" ;;',
-  '    "api repos/example/voidsworn/pulls/42") printf "%s\\n" "$EXISTING_PR_BODY" ;;',
-  '    "pr create"|"pr edit")',
-  '      [ "$2" = "$PR_ACTION" ] && [ "${@: -2:1}" = --body-file ] || return 2',
-  '      [ "$(wc -c < "${!#}")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
-  '      printf "sent %s\\n" "$2" ;;',
-  '    *) return 2 ;;',
+  '  [ "$1" = api ] || return 2',
+  '  local body_arg=""',
+  '  for a in "$@"; do case "$a" in body=@*) body_arg="${a#body=@}" ;; esac; done',
+  '  case "$2 $3 $4" in',
+  '    "repos/example/voidsworn/pulls?state=open&head=example:$BRANCH --jq length")',
+  '      if [ "$PR_ACTION" = edit ]; then echo 1; elif [ ! -f created ]; then echo 0;',
+  '      elif [ "$PR_ACTION" = race ]; then echo 1; else return 1; fi ;;',
+  '    "repos/example/voidsworn/pulls?state=open&head=example:$BRANCH --jq .[0].number") echo 42 ;;',
+  '    "repos/example/voidsworn/issues/1098 --jq .title") echo "Fixture title" ;;',
+  '    "repos/example/voidsworn/pulls/42 --jq .body") printf "%s\\n" "$EXISTING_PR_BODY" ;;',
+  '    "repos/example/voidsworn/pulls -f base=main")',
+  '      [ "$5 $6" = "-f head=$BRANCH" ] && [ "$body_arg" = body.md ] && [ "${!#}" = --silent ] || return 2',
+  // race and down (PR 1492): the create fails; then the lookup sees another run's PR (race) or fails too (down).
+  '      if [ "$PR_ACTION" != create ]; then : > created; return 1; fi',
+  '      [ "$(wc -c < "$body_arg")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
+  '      echo "sent create" ;;',
+  '    "repos/example/voidsworn/compare/main...$BRANCH --jq .ahead_by") echo 3 ;;',
+  '    "-X PATCH repos/example/voidsworn/pulls/42")',
+  '      [ "$PR_ACTION" = edit ] && [ "$body_arg" = body.md ] && [ "${!#}" = --silent ] || return 2',
+  '      [ "$(wc -c < "$body_arg")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
+  '      echo "sent edit" ;;',
+  '    *) echo "unexpected gh call: $*" >&2; return 2 ;;',
   '  esac',
   '}',
   'sleep() { :; }',
@@ -57,7 +71,7 @@ function send(action, message, head = branch, existingBody = '') {
     input: [windows ? windowsSetup : '', fakeGh, step].join('\n'),
     encoding: 'utf8',
     env: { ...process.env, PR_ACTION: action, BRANCH: head, REPO: 'example/voidsworn',
-      STANDING: '256', GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: existingBody },
+      STANDING: standingList, GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: existingBody },
     timeout: 30000,
     windowsHide: true,
   });
@@ -150,5 +164,30 @@ assert.equal(send('edit', refreshMessage, branch, 'Older report\n\nRefs #10980')
 const standingBody = send('edit', `${refreshMessage}\n\nCloses #256`, 'codex/issue-256', 'Closes #256');
 assert.match(standingBody, /^Refs #256$/m);
 assert.doesNotMatch(standingBody, /^Closes #256$/m);
+// Issue 1488: Artoo's standing sweep 906 stays open through every merge, on create and on refresh.
+for (const action of ['create', 'edit']) {
+  const sweep = send(action, `${refreshMessage}\n\nCloses #906\nfixes: #256`, 'codex/issue-906', 'Closes #906');
+  assert.match(sweep, /^Refs #906$/m, action);
+  assert.match(sweep, /^Refs #256$/m, action);
+  assert.doesNotMatch(sweep, /(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#(906|256)\b/i, action);
+}
+
+// Artoo on PR 1492: a failed create is a pass only when a working lookup finds the other run's PR.
+function failedCreate(mode) {
+  fs.writeFileSync(event, JSON.stringify({ head_commit: { message: `${title}\n\n${report}` } }));
+  fs.rmSync(path.join(tmp, 'created'), { force: true });
+  return spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
+    cwd: tmp, input: [windows ? windowsSetup : '', fakeGh, step].join('\n'), encoding: 'utf8',
+    env: { ...process.env, PR_ACTION: mode, BRANCH: branch, REPO: 'example/voidsworn', STANDING: standingList,
+      GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: '' },
+    timeout: 30000, windowsHide: true,
+  });
+}
+const race = failedCreate('race');
+assert.equal(race.status, 0, race.stdout + race.stderr);
+assert.match(race.stdout, /was opened by another run/);
+const down = failedCreate('down');
+assert.notEqual(down.status, 0, 'create and lookup both failed: the run must fail, not report a race');
+assert.doesNotMatch(down.stdout, /was opened by another run/);
 
 console.log('PASS auto_pr_body_tests: create and edit bound long bodies and refreshes keep the Board Refs directive');
