@@ -8,7 +8,7 @@
 //   the GPU wait default (3600, the gpu_slots.js MAX_WAIT_SECONDS that every ship checkout's helper accepts) is set before any GPU step;
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
 //   both jobs refresh and clone from the local mirror under the runner's lock;
-//   the ship job collects only deliverables and lists backups older than the newest two for the janitor;
+//   the ship job collects only deliverables, and nothing when no recipe stage ran (1516); it lists backups older than the newest two for the janitor;
 //   no delete or move commands, and output only under the job folder and the helper's own TEMP;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
 const assert = require('assert');
@@ -123,7 +123,7 @@ for (let i = start; i < subs; i++) {
   if (/exit \/b/i.test(code[i].s)) assert(i > finish, `line ${code[i].n} leaves the job before the done and all done lines`);
 }
 for (const l of code.slice(start, finish)) {
-  if (/goto (\w+)/i.test(l.s)) assert(['collect', 'finish', 'based'].includes(/goto (\w+)/i.exec(l.s)[1]), `line ${l.n}: ${l.s}`);
+  if (/goto (\w+)/i.test(l.s)) assert(['collect', 'collect_skipped', 'finish', 'based'].includes(/goto (\w+)/i.exec(l.s)[1]), `line ${l.n}: ${l.s}`);
 }
 pass('the last line: every way out of the job writes done PASS or done FAILED, then all done');
 
@@ -179,6 +179,70 @@ assert(copies.every(s => /^if errorlevel 8 if not defined FAILED set "FAILED=col
   'a failed copy sets FAILED without hiding an earlier build failure');
 assert(collect.some(s => /if not exist "%O%\\recipe\\export\\%CODE%\\%CODE%.glb" if not defined FAILED/.test(s)), 'the stage 7 export guard still checks for the collected GLB');
 pass('collect only reports, shots and the requested export');
+
+// Issue 1516 (1415E GP1 and GA1, Nov 21): the mirror fetch failed, yet collect copied the earlier 1415D build's files from
+// the shared recipe folder into out\recipe, and the relay looked like a build of the new pin. Collect now runs only when a
+// recipe stage ran in this run, and the result names the fetch as the failed step.
+{
+  const stagesCmd = main.findIndex(l => /cmd \/c ""%~f0" ship"/.test(l.s));
+  const ranSet = code.filter(l => /STAGES_RAN=/.test(l.s));
+  assert.deepEqual(ranSet.map(l => l.s), ['set STAGES_RAN=', 'set "STAGES_RAN=1"'], 'STAGES_RAN is cleared once and set once');
+  const clear = main.findIndex(l => l.s === 'set STAGES_RAN=');
+  assert(clear > 0 && clear < main.findIndex(l => guard.test(l.s)), 'STAGES_RAN is cleared before the first way to collect');
+  assert(main[stagesCmd - 1].s === 'set "STAGES_RAN=1"' && guard.test(main[stagesCmd - 2].s),
+    'STAGES_RAN is set right before the stages run, after the import guard');
+  const col = code.slice(at(/^:collect$/)).map(l => l.s);
+  assert.equal(col[1], 'if not defined STAGES_RAN goto collect_skipped', 'the first thing collect does is skip when no stage ran');
+  const skipped = col.indexOf(':collect_skipped');
+  const fin = col.indexOf(':finish');
+  assert(skipped > 0 && fin === skipped + 3, 'the skip branch falls straight into :finish');
+  assert(/^echo collect SKIPPED: no recipe stage ran/.test(col[skipped + 1]), 'the skip is written to result.txt');
+  assert.equal(col[skipped + 2], 'if not defined FAILED set "FAILED=collect (no recipe stage ran)"', 'a skipped collect never passes');
+  assert.equal(col[skipped - 1], 'goto finish', 'a normal collect does not run into the skip branch');
+  assert(!col.slice(skipped, fin).some(s => /robocopy|copy |xcopy/i.test(s)), 'the skip branch copies nothing');
+  const fetchFail = main.find(l => /if errorlevel 1 set "FAILED=mirror fetch: /.test(l.s));
+  assert(fetchFail && guard.test(main[main.indexOf(fetchFail) + 1].s), 'a failed fetch says "mirror fetch" and goes straight to collect');
+  assert(text.includes("if ($try -ge 3) { throw ('mirror fetch failed ' + $try + ' times') }"), 'the mirror fetch tries three times, then fails');
+  assert(/\$wait = 30 \* \$try \* \$try;[^\r\n]*Start-Sleep -Seconds \$wait/.test(text), 'with backoff between tries (30 s, then 120 s)');
+  assert(col.some(s => /recipe_from_earlier_runs\.txt/.test(s) && /LastWriteTimeUtc\.Ticks -lt \[long\]\$env:START_TICKS/.test(s)),
+    'collected files older than this run are listed');
+}
+if (process.platform === 'win32') {
+  // the real collect section under cmd: stale recipe files, a failed fetch, then a run whose stages ran
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'shipjob1516-'));
+  try {
+    const recipe = path.join(tmp, 'recipe', 'ithar_GP1');
+    fs.mkdirSync(path.join(recipe, 'export', 'G1'), { recursive: true });
+    fs.writeFileSync(path.join(recipe, 'build_report.txt'), 'the 1415D build\n');
+    fs.writeFileSync(path.join(recipe, 'export', 'G1', 'G1.glb'), 'old glb');
+    const old = new Date(Date.now() - 3600e3);
+    for (const f of ['build_report.txt', 'export/G1/G1.glb']) fs.utimesSync(path.join(recipe, f), old, old);
+    const ticks = (BigInt(Date.now()) * 10000n + 621355968000000000n).toString();
+    const section = lines.slice(lines.findIndex(l => l.trim() === ':collect'), lines.findIndex(l => l.trim() === ':ship'));
+    const runCase = (name, extra) => {
+      const o = path.join(tmp, name);
+      fs.mkdirSync(o);
+      const probe = path.join(tmp, name + '.bat');
+      const head = ['@echo off', 'setlocal', `set "O=${o}"`, 'set "RES=%O%\\result.txt"', `set "RECIPE=${recipe}"`,
+        'set "SHIP=ithar_GP1"', 'set "CODE=G1"', 'set "STAGES=1_concept_in 7_export"', `set "START_TICKS=${ticks}"`, ...extra];
+      fs.writeFileSync(probe, [...head, ...section].join('\r\n') + '\r\n');
+      const run = spawnSync('cmd.exe', ['/d', '/c', probe], { encoding: 'utf8', timeout: 60000 });
+      return { status: run.status, o, res: fs.readFileSync(path.join(o, 'result.txt'), 'utf8') };
+    };
+    const failed = runCase('fetch_failed', ['set "FAILED=mirror fetch: clone or fetch of opus/issue-1415 failed, see the Git output above"']);
+    assert.equal(failed.status, 1, failed.res);
+    assert(!fs.existsSync(path.join(failed.o, 'recipe')), 'a failed fetch copies nothing from the shared recipe folder');
+    assert(/collect SKIPPED: no recipe stage ran/.test(failed.res) && /done FAILED: mirror fetch: /.test(failed.res), failed.res);
+    const ran = runCase('stages_ran', ['set "STAGES_RAN=1"']);
+    assert(fs.existsSync(path.join(ran.o, 'recipe', 'build_report.txt')), 'a run whose stages ran still collects');
+    assert(/recipe_from_earlier_runs/.test(ran.res), ran.res);
+    assert(/build_report\.txt/.test(fs.readFileSync(path.join(ran.o, 'recipe_from_earlier_runs.txt'), 'utf8')), 'the earlier file is listed');
+    console.log('PASS 1516 real cmd run: the collect section');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+pass('1516: a failed mirror fetch collects nothing from the shared recipe folder and the result names the fetch');
 
 assert(main.some(l => /^ren "%O%" "out_before_%STAMP%" \|\| exit \/b 1$/.test(l.s)), 'stop if the earlier out folder could not be renamed');
 const janitor = main.findIndex(l => /out_before_for_janitor\.txt/.test(l.s));
