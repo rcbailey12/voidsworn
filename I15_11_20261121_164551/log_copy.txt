@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 4:45:53 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GP1\out\recipe\export\I15_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\I15_11_20261121_164551\export\I15_11\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GP1\out\recipe\export\I15_11\
+	    New File  		      25	export_status.txt100%  
+	    New File  		  16.0 m	I15_11.glb  6.2% 12.4% 18.6% 24.8% 31.0% 37.3% 43.5% 49.7% 55.9% 62.1% 68.3% 74.6% 80.8% 87.0% 93.2% 99.4%100%  
+	    New File  		   1.4 m	I15_11_base.jpg 16%   33%   50%   66%   83%  100%  
+	    New File  		    4121	I15_11_check.json100%  
+	    New File  		  799602	I15_11_emission.jpg 32%   65%   98%  100%  
+	    New File  		   11232	I15_11_export.json100%  
+	    New File  		   5.8 m	I15_11_normal.png  8.6% 17.2% 25.8% 34.4% 43.0% 51.7% 60.3% 68.9% 77.5% 86.1% 94.8%100%  
+	    New File  		   5.8 m	I15_11_orm.png  8.5% 17.0% 25.6% 34.1% 42.7% 51.2% 59.8% 68.3% 76.9% 85.4% 94.0%100%  
+	    New File  		  912124	I15_11_parts_base.jpg 28%   57%   86%  100%  
+	    New File  		   5.3 m	I15_11_parts_normal.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+	    New File  		   4.4 m	I15_11_parts_orm.png 11%   22%   33%   45%   56%   67%   79%   90%  100%  
+	    New File  		    1428	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1415h_GP1\out\recipe\export\I15_11\_gltf_source\
+	    New File  		   3.7 m	GP1_hull_albedo.png 13%   26%   39%   53%   66%   79%   93%  100%  
+	    New File  		   2.2 m	GP1_hull_emission.png 22%   44%   67%   89%  100%  
+	    New File  		   5.8 m	GP1_hull_normal.png  8.6% 17.2% 25.8% 34.4% 43.0% 51.7% 60.3% 68.9% 77.5% 86.1% 94.8%100%  
+	    New File  		   5.8 m	GP1_hull_orm.png  8.5% 17.0% 25.6% 34.1% 42.7% 51.2% 59.8% 68.3% 76.9% 85.4% 94.0%100%  
+	    New File  		  638122	GP1_parts_albedo.png 41%   82%  100%  
+	    New File  		   5.3 m	GP1_parts_normal.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+	    New File  		   4.4 m	GP1_parts_orm.png 11%   22%   33%   45%   56%   67%   79%   90%  100%  
+	    New File  		  16.0 m	I15_11.bin  6.2% 12.4% 18.6% 24.9% 31.1% 37.3% 43.6% 49.8% 56.0% 62.2% 68.5% 74.7% 80.9% 87.2% 93.4% 99.6%100%  
+	    New File  		   43519	I15_11.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   84.70 m   84.70 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           2114703047 Bytes/sec.
+   Speed :           121004.279 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 4:45:53 PM
+
