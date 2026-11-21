@@ -1,0 +1,175 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+PASS Codex task prompt forbids .github/workflows edits (issue 873) (elapsed 0.06 s)
+PASS shared runner contract, chain launcher and issue 722 start checks (elapsed 0.15 s)
+PASS GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal (elapsed 0.15 s)
+PASS OpenAI arm defaults, isolated key name, lean config and local stand-in config (elapsed 0.17 s)
+Evidence: C:\Users\rcbai\AppData\Local\Temp\runner687 proof gyzJN3
+Fixture setup: 0.55 s (tiny shared source and stubs; retry delay 0 s)
+PASS Codex refuses same-issue and different-issue launches before writes, blocks refresh during final reporting, and releases the lane (elapsed 17.75 s)
+PASS DeepSeek and OpenAI use separate reusable slots with per-run logs, a slot lock and preserved local work (elapsed 38.38 s)
+PASS the slot lock outlives its PowerShell while the batch lives, refuses another issue, and frees when the batch ends (elapsed 47.30 s)
+PASS OpenAI missing key, named prices, probe plus agent usage, idempotent ledger, default/configured budget, dry isolation, month rollover and unknown-usage refusal (elapsed 50.85 s)
+PASS only a confirmed non-partial real push with passing checks releases a chain (elapsed 51.84 s)
+PASS a success exit without push confirmation cannot release a chain (elapsed 51.94 s)
+PASS missing or legacy predecessor status fails closed (elapsed 52.01 s)
+PASS unfinished predecessor times out; a stale run id stops the chain (elapsed 53.24 s)
+PASS codex: closed refuses before checkout, probe or agent, with no GitHub writes (elapsed 53.82 s)
+PASS codex: no-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 54.30 s)
+PASS codex: other-pr refuses before checkout, probe or agent, with no GitHub writes (elapsed 54.56 s)
+PASS untracked-pyc: checkout and all bytes kept aside even beside a Python cache (elapsed 55.23 s)
+PASS unpushed commit is kept aside with its branch and work intact (elapsed 56.16 s)
+PASS python-file-collision: incoming tracked collision keeps the checkout and Python cache intact (elapsed 57.46 s)
+PASS clean pushed checkout reuses the Git directory, switches from old branch to main, warns with kept names and sizes, removes nothing (elapsed 57.97 s)
+PASS codex: other-branch refuses before checkout, probe or agent, with no GitHub writes (elapsed 58.14 s)
+PASS tracked edit after eligibility survives the branch switch and stops the job with failed status (elapsed 58.22 s)
+PASS a byte change to a shared ship after eligibility stops the job and survives the switch (elapsed 58.61 s)
+PASS codex: claimed refuses before checkout, probe or agent, with no GitHub writes (elapsed 59.89 s)
+PASS held checkout retries, keeps untracked work, logs holder diagnostics and lets another lane use the mirror (elapsed 60.96 s)
+PASS untracked-pycache: checkout and all bytes kept aside even beside a Python cache (elapsed 62.19 s)
+PASS unpushed history reachable only from the reflog is kept aside (elapsed 63.17 s)
+PASS python-parent-collision: incoming tracked collision keeps the checkout and Python cache intact (elapsed 63.53 s)
+PASS unique ignored file is kept aside and its bytes survive (elapsed 63.90 s)
+PASS a junction to the shared build keeps the checkout and the junction (elapsed 64.19 s)
+PASS two simultaneous jobs serialize mirror fetch and local clone (elapsed 64.34 s)
+PASS unreadable status after the branch switch fails closed and keeps late edit bytes (elapsed 64.36 s)
+PASS real Git remote confirmation writes the marker required for chain success (fixture ref, no push) (elapsed 65.14 s)
+PASS codex: two-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 65.38 s)
+PASS codex: two-fixed refuses before checkout, probe or agent, with no GitHub writes (elapsed 65.61 s)
+PASS deepseek: closed refuses before checkout, probe or agent, with no GitHub writes (elapsed 66.09 s)
+PASS deepseek: claimed refuses before checkout, probe or agent, with no GitHub writes (elapsed 66.48 s)
+PASS other-ignored: checkout and all bytes kept aside even beside a Python cache (elapsed 66.82 s)
+PASS dirty tracked file is kept aside with edits intact (elapsed 67.18 s)
+PASS an incoming tracked file that collides with an identical ship copy keeps the checkout and both copies (elapsed 67.54 s)
+PASS cache-only ignored files allow reuse and both cache files survive (elapsed 67.69 s)
+PASS incoming tracked path that collides with an ignored cache keeps the old checkout and cache intact (elapsed 68.00 s)
+PASS deepseek: other-pr refuses before checkout, probe or agent, with no GitHub writes (elapsed 68.01 s)
+PASS deepseek: other-branch refuses before checkout, probe or agent, with no GitHub writes (elapsed 68.02 s)
+PASS late tracked edit that blocks the branch switch survives and stops with the same clear message (elapsed 68.03 s)
+PASS rename wait expires cleanly with failed status and the original checkout intact (elapsed 68.03 s)
+PASS index flags that hide tracked edits cause the checkout to be kept (elapsed 69.57 s)
+PASS other-untracked: checkout and all bytes kept aside even beside a Python cache (elapsed 69.71 s)
+PASS deepseek: two-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 69.86 s)
+PASS kimi: closed refuses before checkout, probe or agent, with no GitHub writes (elapsed 69.87 s)
+PASS deepseek: no-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 69.88 s)
+PASS deepseek: two-fixed refuses before checkout, probe or agent, with no GitHub writes (elapsed 69.88 s)
+PASS ignored munition maps extracted by the glb import allow reuse (issue 1379) (elapsed 70.06 s)
+PASS kimi: claimed refuses before checkout, probe or agent, with no GitHub writes (elapsed 71.03 s)
+PASS kimi: other-pr refuses before checkout, probe or agent, with no GitHub writes (elapsed 71.21 s)
+PASS pycache-lookalike: checkout and all bytes kept aside even beside a Python cache (elapsed 71.75 s)
+PASS a file in a folder under godot/fx/munitions is still kept aside (elapsed 72.09 s)
+PASS kimi: no-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 72.60 s)
+PASS kimi: two-fixed refuses before checkout, probe or agent, with no GitHub writes (elapsed 72.61 s)
+PASS kimi: two-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 72.61 s)
+PASS kimi: other-branch refuses before checkout, probe or agent, with no GitHub writes (elapsed 72.69 s)
+PASS kimicode: closed refuses before checkout, probe or agent, with no GitHub writes (elapsed 73.53 s)
+PASS pyc-lookalike: checkout and all bytes kept aside even beside a Python cache (elapsed 73.74 s)
+PASS pushed checkout with only ignored Python caches reuses in place and preserves every cache byte (elapsed 74.05 s)
+PASS kimicode: claimed refuses before checkout, probe or agent, with no GitHub writes (elapsed 74.06 s)
+PASS kimicode: other-pr refuses before checkout, probe or agent, with no GitHub writes (elapsed 74.06 s)
+PASS quoted-pyc: checkout and all bytes kept aside even beside a Python cache (elapsed 75.33 s)
+PASS kimicode: two-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 75.53 s)
+PASS kimicode: no-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 75.60 s)
+PASS kimicode: other-branch refuses before checkout, probe or agent, with no GitHub writes (elapsed 75.60 s)
+PASS kimicode: two-fixed refuses before checkout, probe or agent, with no GitHub writes (elapsed 75.69 s)
+PASS codex: failed status-comment claim stops before checkout or model calls and releases only its label (elapsed 75.76 s)
+PASS codex: moved-seat refuses before any claim or agent call (elapsed 76.37 s)
+PASS deepseek: failed status-comment claim stops before checkout or model calls and releases only its label (elapsed 76.40 s)
+PASS kimicode: failed status-comment claim stops before checkout or model calls and releases only its label (elapsed 76.43 s)
+PASS deepseek: moved-arm refuses before any claim or agent call (elapsed 76.70 s)
+PASS codex: moved-owner refuses before any claim or agent call (elapsed 77.31 s)
+PASS Sonnet ignores a leftover WORK_EFFORT setting (elapsed 82.00 s)
+PASS sonnet: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 82.00 s)
+PASS opus: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 82.08 s)
+PASS deepseek: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 82.69 s)
+PASS OpenAI default model and high effort reach probe and agent and are stamped (elapsed 83.04 s)
+PASS openai: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 83.04 s)
+PASS workhorse delivers and keeps the shared slot: partial (elapsed 85.40 s)
+PASS workhorse delivers and keeps the shared slot: local-history (elapsed 85.69 s)
+PASS workhorse delivers and keeps the shared slot: ignored-work (elapsed 85.78 s)
+PASS workhorse delivers and keeps the shared slot: failed-checks (elapsed 85.86 s)
+PASS workhorse delivers and keeps the shared slot: clean (elapsed 86.77 s)
+PASS kimi: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 87.48 s)
+PASS kimicode: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 87.56 s)
+PASS codex: claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish (elapsed 88.00 s)
+PASS clone-dead: retry count and failed checkout preservation (elapsed 89.19 s)
+PASS resume conflict keeps the checkout and stops before model use (elapsed 89.20 s)
+PASS fetch-two: retry count and failed checkout preservation (elapsed 89.75 s)
+PASS clone-two: retry count and failed checkout preservation (elapsed 90.90 s)
+PASS preflight timeout kills the probe tree and stops the job (elapsed 91.15 s)
+PASS partial in HEAD skips git merge, logs why and starts fresh without resume.txt (elapsed 91.26 s)
+PASS campaign parity batch keeps mismatch records and clears all generated output after a pass (elapsed 91.28 s)
+PASS resolved model stamp warns when a same-provider override changes the model (elapsed 91.98 s)
+PASS model mode stamps status.json and result.txt and warns on any difference (elapsed 92.04 s)
+PASS free-space floor refuses below min_free_gb, honors the tuning value, defaults to 60 (elapsed 92.15 s)
+PASS OpenAI missing accounting: guarded partial push retains agent changes, never checked, next paid start refused (elapsed 92.16 s)
+PASS codex: other-seat branch named as Base passes validation, merges and starts the agent (elapsed 92.97 s)
+PASS OpenAI invalid accounting: guarded partial push retains agent changes, never checked, next paid start refused (elapsed 93.25 s)
+PASS deepseek: other-seat branch named as Base passes validation, merges and starts the agent (elapsed 93.54 s)
+PASS kimi: other-seat branch named as Base passes validation, merges and starts the agent (elapsed 94.86 s)
+PASS OpenAI busy accounting: guarded partial push retains agent changes, never checked, next paid start refused (elapsed 95.67 s)
+PASS sonnet: provider error with exit 0 stops before agent and keeps the reason (elapsed 95.79 s)
+PASS fixture push override still validates the issue against the actual Codex assignment (elapsed 96.31 s)
+PASS opus: provider error with exit 0 stops before agent and keeps the reason (elapsed 96.50 s)
+PASS deepseek: provider error with exit 0 stops before agent and keeps the reason (elapsed 96.64 s)
+PASS kimicode: other-seat branch named as Base passes validation, merges and starts the agent (elapsed 96.70 s)
+PASS a low-disk run stops before the mirror, the model probe and the agent (elapsed 97.26 s)
+PASS hashwrite and hashcheck agree on the runner and watchdog files (elapsed 97.39 s)
+PASS a hash mismatch and a missing hashes file warn without stopping (elapsed 97.47 s)
+PASS openai: provider error with exit 0 stops before agent and keeps the reason (elapsed 97.98 s)
+PASS kimi: provider error with exit 0 stops before agent and keeps the reason (elapsed 98.03 s)
+PASS OpenAI medium review effort reaches probe and agent and is stamped, other provider ignored and unpriced model refused (elapsed 99.01 s)
+PASS kimicode: provider error with exit 0 stops before agent and keeps the reason (elapsed 99.25 s)
+PASS codex: provider error with exit 0 stops before agent and keeps the reason (elapsed 99.38 s)
+PASS partial with new commits still merges and passes the saved resume note to the agent (elapsed 100.57 s)
+PASS codex: same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort (elapsed 101.03 s)
+PASS deepseek: same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort (elapsed 101.47 s)
+PASS kimi: same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort (elapsed 101.73 s)
+PASS sonnet: three failed fetch attempts, then chain stops before clone or model (elapsed 102.91 s)
+PASS opus: three failed fetch attempts, then chain stops before clone or model (elapsed 103.36 s)
+PASS deepseek: three failed fetch attempts, then chain stops before clone or model (elapsed 103.59 s)
+PASS kimicode: same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort (elapsed 104.08 s)
+PASS a run whose tools folder drifts from the Board hashes still starts and warns (elapsed 104.28 s)
+PASS openai: three failed fetch attempts, then chain stops before clone or model (elapsed 105.28 s)
+PASS codex: three failed fetch attempts, then chain stops before clone or model (elapsed 105.32 s)
+PASS kimi: three failed fetch attempts, then chain stops before clone or model (elapsed 105.41 s)
+PASS kimicode: three failed fetch attempts, then chain stops before clone or model (elapsed 105.43 s)
+PASS codex: a new job with one fixed block and no run history runs its whole body without a marker (elapsed 105.80 s)
+PASS deepseek: a new job with one fixed block and no run history runs its whole body without a marker (elapsed 107.24 s)
+PASS kimi: a new job with one fixed block and no run history runs its whole body without a marker (elapsed 107.27 s)
+PASS kimicode: a new job with one fixed block and no run history runs its whole body without a marker (elapsed 108.10 s)
+PASS Codex restart keeps the earlier checkout and its untracked work (elapsed 108.98 s)
+PASS Codex alone refuses a missing Effort line before checkout (elapsed 109.44 s)
+PASS runner687+722+860+985: 138 checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.
+Evidence: C:\Users\rcbai\AppData\Local\Temp\runner687 proof gyzJN3
+Timing: 109.63 s wall time; cumulative child times below overlap in parallel batches
+Fixture setup: 0.55 s (includes static checks and Git init)
+git:init: 1 calls, 0.07 s
+where.exe: 1 calls, 0.09 s
+runner entry point: 117 calls, 631.05 s
+lane_tools_refresh.ps1:-Build: 1 calls, 1.19 s
+powershell.exe: 1 calls, 0.56 s
+taskkill.exe: 1 calls, 0.11 s
+git:clone: 26 calls, 5.67 s
+git:checkout: 8 calls, 0.53 s
+compile.ps1:undefined: 1 calls, 0.53 s
+git:fetch: 2 calls, 0.36 s
+work_issue.ps1:openai-key: 1 calls, 2.97 s
+runner_common.ps1:init: 45 calls, 27.10 s
+work_issue.ps1:openai-budget: 11 calls, 0.33 s
+work_issue.ps1:openai-spend: 5 calls, 0.21 s
+runner_common.ps1:finish: 9 calls, 0.63 s
+runner_common.ps1:wait: 10 calls, 1.95 s
+runner_common.ps1:checkout: 26 calls, 96.59 s
+git:symbolic-ref: 23 calls, 1.73 s
+git:rev-parse: 25 calls, 2.04 s
+git:remote: 29 calls, 2.41 s
+git:reflog: 1 calls, 0.15 s
+git:diff: 1 calls, 0.07 s
+work_issue.ps1:confirm: 1 calls, 0.51 s
+git:update-index: 1 calls, 0.05 s
+git:--git-dir: 14 calls, 0.84 s
+runner_common.ps1:model: 1 calls, 0.04 s
+runner_common.ps1:space: 4 calls, 0.09 s
+runner_common.ps1:hashwrite: 1 calls, 0.04 s
+runner_common.ps1:hashcheck: 3 calls, 0.12 s
+Evidence removed after PASS: C:\Users\rcbai\AppData\Local\Temp\runner687 proof gyzJN3

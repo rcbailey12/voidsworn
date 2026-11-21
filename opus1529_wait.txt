@@ -1,0 +1,5 @@
+OPUS1529_CLEANUP_PROOF start Sat 11/21/2026  9:43:43.62 
+OPUS1529_CLEANUP_PROOF exit 0 at  9:46:03.61 
+run folder out_20261121_094344_27050
+result: done PASS
+all done Sat 11/21/2026  9:46:04.02 

@@ -1,0 +1,5 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail
+PASS template: five fill lines, head from tools_live, every step through the head and job_wrap
+PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts
+SKIP opus job head fixtures: they need pwsh (Linux CI runs them)
