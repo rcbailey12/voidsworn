@@ -15,7 +15,7 @@ setlocal EnableExtensions
 set "JOB=opus1439"
 set "LABEL=1439"
 set "TOOLS=godot"
-set "PIN_NEW=PIN_PLACEHOLDER"
+set "PIN_NEW=a7858a5ca86f4e4a9fad2309ad85364945ea1db3"
 set "PIN_OLD="
 
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
