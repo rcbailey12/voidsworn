@@ -1514,10 +1514,7 @@ def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0):
     # issue 1291 (Ryan Nov 21): matte dark 'pit', so the open bore reads as a hole and never flares like a lit cap
     BV, BF = revolve([(H * 0.1, r * 0.96), (-D_ * 0.45, r * 0.9), (-D_ * 0.85, r * 0.72), (-D_, r * 0.4)], 40, cap1=True, axis='Z')
     p.add('bore', 'mount', 'pit', (BV, list(BF) + [tuple(reversed(f)) for f in BF]))   # both faces: seen from the mouth, never culled
-    for k in range(14):
-        a = 2 * math.pi * (k + 0.5) / 14
-        q = [Vector((r * (0.93 - 0.15 * t) * math.cos(a + 0.04 * t), r * (0.93 - 0.15 * t) * math.sin(a + 0.04 * t), H * 0.05 - D_ * 0.8 * t)) for t in [j / 6 for j in range(7)]]
-        p.add('borew%d' % k, 'mount', 'tissue', tube(q, [r * 0.04] * 7, n=5, flat=0.6))
+    # Ryan (Nov 21): the ridges down the bore read as "random teeth inside"; the wall stays smooth
     p.add('boreg', 'mount', 'pit', revolve([(-D_ * 0.8, r * 0.76), (-D_ * 0.92, r * 0.6), (-D_ * 0.99, r * 0.42)], 40, axis='Z'))
     p.fit = dict(exit=P((0, 0, H + r * 0.1)), axis=D((0, 0, 1)), radius=r, floor=P((0, 0, -D_)))
     return p

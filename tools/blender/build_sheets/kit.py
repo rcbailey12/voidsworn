@@ -547,10 +547,13 @@ class Kit:
             bm = bmesh.new(); bm.from_mesh(ob.data)
             kill = []
             for f in bm.faces:
-                d = mw @ f.calc_center_median() - p0
-                along = d.dot(ax)
-                if lo < along < reach and (d - ax * along).length < r:
-                    kill.append(f)
+                # any corner in the opening: a band or a shell sliver half in the bore would show as a shard down the hole
+                for v in f.verts:
+                    d = mw @ v.co - p0
+                    along = d.dot(ax)
+                    if lo < along < reach and (d - ax * along).length < r:
+                        kill.append(f)
+                        break
             if kill:
                 bmesh.ops.delete(bm, geom=kill, context='FACES')
                 bm.to_mesh(ob.data); ob.data.update(); n += len(kill)
