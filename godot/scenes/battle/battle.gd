@@ -607,6 +607,11 @@ func _begin(a) -> void:
 	board.build(api)
 	cam.bounds = board.bounds()
 	_post_quality(str(args.get("quality", "max")))
+	if sliced:
+		load_phase = "board"
+		await get_tree().process_frame   # issue 1434: the board's frame, then the world's steps
+		if gen != _build_gen:
+			return
 	if world != null:
 		world.queue_free()
 		world = null
@@ -625,7 +630,17 @@ func _begin(a) -> void:
 			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		if args.get("stop") is Dictionary: world_opts["stop"] = args["stop"]   # issue 1272: the stop's sky mood
-		world.build(vb, world_opts)
+		if sliced:
+			# issue 1434 (LOAD5: one 1.5 to 2 s frame between the cover and the ships): the world builds over a few frames
+			load_phase = "world_build"
+			world.slice_yield = true
+			var wnode = world
+			await world.build(vb, world_opts)
+			if not is_instance_valid(wnode) or gen != _build_gen:
+				return
+			wnode.slice_yield = false
+		else:
+			world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
@@ -1049,6 +1064,12 @@ func _make_views_sliced(gen: int) -> bool:
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
+		var tl := Time.get_ticks_usec()
+		sv.setup_look()
+		used += Time.get_ticks_usec() - tl
+		ok = await _ls_yield(gen, true)
+		if not ok:
+			return false
 		var te := Time.get_ticks_usec()
 		sv.setup_end()
 		sv.set_marker(u["side"] == "player")
@@ -1060,12 +1081,29 @@ func _make_views_sliced(gen: int) -> bool:
 			_ls["worst_setup"] = used
 			_ls["worst_code"] = sv.code
 			_ls["worst_stages"] = sv.stage_us.duplicate()
+		# issue 1434 (LOAD5: a first hull's analyse took up to 450 ms): a new hull's triangles and hit BVH get their own
+		# frame. The view holds still until its effects are registered, so the pose (and the geometry key) is the same.
+		var proc_was: bool = sv.is_processing()
+		sv.set_process(false)
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
+		if gfx != null and "hull_shared" in gfx:
+			var tg := Time.get_ticks_usec()
+			var ms_list: Array = sv.meshes if not sv.a4 else load("res://fx/fx_ship.gd")._find_meshes(sv)
+			if load("res://fx/fx_hull.gd").prime(sv, ms_list, gfx.hull_shared):
+				var g_us := Time.get_ticks_usec() - tg
+				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
+				if g_us > int(_ls.get("worst_geo", 0)):
+					_ls["worst_geo"] = g_us
+					_ls["worst_geo_code"] = sv.code
+				ok = await _ls_yield(gen, true)
+				if not ok:
+					return false
 		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
 		var tr := Time.get_ticks_usec()
 		_register_fx_ship(u, sv)
+		sv.set_process(proc_was)
 		var fx_us := Time.get_ticks_usec() - tr
 		_ls["fx"] += fx_us
 		if fx_us > _ls["worst_fx"]:
@@ -1089,10 +1127,11 @@ func _make_views_sliced(gen: int) -> bool:
 	load_stats = _ls   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
 	_drop_preload()
 	hud.loading_count(0, 0)
-	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), hull geometry %d ms (worst %d ms, %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
 		total, _ls["ms"], _ls["frames"], " (title backdrop)" if title_backdrop else "", _ls["worst_stretch"] / 1000,
 		_ls["setup"] / 1000, _ls["worst_setup"] / 1000, _ls["worst_code"], _us_ms(_ls["worst_stages"]),
-		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]), _ls["wait"] / 1000, _ls["worker_insts"]])
+		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]),
+		int(_ls.get("geo", 0)) / 1000, int(_ls.get("worst_geo", 0)) / 1000, str(_ls.get("worst_geo_code", "-")), _ls["wait"] / 1000, _ls["worker_insts"]])
 	return true
 
 

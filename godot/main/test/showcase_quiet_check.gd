@@ -140,7 +140,7 @@ func _run() -> void:
 	k.bot = true
 	root.add_child(k)
 	t0 = Time.get_ticks_msec()
-	while k.views.size() < units and Time.get_ticks_msec() - t0 < 20000:
+	while (k.views.size() < units or k.load_stats.is_empty()) and Time.get_ticks_msec() - t0 < 20000:   # load_stats: the build's end
 		await process_frame
 	var kits := 0
 	var staged := 0

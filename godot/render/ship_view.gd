@@ -52,6 +52,8 @@ static func clear_static() -> void:
 	_retired_insts.clear()
 	_manifest = null
 	_look_cache.clear()
+	_shader_keep.clear()
+	_keep_tex = null
 	_pm = null
 	_gt = null
 
@@ -128,7 +130,43 @@ static func retired_build_count() -> int:
 
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
 static func clear_look_cache() -> void:
+	_keep_shaders()
 	_look_cache.clear()
+
+
+# Issue 1434 (LOAD5 on the PC: the first Sunward hull of each battle spent 460 to 500 ms in _look). A hull material's
+# shader lives only while a material uses it, so clearing the look cache at a battle's end freed every hull shader and
+# the next battle compiled them again. One stand-in per shader stays: a copy of the looked material with its textures
+# swapped for a 1 pixel one (no hull textures held), kept only when it still maps to the same shader. Cleared at quit.
+static var _shader_keep := {}   # shader RID id -> stand-in material
+static var _keep_tex: Texture2D = null
+const SHADER_KEEP_MAX := 96
+
+
+static func _keep_shaders() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	for m in _look_cache.values():
+		var bm := m as BaseMaterial3D
+		if bm == null or _shader_keep.size() >= SHADER_KEEP_MAX:
+			continue
+		var rid: RID = bm.get_shader_rid()
+		if not rid.is_valid() or _shader_keep.has(rid.get_id()):
+			continue
+		if _keep_tex == null:
+			var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+			img.fill(Color.WHITE)
+			_keep_tex = ImageTexture.create_from_image(img)
+		var k := bm.duplicate() as BaseMaterial3D
+		for t in BaseMaterial3D.TEXTURE_MAX:
+			if k.get_texture(t) != null:
+				k.set_texture(t, _keep_tex)
+		if k.get_shader_rid() == rid:
+			_shader_keep[rid.get_id()] = k
+
+
+static func kept_shader_count() -> int:
+	return _shader_keep.size()
 
 
 func _exit_tree() -> void:
@@ -291,15 +329,31 @@ func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 
 
 # the rest of setup: the faction look on every surface, the fit to the hex, the engines and the ring
+# Issue 1434 (LOAD5: a first hull's look took up to 500 ms): the sliced load gives the look its own frame. Optional;
+# setup_end runs it when this was not called.
+var _looked := false
+
+
+func setup_look() -> void:
+	if not _end_pending or _looked:
+		return
+	var t0 := Time.get_ticks_usec()
+	_look()
+	stage_us["look"] = Time.get_ticks_usec() - t0
+	_looked = true
+
+
 func setup_end() -> void:
 	if not _end_pending:
 		return
 	_end_pending = false
 	set_process(_proc_was)
 	var t0 := Time.get_ticks_usec()
-	_look()
+	if not _looked:
+		_look()
+		stage_us["look"] = Time.get_ticks_usec() - t0
+	_looked = false
 	var t1 := Time.get_ticks_usec()
-	stage_us["look"] = t1 - t0
 	_fit()
 	var t2 := Time.get_ticks_usec()
 	stage_us["fit"] = t2 - t1

@@ -46,6 +46,15 @@ func _say(s: String) -> void:
 	lines.append(s)
 
 
+# pipelines compiled so far (Godot 4.7 Forward+ monitors; 0 where the renderer has none)
+func _pipes() -> int:
+	var n := 0
+	for m in ["PIPELINE_COMPILATIONS_CANVAS", "PIPELINE_COMPILATIONS_MESH", "PIPELINE_COMPILATIONS_SURFACE", "PIPELINE_COMPILATIONS_DRAW", "PIPELINE_COMPILATIONS_SPECIALIZATION"]:
+		if ClassDB.class_has_integer_constant("Performance", m):
+			n += int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
+	return n
+
+
 func _bus() -> String:
 	var i := AudioServer.get_bus_index("sfx")
 	return "%.2f dB%s" % [AudioServer.get_bus_volume_db(i), " muted" if AudioServer.is_bus_mute(i) else ""] if i >= 0 else "none"
@@ -62,20 +71,33 @@ func _battle(tag: String, args: Dictionary) -> void:
 	root.add_child(b)
 	var ready_ms := (Time.get_ticks_usec() - t0) / 1000
 	var worst := 0
-	var frames: Array = []   # [ms, phase before -> phase after] for every frame under the cover
+	# [ms, phase before -> phase after, render cpu ms, gpu ms, pipelines compiled, world bakes pending] per frame under
+	# the cover (LOAD5: the long "world" frames were not script time the bench could name; this splits them)
+	var frames: Array = []
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
+	var vp_rid := root.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
+	var pipes0 := _pipes()
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
 		var ph0: String = b.load_phase
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
-		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase]])
+		var pipes := _pipes()
+		var bakes: int = int(b.world.pending_bakes) if b.world != null and is_instance_valid(b.world) else -1
+		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase],
+			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
+			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes])
+		pipes0 = pipes
 		last = now
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	var top := PackedStringArray()
+	var split := PackedStringArray()
 	for f in frames.slice(0, 5):
 		top.append("%d ms %s" % [f[0], f[1]])
+		split.append("%d ms %s: render cpu %.0f ms, gpu %.0f ms, rest (scripts, waits) %.0f ms, %d pipelines compiled, %d world bakes pending" % [
+			f[0], f[1], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[4], f[5]])
 	var per := {}
 	for f in frames:
 		per[f[1]] = int(per.get(f[1], 0)) + int(f[0])
@@ -96,9 +118,11 @@ func _battle(tag: String, args: Dictionary) -> void:
 			int(st["worst_setup"]) / 1000, st["worst_code"], int(st["worst_fx"]) / 1000, int(st["wait"]) / 1000, ready_ms,
 			worst / 1000, Time.get_ticks_msec() - w0])
 	_say("[load1434] %s cover frames: worst %s; time by phase %s" % [tag, ", ".join(top), str(per)])
+	_say("[load1434] %s worst cover frames split: %s" % [tag, "; ".join(split)])
 	if not st.is_empty():
-		_say("[load1434] %s worst ship %s setup stages (us) %s; worst effects registration %s parts (us) %s" % [tag, st.get("worst_code", ""),
-			str(st.get("worst_stages", {})), st.get("worst_fx_code", ""), str(st.get("worst_fx_parts", {}))])
+		_say("[load1434] %s worst ship %s setup stages (us) %s; worst effects registration %s parts (us) %s; worst hull geometry %d ms (%s)" % [tag, st.get("worst_code", ""),
+			str(st.get("worst_stages", {})), st.get("worst_fx_code", ""), str(st.get("worst_fx_parts", {})),
+			int(st.get("worst_geo", 0)) / 1000, str(st.get("worst_geo_code", "-"))])
 	b.queue_free()
 	for i in 30:
 		await process_frame
