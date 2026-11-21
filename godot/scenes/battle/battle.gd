@@ -3327,6 +3327,10 @@ func _nova_blast(q: int, r: int) -> Dictionary:
 
 
 func _nova_tip(q: int, r: int) -> String:
+	# issue 1433: nova_preview takes the rules lock; never call it while the threat worker owns the rules (a pointer
+	# handler gets "pending" here and the publish redraws the tip)
+	if not _api_join():
+		return ""
 	var blast := _nova_blast(q, r)
 	if (blast["hexes"] as Array).is_empty():
 		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
