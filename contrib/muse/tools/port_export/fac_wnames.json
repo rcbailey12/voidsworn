@@ -10,8 +10,8 @@
  },
  "hegemony": {
   "laser": "Plasma cannon",
-  "turbo": "Plasma lance",
-  "hturbo": "Heavy plasma lance",
+  "turbo": "Plasma battery",
+  "hturbo": "Heavy plasma battery",
   "ion": "Ion cannon",
   "flak": "Picket lasers"
  },

@@ -1,0 +1,57 @@
+# Issue 1495 (audit GH-04, follow-up to 1487): the game's fonts, crests, world and effect textures and rock models, imported
+# headless as the editor would, so the Godot game checks draw with them. A fresh import took about 170 s on every run.
+# Now the import results come from main's cache and Godot only re-imports what changed: it keeps a checksum of every
+# source file in .godot/imported, so a cache from an older main is still correct, just slower. Branches only read the
+# cache; cache_warm.yml saves it on main (same pattern as setup-godot). Needs GODOT (setup-godot) and a checkout of godot/.
+# Left out of the import to keep it short (none is preloaded; the scripts load them at run time and carry on without
+# them): music, audio, the painted portraits and fx/test results.
+# The step fails on a real import error (a non-zero exit, its 300 s limit, or an ERROR line), and prints those lines.
+# The checks after it still run (they test with !cancelled()), so one red run still shows every failure.
+name: Import the game's assets (headless)
+description: Restore the Godot import cache, import what changed, fail on import errors, and save the cache on main.
+runs:
+  using: composite
+  steps:
+    # The key is worked out before the restore, so 'godot/**/*.import' there means the 33 tracked import settings files
+    # only: a settings-only edit gets a new key, and this file is in the key so a change to the skip list or the import
+    # command does too (Artoo on PR 1496).
+    - name: Import cache from main
+      id: cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          godot/.godot/imported
+          godot/.godot/uid_cache.bin
+          godot/.godot/editor/filesystem_cache10
+          godot/**/*.import
+        key: godot-import-4.7.2-${{ hashFiles('.github/actions/godot-import/action.yml', 'godot/project.godot', 'godot/**/*.import', 'godot/**/*.png', 'godot/**/*.jpg', 'godot/**/*.webp', 'godot/**/*.svg', 'godot/**/*.ttf', 'godot/**/*.otf', 'godot/**/*.glb', '!godot/music/**', '!godot/audio/**', '!godot/fx/test/**', '!godot/portraits/nemesis/**', '!godot/portraits/alts/**', '!godot/portraits/sheets/**', '!godot/portraits/painted/**') }}
+        restore-keys: godot-import-4.7.2-
+    - name: Import what changed (headless)
+      shell: bash
+      run: |
+        # 33 .import files are tracked: the branch's own copies win over the cache's.
+        git ls-files -z -- 'godot/*.import' | xargs -0 -r git checkout --
+        skip="godot/music godot/audio godot/fx/test godot/portraits/nemesis godot/portraits/alts godot/portraits/sheets godot/portraits/painted"
+        for d in $skip; do touch "$d/.gdignore"; done
+        start=$(date +%s); code=0
+        timeout -k 10 300 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || code=$?
+        for d in $skip; do rm -f "$d/.gdignore"; done
+        hit="${{ steps.cache.outputs.cache-hit == 'true' && 'exact' || (steps.cache.outputs.cache-matched-key != '' && 'older main copy' || 'none') }}"
+        line="import: cache $hit, $(($(date +%s) - start)) s, exit $code, imported files $(find godot/.godot/imported -type f | wc -l)"
+        { echo '### Asset import'; echo "$line"; } | tee -a "$GITHUB_STEP_SUMMARY"
+        bad=0
+        if grep -q 'ERROR' "$RUNNER_TEMP/import.log"; then
+          { echo '```'; grep -A2 'ERROR' "$RUNNER_TEMP/import.log" | head -40; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"; bad=1
+        fi
+        if [ $code -ne 0 ]; then echo "The import ended with exit code $code (124 or 137 is its 300 s limit)." | tee -a "$GITHUB_STEP_SUMMARY"; bad=1; fi
+        exit $bad
+    - name: Save the import cache (main only)
+      if: steps.cache.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          godot/.godot/imported
+          godot/.godot/uid_cache.bin
+          godot/.godot/editor/filesystem_cache10
+          godot/**/*.import
+        key: ${{ steps.cache.outputs.cache-primary-key }}

@@ -1,14 +1,14 @@
 {
-  "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-  "source_commit_date": "2026-11-19T17:29:22Z",
+  "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+  "source_commit_date": "2026-11-21T20:15:22Z",
   "stage": "installed in game",
   "source_dirty": false,
   "source_diff_sha256": "",
   "schema": 1,
-  "date": "2026-11-19T19:18:58Z",
-  "seed": 121,
-  "build_sha256": "ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4",
-  "manifest_sha256": "c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52",
+  "date": "2026-11-21T21:56:30Z",
+  "seed": 31,
+  "build_sha256": "44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173",
+  "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
   "fps": 30,
   "battle": 2,
   "enemy": "corsair",
@@ -16,16 +16,16 @@
   "picture_name": "hullbreakers-b2-p02.mp4",
   "sources": [
     {
-      "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-      "source_commit_date": "2026-11-19T17:29:22Z",
+      "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+      "source_commit_date": "2026-11-21T20:15:22Z",
       "stage": "installed in game",
       "source_dirty": false,
       "source_diff_sha256": "",
       "schema": 1,
-      "date": "2026-11-19T19:18:58Z",
-      "seed": 121,
-      "build_sha256": "ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4",
-      "manifest_sha256": "c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52",
+      "date": "2026-11-21T21:56:30Z",
+      "seed": 31,
+      "build_sha256": "44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173",
+      "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
       "fps": 30,
       "battle": 2,
       "enemy": "corsair",
@@ -34,27 +34,27 @@
   ],
   "inputs": [
     {
-      "picture_name": "seed-121.avi",
-      "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
+      "picture_name": "seed-31.avi",
+      "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "installed in game",
-      "date": "2026-11-19T19:18:58Z",
-      "image_sha256": "8b9bf1b60ec0bb94ab5c415902f8367722bfc3ba7a7cf37ca05fcf7a450e5b4a",
+      "date": "2026-11-21T21:56:30Z",
+      "image_sha256": "b85dbe29cc6b2877fa2e570c1253e6ac6faaec5d5cc731fb8c017628e591188d",
       "sources": [
         {
-          "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-          "source_commit_date": "2026-11-19T17:29:22Z",
+          "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+          "source_commit_date": "2026-11-21T20:15:22Z",
           "stage": "installed in game",
           "source_dirty": false,
           "source_diff_sha256": ""
         }
       ],
-      "source_commit_date": "2026-11-19T17:29:22Z"
+      "source_commit_date": "2026-11-21T20:15:22Z"
     }
   ],
   "seconds_in_battle": 48,
   "duration_s": 48,
-  "stamp_template_sha256": "381409a000a120c6ef4e69e97a0b9fe049b3e7a632e8b6d481ff806edf75f236",
-  "image_sha256": "4f5b96a34810ce72adaa5a6ebdb9e425b2033e5003e2ece192b44acd6d82868a"
+  "stamp_template_sha256": "d6bc0db85ad6b487857780d2165b81a0a874b83ce6c4e0d26fa3cf27cdb1d602",
+  "image_sha256": "38f2049d24129231b5bf4d801d5d55fc3222689c10a6d78a31c448c42fe5fc75"
 }

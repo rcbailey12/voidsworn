@@ -11,13 +11,14 @@ extends Node
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
 const Host := preload("res://main/campaign_host.gd")
+const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -25,23 +26,48 @@ var bot_mode := false
 var player_path: Node
 
 
-# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
-func quit_clean(code := 0) -> void:
-	if battle != null and is_instance_valid(battle):
-		battle.queue_free()
+# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static).
+# Issue 1435 (W3): the window close button and Alt-F4 come here too (auto accept is off, see _notification), and it runs
+# once however many ask: no new showcase or load work starts, the scenes are freed, the fx jobs drain once
+# (static_caches clear_all, fx.gd clear_static) and the statics are cleared before the process ends.
+var quitting := false
+var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
+
+
+func quit_clean(code := 0, route := "menu") -> void:
+	if quitting:
+		return
+	quitting = true
+	quit_route = route
+	var t0 := Time.get_ticks_msec()
+	print("[main] quit (%s) at %d ms" % [route, t0])
+	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
+	if route == "window" and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+	for n in [battle, showcase]:
+		if n != null and is_instance_valid(n):
+			if "quitting" in n:
+				n.quitting = true   # issue 521: an awaiting command must not draw on the freed HUD
+			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if music != null and is_instance_valid(music) and music.has_method("release"):
+		music.release()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	load("res://render/ship_view.gd").clear_static()
-	load("res://scenes/battle/fx_stub.gd").clear_static()
-	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
-		if ResourceLoader.exists(sp):
-			var sc = load(sp)
-			if sc != null and sc.has_method("clear_static"):
-				sc.clear_static()
+	var t1 := Time.get_ticks_msec()
+	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
+	load("res://render/static_caches.gd").clear_all()
+	var t2 := Time.get_ticks_msec()
+	print("[main] quit stages: scenes freed + 2 frames %d ms, statics and fx drain %d ms, engine exit from %d ms" % [t1 - t0, t2 - t1, t2])
 	get_tree().quit(code)
+
+
+# Issue 1435 (W3): the system close (title bar X, Alt-F4) used to end the process straight from SceneTree, past
+# quit_clean, so the statics were released after the rendering server (the crash class static_caches.gd describes).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_clean(0, "window")
 
 
 # bot runs: count every engine and script error per run (Godot 4.5+ Logger), since a script error never reaches the run's
@@ -74,10 +100,12 @@ class ErrCount extends Logger:
 
 var errlog: ErrCount
 var music: Node              # godot/music/music_player.gd (the music helper's player), one for the whole game
+var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.gd with the ui_* cues only), OrdersKit.sound
 
 
 func _ready() -> void:
 	name = "Main"
+	get_tree().set_auto_accept_quit(false)   # issue 1435: the window close runs quit_clean (see _notification)
 	_args()
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
@@ -104,6 +132,13 @@ func _ready() -> void:
 		add_child(music)
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	if not args.has("bot-runs") and ResourceLoader.exists("res://audio/sfx.gd"):
+		ui_sound = load("res://audio/sfx.gd").new()
+		ui_sound.only = "ui_"
+		ui_sound.name = "UiSound"
+		add_child(ui_sound)
+		OrdersKit.sound = ui_sound
+		_settings_to_ui_sound()
 	if args.has("quit-after"):
 		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
 		var lim := float(args["quit-after"])
@@ -169,6 +204,9 @@ func _load_settings() -> void:
 		if o is Dictionary:
 			for k in o:
 				settings[k] = o[k]
+	# Issue 1079: the nebula wake went on by default (Ryan, Nov 20) under a new key, so the "nebula_wake": false that the
+	# off-by-default build saved with every settings file never keeps it off.
+	settings.erase("nebula_wake")
 
 
 func save_settings() -> void:
@@ -215,6 +253,13 @@ func _apply_settings() -> void:
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	_settings_to_ui_sound()
+
+
+func _settings_to_ui_sound() -> void:
+	if ui_sound != null and is_instance_valid(ui_sound):
+		ui_sound.set_on(bool(settings.get("sound", true)))
+		ui_sound.set_volume(float(settings.get("volume", 0.8)))
 
 
 func _settings_to_battle(b: Node) -> void:
@@ -276,14 +321,47 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
+# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
+# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
+# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
+static var _showcase_i := -1
+
+static func showcase_factions() -> Array:
+	var out: Array = []
+	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
+			continue
+		for id in m["ships"]:
+			var e = m["ships"][id]
+			var f := str(e.get("faction", "")) if e is Dictionary else ""
+			if f != "" and f != "voidsworn" and not out.has(f):
+				out.append(f)
+		if not out.is_empty():
+			break
+	out.sort()
+	return out if not out.is_empty() else ["hegemony", "corsair"]
+
+
+static func next_showcase_fac() -> String:
+	var facs := showcase_factions()
+	if _showcase_i < 0:
+		_showcase_i = randi() % facs.size()
+	else:
+		_showcase_i = (_showcase_i + 1) % facs.size()
+	return str(facs[_showcase_i])
+
+
 func _start_showcase() -> void:
-	if title == null or not is_instance_valid(title) or showcase != null:
+	if quitting or title == null or not is_instance_valid(title) or showcase != null:
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
-	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
@@ -344,15 +422,39 @@ func quick_battle() -> void:
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
+	# Issue 1079: on by default (Ryan, Nov 20). A capture that needs the old look passes --nebula_wake false (Artoo, PR 1330).
+	var wake := bool(settings.get("nebula_wake_on", true))
+	if args.has("nebula_wake"):
+		wake = str(args["nebula_wake"]) == "true"
+	b.args["nebula_wake"] = str(wake)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
+		var t_leave := Time.get_ticks_usec()
 		b.queue_free()
 		battle = null
-		show_title(), CONNECT_ONE_SHOT)
+		show_title()
+		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
+	if args.has("title-after"):
+		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(b) and battle == b:
+				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
+				b._on_action("to_title", null))
+
+
+# Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
+# retires any running cut) and the first title frame after it.
+func _time_title_return(t_leave: int) -> void:
+	await get_tree().process_frame
+	var t_free := Time.get_ticks_usec()
+	await get_tree().process_frame
+	var t_title := Time.get_ticks_usec()
+	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
+		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the
@@ -375,6 +477,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(run)
 	b.can_retreat = campaign != null and str(cfg.get("kind", "")) != "boss"
 	b.args["quality"] = str(settings["quality"])
+	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
@@ -397,11 +500,16 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
 	b.in_campaign = true
+	if opts.get("on_round") is Callable:
+		b.round_save_cb = opts["on_round"]   # issue 1451: the campaign saves each round start
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
-		# R78 Q18: only the fifth run's final boss gets dawn. Keep this visual flag out of the rules and saves.
-		b.args["finale"] = int(campaign.C.META.get("stats", {}).get("runs", 0)) == 5
+		b.args["stop"] = stop_of(a, campaign.C.RUN)   # issue 1272: rival, boss and wreck-field stops change the sky
+		# Issue 1271 (replaces R78 Q18's "fifth run only"): from the fifth run on, the final boss gets dawn.
+		# Keep this visual flag out of the rules and saves.
+		b.args["finale"] = finale_for_runs(int(campaign.C.META.get("stats", {}).get("runs", 0)))
 	b.args["quality"] = str(settings["quality"])
+	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
@@ -537,3 +645,24 @@ func _bot_campaign(seed: int) -> Dictionary:
 	if not out.has("errors"):
 		out["errors"] = []
 	return out
+
+
+# Issue 1271: META stats runs counts the run in progress (campaign.gd newRun adds one at the start, Back from the
+# flagship page takes it away), so 5 is the fifth run, as under R78 Q18. Dawn now plays on every run from there.
+static func finale_for_runs(runs: int) -> bool:
+	return runs >= 5
+
+
+# Issue 1272: what the backdrop needs to know about this fight stop (visual only; never the rules or saves).
+static func stop_of(a, run: Dictionary) -> Dictionary:
+	var cfg = a.R.B.get("cfg") if a != null and a.R.B is Dictionary else null
+	if not cfg is Dictionary: return {}
+	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
+	return {"kind": str(cfg.get("kind", "")), "fac": str(cfg.get("fac", "")), "sector_fac": str(map.get("fac", "")),
+		"node": _id_text(cfg.get("node", "")) + "|" + _id_text(run.get("sector", ""))}
+
+
+# a saved run reads numbers back as floats: 3 and 3.0 must give the same stop
+static func _id_text(v) -> String:
+	if v is float and v == floorf(v): return str(int(v))
+	return str(v)

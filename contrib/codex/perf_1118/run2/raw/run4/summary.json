@@ -1,0 +1,535 @@
+{
+  "baseline": [
+    {
+      "mode": "egg",
+      "name": "baseline_egg_s1",
+      "session": 1,
+      "build_s": 27.455938999999997,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 32.098,
+      "fragments": 18,
+      "fragment_window_peak_ms": 32.098,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 10,
+        "lights_pools": 108,
+        "ships": 572,
+        "volley": 53792,
+        "weap_death": 168
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 10,
+        "lights_pools": 108,
+        "ships": 572,
+        "volley": 53792,
+        "weap_death": 168
+      }
+    },
+    {
+      "mode": "egg",
+      "name": "baseline_egg_s2",
+      "session": 2,
+      "build_s": 26.92412,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 37.248,
+      "fragments": 18,
+      "fragment_window_peak_ms": 37.248,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 11,
+        "lights_pools": 147,
+        "ships": 415,
+        "volley": 62313,
+        "weap_death": 227
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 11,
+        "lights_pools": 147,
+        "ships": 415,
+        "volley": 62313,
+        "weap_death": 227
+      }
+    },
+    {
+      "mode": "egg",
+      "name": "baseline_egg_s3",
+      "session": 3,
+      "build_s": 24.535346,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 33.004,
+      "fragments": 18,
+      "fragment_window_peak_ms": 33.004,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 10,
+        "lights_pools": 106,
+        "ships": 413,
+        "volley": 56006,
+        "weap_death": 101
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 10,
+        "lights_pools": 106,
+        "ships": 413,
+        "volley": 56006,
+        "weap_death": 101
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "baseline_fitted_s1",
+      "session": 1,
+      "build_s": 71.960357,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 37.154,
+      "fragments": 18,
+      "fragment_window_peak_ms": 37.154,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 18,
+        "lights_pools": 164,
+        "ships": 548,
+        "volley": 60546,
+        "weap_death": 154
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 18,
+        "lights_pools": 164,
+        "ships": 548,
+        "volley": 60546,
+        "weap_death": 154
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "baseline_fitted_s2",
+      "session": 2,
+      "build_s": 52.970091000000004,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 30.944,
+      "fragments": 18,
+      "fragment_window_peak_ms": 30.944,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 9,
+        "lights_pools": 95,
+        "ships": 370,
+        "volley": 52201,
+        "weap_death": 86
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 9,
+        "lights_pools": 95,
+        "ships": 370,
+        "volley": 52201,
+        "weap_death": 86
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "baseline_fitted_s3",
+      "session": 3,
+      "build_s": 58.584307,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 38.18,
+      "fragments": 18,
+      "fragment_window_peak_ms": 38.18,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 14,
+        "lights_pools": 134,
+        "ships": 572,
+        "volley": 62246,
+        "weap_death": 128
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 14,
+        "lights_pools": 134,
+        "ships": 572,
+        "volley": 62246,
+        "weap_death": 128
+      }
+    }
+  ],
+  "empty-profile": [
+    {
+      "mode": "fitted",
+      "name": "empty-profile_fitted_s1",
+      "session": 1,
+      "build_s": 46.307968,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 7.492,
+      "fragments": 18,
+      "fragment_window_peak_ms": 7.796,
+      "fragment_window_peak_frame": 543,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 9,
+        "lights_pools": 113,
+        "ships": 535,
+        "volley": 4230,
+        "weap_death": 201
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 50,
+        "lights_pools": 60,
+        "ships": 551,
+        "weap_death": 125
+      }
+    }
+  ],
+  "relaunch": [
+    {
+      "mode": "egg",
+      "name": "relaunch_egg_s1",
+      "session": 1,
+      "build_s": 32.42031,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 11.9,
+      "fragments": 18,
+      "fragment_window_peak_ms": 14.873,
+      "fragment_window_peak_frame": 249,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 16,
+        "lights_pools": 155,
+        "ships": 775,
+        "volley": 7651,
+        "weap_death": 146
+      },
+      "peak_frame_fx_cpu_usec": {
+        "L:l_dmg_poll": 2566,
+        "ba_build": 4,
+        "ba_nodes": 1000,
+        "ba_overlay": 599,
+        "ba_swap": 251,
+        "breach_apply": 1884,
+        "later": 2588,
+        "lights_pools": 91,
+        "ships": 750,
+        "weap_death": 170
+      }
+    },
+    {
+      "mode": "egg",
+      "name": "relaunch_egg_s2",
+      "session": 2,
+      "build_s": 25.535913,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 6.43,
+      "fragments": 18,
+      "fragment_window_peak_ms": 7.378,
+      "fragment_window_peak_frame": 469,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 10,
+        "lights_pools": 87,
+        "ships": 362,
+        "volley": 5096,
+        "weap_death": 81
+      },
+      "peak_frame_fx_cpu_usec": {
+        "L:l_dmg_poll": 2056,
+        "ba_build": 2,
+        "ba_nodes": 744,
+        "ba_overlay": 536,
+        "ba_swap": 128,
+        "breach_apply": 1428,
+        "cut_start": 555,
+        "later": 2068,
+        "lights_pools": 48,
+        "ships": 522,
+        "weap_death": 86
+      }
+    },
+    {
+      "mode": "egg",
+      "name": "relaunch_egg_s3",
+      "session": 3,
+      "build_s": 28.452644,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 7.758,
+      "fragments": 18,
+      "fragment_window_peak_ms": 7.99,
+      "fragment_window_peak_frame": 544,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 13,
+        "lights_pools": 107,
+        "ships": 439,
+        "volley": 5380,
+        "weap_death": 102
+      },
+      "peak_frame_fx_cpu_usec": {
+        "L:l_dmg_poll": 1728,
+        "ba_build": 3,
+        "ba_nodes": 761,
+        "ba_overlay": 287,
+        "ba_swap": 313,
+        "breach_apply": 1381,
+        "later": 1743,
+        "lights_pools": 64,
+        "ships": 697,
+        "weap_death": 126
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "relaunch_fitted_s1",
+      "session": 1,
+      "build_s": 27.036062,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 5.141,
+      "fragments": 18,
+      "fragment_window_peak_ms": 8.794,
+      "fragment_window_peak_frame": 438,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 8,
+        "lights_pools": 77,
+        "ships": 299,
+        "volley": 4058,
+        "weap_death": 77
+      },
+      "peak_frame_fx_cpu_usec": {
+        "L:l_dmg_poll": 1556,
+        "ba_build": 3,
+        "ba_nodes": 530,
+        "ba_overlay": 371,
+        "ba_swap": 102,
+        "breach_apply": 1024,
+        "cut_start": 454,
+        "later": 1570,
+        "lights_pools": 57,
+        "ships": 531,
+        "weap_death": 99
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "relaunch_fitted_s2",
+      "session": 2,
+      "build_s": 29.687794,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 7.754,
+      "fragments": 18,
+      "fragment_window_peak_ms": 7.754,
+      "fragment_window_peak_frame": 0,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 12,
+        "lights_pools": 111,
+        "ships": 426,
+        "volley": 6182,
+        "weap_death": 104
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 12,
+        "lights_pools": 111,
+        "ships": 426,
+        "volley": 6182,
+        "weap_death": 104
+      }
+    },
+    {
+      "mode": "fitted",
+      "name": "relaunch_fitted_s3",
+      "session": 3,
+      "build_s": 29.59619,
+      "first_fragment_frame": 0,
+      "first_fragment_ms": 5.711,
+      "fragments": 18,
+      "fragment_window_peak_ms": 6.585,
+      "fragment_window_peak_frame": 561,
+      "pipelines_at_dispatch": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 210,
+        "SURFACE": 361
+      },
+      "pipelines_after_window": {
+        "CANVAS": 4,
+        "DRAW": 0,
+        "MESH": 54,
+        "SPECIALIZATION": 212,
+        "SURFACE": 363
+      },
+      "first_fragment_fx_cpu_usec": {
+        "later": 7,
+        "lights_pools": 71,
+        "ships": 264,
+        "volley": 5249,
+        "weap_death": 67
+      },
+      "peak_frame_fx_cpu_usec": {
+        "later": 12,
+        "lights_pools": 76,
+        "ships": 613,
+        "weap_death": 141
+      }
+    }
+  ]
+}

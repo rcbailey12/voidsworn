@@ -375,9 +375,9 @@ func set_crest(_tex: Texture2D, _tip: String) -> void:
 
 
 # The action is a once-per-battle Command, not a point counter.
-func set_command(label: String, ready: bool, available := false, armed := false) -> void:
-	_last["set_command"] = [label, ready, available, armed]
-	ledger.cmd = {"label": label, "id": label, "ready": ready, "available": available, "active": armed}
+func set_command(label: String, ready: bool, available := false, armed := false, tip := "") -> void:
+	_last["set_command"] = [label, ready, available, armed, tip]
+	ledger.cmd = {"label": label, "id": label, "ready": ready, "available": available, "active": armed, "tip": tip}
 	ledger.mark()
 
 
@@ -856,7 +856,7 @@ func _draw_legend() -> void:
 # ---------------------------------------------------------------- nameplates
 # E1: words on the board only for the ship that is up (ember) and the target (the Nemesis in its red); the ship under the
 # pointer and the enemy acting now get theirs while they are; every other name waits for hover. Plain words with the
-# map's dark halo: no strip, no bars, no tags (the hull and shields are on the sheet and on the hover tip).
+# map's dark halo. A regen lock sits over a ship's name while shields cannot recharge.
 
 func plate(id: String) -> Control:
 	if plates.has(id):
@@ -867,8 +867,14 @@ func plate(id: String) -> Control:
 	var tags := HBoxContainer.new()
 	tags.name = "tags"
 	tags.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tags.alignment = BoxContainer.ALIGNMENT_CENTER
 	tags.visible = false
 	c.add_child(tags)
+	var lock := Control.new()
+	lock.custom_minimum_size = Vector2(s(16), s(18))
+	lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lock.draw.connect(func() -> void: _draw_regen_lock(lock))
+	tags.add_child(lock)
 	var st := PanelContainer.new()
 	st.name = "st"
 	st.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -927,25 +933,40 @@ func _draw_plate_bars(c: Control) -> void:
 		c.draw_rect(Rect2(0, y, w * sh, maxf(1.0, float(s(2)))), SHIELD)
 
 
-# extra: {nem: bool, odds: "64% 2 guns", ghost: expected hull after the volley (or -1), target: bool}. The odds and the
-# ghost are on the sheet now; the plate is the name only.
+func _draw_regen_lock(icon: Control) -> void:
+	var k := icon.size.x / 16.0
+	var shackle := Vector2(8, 7) * k
+	var body := Rect2(Vector2(2, 6) * k, Vector2(12, 9) * k)
+	icon.draw_arc(shackle, 4.0 * k, PI, TAU, 12, GS.WELL, 4.0 * k, true)
+	icon.draw_arc(shackle, 4.0 * k, PI, TAU, 12, SHIELD, 1.8 * k, true)
+	icon.draw_rect(body.grow(k), GS.WELL)
+	icon.draw_rect(body, SHIELD)
+	icon.draw_circle(Vector2(8, 10) * k, 1.4 * k, GS.WELL)
+
+
+# The odds and the ghost are on the sheet. The plate holds the name and active regen lock.
 func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float, up := false, extra := {}) -> void:
 	var c := plate(id)
 	c.visible = on
 	if not on:
 		return
 	var nm := c.get_node("st/v/nm") as Label
+	var tags := c.get_node("tags") as HBoxContainer
+	var locked := bool(extra.get("regenLock", false))
 	# issue 221: the plate is laid out again only when its words change or its size no longer fits them
 	var relayout := nm.text != name_txt
 	if relayout:
 		nm.text = name_txt
+	if tags.visible != locked:
+		tags.visible = locked
+		relayout = true
 	var target: bool = extra.get("target", false)
 	var col := S_EMBER if up else (S_NEM if bool(extra.get("nem", false)) else S_TEXT)
 	# issue 221: an override sends THEME_CHANGED, which reshapes the label's text and re-sorts the plate; set it only when
 	# the colour changes, not every frame for every ship
 	if not nm.has_theme_color_override("font_color") or nm.get_theme_color("font_color") != col:
 		nm.add_theme_color_override("font_color", col)
-	c.set_meta("keep", up or target)
+	c.set_meta("keep", up or target or locked)
 	var bars_c := c.get_node("st/v/bars") as Control
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	var g := float(extra.get("ghost", -1.0))

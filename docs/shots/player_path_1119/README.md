@@ -6,68 +6,57 @@ The recordings use a 1920 by 1080 window. The 720p clips preserve the whole fram
 
 | Route | Campaign seed | Battle 1 | Battle 2 | Battle 3 |
 | --- | ---: | --- | --- | --- |
-| Hegemony Navy | 10 | Navy, Engagement | Hullbreakers, Relay | Navy, Engagement |
-| Ashfall Hullbreakers | 121 | Navy, Engagement | Hullbreakers, Relay | Hullbreakers, Engagement |
+| Ashfall Hullbreakers | 31 | Navy, Rout | Hullbreakers, Hold | Hullbreakers, Rout |
+| Hegemony Navy | 10 | Navy, Rout | Hullbreakers, Hold | Navy, Flagship |
 
-On a fresh profile, the campaign scripts the Navy first and the Hullbreakers second. The seeds select the Sector I
-faction and the Battle 3 opponent. Both second battles have the relay and a scheduled teaching reinforcement.
+Seed 31 plays its planned stops (0-0, 1-0, 2-0). Seed 10's planned third stop 2-2 is now an event, so the recorder logs one
+route drift and takes 2-1, a Navy flagship battle (godot/main/player_path.gd). Seed 121 is a diagnostic only and is not
+recorded here.
 
-## Run 3 recordings
+## Current recording (Nov 21)
 
-Both routes won all three battles on the same Windows export from `c267b2804c67ada75037b0f7f34cf095a79b4d84`,
-the recorder merge named in the brief. The export used the shared install's generated ship and world assets.
-Each clip and contact sheet shows the commit, build SHA-256 and manifest SHA-256 in its stamp.
+Recorded on Ryan's PC on Nov 21 at 22:06 UTC, during the LOAD13 job for issue 1434. The Board relayed it as
+`board/pc-out-1434m` (`fbd20ccd`). Both routes won all three battles.
 
-- Build SHA-256 `ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4`
-- Manifest SHA-256 `c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52`
+- Commit `1a8c7b971622133ebd359b5cc5d44195c226f0e1`: main at `0c23901f` (Nov 21 16:18 UTC) plus PR 1445's loading changes.
+  **This is not a main commit.** The clips show the game with that loading work in it and without later main merges, such
+  as PR 1527 (ram, boarding and command effects). A change judged under RULEBOOK 12 still needs its own recording on a build
+  that includes it.
+- Build SHA-256 `44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173`
+- Manifest SHA-256 `ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8`
 
-| Route and battle | Contact sheet | Clip parts |
-| --- | --- | --- |
-| Hullbreakers 1 | [HULLBREAKERS-B1](hullbreakers-b1.jpg) | [1](hullbreakers-b1-p01.mp4) · [2](hullbreakers-b1-p02.mp4) |
-| Hullbreakers 2 | [HULLBREAKERS-B2](hullbreakers-b2.jpg) | [1](hullbreakers-b2-p01.mp4) · [2](hullbreakers-b2-p02.mp4) · [3](hullbreakers-b2-p03.mp4) · [4](hullbreakers-b2-p04.mp4) |
-| Hullbreakers 3 | [HULLBREAKERS-B3](hullbreakers-b3.jpg) | [1](hullbreakers-b3-p01.mp4) · [2](hullbreakers-b3-p02.mp4) · [3](hullbreakers-b3-p03.mp4) |
-| Navy 1 | [NAVY-B1](navy-b1.jpg) | [1](navy-b1-p01.mp4) · [2](navy-b1-p02.mp4) · [3](navy-b1-p03.mp4) |
-| Navy 2 | [NAVY-B2](navy-b2.jpg) | [1](navy-b2-p01.mp4) · [2](navy-b2-p02.mp4) · [3](navy-b2-p03.mp4) |
-| Navy 3 | [NAVY-B3](navy-b3.jpg) | [1](navy-b3-p01.mp4) · [2](navy-b3-p02.mp4) · [3](navy-b3-p03.mp4) |
+| Route and battle | Contact sheet | Clip parts (48 s each, last part shorter) | Battle length |
+| --- | --- | --- | ---: |
+| Hullbreakers 1 | [HULLBREAKERS-B1](hullbreakers-b1.jpg) | [1](hullbreakers-b1-p01.mp4) · [2](hullbreakers-b1-p02.mp4) · [3](hullbreakers-b1-p03.mp4) | 1:40 |
+| Hullbreakers 2 | [HULLBREAKERS-B2](hullbreakers-b2.jpg) | [1](hullbreakers-b2-p01.mp4) · [2](hullbreakers-b2-p02.mp4) · [3](hullbreakers-b2-p03.mp4) | 1:40 |
+| Hullbreakers 3 | [HULLBREAKERS-B3](hullbreakers-b3.jpg) | [1](hullbreakers-b3-p01.mp4) · [2](hullbreakers-b3-p02.mp4) · [3](hullbreakers-b3-p03.mp4) | 2:15 |
+| Navy 1 | [NAVY-B1](navy-b1.jpg) | [1](navy-b1-p01.mp4) · [2](navy-b1-p02.mp4) · [3](navy-b1-p03.mp4) · [4](navy-b1-p04.mp4) | 3:02 |
+| Navy 2 | [NAVY-B2](navy-b2.jpg) | [1](navy-b2-p01.mp4) · [2](navy-b2-p02.mp4) | 1:25 |
+| Navy 3 | [NAVY-B3](navy-b3.jpg) | [1](navy-b3-p01.mp4) · [2](navy-b3-p02.mp4) | 1:24 |
 
-Times below start at the beginning of each battle. Parts 1 to 4 start at 00:00, 00:48, 01:36 and 02:24. Each contact sheet
-is 1280 by 720. All 18 MP4 parts and six JPGs passed `tools/picture_provenance.py verify`.
+Checks on these files: all 17 MP4 parts and six JPGs pass `tools/picture_provenance.py verify`. Every part decodes with no
+errors at 1280 by 720 and 30 fps, carries audible AAC sound and is under 8 MB. The parts of each battle add up to the
+battle's full length, start to end. The two traces, [seed-31.jsonl](seed-31.jsonl) and [seed-10.jsonl](seed-10.jsonl), show the
+isolated profile, the player defaults and the three wins. The clips are battle only; the map, reward and naming screens
+between battles are in the traces, not in the clips. The 1080p AVI masters were not relayed.
 
-## What a new player sees
+### What a new player sees
 
-The early cards come up during normal orders, with danger hatching on the same board as the move ghost. The target card
-shows expected damage when the target is in range and an attack-move plan when it is out of range. Default cut-ins can
-letterbox the board while a target tooltip is still open. Vex's battle voice appears as text in the battle log and on the result
-card. The earlier F1 trace already showed the target card, move ghost, handover and reinforcement arrival. These recordings
-show how those cues play alongside the cards, danger overlay, cut-ins and dialogue over three consecutive battles.
-[F1 trace](../f1/0354234/README.md) · [Look bench](../look_bench/README.md)
+Times start at the beginning of each battle and match the contact sheets.
 
-| Battle | Danger overlay first appears | Teaching cards | Target card example | First Key cut-in | Vex's battle voice |
+| Battle | Danger overlay | Teaching cards | First target card | First Key cut-in | Command and outcome |
 | --- | --- | --- | --- | --- | --- |
-| Hullbreakers 1 | 00:05.3 | Moving and facing 00:12.4, Shields and hull 00:22.9, Threat map 00:33.2 | Cordon destroyer 00:55.3 | Lance 00:53.0, 5 cut-ins total | Hold the line 00:00.1, Fire for effect 00:52.4, victory 01:32.3 |
-| Hullbreakers 2 | 00:07.2 | Close action 00:56.3, More ships are coming 01:28.3 | Hullbreaker raider 00:11.8 | Lance 00:12.5, 15 total | Hold the line 00:00.1, Fire for effect 01:00.1, lost ship 01:45.2, victory 02:42.9 |
-| Hullbreakers 3 | 00:07.4 | Admiral's Command 00:15.9 | Hullbreaker gutship 01:08.4 | Lance 00:43.9, 9 total | Hold the line 00:00.1, Fire for effect 01:03.7, lost ship 01:38.1, victory 01:52.1 |
-| Navy 1 | 00:06.5 | Moving and facing 00:15.8, Shields and hull 00:23.2, Threat map 00:33.4 | Attack-move forecast for Vanguard cruiser 00:36.7 | Lance 00:43.6, 7 total | Hold the line 00:00.1, victory 01:49.4 |
-| Navy 2 | 00:06.9 | More ships are coming 00:44.2, Close action 00:49.9 | Hullbreaker raider 00:21.5 | Torpedo 00:38.7, 11 total | Run out the guns 00:00.1, Fire for effect 00:53.7, lost ship 01:59.4, victory 02:06.8 |
-| Navy 3 | 00:05.2 | Admiral's Command 00:14.8 | Dominion dreadnought 01:13.3 | Lance 00:40.7, 12 total | Run out the guns 00:00.1, Fire for effect 01:08.6, victory 02:16.4 |
+| Hullbreakers 1 (Navy, Rout) | 00:07.7 | Moving and facing 00:08.2, Shields and hull 00:18.5, Firing 00:34.7, Threat map 00:42.4 | none | Lance 00:29.0, 10 total | Fire for effect 00:50.3; victory 01:36.6 in 3 rounds |
+| Hullbreakers 2 (Hullbreakers, Hold) | 00:11.1 | Objectives 00:11.7, More ships are coming 00:36.2, Close action 00:43.8 | Hullbreaker gutship 00:27.7 | Torpedo 00:28.3, 11 total | Fire for effect 00:47.1; arrival: Hullbreaker raider 01:10.2; victory 01:37.4 in 4 rounds |
+| Hullbreakers 3 (Hullbreakers, Rout) | 00:10.2 | Admiral's Command 00:10.7, Close action 00:24.7 | Hullbreaker raider 00:17.5 | Lance 00:18.2, 13 total | Fire for effect 00:46.4; victory 02:12.4 in 6 rounds |
+| Navy 1 (Navy, Rout) | 00:08.3 | Moving and facing 00:08.8, Shields and hull 00:19.4, Firing 00:37.8, Threat map 00:45.0 | Cordon destroyer 00:55.2 | Lance 00:36.7, 24 total | Fire for effect 00:50.5; victory 02:59.0 in 11 rounds |
+| Navy 2 (Hullbreakers, Hold) | 00:10.8 | Objectives 00:11.3, More ships are coming 00:32.5, Close action 00:39.5 | Hullbreaker gutship 00:48.1 | Torpedo 00:22.8, 6 total | Fire for effect 00:42.9; arrival: Hullbreaker raider 01:03.0; victory 01:22.5 in 4 rounds |
+| Navy 3 (Navy, Flagship) | 00:08.2 | Admiral's Command 00:08.8 | Cordon destroyer 00:38.9 | Lance 00:26.2, 9 total | Fire for effect 00:34.4; arrival: Hegemony picket 00:55.8; victory 01:20.7 in 5 rounds |
 
-Battle 2 opens with the relay score on both routes. The enemy raider arrives at 01:49.6 on the Hullbreakers route and 01:20.5
-on the Navy route. The Hullbreakers Battle 3 sheet shows the hover card over the letterboxed lance shot at 00:44.5. On the
-Navy route the Garrison Warden joins Battle 3 at 00:52.6.
-
-## Current-main attempt
-
-On the runner's clean main revision `f39399f0`, seed 121 won all three battles and its review media verified. Its third battle
-was a relay. Seed 10 won the first two battles, then the recorder stopped with `expected route 2-2 is missing after Battle 2`.
-The sector map change in PR 1191 made Navy stop `2-2` an event. The six recordings above use the earlier recorder merge,
-where that stop is a Hegemony engagement. The two exports used the same shared asset manifest.
-
-## Run 1 recording status
-
-Run 1 won all three battles on both routes. Its AVI masters and frame logs, including the flagship name prompt, sector
-map, rewards and Nemesis cards, are in `Downloads\voidsworn_test\board_b\issue-1143\player_path_1080p_delivery`.
-The run 1 export included working-tree changes, so its clips and sheets fail the clean-build provenance check.
-The historical notes below describe run 1.
+Vex speaks at the start of every battle ("Hold the line" in Battle 1, "Run out the guns" after), on Fire for effect, when a ship
+is lost and on the victory card. Both Battle 2s are Hold battles with a scheduled Hullbreaker raider reinforcement and the
+"More ships are coming" card before it. The older run 3 media (recorder merge `c267b280`, seeds 121 and 10) stays in this
+branch's history at `61611233` as history only, not acceptance of the current route.
 
 ## Profile isolation
 
@@ -75,11 +64,6 @@ The launcher gives each seed and retry a new folder under `%TEMP%` and redirects
 game process. Main checks the resolved `user://` path and creates a one-use marker before it loads settings or opens the
 title. It refuses a mismatched path or a folder with existing profile files. The campaign, career and teaching history use
 their normal save and load routines inside the temporary profile. The recording log reports the resolved folder and the settings.
-
-Both delivered routes passed the profile guard and wrote their own campaign, career and battle options in separate temporary
-folders. The normal campaign and career files and their backups kept write times from before the recordings. The normal
-`battle_opts.json` was written at 13:11:11 CST, one second after a hull fixture from the overlapping world and bench audit.
-That audit opens a battle with the normal profile, which rewrites battle options on entry.
 
 A Windows headless check reached Battle 1 with the shipped settings, tips, Key cut-ins and voice enabled. It wrote the campaign
 save, backup and teaching history into the temporary profile. The normal profile's settings, saves, backups and preferences had
@@ -92,7 +76,7 @@ from before run 1. The normal profile has no `settings.json`, and its battle opt
 the run 1 window. I found no evidence that run 1 changed Ryan’s saves, settings or story state. The old guard ran after settings were loaded,
 so the available records cannot rule out a settings read on an earlier aborted launch. Nothing was restored or overwritten.
 
-## Run 1, Ashfall Hullbreakers route, seed 121
+## History: run 1 (Nov 19), Ashfall Hullbreakers route, seed 121
 
 Times start with each battle. Card times mark the pilot's reading pauses. Vex opens all three battles with
 “Hold the line. Let them come to the broadsides.”
@@ -104,7 +88,7 @@ His Command and closing line appear in the battle log and result card.
 | 2 | Relay score from the opening. Danger and move ghost 00:08, Close action 00:15, target odds 00:18, warning 01:20. The relay was won before the reinforcement arrived. | Fire for effect 00:47, lost-ship line 01:31, victory 01:50. Eight cut-ins, 0.83 to 2.70 s. | The same older Sunward trio. New Hullbreaker `C13s_23` raiders and `C14s_23` gutship. |
 | 3 | Danger, move ghost and Admiral's Command card 00:08. Card read at 00:16, attack-move 00:40, target odds 01:09. | Fire for effect 01:03, lost-ship line 01:34, victory 01:53. Nine cut-ins, 1.60 to 2.70 s. | Older Sunward `V16_37` and `V14_23`. Three new `C14s_23` gutships. |
 
-## Run 1, Hegemony Navy route, seed 10
+## History: run 1 (Nov 19), Hegemony Navy route, seed 10
 
 Vex opens Battle 1 with “Hold the line.” He opens Battles 2 and 3 with “Run out the guns. Present the flank.”
 
@@ -116,7 +100,14 @@ Vex opens Battle 1 with “Hold the line.” He opens Battles 2 and 3 with “Ru
 
 Hull build status follows the [installed ship list](../battle_baseline_1118/README.md#installed-hull-contract).
 
-## Run 1 review notes
+## What this recording adds
+
+The [F1 trace](../f1/0354234/README.md) showed the move ghost, target odds, player handover and arriving reinforcements.
+The [look bench](../look_bench/README.md) showed isolated weapons, shields, deaths and hulls at fixed cameras.
+The player path shows when fresh-run cards appear, where the danger hatching falls alongside move and target options,
+and how the default cut-ins and story lines interrupt or frame those same decisions in a live campaign.
+
+## History: run 1 review notes
 
 - Hullbreakers route, Battle 2 at 01:38. Tab was needed to restore the selected ship after an activation.
 - Hullbreakers route, Battle 3 at 00:45. The target hover card stays over the letterboxed lance shot.

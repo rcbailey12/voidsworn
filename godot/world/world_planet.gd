@@ -377,13 +377,22 @@ void fragment() {
 	}
 	alb *= tint;
 	float ndl = dot(N, L);
-	// relief: a cheap bump from the baked height, along the surface
-	vec3 dsx = spun(normalize(n0 + vec3(0.003, 0.0, 0.0)), TIME * spin);
-	vec3 dsy = spun(normalize(n0 + vec3(0.0, 0.003, 0.0)), TIME * spin);
+	// relief: a cheap bump from the baked height, along the surface. The two height samples step along the local
+	// tangent and bitangent (object space, before the texture spin), and the bumped normal tilts along the same two
+	// directions taken to world space, so ridges light from the sun's side all round the planet (issue 1468; fixed
+	// object X and Y steps flipped on the far half and vanished at the X poles)
+	vec3 up_o = abs(n0.y) > 0.99 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+	vec3 t_o = normalize(cross(up_o, n0));
+	vec3 b_o = cross(n0, t_o);
+	vec3 dsx = spun(normalize(n0 + t_o * 0.003), TIME * spin);
+	vec3 dsy = spun(normalize(n0 + b_o * 0.003), TIME * spin);
 	float hx = has_tex > 0.5 ? texture(tex_b, uv_of(dsx)).b - b.b : 0.0;
 	float hy = has_tex > 0.5 ? texture(tex_b, uv_of(dsy)).b - b.b : 0.0;
-	vec3 tx = normalize(cross(vec3(0.0, 1.0, 0.0), N) + vec3(1e-4));
-	vec3 ty = cross(N, tx);
+	mat3 m3 = mat3(MODEL_MATRIX[0].xyz, MODEL_MATRIX[1].xyz, MODEL_MATRIX[2].xyz);
+	vec3 tx = normalize(m3 * t_o);
+	tx = normalize(tx - N * dot(tx, N));
+	vec3 ty = normalize(m3 * b_o);
+	ty = normalize(ty - N * dot(ty, N) - tx * dot(ty, tx));
 	vec3 Nb = normalize(N - (tx * hx + ty * hy) * 2.5 * rough * (1.0 - b.r));
 	float lam = max(dot(Nb, L), 0.0);
 	// the terminator softened by the atmosphere

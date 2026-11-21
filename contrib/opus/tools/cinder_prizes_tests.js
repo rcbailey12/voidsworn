@@ -22,7 +22,7 @@ globalThis.T = {
   get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, set META(v){ META=v; }, get B(){ return B; },
   get SAVED_RUN(){ return SAVED_RUN; },
   runDefaults, newShip, derive, shipyardStock, shipyardScreen, capturedHullPrice, cinderOpen, cinderPool, fleetCP, priceMult,
-  startBattle, inSync, legionCan, syncAnchor, factionTraitLines, prizePlan, ACT, saveRun, migrateRun, genSector, HULLS, CINDER_PRIZES, CINDER_FIRST_RUN, FAC_PRICE
+  startBattle, inSync, legionCan, syncAnchor, factionTraitLines, prizePlan, ACT, saveRun, migrateRun, genSector, HULLS, CINDER_PRIZES, CINDER_FIRST_RUN, FAC_PRICE, SHOP_DISCOUNT
 };`);
 function setup(fac, runs) {
   // a fresh meta at the given launched-run count, and a plain run standing at a shipyard
@@ -50,10 +50,10 @@ check('from run 3 a Crusade yard stocks two captured Hegemony or Eclipse hulls',
 check('captured hulls sell at Crusade prices, not at the owners faction prices', () => {
   setup('voidsworn', 3);
   const warden = T.HULLS.warden, mote = T.HULLS.d_scythe, picket = T.HULLS.h_picket;
-  if (T.capturedHullPrice(mote) !== warden.cost) return false; // a 1 CP frigate costs what a Warden costs (70), not the Eclipse 110
-  if (T.capturedHullPrice(picket) !== picket.cost) return false; // Hegemony is already the 1.0 baseline
-  const corsair = T.HULLS.c_raider;
-  return T.capturedHullPrice(T.HULLS.c_reaver) === Math.round(Math.round((T.HULLS.c_reaver.cost0 != null ? T.HULLS.c_reaver.cost0 : T.HULLS.c_reaver.cost) / 5) * 5); // corsair destroyer base 130, no voidsworn destroyer markup
+  if (T.capturedHullPrice(mote) !== warden.cost) return false; // a 1 CP frigate costs what a Warden costs in the shop (65 with the issue 1354 Crusade discount, issue 1384), not the Eclipse 110
+  if (T.capturedHullPrice(picket) !== Math.round(picket.val * T.SHOP_DISCOUNT.voidsworn / 5) * 5) return false; // Hegemony is the 1.0 baseline: its ladder price, then the Crusade shop discount
+  const r = T.HULLS.c_reaver, rb = Math.round((r.cost0 != null ? r.cost0 : r.cost) / 5) * 5; // corsair destroyer base 130, no voidsworn destroyer markup
+  return T.capturedHullPrice(r) === Math.round(rb * T.SHOP_DISCOUNT.voidsworn / 5) * 5;
 });
 check('buying a captured hull charges the captured price and rips its links', () => {
   const r = setup('voidsworn', 3);
@@ -130,14 +130,14 @@ check('from run 3 a kept Hegemony or Eclipse prize joins with its links ripped o
   r.cpCap = 10; r.fleet = [];
   r.map = T.genSector(1); r.pos = r.map.cols[0][0].id; r.curNode = r.pos; // a real map, so the confirm chain can walk on to the map screen
   const prize = { tpl: 'h_interdictor', name: 'HNS Kept', cp: 2, hpf: .6, wk: ['battery'], ab: null, regen: 0, sh: 12 };
-  r.reward = { prizes: [prize], prizeSel: ['add'] };
+  r.reward = { kind: 'elite', stage: 'prize', prizes: [prize], prizeSel: ['add'], wrecks: [] };
   let rows = T.prizePlan(r.reward);
   if (!rows[0].room || rows[0].cinder || rows[0].rip !== true) return false;
   T.ACT.prizeConfirm();
   const kept = r.fleet.find(x => x.tpl === 'h_interdictor');
   if (!kept || kept.ripped !== true || kept.name !== 'HNS Kept') return false;
   const prize2 = { tpl: 'c_raider', name: 'RVD Plain', cp: 1, hpf: .7, wk: ['autocannon'], ab: null, regen: 0, sh: 8 };
-  r.reward = { prizes: [prize2], prizeSel: ['add'] };
+  r.reward = { kind: 'elite', stage: 'prize', prizes: [prize2], prizeSel: ['add'], wrecks: [] };
   rows = T.prizePlan(r.reward);
   if (rows[0].cinder || rows[0].rip !== false) return false; // only Hegemony and Eclipse prizes rip
   T.ACT.prizeConfirm();

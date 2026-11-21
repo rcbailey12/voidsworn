@@ -16,20 +16,14 @@ import os, sys, math, json
 import bpy
 from mathutils import Vector, Matrix
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from cycles_devices import configure_cycles_device
 a = sys.argv[sys.argv.index('--') + 1:]; OUT, CELL = a[0], a[1]; SAMPLES = int(a[2]) if len(a) > 2 else 64
 os.makedirs(OUT, exist_ok=True)
 REGIONS = dict(cas=(170, 470, 510, 700), bow=(130, 380, 410, 530), drums=(330, 250, 730, 460), aft=(680, 200, 1010, 430))
 SCALE = 4
 CAMJ = os.path.join(HERE, '..', '..', '..', 'docs', 'shots', 'ship_pipeline', 'route209', 'round4', 'concept_camera.json')
 sc = bpy.context.scene; sc.render.engine = 'CYCLES'
-prefs = bpy.context.preferences.addons['cycles'].preferences
-for t in ('OPTIX', 'CUDA'):
-    try:
-        prefs.compute_device_type = t; prefs.get_devices()
-        if not [d for d in prefs.devices if d.type == t]: continue
-        for d in prefs.devices: d.use = True
-        sc.cycles.device = 'GPU'; break
-    except Exception: pass
+configure_cycles_device(sc)
 sc.cycles.samples = SAMPLES; sc.cycles.use_denoising = True; sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'None'
 w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True; w.node_tree.nodes['Background'].inputs['Color'].default_value = (.035, .037, .042, 1)
 RIGS = {'studio': ((('key', (50, 0, 140), 4.0, 2), ('fill', (115, 0, -40), 1.0, 8), ('rim', (60, 0, -95), 2.2, 3)), 1.6),

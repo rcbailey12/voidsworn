@@ -38,7 +38,7 @@ def load_capture(folder, name, source):
     return marked
 
 
-def sheet(title, rows, output):
+def sheet(title, rows, output, pair_width=376):
     review = Review(STAGE)
     image = Image.new("RGB", (1280, 720), "#10151e")
     draw = ImageDraw.Draw(image)
@@ -49,7 +49,7 @@ def sheet(title, rows, output):
     draw.text((24, 55), output.stem, font=code_font, fill="#ffbe8b")
     for i, (label, pair) in enumerate(rows):
         if len(rows) == 2:
-            x, y, width, gap = 194, 80 + i * 264, 376, 512
+            x, y, width, gap = 194, 80 + i * 264, pair_width, 512
         else:
             x, y, width, gap = 22 + (i % 2) * 630, 100 + (i // 2) * 252, 300, 309
         draw.text((x, y), label, font=label_font, fill="#fff0de")
@@ -79,6 +79,24 @@ def provenance(work):
     return source
 
 
+def high_storm_proof(options, before, after):
+    rows = []
+    differences = {}
+    for radius in (170, 26):
+        name = f"storm_high_{radius}"
+        captures = [work / f"{options.label}_{take}" for work in (options.before, options.after)
+                    for take in (1, 2)]
+        baseline = load_capture(captures[1], name, before)
+        modified = load_capture(captures[3], name, after)
+        rows.append((f"Radius {radius}", (("High on main", baseline), ("High after", modified))))
+        files = [folder / f"{name}.png" for folder in captures]
+        differences[name] = {"before_repeat": compare(files[0], files[1]),
+                             "after_repeat": compare(files[2], files[3]),
+                             "before_after": compare(files[1], files[3])}
+    sheet("Dense storm High   /   seed 4103", rows, options.output / "PERF1070_RUN3_STORM.jpg", pair_width=360)
+    return differences
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("before", type=Path)
@@ -86,9 +104,14 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("results", type=Path)
     parser.add_argument("--label", default="proof")
+    parser.add_argument("--storm-high-only", action="store_true")
     options = parser.parse_args()
     before = provenance(options.before)
     after = provenance(options.after)
+    if options.storm_high_only:
+        differences = high_storm_proof(options, before, after)
+        options.results.write_text(json.dumps(differences, indent=2) + "\n", encoding="utf-8", newline="\n")
+        return
     before_take = options.before / f"{options.label}_2"
     after_take = options.after / f"{options.label}_2"
     battle = []

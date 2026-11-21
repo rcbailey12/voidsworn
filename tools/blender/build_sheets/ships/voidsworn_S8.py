@@ -330,14 +330,22 @@ def build(K):
         K.slit('W%d' % (i + 1), (SPX[0] + 0.005, y, deck_z(SPX[0], 0.0) - 0.08 + 0.19), (1, 0, 0), 0.17, 0.06, inv='bridge_slits',
                note='command deck window, ember-lit, in the spine block\'s face')
     K.mark('spine', 'spine', ['block', 'step', 'slit'])
-    # seven radiator spires: heights rise to the tallest at the row's middle (amidships of the line), each profile its own
+    # seven radiator spires: heights rise to the tallest at the row's middle (amidships of the line), each profile its own.
+    # R331 (Ryan, Nov 19 2026): every spire at 70 percent of the first build's height (SPIRE_SCALE), the same stations, lengths
+    # and profiles, and the ember in the fin slats (glow='slats': three to five glowing fins at least 0.26 apart, was 0.17, with
+    # the dark iron core between them, the fins reaching 60 percent as far out), never a whole lit tower, so the stripes read
+    # from the battle camera's 34 degrees and from above (about half the old towers' lit area at both cameras)
+    # R347 (Nov 20, PR 1164): the shared glow='slats' now lights the core the full height between dark iron ribs 0.15 apart;
+    # S8 takes it unchanged (painted run 1158_shipjob2 at 291dfcac); the notes below say so.
+    SPIRE_SCALE = 0.7
     SPIRES = [(-3.75, 1.6, 0.7, 0), (-4.6, 2.0, 0.72, 3), (-5.45, 2.35, 0.72, 1), (-6.3, 2.6, 0.74, 2), (-7.15, 2.35, 0.72, 1),
               (-8.0, 2.0, 0.72, 3), (-8.85, 1.55, 0.62, 0)]
+    SPIRES = [(x, round(h * SPIRE_SCALE, 3), L, prof) for (x, h, L, prof) in SPIRES]
     for i, (x, h, L, prof) in enumerate(SPIRES):
-        part = HP.radiator(h, L, profile=prof, spread=0.2 + 0.42 * h / 2.6, seed=i)
+        part = HP.radiator(h, L, profile=prof, spread=0.2 + 0.42 * h / 2.6, seed=i, glow='slats')
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.1f tall, profile %s' % (h, ('blade', 'stepped', 'twin', 'raked')[prof]),
-                kind='radiator', note='sheds the reactor\'s heat: a stack of radiator fins glowing ember between iron posts')
-        K.mass('Radiator spire R%d (%s, %.1f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fins on iron',
+                kind='radiator', note='sheds the reactor\'s heat: the lit ember core showing between dark iron ribs')
+        K.mass('Radiator spire R%d (%s, %.1f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember core between iron ribs',
                note='one of the seven spires of the spire line')
 
     # ---------------- the stern: the stern hood over the drums, two big ember bells ----------------
@@ -556,7 +564,8 @@ def build(K):
     K.fix('Spire roots R1 and R2, R6 and R7 intersecting', 'the root sockets shortened to the spire\'s own length')
     K.fix('Bow running lights L2 inside the cheek plates', 'the bow lights moved down to the knuckle line, the blade\'s edge')
     K.fix('Belly hatches H5 and H6 not touching the armour step', 'the step lofted through every hull station, so its face follows the belly; the hatches seat on it')
-    K.change('The spires stand taller than S8\'s bank: the tallest 2.6 over the spine block (3.1 over the deck) against S8\'s 1.8', 'factions.md: "a row of tall radiator spires"; the battle camera sees the ship from 34 degrees above the board, so the spire line is the silhouette\'s crown and must read there (voidsworn_S8_battle_cam.jpg)')
+    K.change('The spires stand at about S8\'s bank height: the tallest 1.8 over the spine block (2.3 over the deck) against S8\'s 1.8', 'Ryan, Nov 19 2026 (R331, issue 1158): "can we scale down the giant radiator/orange towers on each ship a bit too?"; the first build\'s 2.6 tallest read as giant orange towers. Every spire is 70 percent of its first height (1.6, 2.0, 2.35, 2.6, 2.35, 2.0, 1.55 became 1.12, 1.4, 1.65, 1.82, 1.65, 1.4, 1.09), same count, stations, lengths and profiles; the spire line still crowns the silhouette at the battle camera')
+    K.change('The ember is in the fin slats, not a whole lit tower (R331, issue 1158)', 'The shared Sunward spire option radiator(..., glow=\'slats\'): first three to five glowing fins over a dark core (Nov 19), then from R347 (PR 1164, Nov 20) the core lit the full height between dark iron ribs 0.15 apart, as on the Warden. Warden, Vigil and the later Sunward builds use the same option (R333)')
     K.change('Modelled plates: sleek triangles on the spearhead\'s facets and cheek plates, ordered rows of forged plates elsewhere', 'paint direction sunward.md (R243, "more triangle sleek panels") asks for triangles on the flat fields; modelled on the deck in the first render they read as rows of letters at a distance, so the deck keeps forged rows and the Sunward paint stack lays its triangles there')
     K.open_item('The belly is designed here; S8 shows no underside')
     K.open_item('Frost-white markings and the half-sun crest are paint (the Sunward stack, a later job), not modelled')

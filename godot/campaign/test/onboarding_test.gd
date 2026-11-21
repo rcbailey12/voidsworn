@@ -3,6 +3,7 @@ const Teaching = preload("res://ui/campaign/campaign_tips.gd")
 const Battle = preload("res://scenes/battle/battle.gd")
 const Campaign = preload("res://campaign/campaign.gd")
 const API = preload("res://rules/battle_api.gd")
+const CampaignUI = preload("res://ui/campaign/campaign_ui.gd")
 var fails := 0
 
 class FakeHUD extends CanvasLayer:
@@ -93,16 +94,16 @@ func _run() -> void:
 	b.api.close = true; b.api.command = true; b.api.version += 1
 	b.tip_slot = "2:player:p2"; b._tutorial()
 	check(b.hud.tipcard == null, "battle one suppresses close and Command")
-	b.api.n = 2; b.api.event = {"k": "reinf_enemy", "r": 3}; b._tutorial()
-	check(b.hud.last == "reinforce_warn", "warning appears one round before scheduled arrival")
+	b.api.n = 2; b.api.event = {"k": "reinf_enemy", "warnR": 2, "r": 4}; b._tutorial()
+	check(b.hud.last == "reinforce_warn", "warning appears on the rules' warning round even with two rounds to arrival")
 	b._tip_dismiss("got_it"); b.tip_slot = "2:player:p3"; b._tutorial()
 	check(b.hud.last == "close", "battle two teaches available close action")
 	b._tip_dismiss("got_it"); b._tip_completed({"t": "board", "unit": "p1"})
 	check(b.tips.has("close"), "resolved boarding retires Close action")
-	b.api.n = 3; b.tip_slot = "2:player:p4"; b._tutorial()
+	b.V.obj.type = "hold"; b.tip_slot = "2:player:p4"; b._tutorial()
+	check(b.hud.last == "objective", "Battle 2 teaches its objective before the Command card is eligible")
+	b._tip_dismiss("got_it"); b.api.n = 3; b.tip_slot = "2:player:p5"; b._tutorial()
 	check(b.hud.last == "resolve", "battle three permits ready Command")
-	b._tip_dismiss("got_it"); b.V.obj.type = "hold"; b.tip_slot = "2:player:p5"; b._tutorial()
-	check(b.hud.last == "objective", "non-rout battle teaches Objectives")
 	b._tip_dismiss("got_it")
 	var log = b.plog.summary("win", 2, {})
 	check(log.tips.any(func(e): return e.k == "show") and log.tips.any(func(e): return e.k == "dismiss") and log.tips.any(func(e): return e.k == "retire"), "F1 play log contains shows, dismissals and retirements")
@@ -140,8 +141,10 @@ func _run() -> void:
 	var retry = c.teachingBattle({"node": "a", "kind": "battle", "fac": "chorus"})
 	var second = c.teachingBattle({"node": "b", "kind": "battle", "fac": "chorus"})
 	check(c.nodeFaction({"id": "b", "type": "battle"}) == "corsair", "map preview names the second teaching enemy")
+	check(second.get("shape") == "open" and second.get("arena") == "strip" and second.get("dep") == "line" and second.get("edgeFeature") == true, "R366: Battle 2 opens on Battle 1's open strip")
 	check(first.fac == "hegemony" and first.edgeFeature and retry.teachingBattle == 1 and second.fac == "corsair", "campaign pins first two unique fights and preserves reload identity")
-	check(c.rollBattleEvent(first, "reinf_ally") == null and c.rollBattleEvent(second, "flare").k == "reinf_enemy", "first fight suppresses arrivals, second forces enemy arrival")
+	var event = c.rollBattleEvent(second, "flare")
+	check(c.rollBattleEvent(first, "reinf_ally") == null and event.k == "reinf_enemy" and event.warnR == 2, "first fight suppresses arrivals, second schedules an enemy arrival with a Round 2 warning")
 	check(not c.teachingBattle({"node": "c", "kind": "elite", "fac": "chorus"}).has("teachingBattle"), "later fights keep their generated faction")
 	var boss = c.teachingBattle({"node": "boss", "kind": "boss", "fac": "chorus"})
 	c.RUN["sector"] = 2
@@ -171,5 +174,21 @@ func _run() -> void:
 	t._action("tip_ok", "c_shipyard")
 	check(c.tel_log.any(func(e): return e.ev == "teaching_tip" and e.k == "dismiss"), "campaign card events reach existing telemetry")
 	t.queue_free(); await process_frame
+	var f2 := FileAccess.open(Teaching.OPTS, FileAccess.WRITE)
+	f2.store_string('{"tipsOff":false,"tips":{"c_map":true,"c_clock":true,"c_tree":true}}'); f2.close()
+	c.META = c.defaultMeta(); c.newRun("vex", "voidsworn")
+	var ui := CampaignUI.new(); root.add_child(ui); ui.bind(c); ui.set_process(false)
+	var node: Dictionary = c.RUN.map.cols[0][0]
+	c.RUN.pos = node.id; node.type = "drydock"
+	c.repairStopScreen(node); ui._teaching_screen()
+	check(ui.teaching.current == "", "the Drydock modal does not show the shipyard card")
+	node.type = "field"
+	c.repairStopScreen(node); ui._teaching_screen()
+	check(ui.teaching.current == "", "a Field Repair stop does not show the shipyard card")
+	node.type = "shipyard"
+	c.shipyardScreen(node); ui._teaching_screen()
+	check(ui.teaching.current == "c_shipyard" and Teaching.load_opts().tips.has("c_tree"),
+		"a real shipyard shows its card and an old retired card entry is safe to keep")
+	ui.queue_free(); await process_frame
 	print("ONBOARDING " + ("PASS" if fails == 0 else "FAIL: %d" % fails))
 	quit(0 if fails == 0 else 1)

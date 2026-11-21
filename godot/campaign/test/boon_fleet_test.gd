@@ -215,6 +215,27 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 	_ok(not ui._boon_fleet_line("h_wings", 0).contains("in your hold"), "a refit cannot qualify a ship without a free slot")
 	c.RUN["fac"] = "corsair"
 	_ok(ui._boon_fleet_line("a_lance", 0) == "No current ship with lances.", "a future hull must pass the faction's equipment gate")
+	c.newRun("aelith", "ithar")
+	c.RUN["patrons"] = ["iron", "storm"]
+	c.RUN["boons"] = [{"id": "s_cap", "r": 0}]
+	_set_fleet(c, [["i_wisp", "Still Light"], ["i_blade", "Far Focus"]])
+	var brace_offers := [{"id": "d_bastion", "r": 0}, {"id": "i_brace", "r": 0}, {"id": "i_wall", "r": 0}]
+	c.RUN["reward"] = {"kind": "elite", "stage": "pick", "rw": {"k": "boon", "p": "iron"}, "boonOffer": brace_offers}
+	c.show_page("battle", {}, [])
+	var pool: Array = c.boonOfferPool("iron")
+	var duos: Array = c.boonOfferDuos("iron")
+	JSM.rnd_seed(75)
+	c.resumeReward()
+	var saved: String = c.save_text()
+	await _settle()
+	var lines := _details(ui, c)
+	_ok(lines.size() == 3 and lines.all(func(line): return line.ends_with("No effect on this fleet: none of its ships can Brace.")),
+		"all three Brace offers show no effect on the real Glasswright reward screen")
+	_ok(pool.has("i_brace") and pool.has("i_wall") and duos.has("d_bastion") and c.modal_d["data"]["offer"] == brace_offers
+		and JSM.rng_u32() == 75 and c.save_text() == saved, "Brace explanations do not change the Glasswright pool, saved offer, or RNG")
+	var captured: Dictionary = c.newShip("warden"); captured["name"] = "Added Escort"; c.RUN["fleet"].append(captured)
+	_ok(brace_offers.all(func(entry): return ui._boon_fleet_line(entry.id, 0) == "Affects 1 ship that can Brace: Added Escort"),
+		"a captured ship can benefit from Brace protocols in a Glasswright fleet")
 	ui.free()
 
 

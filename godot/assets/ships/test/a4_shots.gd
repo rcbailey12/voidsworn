@@ -18,6 +18,7 @@ extends Node3D
 # Lives under test/ so the export leaves it out (export_presets.cfg excludes */test/*).
 
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
 const CamRig := preload("res://render/camera_rig.gd")
@@ -148,7 +149,7 @@ func _len_of(fac: String, cls: String) -> float:
 
 
 func _spawn(code: String, fac: String, cls: String, pos: Vector3, facing := 0) -> Node3D:
-	var f2 := fac if HT.FAC3D.has(fac) else "hegemony"
+	var f2 := fac if FLOOK.has(fac) else "hegemony"
 	var L := _len_of(fac, cls)
 	var sv = ShipView.new()
 	add_child(sv)

@@ -1,11 +1,14 @@
 'use strict';
-// Issue 818: fake clocks run on Linux CI; Windows also exercises the real watchdog and resume path for free.
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
+// Issues 818 and 1192: portable runner checks and real Windows watchdog, process-tree and GPU claim probes.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { spawnSync } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
+const { Slots } = require(path.join(pc, 'gpu_slots.js'));
 const source = fs.readFileSync(path.join(pc, 'run_timeout.ps1'), 'utf8');
 
 // Run the actual small PowerShell decision on every CI host. Only its arithmetic and variable syntax need translation.
@@ -36,18 +39,41 @@ assert.deepEqual(fakeRun(0, 21600, 10), { now: 600, reason: 'STALLED after 10 mi
 assert.equal(decide(21600, 1800, 21600, 30), 'CEILING');
 assert.equal(decide(1799, 1799, 21600, 30), '');
 pass('ceiling and stall overrides, exact boundaries, ceiling takes priority');
+assert(source.includes("if ($gpuMode -eq 'solo' -and $env:PC_GPU_SOLO_MAX_S)"));
 
 for (const [runner, cap] of [['codex_issue', 'CODEX_CAP'], ['work_issue', 'WORK_CAP']]) {
   const bat = fs.readFileSync(path.join(pc, runner + '.bat'), 'utf8');
   assert(bat.includes(`if not defined ${cap} set "${cap}=21600"`));
+  assert(bat.includes('if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=1500"'));
+  assert(1500 < defaultStall * 60);
   for (const name of ['TMO_REPO', 'TMO_OUT', 'TMO_LOG']) {
     assert(bat.includes(`set "${name}=`), runner + ' must set ' + name);
     assert(bat.includes(`set "${name}="`), runner + ' must clear ' + name);
   }
+  assert(bat.indexOf('set "TMO_FATAL_PATTERN="') < bat.indexOf('contrib\\opus\\tools\\run_all_checks.js'));
+  assert(bat.includes('set "TMO_FATAL_PATTERN="'));
   assert(bat.includes('stop_reason.txt'));
   assert(bat.includes('if defined PARTIAL goto :haschange'));
 }
-pass('both launchers set agent progress paths, preserve ceiling overrides and keep partial runs with no file changes');
+pass('both launchers bound admission below the stall limit and clear step settings before checks');
+
+const ship = fs.readFileSync(path.join(pc, 'jobs', 'ship_job.bat'), 'utf8');
+const recipe = path.resolve(pc, '../recipe');
+const limits = fs.readFileSync(path.join(recipe, 'env.bat'), 'utf8');
+for (const [file, settings] of [[ship, ship], ...fs.readdirSync(recipe)
+  .filter(name => /^[1-7]_.*\.bat$|^install_godot\.bat$/.test(name))
+  .map(name => [fs.readFileSync(path.join(recipe, name), 'utf8'), limits])]) {
+  for (const line of file.split(/\r?\n/).filter(line => /\bcall\b.*tmo\.bat/i.test(line))) {
+    const cap = line.match(/tmo\.bat" %([A-Z_]+_CAP)% /i);
+    assert(cap, 'give the step a named cap: ' + line);
+    const seconds = settings.match(new RegExp('set "' + cap[1] + '=(\\d+)"', 'ig'));
+    assert.equal(seconds?.length, 1, 'define the cap once: ' + cap[1]);
+    assert(Number(seconds[0].match(/=(\d+)/)[1]) <= 3600, 'oversized step: ' + line);
+  }
+}
+assert(ship.includes('if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=3600'));
+assert(Number(ship.match(/set "SHIP_IMPORT_CAP=(\d+)"/)[1]) >= 2 * 1150, 'allow twice the measured cold Godot import');
+pass('ship and recipe watchdog calls use named step caps and ship GPU admission keeps its 3600 s default');
 
 if (process.platform !== 'win32') {
   console.log('SKIP Windows process and file probes: Windows standing checks run them');
@@ -209,6 +235,206 @@ const normal = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'B
 assert.equal(normal.status, 7, normal.stdout + normal.stderr);
 helpers.push(normal.pid);
 pass('ordinary commands keep their exit code and explicit limit, child commands cannot inherit the agent watch');
+
+// A fake Godot executable uses Windows processes and the real claim helper. Its GPU go file and claims live in TEMP.
+const game = path.join(root, 'Godot_stall_fixture_console.exe');
+const gameSource = path.join(root, 'FakeGodot.cs');
+fs.writeFileSync(gameSource, String.raw`
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+public static class FakeGodot {
+  static void StartChild(string exe, string role, string output) {
+    Process.Start(new ProcessStartInfo(exe, role + " \"" + output + "\"") {
+      UseShellExecute = false, CreateNoWindow = true
+    });
+  }
+  public static int Main(string[] args) {
+    string mode = args[0], output = args[1];
+    string exe = typeof(FakeGodot).Assembly.Location;
+    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("TMO_FATAL_PATTERN"))) return 10;
+    File.WriteAllText(Path.Combine(output, "pid-" + mode), Process.GetCurrentProcess().Id + "\n");
+    if (mode == "leaf") { Thread.Sleep(Timeout.Infinite); return 0; }
+    if (mode == "branch") {
+      StartChild(exe, "leaf", output);
+      Thread.Sleep(Timeout.Infinite);
+      return 0;
+    }
+    if (mode == "new-files" || mode == "cpu") {
+      var clock = Stopwatch.StartNew();
+      int file = 0;
+      while (clock.ElapsedMilliseconds < 1800) {
+        if (mode == "cpu") Thread.SpinWait(10000);
+        else {
+          File.WriteAllText(Path.Combine(output, "work-" + file++), "progress");
+          Thread.Sleep(150);
+        }
+      }
+      return 7;
+    }
+    if (mode == "noisy") {
+      Console.Error.WriteLine("Out of memory");
+      Console.WriteLine("Assertion failed");
+      for (int i = 0; i < 60; i++) {
+        Console.Error.WriteLine("ERROR: fixture retry");
+      }
+      return 7;
+    }
+    StartChild(exe, "branch", output);
+    if (!SpinWait.SpinUntil(() => File.Exists(Path.Combine(output, "pid-leaf")), 5000)) return 9;
+    string claim = Path.Combine(output, "gpu", "gpu_slot_1");
+    if (mode == "idle" || mode.StartsWith("solo")) {
+      if (!File.Exists(claim) || !File.ReadAllText(claim).Contains("1192")) return 8;
+      Console.WriteLine("fixture saw held GPU claim");
+    }
+    if (mode == "idle") Console.Error.Write("last output before the hang");
+    if (mode == "jolt" || mode == "failed-kill") Console.Error.Write("Jolt Physics job system exceeded the maximum number of jobs");
+    if (mode == "opt-in") Console.WriteLine("Assertion failed");
+    if (mode.StartsWith("solo")) {
+      Console.WriteLine("launcher exited while descendants were still running");
+      return 7;
+    }
+    Thread.Sleep(Timeout.Infinite);
+    return 0;
+  }
+}
+`);
+const compile = path.join(root, 'fake-godot.ps1');
+fs.writeFileSync(compile, '$ErrorActionPreference = "Stop"\nAdd-Type -Path $args[0] -OutputAssembly $args[1] -OutputType ConsoleApplication\n');
+const built = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', compile, gameSource, game], {
+  encoding: 'utf8', windowsHide: true, timeout: 15000
+});
+assert.equal(built.status, 0, built.stdout + built.stderr + String(built.error || ''));
+const tmo = path.join(pc, 'tmo.bat');
+for (const [mode, reason] of [
+  ['idle', 'IDLE after 1 s'], ['jolt', 'FATAL Jolt Physics job system exceeded'],
+  ['opt-in', 'FATAL Assertion failed'], ['solo-default', 'CEILING'], ['solo-override', 'SOLO CAP after 2 s'],
+  ['new-files', ''], ['cpu', ''], ['noisy', '']
+]) {
+  const folder = path.join(root, 'step-' + mode);
+  const gpu = path.join(folder, 'gpu');
+  fs.mkdirSync(gpu, { recursive: true });
+  fs.writeFileSync(path.join(gpu, 'gpu_go.txt'), 'GPU cleared');
+  for (const role of [mode, 'branch', 'leaf']) pidFiles.push(path.join(folder, 'pid-' + role));
+  const stepLog = path.join(folder, 'timeouts.log');
+  const solo = mode.startsWith('solo-');
+  const claimed = mode === 'idle' || solo;
+  const flags = claimed ? '--bench' : '--headless';
+  const ceiling = mode === 'solo-default' ? 4 : 12;
+  const run = spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c',
+    `""${tmo}" ${ceiling} "${game}" ${mode} "${folder}" ${flags}"`], {
+    cwd: folder, encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true, timeout: 60000,
+    env: { ...process.env, TMO_REPO: '', TMO_OUT: '', TMO_LOG: '', TMO_ERR_LOG: '', TMO_STEP: 'fake Godot ' + mode,
+      TMO_STEP_OUT: folder, TMO_IDLE_S: solo ? '10' : '1',
+      TMO_FATAL_PATTERN: mode === 'opt-in' ? 'assertion failed' : '',
+      PC_GPU_SOLO_MAX_S: mode === 'solo-override' ? '2' : '',
+      PC_GPU_LANE: '', PC_GPU_ISSUE: '1192', PC_GPU_WAIT_SECONDS: '5', PC_GPU_MODE: '', PC_GPU_WEIGHT: '',
+      PC_RUNNER_TEST: '1', PC_TEST_GPU_ROOT: gpu, PC_TEST_TIMEOUT_LOG: stepLog }
+  });
+  helpers.push(run.pid);
+  const diagnostic = run.stdout + run.stderr + String(run.error || '');
+  assert.equal(run.status, reason ? 124 : 7, diagnostic);
+  if (!reason) {
+    if (mode === 'noisy') {
+      assert(run.stdout.includes('Assertion failed') && run.stderr.includes('Out of memory'), diagnostic);
+      assert.equal(run.stderr.match(/ERROR: fixture retry/g)?.length, 60);
+      assert(!fs.existsSync(stepLog), diagnostic);
+    }
+    pass('fake Godot ' + mode + ' preserves normal completion');
+    continue;
+  }
+  const details = fs.readFileSync(stepLog, 'utf8');
+  const stopped = details.match(new RegExp(' at (\\d+(?:\\.\\d+)?) s \\(ceiling ' + ceiling + ' s\\)'));
+  assert(stopped && details.includes('TIMEOUT fake Godot ' + mode) && details.includes(reason), details);
+  assert(Number(details.match(/kill verified: all (\d+) processes gone/)?.[1]) >= 3, details);
+  const pids = [mode, 'branch', 'leaf'].map(role => Number(fs.readFileSync(path.join(folder, 'pid-' + role), 'utf8')));
+  assert(pids.every(pid => pid > 0 && !alive(pid)), 'fake Godot tree survived: ' + pids);
+  if (reason.startsWith('FATAL')) assert(Number(stopped[1]) < ceiling, details);
+  if (mode === 'solo-default') assert(Number(stopped[1]) >= ceiling && Number(stopped[1]) < ceiling + 1, details);
+  if (claimed) {
+    assert(run.stdout.includes('fixture saw held GPU claim'), diagnostic);
+    const verifiedAt = run.stdout.indexOf('kill verified:');
+    assert(verifiedAt >= 0 && run.stdout.indexOf('GPU: released solo claim') > verifiedAt, diagnostic);
+    for (const name of ['gpu_solo', 'gpu_slot_1']) assert.equal(fs.readFileSync(path.join(gpu, name), 'utf8'), '');
+  }
+  if (mode === 'idle') {
+    const quietFor = Number(details.match(/\(([\d.]+) s since last progress\)/)?.[1]);
+    assert(quietFor >= 1 && quietFor < 2, details);
+    assert(run.stderr.includes('last output before the hang'), diagnostic);
+    const spool = details.match(/Child logs: ([^\r\n]+)/)[1];
+    assert(fs.readFileSync(path.join(spool, 'stderr.log'), 'utf8').includes('last output before the hang'));
+  }
+  pass(`fake Godot ${mode} stopped at ${stopped[1]} s, tree gone${claimed ? ', then GPU claim released' : ''}`);
+}
+
+// In one real tmo run, a fatal line triggers a kill that fails. The next admission must wait for the entire tree.
+const failedKill = path.join(root, 'failed-kill');
+fs.mkdirSync(failedKill);
+const failedKillPids = ['failed-kill', 'branch', 'leaf'].map(role => path.join(failedKill, 'pid-' + role));
+pidFiles.push(...failedKillPids);
+const brokenKiller = path.join(failedKill, 'taskkill.cmd');
+fs.writeFileSync(brokenKiller, '@echo off\r\nexit /b 5\r\n');
+fs.writeFileSync(path.join(failedKill, 'gpu_go.txt'), 'GPU cleared');
+fs.writeFileSync(path.join(failedKill, 'gpu_slots.json'), '{"sharedSlots":1}');
+const failedKillLog = path.join(failedKill, 'timeouts.log');
+const run = spawnSync(process.env.ComSpec, ['/d', '/s', '/c',
+  '""' + tmo + '" 12 "' + game + '" failed-kill "' + failedKill + '""'], {
+  cwd: failedKill, encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true, timeout: 60000,
+  env: { ...process.env, TMO_REPO: '', TMO_OUT: '', TMO_LOG: '', TMO_ERR_LOG: '', TMO_STEP: 'fake Godot failed kill',
+    TMO_STEP_OUT: '', TMO_IDLE_S: '8', TMO_FATAL_PATTERN: '', PC_GPU_SOLO_MAX_S: '', PC_GPU_LANE: '',
+    PC_GPU_ISSUE: '1192', PC_GPU_WAIT_SECONDS: '5', PC_GPU_MODE: '', PC_GPU_WEIGHT: '',
+    PC_RUNNER_TEST: '1', PC_TEST_GPU_ROOT: failedKill, PC_TEST_TIMEOUT_LOG: failedKillLog,
+    PC_TEST_TASKKILL: brokenKiller, PC_TEST_FAIL_KILL: '1' }
+});
+helpers.push(run.pid);
+assert.equal(run.status, 124, run.stdout + run.stderr + String(run.error || ''));
+const livePids = failedKillPids.map(file => Number(fs.readFileSync(file, 'utf8')));
+assert(livePids.every(alive), 'the first kill must leave the fixture tree alive');
+const details = fs.readFileSync(failedKillLog, 'utf8');
+assert.match(details, /TIMEOUT fake Godot failed kill .*FATAL Jolt Physics job system exceeded/);
+const reported = details.match(/KILL FAILED: surviving PIDs ([\d, ]+) for fake Godot failed kill/);
+const reportedPids = reported?.[1].split(', ').map(Number) || [];
+assert(livePids.every(pid => reportedPids.includes(pid)), details);
+const slots = new Slots(failedKill);
+const held = slots.read('gpu_slot_1');
+assert.equal(held?.state, 'orphaned_child', details);
+const heldPids = held.survivors.map(child => child.pid);
+// Windows can add console hosts to the job. They can exit between the kill report and claim update.
+assert(livePids.every(pid => heldPids.includes(pid)), details);
+assert(heldPids.every(pid => reportedPids.includes(pid)), details);
+assert.doesNotMatch(run.stdout, /GPU: released/, run.stdout);
+function claimCommand(args, wait = '1') {
+  return spawnSync(process.execPath, [path.join(pc, 'gpu_slots.js'), ...args], {
+    cwd: failedKill, encoding: 'utf8', windowsHide: true, timeout: 15000,
+    env: { ...process.env, PC_GPU_LANE: '', PC_GPU_WAIT_SECONDS: wait }
+  });
+}
+function stopFixture(pid) {
+  process.kill(pid, 'SIGKILL');
+  const deadline = Date.now() + 5000;
+  while (alive(pid) && Date.now() < deadline) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
+  assert(!alive(pid), 'fixture PID did not exit: ' + pid);
+}
+const acquire = ['acquire', failedKill, 'next fixture', String(process.pid), 'shared', '1'];
+const prematureRelease = claimCommand(['release', failedKill, held.token]);
+assert.notEqual(prematureRelease.status, 0, prematureRelease.stdout);
+assert.match(prematureRelease.stderr, /live child/);
+stopFixture(livePids[0]);
+stopFixture(livePids[1]);
+assert(alive(livePids[2]), 'the leaf must still hold the claim after the root and branch exit');
+const blocked = claimCommand(acquire);
+assert.notEqual(blocked.status, 0, blocked.stdout);
+assert.match(blocked.stderr, /admission timed out/);
+assert.equal(slots.read('gpu_slot_1').token, held.token);
+stopFixture(livePids[2]);
+const next = claimCommand(acquire, '5');
+assert.equal(next.status, 0, next.stderr + String(next.error || ''));
+const nextToken = next.stdout.trim().split(/\r?\n/).at(-1);
+assert.notEqual(nextToken, held.token);
+assert.equal(claimCommand(['release', failedKill, nextToken]).status, 0);
+assert.equal(slots.read('gpu_slot_1'), null);
+pass('fake Godot fatal timeout logs every surviving PID and holds its GPU claim until the last child exits');
 } finally {
   for (const pid of [...agentPids().reverse(), ...helpers].filter(Boolean)) {
     if (alive(pid)) process.kill(pid, 'SIGKILL');

@@ -122,6 +122,7 @@ uniform bool fx_organic = false;
 uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
 uniform float fx_scorch_heat = 0.0;
+uniform vec3 fx_scorch_col = vec3(1.0, 0.30, 0.05);   // R367: the scorch heat in the faction's death colour
 varying vec3 fx_hull_p;
 float fx_scorch_at(vec3 p) {
 	float s = 0.0;
@@ -166,7 +167,7 @@ float fx_mouth_edge(int i, vec3 p) {
 # A surface overlay cannot discard the opaque skin underneath it.
 # Weak cache: identical generated PBR shaders reuse the pipelines warmed by fx.
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
-static var _shader_refs := {}
+static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
 
 # Issue 569: a see-through hull surface (the Glasswright sail membranes, GLB alpha blend, which
 # Godot imports as TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) carries its alpha through the damage path
@@ -183,8 +184,8 @@ static func exterior_alpha_code() -> String:
 # per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
 # warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
 static var late_watch := false
-static var _late := {}
-static var _late_lines: Array = []
+static var _late := {}   # not GPU: shader names -> frame and time
+static var _late_lines: Array = []   # not GPU: log lines
 
 
 static func start_late_watch() -> void:
@@ -244,7 +245,9 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
 	var mat := ShaderMaterial.new()
-	var dmg := _damage_code(base.shader.code)
+	# The fog policy has already marked the painted source by the time this
+	# adapter is drawn. Compile with that mode on the first assignment.
+	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog)
 	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
@@ -268,9 +271,9 @@ static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dic
 # Issue 220: the damage shader's source is a pure function of the hull shader's source, so it is worked out once per
 # hull shader and kept (the regex and the character walk in _inject cost about a millisecond per surface, and every
 # hull rebuild, death and death piece made one per surface on the main thread). Same code out, same shader.
-static var _dmg_code := {}
-static var _uniform_names := {}
-static var _ext_codes := {}
+static var _dmg_code := {}   # not GPU: shader source text
+static var _uniform_names := {}   # not GPU: uniform name lists
+static var _ext_codes := {}   # not GPU: shader source text
 
 
 static func _uniforms_of(shader: Shader) -> Array:
@@ -283,9 +286,10 @@ static func _uniforms_of(shader: Shader) -> Array:
 	return _uniform_names[key]
 
 
-static func _damage_code(source: String) -> String:
-	if _dmg_code.has(source):
-		return _dmg_code[source]
+static func _damage_code(source: String, disable_fog := false) -> String:
+	var key := [source, disable_fog]
+	if _dmg_code.has(key):
+		return _dmg_code[key]
 	var code: String = source
 	var cull := RegEx.new()
 	cull.compile("cull_(back|front|disabled)")
@@ -317,7 +321,7 @@ if (fx_scorch_count > 0) {
 	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
-	EMISSION += vec3(1.0, 0.30, 0.05) * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
+	EMISSION += fx_scorch_col * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
 }
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
@@ -336,7 +340,9 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	EMISSION = max(EMISSION, structure);
 }
 """)
-	_dmg_code[source] = code
+	if disable_fog and not code.contains("fog_disabled"):
+		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+	_dmg_code[key] = code
 	return code
 
 
@@ -447,6 +453,7 @@ static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null, frames
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -523,6 +530,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -536,13 +544,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	var faces = faces_of(root, meshes, bvh_ranges)
-	tri_count = faces.size() / 3
-	tm = TriangleMesh.new()
-	if faces.size() >= 3:
-		tm.create_from_faces(faces)
+	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
+	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
+	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
+	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
+	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
+	var faces: PackedVector3Array
+	if geo is Dictionary:
+		faces = geo["faces"]
+		tm = geo["tm"]
+		for r in geo["ranges"]:
+			var mi := meshes[int(r["mi_index"])] as MeshInstance3D
+			var e: Dictionary = r.duplicate()
+			e.erase("mi_index")
+			e["mi"] = mi
+			var paint := mi.get_active_material(int(r["surface"])) as BaseMaterial3D
+			e["paint"] = paint if paint != null else (r["mesh"] as Mesh).surface_get_material(int(r["surface"])) as BaseMaterial3D
+			bvh_ranges.append(e)
 	else:
-		tm = null
+		faces = faces_of(root, meshes, bvh_ranges)
+		tm = TriangleMesh.new()
+		if faces.size() >= 3:
+			tm.create_from_faces(faces)
+		else:
+			tm = null
+		if geo_key != "":
+			var keep: Array = []
+			for r in bvh_ranges:
+				var e: Dictionary = r.duplicate()
+				e["mi_index"] = meshes.find(r["mi"])
+				e.erase("mi")
+				e.erase("paint")
+				keep.append(e)
+			geo = {"faces": faces, "tm": tm, "ranges": keep}
+			shared[geo_key] = geo
+	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
@@ -552,9 +588,44 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	if code == "" and root.get("code") != null:
 		code = str(root.get("code"))
 	_read_turrets(root)
+	_read_doors(root)
 	_read_points(root)
 	_find_core(faces)
-	_turret_clearance(root, meshes)
+	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+		for k in turrets.size():
+			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+	else:
+		_turret_clearance(root, meshes)
+		if geo is Dictionary:
+			var reach: Array = []
+			for t in turrets:
+				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
+			geo["turrets"] = reach
+
+
+var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
+
+
+# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
+# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
+func _geo_key(root: Node3D, meshes: Array) -> String:
+	var parts := PackedStringArray()
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
+			parts.append("-")
+			continue
+		var frame := Transform3D.IDENTITY
+		var part: Node3D = mi
+		while part != null and part != root:
+			if part.top_level:
+				return ""   # placed in the world, not under the ship: no sharing
+			frame = part.transform * frame
+			part = part.get_parent_node_3d()
+		if part != root:
+			return ""
+		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
+	return "|".join(parts)
 
 
 func section_of(x: float) -> int:
@@ -1055,7 +1126,10 @@ func bay(i: int, toward_local: Vector3) -> Dictionary:
 	var pts: Array = points.get("bay", [])
 	if not pts.is_empty():
 		_took("bay", "hp")
-		return _hp(pts[posmod(i, pts.size())])
+		var pt: Dictionary = pts[posmod(i, pts.size())]
+		var r := _hp(pt)
+		r["bay"] = int(pt["i"])   # issue 1543: which hp_bay_<n>, so launch() opens that mouth's door
+		return r
 	var d := toward_local - core
 	d.y = 0.0
 	var out := (d.normalized() + Vector3.UP).normalized() if d.length() > 1e-4 else Vector3.UP
@@ -1294,6 +1368,7 @@ func _turret_clearance(root: Node3D, meshes: Array) -> void:
 		return
 	var fixed: Array = []
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi != null and _turret_above(mi, root) < 0:
 			fixed.append(mi)
@@ -1522,3 +1597,115 @@ func turret_step(t: float) -> void:
 		var y := turret_yaw(k, t)
 		tt["yaw"] = y
 		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(Basis(Vector3.UP, deg_to_rad(y)), Vector3.ZERO)
+
+
+# ---------------------------------------------------------------- doors (issue 1543)
+# Ryan (Nov 21 2026): a launch mouth has a flesh door "in sections with the opening spreading from the middle", closed between
+# launches, plain flesh. A door reaches the game as a node door_<n> (docs/ship_pipeline/HARDPOINTS.md "Doors"; extras: the bay
+# it opens for and open_deg) with one node door_<n>_lobe_<k> per lobe at its hinge: local +X the hinge line, -Z toward the
+# door's centre, +Y out of the mouth; a turn of open_deg (negative: the tip folds down into the bore) about +X opens it.
+# launch() opens the door of the bay a squadron leaves from (door_cycle): the lobes ease open before the first craft leaves,
+# hold while the squadron is out, then ease shut. Like a turret's, a door's pose is a pure function of the effect clock (fx.now);
+# fx_ship.update writes it onto the lobe nodes every frame. The rules never see a door (RULEBOOK 7.4).
+const DOOR_RE := "^door_(\\d+)$"
+const DOOR_OPEN := 0.28      # seconds to open (the first craft leaves 0.3 after the launch call: fx_weapons.launch)
+const DOOR_CLOSE := 0.5      # seconds to shut, after the hold
+var doors: Array = []        # {node, name, id, bay, deg, lobes: [{node, rest}], wins: [[t_open, t_shut]], f}
+var _door_of := {}           # door node instance id -> index
+
+
+func _read_doors(root: Node3D) -> void:
+	doors = []
+	_door_of = {}
+	var re := RegEx.new()
+	re.compile(DOOR_RE)
+	var found: Array = []
+	for nd in root.find_children("door_*", "Node3D", true, false):
+		var m := re.search(String(nd.name))
+		if m == null:
+			continue
+		var ex = (nd as Node3D).get_meta("extras", {})
+		if not ex is Dictionary:
+			ex = {}
+		found.append([int(m.get_string(1)), nd, ex])
+	found.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	for row in found:
+		var d3: Node3D = row[1]
+		var ex: Dictionary = row[2]
+		var lobes: Array = []
+		var lre := RegEx.create_from_string("^%s_lobe_(\\d+)$" % String(d3.name))
+		for c in d3.get_children():
+			if c is Node3D and lre.search(String(c.name)) != null:
+				lobes.append({"node": c, "rest": (c as Node3D).transform})
+		_door_of[d3.get_instance_id()] = doors.size()
+		doors.append({"node": d3, "name": String(d3.name), "id": str(ex.get("id", d3.name)), "bay": int(ex.get("bay", row[0])),
+			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
+
+
+# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+func _door_above(n: Node, root: Node) -> int:
+	var p := n.get_parent()
+	while p != null and p != root:
+		if _door_of.has(p.get_instance_id()):
+			return int(_door_of[p.get_instance_id()])
+		p = p.get_parent()
+	return -1
+
+
+# The door that opens for bay i (hp_bay_<i>), or -1.
+func door_for_bay(i: int) -> int:
+	for k in doors.size():
+		if int(doors[k]["bay"]) == i:
+			return k
+	return -1
+
+
+# Open bay i's door from t_open, hold it open until t_hold (the last craft clear), then shut it. A second launch from the same
+# bay while the door is still held open extends that hold, so it never shuts between squadrons. One that comes while the door is
+# closing gets its own window: the door's pose is the most open of its windows, so it reopens from where it is (it keeps
+# closing until the new opening passes it, then opens), never jumping back to fully open (Artoo on PR 1544).
+func door_cycle(i: int, t_open: float, t_hold: float) -> void:
+	var k := door_for_bay(i)
+	if k < 0:
+		return
+	var wins: Array = doors[k]["wins"]
+	for w in wins:
+		if t_open >= float(w[0]) and t_open <= float(w[1]):
+			w[1] = maxf(float(w[1]), t_hold)
+			return
+	wins.append([t_open, t_hold])
+
+
+# How far door k is open at time t: 0 shut, 1 open; eased in and out (smoothstep), never a snap (RULEBOOK 7.1).
+func door_open_at(k: int, t: float) -> float:
+	var f := 0.0
+	for w in doors[k]["wins"]:
+		var a := float(w[0])
+		var b := float(w[1])
+		var g := 0.0
+		if t < a or t > b + DOOR_CLOSE:
+			g = 0.0
+		elif t < a + DOOR_OPEN:
+			g = smoothstep(0.0, 1.0, (t - a) / DOOR_OPEN)
+		elif t <= b:
+			g = 1.0
+		else:
+			g = 1.0 - smoothstep(0.0, 1.0, (t - b) / DOOR_CLOSE)
+		f = maxf(f, g)
+	return f
+
+
+func door_step(t: float) -> void:
+	for k in doors.size():
+		var d: Dictionary = doors[k]
+		var wins: Array = d["wins"]
+		while not wins.is_empty() and float(wins[0][1]) + DOOR_CLOSE < t - 1.0:
+			wins.pop_front()
+		var f := door_open_at(k, t)
+		if f == float(d["f"]) and f == 0.0:
+			continue
+		d["f"] = f
+		var b := Basis(Vector3.RIGHT, deg_to_rad(float(d["deg"]) * f))
+		for lb in d["lobes"]:
+			if is_instance_valid(lb["node"]):
+				(lb["node"] as Node3D).transform = (lb["rest"] as Transform3D) * Transform3D(b, Vector3.ZERO)

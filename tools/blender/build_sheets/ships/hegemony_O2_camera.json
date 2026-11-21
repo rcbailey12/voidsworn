@@ -1,0 +1,21 @@
+{
+ "az": 66.86210588377826,
+ "el": 39.03841032208613,
+ "roll": -9.389770407501844,
+ "dist": 62.42635318015661,
+ "mm": 169.62068913943654,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.008174541084392485,
+ "sy": -0.012718226692442797,
+ "res": [
+  1920,
+  1200
+ ],
+ "iou": 0.9046,
+ "body_iou": 0.9071,
+ "note": "Convoy beauty (issue 1413): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (the nozzle plumes are in the mask)"
+}

@@ -1,7 +1,8 @@
 'use strict';
 // Authored copy, browser screens, and live beat 3 rewards (issues 55 and 110).
-const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert');
+const path = require('path'), vm = require('vm'), assert = require('assert');
 const ROOT = path.resolve(__dirname, '../../..');
+const inputs = require('./sparse_check_inputs')(ROOT);
 process.env.VS_ORACLE = ROOT;
 require(path.join(ROOT, 'godot/campaign/test/node/env.js')).load(`
 globalThis.story55={table:STORY_BEAT3,admirals:ADMIRALS,card:beat3Card,
@@ -24,7 +25,7 @@ vm.runInThisContext('modal=show=function(h){globalThis.story55html=h;};');
 const files = ['sunward_crusade', 'hegemony_navy', 'ashfall_hullbreakers', 'the_chorus', 'the_glasswrights', 'eclipse'];
 let count = 0;
 for (const [index, fac] of Object.keys(story55.table).entries()) {
-  const source = fs.readFileSync(path.join(ROOT, 'contrib/muse/design/story_beat3_2026_11', files[index] + '.md'), 'utf8').split('### Flags')[0];
+  const source = inputs.read(path.join(ROOT, 'contrib/muse/design/story_beat3_2026_11', files[index] + '.md')).split('### Flags')[0];
   const node = vm.runInNewContext('({' + source.match(/```\s*([\s\S]*?)```/)[1] + '})');
   const row = story55.table[fac];
   assert.strictEqual(row.id, node.id); assert.strictEqual(row.fight, false);

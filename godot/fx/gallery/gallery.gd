@@ -221,6 +221,7 @@ func _build_ships() -> void:
 				var mat := mi.get_active_material(si)
 				if mat is BaseMaterial3D:
 					mi.set_surface_override_material(si, LOOK.hull(mat, s["fac"], true))
+		load("res://render/mesh_watch.gd").touch(sv)   # issue 1204: hull materials set after the ship entered the scene
 		ships[s["id"]] = sv
 	var n_fleet := int(args.get("fleet", "0"))
 	for i in maxi(0, n_fleet - FLAGS.size()):

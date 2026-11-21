@@ -16,6 +16,8 @@ The Board runs `RUN_RETRY.bat <issue> openai 7200` using its installed retry lau
 An invalid value falls back to high with an ignored-setting message. The existing provider guard ignores a
 `WORK_MODEL` from another provider. Add a named entry in `openaiPrices` in `work_issue.ps1` and configure the
 model and its variants in OpenCode before using another OpenAI model.
+Priced and configured: gpt-6.2-sol, gpt-6.1-sol, gpt-6.1-terra and gpt-6.2-astra (issue 1408: $8 in, $40 out a million;
+its cached rate, $0.80, is 10 percent of input, not confirmed on OpenAI's page). Astra runs only on the Board's go (one shot).
 
 The runner passes `--variant <effort>` to the preflight and the agent, and stamps it in `out\model.txt`,
 `out\status.json` and `out\result.txt`. OpenCode 1.19.5 merges the selected model variant's
@@ -125,11 +127,14 @@ work_issue.ps1):
   (`work_issue.ps1 confirm`) GitHub's branch must be that commit, with that diff (out\pushed_diffstat.txt). A difference
   stops the run: "DIFF MISMATCH" in result.txt, out\DIFF_MISMATCH.txt, exit code 10, nothing (more) pushed. On Nov 11 the
   old runner's commit aborted on an empty commit.txt (the disk was full) and its push carried only the agent's own merge.
-- **Disk.** Every run ends with "run folder size" in result.txt. work217\runner_settings.txt holds Ryan's switch
-  (`remove_repo_copy_after_push=no` by default; WORKHORSE_CLEANUP.bat, from tools/pc/work_cleanup_setting.bat, turns it on).
-  With it on, cleanup requires a confirmed non-partial push and passing runner checks (`checked_push`). The runner keeps
-  its repo copy if it cannot verify the delivery branch, or if the checkout holds local history, edits, untracked files or
-  ignored files. The reason goes in result.txt. The out\ folder always stays.
+- **Disk (issue 1186).** Each arm reuses one checkout, `work217\slot_<arm>\repo`, under the same reuse checks as the
+  Codex lanes; each run keeps only its own `issue-<n>-<arm>\<stamp>\out\`. One run owns a slot at a time: the slot lock
+  (`repo.checkout.lock` beside it) is inherited by the whole work_issue.bat process tree, so it stays held until every
+  process of that run has exited. A slot holding unpublished work is set aside as `repo-kept-*` beside it and reported;
+  the janitor later prunes older kept copies under its usual checks. Slots leave out `docs/shots/`, the build sheets,
+  `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the issue's Brief or Deliver to line names a path there.
+  Every run ends with "disk: run folder" and "disk: shared checkout" sizes in result.txt. The old
+  `remove_repo_copy_after_push` switch (WORKHORSE_CLEANUP.bat) is retired and changes nothing.
 
 result.txt is for people. Chains use status.json as described below; matching words in result.txt cannot prove success.
 Exit codes: 0 pushed, 7 no changes, 8 push refused (change.patch kept), 10 diff mismatch, 11 commit failed, 12 the branch's
@@ -191,7 +196,11 @@ Here `%V%` is `%USERPROFILE%\Downloads\voidsworn_test` and `lane_tools_refresh.p
 outside the folder being refreshed. Use `build_b`, `build_c`, `build_d`, `build_e` or `work217` for the runner being called.
 The command checks that seat's issue status, fetches public `origin/main` through `lane_tools_source`, and keeps the previous
 tools in `runner_backups\<build>_<yyyyMMdd_HHmmss>\tools` when it installs a change. Matching tools use no backup slot.
-A fourth backup or a running job stops the refresh. The installed commit or failure is recorded in `lane_tools_refresh.txt`.
+A running job stops the refresh. Older backups rotate instead of stopping it (issue 1194): the newest three stay, and an
+older one is removed only when every file in it is kept in the live tools, a newer backup or a saved main snapshot.
+`-Build build` refreshes the main queue's `build\tools` (the watcher runs it between jobs), and `-Build tools_live`
+installs the canonical copy every `tmo.bat` hands its steps to (RULEBOOK 3.5). The installed commit or failure is recorded
+in `lane_tools_refresh.txt`.
 
 GPU claims (R276, issue 847): `tmo.bat` uses `gpu_slots.js` for Godot rendering, Blender and explicit
 `PC_GPU_MODE=shared|solo` launches. Two holders live in `voidsworn_test\gpu_slot_1` and `gpu_slot_2` (JSON: issue, PID,

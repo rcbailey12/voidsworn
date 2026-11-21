@@ -467,11 +467,10 @@ func _bar(r: Rect2, f: float, col: Color, track: Color) -> void:
 static func keyword_tip(line: String) -> String:
 	var out := PackedStringArray()
 	var keywords := {
-		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire.",
+		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
-		"Torpedoes inbound": "Torpedoes inbound: move 3 or more hexes away from the marked hex to dodge.",
 		"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
-		"Fired": "Ships move, then fire: after firing, half the movement left can still be used to slip away."}
+		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
 	for kw in keywords:
 		if line.contains(kw):
 			out.append(keywords[kw])
@@ -485,7 +484,7 @@ func _status(x: float, y: float, w: float, foot: float) -> void:
 		return
 	var def := keyword_tip(fl)
 	if fl != "":
-		var id := "focus" if "focusing" in fl else ("torpedo" if "Torpedoes" in fl else ("brace" if "Braced" in fl else "battery"))
+		var id := "focus" if "focusing" in fl else ("brace" if "Braced" in fl else "battery")
 		_glyph(id, Vector2(x, y), 20, TEXT2)
 		x += px(28)
 		w -= px(28)
@@ -651,9 +650,13 @@ func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, com
 	if not turn.is_empty():
 		orders.insert(mini(2, orders.size()), {"act": "turn", "left": turn.get("rotl", false), "right": turn.get("rotr", false)})
 	if bool(cmd.get("available", false)) or bool(cmd.get("ready", false)):
+		var tip := "Your Admiral's Command, once per battle: %s." % str(cmd.get("label", "Command"))
+		var details := str(cmd.get("tip", ""))
+		if details != "": tip += "\n" + details
+		if cmd.get("ready", false): tip += "\nPress the order twice to give it (click or use C)."
 		orders.append({"act": "command", "label": str(cmd.get("label", "Command")), "on": bool(cmd.get("ready", false)), "glyph": Icons.order(str(cmd.get("id", "command"))),
-			"tip": "Your Admiral's Command, once per battle: %s. Click twice (or press C) to give it." % str(cmd.get("label", "Command")), "active": cmd.get("active", false)})
-	for id in ["end", "next", "cancel"]:
+			"tip": tip, "active": cmd.get("active", false)})
+	for id in ["end", "undo", "next", "cancel"]:   # issue 1450: Undo move sits next to End ship
 		var b := _button_data(id)
 		if id != mode and bool(b.get("on", false)):
 			orders.append({"act": id, "label": _without_key(str(b.text)), "on": true, "glyph": id, "tip": b.get("tip", "Cancel the current plan.")})

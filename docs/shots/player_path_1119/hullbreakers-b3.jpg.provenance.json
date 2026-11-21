@@ -1,14 +1,14 @@
 {
-  "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-  "source_commit_date": "2026-11-19T17:29:22Z",
+  "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+  "source_commit_date": "2026-11-21T20:15:22Z",
   "stage": "installed in game",
   "source_dirty": false,
   "source_diff_sha256": "",
   "schema": 1,
-  "date": "2026-11-19T19:20:16Z",
-  "seed": 121,
-  "build_sha256": "ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4",
-  "manifest_sha256": "c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52",
+  "date": "2026-11-21T21:57:21Z",
+  "seed": 31,
+  "build_sha256": "44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173",
+  "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
   "fps": 30,
   "battle": 3,
   "enemy": "corsair",
@@ -16,16 +16,16 @@
   "picture_name": "hullbreakers-b3.jpg",
   "sources": [
     {
-      "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-      "source_commit_date": "2026-11-19T17:29:22Z",
+      "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+      "source_commit_date": "2026-11-21T20:15:22Z",
       "stage": "installed in game",
       "source_dirty": false,
       "source_diff_sha256": "",
       "schema": 1,
-      "date": "2026-11-19T19:18:58Z",
-      "seed": 121,
-      "build_sha256": "ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4",
-      "manifest_sha256": "c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52",
+      "date": "2026-11-21T21:56:30Z",
+      "seed": 31,
+      "build_sha256": "44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173",
+      "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
       "fps": 30,
       "battle": 3,
       "enemy": "corsair",
@@ -34,32 +34,32 @@
   ],
   "inputs": [
     {
-      "picture_name": "seed-121.avi",
-      "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
+      "picture_name": "seed-31.avi",
+      "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "installed in game",
-      "date": "2026-11-19T19:18:58Z",
-      "image_sha256": "8b9bf1b60ec0bb94ab5c415902f8367722bfc3ba7a7cf37ca05fcf7a450e5b4a",
+      "date": "2026-11-21T21:56:30Z",
+      "image_sha256": "b85dbe29cc6b2877fa2e570c1253e6ac6faaec5d5cc731fb8c017628e591188d",
       "sources": [
         {
-          "source_commit": "c267b2804c67ada75037b0f7f34cf095a79b4d84",
-          "source_commit_date": "2026-11-19T17:29:22Z",
+          "source_commit": "1a8c7b971622133ebd359b5cc5d44195c226f0e1",
+          "source_commit_date": "2026-11-21T20:15:22Z",
           "stage": "installed in game",
           "source_dirty": false,
           "source_diff_sha256": "",
           "schema": 1,
-          "date": "2026-11-19T19:18:58Z",
-          "seed": 121,
-          "build_sha256": "ff4c9e4970dcdc7d453954cd97bbf6192df3440453c12179abf67f9a259b3bd4",
-          "manifest_sha256": "c4e1e188ff3d4cb654e2c5a9c8fcc01f49acf5fc655da84e1ce2d93a351c2a52",
+          "date": "2026-11-21T21:56:30Z",
+          "seed": 31,
+          "build_sha256": "44eb8c253ac97d94639772a57b4accf2ca6be118b08de5dc39c3b61cf679e173",
+          "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
           "fps": 30,
           "battle": 3,
           "enemy": "corsair",
           "objective": "rout"
         }
       ],
-      "source_commit_date": "2026-11-19T17:29:22Z"
+      "source_commit_date": "2026-11-21T20:15:22Z"
     }
   ],
   "stamp_box": [
@@ -73,36 +73,36 @@
     88
   ],
   "strip_sha256": [
-    "1e17245a47ba3b68d4e1a573950ad5370da384de549868e04d89363a70606f45"
+    "6a075fd42409799f4743248f0438b329f0e7f4e348d5b278a1cf8b2ea6358f94"
   ],
-  "stamp_template_sha256": "f22af9b766b5e0d216fe4e261777d6227b5432e27b50a1aefa7c14555c2187b5",
+  "stamp_template_sha256": "88d770161abecbcf685b37d5afe33ca331b7932b5fbed92c66b3cb7bfd15d96e",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAfIAAABYCAIAAACBA+K7AAABV0lEQVR4nO3UMQ0AIQDAQHgFLKz4l/kmSEiaOwWdOtc+A4CK73UAADfZOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOMkh87IwDzR50e2AAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "637a9a6fa3827d45e023fd7d1fe10d80e1e97cab444e81ac52cd38be80bf3f7b",
+  "image_sha256": "0dc240360bc73cb19e42c6ee863a77df02cf983c0893b117fe4331bd8aa2bead",
   "frames": [
     {
-      "seconds": 6.67,
+      "seconds": 9.47,
       "label": "Opening board"
     },
     {
-      "seconds": 7.64,
+      "seconds": 10.44,
       "label": "Move preview"
     },
     {
-      "seconds": 16.17,
+      "seconds": 10.97,
       "label": "Card / resolve"
     },
     {
-      "seconds": 44.5,
-      "label": "Cut-in / lance"
-    },
-    {
-      "seconds": 68.7,
+      "seconds": 17.8,
       "label": "Target preview"
     },
     {
-      "seconds": 112.4,
+      "seconds": 18.8,
+      "label": "Cut-in / lance"
+    },
+    {
+      "seconds": 132.7,
       "label": "Win"
     }
   ]

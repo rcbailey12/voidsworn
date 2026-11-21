@@ -253,3 +253,93 @@ static func shard_shape(rng: RandomNumberGenerator) -> Array:
 		n.append_array(PackedVector3Array([nn, nn, nn]))
 		idx.append_array(PackedInt32Array([b, b + 2, b + 1]))
 	return [v, n, idx]
+
+
+# ---------------------------------------------------------------- Pictures (reused quads, issue 1237)
+
+# Issue 1237 (Neon audit F7.2): a capital death made about 60 one-shot pictures (baked flipbooks, staged flashes and
+# smoke), each with its own MeshInstance3D, QuadMesh and ShaderMaterial, freed again a second or two later; three
+# capitals dying together made close to 200 of each. The pictures now come from one pool per fx node, keyed by the
+# material they draw with (shader and baked textures), and go back to it when their life ends. A returned picture is
+# hidden, renamed, stripped of its metas and has every non-texture shader value put back to the shader's default, so
+# the next user starts from the same state a new material would have. Nothing here is static: the pool lives in
+# fx.dstate and its nodes are fx's children, so both go with the fx node (no entry for render/static_caches.gd).
+class Pictures:
+	const KEEP := 64        # free pictures kept per key; more than that are freed
+	const NAME := "fx_pooled_picture"
+	var quad: QuadMesh
+	var free_by_key := {}   # key -> Array of hidden MeshInstance3D
+	var uniforms := {}      # Shader -> PackedStringArray of its non-texture uniform names
+	var made := 0           # pictures built (new nodes and materials)
+	var reused := 0         # pictures taken back out of the pool
+	var live := 0
+
+	func _init() -> void:
+		quad = QuadMesh.new()
+		quad.size = Vector2.ONE
+
+	# A picture for `key`. `make` builds its material the first time (it is called only when the pool has none free).
+	func take(parent: Node, key: String, make: Callable, node_name: String) -> MeshInstance3D:
+		var mi: MeshInstance3D = null
+		var free: Array = free_by_key.get(key, [])
+		while not free.is_empty() and mi == null:
+			var c = free.pop_back()
+			if is_instance_valid(c) and not c.is_queued_for_deletion():
+				mi = c
+		live += 1
+		if mi != null:
+			reused += 1
+			mi.name = node_name
+			mi.visible = true
+			mi.set_meta("pic_gen", int(mi.get_meta("pic_gen", 0)) + 1)
+			mi.set_meta("pic_live", true)
+			return mi
+		made += 1
+		mi = MeshInstance3D.new()
+		mi.name = node_name
+		mi.mesh = quad
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.material_override = make.call()
+		mi.set_meta("pic_key", key)
+		mi.set_meta("pic_gen", 1)
+		mi.set_meta("pic_live", true)
+		parent.add_child(mi)
+		return mi
+
+	# Back to the pool. `gen` is the use the caller's timer belongs to: a stale timer from an earlier use does nothing.
+	func give(mi: MeshInstance3D, gen := -1) -> void:
+		if not is_instance_valid(mi) or mi.is_queued_for_deletion() or not bool(mi.get_meta("pic_live", false)): return
+		if gen >= 0 and int(mi.get_meta("pic_gen", 0)) != gen: return
+		live = maxi(live - 1, 0)
+		var key: String = mi.get_meta("pic_key", "")
+		var free: Array = free_by_key.get(key, [])
+		if free.size() >= KEEP:
+			mi.queue_free()
+			return
+		mi.visible = false
+		mi.name = NAME
+		for m in mi.get_meta_list():
+			if not m in [&"pic_key", &"pic_gen"]: mi.remove_meta(m)
+		mi.set_meta("pic_live", false)
+		mi.transform = Transform3D.IDENTITY
+		var mat := mi.material_override as ShaderMaterial
+		if mat != null and mat.shader != null:
+			for u in _names(mat.shader):
+				mat.set_shader_parameter(u, null)
+		free.append(mi)
+		free_by_key[key] = free
+
+	func _names(sh: Shader) -> PackedStringArray:
+		if not uniforms.has(sh):
+			var out := PackedStringArray()
+			for u in sh.get_shader_uniform_list():
+				if int(u.get("type", TYPE_NIL)) not in [TYPE_NIL, TYPE_OBJECT]:
+					out.append(String(u["name"]))
+			uniforms[sh] = out
+		return uniforms[sh]
+
+	func free_count() -> int:
+		var n := 0
+		for k in free_by_key:
+			n += (free_by_key[k] as Array).size()
+		return n

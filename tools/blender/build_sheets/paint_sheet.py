@@ -18,6 +18,8 @@ import bpy
 from mathutils import Vector, Matrix
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'r209'))
+from cycles_devices import configure_cycles_device
 if '--' in sys.argv:
     a = sys.argv[sys.argv.index('--') + 1:]
 else:
@@ -32,16 +34,7 @@ S = float(sc.get('r209_scale', 1.0))      # the build contract's scale: sheet wo
 # the game's light (as tools/blender/r209/preview7.py light=game): Godot y up, the ship frame z up: (x, y, z)_godot -> (x, -z, y)
 sc.render.engine = 'CYCLES'; sc.cycles.samples = SAMP; sc.cycles.use_denoising = True
 if kw.get('gpu') == '1':
-    try:
-        prefs = bpy.context.preferences.addons['cycles'].preferences
-        for t in ('OPTIX', 'CUDA'):
-            try:
-                prefs.compute_device_type = t; prefs.get_devices()
-                if [d for d in prefs.devices if d.type == t]:
-                    for d in prefs.devices: d.use = True
-                    sc.cycles.device = 'GPU'; break
-            except Exception: pass
-    except Exception: pass
+    configure_cycles_device(sc)
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.exposure = 0.0
 w = bpy.data.worlds.new('game'); sc.world = w; w.use_nodes = True; bg = w.node_tree.nodes['Background']
 bg.inputs['Color'].default_value = (.86 * .5, .9 * .5, 1.0 * .5, 1)

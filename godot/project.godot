@@ -43,6 +43,7 @@ renderer/rendering_method="forward_plus"
 rendering_device/driver.windows="vulkan"
 rendering_device/fallback_to_d3d12=true
 anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/use_debanding=true
 lights_and_shadows/directional_shadow/size=4096
 lights_and_shadows/directional_shadow/soft_shadow_filter_quality=2
 textures/vram_compression/import_s3tc_bptc=true
@@ -51,6 +52,21 @@ limits/cluster_builder/max_clustered_elements=1024
 [physics]
 
 3d/physics_engine="Jolt Physics"
+
+[shader_globals]
+
+cam_near={
+"type": "float",
+"value": 0.5
+}
+cam_eye={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
+}
+cam_fwd={
+"type": "vec3",
+"value": Vector3(0, 0, -1)
+}
 
 [importer_defaults]
 

@@ -37,7 +37,7 @@ const PROFILES := [
 const CROWN := [0.095, -0.06, 0.045, -0.035, 0.03, 0.055]
 const CENTRE_DEPTH := [0.075, 0.075, 0.15, 0.15, 0.12, 0.105]
 
-static var _meshes: Array[Array] = []
+static var _meshes: Array[Array] = []   # not GPU: vertex arrays (Packed arrays), not meshes
 static var _atlas_image: Image
 
 
@@ -199,14 +199,24 @@ static func _source_at(target, p: Vector3, out: Vector3) -> Dictionary:
 				return {}
 			var at: Vector3 = (row["to_part"] as Transform3D) * (hit["position"] as Vector3)
 			var corners := HULL.face_corners(face - start, row["strip"])
-			return _finish(mi.global_transform.basis, row["mesh"], row["paint"], int(row["surface"]), corners, at)
+			var paint: BaseMaterial3D = row["paint"]
+			if paint == null or paint.albedo_texture == null:
+				return {}
+			var arrays: Array = target.arrays_of(row["mesh"], int(row["surface"]))
+			return _finish(mi.global_transform.basis, arrays, paint, corners, at)
 	return {}
 
 
-static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, surface: int, corners: Vector3i, at: Vector3) -> Dictionary:
-	if material == null or material.albedo_texture == null:
-		return {}
-	var arrays := mesh.surface_get_arrays(surface)
+# Use the original BVH ranges. Damage can replace the visible surface, but the
+# fragment paint still comes from the original UVs.
+static func warm_source(target) -> void:
+	for row in target.hull.bvh_ranges:
+		var paint: BaseMaterial3D = row["paint"]
+		if paint != null and paint.albedo_texture != null:
+			target.arrays_of(row["mesh"], int(row["surface"]))
+
+
+static func _finish(world: Basis, arrays: Array, material: BaseMaterial3D, corners: Vector3i, at: Vector3) -> Dictionary:
 	var uv: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV] if arrays[Mesh.ARRAY_TEX_UV] != null else PackedVector2Array()
 	if uv.is_empty():
 		return {}
@@ -231,8 +241,15 @@ static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, sur
 		return {}
 	var along_uv := (uv[b] - uv[a]) / edge.length()
 	var across_uv := (uv[c] - uv[a] - along_uv * across.dot(tangent)) / rise
+	var maps := finish_maps(material)
+	return {"maps": maps, "uv": centre * scale + offset, "u": (along_uv * scale).limit_length(0.4),
+		"v": (across_uv * scale).limit_length(0.4), "tint": material.albedo_color.srgb_to_linear(),
+		"finish": Vector4(material.roughness, material.metallic, material.metallic_specular, 1.0 if maps[1] != null else 0.0),
+		"normal_scale": material.normal_scale if material.normal_enabled else 0.0, "slot": -1}
+
+
+static func finish_maps(material: BaseMaterial3D) -> Array:
 	var orm := material.get_texture(BaseMaterial3D.TEXTURE_ORM)
-	var packed := 1.0 if orm != null else 0.0
 	if orm == null:
 		var rough := material.get_texture(BaseMaterial3D.TEXTURE_ROUGHNESS)
 		var metal := material.get_texture(BaseMaterial3D.TEXTURE_METALLIC)
@@ -240,12 +257,7 @@ static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, sur
 		if rough != null and rough == metal and material.roughness_texture_channel == BaseMaterial3D.TEXTURE_CHANNEL_GREEN \
 				and material.metallic_texture_channel == BaseMaterial3D.TEXTURE_CHANNEL_BLUE:
 			orm = rough
-			packed = 1.0
-	return {"maps": [material.albedo_texture, orm, material.normal_texture if material.normal_enabled else null],
-		"uv": centre * scale + offset, "u": (along_uv * scale).limit_length(0.4),
-		"v": (across_uv * scale).limit_length(0.4), "tint": material.albedo_color.srgb_to_linear(),
-		"finish": Vector4(material.roughness, material.metallic, material.metallic_specular, packed),
-		"normal_scale": material.normal_scale if material.normal_enabled else 0.0, "slot": -1}
+	return [material.albedo_texture, orm, material.normal_texture if material.normal_enabled else null]
 
 
 class Pool:
@@ -324,26 +336,50 @@ class Pool:
 		particle.append_array(PackedFloat32Array([uv.x, uv.y, u.x, u.y, v.x, v.y, slot, finish.get("normal_scale", 0.0),
 			tint.r, tint.g, tint.b, factors.x, factors.y, factors.z, factors.w, 0.0]))
 		if particles.size() == cap:
+			_drop_expired(_now)
+		if particles.size() == cap:
 			particles.pop_front()
 		particles.append(particle)
 		emitted += 1
 		_dirty = true
 
+	# Issue 1467: rows stay put between emissions. The shader already hides a row past its life, so an expiry only
+	# trims dead rows off the end of the draw (no texture work); the texture is rebuilt and uploaded only when pieces
+	# are added, and nothing is uploaded once every piece is gone.
+	var uploads := 0   # texture uploads so far (the frame-rate check counts them)
+	var _now := 0.0
+
+	func _drop_expired(now: float) -> void:
+		var live: Array[PackedFloat32Array] = []
+		for particle in particles:
+			if particle[7] + particle[11] > now:
+				live.append(particle)
+		particles = live
+
 	func flush(now: float) -> void:
+		_now = now
 		if not _dirty and now < _next_end:
 			return
+		if _dirty:
+			_drop_expired(now)
+		_commit(now)
+
+	func _commit(now: float) -> void:
+		var upload := _dirty
 		_dirty = false
 		_next_end = INF
-		var live: Array[PackedFloat32Array] = []
-		var data := PackedFloat32Array()
-		for particle in particles:
-			var expires := particle[7] + particle[11]
+		var last_live := -1
+		for i in particles.size():
+			var expires := particles[i][7] + particles[i][11]
 			if expires > now:
-				live.append(particle)
-				data.append_array(particle)
+				last_live = i
 				_next_end = minf(_next_end, expires)
-		particles = live
-		mi.multimesh.visible_instance_count = live.size()
-		if not live.is_empty():
+		particles.resize(last_live + 1)
+		mi.multimesh.visible_instance_count = particles.size()
+		if upload and not particles.is_empty():
+			var data := PackedFloat32Array()
+			for particle in particles:
+				data.append_array(particle)
 			data.resize(cap * DATA_COLUMNS * 4)
 			_data.update(Image.create_from_data(DATA_COLUMNS, cap, false, Image.FORMAT_RGBAF, data.to_byte_array()))
+			uploads += 1

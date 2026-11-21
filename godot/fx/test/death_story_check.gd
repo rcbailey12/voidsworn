@@ -8,9 +8,13 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #     is set before the split, and the hull groans along those lines;
 #   on: 14 s after the kill the main pieces sit within MAIN_MAX of the length from where they broke, and the thrown
 #     fragments within FRAG_MAX of the break's middle; both paths' numbers are printed side by side.
+# The kill runs twice per path: at quality low (kinematic pieces) here, and at quality high (physics pieces, Jolt) in a
+# child process started with --fixed-fps 60, so the physics steps keep pace with the effect clock (the PC clip at 1236bbc3
+# found the physics pieces undamped, 1.9 L apart, while the low-quality check passed).
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same choice as death_seam_check.gd, which also guards the fixture's freshness).
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
@@ -31,7 +35,7 @@ func check(ok: bool, why: String) -> void:
 
 
 func _load_ship() -> Node3D:
-	var args := OS.get_cmdline_user_args()
+	var args := Array(OS.get_cmdline_user_args()).filter(func(a: String) -> bool: return a != "--hi")
 	var path: String = args[0] if not args.is_empty() else (INSTALLED if FileAccess.file_exists(INSTALLED) else FIXTURE)
 	var bytes := FileAccess.get_file_as_bytes(path)
 	if path.ends_with(".gz"): bytes = bytes.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
@@ -43,19 +47,30 @@ func _load_ship() -> Node3D:
 
 
 func _run() -> void:
-	# the lights-out bands are today's on every tier, switch off or on (Fable on PR 1171: a misplaced branch once gave the
-	# capital and cruiser the small hull's single band, with the switch off)
-	for story in [false, true]:
-		for row in [["Battle-barge", Vector3(5.0, 0.12, 0.15)], ["Cruiser", Vector3(4.0, 0.06, 0.12)], ["Frigate", Vector3(1.0, 0.0, 0.001)]]:
-			await _bands(row[0], row[1], story)
-	var off := await _kill(false)
-	var on := await _kill(true)
+	var hi := "--hi" in OS.get_cmdline_user_args()
+	var quality := "high" if hi else "low"
+	if not hi:
+		# the lights-out bands are today's on every tier, switch off or on (Fable on PR 1171: a misplaced branch once gave the
+		# capital and cruiser the small hull's single band, with the switch off)
+		for story in [false, true]:
+			for row in [["Battle-barge", Vector3(5.0, 0.12, 0.15)], ["Cruiser", Vector3(4.0, 0.06, 0.12)], ["Frigate", Vector3(1.0, 0.0, 0.001)]]:
+				await _bands(row[0], row[1], story)
+	var off := await _kill(false, quality)
+	var on := await _kill(true, quality)
 	if not off.is_empty() and not on.is_empty():
-		print("DEATH_STORY travel_in_lengths main_max off=%.2f on=%.2f frag_max off=%.2f on=%.2f frags=%d" % [
-			off["main"], on["main"], off["frag"], on["frag"], int(on["frags"])])
-		check(float(on["main"]) <= MAIN_MAX, "strained wreck: main pieces within %.2f L of the break (%.2f)" % [MAIN_MAX, on["main"]])
-		check(float(on["frag"]) <= FRAG_MAX, "strained wreck: fragments within %.2f L of the break (%.2f)" % [FRAG_MAX, on["frag"]])
-		check(float(on["main"]) < float(off["main"]), "the strained wreck stays more grouped than today's")
+		print("DEATH_STORY %s travel_in_lengths main_max off=%.2f on=%.2f frag_max off=%.2f on=%.2f frags=%d" % [
+			quality, off["main"], on["main"], off["frag"], on["frag"], int(on["frags"])])
+		check(float(on["main"]) <= MAIN_MAX, "%s: strained wreck: main pieces within %.2f L of the break (%.2f)" % [quality, MAIN_MAX, on["main"]])
+		check(float(on["frag"]) <= FRAG_MAX, "%s: strained wreck: fragments within %.2f L of the break (%.2f)" % [quality, FRAG_MAX, on["frag"]])
+		check(float(on["main"]) < float(off["main"]), "%s: the strained wreck stays more grouped than today's" % quality)
+	if not hi:
+		var out := []
+		var args := ["--headless", "--fixed-fps", "60", "--path", ProjectSettings.globalize_path("res://"), "--script",
+			"res://fx/test/death_story_check.gd", "--", "--hi"] + Array(OS.get_cmdline_user_args())
+		var code := OS.execute(OS.get_executable_path(), PackedStringArray(args), out, true)
+		for line in str(out[0] if not out.is_empty() else "").split("\n"):
+			if line.begins_with("DEATH_STORY") or "ERROR" in line and "strain" in line: print("  [high] ", line)
+		check(code == 0, "quality high (physics pieces) passes in its child process (exit %d)" % code)
 	print("DEATH_STORY failures=%d" % failures)
 	quit(1 if failures else 0)
 
@@ -93,38 +108,23 @@ func _bands(cls: String, want: Vector3, story: bool) -> void:
 	await process_frame
 
 
-func _kill(story: bool) -> Dictionary:
+func _kill(story: bool, quality: String) -> Dictionary:
 	var world := Node3D.new()
 	root.add_child(world)
 	var ship := _load_ship()
 	check(ship != null, "A16 loads")
 	if ship == null: return {}
-	var length := 26.0
-	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
-		var ex = nd.get_meta("extras", {})
-		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
-	var box := AABB()
-	var first := true
-	for mi in ship.find_children("*", "MeshInstance3D", true, false):
-		var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
-		box = bb if first else box.merge(bb)
-		first = false
-	# as ShipView draws it: the hull node scaled to the class length under an unscaled root, so the hull's numbers are
-	# world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
-	world.remove_child(ship)
-	var holder := Node3D.new()
-	world.add_child(holder)
-	holder.add_child(ship)
-	ship.scale = Vector3.ONE * (length / maxf(box.size.x, 0.0001))
-	ship = holder
+	# as ShipView draws it (tools/ci/world_root.gd): the hull scaled to its game length under an unscaled root, so the hull's
+	# numbers are world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
+	ship = ROOT.hold(world, ship)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
-	fx.setup({"quality": "low", "camera": null, "shake": 0.0, "death_story": "strain" if story else "off"})
+	fx.setup({"quality": quality, "camera": null, "shake": 0.0, "death_story": "strain" if story else "off"})
 	check(fx.death_story == story, "the switch reads %s" % story)
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	var t_wait := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t_wait < 120000:
 		fx.step(1.0 / 60.0)
@@ -135,7 +135,7 @@ func _kill(story: bool) -> Dictionary:
 	var L: float = s.hull.L
 	var plan: Dictionary = job.get("plan", {})
 	fx.death("a16", "big")
-	var tag := "on" if story else "off"
+	var tag := ("on" if story else "off") + " " + quality
 	# the strain is on the hull's own break lines, before the split
 	check(s.has_meta("death_strain") == story, "%s: strain set at the kill" % tag)
 	if story:
@@ -182,6 +182,18 @@ func _kill(story: bool) -> Dictionary:
 				for nd in w["nodes"] + w.get("frags", []):
 					if is_instance_valid(nd): starts[nd] = (nd as Node3D).global_position
 	check(hidden_at > 0.0, "%s: A16 broke up (at %.2f s)" % [tag, hidden_at])
+	# the strained wreck's torn insides are sooted (pass 3: they read as flat grey slabs up close); today's are unchanged
+	var sooted := 0
+	for w in fx.dstate["wrecks"]:
+		if w["id"] != "a16": continue
+		for nd in w["nodes"]:
+			if not is_instance_valid(nd): continue
+			for mi in (nd as Node3D).find_children("*", "MeshInstance3D", true, false):
+				var m: Mesh = (mi as MeshInstance3D).mesh
+				for k in (m.get_surface_count() if m != null else 0):
+					if fx._wreck_interiors.values().has(m.surface_get_material(k)): sooted += 1
+	print("DEATH_STORY %s sooted_inside_surfaces=%d" % [tag, sooted])
+	check((sooted > 0) == story, "%s: the wreck's insides are %s" % [tag, "sooted" if story else "today's"])
 	var main_max := 0.0
 	var frag_max := 0.0
 	var frags := 0
