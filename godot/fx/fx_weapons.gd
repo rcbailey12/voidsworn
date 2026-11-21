@@ -503,7 +503,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				if A != null and hd.size() > 0:
 					fx.later(T0, func l_ram_mark() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
-				var vent = 0.45 + beat * (0.35 if lk == "torp" else 0.12)
+				var vent = (0.75 if lk == "torp" else 0.45) + beat * (0.35 if lk == "torp" else 0.12)   # torp: room for the 0.7 s slide after the order
 				tf = T0 + vent
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
 				var tt = dist / spd + 0.25
@@ -819,8 +819,8 @@ static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k:
 #      the drive lights and the wake starts;
 #   4. the turn: the flight leaves along the tube's own line and bends onto the target with only a low lift, never a
 #      climb. A deck tube that points up is tipped toward the target so the round does not stand on its tail.
-const LAUNCH_EJECT := {"torp": 0.34, "rockets": 0.14, "star": 0.22}
-const LAUNCH_PUSH := {"torp": 3.0, "rockets": 1.4, "star": 1.6}   # push-out length, in round lengths (pk)
+const LAUNCH_EJECT := {"torp": 0.7, "rockets": 0.14, "star": 0.22}   # torp: a long slow slide so it plainly leaves the hull (Ryan, Nov 21)
+const LAUNCH_PUSH := {"torp": 3.5, "rockets": 1.4, "star": 1.6}   # push-out length, in round lengths (pk)
 
 
 static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
@@ -840,7 +840,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 	var old := OS.get_environment("VS_1379_LAUNCH") == "old"   # the launch before this change, for before shots only
 	var ed := _launch_dir(mn, from, to)
 	var ej: float = 0.0 if old else float(LAUNCH_EJECT.get(lk, 0.2))
-	var tl := tf - ej   # the hatch opens (the shot's vent delay before tf is 0.45 s or more, so this stays after the order)
+	var tl := tf - ej   # the hatch opens (the vent delay before tf, 0.75 s for torpedoes and 0.45 s for the rest, is longer than the slide, so this stays after the order)
 	# the hatch: cold grey gas and a faint flash at the mount (not the engine colour: nothing burns yet)
 	if old:
 		_vent(fx, from + mn * 0.6 * k, mn, tf, 3.2 * k, 0.35, eng, 0.8, mn * 4.0 * k, 0.7, 1.0, 2, src)
