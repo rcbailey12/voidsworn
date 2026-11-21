@@ -447,7 +447,7 @@ const EVENTS = [
       {
         "k": "oath",
         "l": "Offer her a slot in the Crusade line, no pay",
-        "s": "She takes the oath. A faction destroyer joins with a veteran captain.",
+        "s": "She takes the oath. A faction destroyer joins with veteran experience.",
         "need": {
           "fac": "voidsworn"
         },
