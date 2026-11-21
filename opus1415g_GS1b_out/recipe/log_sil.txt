@@ -1,0 +1,1 @@
+[score] GS1 {'overlap': 68.7, 'concept_covered': 70.0, 'cell_outside': 2.8, 'triangles': 180446}

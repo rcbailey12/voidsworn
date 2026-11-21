@@ -1,0 +1,4 @@
+OPUS1415GS1B_WAIT.bat waiting for 1415G GA1 exit in chain_1119cn.txt Sat 11/21/2026 12:10:29.90 
+1415G GS1B start 12:52:31.22 
+1415G GS1B exit 0 at 13:21:38.11 
+all done Sat 11/21/2026 13:21:38.11 
