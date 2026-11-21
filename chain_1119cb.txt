@@ -1,0 +1,12 @@
+chain CB waiting for 1373I GW4 exit in chain_1119ca.txt Fri 11/20/2026 20:52:14.54 
+swapped out while only waiting 20:54:12: CB replaced by HELPERS_CHAIN_1119CB2.bat (waits for 1373I PROBE16 exit; Board Nov 21 02:53 UTC)
+chain CB2 waiting for 1373I PROBE16 exit in chain_1119cc.txt Fri 11/20/2026 20:54:12.34 
+HELD 00:07:24 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule). Requeue after space is freed.
+chain CB2 waiting for 1373I PROBE16 exit in chain_1119cc.txt Sat 11/21/2026  6:14:35.80 
+mirror fetch exit 0
+de23877943bf3850f23ef54bc1781222f8be806b reachable in the mirror
+1291 C13K start  6:17:37.69 
+1291 C13K exit 0 at  6:35:47.00 
+1291 C10G start  6:35:47.00 
+1291 C10G exit 0 at  6:55:19.15 
+1291 C11F start  6:55:19.16 

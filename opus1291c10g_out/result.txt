@@ -1,0 +1,42 @@
+start chorus_C10 B16_23 board/pin-1291-holes3 Sat 11/21/2026  6:35:48.41 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                   -> opus/issue-1373
+ - [deleted]             (none)                   -> opus/issue-1460
+ - [deleted]             (none)                   -> refs/pull/1382/merge
+ - [deleted]             (none)                   -> refs/pull/1471/merge
+ * [new branch]          board/pc-out-1460b       -> board/pc-out-1460b
+   7e5a085f6..a4099ab35  main                     -> main
+ * [new branch]          opus/issue-1373-kf1      -> opus/issue-1373-kf1
+ * [new branch]          opus/issue-1373-manifest -> opus/issue-1373-manifest
+   7d4f2457e..7673220de  opus/issue-1413          -> opus/issue-1413
+ + 0f420095e...8543d40f0 refs/pull/1245/merge     -> refs/pull/1245/merge  (forced update)
+   7d4f2457e..7673220de  refs/pull/1427/head      -> refs/pull/1427/head
+ + 0f1fd822e...7fc23a3c8 refs/pull/1427/merge     -> refs/pull/1427/merge  (forced update)
+ * [new ref]             refs/pull/1500/head      -> refs/pull/1500/head
+ * [new ref]             refs/pull/1500/merge     -> refs/pull/1500/merge
+ * [new ref]             refs/pull/1501/head      -> refs/pull/1501/head
+ * [new ref]             refs/pull/1501/merge     -> refs/pull/1501/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10g\repo
+commit=de23877943bf3850f23ef54bc1781222f8be806b
+import exit 0 
+3_trace_hull start  6:40:50.01 
+3_trace_hull exit 0 at  6:42:18.41 
+4_parts_kit start  6:42:18.41 
+4_parts_kit exit 0 at  6:43:57.45 
+5_paint_bake start  6:43:57.45 
+5_paint_bake exit 0 at  6:47:53.26 
+6_lod start  6:47:53.26 
+6_lod exit 0 at  6:51:07.87 
+7_export start  6:51:07.87 
+7_export exit 0 at  6:54:38.99 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10g\repo\godot\assets\ships\B16_23\B16_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  6:55:19.14 
+all done 

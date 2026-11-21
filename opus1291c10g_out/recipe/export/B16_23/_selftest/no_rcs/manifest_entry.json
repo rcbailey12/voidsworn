@@ -1,0 +1,24 @@
+{
+ "name": "The Ninefold Maw, the Chorus flagship (The Chorus)",
+ "faction": "chorus",
+ "cls": "Bio-titan",
+ "band": "XL",
+ "length_world": 28.0,
+ "hardpoints": {
+  "bay": 6,
+  "board": 2,
+  "breach": 9,
+  "core": 1,
+  "engine": 3,
+  "gun": 15
+ },
+ "breaches": 9,
+ "turrets": 6,
+ "files": {
+  "B16_23.glb": {
+   "bytes": 4939456,
+   "sha256": "d3ecf1fa2735af052fd90765d136abd873cab27e96b7aa806a3ea1a95b67b0bc"
+  }
+ },
+ "pc_path": "godot/assets/ships/B16_23/"
+}

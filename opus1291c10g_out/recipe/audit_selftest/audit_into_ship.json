@@ -1,0 +1,21 @@
+{
+ "problems": [
+  "gun M1 aims into the ship (aim . mount normal -1.00)"
+ ],
+ "parts": 132,
+ "crossing_break_lines": [],
+ "structure_across_seams": [],
+ "guns_with_normals": 6,
+ "guns_into_ship": 1,
+ "guns": 6,
+ "break_lines": {
+  "t_lines": [
+   -0.22477944797105065,
+   -0.05619486199276266,
+   0.25287687896743194
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "FAIL"
+}
