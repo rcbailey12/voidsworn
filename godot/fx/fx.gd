@@ -441,7 +441,45 @@ func _gate_physics() -> void:
 		if rb != null and not rb.freeze and not rb.sleeping and not rb.is_queued_for_deletion():
 			awake = true
 			break
-	_set_physics_awake(awake)
+	# Issue 1466 (Astra pass 2, finding 3): a hull is not a rigid body, so with every plate at rest the space slept and a
+	# ship crossing settled plates passed straight through them. A hull that moved since the last look and whose path
+	# (where it was, where it is, and as far again ahead) comes near a resting body keeps the space awake; Jolt then
+	# knocks the plate and _settle_debris puts it back to rest. An empty board, or hulls far from any debris, still sleeps.
+	var near := _hull_near_debris()
+	if near: _phys_check_ms = t + PHYS_CHECK_MOVING_MS
+	_set_physics_awake(awake or near)
+
+
+const PHYS_CHECK_MOVING_MS := 100   # the next look comes sooner while a moving hull is near debris
+
+
+func _hull_near_debris() -> bool:
+	var movers: Array = []
+	for h in get_tree().get_nodes_in_group(DEATH.HULL_GROUP):
+		var hb := h as Node3D
+		if hb == null or not hb.is_inside_tree(): continue
+		var p := hb.global_position
+		var prev: Vector3 = hb.get_meta("gate_prev", p)
+		hb.set_meta("gate_prev", p)
+		var moved := p - prev
+		if moved.length_squared() < 1e-6 * unit * unit: continue
+		var reach: float = float(hb.get_meta("fx_reach", -1.0))
+		if reach < 0.0:
+			reach = DEATH.body_reach(hb)
+			hb.set_meta("fx_reach", reach)
+		movers.append([prev, p + moved, reach + 1.5 * unit])
+	if movers.is_empty(): return false
+	for n in phys_root.get_children():
+		var rb := n as RigidBody3D
+		if rb == null or rb.freeze or rb.process_mode == Node.PROCESS_MODE_DISABLED or not rb.visible or rb.is_queued_for_deletion(): continue
+		var q := rb.global_position
+		for m in movers:
+			var a: Vector3 = m[0]
+			var ab: Vector3 = (m[1] as Vector3) - a
+			var k := clampf((q - a).dot(ab) / maxf(ab.length_squared(), 1e-9), 0.0, 1.0)
+			if q.distance_squared_to(a + ab * k) < float(m[2]) * float(m[2]):
+				return true
+	return false
 
 
 # F3 profiling (the 20-ship bench's hitch frames): microseconds of main-thread fx work per named section since the last
