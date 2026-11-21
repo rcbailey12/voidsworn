@@ -31,7 +31,7 @@ func _save(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
 	var path := out.path_join("%s_%s.png" % [name, tag])
-	img.save_png(path)
+	if preload("res://tools/picture_provenance.gd").save_png(img, path) != OK: printerr("shader math shots: could not save ", path)
 	print("shader math shots: wrote ", path)
 
 func _run() -> void:
@@ -62,7 +62,7 @@ func _run() -> void:
 	var p2 := pano.duplicate()
 	p2.convert(Image.FORMAT_RGBA8)
 	p2.resize(1280, 640, Image.INTERPOLATE_LANCZOS)
-	p2.save_png(out.path_join("sky_panorama_%s.png" % tag))
+	preload("res://tools/picture_provenance.gd").save_png(p2, out.path_join("sky_panorama_%s.png" % tag))
 	print("shader math shots: wrote sky panorama")
 
 	var scene := Node3D.new()
