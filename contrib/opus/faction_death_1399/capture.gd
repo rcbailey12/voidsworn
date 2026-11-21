@@ -5,7 +5,9 @@ extends SceneTree
 ## one-crack death on (rendering/effects/death_story default), quality max, Forward+.
 ## Arguments after --: scratch directory, then a comma list of hull ids (default below), then a tag (before|after), then
 ## optionally "burst": the close camera only, a frame every 1/15 s from the kill to half a second after the split (f000.jpg
-## on), for the moves that fall between the five stills (the Sunward magazine row in the tell, the Hegemony arcs at the split).
+## on), for the moves that fall between the five stills (the Sunward magazine row in the tell, the Hegemony arcs at the split);
+## or "drift": one wider camera (four lengths), a frame every 1/6 s from the kill to 9 s after it, for how far the wreck
+## pieces travel and how fast they turn (Ryan, Nov 21: small ships' pieces "spin off super far").
 ## Output per target and radius: <scratch>/<tag>_<id>_c<r>/<moment>.png (stamped) and <moment>_sheet.jpg (960x540), and
 ## <scratch>/<tag>_capture.json with the commit, renderer and every still's fx time. Nothing outside <scratch> is written.
 ## Run with --fixed-fps 60 at 1920x1080, Forward+, through the canonical watchdog tmo.bat.
@@ -42,6 +44,7 @@ var failed := false
 var hulls: Dictionary
 var info: Dictionary
 var burst := false
+var drift := false
 
 
 func _initialize() -> void:
@@ -58,6 +61,7 @@ func _run() -> void:
 	var ids := (args[1] if args.size() > 1 else TARGETS).split(",", false)
 	tag = args[2] if args.size() > 2 else "before"
 	burst = args.size() > 3 and args[3] == "burst"
+	drift = args.size() > 3 and args[3] == "drift"
 	DirAccess.make_dir_recursive_absolute(out)
 	Engine.max_fps = 0
 	AudioServer.set_bus_mute(0, true)
@@ -83,7 +87,7 @@ func _run() -> void:
 		if not hulls.has(id):
 			_fail("no hull " + id)
 			continue
-		for r in ([0] if burst else [170, 0]):
+		for r in ([0] if burst else ([-1] if drift else [170, 0])):
 			await _clip(id, r)
 	_write(tag + "_capture.json", info, out)
 	bench._clear()
@@ -120,7 +124,7 @@ func _clip(id: String, radius: int) -> void:
 		return
 	var s = bench.fx.ship("T")
 	var L: float = s.hull.L
-	var r: float = float(radius) if radius > 0 else maxf(L * 0.62, 6.0)
+	var r: float = float(radius) if radius > 0 else (maxf(L * 4.0, 24.0) if radius < 0 else maxf(L * 0.62, 6.0))
 	bench._cam(Vector3.ZERO, r)
 	var folder := out.path_join("%s_%s_c%d" % [tag, id, int(round(r))])
 	DirAccess.make_dir_recursive_absolute(folder)
@@ -146,6 +150,13 @@ func _clip(id: String, radius: int) -> void:
 			marks["f%03d" % k] = start + float(k) / 15.0
 			k += 1
 		marks["settled"] = split + 0.55
+	if drift:
+		marks = {}
+		var k := 0
+		while float(k) / 6.0 <= 9.0:
+			marks["f%03d" % k] = start + float(k) / 6.0
+			k += 1
+		marks["settled"] = start + 9.05
 	var row := {"id": id, "fac": spec.fac, "cls": spec.cls, "code": v.code, "L": L, "radius": r, "kill_at": start, "split_at": split,
 		"core_at": core, "stills": {}}
 	while bench.fx.now < float(marks.settled) + 0.05:
@@ -153,7 +164,7 @@ func _clip(id: String, radius: int) -> void:
 		for key in marks:
 			if not row.stills.has(key) and bench.fx.now >= float(marks[key]):
 				var img: Image = bench._grab()
-				if img == null or (not burst and CAP.save_png(img, folder.path_join(key + ".png")) != OK):
+				if img == null or (not burst and not drift and CAP.save_png(img, folder.path_join(key + ".png")) != OK):
 					_fail("could not save %s %s" % [id, key])
 					continue
 				var small: Image = bench._crop(img, Vector2i(960, 540), Vector2i(960, 540)) if radius == 170 else img.duplicate()
