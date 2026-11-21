@@ -54,6 +54,7 @@ headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|sh
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/undo_test.gd|-|-|issue 1450: undo a move before firing: the whole state and dice come back, a free or pivot turn comes back, battles with every move undone and redone end identical, and undo is refused after a shot, fire on the move, ram, boarding, ability, order, Command, the ship ending, the enemy phase or any other change
 headless|rules/test/arrival_preview_test.gd|-|-|issue 1289: the rules name the reinforcement hull at battle start without changing the battle, and the ship that arrives is that hull
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
@@ -63,6 +64,7 @@ headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
+headless|scenes/battle/test/undo_scene_check.gd|-|-|issue 1450: Backspace in the live battle scene takes a one-hex move back: the drawn ship, the facing and the reach overlay return to the start hex, Undo move gives way to Next ship, and the undo event has its playback branch (no unknown event warning)
 headless|scenes/battle/test/hit_timing_check.gd|-|-|issue 1211: a [miss, miss, hit] volley lands its sound, HP drop and number on the hitting shot on the effect clock; a second-of-three hit breaks the shield there; the enemy target is ringed and named
 headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapping volleys on the fitted and the egg shield, reduced flashing off and on; the clean collapse starts once, on the draining hit
 headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg

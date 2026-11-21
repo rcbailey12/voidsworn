@@ -9,7 +9,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const env = require('./env.js');
 env.load('globalThis.__E={cmdDesc,altCommand,RUN_FACTIONS};');
 const out = {}, skipped = [], dropped = [];
-const STATE = ['RNG_S', 'SPEED', 'UID', 'SAVED_RUN', 'RUN', 'B', 'ARENA', 'CUT', 'SOLID', 'TERRAIN_META', 'META', 'ACT', 'ERRS', 'PERF', 'AI_LEVEL', 'UNKNOWN_IDS'];
+const STATE = ['RNG_S', 'SPEED', 'UID', 'SAVED_RUN', 'RUN', 'B', 'ARENA', 'CUT', 'SOLID', 'TERRAIN_META', 'META', 'ACT', 'ERRS', 'PERF', 'AI_LEVEL', 'UNKNOWN_IDS', 'UNDO_ON', 'UNDO', 'UNDO_KEYS', 'UNDO_SKIP_B']; // issue 1450: the battle undo state, not data
 const names = [];
 for (const f of env.FILES) { const s = fs.readFileSync(path.join(env.ORACLE, f), 'utf8'); const re = /^(?:const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm; let m; while ((m = re.exec(s))) if (!names.includes(m[1])) names.push(m[1]); }
 for (const extra of ['FNAMES', 'TIPS', 'ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG']) if (!names.includes(extra)) names.push(extra);
