@@ -1,0 +1,2 @@
+  battle camera H10: game bow 64.5 midship 74.3 stern 80.7 whole 72.8, studio bow 59.3 midship 65.4 stern 80.2 whole 68.3
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

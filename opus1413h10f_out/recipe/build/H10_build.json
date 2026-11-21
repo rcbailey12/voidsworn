@@ -1,0 +1,45 @@
+{
+ "cell": "H10",
+ "hull_objects": 73,
+ "parts": 283,
+ "interiors": 60,
+ "seconds": 0.4,
+ "notes": [
+  {
+   "route": "build sheet hegemony_H10",
+   "contract": {
+    "sheet": "hegemony_H10",
+    "game_ship": "h_dominion",
+    "variant": "",
+    "model_length": 21.2,
+    "scale": 0.04716980962322129,
+    "length_world": 21.0,
+    "t_lines": [
+     -0.26415,
+     -0.02594,
+     0.33019
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 9,
+    "guns": 5,
+    "engines": 4,
+    "bays": 1,
+    "points": 13,
+    "turrets": [
+     "F1_turret",
+     "F2_turret",
+     "HP_turret",
+     "HS_turret"
+    ],
+    "interior_objects": 60,
+    "slots": [
+     "0 hturbo P",
+     "1 hturbo S",
+     "2 ion F",
+     "3 flak T"
+    ]
+   }
+  }
+ ]
+}

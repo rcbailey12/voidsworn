@@ -1,0 +1,42 @@
+[audit] {"problems": ["gun I1 aims into the ship (aim . mount normal -1.00)"], "parts": 283, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 5, "guns_into_ship": 1, "guns": 5, "break_lines": {"t_lines": [-0.2641509338900392, -0.02594339529277171, 0.33018866736254904], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+ok   into_ship: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull's"], "problems": [], "crossing_break_lines": [], "guns": 5, "guns_with_normals": 5}
+[audit] FAIL
+ok   no_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's break lines are empty (r209_t_lines): an empty list tests no break line"], "problems": [], "crossing_break_lines": [], "guns": 5, "guns_with_normals": 5}
+[audit] FAIL
+ok   empty_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's longitudinal seam is not one [z, x0, x1] with x0 below x1: [0.0, 0.2, -0.2]"], "problems": [], "crossing_break_lines": [], "guns": 5, "guns_with_normals": 5}
+[audit] FAIL
+ok   bad_longitudinal: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["5 of 5 guns carry no mount normal, so the into-the-ship test could not run for them: I1, HP, HS, F1, F2"], "problems": [], "crossing_break_lines": [], "guns": 5, "guns_with_normals": 0}
+[audit] FAIL
+ok   no_normals: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["1 of 5 guns carry no mount normal, so the into-the-ship test could not run for them: F2"], "problems": [], "crossing_break_lines": [], "guns": 5, "guns_with_normals": 4}
+[audit] FAIL
+ok   one_normal_missing: the audit failed as it must
+[audit] {"problems": [], "parts": 283, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 5, "guns_into_ship": 0, "guns": 5, "break_lines": {"t_lines": [-0.2641509338900392, -0.02594339529277171, 0.33018866736254904], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   no_longitudinal: a build with no longitudinal seam is audited on its transverse seams
+[audit] {"problems": ["part A1 floats 0.61 game units off the hull"], "parts": 283, "crossing_break_lines": ["A1"], "structure_across_seams": [], "guns_with_normals": 5, "guns_into_ship": 0, "guns": 5, "break_lines": {"t_lines": [-0.2641509338900392, -0.02594339529277171, 0.33018866736254904], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+ok   machine_across: A1 on the seam is refused
+[audit] {"problems": [], "parts": 283, "crossing_break_lines": [], "structure_across_seams": ["B1"], "guns_with_normals": 5, "guns_into_ship": 0, "guns": 5, "break_lines": {"t_lines": [-0.2641509338900392, -0.02594339529277171, 0.33018866736254904], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   structure_across: B1 on the seam is allowed (structure)
+n/a  armed_no_guns: this build carries guns
+PASS the audit fails when it should
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_H10\build\H10.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-31b98ce4c3654a01ae3453a61c8fc434\runner-step-5cef7c93b7bb4758a7f8f98990c6ffbf

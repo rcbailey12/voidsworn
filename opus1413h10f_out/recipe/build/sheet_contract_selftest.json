@@ -1,0 +1,51 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (21.0 = LENGTH 21.0)",
+  "ok   3 transverse seams at the sheet's stations",
+  "ok   0 longitudinal seams at the sheet's heights and spans",
+  "ok   9 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (4) has muzzles of its own",
+  "ok   4 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   4 engine exits and bell radii are the sheet's",
+  "ok   60 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 4 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (hturbo P) was refused: HP: weapon 'hturbo' arc 'P' names 0 slots of the data.js list [('hturbo', 'S'), ('ion', 'F'), ('flak', 'T')]",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-6.1 to -5.1) runs across the transverse seam B-3: one compartment each",
+  "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+ ],
+ "record": {
+  "sheet": "hegemony_H10",
+  "game_ship": "h_dominion",
+  "variant": "",
+  "model_length": 21.2,
+  "scale": 0.04716980962322129,
+  "length_world": 21.0,
+  "t_lines": [
+   -0.26415,
+   -0.02594,
+   0.33019
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 9,
+  "guns": 5,
+  "engines": 4,
+  "bays": 1,
+  "points": 13,
+  "turrets": [
+   "F1_turret",
+   "F2_turret",
+   "HP_turret",
+   "HS_turret"
+  ],
+  "interior_objects": 60,
+  "slots": [
+   "0 hturbo P",
+   "1 hturbo S",
+   "2 ion F",
+   "3 flak T"
+  ]
+ }
+}

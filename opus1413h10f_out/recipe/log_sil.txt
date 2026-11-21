@@ -1,0 +1,1 @@
+[score] H10 {'overlap': 70.0, 'concept_covered': 85.0, 'cell_outside': 20.1, 'triangles': 54332}

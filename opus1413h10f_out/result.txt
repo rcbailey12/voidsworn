@@ -1,0 +1,42 @@
+start hegemony_H10 H10_23 board/pin-1413f Sat 11/21/2026 16:58:44.72 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   f5b36f9da..277e47642  neon/issue-1551      -> neon/issue-1551
+   ddc85277c..395a3731b  opus/issue-1415      -> opus/issue-1415
+   ddc85277c..395a3731b  refs/pull/1428/head  -> refs/pull/1428/head
+ + 318d3d619...1f0d16440 refs/pull/1428/merge -> refs/pull/1428/merge  (forced update)
+   f5b36f9da..277e47642  refs/pull/1552/head  -> refs/pull/1552/head
+ + d2d51523e...358a23f11 refs/pull/1552/merge -> refs/pull/1552/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\repo
+commit=7521a69d4299163e965750f87fdd3819097ef158
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+import exit 0 
+1_concept_in start 17:03:46.80 
+1_concept_in exit 0 at 17:03:49.34 
+2_shape_ref start 17:03:49.34 
+2_shape_ref exit 0 at 17:03:50.18 
+3_trace_hull start 17:03:50.18 
+3_trace_hull exit 0 at 17:05:09.94 
+4_parts_kit start 17:05:09.94 
+4_parts_kit exit 0 at 17:05:44.34 
+5_paint_bake start 17:05:44.35 
+5_paint_bake exit 0 at 17:11:07.99 
+6_lod start 17:11:07.99 
+6_lod exit 0 at 17:12:09.36 
+7_export start 17:12:09.36 
+7_export exit 0 at 17:13:21.02 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\repo\godot\assets\ships\H10_23\H10_23.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\picture_provenance.py 
+shots exit 0 
+collected 152 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1413h10f\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 239.9 GB free
+done PASS Sat 11/21/2026 17:13:48.91 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-31b98ce4c3654a01ae3453a61c8fc434

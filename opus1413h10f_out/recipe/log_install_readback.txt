@@ -1,0 +1,9 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-31b98ce4c3654a01ae3453a61c8fc434\voidsworn-run-ae8e1544d6ba4e64979654b9fe39db76\godot-profile-6cafaab5473b40239b80e25a60a2a97f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+INSTALL READBACK PASS code=H10_23 nodes=35
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-31b98ce4c3654a01ae3453a61c8fc434\voidsworn-run-ae8e1544d6ba4e64979654b9fe39db76\godot-profile-6cafaab5473b40239b80e25a60a2a97f

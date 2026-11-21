@@ -1,0 +1,54 @@
+{
+ "name": "Dominion-class dreadnought, the Hegemony line flagship (Hegemony Navy)",
+ "faction": "hegemony",
+ "cls": "Battleship",
+ "band": "L",
+ "game_ship": "h_dominion",
+ "length_world": 21.0,
+ "hardpoints": {
+  "gun": 9,
+  "engine": 4,
+  "bay": 1,
+  "breach": 6,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 6,
+ "turrets": 4,
+ "files": {
+  "H10_23.glb": {
+   "bytes": 6245404,
+   "sha256": "7b04efd4b3bcded22a9d744cf1b1d08f1861cb243f681f7f0882c1315f1e8f09"
+  },
+  "H10_23_base.jpg": {
+   "bytes": 1560686,
+   "sha256": "0f7e0348e3daf8bb90c94f6666dddf67c96d4dde51a0159430927f9032df592b"
+  },
+  "H10_23_glow_emission.jpg": {
+   "bytes": 599093,
+   "sha256": "7b5124ee4ac48a246fee1703844449d5620f14a64977faff599c1b6d667a399a"
+  },
+  "H10_23_normal.png": {
+   "bytes": 4426508,
+   "sha256": "90211e01fa0c5c094bf86f7b5734c861f8a1022d168a447ccb3608bd100e832c"
+  },
+  "H10_23_orm.png": {
+   "bytes": 6645485,
+   "sha256": "af492bfb6e0e561a22a64d7b402770ba6c20765518c630305b8464849ffce957"
+  },
+  "H10_23_parts_base.jpg": {
+   "bytes": 1080983,
+   "sha256": "bcd0bcb46cc8fd94be8f312054940380d31ec66c5d0bcea54ed1211cec3ef99f"
+  },
+  "H10_23_parts_normal.png": {
+   "bytes": 4505516,
+   "sha256": "af81638f4f281324e6a89135b328b8368ebe0cf40e8704de8d39e447b2610cd9"
+  },
+  "H10_23_parts_orm.png": {
+   "bytes": 5425789,
+   "sha256": "85b1de3119596e047e39a94d805bd6ce5bb1190359922ab47675571ddc7703b7"
+  }
+ },
+ "pc_path": "godot/assets/ships/H10_23/"
+}
