@@ -56,8 +56,8 @@ jobs:
         run: |
           node tools/ci/docs_only.js --self-test
           say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
-          if [ "$EVENT" = workflow_dispatch ] && [ -z "$BASE" ]; then
-            say "Started by hand with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
+          if [ -z "$BASE" ] && { [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF" = refs/heads/main ]; }; then
+            say "Started by hand or on main with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
           base=${BASE:-main}
           if git fetch -q --no-tags --filter=blob:none --unshallow origin "$base" \
@@ -316,6 +316,6 @@ jobs:
           GODOT: ${{ needs.changes.outputs.godot }}
         run: |
           echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
-          bad=$(echo "$RESULTS" | jq -r --arg g "$GODOT" '[to_entries[] | select(.value.result != "success" and ((.value.result == "skipped" and $g == "false") | not))] | length')
-          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled or were skipped without a docs-only verdict."; exit 1; fi
+          bad=$(echo "$RESULTS" | jq -r --arg g "$GODOT" '[to_entries[] | select(.value.result != "success" and ((.value.result == "skipped" and $g == "false" and (.key | IN("godot-parity", "rules-safety", "godot-game", "a16-fixture"))) | not))] | length')
+          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled, or were skipped without being one of the four Godot jobs on a docs-only verdict."; exit 1; fi
           echo "PASS" | tee -a "$GITHUB_STEP_SUMMARY"

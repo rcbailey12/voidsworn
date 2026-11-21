@@ -19,6 +19,8 @@ function isDoc(path) {
 
 function classify(paths) {
   const list = paths.map(p => p.trim()).filter(Boolean);
+  // An empty list means the comparison saw nothing (a ref compared with itself, such as main with main): run everything.
+  if (!list.length) return { docsOnly: false, reason: 'no changed files found, so every check runs' };
   const code = list.filter(p => !isDoc(p));
   if (code.length) return { docsOnly: false, reason: `${code.length} of ${list.length} changed file(s) are not docs, first: ${code[0]}` };
   return { docsOnly: true, reason: `all ${list.length} changed file(s) are docs or pictures` };
@@ -27,7 +29,7 @@ function classify(paths) {
 function selfTest() {
   const cases = [
     [['contrib/muse/reviews/x/PACK.md', 'docs/shots/a.jpg', 'HANDOFF.md'], true],
-    [[], true],
+    [[], false],
     [['godot/story/outlines.md'], false],
     [['docs/ship_pipeline/build_sheets/voidsworn_SF3/checks.json'], false],
     [['contrib/opus/tools/check_em_dashes.js'], false],
