@@ -1,0 +1,8 @@
+issue 1497 selftest part 1, job opus1497st4, attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137
+ships copy recorded: 950 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+ships copy recorded: 950 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\old_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+done PASS
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137 (results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137 (the Board writes it when it relays))
+disk: checkouts freed 0.0 GB in all, C: 481.8 GB free
+selftest part 1 PASS: checkouts wait for the relay; relay out_new, out_old and opus1497st4ship\out, then run OPUS1497_AFTERRELAY4.bat
+all done

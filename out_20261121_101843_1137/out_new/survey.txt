@@ -1,0 +1,23 @@
+ship clone 6.5 GB (import cache 0.9 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\board\repo
+ship clone 6.6 GB (import cache 0.9 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+ship clone 6.6 GB (import cache 0.9 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo
+ship clone 5.7 GB (import cache 0.0 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ship clone 12.5 GB (import cache 3.0 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\look_bench\repo
+ship clone 13.2 GB (import cache 3.0 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\opus1235\repo
+ship clone 17.4 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1291c10h\repo
+ship clone 17.5 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\repo
+ship clone 18.4 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\repo
+ship clone 18.2 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14h\repo
+ship clone 17.4 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo
+ship clone 18.5 GB (import cache 2.9 GB) no result C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo
+ship clone 18.3 GB (import cache 0.9 GB) FAILED or unfinished C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GL1\repo
+ship clone 18.3 GB (import cache 0.9 GB) PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GS1\repo
+attempt checkout 24.7 GB FAILED C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new
+attempt checkout 14.6 GB PASS C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2\out_20261121_084256_15138\new
+attempt checkout 24.8 GB unfinished C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\new
+attempt checkout 22.2 GB unfinished C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4\out_20261121_101843_1137\old
+ship clone 17.6 GB (import cache 0.1 GB) FAILED or unfinished C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4ship\repo
+attempt checkout 24.7 GB FAILED C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\new
+attempt checkout 22.1 GB FAILED C:\Users\rcbai\Downloads\voidsworn_test\opus1524\out_20261121_095841_22531\old
+attempt checkout 24.8 GB unfinished C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new
+survey: 370.6 GB in job checkouts and ship clones (hard links to the mirror count in full); nothing was removed
