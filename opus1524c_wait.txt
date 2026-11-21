@@ -1,0 +1,8 @@
+OPUS1524C_WAIT.bat waiting for OPUS1529_PROOF2 exit in opus1529b_wait.txt Sat 11/21/2026 10:34:44.64 
+swapped out while only waiting 10:59:13: replaced by OPUS1524D_WAIT.bat (waits for OPUS1529_PROOF3 exit in opus1529c_wait.txt, same SHOTS2 and end line, Board Nov 21 16:58 UTC)
+OPUS1524D_WAIT.bat waiting for OPUS1529_PROOF3 exit in opus1529c_wait.txt Sat 11/21/2026 10:59:13.27 
+OPUS1524_SHOTS3 start 11:27:16.12 
+OPUS1524_SHOTS3 exit 2 at 11:27:18.00 
+run folder out_20261121_112716_9075
+result: done FAILED: preflight: missing tool
+all done Sat 11/21/2026 11:27:18.38 

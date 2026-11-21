@@ -1,0 +1,9 @@
+[Sat 11/21/2026 11:27:16.98] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d9c315dd8633\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T17:27:17Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+MISSING ffmpeg: set FFMPEG_EXE or install it
+STOPPED: missing tools: ffmpeg
+done FAILED: preflight: missing tool
+all done Sat 11/21/2026 11:27:17.99
