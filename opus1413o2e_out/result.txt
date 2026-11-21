@@ -1,0 +1,37 @@
+start hegemony_O2 O2_37 board/pin-1413e Sat 11/21/2026 13:42:48.97 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   633a31fa2..0f10e1a04  main       -> main
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2e\repo
+commit=3dd4e50204db724721e4acd24c40028ef84a0b04
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\pc\tmo.bat 
+import exit 0 
+1_concept_in start 13:47:32.00 
+1_concept_in exit 0 at 13:47:34.57 
+2_shape_ref start 13:47:34.57 
+2_shape_ref exit 0 at 13:47:35.38 
+3_trace_hull start 13:47:35.38 
+3_trace_hull exit 0 at 13:48:45.28 
+4_parts_kit start 13:48:45.29 
+4_parts_kit exit 0 at 13:49:10.66 
+5_paint_bake start 13:49:10.66 
+5_paint_bake exit 0 at 13:53:33.21 
+6_lod start 13:53:33.21 
+6_lod exit 0 at 13:54:28.40 
+7_export start 13:54:28.40 
+7_export exit 0 at 13:55:17.93 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2e\repo\godot\assets\ships\O2_37\O2_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\2f6488efe90d\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1413o2e\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 379.1 GB free
+done PASS Sat 11/21/2026 13:55:40.85 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-994f503776e34973b11a13e814e1aede

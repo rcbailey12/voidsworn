@@ -1,0 +1,1501 @@
+GPU: waiting for shared claim, weight 2 (1413)
+GPU: acquired shared claim 6e24a883-5d33-4dab-b469-c5bc6663faa7
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\O2.blend"
+Fra:1 Mem:190.54M (Peak 190.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:190.58M (Peak 190.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_welllip_0
+Fra:1 Mem:190.66M (Peak 190.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper_trim_b
+Fra:1 Mem:190.73M (Peak 190.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D2_body_hmetal
+Fra:1 Mem:190.77M (Peak 190.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_htrim
+Fra:1 Mem:190.77M (Peak 190.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_dark
+Fra:1 Mem:190.82M (Peak 190.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hpanel
+Fra:1 Mem:190.85M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_htrim
+Fra:1 Mem:190.83M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hgrey2
+Fra:1 Mem:190.85M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_htrim
+Fra:1 Mem:190.92M (Peak 190.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_mount_hgrey
+Fra:1 Mem:190.91M (Peak 190.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_dark
+Fra:1 Mem:190.93M (Peak 190.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_htrim
+Fra:1 Mem:190.96M (Peak 190.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:190.96M (Peak 190.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_body_hmetal
+Fra:1 Mem:190.97M (Peak 190.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1s_body_hmetal
+Fra:1 Mem:191.00M (Peak 191.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_body_hmetal
+Fra:1 Mem:191.17M (Peak 191.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:191.17M (Peak 191.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_mount_hgrey2
+Fra:1 Mem:191.17M (Peak 191.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_body_hmetal
+Fra:1 Mem:191.22M (Peak 191.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_body_hmetal
+Fra:1 Mem:191.23M (Peak 191.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_body_hmetal
+Fra:1 Mem:191.25M (Peak 191.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_0
+Fra:1 Mem:191.25M (Peak 191.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_1
+Fra:1 Mem:191.25M (Peak 191.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_0
+Fra:1 Mem:191.26M (Peak 191.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_1
+Fra:1 Mem:191.26M (Peak 191.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b2
+Fra:1 Mem:191.27M (Peak 191.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:191.27M (Peak 191.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:191.28M (Peak 191.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p6
+Fra:1 Mem:191.28M (Peak 191.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s2
+Fra:1 Mem:191.31M (Peak 191.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s4
+Fra:1 Mem:191.32M (Peak 191.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s6
+Fra:1 Mem:191.34M (Peak 191.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_mount_hgrey2
+Fra:1 Mem:191.35M (Peak 191.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hwin
+Fra:1 Mem:191.35M (Peak 191.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hlens
+Fra:1 Mem:191.36M (Peak 191.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:191.36M (Peak 191.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hlining
+Fra:1 Mem:191.38M (Peak 191.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:191.39M (Peak 191.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:191.42M (Peak 191.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:191.41M (Peak 191.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hpanel
+Fra:1 Mem:191.42M (Peak 191.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hlining
+Fra:1 Mem:191.43M (Peak 191.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hnozzle
+Fra:1 Mem:191.43M (Peak 191.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hmetal
+Fra:1 Mem:191.44M (Peak 191.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hgrey2
+Fra:1 Mem:191.44M (Peak 191.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hpanel
+Fra:1 Mem:191.45M (Peak 191.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hlining
+Fra:1 Mem:191.48M (Peak 191.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hnozzle
+Fra:1 Mem:191.49M (Peak 191.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hmetal
+Fra:1 Mem:191.51M (Peak 191.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_htrim
+Fra:1 Mem:191.55M (Peak 191.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hpanel
+Fra:1 Mem:191.55M (Peak 191.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:191.55M (Peak 191.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hnozzle
+Fra:1 Mem:191.58M (Peak 191.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hmetal
+Fra:1 Mem:191.59M (Peak 191.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hgrey2
+Fra:1 Mem:191.61M (Peak 191.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_htrim
+Fra:1 Mem:191.62M (Peak 191.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hpanel
+Fra:1 Mem:191.62M (Peak 191.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hmetal
+Fra:1 Mem:191.64M (Peak 191.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_dark
+Fra:1 Mem:191.67M (Peak 191.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_hgrey2
+Fra:1 Mem:191.68M (Peak 191.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hlining
+Fra:1 Mem:191.74M (Peak 191.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_mount_htrim
+Fra:1 Mem:191.75M (Peak 191.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_mount_htrim
+Fra:1 Mem:191.75M (Peak 191.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_mount_htrim
+Fra:1 Mem:191.77M (Peak 191.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_dark
+Fra:1 Mem:191.77M (Peak 191.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey
+Fra:1 Mem:191.79M (Peak 191.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_mount_htrim
+Fra:1 Mem:191.80M (Peak 191.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_dark
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_hgrey
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_mount_htrim
+Fra:1 Mem:191.81M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:191.84M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey2
+Fra:1 Mem:191.84M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_dark
+Fra:1 Mem:191.83M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey2
+Fra:1 Mem:191.85M (Peak 191.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_dark
+Fra:1 Mem:191.86M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_body_hgrey
+Fra:1 Mem:191.85M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_body_hgrey
+Fra:1 Mem:191.87M (Peak 191.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_htrim
+Fra:1 Mem:191.86M (Peak 191.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_dark
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_htrim
+Fra:1 Mem:191.87M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_htrim
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_body_hgrey
+Fra:1 Mem:191.91M (Peak 191.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:191.90M (Peak 191.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hmetal
+Fra:1 Mem:191.91M (Peak 191.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hmetal
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:191.96M (Peak 191.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hlining
+Fra:1 Mem:191.95M (Peak 191.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_mount_htrim
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_body_hwin
+Fra:1 Mem:191.97M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_body_hwin
+Fra:1 Mem:192.02M (Peak 192.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.00M (Peak 192.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_dark
+Fra:1 Mem:192.00M (Peak 192.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey2
+Fra:1 Mem:192.02M (Peak 192.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_dark
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey
+Fra:1 Mem:192.02M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_mount_htrim
+Fra:1 Mem:192.02M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_dark
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_mount_htrim
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_dark
+Fra:1 Mem:192.05M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey
+Fra:1 Mem:192.05M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey2
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_dark
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_htrim
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_fuel
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_htrim
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_body_hgrey
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_engine_room
+Fra:1 Mem:192.08M (Peak 192.09M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_body_hgrey
+Fra:1 Mem:192.10M (Peak 192.10M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_dark
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_htrim
+Fra:1 Mem:192.10M (Peak 192.11M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.10M (Peak 192.11M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_dark
+Fra:1 Mem:192.10M (Peak 192.11M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey2
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_dark
+Fra:1 Mem:192.12M (Peak 192.13M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F10
+Fra:1 Mem:192.13M (Peak 192.14M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_mount_hgrey2
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hpanel
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hblue
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_dark
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey2
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_dark
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey2
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_dark
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_mount_htrim
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_dark
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey
+Fra:1 Mem:192.23M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_mount_htrim
+Fra:1 Mem:192.23M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_dark
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey
+Fra:1 Mem:192.24M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.24M (Peak 192.25M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_dark
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey
+Fra:1 Mem:192.25M (Peak 192.26M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey2
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hpanel
+Fra:1 Mem:192.27M (Peak 192.28M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_dark
+Fra:1 Mem:192.26M (Peak 192.28M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hpanel
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_aft_main
+Fra:1 Mem:192.28M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_dark
+Fra:1 Mem:192.28M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hblue
+Fra:1 Mem:192.28M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_mount_htrim
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_hgrey2
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_mount_htrim
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_dark
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey2
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_dark
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey2
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_dark
+Fra:1 Mem:192.32M (Peak 192.33M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey
+Fra:1 Mem:192.32M (Peak 192.33M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_mount_htrim
+Fra:1 Mem:192.32M (Peak 192.33M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey
+Fra:1 Mem:192.33M (Peak 192.34M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_dark
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey2
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey2
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hgrey
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hpanel
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hgrey
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.41M (Peak 192.42M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hpanel
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hgrey
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bow_stores
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_fwd
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_p
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_s
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_aft
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.14M (Peak 192.72M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_engine_emission
+Fra:1 Mem:191.14M (Peak 192.72M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.19M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.19M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.19M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.19M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.27M (Peak 911.20M) | Time:00:00.39 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.34M (Peak 911.20M) | Time:00:00.39 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.34M (Peak 911.20M) | Time:00:00.39 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.34M (Peak 911.20M) | Time:00:00.39 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.34M (Peak 911.20M) | Time:00:00.39 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.34M (Peak 911.20M) | Time:00:00.39 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.43M (Peak 911.20M) | Time:00:00.39 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.38M (Peak 911.20M) | Time:00:00.39 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.39M (Peak 911.20M) | Time:00:00.39 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.39M (Peak 911.20M) | Time:00:00.39 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.39M (Peak 911.20M) | Time:00:00.40 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.39M (Peak 911.20M) | Time:00:00.40 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.26M (Peak 911.20M) | Time:00:00.40 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.14M (Peak 911.20M) | Time:00:00.42 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.14M (Peak 911.20M) | Time:00:00.42 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.14M (Peak 911.20M) | Time:00:00.42 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.14M (Peak 911.20M) | Time:00:00.42 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.14M (Peak 911.20M) | Time:00:00.42 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.15M (Peak 911.20M) | Time:00:00.42 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.50M (Peak 911.20M) | Time:00:00.43 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.50M (Peak 911.20M) | Time:00:00.43 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_top.png'
+Time: 00:00.47 (Saving: 00:00.01)
+
+Fra:1 Mem:191.55M (Peak 191.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:191.55M (Peak 191.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper
+Fra:1 Mem:191.59M (Peak 191.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D1_mount_hgrey2
+Fra:1 Mem:191.67M (Peak 191.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D2_body_hmetal
+Fra:1 Mem:191.74M (Peak 191.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hgrey2
+Fra:1 Mem:191.76M (Peak 191.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hmetal
+Fra:1 Mem:191.80M (Peak 191.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_dark
+Fra:1 Mem:191.81M (Peak 191.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hpanel
+Fra:1 Mem:191.81M (Peak 191.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hgrey2
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_htrim
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_mount_hgrey
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_dark
+Fra:1 Mem:191.84M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hgrey2
+Fra:1 Mem:191.84M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hmetal
+Fra:1 Mem:191.85M (Peak 191.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_dark
+Fra:1 Mem:191.85M (Peak 191.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hpanel
+Fra:1 Mem:191.85M (Peak 191.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_htrim
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_mount_hgrey2
+Fra:1 Mem:191.89M (Peak 191.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_body_hmetal
+Fra:1 Mem:191.89M (Peak 191.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1s_mount_hgrey2
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1s_body_hmetal
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_body_hmetal
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_body_hmetal
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_mount_hgrey2
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_body_hmetal
+Fra:1 Mem:191.98M (Peak 191.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_mount_hgrey2
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_body_hmetal
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_mount_hgrey2
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_body_hmetal
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_1
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b0
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_0
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b1
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_1
+Fra:1 Mem:192.02M (Peak 192.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b2
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:192.05M (Peak 192.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:192.05M (Peak 192.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p6
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s4
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_mount_hgrey2
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hwin
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hpanel
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_htrim
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hlens
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hlining
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:192.10M (Peak 192.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_htrim
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hnozzle
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hgrey2
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hpanel
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_htrim
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hlining
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hmetal
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hgrey2
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_htrim
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hpanel
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_htrim
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hnozzle
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hgrey2
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_htrim
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hpanel
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_dark
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hlining
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hmetal
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_dark
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hlining
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_mount_htrim
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_body_hwin
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_mount_htrim
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_body_hwin
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_body_hwin
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_mount_htrim
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey2
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_mount_htrim
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_fuel
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_dark
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey2
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_dark
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_dark
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_htrim
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_mount_dark
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_body_hgrey
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_dark
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_htrim
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_dark
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_htrim
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_dark
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_htrim
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_body_hgrey
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hmetal
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_dark
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hmetal
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hlining
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_body_hwin
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_mount_htrim
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_body_hwin
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_mount_htrim
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_dark
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_mount_htrim
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_dark
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F10
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey2
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_mount_htrim
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey2
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_dark
+Fra:1 Mem:192.43M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_htrim
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_body_hgrey
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_htrim
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_body_hgrey
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_dark
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_body_hgrey
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_dark
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_htrim
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_dark
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_mount_htrim
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_dark
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_mount_hgrey2
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_dark
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hblue
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_mount_hgrey2
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hblue
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_mount_htrim
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey2
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_mount_htrim
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey2
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_mount_htrim
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_dark
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_mount_hgrey2
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hpanel
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_mount_hgrey2
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hpanel
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_mount_htrim
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_mount_htrim
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_dark
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_dark
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey2
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_mount_htrim
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey2
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_mount_htrim
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey2
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_mount_htrim
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey2
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hgrey
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hgrey
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hpanel
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_s
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_p
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bridge
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_p
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bow_stores
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_fwd
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_p
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_p
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_aft
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_aft
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.17M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_engine_emission
+Fra:1 Mem:191.17M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.21M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.21M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.21M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.21M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.29M (Peak 975.25M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.36M (Peak 975.25M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.36M (Peak 975.25M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.36M (Peak 975.25M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.36M (Peak 975.25M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.36M (Peak 975.25M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.45M (Peak 975.25M) | Time:00:00.37 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.41M (Peak 975.25M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.41M (Peak 975.25M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.41M (Peak 975.25M) | Time:00:00.37 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.41M (Peak 975.25M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.41M (Peak 975.25M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.28M (Peak 975.25M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.16M (Peak 975.25M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.16M (Peak 975.25M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.17M (Peak 975.25M) | Time:00:00.39 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.17M (Peak 975.25M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.17M (Peak 975.25M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.17M (Peak 975.25M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.52M (Peak 975.25M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.52M (Peak 975.25M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_below.png'
+Time: 00:00.44 (Saving: 00:00.00)
+
+Fra:1 Mem:191.59M (Peak 191.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:191.59M (Peak 191.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper_trim_t
+Fra:1 Mem:191.63M (Peak 191.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D1_mount_hgrey2
+Fra:1 Mem:191.74M (Peak 191.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_mount_hgrey
+Fra:1 Mem:191.78M (Peak 191.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hpanel
+Fra:1 Mem:191.78M (Peak 191.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_mount_hgrey
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_dark
+Fra:1 Mem:191.83M (Peak 191.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hgrey2
+Fra:1 Mem:191.82M (Peak 191.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_htrim
+Fra:1 Mem:191.82M (Peak 191.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hmetal
+Fra:1 Mem:191.84M (Peak 191.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_dark
+Fra:1 Mem:191.85M (Peak 191.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hpanel
+Fra:1 Mem:191.86M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_htrim
+Fra:1 Mem:191.87M (Peak 191.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hmetal
+Fra:1 Mem:191.87M (Peak 191.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hpanel
+Fra:1 Mem:191.89M (Peak 191.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hgrey2
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_mount_hgrey2
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_body_hmetal
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_mount_hgrey2
+Fra:1 Mem:191.97M (Peak 191.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_body_hmetal
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_body_hmetal
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_mount_hgrey2
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_body_hmetal
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_mount_hgrey2
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_body_hmetal
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_mount_hgrey2
+Fra:1 Mem:192.06M (Peak 192.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_0
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_1
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_1
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b1
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_0
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_1
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p6
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s2
+Fra:1 Mem:192.10M (Peak 192.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s4
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_mount_hgrey2
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hwin
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hpanel
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_htrim
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hlens
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hpanel
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hlining
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hnozzle
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hgrey2
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hpanel
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_htrim
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hlining
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hnozzle
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hmetal
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hgrey2
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hpanel
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_htrim
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hgrey2
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_htrim
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hpanel
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_sterncap
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_hgrey2
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_dark
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hlining
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_hgrey2
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hmetal
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_dark
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_mount_htrim
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_body_hwin
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_mount_htrim
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_body_hwin
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_dark
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey2
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_mount_htrim
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_dark
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_hgrey
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_hgrey2
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_mount_htrim
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_dark
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey2
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_fuel
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey2
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_dark
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_body_hgrey
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_mount_htrim
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_body_hgrey
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_dark
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_htrim
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_body_hgrey
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_htrim
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_body_hgrey
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_engine_room
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_dark
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_htrim
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hmetal
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hmetal
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_mount_htrim
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_body_hwin
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_mount_htrim
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_body_hwin
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey2
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey2
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey2
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_mount_htrim
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_dark
+Fra:1 Mem:192.48M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_htrim
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_body_hgrey
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_dark
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_body_hgrey
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_dark
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_body_hgrey
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_htrim
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_body_hgrey
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_htrim
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_mount_htrim
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey2
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_mount_hgrey2
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_mount_hgrey2
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hpanel
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_mount_htrim
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_dark
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_mount_htrim
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey2
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_dark
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey2
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_mount_hgrey2
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_dark
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_mount_hgrey2
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_dark
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_dark
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_mount_htrim
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_aft_main
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey2
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_mount_htrim
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_mount_htrim
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey2
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_dark
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey2
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hpanel
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hpanel
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bridge
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_s
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bow_stores
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_p
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_p
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_s
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_aft
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_p
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_s
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.22M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_engine_emission
+Fra:1 Mem:191.22M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.23M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.23M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.23M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.23M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.32M (Peak 847.29M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.39M (Peak 847.29M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.39M (Peak 847.29M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.39M (Peak 847.29M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.39M (Peak 847.29M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.39M (Peak 847.29M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.48M (Peak 847.29M) | Time:00:00.36 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.43M (Peak 847.29M) | Time:00:00.36 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.44M (Peak 847.29M) | Time:00:00.36 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.44M (Peak 847.29M) | Time:00:00.36 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.44M (Peak 847.29M) | Time:00:00.36 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.44M (Peak 847.29M) | Time:00:00.36 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.30M (Peak 847.29M) | Time:00:00.36 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.30M (Peak 847.29M) | Time:00:00.36 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.30M (Peak 847.29M) | Time:00:00.36 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.31M (Peak 847.29M) | Time:00:00.36 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.31M (Peak 847.29M) | Time:00:00.36 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.31M (Peak 847.29M) | Time:00:00.36 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.31M (Peak 847.29M) | Time:00:00.36 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.31M (Peak 847.29M) | Time:00:00.36 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.19M (Peak 847.29M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.19M (Peak 847.29M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.19M (Peak 847.29M) | Time:00:00.39 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.19M (Peak 847.29M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.19M (Peak 847.29M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.20M (Peak 847.29M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.54M (Peak 847.29M) | Time:00:00.39 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.54M (Peak 847.29M) | Time:00:00.39 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_port.png'
+Time: 00:00.43 (Saving: 00:00.00)
+
+Fra:1 Mem:191.63M (Peak 191.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:191.63M (Peak 191.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper_trim_t
+Fra:1 Mem:191.67M (Peak 191.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D1_body_hmetal
+Fra:1 Mem:191.75M (Peak 191.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_mount_hgrey
+Fra:1 Mem:191.82M (Peak 191.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hpanel
+Fra:1 Mem:191.83M (Peak 191.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hmetal
+Fra:1 Mem:191.86M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hpanel
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hgrey2
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hmetal
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_mount_hgrey
+Fra:1 Mem:191.88M (Peak 191.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hpanel
+Fra:1 Mem:191.91M (Peak 191.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hgrey2
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_htrim
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_mount_hgrey
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_dark
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hgrey2
+Fra:1 Mem:191.97M (Peak 191.97M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_htrim
+Fra:1 Mem:191.98M (Peak 191.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_mount_hgrey2
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_body_hmetal
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1s_body_hmetal
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_mount_hgrey2
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_mount_hgrey2
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_body_hmetal
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_mount_hgrey2
+Fra:1 Mem:192.05M (Peak 192.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_mount_hgrey2
+Fra:1 Mem:192.05M (Peak 192.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_body_hmetal
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_mount_hgrey2
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_body_hmetal
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b0
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_0
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_1
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_0
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_1
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:192.09M (Peak 192.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:192.10M (Peak 192.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s0
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s4
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_mount_hgrey2
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hgrey
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hpanel
+Fra:1 Mem:192.15M (Peak 192.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_htrim
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hlens
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hpanel
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hlining
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hmetal
+Fra:1 Mem:192.21M (Peak 192.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hgrey2
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_htrim
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_htrim
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hnozzle
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hmetal
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hgrey2
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_htrim
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hmetal
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hgrey2
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hpanel
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_sterncap
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hmetal
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_dark
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_hgrey2
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hmetal
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_dark
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hlining
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_body_hwin
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_body_hwin
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_mount_htrim
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_body_hwin
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_mount_htrim
+Fra:1 Mem:192.37M (Peak 192.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey2
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_dark
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_mount_htrim
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_dark
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey2
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_mount_htrim
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_dark
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_htrim
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_body_hgrey
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_dark
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_htrim
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_dark
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_dark
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_body_hgrey
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_dark
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_mount_htrim
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_body_hwin
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_body_hwin
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_mount_htrim
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_dark
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey2
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_dark
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey2
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_dark
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey2
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_htrim
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_body_hgrey
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_htrim
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_body_hgrey
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_htrim
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_engine_room
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_dark
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_mount_hgrey2
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hpanel
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hblue
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_mount_htrim
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_dark
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey2
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_dark
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey2
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey2
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_mount_htrim
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_dark
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_dark
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F10
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_mount_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hpanel
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hblue
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_mount_hgrey2
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hblue
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_mount_htrim
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_hgrey2
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey2
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_dark
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_dark
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_mount_htrim
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_dark
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey2
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_mount_htrim
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey2
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_mount_htrim
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_dark
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey2
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_aft_main
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hgrey
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hpanel
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hgrey
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hpanel
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hpanel
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F3
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bridge
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_p
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bow_stores
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_fwd
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_p
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_aft
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_aft
+Fra:1 Mem:192.78M (Peak 192.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_s
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:192.82M (Peak 192.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:192.84M (Peak 192.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.26M (Peak 192.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_hull_albedo
+Fra:1 Mem:191.26M (Peak 192.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.25M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.25M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.25M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.25M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.34M (Peak 911.33M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.41M (Peak 911.33M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.41M (Peak 911.33M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.41M (Peak 911.33M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.41M (Peak 911.33M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.41M (Peak 911.33M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.50M (Peak 911.33M) | Time:00:00.37 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.45M (Peak 911.33M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.46M (Peak 911.33M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.46M (Peak 911.33M) | Time:00:00.38 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.46M (Peak 911.33M) | Time:00:00.38 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.46M (Peak 911.33M) | Time:00:00.38 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.33M (Peak 911.33M) | Time:00:00.38 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.21M (Peak 911.33M) | Time:00:00.40 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.21M (Peak 911.33M) | Time:00:00.40 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.21M (Peak 911.33M) | Time:00:00.40 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.21M (Peak 911.33M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.21M (Peak 911.33M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.22M (Peak 911.33M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.56M (Peak 911.33M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.56M (Peak 911.33M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_starboard.png'
+Time: 00:00.44 (Saving: 00:00.00)
+
+Fra:1 Mem:191.67M (Peak 191.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:191.67M (Peak 191.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper_trim_t
+Fra:1 Mem:191.71M (Peak 191.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D1_body_hmetal
+Fra:1 Mem:191.73M (Peak 191.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D2_mount_hgrey2
+Fra:1 Mem:191.86M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_mount_hgrey
+Fra:1 Mem:191.86M (Peak 191.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hpanel
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_mount_hgrey
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_dark
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hgrey2
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_htrim
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hmetal
+Fra:1 Mem:191.92M (Peak 191.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_mount_hgrey
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hgrey2
+Fra:1 Mem:191.93M (Peak 191.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_htrim
+Fra:1 Mem:191.98M (Peak 191.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hmetal
+Fra:1 Mem:191.98M (Peak 191.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_dark
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hgrey2
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_htrim
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_mount_hgrey2
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_body_hmetal
+Fra:1 Mem:192.03M (Peak 192.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_mount_hgrey2
+Fra:1 Mem:192.05M (Peak 192.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_body_hmetal
+Fra:1 Mem:192.07M (Peak 192.07M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_mount_hgrey2
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_body_hmetal
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_mount_hgrey2
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_mount_hgrey2
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_mount_hgrey2
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_body_hmetal
+Fra:1 Mem:192.11M (Peak 192.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_0
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_1
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b0
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_0
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_1
+Fra:1 Mem:192.13M (Peak 192.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b1
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_0
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b2
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p6
+Fra:1 Mem:192.16M (Peak 192.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s0
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s2
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s4
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_mount_hgrey2
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hgrey
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hpanel
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_htrim
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_htrim
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hlining
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hnozzle
+Fra:1 Mem:192.21M (Peak 192.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:192.21M (Peak 192.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hpanel
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hlining
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hnozzle
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hmetal
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hgrey2
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_htrim
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_htrim
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hlining
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hnozzle
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hgrey2
+Fra:1 Mem:192.26M (Peak 192.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_htrim
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hpanel
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_htrim
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hmetal
+Fra:1 Mem:192.29M (Peak 192.29M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hgrey2
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_htrim
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_sterncap
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_hgrey2
+Fra:1 Mem:192.33M (Peak 192.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_dark
+Fra:1 Mem:192.34M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hlining
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_mount_hgrey2
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hmetal
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hlining
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_mount_htrim
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_mount_htrim
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_body_hwin
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_body_hwin
+Fra:1 Mem:192.39M (Peak 192.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_dark
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey2
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_mount_htrim
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_dark
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_hgrey2
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_dark
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_dark
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey2
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_dark
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_htrim
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_body_hgrey
+Fra:1 Mem:192.43M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_mount_htrim
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_body_hgrey
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_dark
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_body_hgrey
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_body_hgrey
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_htrim
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hmetal
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_dark
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hlining
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hmetal
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_mount_htrim
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1s_body_hwin
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_body_hwin
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_mount_htrim
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_body_hwin
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey2
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_mount_htrim
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_dark
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_hgrey2
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_dark
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_mount_htrim
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey2
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_htrim
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_body_hgrey
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_dark
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_dark
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_body_hgrey
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_dark
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_engine_room
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_body_hgrey
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_dark
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_mount_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_mount_hgrey2
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hpanel
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F10
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_mount_htrim
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey2
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_dark
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey2
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_dark
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_mount_htrim
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_dark
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey2
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_dark
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_mount_htrim
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey2
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_dark
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hblue
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_mount_hgrey2
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hpanel
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hblue
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_mount_htrim
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_hgrey
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_mount_htrim
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_dark
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_mount_htrim
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_dark
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F7
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey2
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_mount_htrim
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_dark
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey2
+Fra:1 Mem:192.69M (Peak 192.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_mount_htrim
+Fra:1 Mem:192.69M (Peak 192.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.69M (Peak 192.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey2
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_mount_htrim
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey2
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_dark
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hpanel
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hgrey
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hpanel
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bridge
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_p
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bow_stores
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_fwd
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_fwd
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_p
+Fra:1 Mem:192.82M (Peak 192.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.82M (Peak 192.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_fwd_s
+Fra:1 Mem:192.83M (Peak 192.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:192.84M (Peak 192.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_s
+Fra:1 Mem:192.85M (Peak 192.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.85M (Peak 192.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.88M (Peak 192.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.29M (Peak 192.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_engine_emission
+Fra:1 Mem:191.29M (Peak 192.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.28M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.28M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.28M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.28M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.36M (Peak 847.37M) | Time:00:00.37 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.43M (Peak 847.37M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.43M (Peak 847.37M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.43M (Peak 847.37M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.43M (Peak 847.37M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.43M (Peak 847.37M) | Time:00:00.37 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.52M (Peak 847.37M) | Time:00:00.37 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.48M (Peak 847.37M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.48M (Peak 847.37M) | Time:00:00.37 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.48M (Peak 847.37M) | Time:00:00.37 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.48M (Peak 847.37M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.48M (Peak 847.37M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.35M (Peak 847.37M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.23M (Peak 847.37M) | Time:00:00.40 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.23M (Peak 847.37M) | Time:00:00.40 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.24M (Peak 847.37M) | Time:00:00.40 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.24M (Peak 847.37M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.24M (Peak 847.37M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.24M (Peak 847.37M) | Time:00:00.40 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.59M (Peak 847.37M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.59M (Peak 847.37M) | Time:00:00.40 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_bow.png'
+Time: 00:00.43 (Saving: 00:00.00)
+
+Fra:1 Mem:191.70M (Peak 191.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | hegemony_O2_hull
+Fra:1 Mem:191.71M (Peak 191.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bumper_trim_t
+Fra:1 Mem:191.75M (Peak 191.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | D1_body_hmetal
+Fra:1 Mem:191.83M (Peak 191.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_mount_hgrey
+Fra:1 Mem:191.90M (Peak 191.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hpanel
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C1_body_hmetal
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_dark
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hpanel
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_htrim
+Fra:1 Mem:191.94M (Peak 191.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C2_body_hmetal
+Fra:1 Mem:191.95M (Peak 191.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_mount_hgrey
+Fra:1 Mem:191.96M (Peak 191.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hpanel
+Fra:1 Mem:191.96M (Peak 191.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hgrey2
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C3_body_hmetal
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_dark
+Fra:1 Mem:191.99M (Peak 191.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hpanel
+Fra:1 Mem:192.00M (Peak 192.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hgrey2
+Fra:1 Mem:192.01M (Peak 192.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | C4_body_hmetal
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1p_mount_hgrey2
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM1s_body_hmetal
+Fra:1 Mem:192.04M (Peak 192.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2p_body_hmetal
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM2s_mount_hgrey2
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3p_mount_hgrey2
+Fra:1 Mem:192.08M (Peak 192.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_mount_hgrey2
+Fra:1 Mem:192.12M (Peak 192.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM3s_body_hmetal
+Fra:1 Mem:192.14M (Peak 192.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4p_mount_hgrey2
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | LM4s_mount_hgrey2
+Fra:1 Mem:192.17M (Peak 192.17M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_0
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b0_1
+Fra:1 Mem:192.18M (Peak 192.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b1_1
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_bandseam_b1
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_band_b2_1
+Fra:1 Mem:192.19M (Peak 192.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p0
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p2
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_p6
+Fra:1 Mem:192.20M (Peak 192.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s0
+Fra:1 Mem:192.21M (Peak 192.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s2
+Fra:1 Mem:192.22M (Peak 192.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_blue_s6
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hgrey
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hwin
+Fra:1 Mem:192.23M (Peak 192.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_htrim
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | A1_body_hlens
+Fra:1 Mem:192.24M (Peak 192.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hlining
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_body_hmetal
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hgrey2
+Fra:1 Mem:192.25M (Peak 192.25M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_htrim
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_mount_hpanel
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hlining
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hnozzle
+Fra:1 Mem:192.27M (Peak 192.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_body_hmetal
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_htrim
+Fra:1 Mem:192.28M (Peak 192.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_mount_hpanel
+Fra:1 Mem:192.30M (Peak 192.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_body_hlining
+Fra:1 Mem:192.31M (Peak 192.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_hgrey2
+Fra:1 Mem:192.32M (Peak 192.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E3_mount_htrim
+Fra:1 Mem:192.34M (Peak 192.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_htrim
+Fra:1 Mem:192.35M (Peak 192.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hlining
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_body_hmetal
+Fra:1 Mem:192.36M (Peak 192.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_htrim
+Fra:1 Mem:192.38M (Peak 192.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E4_mount_hpanel
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_mount_hgrey2
+Fra:1 Mem:192.40M (Peak 192.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hmetal
+Fra:1 Mem:192.41M (Peak 192.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1p_body_hlining
+Fra:1 Mem:192.42M (Peak 192.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_hmetal
+Fra:1 Mem:192.44M (Peak 192.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2p_body_dark
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W1p_body_hwin
+Fra:1 Mem:192.44M (Peak 192.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_mount_htrim
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2p_body_hwin
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3p_body_hwin
+Fra:1 Mem:192.45M (Peak 192.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_mount_htrim
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_dark
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10p_body_hgrey2
+Fra:1 Mem:192.46M (Peak 192.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_dark
+Fra:1 Mem:192.47M (Peak 192.47M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11p_body_hgrey
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_mount_htrim
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey
+Fra:1 Mem:192.48M (Peak 192.48M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12p_body_hgrey2
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_mount_htrim
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13p_body_hgrey2
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1p_mount_htrim
+Fra:1 Mem:192.49M (Peak 192.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_engine_room
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_reactor
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_mount_htrim
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2p_body_hgrey
+Fra:1 Mem:192.50M (Peak 192.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_mount_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3p_body_hgrey
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_mount_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4p_body_hgrey
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_mount_dark
+Fra:1 Mem:192.51M (Peak 192.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5p_body_hgrey
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_mount_hgrey2
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_dark
+Fra:1 Mem:192.52M (Peak 192.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q1s_body_hlining
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F10
+Fra:1 Mem:192.53M (Peak 192.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F9
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_mount_hgrey2
+Fra:1 Mem:192.54M (Peak 192.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F8
+Fra:1 Mem:192.55M (Peak 192.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_dark
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | Q2s_body_hlining
+Fra:1 Mem:192.56M (Peak 192.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W2s_body_hwin
+Fra:1 Mem:192.57M (Peak 192.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | W3s_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_mount_htrim
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey
+Fra:1 Mem:192.58M (Peak 192.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H10s_body_hgrey2
+Fra:1 Mem:192.59M (Peak 192.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H11s_body_dark
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_aft_main
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_mount_htrim
+Fra:1 Mem:192.60M (Peak 192.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H12s_body_hgrey
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_mount_htrim
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H13s_body_hgrey2
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_dark
+Fra:1 Mem:192.61M (Peak 192.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V1s_body_hgrey
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_dark
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V2s_mount_htrim
+Fra:1 Mem:192.62M (Peak 192.62M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_dark
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V3s_mount_htrim
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V4s_body_hgrey
+Fra:1 Mem:192.63M (Peak 192.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_dark
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_mount_htrim
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | V5s_body_hgrey
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_dark
+Fra:1 Mem:192.64M (Peak 192.64M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey
+Fra:1 Mem:192.65M (Peak 192.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H1_body_hgrey2
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F6
+Fra:1 Mem:192.65M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hpanel
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_dark
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1p_body_hblue
+Fra:1 Mem:192.66M (Peak 192.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_hpanel
+Fra:1 Mem:192.67M (Peak 192.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2p_body_dark
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_mount_htrim
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20p_body_hgrey2
+Fra:1 Mem:192.68M (Peak 192.68M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_mount_htrim
+Fra:1 Mem:192.69M (Peak 192.69M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F5
+Fra:1 Mem:192.70M (Peak 192.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21p_body_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F4
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_mount_htrim
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_dark
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30p_body_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_mount_htrim
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31p_body_hgrey2
+Fra:1 Mem:192.71M (Peak 192.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_mount_htrim
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32p_body_hgrey2
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_mount_htrim
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_dark
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33p_body_hgrey2
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_mount_hgrey2
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_dark
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B1s_body_hblue
+Fra:1 Mem:192.72M (Peak 192.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_mount_hgrey2
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hpanel
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_dark
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | B2s_body_hblue
+Fra:1 Mem:192.73M (Peak 192.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H20s_body_dark
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_s
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_emerg_aft_p
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_mount_htrim
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey
+Fra:1 Mem:192.74M (Peak 192.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H21s_body_hgrey2
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_mount_htrim
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H30s_body_hgrey2
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_mount_htrim
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_dark
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H31s_body_hgrey2
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_dark
+Fra:1 Mem:192.75M (Peak 192.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_s
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H32s_body_hgrey2
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_mount_htrim
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_dark
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H33s_body_hgrey2
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_mount_htrim
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_dark
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H2_body_hgrey
+Fra:1 Mem:192.76M (Peak 192.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_mount_htrim
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_dark
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | H3_body_hgrey
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hgrey
+Fra:1 Mem:192.77M (Peak 192.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_aft_p
+Fra:1 Mem:192.78M (Peak 192.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_deck_panels_hpanel
+Fra:1 Mem:192.78M (Peak 192.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hgrey
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_flank_panels_hpanel
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_panels_hgrey
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hgrey
+Fra:1 Mem:192.79M (Peak 192.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O2_belly_step_panels_hpanel
+Fra:1 Mem:192.80M (Peak 192.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_bow_main
+Fra:1 Mem:192.80M (Peak 192.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F1
+Fra:1 Mem:192.80M (Peak 192.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bh_F2
+Fra:1 Mem:192.80M (Peak 192.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_bridge
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_p
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_crew_deck_s
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_hold_aft
+Fra:1 Mem:192.81M (Peak 192.81M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_fwd
+Fra:1 Mem:192.85M (Peak 192.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_p
+Fra:1 Mem:192.86M (Peak 192.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_rail_corr_fwd_s
+Fra:1 Mem:192.86M (Peak 192.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_hold_aft
+Fra:1 Mem:192.92M (Peak 192.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:191.33M (Peak 192.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_hull_albedo
+Fra:1 Mem:191.33M (Peak 192.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading O2_parts_normal
+Fra:1 Mem:581.30M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:581.30M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:581.30M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:581.30M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:581.38M (Peak 847.40M) | Time:00:00.36 | Mem:400.00M, Peak:400.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:581.46M (Peak 847.40M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:581.46M (Peak 847.40M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:581.46M (Peak 847.40M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:581.46M (Peak 847.40M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:581.46M (Peak 847.40M) | Time:00:00.36 | Mem:400.07M, Peak:400.07M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:581.55M (Peak 847.40M) | Time:00:00.36 | Mem:400.11M, Peak:400.11M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:581.50M (Peak 847.40M) | Time:00:00.36 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:581.50M (Peak 847.40M) | Time:00:00.36 | Mem:400.12M, Peak:400.12M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:581.50M (Peak 847.40M) | Time:00:00.36 | Mem:401.04M, Peak:401.04M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:581.50M (Peak 847.40M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:581.50M (Peak 847.40M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:402.15M, Peak:403.07M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.02M, Peak:403.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:582.37M (Peak 847.40M) | Time:00:00.37 | Mem:403.10M, Peak:403.10M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:586.25M (Peak 847.40M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:586.25M (Peak 847.40M) | Time:00:00.39 | Mem:406.98M, Peak:406.98M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:586.26M (Peak 847.40M) | Time:00:00.39 | Mem:406.90M, Peak:406.98M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:586.26M (Peak 847.40M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:586.26M (Peak 847.40M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:586.26M (Peak 847.40M) | Time:00:00.39 | Mem:406.99M, Peak:406.99M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:596.61M (Peak 847.40M) | Time:00:00.39 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:596.61M (Peak 847.40M) | Time:00:00.39 | Mem:414.03M, Peak:414.03M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\surface\surface_stern.png'
+Time: 00:00.43 (Saving: 00:00.00)
+
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+
+Blender quit
+GPU: released shared claim 6e24a883-5d33-4dab-b469-c5bc6663faa7

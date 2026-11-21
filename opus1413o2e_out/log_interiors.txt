@@ -1,0 +1,5 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-994f503776e34973b11a13e814e1aede\voidsworn-run-73e6c69370a344838ba68aae32d0f81d\godot-profile-6b1a8d73630b4a1b834ff93eaceefc6a
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUTHORED_INTERIORS failures=0 interior_triangles=14856
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-994f503776e34973b11a13e814e1aede\voidsworn-run-73e6c69370a344838ba68aae32d0f81d\godot-profile-6b1a8d73630b4a1b834ff93eaceefc6a

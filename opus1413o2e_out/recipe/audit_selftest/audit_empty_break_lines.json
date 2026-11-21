@@ -1,0 +1,10 @@
+{
+ "result": "FAIL",
+ "failures": [
+  "the build's break lines are empty (r209_t_lines): an empty list tests no break line"
+ ],
+ "problems": [],
+ "crossing_break_lines": [],
+ "guns": 0,
+ "guns_with_normals": 0
+}
