@@ -134,7 +134,9 @@ Fast, because they die often and must not clutter the board:
 - 0.0 to 0.72: the hull spins, trailing a curling ribbon of fire, then gas.
 - 0.72: the pop. Frigate: 216 px flash for 0.18 s, 180 px body for about a second. A destroyer sits between frigate and
   cruiser: about 255 px (the same 1.4 step taken half way).
-- Two to four chunks and their streamers fly; one surviving chunk keeps coals for about six seconds.
+- Two to four chunks part with their streamers; one surviving chunk keeps coals for about six seconds. With the strained
+  death on (the default), the chunks part as calmly as a big hull's: slow, turning gently, at rest about half a length
+  apart (Ryan, Nov 21 2026, in game: they "spin off super far"). Check: fx/test/small_wreck_calm_check.gd.
 
 ### Small craft (wings)
 
@@ -168,8 +170,8 @@ body and the wreck.
   with a rainbow fringe, the only coloured flash in the game. Whole panes and rings shear off and tumble, glinting. No fire
   and no smoke: glittering dust. The light inside the shards fades slowly.
 - **Eclipse.** It peels. Shade plates lift away band by band, a beat apart, during the tell. The trapped core gutters
-  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white,
-  which is only the Doom gun's core, R263), the scene around it dims for an instant, then one small hard flash and it is
+  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white;
+  the Doom gun's core was the last green and is deep violet since Nov 21, issue 1503), the scene around it dims for an instant, then one small hard flash and it is
   out. No fire. The plates drift.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.

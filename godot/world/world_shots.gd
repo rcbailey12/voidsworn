@@ -6,6 +6,7 @@ extends Node
 #   godot --path godot --resolution 1920x1080 res://world/world_shots.tscn -- --out DIR [--only a,b] [--quality max]
 #         [--bench S]   also orbit the camera for S seconds per case and write DIR/bench.json (frame times)
 #         [--novsync]   measure without the screen's frame cap
+#         [--png]       lossless stills (issue 1460: JPEG smooths away the debanding dither, so a banding check needs PNG)
 #         [--looks today,holo,living,cine,tac]   the board look trial (world/board_look.gd): each look in turn on the same
 #                       battle, from the default camera, zoomed out and close over the ship that is up, with a move hex
 #                       hovered (tac: look C with the tactical grid up); names <case>_<look>_1_default.jpg, _2_zoomed_out.jpg
@@ -70,6 +71,8 @@ func _ready() -> void:
 	if args.has("novsync"):
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	DirAccess.make_dir_recursive_absolute(out)
+	# issue 1460: say whether debanding is on, so a before and after pair proves which side it was
+	print("[world_shots] debanding ", get_viewport().use_debanding)
 	_run.call_deferred()
 
 
@@ -496,6 +499,9 @@ func _snap(n: String) -> void:
 		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
-	var p := out.path_join(n + ".jpg")
-	preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.92)
+	var p := out.path_join(n + (".png" if args.has("png") else ".jpg"))
+	if args.has("png"):
+		preload("res://tools/picture_provenance.gd").save_png(img, p)
+	else:
+		preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.92)
 	print("[world_shots] ", p)

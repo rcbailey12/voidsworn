@@ -24,7 +24,9 @@ rem      never into Ryan's game)
 rem   4. the installed glb must be this run's (written after the run started), else the install counts as failed
 rem   5. the GPU readback, the authored interiors check and the death seam check on the installed glb; all three must pass
 rem   6. the in-game shots at camera 170 and 60, only when everything above passed
-rem   7. logs, reports, shots and export\CODE copied into out\recipe
+rem   7. reports, shots and export\CODE this run wrote copied into out\recipe, only when a recipe stage ran in this run
+rem      (1516: a failed mirror fetch once collected an earlier build's files and looked like a build of the new pin);
+rem      older reports go to out\recipe_from_earlier_runs, older pictures and exports stay behind, all listed
 rem The earlier out folder becomes out_before_<time>. Backups older than the newest two are listed for the janitor.
 if "%~1"=="ship" goto ship
 setlocal EnableExtensions
@@ -70,6 +72,7 @@ mkdir "%O%" || exit /b 1
 set "RES=%O%\result.txt"
 for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"`) do set "START_TICKS=%%T"
 set FAILED=
+set STAGES_RAN=
 rem The installed copy runs on its own. Keep its inherited tool scratch under a named, owned TEMP directory.
 powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%O%\scratch_path.txt" 2>> "%RES%"
 if errorlevel 1 set "FAILED=private TEMP setup"
@@ -125,14 +128,15 @@ powershell -NoProfile -Command ^
   "  if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init --bare $mirror; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source }" ^
   "  if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }" ^
   "  Write-Output ('refreshing shared mirror ' + $mirror);" ^
-  "  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune origin;" ^
+  "  $try = 0; while ($true) { $try++; & git.exe --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune origin; if ($LASTEXITCODE -eq 0) { break };" ^
+  "    if ($try -ge 3) { throw ('mirror fetch failed ' + $try + ' times') }; $wait = 30 * $try * $try; Write-Output ('mirror fetch try ' + $try + ' failed, retrying in ' + $wait + ' s'); Start-Sleep -Seconds $wait };" ^
   "  Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main;" ^
   "  if (-not (Test-Path -LiteralPath (Join-Path $env:C '.git'))) { Write-Output ('local clone ' + $env:C); Run-Git -c core.autocrlf=false clone --local -q $mirror $env:C }" ^
   "  $depth = @(); if ((Run-Git -C $env:C rev-parse --is-shallow-repository) -eq 'true') { $depth = @('--unshallow') }" ^
   "  Run-Git -C $env:C fetch -q --no-tags @depth $mirror ('refs/heads/' + $env:BRANCH);" ^
   "  if ($env:PAINT_BASE) { Run-Git -C $env:C fetch -q --no-tags --no-write-fetch-head $mirror ('+refs/heads/' + $env:PAINT_BASE + ':refs/ship-job/paint-base') }" ^
   "} finally { $lock.Dispose() }" >> "%RES%" 2>&1
-if errorlevel 1 set "FAILED=mirror clone or fetch %BRANCH% (see Git output above)"
+if errorlevel 1 set "FAILED=mirror fetch: clone or fetch of %BRANCH% failed, see the Git output above"
 if defined FAILED goto collect
 rem the checkout, in this job's own clone: stage 7 rewrites the tracked godot\assets\ships files here (manifest.json, the CODE
 rem folder), and a plain checkout then refuses every rerun after the branch moved. So: list and save every tracked change
@@ -210,6 +214,7 @@ set EL=%ERRORLEVEL%
 echo import exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=import"
 if defined FAILED goto collect
+set "STAGES_RAN=1"
 cmd /c ""%~f0" ship"
 set EL=%ERRORLEVEL%
 echo stages exit %EL% >> "%RES%"
@@ -256,27 +261,45 @@ set EL=%ERRORLEVEL%
 echo shots exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=shots"
 
-rem 7. Copy the Board's deliverables. Robocopy exits 0 through 7 for successful copies.
+rem 7. Copy the Board's deliverables.
 :collect
+rem (1516) no stage ran, so everything in recipe\%SHIP% is an earlier run's: copy none of it
+if not defined STAGES_RAN goto collect_skipped
 if not exist "%RECIPE%" (
   echo collect: no recipe\%SHIP% folder >> "%RES%"
   if not defined FAILED set "FAILED=collect (no recipe\%SHIP% folder)"
   goto finish
 )
-robocopy "%RECIPE%" "%O%\recipe" *.txt *.json *.md *.jpg /S /XJ /R:1 /W:1 /XD sil "%RECIPE%\godot\proj" "%RECIPE%\export" > "%O%\log_collect.txt" 2>&1
-if errorlevel 8 if not defined FAILED set "FAILED=collect (reports)"
-for /d %%D in ("%RECIPE%\clay" "%RECIPE%\r" "%RECIPE%\close" "%RECIPE%\surface" "%RECIPE%\godot" "%RECIPE%\shots" "%RECIPE%\shots_*") do if exist "%%~fD\" (
-  robocopy "%%~fD" "%O%\recipe\%%~nxD" *.png *.jpg *.jpeg *.gif /S /XJ /R:1 /W:1 /XD sil "%RECIPE%\godot\proj" >> "%O%\log_collect.txt" 2>&1
-  if errorlevel 8 if not defined FAILED set "FAILED=collect (shots)"
-)
-if exist "%RECIPE%\export\%CODE%\" (
-  robocopy "%RECIPE%\export\%CODE%" "%O%\recipe\export\%CODE%" /E /XJ /R:1 /W:1 /XD sil "%RECIPE%\export\%CODE%\godot\proj" /XF *.blend b0.npz >> "%O%\log_collect.txt" 2>&1
-  if errorlevel 8 if not defined FAILED set "FAILED=collect (export)"
-)
-echo collect: see log_collect.txt >> "%RES%"
+rem (1516, Artoo on PR 1520) Only files this run wrote go to out\recipe: reports, review pictures (png, jpg, jpeg, gif
+rem under clay, r, close, surface, godot, shots, shots_*; jpg anywhere) and export\CODE without *.blend, b0.npz, sil\ and
+rem godot\proj. An older report (a stage this run skipped or never reached) goes to out\recipe_from_earlier_runs for
+rem diagnosis; an older picture or export is not copied. Every older file is listed in recipe_from_earlier_runs.txt.
+powershell -NoProfile -Command ^
+  "$ErrorActionPreference = 'Stop'; $src = $env:RECIPE; $t = [long]$env:START_TICKS; $exp = 'export\' + $env:CODE.ToLower() + '\';" ^
+  "$pics = @('clay', 'r', 'close', 'surface', 'godot', 'shots'); $old = @(); $copied = 0;" ^
+  "function Walk($dir, $rel) { foreach ($i in @(Get-ChildItem -LiteralPath $dir -Force)) { $r = $i.Name; if ($rel) { $r = $rel + '\' + $i.Name };" ^
+  "  if ($i.PSIsContainer) { if (($i.Attributes -band [IO.FileAttributes]::ReparsePoint) -or ($i.Name -eq 'sil')) { continue }; Walk $i.FullName $r } else { [pscustomobject]@{ Rel = $r; File = $i } } } }" ^
+  "foreach ($e in @(Walk $src '')) { $low = $e.Rel.ToLower(); $ext = [IO.Path]::GetExtension($low); $top = $low.Split('\')[0]; $kind = $null;" ^
+  "  if ($low.StartsWith('godot\proj\')) { continue };" ^
+  "  if ($top -eq 'export') { if ($low.StartsWith($exp) -and -not $low.StartsWith($exp + 'godot\proj\') -and $ext -ne '.blend' -and $e.File.Name -ne 'b0.npz') { $kind = 'export' } }" ^
+  "  elseif (@('.txt', '.json', '.md') -contains $ext) { $kind = 'report' }" ^
+  "  elseif (($ext -eq '.jpg') -or ((@('.png', '.jpeg', '.gif') -contains $ext) -and $low.Contains('\') -and (($pics -contains $top) -or ($top -like 'shots_*')))) { $kind = 'picture' };" ^
+  "  if (-not $kind) { continue }; $dest = $null;" ^
+  "  if ($e.File.LastWriteTimeUtc.Ticks -ge $t) { $dest = Join-Path (Join-Path $env:O 'recipe') $e.Rel; $copied++ }" ^
+  "  else { $note = 'not copied'; if ($kind -eq 'report') { $dest = Join-Path (Join-Path $env:O 'recipe_from_earlier_runs') $e.Rel; $note = 'copied to recipe_from_earlier_runs' }; $old += ($kind + ' ' + $e.Rel + ' (' + $note + ')') };" ^
+  "  if ($dest) { $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest); Copy-Item -LiteralPath $e.File.FullName -Destination $dest } }" ^
+  "[IO.File]::WriteAllLines((Join-Path $env:O 'recipe_from_earlier_runs.txt'), [string[]]$old);" ^
+  "Write-Output ('collected ' + $copied + ' files this run wrote; ' + $old.Count + ' older files from earlier runs')" > "%O%\log_collect.txt" 2>&1
+if errorlevel 1 if not defined FAILED set "FAILED=collect (see log_collect.txt)"
+type "%O%\log_collect.txt" >> "%RES%"
+for %%Z in ("%O%\recipe_from_earlier_runs.txt") do if %%~zZ GTR 0 echo collect: files from earlier runs are listed in recipe_from_earlier_runs.txt and kept out of out\recipe >> "%RES%"
 echo %STAGES% | findstr /c:"7_export" > nul
 if errorlevel 1 goto finish
 if not exist "%O%\recipe\export\%CODE%\%CODE%.glb" if not defined FAILED set "FAILED=collect (out\recipe\export\%CODE%\%CODE%.glb missing)"
+goto finish
+:collect_skipped
+echo collect SKIPPED: no recipe stage ran in this run, so nothing was copied from recipe\%SHIP% >> "%RES%"
+if not defined FAILED set "FAILED=collect (no recipe stage ran)"
 
 :finish
 rem no parenthesised block here: FAILED can hold a ")" that would end the block early

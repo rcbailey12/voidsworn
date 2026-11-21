@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 21 new builds installed, 0 with a build sheet but the old hull in game, 6 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 21 new builds installed, 2 with a build sheet but the old hull in game, 4 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -85,8 +85,8 @@ of this is the playable exe (that is a separate snapshot).
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
 | Defence station (small teaching station) | station | `O1_37` | Old hull kept on purpose |  | none |  |  |  | Stays as it is by design. |
-| Convoy transport | transport | `O2_37` | Concept picked, old hull in game |  | [convoy_beauty.webp](../../contrib/muse/design/class_family_hegemony_2026_11/convoy_beauty.webp) | R369 |  | #1413 |  |
-| Relay beacon | beacon | `O3_11` | Concept picked, old hull in game |  | [relay_beauty.webp](../../contrib/muse/design/class_family_hegemony_2026_11/relay_beauty.webp) | R369 |  | #1413 |  |
+| Convoy transport | transport | `O2_37` | Build sheet made, old hull in game |  | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg) | R369 | hegemony_O2 | #1413 |  |
+| Relay beacon | beacon | `O3_11` | Build sheet made, old hull in game |  | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg) | R369 | hegemony_O3 | #1413 |  |
 
 ## Not a slot yet
 
