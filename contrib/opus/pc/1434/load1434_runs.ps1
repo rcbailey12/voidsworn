@@ -4,13 +4,14 @@
 #      no pipeline cache, no world bakes on disk). Reported, plus its COVER line: the loading cover up on every frame
 #      to play and no frame of 5 s or more (the Board's one condition on the cold pass).
 #   2. load bench, warm: the same bench again on that same profile (the player's second launch onward). Graded.
-#   3. close timing (from close1435_timing5.ps1, PR 1441): the six CLOSE5 cases, each on its own fresh profile (cold,
-#      reported) and then each on the warm profile from steps 1 and 2 (graded). Issue 1518: the window hides within
+#   3. close timing (from close1435_timing5.ps1, PR 1441): the six CLOSE5 cases, each on its own fresh profile (cold)
+#      and then each on the warm profile from steps 1 and 2, both graded (Artoo on PR 1445: the warm reading is the
+#      Board's for the 1434 load items only). Issue 1518: the window hides within
 #      500 ms of the close request in altf4_load_5s, title_load_5s and title_battle_30s. Issue 1519: the first title frame
 #      within 200 ms of leaving the battle in title_load_5s and title_battle_30s (the game's "[main] battle to title" line).
 #      Every case must also take the window route once, exit 0 and not crash (as CLOSE5).
-# Writes <Out>\load10_result.txt with the gate line "[load10] RESULT PASS" only when step 2 passes, step 1's COVER
-# passes and every graded warm close item passes. Nothing outside <Out> is written; every profile lives under <Out>.
+# Writes <Out>\load10_result.txt with one line per result (1434 load; 1518, 1519 and clean close, cold and warm) and the
+# gate line "[load10] RESULT PASS" only when every one passes. Nothing outside <Out> is written; every profile lives under <Out>.
 param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out)
 $ErrorActionPreference = 'Stop'
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
@@ -93,7 +94,6 @@ $cases = @(
 )
 $limitMs = 15000
 $rows = @()
-$warmBad = 0
 foreach ($set in @('cold', 'warm')) {
   foreach ($c in $cases) {
     $dir = Join-Path $Out "close_$set\$($c.name)"
@@ -124,7 +124,7 @@ foreach ($set in @('cold', 'warm')) {
         $g.Refresh()
         $front = [V1434L.User32]::GetForegroundWindow()
         if ($activated -and $g.MainWindowHandle -ne [IntPtr]::Zero -and $front -eq $g.MainWindowHandle) { $sw.Restart(); $shell.SendKeys('%{F4}'); $row.sent = 'altf4' }
-        else { $row.skip = 'game not in front, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
+        else { $row.skip = 'Alt-F4 UNVERIFIED: game not in front, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
       }
       $hwnd = $g.MainWindowHandle
       $row.hidden_ms = $null
@@ -156,21 +156,44 @@ foreach ($set in @('cold', 'warm')) {
         if ($g.ExitCode -ne 0) { $fails += "exit $($g.ExitCode)" }
         if ($c.title -and $row.title_leave_frame_ms -eq $null) { $fails += 'no battle to title line' }
       }
-      if ($c.hide -and ($row.hidden_ms -eq $null -or $row.hidden_ms -gt $c.hide)) { $fails += "hidden after $($row.hidden_ms) ms (limit $($c.hide), issue 1518)" }
-      if ($c.first -and ($row.title_first_frame_ms -eq $null -or $row.title_first_frame_ms -gt $c.first)) { $fails += "first title frame $($row.title_first_frame_ms) ms (limit $($c.first), issue 1519)" }
     }
-    $row.result = if ($fails.Count) { 'FAIL: ' + ($fails -join '; ') } else { 'PASS' }
-    if ($set -eq 'warm' -and $fails.Count) { $warmBad++ }
+    # three separate gradings per case (Artoo on PR 1445): a clean close (window route once, exit 0, no crash or hang),
+    # issue 1518's hide time, issue 1519's first title frame; an Alt-F4 case whose keys could not be sent is UNVERIFIED
+    $row.clean = if ($fails.Count) { 'FAIL: ' + ($fails -join '; ') } else { 'PASS' }
+    $row.g1518 = '-'
+    if ($c.hide) {
+      $row.g1518 = if ($row.hidden_ms -eq $null -or $row.hidden_ms -gt $c.hide) { "FAIL (hidden after $($row.hidden_ms) ms, limit $($c.hide))" } elseif ($row.skip) { 'UNVERIFIED (Alt-F4 not sent)' } else { 'PASS' }
+    }
+    $row.g1519 = '-'
+    if ($c.first) {
+      $row.g1519 = if ($row.title_first_frame_ms -eq $null -or $row.title_first_frame_ms -gt $c.first) { "FAIL (first title frame $($row.title_first_frame_ms) ms, limit $($c.first))" } else { 'PASS' }
+    }
+    $row.result = if ($row.clean -ne 'PASS' -or $row.g1518 -like 'FAIL*' -or $row.g1519 -like 'FAIL*') { 'FAIL' } elseif ($row.skip -or $row.g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } else { 'PASS' }
     $rows += New-Object psobject -Property $row
-    Say ("close {0} {1}: {2}{3} sent={4} hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
-      $(if ($set -eq 'cold') { 'reported ' } else { '' }), $row.result, $row.sent, $row.hidden_ms, $row.title_first_frame_ms, $row.title_worst_first_second_ms,
-      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }))
+    Say ("close {0} {1}: {2}{3} clean={11} 1518={12} 1519={13}{14} sent={4} hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
+      '', $row.result, $row.sent, $row.hidden_ms, $row.title_first_frame_ms, $row.title_worst_first_second_ms,
+      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' })))
     Start-Sleep -Seconds 2
   }
 }
 $rows | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Out 'close_timing.json') -Encoding Ascii
 
-$ok = $bench['warm'].pass -and $bench['cold'].cover_pass -and $warmBad -eq 0
-Say ("[load10] RESULT {0} (warm load bench {1}; cold cover condition {2}; warm close items {3} of {4} cases failing; cold reported above)" -f
-  $(if ($ok) { 'PASS' } else { 'FAIL' }), $(if ($bench['warm'].pass) { 'PASS' } else { 'FAIL' }), $(if ($bench['cold'].cover_pass) { 'PASS' } else { 'FAIL' }), $warmBad, $cases.Count)
+# Separate results (Artoo on PR 1445): the Board's warm grading covers the issue 1434 load items only; issues 1518 and
+# 1519 keep their own limits on BOTH profiles, and every close must be clean on both.
+function Set-Grade($set, $key) {
+  $r = @($rows | Where-Object { $_.set -eq $set -and $_.$key -ne '-' } | ForEach-Object { $_.$key })
+  if (@($r | Where-Object { $_ -like 'FAIL*' }).Count) { return 'FAIL' }
+  if (@($r | Where-Object { $_ -like 'UNVERIFIED*' }).Count) { return 'UNVERIFIED' }
+  return 'PASS'
+}
+$grades = [ordered]@{}
+$grades['1434 load (warm bench, cold COVER)'] = if ($bench['warm'].pass -and $bench['cold'].cover_pass) { 'PASS' } else { 'FAIL' }
+foreach ($set in @('cold', 'warm')) {
+  $grades["1518 close hides within 500 ms, $set"] = Set-Grade $set 'g1518'
+  $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
+  $grades["every close clean, $set"] = Set-Grade $set 'clean'
+}
+foreach ($k in $grades.Keys) { Say "[load10] $k`: $($grades[$k])" }
+$ok = @($grades.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0
+Say ("[load10] RESULT {0} (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)" -f $(if ($ok) { 'PASS' } else { 'FAIL' }))
 if ($ok) { exit 0 } else { exit 1 }
