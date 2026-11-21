@@ -213,10 +213,11 @@ def bow_gather(x0, x1, targets, strength=0.85):
 
 
 def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=0, light=None, v0=0.0, v1=TAU, wrap=True,
-                grp=None, even=0.0):
+                grp=None, even=0.0, streak=False):
     """the opaque glowing mosaic core. light(x, a) -> 0..1 blends the panel to seafoam stored light (a cleft, a bay floor).
     even (0..1) evens each panel's glow toward a steady middle tone, so a pane-heavy hull (the Prism) reads as rows of lit
-    panes rather than lit spots; 0 is the CD5 panel (hot middle, dark border)."""
+    panes rather than lit spots; 0 is the CD5 panel (hot middle, dark border). streak=True is parts.mosaic_tint's streak style
+    for wide bodies whose whole bays show (the Prism, the W4b bomber)."""
     gw, stack = gw_kit('parts'), gw_kit('stack')
     vf = grid_surface(skin, nu, nv, x0, x1, v0, v1, wrap)
     hull = K._obj(name, *vf, 'gw_mosaic', smooth=True, grp=grp)
@@ -229,12 +230,12 @@ def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=
         x = x0 + (x1 - x0) * ix / nu
         a = v0 + (v1 - v0) * ia / nv
         if even > 0:
-            name_, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=seed, tones=None)
+            name_, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=seed, tones=None, streak=streak)
             g = g + (0.55 + 0.45 * g - g) * even
             deep, hot = stack.TONES[name_]
             rgb = [d + (h - d) * g ** 1.5 for d, h in zip(deep, hot)]
         else:
-            rgb, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=seed, tones=stack.TONES)
+            rgb, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=seed, tones=stack.TONES, streak=streak)
         if light:
             w = max(0.0, min(1.0, light(x, a)))
             if w > 0:
