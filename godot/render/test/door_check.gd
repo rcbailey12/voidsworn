@@ -79,7 +79,10 @@ func _run() -> void:
 	fx.add_ship("A", node, {"faction": "chorus", "cls": "Cruiser", "size": 1.0, "code": "DOORS"})
 	var A = fx.ship("A")
 	var h = A.hull
-	# 1. what arrives (an installed ship built before issue 1543 has no doors yet: said so, not a failure)
+	# 1. what arrives (the installed ship, when no glb is named, may predate issue 1543: said so, not a failure; a glb named on
+	# the command line is a candidate build and must carry its doors, Artoo on PR 1544)
+	if h.doors.is_empty() and ua.size() > 0:
+		check(false, "no door nodes in the named glb %s" % path)
 	if h.doors.is_empty():
 		print("DOOR SKIP: no door nodes in %s (built before issue 1543)" % path)
 		print("DOOR failures=%d" % failures)
@@ -143,6 +146,31 @@ func _run() -> void:
 		if k >= 0:
 			for lb in h.doors[k]["lobes"]:
 				check((lb["node"] as Node3D).transform.is_equal_approx(lb["rest"]), "%s is shut again after its squadron" % (lb["node"] as Node3D).name)
+	# 5b. a second squadron from the same bay while its door is closing: the door reopens from where it is, never a jump
+	if not bays.is_empty():
+		var k2: int = h.door_for_bay(int(bays[0]["i"]))
+		A.set_meta("launches", 0)
+		var T2: float = fx.now
+		WEAP.launch(fx, "A", "")
+		while fx.now < T2 + 0.3 + 5 * 0.25 + 0.35 + 0.2:
+			fx.step(DT)
+		var mid: float = h.door_open_at(k2, fx.now)
+		check(mid > 0.05 and mid < 0.95, "the door is part shut when the second squadron comes (%.3f)" % mid)
+		A.set_meta("launches", 0)
+		var last2 := mid
+		WEAP.launch(fx, "A", "")
+		var T3: float = fx.now
+		var reopened := false
+		while fx.now < T3 + 3.2:
+			fx.step(DT)
+			var f2: float = h.door_open_at(k2, fx.now)
+			check(absf(f2 - last2) <= 1.0 / 6.0 + 1e-4, "%s moves smoothly when relaunched mid-close (%.3f to %.3f)" % [h.doors[k2]["name"], last2, f2])
+			reopened = reopened or f2 > 0.999
+			last2 = f2
+		check(reopened, "%s opens fully for the second squadron" % h.doors[k2]["name"])
+		h.door_step(fx.now)
+		for lb in h.doors[k2]["lobes"]:
+			check((lb["node"] as Node3D).transform.is_equal_approx(lb["rest"]), "%s is shut after the second squadron" % (lb["node"] as Node3D).name)
 	# 4. open lobes lie down in the bore (a hundredth of the hull's length of slack for the lobe's dome over its hinge)
 	check(worst_top <= shut_top + 1e-3, "open lobes never rise past their shut height (open %.4f, shut %.4f above the hinge)" % [worst_top, shut_top])
 	print("DOOR doors=%d bays=%d shut_top=%.4f open_top=%.4f step_usec=%.1f" % [h.doors.size(), bays.size(), shut_top, worst_top, cost / maxf(steps, 1)])

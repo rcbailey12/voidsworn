@@ -1661,15 +1661,16 @@ func door_for_bay(i: int) -> int:
 
 
 # Open bay i's door from t_open, hold it open until t_hold (the last craft clear), then shut it. A second launch from the same
-# bay while it is still open joins the open window, so the door never snaps shut between squadrons.
+# bay while the door is still held open extends that hold, so it never shuts between squadrons. One that comes while the door is
+# closing gets its own window: the door's pose is the most open of its windows, so it reopens from where it is (it keeps
+# closing until the new opening passes it, then opens), never jumping back to fully open (Artoo on PR 1544).
 func door_cycle(i: int, t_open: float, t_hold: float) -> void:
 	var k := door_for_bay(i)
 	if k < 0:
 		return
 	var wins: Array = doors[k]["wins"]
 	for w in wins:
-		if t_open <= float(w[1]) + DOOR_CLOSE and t_hold >= float(w[0]):
-			w[0] = minf(float(w[0]), t_open)
+		if t_open >= float(w[0]) and t_open <= float(w[1]):
 			w[1] = maxf(float(w[1]), t_hold)
 			return
 	wins.append([t_open, t_hold])
