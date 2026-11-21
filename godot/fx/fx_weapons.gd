@@ -872,6 +872,8 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": pk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"]), faction), "dead_at": INF,
 			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
+		if not old:
+			_kit_nozzle_dark(p["mesh"], true)
 		if old:
 			p.erase("lt")
 			if (p["mesh"] as Node3D).has_meta("kit"):
@@ -905,6 +907,7 @@ static func _launch_step(fx, p: Dictionary, now: float) -> void:
 
 # Ignition (launch step 3): a short hot flash at the nozzle, then the drive and the wake take over.
 static func _ignite(fx, p: Dictionary, fac_engine: Color) -> void:
+	_kit_nozzle_dark(p["mesh"], false)
 	var d: Vector3 = p["ed"]
 	var k: float = p["k"]
 	var nozzle: Vector3 = (p["a"] as Vector3) - d * 1.2 * k * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
@@ -1014,16 +1017,22 @@ static func _build_munition(parts) -> Node3D:
 		return null
 	var root := Node3D.new()
 	root.name = "kit_body"
+	var nozzles: Array = []
 	for part in parts:
 		var mi := MeshInstance3D.new()
 		mi.name = str(part["name"])
 		mi.mesh = part["mesh"]
 		mi.transform = part["xf"]
 		var mats: Array = part["mats"]
+		var dark: Array = part.get("dark", [])
 		for i in mats.size():
 			mi.set_surface_override_material(i, mats[i])
+			if i < dark.size() and dark[i] != null:
+				nozzles.append([mi, i, mats[i], dark[i]])
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(mi)
+	if not nozzles.is_empty():
+		root.set_meta("nozzles", nozzles)
 	return root
 
 
@@ -1048,14 +1057,45 @@ static func _load_munition(path: String, faction: String) -> Array:
 		if src.mesh == null:
 			continue
 		var mats: Array = []
+		var dark: Array = []
 		for i in src.mesh.get_surface_count():
 			var mat: Material = src.get_active_material(i)
 			if mat != null and LOOK != null:
 				mat = LOOK.hull(mat, faction, true)
 			mats.append(mat)
-		parts.append({"name": String(src.name), "mesh": src.mesh, "xf": _to_root(n, src), "mats": mats})
+			dark.append(_dark_nozzle(mat))
+		parts.append({"name": String(src.name), "mesh": src.mesh, "xf": _to_root(n, src), "mats": mats, "dark": dark})
 	n.free()
 	return parts
+
+
+# Issue 1531 (Artoo on PR 1532): the nozzle's baked glow (the engine emission map) stays dark until ignition. A nozzle
+# surface gets its own unlit copy in the cache, so a shot swaps its own surface and no shared material changes; marker
+# lights (Sunward frost band, window, vent ember) keep their glow. Returns null for any other surface.
+static func _dark_nozzle(mat: Material) -> Material:
+	var m := mat as BaseMaterial3D
+	if m == null or not m.emission_enabled or m.emission_texture == null:
+		return null
+	var t := m.emission_texture
+	# the runtime glTF read names the map; an imported glb keeps it in the extracted file's path; the paint stack names the
+	# nozzle material p3_glow either way
+	if not ("engine_emission" in t.resource_name or "engine_emission" in t.resource_path or m.resource_name == "p3_glow"):
+		return null
+	var d := m.duplicate() as BaseMaterial3D
+	d.emission_enabled = false
+	return d
+
+
+# A kit body's nozzle glow off (true: the push out) or on (ignition), on this shot's own surfaces only.
+static func _kit_nozzle_dark(node, dark: bool) -> void:
+	if not is_instance_valid(node):
+		return
+	var kit := (node as Node).get_node_or_null("kit_body")
+	if kit == null or not kit.has_meta("nozzles"):
+		return
+	for row in kit.get_meta("nozzles"):
+		var mi := row[0] as MeshInstance3D
+		mi.set_surface_override_material(int(row[1]), row[3] if dark else row[2])
 
 
 static func _to_root(root: Node, n: Node3D) -> Transform3D:
