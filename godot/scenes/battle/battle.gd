@@ -894,6 +894,7 @@ func _make_view_node(u: Dictionary) -> ShipView:
 # registration stay on the main thread, in that order, as _make_view does them. The log line names the stage that costs
 # most, so the next slice goes where the time is.
 const LOAD_SLICE_MS := 40.0
+var load_stats := {}   # issue 1434: the last sliced build's timings (bench/load_1434.gd)
 var _preload := {}   # hull resource path -> the loaded resource (null while its threaded load runs)
 
 
@@ -965,6 +966,9 @@ func _make_views_sliced(gen: int) -> bool:
 				return false
 			stretch_t = Time.get_ticks_usec()
 	st["worst_stretch"] = maxi(st["worst_stretch"], Time.get_ticks_usec() - stretch_t)
+	st["ships"] = total
+	st["ms"] = (Time.get_ticks_usec() - t0) / 1000
+	load_stats = st   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
 	_drop_preload()
 	hud.loading_count(0, 0)
 	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s), effects registration %d ms (worst %d ms), waiting on hull files %d ms" % [
