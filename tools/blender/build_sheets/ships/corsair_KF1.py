@@ -4,7 +4,7 @@ Issue 1373 (R362: anything solid near a ship is built from the ship part kits an
 fighters only in the adaptive enemy wings (rules.gd adaptWings: "launched a fighter wing to hunt your craft"), and the game drew
 a code-built box for them. KF1 is the fighter of Ryan's accepted bomber KB1CC (R259, R273): the same glacis ramp, rails,
 armoured lip and patchwork plating, without the wide shoulders and bomb barrels, so it reads as the light craft of the same
-family. A salvaged twin gun sits off to port on the ramp, the vision slit off to starboard (lopsided, factions.md). Nothing hung
+family. Two salvaged twin guns sit up front on the ramp, the vision slit off to starboard (lopsided, factions.md). Nothing hung
 under the hull, no canopy, no wings (R254). Size 1.6 (scale.md Squadron row), +X bow.
   blender -b -P tools/blender/build_sheets/build.py -- corsair_KF1 OUT render
 """
@@ -50,7 +50,7 @@ def build(K):
     CR = importlib.util.module_from_spec(sp); sp.loader.exec_module(CR)
     CR.install(HP)
     K.hull_sections = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in BODY]
-    PL = dict(size=(U(0.08), U(0.19)), thick=(U(0.002), U(0.0045)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
+    PL = dict(size=(U(0.08), U(0.19)), thick=(U(0.002), U(0.0045)), gap=U(0.0016), skip=0.0, turn=12.0, hard=0.35, stack=0.45,
               rivets_share=0.07, rivet_r=U(0.0018),
               # Ryan, Nov 21 2026: "it's ALL red compared to the patchy colors of the rest": the capitals' plate mix (A18, A19):
               # red plate, grey salvaged trophy plates and a few violet ones over a dark steel body. The faction register paints soot and
@@ -60,8 +60,13 @@ def build(K):
     ns = sorted({r[0] for r in BODY} | {round(0.46 - 0.04 * i, 3) for i in range(24) if 0.46 - 0.04 * i > X_END}, reverse=True)
     bsecs = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in [sec(BODY, n) for n in ns]]
     body = K.loft(CODE + '_body', bsecs, 'steel', shell=U(0.004))
-    PATCH.append((CODE + '_body', [[(s_[0], y, z) for (y, z) in _k._octa(*s_[1:7])] for s_ in bsecs],
-                  dict(PL, seed=17, faces=[1, 3, 7, 5], inv=['glacis_plates', 'belly_plates'])))
+    brings = [[(s_[0], y, z) for (y, z) in _k._octa(*s_[1:7])] for s_ in bsecs]
+    PATCH.append((CODE + '_body', brings, dict(PL, seed=17, faces=[5], inv=['belly_plates'])))
+    # the deck around the guns and lockers: plates small enough to fit between them
+    PATCH.append((CODE + '_deck', brings, dict(PL, seed=19, faces=[1], size=(U(0.05), U(0.12)), inv=['glacis_plates'])))
+    # the flanks and chamfers are low, so the deck's plate size left few cells and wide bare gaps (Ryan, Nov 21: "it looks
+    # unfinished with the lack of plates"): smaller plates there, so the whole flank is covered
+    PATCH.append((CODE + '_flank', brings, dict(PL, seed=29, faces=[0, 2, 3, 7], size=(U(0.045), U(0.1)), inv=[])))
     K.mass('Hull: the glacis body (the bomber\'s ramp and stern housing, narrowed)', body, 'soot and patched plate',
            note='the KB1CC body at about two thirds of its beam: a tapered bow toe, the rising glacis, a level upper deck, the stern bank housing')
     K.mark('body', 'hull', ['bevel', 'step', 'overhang'])
@@ -97,9 +102,24 @@ def build(K):
                     'vision_slit', 'vision slit %.2f x %.3f' % (U(0.05), U(0.004)), 'slit', 'designed',
                     'the pilot\'s vision slit in the lip\'s face, off to starboard, looking forward down the ramp', aperture=U(0.2))
 
-    # ---------------- the gun: a salvaged twin mount on the ramp, off to port, fixed forward ----------------
-    K.gun('G1', (U(GX), U(GY), top(GX)), 0.0, 3.0, barrels=2, cal=U(0.0035), blen=U(0.075), size=U(0.034), slot='T', weapon='guns', inv='guns',
-          variant=1, band=(0, 10, 20, 30, 45), note='the fighter\'s guns (data.js guns T): a salvaged twin mount from the Hullbreaker kit, off to port on the deck above the ramp, firing forward; the craft turns onto its target')
+    # ---------------- the guns: two salvaged twin mounts up front on the ramp, lopsided ----------------
+    # Ryan, Nov 21 2026: "can we make the weapon more prominent? right now it just looks like a slab shape ... even if we put
+    # the turrets at the front". A big twin mount forward to port and a smaller one behind it to starboard, both firing forward.
+    # an upright mount (normal +Z) on the 14 degree ramp, seated at the ramp's height just ahead of it so no edge floats
+    for fid, (gx, gy, sz, cal, bl, var) in (('G1', (0.235, 0.070, 0.056, 0.0055, 0.115, 1)), ('G2', (0.105, -0.075, 0.044, 0.0045, 0.090, 2))):
+        K.gun(fid, (U(gx), U(gy), top(gx + 0.022)), 0.0, 3.0, barrels=2, cal=U(cal), blen=U(bl), size=U(sz), slot='T', weapon='guns', inv='guns',
+              variant=var, band=(0, 10, 20, 30, 45),
+              note='the fighter\'s guns (data.js guns T): a salvaged twin mount from the Hullbreaker kit on the bow ramp, %s, firing forward' % ('forward to port, the big one' if fid == 'G1' else 'behind it to starboard'))
+
+    # ---------------- deck detail: an ammunition locker and a vent box on the level deck, off centre ----------------
+    zd = top(-0.12) / LENGTH
+    K.box('KF1_ammo', U(-0.17), U(-0.06), U(0.012), U(0.085), U(zd - 0.002), U(zd + 0.018), 'iron', ch=U(0.003), grp='hull')
+    K.box('KF1_ammo_lid', U(-0.16), U(-0.07), U(0.020), U(0.077), U(zd + 0.018), U(zd + 0.022), 'steel', ch=U(0.0015), grp='hull')
+    K.box('KF1_vent', U(-0.26), U(-0.19), U(-0.095), U(-0.03), U(zd - 0.002), U(zd + 0.012), 'soot2', ch=U(0.002), grp='hull')
+    for i in range(4):
+        x0 = -0.198 - 0.016 * i
+        K.box('KF1_vent_slat%d' % i, U(x0 - 0.006), U(x0), U(-0.09), U(-0.035), U(zd + 0.012), U(zd + 0.016), 'iron', ch=0.0, grp='hull')
+    K.mark('deck_detail', 'tier', ['face', 'roof'])
 
     # ---------------- the drives: the bomber's thruster bank, three bells under a hood ----------------
     BANK = [(0.062, 0.088, 0.019), (-0.004, 0.094, 0.025), (-0.066, 0.086, 0.017)]
@@ -137,4 +157,6 @@ def build(K):
              'issue 1373: the Hullbreaker adaptive fighter wing drew a code-built box; one family per faction, the fighter reads as the light craft (R259, R362)')
     K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
              'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
-    K.change('A salvaged twin gun off to port on the deck above the ramp, the vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
+    K.change('The vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
+    K.change('Two bigger twin mounts up front on the ramp (port forward, starboard behind), an ammunition locker and a vent box on the deck, and smaller plates on the deck, flanks and chamfers so no bare hull shows',
+             'Ryan, Nov 21 2026: "it looks unfinished with the lack of plates" and "can we make the weapon more prominent? right now it just looks like a slab shape"')
