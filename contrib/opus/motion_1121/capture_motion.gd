@@ -12,7 +12,7 @@ var battle
 var out := ""
 var kind := ""
 var every := 2
-const KINDS := ["straight", "turn", "final", "side", "back", "long", "kill_cruiser", "kill_capital"]
+const KINDS := ["straight", "turn", "final", "side", "back", "long", "kill_frigate", "kill_enemy", "kill_cruiser", "kill_capital"]
 var allow_placeholder := false
 
 
@@ -219,10 +219,18 @@ func _moves() -> Array:
 
 
 func _kill() -> Array:
-	var cls := "Cruiser" if kind == "kill_cruiser" else "Dreadnought"
+	# kill_frigate (Ryan Nov 21: small-ship deaths fly apart) kills the player's Sunward frigate; kill_enemy kills the
+	# first living enemy (a Hegemony ship in s1) by the player's frigate, so a second faction's small death is on file
+	var cls := {"kill_frigate": "Frigate", "kill_cruiser": "Cruiser", "kill_capital": "Dreadnought"}.get(kind, "Enemy")
 	var tid := ""
 	var by := ""
 	for u in battle.V["units"]:
+		if kind == "kill_enemy":
+			if u["side"] == "enemy" and not u["dead"] and tid == "":
+				tid = u["id"]
+			if u["side"] == "player" and u["cls"] == "Frigate":
+				by = u["id"]
+			continue
 		if u["side"] == "player" and u["cls"] == cls:
 			tid = u["id"]
 		if u["side"] == "enemy" and not u["dead"] and by == "":
@@ -244,13 +252,15 @@ func _kill() -> Array:
 	var core_at: float = float(gfx.death_core_at(tid)) - fx0 if gfx != null and gfx.has_method("death_core_at") and float(gfx.death_core_at(tid)) >= 0.0 else -1.0
 	var tel := []
 	var n := 0
+	var saved := 0
 	while battle.game_t - t0 < 4.4:
 		await process_frame
 		tel.append({"t": battle.game_t - t0, "fx_t": (float(gfx.now) - fx0) if gfx != null else 0.0,
 			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n, "cam_r": float(battle.cam._cr),
 			"screen": [battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).x, battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).y]})
-		if n % 3 == 0:
+		if every > 0 and n % every == 0 and not allow_placeholder:
 			await RenderingServer.frame_post_draw
-			_save(folder, "%05d.jpg" % n)
+			_save(folder, "%05d.jpg" % saved)   # consecutive, for ffmpeg
+			saved += 1
 		n += 1
 	return [{"cls": cls, "kind": kind, "target": tid, "by": by, "hull_L": float(sv.L), "core_flash_fx_s": core_at, "telemetry": tel}]
