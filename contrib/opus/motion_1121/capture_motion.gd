@@ -12,15 +12,28 @@ var battle
 var out := ""
 var kind := ""
 var every := 2
+const KINDS := ["straight", "turn", "final", "side", "back", "long", "kill_cruiser", "kill_capital"]
 var allow_placeholder := false
 
 
 func _init() -> void:
+	# PC run 1121N (Nov 21): the kind read from the command line came back as "OK.txt", so every class was "unavailable"
+	# and the run still printed done with 0 frames. The bat now also passes MOTION_OUT and MOTION_KIND in the
+	# environment, which win; the command line is the fallback. Anything unread or unknown fails the run.
 	var a := OS.get_cmdline_user_args()
-	out = a[a.find("--out") + 1]
-	kind = a[a.find("--kind") + 1]
-	every = int(a[a.find("--every") + 1]) if a.has("--every") else 2
+	print("MOTION_ARGS ", a, " env kind '", OS.get_environment("MOTION_KIND"), "' env out '", OS.get_environment("MOTION_OUT"), "'")
+	out = OS.get_environment("MOTION_OUT")
+	kind = OS.get_environment("MOTION_KIND")
+	if out == "" and a.find("--out") >= 0 and a.find("--out") + 1 < a.size():
+		out = a[a.find("--out") + 1]
+	if kind == "" and a.find("--kind") >= 0 and a.find("--kind") + 1 < a.size():
+		kind = a[a.find("--kind") + 1]
+	every = int(a[a.find("--every") + 1]) if a.has("--every") and a.find("--every") + 1 < a.size() else 2
 	allow_placeholder = a.has("--allow-placeholder")
+	if out == "" or not (kind in KINDS):
+		print("MOTION_FAILED bad arguments: out '%s', kind '%s' (want one of %s)" % [out, kind, str(KINDS)])
+		quit(1)
+		return
 	# Artoo on PR 1523: a reused folder could pass old frames off as new; refuse anything but a fresh one
 	if DirAccess.dir_exists_absolute(out) and (not DirAccess.get_files_at(out).is_empty() or not DirAccess.get_directories_at(out).is_empty()):
 		print("MOTION_FAILED output folder is not fresh: ", out)
@@ -103,6 +116,13 @@ func run() -> void:
 			n_jpg += 1 if fn.ends_with(".jpg") else 0
 		if n_jpg != int(expected[folder]):
 			save_errors.append("%s holds %d frames, %d saved" % [folder, n_jpg, int(expected[folder])])
+	var recorded := 0
+	for r in result:
+		recorded += 0 if (r as Dictionary).has("unavailable") else 1
+	if recorded == 0:
+		save_errors.append("no class could fly a %s move: nothing recorded" % kind)
+	if not allow_placeholder and expected.is_empty():
+		save_errors.append("0 frames saved")
 	if not save_errors.is_empty():
 		for e in save_errors:
 			print("MOTION_SAVE_ERROR ", e)
