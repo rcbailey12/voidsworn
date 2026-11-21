@@ -260,6 +260,9 @@ func specification(ship: Dictionary) -> void:
 # regrown hulls). Each line is {"t": text, "k": shield | stat | ability | ability_d | weapon | gun}; callers pick the type.
 static func spec_lines(c, ship: Dictionary) -> Array:
 	var hull = c.HULLS[ship["tpl"]]; var d = c.derive(ship); var out = []
+	if ship["uid"] == "" and ship["cap"].has("name"):   # a preview with a recovered captain: say whose perks the numbers include
+		var ps = ship["cap"]["perks"].map(func(p): return str(c.PERKS[p]["n"]))
+		out.append({"k": "captain", "t": "Comes with " + c.rankName(ship["cap"]) + " " + str(ship["cap"]["name"]) + ", recovered from the reserve" + ((" (" + ", ".join(PackedStringArray(ps)) + ")") if not ps.is_empty() else "") + ". The numbers include their perks."})
 	out.append({"k": "shield", "t": "Shields " + c.numstr(d["shMax"]) + "  +" + c.numstr(d["regen"]) + "/turn"})
 	out.append({"k": "stat", "t": "Armor " + c.pct(d["armor"]) + "   Speed " + c.numstr(d["speed"]) + "\nTurns " + c.numstr(d["turns"]) + "   Evasion " + c.numstr(d["ev"])})
 	var ability = c.ABILITIES.get(hull.get("ab"), {})
@@ -270,9 +273,14 @@ static func spec_lines(c, ship: Dictionary) -> Array:
 		var arc = "Turret" if w["arc"] == "T" else str(c.ARC_NAME.get(w["arc"], w["arc"]))
 		out.append({"k": "gun", "t": arc + " · " + c.numstr(w["shots"]) + "×" + c.numstr(w["dmg"]) + " · range " + c.numstr(w["r"]) + ((" · reload " + c.numstr(w["cd"])) if c.jt(w.get("cd")) else "")})
 	return out
-# A hull as it would arrive from the shipyard (Mk I, no refits, a fresh lieutenant), for spec_lines only: never added to the run.
-static func preview_ship(c, tpl: String, ripped := false) -> Dictionary:
-	var s = {"uid": "", "tpl": tpl, "mk": 1, "mods": [], "cap": {"perks": [], "rank": 0, "xp": 0}, "hp": c.HULLS[tpl]["hp"]}
+# A hull as it would arrive (Mk I, no refits), for spec_lines only: never added to the run. Its captain is the one newShip
+# would really install: the nth recovered captain in the reserve when newShip would take one (same test as newShip: no
+# battle running, a reserve to draw from), else a fresh lieutenant. The reserve is read, never popped (issue 1449, Artoo).
+static func preview_ship(c, tpl: String, ripped := false, nth := 0) -> Dictionary:
+	var cap = {"perks": [], "rank": 0, "xp": 0}
+	var R = c.RUN
+	if c.B == null and R != null and R.get("reserve") is Array and nth < R["reserve"].size(): cap = R["reserve"][nth]["cap"].duplicate(true)
+	var s = {"uid": "", "tpl": tpl, "mk": 1, "mods": [], "cap": cap, "hp": c.HULLS[tpl]["hp"]}
 	if ripped: s["ripped"] = true
 	return s
 

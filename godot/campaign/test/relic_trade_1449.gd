@@ -119,6 +119,30 @@ func _run() -> void:
 	if campaign.RUN["fleet"].any(func(s): return s["uid"] == ""): _fail("a preview ship joined the fleet"); return
 	print("PASS: shipyard Full specs drawer shows armor, every gun's shots, damage and range, and the ability text")
 
+	# 2b. A wounded reserve captain with a stat perk (Artoo on PR 1458): buying installs them (newShip), so the preview shows
+	# their perks too, names them, and never takes them from the reserve
+	var vet = {"name": "Reserve Tester", "rank": 1, "xp": 30, "perks": ["helm"]}
+	campaign.RUN["reserve"] = [{"cap": vet.duplicate(true)}]
+	var bare = campaign.derive(FleetManifest.preview_ship(campaign, h, false, 1))   # nth past the reserve: a fresh lieutenant
+	var pv = FleetManifest.preview_ship(campaign, h)
+	var pd = campaign.derive(pv)
+	if float(pd["speed"]) != float(bare["speed"]) + 1: _fail("the preview ignores the reserve captain's Helm perk: " + str(pd["speed"]) + " vs " + str(bare["speed"])); return
+	var rl = FleetManifest.spec_lines(campaign, pv)
+	if not (rl[0]["k"] == "captain" and str(rl[0]["t"]).contains("Reserve Tester")): _fail("the drawer does not name the reserve captain"); return
+	ui.spec_open = {"yard:" + h: true}
+	ui.render(); await process_frame
+	if campaign.RUN["reserve"].size() != 1: _fail("previewing used up the reserve captain"); return
+	if not _visible_text("Reserve Tester"): _fail("the open drawer does not show the reserve captain"); return
+	if not await _page("Reserve Tester", "SHIP-1_reserve_captain", "normal"): return
+	var n_before = campaign.RUN["fleet"].size()
+	campaign.act("buyHull", h)
+	if campaign.RUN["fleet"].size() != n_before + 1: _fail("buying the previewed hull failed"); return
+	var got = campaign.RUN["fleet"][campaign.RUN["fleet"].size() - 1]
+	var gd = campaign.derive(got)
+	if str(got["cap"]["name"]) != "Reserve Tester" or float(gd["speed"]) != float(pd["speed"]) or float(gd["maxHp"]) != float(pd["maxHp"]) or float(gd["shMax"]) != float(pd["shMax"]): _fail("the bought ship differs from its preview"); return
+	if not campaign.RUN["reserve"].is_empty(): _fail("buying did not take the reserve captain"); return
+	print("PASS: with a reserve captain the preview shows their perks and matches the ship you buy; previewing never spends them")
+
 	# 3. The same drawer on a prize ship after a battle
 	campaign.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [{"tpl": h, "name": "Taken Prize", "cp": campaign.HULLS[h]["cp"], "hpf": 0.6, "wk": [], "ab": null, "regen": 0, "sh": 10}], "prizeSel": null, "wrecks": []}
 	campaign.ACT_prizeStep()
