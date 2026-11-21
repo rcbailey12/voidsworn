@@ -503,7 +503,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				if A != null and hd.size() > 0:
 					fx.later(T0, func l_ram_mark() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
-				var vent = (0.75 if lk == "torp" else 0.45) + beat * (0.35 if lk == "torp" else 0.12)   # torp: room for the 0.7 s slide after the order
+				var slide_room := 0.30 if lk == "torp" and OS.get_environment("VS_1379_LAUNCH") != "old" else 0.0   # torp: room for the 0.7 s slide after the order (the old arm keeps main's timing)
+				var vent = 0.45 + slide_room + beat * (0.35 if lk == "torp" else 0.12)
 				tf = T0 + vent
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
 				var tt = dist / spd + 0.25
