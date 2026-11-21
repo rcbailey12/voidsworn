@@ -6,7 +6,8 @@ extends SceneTree
 #   -- <out folder> <arm label>
 # Writes <out>/frames/f_###.jpg (every second frame, 1280x720), <out>/sheet.png (six frames cropped to the middle
 # half, 1278x560: 3 by 2 with a band below for the revision stamp) and <out>/crossing.json (plates near the path and
-# how many moved). Exit 1 if no plate settled near the path or the scene drew a placeholder.
+# how many moved; written last, only when every picture saved). Exit 1 if the folder is not fresh, any frame, sheet or
+# stamp save fails, no plate settled near the path, or the scene drew a placeholder.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const PG := preload("res://render/placeholder_guard.gd")
@@ -55,6 +56,12 @@ func _frames(fx, n: int) -> void:
 
 
 func _run() -> void:
+	# a fresh output folder only (Artoo on PR 1476): stale frames or a stale sheet must never pass as this run's
+	for old in ["frames", "sheet.png", "crossing.json"]:
+		if FileAccess.file_exists(out.path_join(old)) or DirAccess.dir_exists_absolute(out.path_join(old)):
+			printerr("WRECK_CROSSING output folder not fresh: %s exists" % out.path_join(old))
+			quit(1)
+			return
 	DirAccess.make_dir_recursive_absolute(out.path_join("frames"))
 	var vp := SubViewport.new()
 	vp.size = Vector2i(1280, 720)
@@ -130,6 +137,7 @@ func _run() -> void:
 	await _frames(fx, 30)
 	var n := int(2.0 * RUN / SPEED * 60.0)
 	var saved: Array = []
+	var save_errors: Array = []
 	for i in n + 60:
 		if i < n: crosser.position = start + Vector3(SPEED * (i + 1) / 60.0, 0, 0)
 		label.text = "WX1466 %s c60 | box frigates | crossing settled plates | t %.2f s" % [arm, i / 60.0]
@@ -137,8 +145,9 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		if i % 2 == 0:
 			var p := out.path_join("frames/f_%03d.jpg" % (i / 2))
-			preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), p, 0.88)
-			saved.append(p)
+			var err: Error = preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), p, 0.88)
+			if err != OK or not FileAccess.file_exists(p): save_errors.append("%s: %s" % [p.get_file(), error_string(err)])
+			else: saved.append(p)
 	# the plates the hull's path reached (within 4 units of its centre line) and how far each was pushed
 	var near := 0
 	var moved := 0
@@ -150,21 +159,37 @@ func _run() -> void:
 		var d := (b as Node3D).global_position.distance_to(p0)
 		most = maxf(most, d)
 		if d > 0.5: moved += 1
-	var res := {"arm": arm, "plates": plates.size(), "resting_before": resting, "space_asleep_before": asleep,
-		"near_path": near, "moved": moved, "most_moved": snappedf(most, 0.01), "frames": saved.size()}
-	FileAccess.open(out.path_join("crossing.json"), FileAccess.WRITE).store_string(JSON.stringify(res, "  "))
-	print("WRECK_CROSSING %s" % JSON.stringify(res))
 	# six frames across the crossing, 3 by 2 at 426x240
 	var sheet := Image.create(1278, 560, false, Image.FORMAT_RGB8)
 	for k in 6:
+		if saved.is_empty(): break
 		var idx := int(float(k) / 5.0 * float(saved.size() - 1))
 		var im := Image.load_from_file(ProjectSettings.globalize_path(saved[idx]))
-		if im == null: continue
+		if im == null or im.is_empty():
+			save_errors.append("sheet frame %s did not load" % saved[idx].get_file())
+			continue
 		im.convert(Image.FORMAT_RGB8)
 		# the middle half of the frame at 2x less shrink, so the plates (a few pixels at c60) still read on the sheet
 		im = im.get_region(Rect2i(320, 180, 640, 360))
 		im.resize(426, 240, Image.INTERPOLATE_LANCZOS)
 		sheet.blit_rect(im, Rect2i(0, 0, 426, 240), Vector2i((k % 3) * 426, (k / 3) * 240))
-	preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join("sheet.png"))
+	var sheet_err: Error = preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join("sheet.png"))
+	if sheet_err != OK or not FileAccess.file_exists(out.path_join("sheet.png")): save_errors.append("sheet.png: %s" % error_string(sheet_err))
+	if saved.size() != (n + 60 + 1) / 2: save_errors.append("frames saved %d of %d" % [saved.size(), (n + 60 + 1) / 2])
+	# written last, so crossing.json exists only when every picture did; moved may be 0 (the before arm reports that)
+	var res := {"arm": arm, "plates": plates.size(), "resting_before": resting, "space_asleep_before": asleep,
+		"near_path": near, "moved": moved, "most_moved": snappedf(most, 0.01), "frames": saved.size(), "save_errors": save_errors}
+	print("WRECK_CROSSING %s" % JSON.stringify(res))
 	fx.release()
+	if not save_errors.is_empty():
+		printerr("WRECK_CROSSING capture failed: %s" % ", ".join(save_errors))
+		PG.finish(1)
+		return
+	var f := FileAccess.open(out.path_join("crossing.json"), FileAccess.WRITE)
+	if f == null:
+		printerr("WRECK_CROSSING could not write crossing.json")
+		PG.finish(1)
+		return
+	f.store_string(JSON.stringify(res, "  "))
+	f.close()
 	PG.finish(0 if near > 0 else 1)
