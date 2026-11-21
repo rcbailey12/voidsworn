@@ -1,0 +1,35 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 11 cues, 10 clip sets, loaded in 13 ms
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[load] battle scene ready in 368 ms (title backdrop)
+[world] baked 14545378056d8008839ad41fd29d2f8b2a5b10fc74fc8fe9e85aa540a45496e7 4096x2048 in 509 ms (worker; stages ms { "began": 5240, "device": 184, "spirv": 3, "pipeline": 1, "dispatch": 96, "worst_strip": 11, "readback": 47, "save": "deferred (a load is running)", "mips": 11 }; queued at 5239, worker from 5240, handed back at 5748 ms)
+[world] baked 3a7cfd26aad6a9da80856a06e1d26d3791d8c5ee3ad600a70157959a58849a19 4096x2048 in 629 ms (worker; stages ms { "began": 5757, "device": 215, "spirv": 4, "pipeline": 1, "dispatch": 13, "worst_strip": 1, "readback": 45, "save": "deferred (a load is running)", "mips": 11 }; queued at 5460, worker from 5748, handed back at 6089 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 7.077, target 4.4; visual tuning (R191)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 1088 ms (worker; stages ms { "began": 6090, "device": 192, "spirv": 10, "pipeline": 3, "dispatch": 11, "worst_strip": 4, "readback": 43, "save": "deferred (a load is running)", "mips": 1 }; queued at 5464, worker from 6089, handed back at 6552 ms)
+[world] baked e1939012d2e063d68007f744be35c286ff3dadd2a0a75740d53b902ce46d70a6 1024x512 in 1310 ms (worker; stages ms { "began": 6552, "device": 156, "spirv": 4, "pipeline": 1, "dispatch": 6, "worst_strip": 3, "readback": 28, "save": "deferred (a load is running)", "mips": 0 }; queued at 5468, worker from 6552, handed back at 6778 ms)
+[world] baked 96ce783691fb37aa0f55f385f7499ba2547f3de178e973e6d360c38647b13c54 4096x2048 in 891 ms (worker; stages ms { "began": 6779, "device": 208, "spirv": 3, "pipeline": 1, "dispatch": 11, "worst_strip": 3, "readback": 55, "save": "deferred (a load is running)", "mips": 12 }; queued at 6266, worker from 6778, handed back at 7157 ms)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 659 ms (worker; stages ms { "began": 7158, "device": 165, "spirv": 4, "pipeline": 1, "dispatch": 6, "worst_strip": 3, "readback": 29, "save": "deferred (a load is running)", "mips": 0 }; queued at 6740, worker from 7157, handed back at 7399 ms)
+[world] baked 902a06f99128af2440968bd607dff2ea0347c57da28c48332bab267f607c23be 1024x512 in 647 ms (worker; stages ms { "began": 7400, "device": 214, "spirv": 4, "pipeline": 1, "dispatch": 5, "worst_strip": 2, "readback": 28, "save": "deferred (a load is running)", "mips": 0 }; queued at 7015, worker from 7399, handed back at 7662 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] saved 14545378056d8008839ad41fd29d2f8b2a5b10fc74fc8fe9e85aa540a45496e7 later (stages ms { "save_began": 10596, "save": 3742, "prune": 2 })
+[world] baked 58413c805df71a726a99c0f230a401cd9cc49e57fe41b5bca00c2081a09dacaa 4096x2048 in 5490 ms (worker; stages ms { "began": 15345, "device": 225, "spirv": 3, "pipeline": 1, "dispatch": 101, "worst_strip": 5, "readback": 44, "save_began": 15723, "save": 3463, "prune": 2, "mips": 13 }; queued at 13723, worker from 15344, handed back at 19213 ms)
+[world] baked a274f108eddffa284941daadf14bbbd66b190a7234e6914f34c63d191e47190a 4096x2048 in 8132 ms (worker; stages ms { "began": 19214, "device": 159, "spirv": 3, "pipeline": 2, "dispatch": 9, "worst_strip": 2, "readback": 47, "save_began": 19437, "save": 2412, "prune": 2, "mips": 10 }; queued at 13732, worker from 19214, handed back at 21864 ms)
+[world] saved 3a7cfd26aad6a9da80856a06e1d26d3791d8c5ee3ad600a70157959a58849a19 later (stages ms { "save_began": 21865, "save": 2162, "prune": 2 })
+[world] baked d8002323e9deb4fc943bc39fdc90c8608d6555071d3c866f8c051dcfa5301b1c 4096x2048 in 3440 ms (worker; stages ms { "began": 24068, "device": 166, "spirv": 4, "pipeline": 2, "dispatch": 10, "worst_strip": 2, "readback": 44, "save_began": 24296, "save": 1000, "prune": 2, "mips": 12 }; queued at 21884, worker from 24067, handed back at 25324 ms)
+[world] saved fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd later (stages ms { "save_began": 25325, "save": 162, "prune": 2 })
+[world] saved e1939012d2e063d68007f744be35c286ff3dadd2a0a75740d53b902ce46d70a6 later (stages ms { "save_began": 25519, "save": 165, "prune": 3 })
+[world] saved 96ce783691fb37aa0f55f385f7499ba2547f3de178e973e6d360c38647b13c54 later (stages ms { "save_began": 25721, "save": 920, "prune": 3 })
+[world] saved d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 later (stages ms { "save_began": 26686, "save": 119, "prune": 4 })
+[world] saved 902a06f99128af2440968bd607dff2ea0347c57da28c48332bab267f607c23be later (stages ms { "save_began": 26848, "save": 73, "prune": 4 })
+[player-path] FAIL jump to 0-0 did not open
+[main] quit (menu) at 32827 ms
+[main] frames before the close, oldest first: 31 ms (-), 29 ms (-), 28 ms (-), 27 ms (-), 27 ms (-), 28 ms (-), 27 ms (-), 27 ms (-), 1 ms so far (this frame)
+[main] loading at the close: nothing
+[main] quit stages: scenes freed + 2 frames 73 ms, statics and fx drain 29 ms, engine exit from 32929 ms
