@@ -46,6 +46,8 @@ func quit_clean(code := 0, route := "menu") -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 	for n in [battle, showcase]:
 		if n != null and is_instance_valid(n):
+			if n.has_method("stop_build"):
+				n.stop_build()   # issue 1518: a load under way stops at its next step and starts no more work
 			if "quitting" in n:
 				n.quitting = true   # issue 521: an awaiting command must not draw on the freed HUD
 			n.queue_free()
@@ -443,10 +445,13 @@ func quick_battle() -> void:
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
 		var t_leave := Time.get_ticks_usec()
-		b.queue_free()
+		var parts := {}
 		battle = null
+		_retire_battle(b, parts)
+		var t_q := Time.get_ticks_usec()
 		show_title()
-		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+		parts["title_build"] = Time.get_ticks_usec() - t_q
+		_time_title_return(t_leave, parts), CONNECT_ONE_SHOT)
 	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
 	if args.has("title-after"):
 		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
@@ -455,15 +460,72 @@ func quick_battle() -> void:
 				b._on_action("to_title", null))
 
 
+# Issue 1519 (CLOSE5: battle to title about 0.55 s): the battle used to be freed in the same frame the title was built, so
+# the player saw neither until both were done. Now the battle leaves the tree at once (nothing of it draws or runs), the
+# title is drawn on that frame, and the battle is freed just after that frame's draw, before any of its awaiting code
+# could resume out of the tree. Hiding it in the tree instead cost more (the hidden scene still drew its sky and world).
+# Only the quick battle's way back to the title uses this; the campaign's battles still free at once.
+func _retire_battle(b: Node, parts: Dictionary) -> void:
+	if b == null or not is_instance_valid(b):
+		return
+	var t := Time.get_ticks_usec()
+	if b.has_method("stop_build"):
+		b.stop_build()
+	if "quitting" in b:
+		b.quitting = true   # issue 521: nothing awaiting in it draws again
+	if b.get_parent() != null:
+		b.get_parent().remove_child(b)   # its _exit_tree runs here (load hand-off, worker joins, look cache)
+	parts["battle_out"] = Time.get_ticks_usec() - t
+	if not DisplayServer.window_can_draw():
+		b.queue_free()   # headless or minimised: no frame is drawn to wait for, so it goes at the end of this one as before
+		return
+	RenderingServer.frame_post_draw.connect(func() -> void:
+		if is_instance_valid(b):
+			var t1 := Time.get_ticks_usec()
+			b.free()
+			parts["battle_free"] = Time.get_ticks_usec() - t1, CONNECT_ONE_SHOT)
+
+
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
 # retires any running cut) and the first title frame after it.
-func _time_title_return(t_leave: int) -> void:
+func _time_title_return(t_leave: int, parts := {}) -> void:
+	# issue 1519: where the time goes, frame by frame: the end of each frame's draw and the start of the next process step
+	var marks: Array = []
+	var on_draw := func() -> void: marks.append(["draw", Time.get_ticks_usec() - t_leave])
+	RenderingServer.frame_post_draw.connect(on_draw)
+	RenderingServer.frame_pre_draw.connect(func() -> void: marks.append(["pre", Time.get_ticks_usec() - t_leave]), CONNECT_ONE_SHOT)
 	await get_tree().process_frame
 	var t_free := Time.get_ticks_usec()
+	marks.append(["step", t_free - t_leave])
 	await get_tree().process_frame
 	var t_title := Time.get_ticks_usec()
+	marks.append(["step", t_title - t_leave])
+	# then the rest of the first second, so a cost moved behind the title still shows (worst frame below)
+	while Time.get_ticks_usec() - t_leave < 1000000 and not quitting:
+		await get_tree().process_frame
+		marks.append(["step", Time.get_ticks_usec() - t_leave])
+	RenderingServer.frame_post_draw.disconnect(on_draw)
+	# issue 1519: the first title frame is the first frame drawn after the leave (the title is in the tree from the
+	# leave on); before, this line gave the second process step, which also held the battle's free
+	var first_draw := -1
+	var worst := 0
+	var prev := 0
+	for m in marks:
+		if m[0] == "draw":
+			if first_draw < 0:
+				first_draw = int(m[1])
+			worst = maxi(worst, int(m[1]) - prev)
+			prev = int(m[1])
 	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
-		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
+		float(t_free - t_leave) / 1000.0, float(first_draw if first_draw >= 0 else t_title - t_leave) / 1000.0])
+	var bits: Array = []
+	for k in parts:
+		bits.append("%s %.1f" % [k, float(parts[k]) / 1000.0])
+	bits.append("battle exit_tree %.1f" % (float(load("res://scenes/battle/battle.gd").last_exit_us) / 1000.0))
+	for m in marks.slice(0, 10):
+		bits.append("%s@%.1f" % [m[0], float(m[1]) / 1000.0])
+	print("[main] battle to title parts (ms): %s" % ", ".join(bits))
+	print("[main] battle to title: worst frame in the first second %.1f ms" % (float(worst) / 1000.0))
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the

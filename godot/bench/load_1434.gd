@@ -31,6 +31,16 @@ var lines: Array = []
 var pass_all := true
 var finished: Array = []   # each case adds its name as its last step, so a case cut short by a script error fails the run
 var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3", "b2r"])
+# Board, Nov 21 (LOAD10): graded on a warm profile (the player's second launch onward: Godot's shader and pipeline caches
+# and the world bakes already on disk), with the cold first launch reported alongside on the same items. --pass names
+# which this run is; the runner (load1434_runs.ps1) starts the bench twice on one profile, cold then warm.
+var pass_name := "one"
+# The cold condition (Board): the first launch must still show the loading cover while shaders compile, never a blank
+# or stalled window. Every frame from the cover to play must have the cover up, and no frame may reach 5 s (Windows
+# marks a window that has not answered for 5 s as not responding).
+const STALL_MS := 5000
+var cover_ok_all := true
+var cover_notes: Array = []
 
 
 func _init() -> void:
@@ -38,6 +48,9 @@ func _init() -> void:
 	var i := a.find("--out")
 	if i >= 0 and i + 1 < a.size():
 		out_dir = a[i + 1]
+	var pn := a.find("--pass")
+	if pn >= 0 and pn + 1 < a.size():
+		pass_name = a[pn + 1]
 	var c := a.find("--cases")   # a subset for a quick trial, e.g. --cases leave,b1 (the PC job runs them all)
 	if c >= 0 and c + 1 < a.size():
 		cases = a[c + 1].split(",")
@@ -91,11 +104,19 @@ func _battle(tag: String, args: Dictionary) -> void:
 	var vp_rid := root.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
+	var gaps := 0
+	var stalls := 0
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
 		var ph0: String = b.load_phase
 		await process_frame
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
+		if b.warming:
+			var cv = b.hud.load_cover if b.hud != null else null
+			if cv == null or not is_instance_valid(cv) or not (cv as CanvasItem).is_visible_in_tree():
+				gaps += 1
+		if (now - last) / 1000 >= STALL_MS:
+			stalls += 1
 		var pipes := _pipes()
 		var bakes: int = int(b.world.pending_bakes) if b.world != null and is_instance_valid(b.world) else -1
 		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase],
@@ -129,6 +150,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 			int(st["worst_setup"]) / 1000, st["worst_code"], int(st["worst_fx"]) / 1000, int(st["wait"]) / 1000, ready_ms,
 			worst / 1000, Time.get_ticks_msec() - w0])
 	_say("[load1434] %s cover frames: worst %s; time by phase %s" % [tag, ", ".join(top), str(per)])
+	_cover_note(tag, gaps, stalls, worst / 1000)
 	_say("[load1434] %s worst cover frames split: %s" % [tag, "; ".join(split)])
 	if not st.is_empty():
 		_say("[load1434] %s worst ship %s setup stages (us) %s; worst effects registration %s parts (us) %s; worst hull geometry %d ms (%s)" % [tag, st.get("worst_code", ""),
@@ -139,6 +161,14 @@ func _battle(tag: String, args: Dictionary) -> void:
 	for i in 30:
 		await process_frame
 	finished.append(tag)
+
+
+func _cover_note(tag: String, gaps: int, stalls: int, worst_ms: int) -> void:
+	var ok := gaps == 0 and stalls == 0
+	cover_ok_all = cover_ok_all and ok
+	cover_notes.append("%s %s" % [tag, "ok" if ok else "FAIL"])
+	_say("[load1434] %s cover check %s: %d frames without the cover before play, %d frames of %d s or more (worst %d ms)" % [
+		tag, "PASS" if ok else "FAIL", gaps, stalls, STALL_MS / 1000, worst_ms])
 
 
 func _title() -> void:
@@ -209,6 +239,10 @@ func _title() -> void:
 	_say("[load1434] title %s (slice %s, ready %s, click %s, frame %s, bus %s)" % ["PASS" if ok else "FAIL", "PASS" if slice_ok else "FAIL",
 		"PASS" if ready else "FAIL (timed out)", ("PASS (%d ms)" % click_ms) if click_ok else ("FAIL (%s)" % ("no click while building" if click_ms == -1 else "drawer never opened" if click_ms == -2 else "%d ms" % click_ms)),
 		("PASS (%d ms)" % (worst / 1000)) if frame_ok else ("FAIL (%d ms)" % (worst / 1000)), "PASS" if moved.is_empty() else "FAIL"])
+	var stalls := 0
+	for f in frames:
+		if int(f[0]) >= STALL_MS: stalls += 1
+	_cover_note("title", 0, stalls, worst / 1000)   # the title has no cover: its menu stays drawn, so only stalls count
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	_say("[load1434] title worst frames split: %s" % "; ".join(_split(frames.slice(0, 5))))
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
@@ -350,9 +384,12 @@ func _b2_again() -> void:
 	Baker._cache.clear()
 	Baker._textures.clear()
 	var keep := pass_all
+	var keep_cover := cover_ok_all
 	await _battle("b2r", {"seed": 202})
+	cover_ok_all = keep_cover
 	_say("[load1434] b2r is reported only (bakes again, shaders warm): its FAIL or PASS above does not count toward RESULT")
 	pass_all = keep
+	cover_notes[-1] = "b2r reported only"
 	# the folder stays: bakes still running would write into it; it lives in this run's own throwaway Godot profile
 
 
@@ -369,7 +406,9 @@ func _run() -> void:
 		if not c in finished:
 			pass_all = false
 			_say("[load1434] %s FAIL: the case stopped before its end (see the script error above)" % c)
-	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
+	_say("[load1434] COVER %s on the %s profile (the loading cover up on every frame to play and no frame of %d s or more: %s)" % [
+		"PASS" if cover_ok_all else "FAIL", pass_name, STALL_MS / 1000, ", ".join(cover_notes)])
+	_say("[load1434] RESULT %s on the %s profile (limit %d ms for each graded item: slice, ready, cover frame, title click, title frame, bus; leave exit limit 100 ms; graded on the warm profile, the cold one reported with its COVER line, Board Nov 21)" % ["PASS" if pass_all else "FAIL", pass_name, LIMIT_MS])
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var f := FileAccess.open(out_dir.path_join("load_result.txt"), FileAccess.WRITE)

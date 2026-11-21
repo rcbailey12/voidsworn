@@ -1467,6 +1467,7 @@ static var last_exit_id := 0   # which battle the two above belong to (the bench
 
 func _exit_tree() -> void:
 	var t_exit := Time.get_ticks_usec()
+	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
 	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
 	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait
 	# exit synchronisation stays: drain both tasks, then clear the flags they own
