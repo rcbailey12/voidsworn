@@ -241,17 +241,55 @@ function Remove-LinkSafeTree($root) {
       if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
       } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
-      else { $bytes += $entry.Length; $entry.Attributes = [IO.FileAttributes]::Normal; [IO.File]::Delete($entry.FullName) }
+      else { $f = $entry.FullName; $len = $entry.Length; Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len }
     }
   }
-  for ($i = $dirs.Count - 1; $i -ge 0; $i--) { [IO.Directory]::Delete($dirs[$i], $false) }
+  for ($i = $dirs.Count - 1; $i -ge 0; $i--) { $d = $dirs[$i]; Invoke-Retry { $di = New-Object IO.DirectoryInfo $d; if ($di.Exists) { if ($di.Attributes -band [IO.FileAttributes]::ReadOnly) { $di.Attributes = $di.Attributes -bxor [IO.FileAttributes]::ReadOnly }; $di.Delete($false) } } $d }
   return $bytes
 }
-
-function Remove-Owned($path) {
-  # The one place this file removes anything: a folder the callers have checked is the job's own leftover.
+function Invoke-Retry([scriptblock]$act, $what) {
+  # A file Defender, the indexer or a read-only survey holds for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx
+  # was denied, then free a minute later): try again with growing waits, about 30 s in all, before giving up.
+  $waits = @(250, 500, 1000, 2000, 4000, 8000, 15000)
+  if ($env:PC_TEST_HELPER -eq '1' -and $env:PC_TEST_RETRY_MS) { $waits = @($waits | ForEach-Object { [int]$env:PC_TEST_RETRY_MS }) }
+  for ($i = 0; ; $i++) {
+    try { & $act; return }
+    catch {
+      if ($i -ge $waits.Count) { throw "$what is still locked after $($waits.Count) retries: $($_.Exception.Message)" }
+      Start-Sleep -Milliseconds $waits[$i]
+    }
+  }
+}
+function Remove-Owned($path, [switch]$InPlace) {
+  # The one place this file removes anything: a folder the callers have checked is the job's own leftover. It is first
+  # renamed to <name>.removing (one atomic step; a lock there keeps it whole and the next run tries again), then
+  # removed; if a file stays locked past the retries, what is left is that .removing folder, which the next run of the
+  # same step finishes (Complete-Removing). -InPlace (the import cache) skips the rename: a cache may go part way.
   if (Test-Paused) { throw 'the Board PC pause is active' }
-  return (Remove-LinkSafeTree $path)
+  if ($InPlace) { return (Remove-LinkSafeTree $path) }
+  $tomb = $path.TrimEnd('\', '/') + '.removing'
+  if (Test-Path -LiteralPath $tomb) { throw "$tomb already exists" }
+  try { Invoke-Retry { [IO.Directory]::Move($path, $tomb) } $path }
+  catch { throw "nothing removed: $($_.Exception.Message)" }
+  try { return (Remove-LinkSafeTree $tomb) }
+  catch { throw "partly removed; the rest is $tomb, which the next run finishes ($($_.Exception.Message))" }
+}
+function Complete-Removing($folder) {
+  # Finish the <name>.removing folders an earlier run left in $folder (already proven and renamed by Remove-Owned).
+  $bytes = [long]0
+  $dir = Get-Item -LiteralPath $folder -Force -ErrorAction SilentlyContinue
+  if (-not (Test-PlainDir $dir)) { return $bytes }
+  foreach ($t in @($dir.EnumerateDirectories('*.removing'))) {
+    try {
+      if (-not (Test-PlainDir $t)) { throw 'not a plain folder' }
+      Assert-NoLinks $t.FullName
+      if (Test-Paused) { throw 'the Board PC pause is active' }
+      $gone = Remove-LinkSafeTree $t.FullName
+      $bytes += $gone
+      Write-Output ("finished an earlier removal ({0:N1} GB): {1}" -f ($gone / 1GB), $t.FullName)
+    } catch { Write-Output "earlier removal still unfinished: $($t.FullName) ($($_.Exception.Message))" }
+  }
+  return $bytes
 }
 function Assert-NoLinks($path) {
   # Every folder from voidsworn_test down to $path (each one that exists) is a plain folder, never a link or junction
@@ -408,6 +446,7 @@ function Drop-Attempt($attempt) {
   # bytes removed to $script:freed. Every refusal is logged, never thrown.
   $state = Get-AttemptState $attempt
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
+  foreach ($o in @(Complete-Removing $attempt)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
@@ -667,7 +706,7 @@ switch ($Action) {
       if ($null -eq $cacheDir) { Write-Output "no import cache in $repo"; break }
       if (-not (Test-PlainDir $cacheDir)) { throw "$cache is not a plain folder" }
       Assert-NoLinks $cache
-      $gone = Remove-Owned $cache
+      $gone = Remove-Owned $cache -InPlace
       Write-Output ("import cache removed after the PASS ({0:N1} GB): {1}; the clone stays for the publish" -f ($gone / 1GB), $cache)
       Write-Free $gone
     } catch { Write-Output "import cache kept: $($_.Exception.Message)" }
@@ -677,6 +716,10 @@ switch ($Action) {
       if ($B -notmatch '\A[0-9a-f]{40}\z') { throw "a commit must be a full 40-character commit, got: $B" }
       if ($C -notmatch '\A[A-Za-z0-9_]+\z') { throw "not a hull code: $C" }
       $jobDir = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
+      if (Test-Path -LiteralPath (Join-Path $jobDir 'repo.removing')) {
+        Assert-NoLinks $jobDir
+        foreach ($o in @(Complete-Removing $jobDir)) { if ($o -is [long]) { Write-Free $o } else { Write-Output $o } }
+      }
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
       if ($head -ne $B) { throw "HEAD is $head, not the published commit $B" }

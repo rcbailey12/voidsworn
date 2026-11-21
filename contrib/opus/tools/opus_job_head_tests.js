@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '../../..');
 const jobs = path.join(root, 'tools/pc/jobs');
 const read = p => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -77,11 +77,14 @@ assert(psCode.includes("'\\A[0-9a-f]{40}\\z'"), 'a pin must be a full commit');
 const walk = psCode.slice(psCode.indexOf('function Remove-LinkSafeTree'), psCode.indexOf('switch ($Action)'));
 const outsideWalk = psCode.replace(walk, '');
 for (const banned of [/reset\s+--hard/, /\bclean\s+-/, /--force/, /Remove-Item/, /\.Delete\(/]) assert(!banned.test(outsideWalk), 'ps1 must not use ' + banned + ' outside the link-safe walk');
-assert((psCode.match(/Remove-LinkSafeTree /g) || []).length === 1, 'the link-safe walk is called once, from dropcheckouts');
+const ownedFn = psCode.slice(psCode.indexOf('function Remove-Owned'), psCode.indexOf('function Assert-NoLinks'));
+assert.equal((psCode.match(/Remove-LinkSafeTree /g) || []).length, (ownedFn.match(/Remove-LinkSafeTree /g) || []).length, 'the link-safe walk is called only from Remove-Owned and Complete-Removing');
+assert(/function Complete-Removing[\s\S]*Assert-NoLinks \$t\.FullName[\s\S]*Test-Paused[\s\S]*Remove-LinkSafeTree \$t\.FullName/.test(ownedFn), 'an unfinished removal is finished only after the link and pause checks');
+assert(/\.removing'[\s\S]*\[IO\.Directory\]::Move\(\$path, \$tomb\)[\s\S]*Remove-LinkSafeTree \$tomb/.test(ownedFn), 'a checkout is renamed whole before any file goes (Board, AFTERRELAY2 lock)');
 const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'hashes' {"));
 const dropFn = psCode.slice(psCode.indexOf('function Drop-Attempt'), psCode.indexOf('function Get-AttemptState'));
 assert(/HEAD is no longer the pin[\s\S]*Get-KeptWork \$repo[\s\S]*Test-Paused[\s\S]*Save-Leftovers \$repo[\s\S]*Remove-Owned \$repo/.test(dropFn), 'a checkout goes only after its pin, its working files and the pause are checked, and its work is saved');
-assert(/function Remove-Owned\(\$path\) \{\n\s*if \(Test-Paused\)[^\n]*\n\s*return \(Remove-LinkSafeTree \$path\)\n\}/.test(psCode), 'every removal checks the pause and goes through the link-safe walk');
+assert(/function Remove-Owned\(\$path, \[switch\]\$InPlace\) \{\n(\s*#[^\n]*\n)*\s*if \(Test-Paused\)[^\n]*\n/.test(walk), 'every removal checks the pause first');
 assert(/Get-AttemptProblem \$attempt[\s\S]*Drop-Attempt \$attempt[\s\S]*Drop-Attempt \$sib\.FullName/.test(drop), 'the step covers this attempt and the earlier ones of the same job');
 assert(/\$state -ne 'PASS'[\s\S]*Assert-Relayed \$attempt[\s\S]*HEAD is no longer the pin[\s\S]*Assert-Rebuildable \$repo[\s\S]*Get-KeptWork/.test(dropFn), 'only a passed and relayed attempt, then pin, branches and stash, then the files (Artoo on PR 1498)');
 assert(/\$code\[0\] -ne ' '[^\n]*staged: /.test(psCode), 'a staged change is listed as staged, which Save-Leftovers refuses');
@@ -362,6 +365,34 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert.equal(r.status, 0, r.out);
   assert(!fs.existsSync(path.join(big, 'new')) && /result kept on the PC only: out_new\/big\.glb/.test(r.out) && /1 of 2 result file\(s\) are on/.test(r.out), 'a listed skipped file lets the checkout go: ' + r.out);
   assert.equal(fs.statSync(path.join(big, 'out_new', 'big.glb')).size, 11 * 1024 * 1024, 'the skipped file stays on the PC');
+}
+// A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
+// locked past the retries leaves <name>.removing, which the next run finishes. A read-only folder stands in for the lock.
+if (process.getuid && process.getuid() !== 0) {
+  const lockJob = path.join(vt, 'opus1498lock');
+  const lockAttempt = (n) => {
+    const at = path.join(lockJob, n);
+    assert.equal(run('checkout', at, 'new', two).status, 0);
+    write(path.join(at, 'out_new', 'result.txt'), `lock ${n}\n`);
+    write(path.join(at, 'done.txt'), 'PASS\r\n');
+    return [at, relay([[path.join(at, 'out_new'), `${n}/out_new`]])];
+  };
+  env.PC_TEST_RETRY_MS = '1000';
+  const [l1, l1relay] = lockAttempt('out_1');
+  fs.chmodSync(path.join(l1, 'new', 'godot'), 0o555);
+  const unlock = spawn('sh', ['-c', `sleep 2; chmod 755 '${path.join(l1, 'new.removing', 'godot')}'`], { stdio: 'ignore' });
+  r = run('dropcheckouts', l1, l1relay, 'out_1');
+  assert(!fs.existsSync(path.join(l1, 'new')) && !fs.existsSync(path.join(l1, 'new.removing')) && /checkout new removed after the job/.test(r.out), 'a short lock is retried, then the checkout goes: ' + r.out);
+  unlock.unref();
+  env.PC_TEST_RETRY_MS = '50';
+  const [l2, l2relay] = lockAttempt('out_2');
+  fs.chmodSync(path.join(l2, 'new', 'godot'), 0o555);
+  r = run('dropcheckouts', l2, l2relay, 'out_2');
+  assert(/checkout new kept: .*partly removed; the rest is .*new\.removing/.test(r.out) && fs.existsSync(path.join(l2, 'new.removing')), 'a lasting lock leaves the renamed folder and says so: ' + r.out);
+  fs.chmodSync(path.join(l2, 'new.removing', 'godot'), 0o755);
+  r = run('dropcheckouts', l2);
+  assert(!fs.existsSync(path.join(l2, 'new.removing')) && /finished an earlier removal/.test(r.out), 'the next run finishes the removal: ' + r.out);
+  delete env.PC_TEST_RETRY_MS;
 }
 const mine = relay([[path.join(attempt, 'out_new'), 'out_1/out_new']]);
 const pause = path.join(tmp, 'gpu_go.txt');
