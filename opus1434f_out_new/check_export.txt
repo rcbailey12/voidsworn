@@ -1,0 +1,7 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fa2d254473274cf19a22422afcdfd800\godot-profile-d3fbbb5aac7d4946881ab8369d33176f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[sfx] 11 cues, 10 clip sets, loaded in 13 ms
+[export-check] OK []
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fa2d254473274cf19a22422afcdfd800\godot-profile-d3fbbb5aac7d4946881ab8369d33176f

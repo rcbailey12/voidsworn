@@ -1,0 +1,60 @@
+{
+  "source_commit": "fa5a2913ba1a4ebf27a36993490a7edac5c16361",
+  "source_commit_date": "2026-11-21T13:43:05Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T14:22:48Z",
+  "seed": 31,
+  "build_sha256": "e8e7b917b90084b93857999cfc99373a0f6daef573f4ca91e36130161e45b660",
+  "manifest_sha256": "b355d9bc8c5955bd631941c3910c4e4995be7f5ceab6e48aebac6e09759ca4a1",
+  "fps": 30,
+  "battle": 3,
+  "enemy": "corsair",
+  "objective": "rout",
+  "picture_name": "hullbreakers-b3-p03.mp4",
+  "sources": [
+    {
+      "source_commit": "fa5a2913ba1a4ebf27a36993490a7edac5c16361",
+      "source_commit_date": "2026-11-21T13:43:05Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T14:22:48Z",
+      "seed": 31,
+      "build_sha256": "e8e7b917b90084b93857999cfc99373a0f6daef573f4ca91e36130161e45b660",
+      "manifest_sha256": "b355d9bc8c5955bd631941c3910c4e4995be7f5ceab6e48aebac6e09759ca4a1",
+      "fps": 30,
+      "battle": 3,
+      "enemy": "corsair",
+      "objective": "rout"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-31.avi",
+      "source_commit": "fa5a2913ba1a4ebf27a36993490a7edac5c16361",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T14:22:48Z",
+      "image_sha256": "95df56e1e5c2e6f7fe51a83812fe19a7a309ab1744e7d616084c105122d90d44",
+      "sources": [
+        {
+          "source_commit": "fa5a2913ba1a4ebf27a36993490a7edac5c16361",
+          "source_commit_date": "2026-11-21T13:43:05Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-21T13:43:05Z"
+    }
+  ],
+  "seconds_in_battle": 96,
+  "duration_s": 39.1,
+  "stamp_template_sha256": "1327fe905497d6396c9661ac3f78eb836b2e11dba3709c8d85acba3740ac4e81",
+  "image_sha256": "6c9d62a5636d3305b9a624b64d9cea953ff95d59605d4854dab222427a2164e8"
+}
