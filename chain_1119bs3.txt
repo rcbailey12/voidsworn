@@ -1,0 +1,6 @@
+chain BS3 waiting for 1291 C13_I exit in chain_1119bt.txt Fri 11/20/2026 16:52:31.11 
+mirror fetch exit 0
+3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01 reachable in the mirror
+1415B GS1 start 19:01:35.23 
+1415B GS1 exit 0 at 19:19:09.28 
+1415B GL1 start 19:19:09.28 

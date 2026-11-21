@@ -1,0 +1,23 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+19:16:39 | INFO: Starting glTF 2.0 export
+19:16:39 | INFO: Extracting primitive: GS1_lod0
+19:16:40 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+19:16:40 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+19:16:40 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+19:16:40 | INFO: Primitives created: 10
+19:16:40 | INFO: Extracting primitive: GS1_lod1
+19:16:40 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+19:16:41 | INFO: Primitives created: 6
+19:16:41 | INFO: Extracting primitive: GS1_lod2
+19:16:41 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+19:16:41 | INFO: Primitives created: 6
+19:16:41 | INFO: Extracting primitive: GS1_lod3
+19:16:41 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+19:16:41 | INFO: Primitives created: 5
+19:16:41 | INFO: Finished glTF 2.0 export in 1.7168419361114502 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\glb\GS1.glb {"lod0": {"triangles": 181554, "objects": 58, "materials": 10}, "lod1": {"triangles": 174058, "objects": 44, "materials": 6}, "lod2": {"triangles": 87034, "objects": 44, "materials": 6}, "lod3": {"triangles": 36961, "objects": 43, "materials": 5}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\GS1.blend"
+
+Blender quit

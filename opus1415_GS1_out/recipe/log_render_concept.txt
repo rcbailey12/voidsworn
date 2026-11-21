@@ -1,0 +1,375 @@
+GPU: waiting for shared claim, weight 2 (1415)
+GPU: acquired shared claim 0732641e-d3d5-43f4-853f-76db6d5f9cb6
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\GS1.blend"
+Fra:1 Mem:82.34M (Peak 82.34M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:82.34M (Peak 82.34M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_0_silver_p
+Fra:1 Mem:83.29M (Peak 83.29M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_2_silver_s
+Fra:1 Mem:84.17M (Peak 84.17M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_2_silver_p
+Fra:1 Mem:84.76M (Peak 84.76M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_3
+Fra:1 Mem:85.20M (Peak 85.20M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_3_silver_p
+Fra:1 Mem:85.53M (Peak 85.53M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_0
+Fra:1 Mem:85.58M (Peak 85.57M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_3_silver_s
+Fra:1 Mem:85.85M (Peak 85.85M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_0_silver_s
+Fra:1 Mem:85.98M (Peak 85.98M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_1
+Fra:1 Mem:86.36M (Peak 86.36M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_1_silver_s
+Fra:1 Mem:86.50M (Peak 86.50M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | rim
+Fra:1 Mem:86.73M (Peak 86.73M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_2
+Fra:1 Mem:87.09M (Peak 87.09M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | fill
+Fra:1 Mem:87.18M (Peak 87.18M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_2_silver_s
+Fra:1 Mem:87.20M (Peak 87.20M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | key
+Fra:1 Mem:87.28M (Peak 87.28M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_green_1
+Fra:1 Mem:87.35M (Peak 87.35M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_2_silver_p
+Fra:1 Mem:87.69M (Peak 87.69M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3
+Fra:1 Mem:87.77M (Peak 87.77M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_green_0
+Fra:1 Mem:87.82M (Peak 87.82M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3_silver_s
+Fra:1 Mem:87.93M (Peak 87.93M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3_silver_p
+Fra:1 Mem:88.12M (Peak 88.12M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:88.17M (Peak 88.17M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_violet_1
+Fra:1 Mem:88.34M (Peak 88.34M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_silver
+Fra:1 Mem:88.80M (Peak 88.80M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_violet_0
+Fra:1 Mem:88.91M (Peak 88.91M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_amber_1
+Fra:1 Mem:89.22M (Peak 89.22M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:89.42M (Peak 89.42M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:89.40M (Peak 89.42M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:89.60M (Peak 89.60M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_amber_0
+Fra:1 Mem:89.76M (Peak 89.76M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_05
+Fra:1 Mem:89.91M (Peak 89.91M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:90.02M (Peak 90.02M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:90.16M (Peak 90.16M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:90.47M (Peak 90.47M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_04
+Fra:1 Mem:91.60M (Peak 91.60M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:92.90M (Peak 92.90M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:93.02M (Peak 93.02M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:93.17M (Peak 93.17M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_01
+Fra:1 Mem:93.21M (Peak 93.21M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:93.20M (Peak 93.21M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:93.36M (Peak 93.36M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:93.78M (Peak 93.78M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:93.72M (Peak 93.78M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_08
+Fra:1 Mem:93.98M (Peak 93.98M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:94.09M (Peak 94.09M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_-0.3_0
+Fra:1 Mem:94.01M (Peak 94.09M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_+0.3_1
+Fra:1 Mem:99.83M (Peak 101.72M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:99.40M (Peak 101.72M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GS1_parts_normal
+Fra:1 Mem:99.40M (Peak 101.72M) | Time:00:00.23 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GS1_parts_orm
+Fra:1 Mem:545.06M (Peak 803.47M) | Time:00:00.52 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:545.06M (Peak 803.47M) | Time:00:00.52 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:545.06M (Peak 803.47M) | Time:00:00.52 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:545.06M (Peak 803.47M) | Time:00:00.52 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:545.15M (Peak 803.47M) | Time:00:00.61 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:545.17M (Peak 803.47M) | Time:00:00.61 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:545.17M (Peak 803.47M) | Time:00:00.61 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:545.17M (Peak 803.47M) | Time:00:00.61 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:554.61M (Peak 803.47M) | Time:00:00.69 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:554.61M (Peak 803.47M) | Time:00:00.69 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:567.01M (Peak 803.47M) | Time:00:00.69 | Mem:448.05M, Peak:448.05M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.69 | Mem:460.42M, Peak:460.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_0_1_thick 6/62 | Building BVH
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.69 | Mem:460.42M, Peak:460.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_0_3_silver_s 13/62 | Building BVH
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.69 | Mem:460.42M, Peak:460.42M | Scene, ViewLayer | Updating Geometry BVH ithar_GS1_mosaic_core_thick 2/62 | Building BVH
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.69 | Mem:460.42M, Peak:460.42M | Scene, ViewLayer | Updating Geometry BVH ithar_GS1_mosaic_core_thick 2/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH rim 62/62 | Building BVH
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH rim 62/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH fill 61/62 | Building BVH
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH fill 61/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH key 60/62 | Building BVH
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH key 60/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.34M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_1 59/62 | Building BVH
+Fra:1 Mem:569.35M (Peak 803.47M) | Time:00:00.69 | Mem:460.48M, Peak:460.48M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_1 59/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:462.78M, Peak:462.95M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_0_silver_p 17/62 | Building BVH
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:462.85M, Peak:462.95M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_0_silver_p 17/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:462.81M, Peak:462.98M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_thick 18/62 | Building BVH
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:463.29M, Peak:463.29M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_thick 18/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:462.92M, Peak:463.35M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_s 19/62 | Building BVH
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:463.09M, Peak:463.35M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_s 19/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:462.96M, Peak:463.35M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_p 20/62 | Building BVH
+Fra:1 Mem:569.32M (Peak 803.47M) | Time:00:00.70 | Mem:463.44M, Peak:463.44M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_p 20/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.22M, Peak:463.47M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_thick 21/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.48M, Peak:463.48M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_thick 21/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.12M, Peak:463.58M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_s 22/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.19M, Peak:463.58M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_s 22/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.15M, Peak:463.58M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_p 23/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.22M, Peak:463.58M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_p 23/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.18M, Peak:463.58M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_thick 24/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.66M, Peak:463.66M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_thick 24/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.30M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_s 25/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.46M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_s 25/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.33M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_p 26/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.40M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_p 26/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.36M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_lance 27/62 | Building BVH
+Fra:1 Mem:569.26M (Peak 803.47M) | Time:00:00.70 | Mem:463.53M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_lance 27/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.30M (Peak 803.47M) | Time:00:00.70 | Mem:463.43M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_silver 28/62 | Building BVH
+Fra:1 Mem:569.30M (Peak 803.47M) | Time:00:00.70 | Mem:463.65M, Peak:463.76M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_silver 28/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.23M (Peak 803.47M) | Time:00:00.70 | Mem:463.47M, Peak:463.94M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_tip 29/62 | Building BVH
+Fra:1 Mem:569.23M (Peak 803.47M) | Time:00:00.70 | Mem:463.55M, Peak:463.94M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_tip 29/62 | Building OptiX acceleration structure
+Fra:1 Mem:569.21M (Peak 803.47M) | Time:00:00.70 | Mem:463.49M, Peak:463.94M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_pearl 30/62 | Building BVH
+Fra:1 Mem:569.21M (Peak 803.47M) | Time:00:00.70 | Mem:463.49M, Peak:463.94M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_pearl 30/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.65M (Peak 803.47M) | Time:00:00.70 | Mem:463.78M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_grown_stern 31/62 | Building BVH
+Fra:1 Mem:567.65M (Peak 803.47M) | Time:00:00.70 | Mem:463.84M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_grown_stern 31/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.72M (Peak 803.47M) | Time:00:00.70 | Mem:463.87M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_0 58/62 | Building BVH
+Fra:1 Mem:567.72M (Peak 803.47M) | Time:00:00.70 | Mem:463.94M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_0 58/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.69M (Peak 803.47M) | Time:00:00.70 | Mem:464.35M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_deep_lens 32/62 | Building BVH
+Fra:1 Mem:567.69M (Peak 803.47M) | Time:00:00.70 | Mem:464.35M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_deep_lens 32/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.68M (Peak 803.47M) | Time:00:00.70 | Mem:464.04M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_white_bloom 33/62 | Building BVH
+Fra:1 Mem:567.68M (Peak 803.47M) | Time:00:00.70 | Mem:464.13M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_white_bloom 33/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.72M (Peak 803.47M) | Time:00:00.70 | Mem:464.04M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_cut_face 34/62 | Building BVH
+Fra:1 Mem:567.72M (Peak 803.47M) | Time:00:00.70 | Mem:464.21M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_cut_face 34/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.69M (Peak 803.47M) | Time:00:00.71 | Mem:464.04M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_00 35/62 | Building BVH
+Fra:1 Mem:567.69M (Peak 803.47M) | Time:00:00.71 | Mem:464.26M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_00 35/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.60M (Peak 803.47M) | Time:00:00.71 | Mem:464.07M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_01 36/62 | Building BVH
+Fra:1 Mem:567.60M (Peak 803.47M) | Time:00:00.71 | Mem:464.14M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_01 36/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.58M (Peak 803.47M) | Time:00:00.71 | Mem:464.08M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_02 37/62 | Building BVH
+Fra:1 Mem:567.58M (Peak 803.47M) | Time:00:00.71 | Mem:464.15M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_02 37/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.56M (Peak 803.47M) | Time:00:00.71 | Mem:464.30M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_03 38/62 | Building BVH
+Fra:1 Mem:567.56M (Peak 803.47M) | Time:00:00.71 | Mem:464.56M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_03 38/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.47M (Peak 803.47M) | Time:00:00.71 | Mem:464.11M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_04 39/62 | Building BVH
+Fra:1 Mem:567.47M (Peak 803.47M) | Time:00:00.71 | Mem:464.18M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_04 39/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.45M (Peak 803.47M) | Time:00:00.71 | Mem:464.12M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_05 40/62 | Building BVH
+Fra:1 Mem:567.45M (Peak 803.47M) | Time:00:00.71 | Mem:464.29M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_05 40/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.42M (Peak 803.47M) | Time:00:00.71 | Mem:464.13M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_06 41/62 | Building BVH
+Fra:1 Mem:567.42M (Peak 803.47M) | Time:00:00.71 | Mem:464.50M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_06 41/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.36M (Peak 803.47M) | Time:00:00.71 | Mem:464.15M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_07 42/62 | Building BVH
+Fra:1 Mem:567.36M (Peak 803.47M) | Time:00:00.71 | Mem:464.27M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_07 42/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.34M (Peak 803.47M) | Time:00:00.71 | Mem:464.15M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_08 43/62 | Building BVH
+Fra:1 Mem:567.34M (Peak 803.47M) | Time:00:00.71 | Mem:464.19M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_08 43/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.34M (Peak 803.47M) | Time:00:00.71 | Mem:464.16M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_09 44/62 | Building BVH
+Fra:1 Mem:567.34M (Peak 803.47M) | Time:00:00.71 | Mem:464.20M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_09 44/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.33M (Peak 803.47M) | Time:00:00.71 | Mem:464.17M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_10 45/62 | Building BVH
+Fra:1 Mem:567.33M (Peak 803.47M) | Time:00:00.71 | Mem:464.35M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_10 45/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.26M (Peak 803.47M) | Time:00:00.71 | Mem:464.18M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_0 46/62 | Building BVH
+Fra:1 Mem:567.26M (Peak 803.47M) | Time:00:00.71 | Mem:464.21M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_0 46/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.26M (Peak 803.47M) | Time:00:00.71 | Mem:464.19M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_1 57/62 | Building BVH
+Fra:1 Mem:567.26M (Peak 803.47M) | Time:00:00.71 | Mem:464.19M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_1 57/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.19M (Peak 803.47M) | Time:00:00.71 | Mem:464.21M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_1 47/62 | Building BVH
+Fra:1 Mem:567.19M (Peak 803.47M) | Time:00:00.71 | Mem:464.60M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_1 47/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.13M (Peak 803.47M) | Time:00:00.71 | Mem:464.22M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_0 48/62 | Building BVH
+Fra:1 Mem:567.13M (Peak 803.47M) | Time:00:00.71 | Mem:464.23M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_0 48/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.13M (Peak 803.47M) | Time:00:00.71 | Mem:464.28M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_1 49/62 | Building BVH
+Fra:1 Mem:567.13M (Peak 803.47M) | Time:00:00.71 | Mem:464.28M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_1 49/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.14M (Peak 803.47M) | Time:00:00.71 | Mem:464.25M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_00 50/62 | Building BVH
+Fra:1 Mem:567.14M (Peak 803.47M) | Time:00:00.71 | Mem:464.30M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_00 50/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.15M (Peak 803.47M) | Time:00:00.71 | Mem:464.26M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_01 51/62 | Building BVH
+Fra:1 Mem:567.15M (Peak 803.47M) | Time:00:00.71 | Mem:464.32M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_01 51/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.15M (Peak 803.47M) | Time:00:00.71 | Mem:464.28M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_04 52/62 | Building BVH
+Fra:1 Mem:567.15M (Peak 803.47M) | Time:00:00.71 | Mem:464.33M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_04 52/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.30M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_05 53/62 | Building BVH
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.30M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_frame_05 53/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.17M (Peak 803.47M) | Time:00:00.71 | Mem:464.31M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_0 54/62 | Building BVH
+Fra:1 Mem:567.17M (Peak 803.47M) | Time:00:00.71 | Mem:464.33M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_0 54/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.32M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_1 55/62 | Building BVH
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.37M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_1 55/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.33M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_0 56/62 | Building BVH
+Fra:1 Mem:567.16M (Peak 803.47M) | Time:00:00.71 | Mem:464.35M, Peak:469.58M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_0 56/62 | Building OptiX acceleration structure
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.72 | Mem:464.36M, Peak:469.58M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.72 | Mem:464.36M, Peak:469.58M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.72 | Mem:464.38M, Peak:469.58M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:567.00M (Peak 803.47M) | Time:00:00.72 | Mem:464.38M, Peak:469.58M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.72 | Mem:464.38M, Peak:469.58M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.23M, Peak:469.58M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.24M, Peak:469.58M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.24M, Peak:469.58M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.24M, Peak:469.58M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.24M, Peak:469.58M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.32M, Peak:469.58M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:571.86M (Peak 803.47M) | Time:00:00.73 | Mem:469.32M, Peak:469.58M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:600.84M (Peak 803.47M) | Time:00:00.86 | Mem:498.30M, Peak:498.30M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:600.84M (Peak 803.47M) | Time:00:00.86 | Mem:498.30M, Peak:498.30M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:600.85M (Peak 803.47M) | Time:00:00.86 | Mem:498.22M, Peak:498.30M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:600.85M (Peak 803.47M) | Time:00:00.86 | Mem:498.31M, Peak:498.31M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:600.85M (Peak 803.47M) | Time:00:00.86 | Mem:498.31M, Peak:498.31M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:600.85M (Peak 803.47M) | Time:00:00.86 | Mem:498.31M, Peak:498.31M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:608.73M (Peak 803.47M) | Time:00:00.87 | Mem:1191.31M, Peak:1191.31M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:684.73M (Peak 803.47M) | Time:00:00.88 | Remaining:00:01.09 | Mem:1267.31M, Peak:1267.31M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:684.74M (Peak 803.47M) | Time:00:01.05 | Remaining:00:00.03 | Mem:1267.32M, Peak:1267.32M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:716.75M (Peak 803.47M) | Time:00:03.90 | Mem:1267.32M, Peak:1267.32M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:716.75M (Peak 803.47M) | Time:00:03.90 | Mem:1267.32M, Peak:1267.32M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\r\GS1_concept_cl.png'
+Time: 00:04.23 (Saving: 00:00.21)
+
+[209] shot concept
+Fra:1 Mem:88.92M (Peak 88.92M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:88.92M (Peak 88.92M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_0_silver_p
+Fra:1 Mem:89.55M (Peak 89.55M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_1_silver_s
+Fra:1 Mem:91.05M (Peak 91.05M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_2
+Fra:1 Mem:91.13M (Peak 91.13M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_2_silver_p
+Fra:1 Mem:91.22M (Peak 91.22M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_0_3_silver_p
+Fra:1 Mem:91.38M (Peak 91.38M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_0_silver_p
+Fra:1 Mem:91.49M (Peak 91.49M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_1_silver_s
+Fra:1 Mem:91.77M (Peak 91.77M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_1_silver_p
+Fra:1 Mem:92.50M (Peak 92.50M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_2_silver_s
+Fra:1 Mem:92.75M (Peak 92.75M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3
+Fra:1 Mem:92.96M (Peak 92.96M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3_silver_s
+Fra:1 Mem:93.02M (Peak 93.02M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ribbon_1_3_silver_p
+Fra:1 Mem:93.14M (Peak 93.14M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:93.19M (Peak 93.19M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_silver
+Fra:1 Mem:93.34M (Peak 93.34M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:93.45M (Peak 93.45M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:93.63M (Peak 93.63M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:93.78M (Peak 93.78M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:94.56M (Peak 94.56M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:94.70M (Peak 94.70M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:94.77M (Peak 94.77M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | rim
+Fra:1 Mem:94.96M (Peak 94.96M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:94.92M (Peak 94.96M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:95.06M (Peak 95.06M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:95.15M (Peak 95.15M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:95.33M (Peak 95.33M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_08
+Fra:1 Mem:95.40M (Peak 95.40M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:95.40M (Peak 95.40M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_-0.3_1
+Fra:1 Mem:95.42M (Peak 95.42M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_+0.3_0
+Fra:1 Mem:95.48M (Peak 95.48M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_deck_+0.3_1
+Fra:1 Mem:95.49M (Peak 95.49M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_00
+Fra:1 Mem:95.49M (Peak 95.49M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_01
+Fra:1 Mem:95.53M (Peak 95.53M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_frame_04
+Fra:1 Mem:95.70M (Peak 95.70M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_amber_1
+Fra:1 Mem:95.74M (Peak 95.74M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_violet_0
+Fra:1 Mem:95.78M (Peak 95.78M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_violet_1
+Fra:1 Mem:95.80M (Peak 95.80M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_light_core_green_1
+Fra:1 Mem:96.14M (Peak 96.14M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:95.71M (Peak 96.14M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GS1_parts_normal
+Fra:1 Mem:95.71M (Peak 96.14M) | Time:00:00.16 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GS1_parts_orm
+Fra:1 Mem:541.33M (Peak 799.77M) | Time:00:00.45 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:541.33M (Peak 799.77M) | Time:00:00.45 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:541.33M (Peak 799.77M) | Time:00:00.45 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:541.33M (Peak 799.77M) | Time:00:00.45 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:541.41M (Peak 799.77M) | Time:00:00.54 | Mem:448.02M, Peak:448.02M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:541.43M (Peak 799.77M) | Time:00:00.54 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:541.43M (Peak 799.77M) | Time:00:00.54 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:541.43M (Peak 799.77M) | Time:00:00.54 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:541.43M (Peak 799.77M) | Time:00:00.54 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:541.43M (Peak 799.77M) | Time:00:00.54 | Mem:448.03M, Peak:448.03M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.54 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.54 | Mem:449.08M, Peak:449.08M | Scene, ViewLayer | Updating Geometry BVH ribbon_0_0_silver_p 5/62 | Building BVH
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.54 | Mem:449.08M, Peak:449.08M | Scene, ViewLayer | Updating Geometry BVH ribbon_0_2_silver_s 10/62 | Building BVH
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.54 | Mem:449.08M, Peak:449.08M | Scene, ViewLayer | Updating Geometry BVH ithar_GS1_mosaic_core_thick 2/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.90M (Peak 799.77M) | Time:00:00.54 | Mem:449.18M, Peak:449.18M | Scene, ViewLayer | Updating Geometry BVH rim 62/62 | Building BVH
+Fra:1 Mem:542.90M (Peak 799.77M) | Time:00:00.54 | Mem:449.18M, Peak:449.18M | Scene, ViewLayer | Updating Geometry BVH rim 62/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.06M (Peak 799.77M) | Time:00:00.54 | Mem:449.29M, Peak:449.29M | Scene, ViewLayer | Updating Geometry BVH fill 61/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.10M (Peak 799.77M) | Time:00:00.54 | Mem:449.35M, Peak:449.35M | Scene, ViewLayer | Updating Geometry BVH key 60/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.54 | Mem:449.37M, Peak:449.37M | Scene, ViewLayer | Updating Geometry BVH key 60/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.78M (Peak 799.77M) | Time:00:00.54 | Mem:449.37M, Peak:449.37M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_1 59/62 | Building BVH
+Fra:1 Mem:544.78M (Peak 799.77M) | Time:00:00.54 | Mem:449.38M, Peak:449.38M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_1 59/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.45M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_0_silver_p 17/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.62M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_0_silver_p 17/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.65M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_thick 18/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.65M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_thick 18/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.80M (Peak 799.77M) | Time:00:00.55 | Mem:451.58M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_s 19/62 | Building BVH
+Fra:1 Mem:544.80M (Peak 799.77M) | Time:00:00.55 | Mem:451.80M, Peak:451.92M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_s 19/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.63M, Peak:452.09M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_p 20/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.63M, Peak:452.09M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_1_silver_p 20/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.67M (Peak 799.77M) | Time:00:00.55 | Mem:451.76M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_thick 21/62 | Building BVH
+Fra:1 Mem:544.67M (Peak 799.77M) | Time:00:00.55 | Mem:451.76M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_thick 21/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.78M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_s 22/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.85M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_s 22/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.88M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_p 23/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.88M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_2_silver_p 23/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.84M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_thick 24/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.84M, Peak:452.15M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_thick 24/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:451.96M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_s 25/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:452.03M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_s 25/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:452.06M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_p 26/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:452.15M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH ribbon_1_3_silver_p 26/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:452.02M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_lance 27/62 | Building BVH
+Fra:1 Mem:544.73M (Peak 799.77M) | Time:00:00.55 | Mem:452.19M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_lance 27/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.78M (Peak 799.77M) | Time:00:00.55 | Mem:452.09M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_silver 28/62 | Building BVH
+Fra:1 Mem:544.78M (Peak 799.77M) | Time:00:00.55 | Mem:452.26M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_silver 28/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.77M (Peak 799.77M) | Time:00:00.55 | Mem:452.12M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_tip 29/62 | Building BVH
+Fra:1 Mem:544.77M (Peak 799.77M) | Time:00:00.55 | Mem:452.12M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_tip 29/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.77M (Peak 799.77M) | Time:00:00.55 | Mem:452.13M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_0 58/62 | Building BVH
+Fra:1 Mem:544.77M (Peak 799.77M) | Time:00:00.55 | Mem:452.35M, Peak:452.42M | Scene, ViewLayer | Updating Geometry BVH in_light_core_green_0 58/62 | Building OptiX acceleration structure
+Fra:1 Mem:544.68M (Peak 799.77M) | Time:00:00.55 | Mem:452.15M, Peak:452.62M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_pearl 30/62 | Building BVH
+Fra:1 Mem:544.68M (Peak 799.77M) | Time:00:00.55 | Mem:452.82M, Peak:452.82M | Scene, ViewLayer | Updating Geometry BVH S1_mount_gw_pearl 30/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.12M (Peak 799.77M) | Time:00:00.56 | Mem:452.45M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_grown_stern 31/62 | Building BVH
+Fra:1 Mem:543.12M (Peak 799.77M) | Time:00:00.56 | Mem:452.62M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_grown_stern 31/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.17M (Peak 799.77M) | Time:00:00.56 | Mem:453.01M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_deep_lens 32/62 | Building BVH
+Fra:1 Mem:543.17M (Peak 799.77M) | Time:00:00.56 | Mem:453.01M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_deep_lens 32/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.15M (Peak 799.77M) | Time:00:00.56 | Mem:452.62M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_white_bloom 33/62 | Building BVH
+Fra:1 Mem:543.15M (Peak 799.77M) | Time:00:00.56 | Mem:452.79M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_white_bloom 33/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.20M (Peak 799.77M) | Time:00:00.56 | Mem:452.70M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_cut_face 34/62 | Building BVH
+Fra:1 Mem:543.20M (Peak 799.77M) | Time:00:00.56 | Mem:452.78M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_cut_face 34/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.17M (Peak 799.77M) | Time:00:00.56 | Mem:452.70M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_00 35/62 | Building BVH
+Fra:1 Mem:543.17M (Peak 799.77M) | Time:00:00.56 | Mem:453.18M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_00 35/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.08M (Peak 799.77M) | Time:00:00.56 | Mem:452.80M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_01 36/62 | Building BVH
+Fra:1 Mem:543.08M (Peak 799.77M) | Time:00:00.56 | Mem:452.89M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_01 36/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.06M (Peak 799.77M) | Time:00:00.56 | Mem:452.73M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_02 37/62 | Building BVH
+Fra:1 Mem:543.06M (Peak 799.77M) | Time:00:00.56 | Mem:452.90M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_02 37/62 | Building OptiX acceleration structure
+Fra:1 Mem:543.03M (Peak 799.77M) | Time:00:00.56 | Mem:452.96M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_03 38/62 | Building BVH
+Fra:1 Mem:543.03M (Peak 799.77M) | Time:00:00.56 | Mem:453.22M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_03 38/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.95M (Peak 799.77M) | Time:00:00.56 | Mem:452.77M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_04 39/62 | Building BVH
+Fra:1 Mem:542.95M (Peak 799.77M) | Time:00:00.56 | Mem:452.93M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_04 39/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.92M (Peak 799.77M) | Time:00:00.56 | Mem:452.78M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_05 40/62 | Building BVH
+Fra:1 Mem:542.92M (Peak 799.77M) | Time:00:00.56 | Mem:452.94M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_05 40/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.90M (Peak 799.77M) | Time:00:00.56 | Mem:452.78M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_06 41/62 | Building BVH
+Fra:1 Mem:542.90M (Peak 799.77M) | Time:00:00.56 | Mem:453.16M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_06 41/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.83M (Peak 799.77M) | Time:00:00.56 | Mem:452.80M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_07 42/62 | Building BVH
+Fra:1 Mem:542.83M (Peak 799.77M) | Time:00:00.56 | Mem:452.86M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_07 42/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.82M (Peak 799.77M) | Time:00:00.56 | Mem:452.81M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_08 43/62 | Building BVH
+Fra:1 Mem:542.82M (Peak 799.77M) | Time:00:00.56 | Mem:452.84M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_08 43/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.81M (Peak 799.77M) | Time:00:00.56 | Mem:452.82M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_09 44/62 | Building BVH
+Fra:1 Mem:542.81M (Peak 799.77M) | Time:00:00.56 | Mem:452.83M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_09 44/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.82M (Peak 799.77M) | Time:00:00.56 | Mem:452.83M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_1 57/62 | Building BVH
+Fra:1 Mem:542.82M (Peak 799.77M) | Time:00:00.56 | Mem:452.86M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_1 57/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.81M (Peak 799.77M) | Time:00:00.56 | Mem:452.84M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_10 45/62 | Building BVH
+Fra:1 Mem:542.81M (Peak 799.77M) | Time:00:00.56 | Mem:453.02M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH E1_silver_flow_10 45/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.74M (Peak 799.77M) | Time:00:00.56 | Mem:452.85M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_0 46/62 | Building BVH
+Fra:1 Mem:542.74M (Peak 799.77M) | Time:00:00.56 | Mem:453.24M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_0 46/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.67M (Peak 799.77M) | Time:00:00.56 | Mem:452.86M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_1 47/62 | Building BVH
+Fra:1 Mem:542.67M (Peak 799.77M) | Time:00:00.56 | Mem:453.25M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_-0.3_1 47/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.61M (Peak 799.77M) | Time:00:00.56 | Mem:452.88M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_0 48/62 | Building BVH
+Fra:1 Mem:542.61M (Peak 799.77M) | Time:00:00.56 | Mem:452.89M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_0 48/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.61M (Peak 799.77M) | Time:00:00.56 | Mem:452.89M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_1 49/62 | Building BVH
+Fra:1 Mem:542.61M (Peak 799.77M) | Time:00:00.56 | Mem:452.91M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_deck_+0.3_1 49/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.62M (Peak 799.77M) | Time:00:00.57 | Mem:452.91M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_00 50/62 | Building BVH
+Fra:1 Mem:542.62M (Peak 799.77M) | Time:00:00.57 | Mem:452.96M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_00 50/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.62M (Peak 799.77M) | Time:00:00.57 | Mem:452.92M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_01 51/62 | Building BVH
+Fra:1 Mem:542.62M (Peak 799.77M) | Time:00:00.57 | Mem:452.94M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_01 51/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.63M (Peak 799.77M) | Time:00:00.57 | Mem:452.94M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_04 52/62 | Building BVH
+Fra:1 Mem:542.63M (Peak 799.77M) | Time:00:00.57 | Mem:452.99M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_04 52/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.95M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_05 53/62 | Building BVH
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.98M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_frame_05 53/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.97M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_0 54/62 | Building BVH
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.99M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_0 54/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.97M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_1 55/62 | Building BVH
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:453.03M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_amber_1 55/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:452.98M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_0 56/62 | Building BVH
+Fra:1 Mem:542.64M (Peak 799.77M) | Time:00:00.57 | Mem:453.01M, Peak:458.24M | Scene, ViewLayer | Updating Geometry BVH in_light_core_violet_0 56/62 | Building OptiX acceleration structure
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.57 | Mem:453.02M, Peak:458.24M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.57 | Mem:453.02M, Peak:458.24M | Scene, ViewLayer | Updating Scene BVH | Building OptiX acceleration structure
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.57 | Mem:453.04M, Peak:458.24M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:542.48M (Peak 799.77M) | Time:00:00.57 | Mem:453.04M, Peak:458.24M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:453.04M, Peak:458.24M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.97M, Peak:458.24M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:547.33M (Peak 799.77M) | Time:00:00.58 | Mem:457.97M, Peak:458.24M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.97M, Peak:458.24M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.97M, Peak:458.24M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.89M, Peak:458.24M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.98M, Peak:458.24M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.98M, Peak:458.24M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:547.34M (Peak 799.77M) | Time:00:00.58 | Mem:457.98M, Peak:458.24M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:555.22M (Peak 799.77M) | Time:00:00.60 | Mem:1150.98M, Peak:1150.98M | Scene, ViewLayer | Sample 0/96
+Fra:1 Mem:631.23M (Peak 799.77M) | Time:00:00.61 | Remaining:00:00.69 | Mem:1226.98M, Peak:1226.98M | Scene, ViewLayer | Sample 1/96
+Fra:1 Mem:631.24M (Peak 799.77M) | Time:00:00.72 | Remaining:00:00.02 | Mem:1226.99M, Peak:1226.99M | Scene, ViewLayer | Sample 80/96
+Fra:1 Mem:663.24M (Peak 799.77M) | Time:00:03.51 | Mem:1226.99M, Peak:1226.99M | Scene, ViewLayer | Sample 96/96
+Fra:1 Mem:663.24M (Peak 799.77M) | Time:00:03.51 | Mem:1226.99M, Peak:1226.99M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\r\GS1_concept_clay_cl.png'
+Time: 00:03.72 (Saving: 00:00.09)
+
+[209] shot concept_clay
+[209] RENDER DONE GS1
+GPU: released shared claim 0732641e-d3d5-43f4-853f-76db6d5f9cb6
