@@ -170,6 +170,9 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save each round start once it has settled (main.play_api)
+var round_saved := 0                       # the newest round handed to round_save_cb
+var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
@@ -491,7 +494,10 @@ func begin_with(a) -> void:
 
 
 func _begin(a) -> void:
+	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
+	retiring = false
+	_click_q = {}
 	_threat_version = -1
 	api = a
 	warming = true
@@ -515,6 +521,8 @@ func _begin(a) -> void:
 	bot_tried.clear()
 	bot_cmd_used = false
 	roles_opened = false
+	round_saved = 0
+	round_on_disk = 0
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -906,16 +914,24 @@ func _sync(v: Dictionary) -> void:
 
 func _runner() -> void:
 	busy = true
+	var g := _gen
 	while true:
-		if not is_inside_tree():
+		if _stale(g):
 			return
 		while hold and is_inside_tree():
 			await get_tree().process_frame
+		if _stale(g):
+			return
 		if batches.is_empty():
 			if api.phase == "enemy" and not ended:
-				while _threat_busy:
+				while _threat_busy and not _stale(g):
+					_worker_owns_rules()
 					await get_tree().process_frame
+				if _stale(g):
+					return
 				var b = await _think()
+				if _stale(g):
+					return
 				if b != null:
 					batches.append(b)
 				continue
@@ -930,6 +946,8 @@ func _runner() -> void:
 		if not (bt.get("events", []) as Array).is_empty():
 			last_progress = Time.get_ticks_msec() / 1000.0
 		await _play_batch(bt)
+		if _stale(g):
+			return
 		_sync(bt["view"])
 		_refresh_ui()
 
@@ -958,6 +976,7 @@ func _cmd(f: Callable) -> bool:
 	# a player command: the rules act at once, the picture follows
 	if not _api_join() or busy or ended or api.phase != "player":
 		return false
+	_click_q = {}
 	var ok = f.call()
 	var ev: Array = api.take_events()
 	var np := _api_not_ported()
@@ -1045,23 +1064,91 @@ static func _jt(x) -> bool:  # JS truthiness, as the rules' jt
 	return true
 
 
-func _api_join() -> bool:
-	if api == null:
+# ---------------------------------------------------------------- the rules client (issue 1433)
+# This block alone owns the two worker task ids. The rules API locks _enter/_leave around threat_both and every read
+# (can_command too), so a read while the threat worker runs waits on the worker either way: a join or the mutex.
+# - Pointer handlers (_on_hover, _on_click) set _ptr_depth. Inside them _api_join never waits: it answers false while the
+#   worker runs, the reads answer from the last published result or "pending", and _ptr_stale asks the publish to refresh
+#   the pointer (tip, panel, target) once the result lands.
+# - _refresh_ui waits for the publish instead of reading the live API (its reads all lock the rules).
+# - A click while the worker runs is queued once and revalidated before it is played (_click_replay).
+# - _gen and retiring: a battle that has emitted finished (or been begun again) rejects its stale post-await work.
+# Commands, keys and the HUD still call the blocking _api_join, which finishes the worker first (its result is kept).
+var _ptr_depth := 0
+var _ptr_stale := false
+var _ptr_pos := Vector2.ZERO
+var _click_q := {}
+var _gen := 0
+var _threat_gen := -1
+var retiring := false
+
+
+# true while a threat task is still running; a finished one is reaped (and published) here, without waiting
+func _worker_owns_rules() -> bool:
+	if _threat_tid < 0:
 		return false
-	if _threat_tid >= 0:
-		WorkerThreadPool.wait_for_task_completion(_threat_tid)
-		_threat_tid = -1
-		_threat_done()
+	if not WorkerThreadPool.is_task_completed(_threat_tid):
+		_ptr_stale = true
+		return true
+	_threat_reap()
+	return false
+
+
+# reap the threat task once; publish only for this battle (the version check is in _threat_done)
+func _threat_reap() -> void:
+	WorkerThreadPool.wait_for_task_completion(_threat_tid)
+	_threat_tid = -1
+	if retiring or _threat_gen != _gen:
+		_threat_busy = false
+		return
+	_threat_done()
+
+
+# the non-blocking gate: may the main thread read the rules right now?
+func _api_free() -> bool:
+	if api == null or _worker_owns_rules():
+		return false
 	return not thinking
 
 
+func _api_join() -> bool:
+	if api == null:
+		return false
+	if _ptr_depth > 0:
+		return _api_free()
+	if _threat_tid >= 0:
+		_threat_reap()
+	return not thinking
+
+
+func _stale(g: int) -> bool:
+	return retiring or g != _gen or not is_inside_tree()
+
+
+# mark the battle retired before finished goes out: post-await work from it is rejected from here on
+func _retire() -> void:
+	retiring = true
+	_gen += 1
+	_click_q = {}
+
+
+func _finish(r: Dictionary) -> void:
+	_retire()
+	finished.emit(r)
+
+
 func _exit_tree() -> void:
+	# exit synchronisation stays: drain both tasks, then clear the flags they own
+	retiring = true
+	_gen += 1
 	if _threat_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_threat_tid)
 		_threat_tid = -1
+	_threat_busy = false
 	if _think_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_think_tid)
 		_think_tid = -1
+	thinking = false
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
 
@@ -1542,7 +1629,9 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 					var cap := float(ru["sec"][key]["max"])
 					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
+	# not the old lime green
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -2477,7 +2566,7 @@ func _end_flow() -> void:
 		_quit_report()
 		return
 	if bot or args.has("bot-runs"):
-		finished.emit(result)
+		_finish(result)
 		return
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
@@ -2495,10 +2584,14 @@ var _ui_cache := {}
 
 
 func _ui(id: String) -> Dictionary:
-	if id == "" or not _api_join():
+	if id == "" or api == null:
 		return {}
 	# Rules facts change on moves and turns, even when the log and batch count do not.
 	var k := "%s|%d" % [id, api.version]
+	if _ui_cache.has(k):
+		return _ui_cache[k]   # issue 1433: a published answer needs no rules read, even while a worker runs
+	if not _api_join():
+		return {}
 	if not _ui_cache.has(k):
 		if _ui_cache.size() > 16:
 			_ui_cache.clear()
@@ -2764,6 +2857,8 @@ func _overlay() -> void:
 		_threat_request.call_deferred()
 	if board != null and board.has_method("set_danger"):
 		board.set_danger(_danger_bands())
+	if _threat_busy and _worker_owns_rules():
+		return   # issue 1433: keep the last drawing; the publish redraws it (no blank reach area while the map computes)
 	if not _can_act():
 		_clear_overlay()
 		if threat_on:
@@ -3000,6 +3095,7 @@ func _threat_request() -> void:
 	if quitting or not _threat_idle() or _threat_busy or _threat_current() or not (threat_on or _danger_shown()):
 		return
 	_threat_pending_version = int(api.version)
+	_threat_gen = _gen
 	_threat_busy = true
 	var tid := WorkerThreadPool.add_task(func() -> void:
 		_threat_next = api.threat_both())
@@ -3053,14 +3149,15 @@ var _threat_busy := false
 var _threat_next := {}
 
 
+# polls completion each frame; whoever sees it finished first reaps it once (_threat_reap)
 func _threat_wait(tid: int) -> void:
 	while _threat_tid == tid and not WorkerThreadPool.is_task_completed(tid):
+		if not is_inside_tree():
+			return   # _exit_tree drains it
 		await get_tree().process_frame
 	if _threat_tid != tid:
-		return  # _api_join already finished it
-	WorkerThreadPool.wait_for_task_completion(tid)
-	_threat_tid = -1
-	_threat_done()
+		return  # already reaped
+	_threat_reap()
 
 
 func _threat_done() -> void:
@@ -3071,9 +3168,45 @@ func _threat_done() -> void:
 	_threat_version = _threat_pending_version
 	_threat_cache = _threat_next["dmg"]
 	_danger = _threat_next["n"]
-	if _danger_shown():
-		_refresh_ui.call_deferred()   # the danger badges on the fleet list and the shell
+	# the danger badges on the fleet list and the shell, and any UI pass that waited for this publish
+	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
+	_ptr_refresh.call_deferred()   # the stationary pointer: tip, panel and target as of this result
+	_click_replay.call_deferred()
+
+
+# issue 1433: after a publish, the pointer reads that answered "pending" are redone where the pointer stands
+func _ptr_refresh() -> void:
+	if quitting or retiring or not is_inside_tree() or api == null or board == null or not is_instance_valid(hud):
+		return
+	var was := _ptr_stale
+	_ptr_stale = false
+	if not was or hover.x == 99999:
+		return
+	_ptr_depth += 1
+	if api.phase == "player" and not busy and target == "" and sel != "":
+		hud.set_panel(_panel_info())
+		hud.set_target(_target_info())
+	hud.show_tip(_tip(), _ptr_pos)
+	_ptr_depth -= 1
+
+
+# issue 1433: a click made while the threat worker ran, played once now if nothing it depended on has changed
+func _click_replay() -> void:
+	var q := _click_q
+	_click_q = {}
+	if q.is_empty() or quitting or _stale(int(q["gen"])) or api == null or int(q["v"]) != int(api.version):
+		return
+	if str(q["sel"]) != sel or str(q["mode"]) != mode or str(q["plan_k"]) != plan_k or str(q["target"]) != target or not _can_act():
+		return
+	var at: Vector2i = q["hex"]
+	if at != hover:
+		hover = at
+		board.set_hover(at.x, at.y)
+	_on_click()
+	# the pointer may have moved on since the click: put the hover back where it stands now
+	if is_inside_tree() and not retiring and _ray_hex(_ptr_pos) != hover:
+		_on_hover(_ptr_pos)
 
 
 # target hexes for nova and blink
@@ -3201,6 +3334,10 @@ func _nova_blast(q: int, r: int) -> Dictionary:
 
 
 func _nova_tip(q: int, r: int) -> String:
+	# issue 1433: nova_preview takes the rules lock; never call it while the threat worker owns the rules (a pointer
+	# handler gets "pending" here and the publish redraws the tip)
+	if not _api_join():
+		return ""
 	var blast := _nova_blast(q, r)
 	if (blast["hexes"] as Array).is_empty():
 		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
@@ -3363,7 +3500,7 @@ func _on_key(k: int) -> void:
 		KEY_L:
 			hud.toggle_log()
 		KEY_C:
-			if api.has_method("can_command") and api.phase == "player" and not busy and api.can_command():
+			if api.has_method("can_command") and api.phase == "player" and not busy and _api_join() and api.can_command():
 				_on_action("command", null)   # #271 (ui_spec.md follow-up G): Command gets its key
 		KEY_BACKSPACE:
 			_undo("backspace")   # issue 1450: take the last move or turn back, until the ship fires
@@ -3575,6 +3712,9 @@ var _hover_uid := ""
 
 
 func _on_hover(p: Vector2) -> void:
+	# issue 1433: a pointer handler never waits on a worker (see the rules client above)
+	_ptr_depth += 1
+	_ptr_pos = p
 	var h := _ray_hex(p)
 	if h != hover:
 		hover = h
@@ -3586,14 +3726,24 @@ func _on_hover(p: Vector2) -> void:
 		if hid != _hover_uid:
 			_hover_uid = hid
 			if api != null and api.phase == "player" and not busy and target == "" and sel != "":
-				hud.set_panel(_panel_info())
-				hud.set_target(_target_info())
+				if _api_free():
+					hud.set_panel(_panel_info())
+					hud.set_target(_target_info())
+				else:
+					_ptr_stale = true   # pending: the publish fills them
 	hud.show_tip(_tip(), p)
+	_ptr_depth -= 1
 
 
 func _on_click() -> void:
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		return   # issue 529: a tree prompt is open; answer it first
+	if _threat_busy and not busy and not warming and not ended and not retiring and api != null and api.phase == "player" \
+			and hover.x != 99999 and _worker_owns_rules():
+		# issue 1433: the threat map is still computing; keep this click (once) and play it when the result lands
+		if _click_q.is_empty():
+			_click_q = {"hex": hover, "gen": _gen, "v": int(api.version), "sel": sel, "mode": mode, "plan_k": plan_k, "target": target}
+		return
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
 	var u := _unit_at(hover.x, hover.y)
@@ -4321,16 +4471,29 @@ func _on_action(name: String, arg) -> void:
 			ended = true
 			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 			_play_log_out("quit")
-			finished.emit(result)
+			_finish(result)
+		"save_quit", "save_quit_older":
+			if ended or not round_save_cb.is_valid():
+				return
+			# Save and quit is offered only while this round's save is on disk (a failed write offers the older start instead,
+			# by name), so leaving never promises more than Continue will load; the host still tries to write a newer round
+			if name == "save_quit" and round_on_disk != round_saved:
+				_open_menu()
+				return
+			hud.hide_menu()
+			ended = true
+			result = {"result": "save_quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			_play_log_out("quit")
+			_finish(result)
 		"continue":
 			hud.hide_end()
-			finished.emit(result)
+			_finish(result)
 		"retreat":
 			if can_retreat and _can_act():
 				ended = true
 				result = {"result": "retreat", "rounds": int(V["round"]), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 				_play_log_out("retreat")
-				finished.emit(result)
+				_finish(result)
 		"restart":
 			hud.hide_end()
 			hud.hide_menu()
@@ -4456,6 +4619,13 @@ func _open_menu() -> void:
 	items.append(["Controls", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
+	elif in_campaign and round_save_cb.is_valid() and round_saved > 0:
+		# issue 1451: back here at the start of this round. Artoo on PR 1486: when this round's save did not reach the disk, say
+		# what Continue will really load instead of promising this round
+		if round_on_disk == round_saved:
+			items.append(["Save and quit to title", "save_quit"])
+		else:
+			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "from the last checkpoint"), "save_quit_older"])
 	elif not external:
 		items.append(["Fight again", "restart"])
 	items.append(["Copy a problem report", "report"])
@@ -4533,6 +4703,8 @@ func _toggle_opt(k: String) -> void:
 func _refresh_ui() -> void:
 	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
+	if _worker_owns_rules():
+		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
 	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -5179,6 +5351,11 @@ func _process(dt: float) -> void:
 		world.step(dt)
 	if api == null:
 		return
+	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
+	if round_save_cb.is_valid() and int(api.round_snap_round) > round_saved and _can_act():
+		round_saved = int(api.round_snap_round)
+		if bool(round_save_cb.call()):
+			round_on_disk = round_saved
 	var vs := get_viewport().get_visible_rect().size
 	for id in views:
 		var sv = views[id]
@@ -5267,7 +5444,7 @@ func _process(dt: float) -> void:
 		_error("softlock: no progress for %d s (phase %s, busy %s, round %s)" % [int(softlock_s), str(api.phase), str(busy), str(V.get("round"))])
 		ended = true
 		result = {"result": "softlock", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start}
-		finished.emit(result)
+		_finish(result)
 
 
 func _float(id, text: String, col: Color, dy := 0.0) -> void:

@@ -912,6 +912,23 @@ its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 
 shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
 Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
 
+
+11.8 **Retreat returns the fleet to the stop it came from; the fight stays on the map, and the 10% hull cost stays.** A
+retreat never completes the node or clears a Nemesis meeting. Why: an independent audit (Nov 21, F-05) found a round-1
+retreat skipped any non-boss fight for 10% hull and could lock out Nemesis-held service stops. Both rules copies (3.1).
+Set: Ryan (R381, issue 1480).
+
+11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
+Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
+issue 1484).
+
+11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
+kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+(R383, issue 1479).
+
+11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
+checked against issue 1271. Set: Ryan (R384).
+
 ## 12. Automatic checks
 
 12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
@@ -924,6 +941,9 @@ Why: a fixture typed by hand let 137 checks pass while real play was broken (R15
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.
+A push that changes only .md files and pictures under docs/, contrib/ or the repo root (tools/ci/docs_only.js) runs the
+standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
+main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
 12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
 drifted (R155). Set: Board. Id: R155b.

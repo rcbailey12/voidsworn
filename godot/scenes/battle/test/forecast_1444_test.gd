@@ -273,6 +273,42 @@ func _nova() -> void:
 		for pr in pv:
 			same = same and is_equal_approx(float(pr["dmg"]), float(api.R.novaDamage(api.unit(me["id"]), api.unit(pr["id"]), {"q": int(c["q"]), "r": int(c["r"])})))
 		_check(same, "NOVA-1 every forecast number is the rules' novaDamage, the call the hit makes")
+	# issue 1433: hovering a nova hex while a worker holds the rules lock answers "pending" at once (nova_preview locks),
+	# and the same hover after the worker finishes shows the forecast
+	# Artoo on PR 1443: the worker signals when it holds the lock and lets go by itself after 3 s at most, so a hover that
+	# waits on the lock (the guard reverted) fails by name with ~3000 ms instead of hanging the job
+	var sem := Semaphore.new()
+	var held := Semaphore.new()
+	var tid := WorkerThreadPool.add_task(func() -> void:
+		api._enter()
+		held.post()
+		var t1 := Time.get_ticks_msec()
+		while not sem.try_wait() and Time.get_ticks_msec() - t1 < 3000:
+			OS.delay_msec(2)
+		api._leave(false))
+	var w0 := Time.get_ticks_msec()
+	var holding := false
+	while not holding and Time.get_ticks_msec() - w0 < 2000:
+		holding = held.try_wait()
+		if not holding:
+			OS.delay_msec(1)
+	_check(holding, "NOVA-1 fixture: the worker holds the rules lock")
+	b._threat_tid = tid
+	b._threat_busy = true
+	b._threat_gen = -99   # not this battle's: the reap below discards it instead of publishing a fake map
+	b._ptr_depth += 1
+	var c0 := Time.get_ticks_usec()
+	var tp := b._tip()
+	var ms := (Time.get_ticks_usec() - c0) / 1000.0
+	b._ptr_depth -= 1
+	_check(tp == "" and ms < 50.0 and b._ptr_stale, "NOVA-1 a nova hover while a worker holds the rules answers pending in %.1f ms, without waiting" % ms)
+	sem.post()
+	while b._threat_tid >= 0 and not WorkerThreadPool.is_task_completed(tid):   # a waiting hover has reaped it already
+		OS.delay_msec(1)
+	b._ptr_depth += 1
+	var tp2 := b._tip()
+	b._ptr_depth -= 1
+	_check(b._threat_tid < 0 and not b._threat_busy and tp2.contains("Nova shell") and tp2.contains("centre"), "NOVA-1 once the worker is done the same hover reaps it and shows the nova forecast")
 	_done(b)
 
 
