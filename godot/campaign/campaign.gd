@@ -34,7 +34,7 @@ var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
 # Issue 1451 (R378): the battle in progress, saved at the start of its newest round: {"node", "round", "fp", "size", "data"} (data:
-# the rules snapshot, base64), or null. It belongs with SAVED_RUN (the pre-fight checkpoint, kept as the fallback) and clears
+# the rules snapshot, base64), or null. It belongs with SAVED_RUN (the last checkpoint, usually the map before the stop; kept as the fallback) and clears
 # when the battle is settled. Continue resumes that round when the snapshot fits the game's rules (battle_restore).
 var saved_battle = null
 var battle_restore: Callable = Callable()   # external mode: battle_restore(saved_battle) -> {"B", "run"} or {"error"}
@@ -1880,21 +1880,24 @@ func _enter_battle_node(n: Dictionary) -> void:
 		toast("The Hegemony escort you robbed has found you.")
 	battleScreen({"kind": kind, "fac": fac, "col": n["col"], "node": n["id"]})
 
-# Issue 1451: Continue into the round the battle was saved at. False (and the save is dropped) when it cannot be restored: the
-# fight then starts again from the pre-fight save, as before.
+# Issue 1451: Continue into the round the battle was saved at. False (and the save is dropped) when it cannot be restored: Continue
+# then loads the last checkpoint (usually the map before the stop), as it did before round saves.
 func _resume_saved_battle() -> bool:
 	var sb = saved_battle
 	var why = ""
 	if battle_mode != "external" or not battle_restore.is_valid(): why = "no battle scene"
-	elif SAVED_RUN.get("curNode") != sb["node"] or SAVED_RUN.get("reward") != null: why = "the save moved on"
+	# The snapshot carries its own run (taken at the round start), so it does not need the checkpoint to point at the fight: the
+	# checkpoint is usually the map before the stop was entered (Artoo on PR 1486). It must belong to the same run, and any newer
+	# checkpoint outside a battle has already dropped it (saveRun).
+	elif str(SAVED_RUN.get("t0")) != str(sb.get("t0")) or SAVED_RUN.get("reward") != null: why = "the save belongs to another run"
 	var res = {}
 	if why == "":
 		res = battle_restore.call(sb)
 		if not (res is Dictionary) or res.has("error") or not (res.get("B") is Dictionary) or not (res.get("run") is Dictionary): why = str(res.get("error", "restore failed")) if res is Dictionary else "restore failed"
 	if why != "":
 		saved_battle = null
-		push_warning("campaign: the round save was not used (%s); the fight restarts" % why)
-		if why == "the snapshot is from other rules": toast("The game was updated since this save, so this fight starts again from its beginning.")
+		push_warning("campaign: the round save was not used (%s); back to the last checkpoint" % why)
+		if why == "the snapshot is from other rules": toast("The game was updated since this save, so the run goes back to its last checkpoint before this fight.")
 		return false
 	RUN = res["run"]; B = res["B"]
 	var c = B["cfg"]
@@ -1905,16 +1908,16 @@ func _resume_saved_battle() -> bool:
 	show_page("battle", {"cfg": c}, acts)
 	pending_battle = c; battle_requested.emit()
 	return true
-# Issue 1451: the battle scene's round start has settled; write the round's snapshot beside the pre-fight checkpoint.
+# Issue 1451: the battle scene's round start has settled; write the round's snapshot beside the last checkpoint.
 # snap: battle_api take_round_snapshot(). True when it is on disk (or saves are off).
 func save_battle_round(snap: Dictionary) -> bool:
 	if snap.is_empty() or RUN == null or B == null or SAVED_RUN == null or jt(B.get("over")) or jt(B.get("finished")) or not jt(RUN.get("curNode")): return false
 	var prev = saved_battle
-	saved_battle = {"node": RUN["curNode"], "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
+	saved_battle = {"node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
 	persist_save()
 	if not last_save_ok: saved_battle = prev   # keep memory equal to the disk: a later write never jumps to a round the player was not told about
 	return last_save_ok
-# Issue 1451: Save and quit to title from the battle menu. The newest round save stays on disk (if none was written, the pre-fight
+# Issue 1451: Save and quit to title from the battle menu. The newest round save stays on disk (if none was written, the last
 # checkpoint is still there, so nothing is lost and nothing is settled); the run is left, not ended.
 func leave_battle_saved() -> void:
 	pending_battle = null
