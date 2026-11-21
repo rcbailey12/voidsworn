@@ -7,7 +7,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   1. what arrives: every door node with its lobes, each lobe carrying its mesh, each door tied to a bay that exists;
 #   2. shut at rest: before any launch every lobe sits exactly at its authored pose;
 #   3. each launch opens only its own bay's door: fully open when the first craft leaves (T + 0.3), every other door shut;
-#   4. open, every lobe lies down in the bore: no vertex of its mesh rises further out of the mouth than the shut door's does,
+#   4. every lobe lies down in the bore: at every frame of every swing no vertex of it rises further out of the mouth than
+#      that same lobe's does shut,
 #      so no lobe ever stands up past the lip like a tooth (Ryan, Nov 21: "random teeth inside look odd");
 #   5. the motion is smooth (no step over a sixth of the swing in one 60 Hz frame) and the door is back at rest, exactly, after
 #      the squadron has left;
@@ -108,9 +109,13 @@ func _run() -> void:
 		for lb in d["lobes"]:
 			check((lb["node"] as Node3D).transform.is_equal_approx(lb["rest"]), "%s is shut at rest" % (lb["node"] as Node3D).name)
 	var shut_top := -INF
+	var shut_of := {}       # each lobe's own shut height (Artoo on PR 1544: a lower lobe is held to its own, not the tallest)
 	for d in h.doors:
 		for lb in d["lobes"]:
-			shut_top = maxf(shut_top, _lobe_top(h, d, lb))
+			var shut_h := _lobe_top(h, d, lb)
+			shut_of[(lb["node"] as Node3D).get_instance_id()] = shut_h
+			shut_top = maxf(shut_top, shut_h)
+	var worst_rise := -INF  # the most any lobe rose above its own shut height, at any frame of any swing
 	# 3 to 5: one squadron from each bay in turn
 	var cost := 0.0
 	var steps := 0
@@ -138,9 +143,11 @@ func _run() -> void:
 				for j in h.doors.size():
 					if j != k:
 						check(h.door_open_at(j, fx.now) == 0.0, "%s stays shut while %s launches" % [h.doors[j]["name"], h.doors[k]["name"]])
-			if f > 0.999:
-				for lb in h.doors[k]["lobes"]:
-					var top := _lobe_top(h, h.doors[k], lb)
+			h.door_step(fx.now)
+			for lb in h.doors[k]["lobes"]:
+				var top := _lobe_top(h, h.doors[k], lb)
+				worst_rise = maxf(worst_rise, top - float(shut_of[(lb["node"] as Node3D).get_instance_id()]))
+				if f > 0.999:
 					worst_top = maxf(worst_top, top)
 		h.door_step(fx.now)
 		if k >= 0:
@@ -172,7 +179,7 @@ func _run() -> void:
 		for lb in h.doors[k2]["lobes"]:
 			check((lb["node"] as Node3D).transform.is_equal_approx(lb["rest"]), "%s is shut after the second squadron" % (lb["node"] as Node3D).name)
 	# 4. open lobes lie down in the bore (a hundredth of the hull's length of slack for the lobe's dome over its hinge)
-	check(worst_top <= shut_top + 1e-3, "open lobes never rise past their shut height (open %.4f, shut %.4f above the hinge)" % [worst_top, shut_top])
-	print("DOOR doors=%d bays=%d shut_top=%.4f open_top=%.4f step_usec=%.1f" % [h.doors.size(), bays.size(), shut_top, worst_top, cost / maxf(steps, 1)])
+	check(worst_rise <= 1e-4, "no lobe ever rises past its own shut height, at any frame of the swing (most %.5f)" % worst_rise)
+	print("DOOR doors=%d bays=%d shut_top=%.4f open_top=%.4f worst_rise=%.5f step_usec=%.1f" % [h.doors.size(), bays.size(), shut_top, worst_top, worst_rise, cost / maxf(steps, 1)])
 	print("DOOR failures=%d" % failures)
 	quit(1 if failures > 0 else 0)
