@@ -36,10 +36,10 @@ INVENTORY = [
          reads='a machined block, rectangular nozzle throats with depth', src='picture'),
     dict(id='module_panels', job='module armour: flush panels in the even grid', type='plate', what='flush panels on the module\'s flat faces', count=1,
          cells=['mid/top', 'mid/side'], reads='machined slabs with seams, two module sizes', src='picture'),
-    dict(id='hatches', job='maintenance access to the relay core and the stores', type='hatch', what='a deck hatch and a belly hatch', count=2,
-         cells=['mid/top'], reads='a rim, a flush door, a seam, a grip', src='designed'),
-    dict(id='vents', job='the relay core\'s and the emitter\'s heat louvres', type='vent', what='louvres on the module top', count=4,
-         cells=['mid/top'], reads='a machined frame, straight slats over a dark recess', src='designed'),
+    dict(id='hatches', job='maintenance access to the relay core and the stores', type='hatch', what='a deck hatch and a belly hatch, deck, belly and side access plates (round 2, Ryan Nov 21: no clay)', count=10,
+         cells=['mid/top', 'mid/side', 'mid/below'], reads='a rim, a flush door, a seam, a grip', src='designed'),
+    dict(id='vents', job='the relay core\'s and the emitter\'s heat louvres', type='vent', what='louvres on the module top and belly', count=6,
+         cells=['mid/top', 'mid/below'], reads='a machined frame, straight slats over a dark recess', src='designed'),
 ]
 STRUCTURE = {'bow/top': 2, 'bow/side': 2, 'mid/top': 5, 'mid/side': 4, 'stern/top': 2, 'stern/side': 2}
 STRUCTURE_NOTE = ('Relay sheet: forward, the lens face and the rail ends; midships, the module, the cradle and the fin; aft, the rail ends (the top view shows two rails, the upper over the lower)')
