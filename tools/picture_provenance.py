@@ -35,8 +35,8 @@ def sidecar(path):
     return Path(str(path) + '.provenance.json')
 
 
-def git(repo, *args):
-    return subprocess.check_output(['git', '-C', str(repo), *args], stderr=subprocess.PIPE)
+def git(repo, *args, input=None):
+    return subprocess.check_output(['git', '-C', str(repo), *args], stderr=subprocess.PIPE, input=input)
 
 
 @lru_cache(maxsize=8)
@@ -51,10 +51,18 @@ def revision(repo):
         if name and name != 'CODEX_TASK.md' and Path(name).suffix in {'.py', '.gd', '.js', '.ps1', '.bat'}:
             changes += name.encode() + b'\0' + (Path(repo) / name).read_bytes()
             paths.append(name)
-    # source_dirty_paths (issue 1517): which files made the tree dirty, so a reader can tell a PC ship job's own install
-    # (godot/assets/ships, Godot's .import and .uid files) from a real source edit
+    # source_dirty_files (issue 1539): each file that made the tree dirty and the git blob hash of its working copy (None
+    # when deleted), so a reader can match a PC ship job's own install (its ship files, its manifest row, the watchdog
+    # hand-off) exactly against what the job recorded, and refuse a real source edit
+    names = sorted(set(paths))
+    present = [n for n in names if (Path(repo) / n).is_file()]
+    # git's own hash (its line-ending filters applied), the same number ship_job.bat records for the watchdog hand-off
+    blobs = git(repo, 'hash-object', '--stdin-paths', input='\n'.join(present).encode()).decode().split() if present else []
+    files = dict.fromkeys(names)
+    files.update(zip(present, blobs))
     return dict(source_commit=commit, source_dirty=bool(changes),
-                source_diff_sha256=digest(changes) if changes else '', source_dirty_paths=sorted(set(paths)))
+                source_diff_sha256=digest(changes) if changes else '', source_dirty_files=files)
+
 
 
 def text_lines(record):

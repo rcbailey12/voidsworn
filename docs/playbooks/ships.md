@@ -224,7 +224,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    build is made only with `tools/recipe/offer_sheet.py JOB_OUT OUT.jpg`, which refuses a job whose
    `out/recipe/log_detail.txt` has no PASS, takes as proof only the job's own pictures stamped with its commit and the
    sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`; a shot
-   from a dirty tree only when every dirty file is the job's own install, godot/assets/ships, .import or .uid, issue 1539),
+   from a dirty tree only when every dirty file is the install ship_job.bat recorded for that job: its own ship files, its
+   manifest row, the watchdog hand-off, .import and .uid, issue 1539),
    and prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
    same job. A ship under its floor passes only with a dated opt-out holding Ryan's own words in its recipe json
    (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
