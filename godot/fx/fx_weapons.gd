@@ -13,7 +13,7 @@ extends RefCounted
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
 #            pulsar (Ithar: the beam in travelling pulses), nlance (Eclipse: three compression beams)
-#            doom (Eclipse corona arc: re-striking green lightning)
+#            doom (Eclipse corona arc: re-striking violet lightning)
 #   torp:    torp (Voidsworn hellfire: armoured bodies, short plumes)   rockets (Corsair rattle-rocket pods: swarms of
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
@@ -56,6 +56,9 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
 const CRIT_BEAT := 0.12
+# Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
+# shield failure's flash, so the two read as two beats instead of one orange smear
+const BREAK_HULL_BEAT := 0.08
 # F3 (feel pass, Ryan Nov 1: "effects looked very weak, especially at a distance and for smaller ships"): the size every
 # effect is drawn at follows the ship (scale_k, a frigate 0.43, a super-dreadnought 2.07), which left a frigate's fire
 # and the hits on it a fifth of a capital's. Fire and impact visuals now use at least these scales (geometry such as
@@ -205,7 +208,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
 	var col: Color = PLASMA_COL if lk in ["plasma", "plasma_cannon"] else fac["weapon"]
-	# Doom keeps R263 green; the R271 null tracer uses the faction's violet-white.
+	# Doom uses its own deep violet core (issue 1503, was R263 green); the R271 null tracer uses the faction's violet-white.
 	if lk == "doom" and fac.has("weapon_core"):
 		col = fac["weapon_core"]
 	# Issue 461: a hit is sized by the gun that fired it as well as by the ship it lands on
@@ -250,11 +253,18 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var pd_left := maxi(int(opts.get("pd", 0)), 0)
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
+	# issue 1239: each hit's point on the target's shield (shield frame; INF when it never touched the shield), so the
+	# battle can aim the shield failure at the shot that broke it; break_k is that hit (-1: none breaks the shield)
+	var hit_pts: Array = []
+	var shot_pts: Array = []   # each shot's aim point (world), so the checks can follow every projectile to its own shot
+	var break_k := int(opts.get("break_k", -1))
 	for i in total:
 		var hit: bool = bool(shots[i])
 		var hd: Dictionary = {}
+		var hk := -1
 		if hit:
 			hd = hits[hj] if hj < hits.size() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
+			hk = hj
 			hj += 1
 		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
 			hd = {"pd": true}
@@ -264,6 +274,11 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt, pattern[i], rhythm, clusters)
 		tgt["gk"] = gk
 		tgt["tk"] = tk
+		shot_pts.append(tgt["p"])
+		if hk >= 0:
+			hit_pts.append(_shield_lp(tgt))
+			if hk == break_k:
+				tgt["breaking"] = true
 		if bool(opts.get("debug", false)):
 			# (tests: where each shot strikes, in world space and relative to the target's centre)
 			var tp: Vector3 = Tg.root.global_position if Tg != null else to_c
@@ -281,7 +296,16 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			Tg.busy_until = maxf(Tg.busy_until, float(r[0]))
 	for k in tur_last:
 		A.hull.turret_release(int(k), float(tur_last[k]))
-	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms}
+	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms, "hit_pts": hit_pts, "points": shot_pts}
+
+
+# Issue 1239: where a shot met the target's shield, in the shield's frame (INF when it never touched it).
+static func _shield_lp(tg: Dictionary) -> Vector3:
+	if bool(tg.get("shield", false)) and tg.has("local"):
+		return tg["local"]
+	if tg.has("through"):
+		return (tg["through"] as Dictionary)["local"]
+	return Vector3.INF
 
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
@@ -640,7 +664,7 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
 			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
-		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
+		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small", null, false, false, null, "weapon") as MeshInstance3D
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
 		var mat: ShaderMaterial = node.material_override
@@ -690,14 +714,9 @@ static func _weapon_gas(fx, p: Vector3, axis: Vector3, T: float, size: float, ki
 	var seed: float = fx.rng.randf()
 	fx.record_spawn(src, p, true)
 	fx.later(T, func l_wgas() -> void:
-		var mi := MeshInstance3D.new()
-		mi.name = "fx_weapon_" + kind
-		var quad := QuadMesh.new()
-		quad.size = Vector2.ONE
-		mi.mesh = quad
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var mi: MeshInstance3D = fx.picture("wgas|" + kind, func() -> ShaderMaterial: return _weapon_gas_material(fx, kind), "fx_weapon_" + kind)
 		mi.extra_cull_margin = size * 3.0 + velocity.length() * life
-		var m := _weapon_gas_material(fx, kind)
+		var m := mi.material_override as ShaderMaterial
 		m.set_shader_parameter("born", T)
 		m.set_shader_parameter("lifetime", life)
 		m.set_shader_parameter("extent", size * fx.unit)
@@ -715,10 +734,8 @@ static func _weapon_gas(fx, p: Vector3, axis: Vector3, T: float, size: float, ki
 		m.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
 		m.set_shader_parameter("opacity", opacity)
 		m.set_shader_parameter("spin", seed * TAU)
-		mi.material_override = m
-		fx.add_child(mi)
 		mi.global_position = p + axis * size * 0.42 * directional
-		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(mi)))
+		fx.later(T + life + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 	)
 
 
@@ -823,7 +840,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 # The casing has no emission: the drive is bright, the body remains readable.
 const DRIVE := """
 shader_type spatial;
-render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 global uniform float fx_calm;
@@ -834,8 +851,8 @@ uniform float throttle = 1.0;
 void vertex() {
 	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
 	float size = extent * length(MODEL_MATRIX[0].xyz);
-	// Motor core plus sheath stay resolved on small rockets at battle range.
-	float pixel = 2.0 * max(-centre.z, 0.01) / (max(abs(PROJECTION_MATRIX[1][1]), 0.0001) * VIEWPORT_SIZE.y);
+	// Motor core plus sheath stay resolved on small rockets at battle range (1080-line pixels, issue 1211: the same at 4K).
+	float pixel = 2.0 * max(-centre.z, 0.01) / (max(abs(PROJECTION_MATRIX[1][1]), 0.0001) * 1080.0);
 	size = max(size, pixel * 12.0);
 	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
 }
@@ -850,7 +867,7 @@ void fragment() {
 
 const STAR_BODY := """
 shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 uniform vec3 tint = vec3(1.0);
@@ -957,7 +974,6 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 
 
 static func update(fx, dt: float) -> void:
-	_lanes_update(fx)
 	_craft_update(fx, dt)
 	for ship in fx.ships.values():
 		if is_instance_valid(ship.root):
@@ -973,8 +989,7 @@ static func update(fx, dt: float) -> void:
 		if now < t0:
 			keep.append(p)
 			continue
-		var parked: bool = p.get("park", false) and now >= t1
-		if (now >= t1 and not parked) or now >= float(p["dead_at"]):
+		if now >= t1 or now >= float(p["dead_at"]):
 			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
 				var u0 := clampf((float(p["dead_at"]) - t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
 				var pp := _bez(p["a"], p["b"], p["c"], _ease(u0))
@@ -996,26 +1011,29 @@ static func update(fx, dt: float) -> void:
 			node.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(scale), pos)
 			node.visible = true
 			(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
-			var fade := smoothstep(0.0, 0.06, now - t0)
-			if not p.get("park", false):
-				fade *= 1.0 - smoothstep(t1 - 0.08, t1, now)
+			var fade := smoothstep(0.0, 0.06, now - t0) * (1.0 - smoothstep(t1 - 0.08, t1, now))
 			(node.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", fade)
 		_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
 # and let each short puff cool independently. There is no persistent hot ribbon.
-static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
+# Issue 1467: "last" walks the fixed puff grid, so the part of an interval a frame leaves over carries to the next
+# frame (14 puffs a second at 15, 30 or 144 fps). After a hitch, intervals past the 3-puff cap are dropped, not
+# banked, so no burst repeats; the fraction still carries. Returns the puffs emitted (the frame-rate check counts them).
+static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 	var lk: String = p["lk"]
 	var k: float = p["k"]
 	var last: float = p["last"]
 	var rate := 10.0 if lk == "rockets" else 14.0
 	if fx.quality == "low": rate *= 0.6
-	var count := mini(3, int((fx.now-last) * rate))
-	if count <= 0: return
-	p["last"] = fx.now
+	var due := int((fx.now-last) * rate + 1e-6)
+	if due <= 0: return 0
+	var count := mini(3, due)
+	last += float(due) / rate
+	p["last"] = last
 	var eng: Color = p["eng"]
 	for i in count:
-		var tt: float = fx.now - float(count-i-1)/rate
+		var tt: float = last - float(count-i-1)/rate
 		var e := _ease(clampf((tt-float(p["t0"])) / maxf(float(p["t1"])-float(p["t0"]),0.001),0.0,1.0))
 		var at := _bez(p["a"],p["b"],p["c"],e)
 		var d: Vector3 = ((p["b"] as Vector3)-(p["a"] as Vector3)).lerp((p["c"] as Vector3)-(p["b"] as Vector3),e).normalized()
@@ -1028,6 +1046,7 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
 			for j in 3:
 				var f := float(j) / 3.0
 				fx.dst(tail-d*size*(0.5+f*4.0), tt, 0.16, size*(0.4+f*0.5), size*(1.1+f), 1, 0.12*(1.0-f)*(1.0-f))
+	return count
 
 
 static func _ease(u: float) -> float:
@@ -1396,7 +1415,9 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 		var b := POOLS.Batch.new()
 		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
 			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
-		var node: MeshInstance3D = b.build(fx.mat(SH.SPRITE, 1), src._dmg_root, "fx_hit_heat")
+		# Issue 1237 (Neon F7.2): one shared sprite material for every hull heat spot (the data is in the vertices).
+		if not fx.dstate.has("heat_spot_mat"): fx.dstate["heat_spot_mat"] = fx.mat(SH.SPRITE, 1)
+		var node: MeshInstance3D = b.build(fx.dstate["heat_spot_mat"], src._dmg_root, "fx_hit_heat")
 		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(node))))
 
 
@@ -1419,7 +1440,11 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return
-	if tg.has("through") and Tg != null:
+	if tg.has("through") and Tg != null and bool(tg.get("breaking", false)):
+		# issue 1239 (F2.2): the shot that breaks the shield and still hurts the hull. The failure's own flash marks the
+		# shield here, so no extra ripple, and the hull's fire waits a beat so the collapse's flash reads first
+		T += BREAK_HULL_BEAT
+	elif tg.has("through") and Tg != null:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
 			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)
@@ -1737,6 +1762,9 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 # The impact primitive samples the existing baked fire and flow. Its heat map rejects the cold outer lobes, so smoke
 # can be a short directional plume instead of three opaque balls. No extra screen pass or new texture is involved.
 static func hull_impact_material(fx, rel: String) -> ShaderMaterial:
+	# Issue 1237 (Neon F7.2): the shader text is put together once per fx node, not with five replaces on every hit.
+	if fx.dstate.has("hull_impact_code"):
+		return DEATH.route_material(fx, fx.dstate["hull_impact_code"], rel, true, 0)
 	var code: String = SH.DEATH_FLIPBOOK.replace("uniform float smoke_tone = 1.0;", """uniform float smoke_tone = 1.0;
 uniform float impact_body = 0.0;
 uniform float impact_tinted = 0.0;
@@ -1753,6 +1781,7 @@ uniform vec3 impact_tint = vec3(1.0);""")
 	ALBEDO = mix(ALBEDO, coloured, impact_tinted);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);""")
 	code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * smoothstep(0.035, 0.18, thick.b) * fade * soft")
+	fx.dstate["hull_impact_code"] = code
 	return DEATH.route_material(fx, code, rel, true, 0)
 
 
@@ -1785,16 +1814,12 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 			var soft: bool = permit.soft or fx.reduce_flashing
 			var lift: bool = permit.lift
 			var duration: float = (0.30 if energy else (0.65 if torpedo else 0.46)) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
-			var mi := MeshInstance3D.new()
-			mi.name = "fx_staged_body" if body else "fx_staged_flash"
+			var mi: MeshInstance3D = fx.picture("impact|" + rel, func() -> ShaderMaterial: return hull_impact_material(fx, rel),
+				"fx_staged_body" if body else "fx_staged_flash")
 			mi.set_meta("fx_picture_kind", "impact" if body else "flash")
 			mi.set_meta("gas_root", p)
-			var quad := QuadMesh.new()
-			quad.size = Vector2.ONE
-			mi.mesh = quad
 			mi.extra_cull_margin = 100.0
-			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			var mat := hull_impact_material(fx, rel)
+			var mat := mi.material_override as ShaderMaterial
 			mat.set_shader_parameter("pic_spin", spin + (0.7 if body else 0.0))
 			mat.set_shader_parameter("pic_shape", shape if body else Vector2.ONE)
 			mat.set_shader_parameter("born", at)
@@ -1814,12 +1839,10 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 			mat.set_shader_parameter("calm_intensity", calm_power)
 			mat.set_shader_parameter("intensity", (FLASH_LIFT_POWER if lift and not body else calm_power) if soft else (3.8 if body else 5.2))
 			mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
-			mi.material_override = mat
-			fx.add_child(mi)
 			# The fire expands out of the actual impact face. Keep its recorded root on that face.
 			mi.global_position = centre
 			fx.record_spawn(src, p)
-			fx.later(at + duration + 0.1, fx.free_effect.bind(weakref(mi)))
+			fx.later(at + duration + 0.1, fx.free_picture.bind(weakref(mi), int(mi.get_meta("pic_gen"))))
 		)
 
 
@@ -1910,196 +1933,3 @@ static func launch(fx, cid: String, sid: String) -> void:
 		_craft_run(fx, C.faction, kind, from + off, to + off, t0, life, 2.4)
 
 
-# ---------------------------------------------------------------- travelling torpedoes (B3, API.md 3 "coming")
-
-const LANE := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-global uniform float scene_t;
-global uniform float fx_gain;
-global uniform float fx_calm;
-uniform vec3 col = vec3(1.0, 0.5, 0.2);
-uniform float warn = 0.0;
-uniform float len = 50.0;
-uniform float marker = 0.0;
-void fragment() {
-	vec3 c = mix(col, vec3(1.0), warn);
-	if (marker > 0.5) {
-		// the impact marker: a ring and a crosshair that pulse (slowly; faster and whiter in the warning)
-		vec2 p = UV * 2.0 - 1.0;
-		float r = length(p);
-		float rate = mix(1.2, 2.5, warn) * mix(1.0, 0.5, fx_calm);
-		float pulse = 0.6 + 0.4 * sin(scene_t * 6.2831 * rate);
-		float ring = exp(-pow((r - 0.85) / 0.05, 2.0)) + exp(-pow((r - 0.55 + 0.1 * pulse) / 0.04, 2.0)) * 0.6;
-		float crs = (exp(-abs(p.x) * 60.0) + exp(-abs(p.y) * 60.0)) * step(r, 0.4) * step(0.12, r);
-		ALBEDO = c * (ring + crs) * (0.6 + 0.6 * pulse + 1.5 * warn) * fx_gain * 2.0;
-	} else {
-		// the lane: chevrons running toward the target, edges faint
-		float s = UV.x * len;
-		float x = abs(UV.y * 2.0 - 1.0);
-		float chev = fract((s + x * 2.5) / 6.0 - scene_t * mix(0.6, 1.4, warn));
-		float band = smoothstep(0.0, 0.15, chev) * (1.0 - smoothstep(0.35, 0.5, chev));
-		float edge = exp(-pow((x - 0.92) / 0.05, 2.0)) * 0.35;
-		float fade = smoothstep(0.0, 0.05, UV.x) * (1.0 - smoothstep(0.92, 1.0, UV.x) * 0.4);
-		ALBEDO = c * (band * 0.55 + edge) * fade * (0.8 + 1.8 * warn) * fx_gain * 1.6;
-	}
-}
-"""
-
-
-static func torp_lane(fx, lane_id: String, aid: String, to: Vector3, turns: int) -> void:
-	torp_lane_clear(fx, lane_id, false)
-	var A = fx.ship(aid)
-	if A == null:
-		return
-	var fac: Dictionary = A.fac
-	# issue 370: the torpedo's own tube (an authored torpedo muzzle), else the bow plating; the lane starts there
-	var tube: Array = A.hull.guns(-1, "startorp" if A.faction == "ithar" else "torp", A.xf().affine_inverse() * to, 1, true)
-	if tube.is_empty() or (tube[0] as Dictionary).is_empty():
-		return
-	var from: Vector3 = A.to_world(tube[0]["p"])
-	var y = minf(from.y, to.y) - 0.5
-	var a = Vector3(from.x, y, from.z)
-	var b = Vector3(to.x, y, to.z)
-	var d: Vector3 = b - a
-	var L = d.length()
-	if L < 0.5:
-		return
-	var root = Node3D.new()
-	root.name = "fx_lane_" + lane_id
-	fx.add_child(root)
-	var wc: Color = fac["weapon"]
-	var strip = MeshInstance3D.new()
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var side: Vector3 = d.normalized().cross(Vector3.UP).normalized()
-	var w = 3.2 * A.scale_k() * fx.unit
-	var c0 = a - side * w * 0.5
-	var c1 = b - side * w * 0.5
-	var c2 = b + side * w * 0.5
-	var c3 = a + side * w * 0.5
-	for q in [[c0, Vector2(0, 0)], [c1, Vector2(1, 0)], [c2, Vector2(1, 1)], [c0, Vector2(0, 0)], [c2, Vector2(1, 1)], [c3, Vector2(0, 1)]]:
-		st.set_uv(q[1])
-		st.add_vertex(q[0])
-	strip.mesh = st.commit()
-	var m: ShaderMaterial = fx.mat(LANE, 1)
-	m.set_shader_parameter("col", Vector3(wc.r, wc.g, wc.b))
-	m.set_shader_parameter("len", L)
-	strip.material_override = m
-	strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(strip)
-	var mk = MeshInstance3D.new()
-	var pm = PlaneMesh.new()
-	pm.size = Vector2(1, 1)
-	mk.mesh = pm
-	var mm: ShaderMaterial = fx.mat(LANE, 1)
-	mm.set_shader_parameter("col", Vector3(wc.r, wc.g, wc.b))
-	mm.set_shader_parameter("marker", 1.0)
-	mk.material_override = mm
-	mk.transform = Transform3D(Basis().scaled(Vector3.ONE * 9.0 * fx.unit), b + Vector3(0, 0.1, 0))
-	mk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(mk)
-	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	lanes[lane_id] = {"root": root, "mats": [m, mm], "from": from, "to": to, "aid": aid, "turns": turns, "torp": null, "projectiles": [], "look": look_of("torp", "startorp" if A.faction == "ithar" else "torp", A.faction), "fac": fac, "k": A.scale_k()}
-	fx.dstate["lanes"] = lanes
-
-
-# The torpedo leaves the tube and runs out along its lane, then holds there (engine burning) until the next turn.
-static func torp_launch(fx, lane_id: String) -> void:
-	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	if not lanes.has(lane_id):
-		return
-	var ln: Dictionary = lanes[lane_id]
-	var A = fx.ship(ln["aid"])
-	var k: float = ln["k"]
-	var from: Vector3 = ln["from"]
-	var to: Vector3 = ln["to"]
-	var park = from.lerp(to, 0.42) + Vector3(0, 2.0 * k, 0)
-	var T: float = fx.now
-	var mn: Vector3 = A.dir_world(Vector3(1, 0, 0)) if A != null else (to - from).normalized()
-	var before: int = fx.dstate.get("proj", []).size()
-	_launch(fx, ln["look"], from, mn, park, T + 0.15, T + 1.15, ln["fac"]["weapon"], ln["fac"], k, 0, false, A)
-	var list: Array = fx.dstate.get("proj", [])
-	var group: Array = list.slice(before)
-	for p in group: p["park"] = true
-	ln["projectiles"] = group
-	ln["torp"] = group[0]
-
-
-
-# Next turn: the lane ramps to white (two-stage warning, about 0.8 s), the torpedo closes and strikes.
-static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Dictionary:
-	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	if not lanes.has(lane_id):
-		return {"impacts": [], "done": 0.0}
-	var ln: Dictionary = lanes[lane_id]
-	var Tg = fx.ship(tid)
-	var T: float = fx.now
-	var warn_t = 0.8
-	ln["warn_t0"] = T
-	ln["warn_len"] = warn_t
-	var p: Dictionary = ln["torp"] if ln["torp"] != null else {}
-	var start: Vector3 = (ln["from"] as Vector3).lerp(ln["to"], 0.42)
-	if not p.is_empty():
-		start = p.get("pos", start)
-	var hd = hit if not hit.is_empty() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
-	var to_c: Vector3 = Tg.to_world(Tg.hull.c) if Tg != null else ln["to"]
-	var kt: float = Tg.scale_k() if Tg != null else 1.0
-	var tg = _target(fx, Tg, to_c, start, not hit.is_empty(), hd, -1, kt)
-	var k: float = ln["k"]
-	var dist = start.distance_to(tg["p"])
-	var ti = T + warn_t + clampf(dist / (70.0 * fx.unit), 0.85, 1.25)
-	for projectile in ln.get("projectiles", []):
-		var at: Vector3 = projectile.get("pos", start)
-		projectile["park"] = false
-		projectile["a"] = at
-		projectile["b"] = at.lerp(tg["p"], 0.5) + Vector3(0, 1.5 * k, 0)
-		projectile["c"] = tg["p"]
-		projectile["t0"] = T + warn_t
-		projectile["t1"] = ti
-		projectile["last"] = T + warn_t
-
-	if not bool(tg.get("miss", false)):
-		# Faction lane visuals change here; the existing R80 lane wound stays torp.
-		tg["mark_look"] = "torp"
-		_impact(fx, ln["look"], 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
-		if Tg != null:
-			Tg.busy_until = maxf(Tg.busy_until, ti)
-	fx.later(ti + 0.2, func l_lane_clear() -> void: torp_lane_clear(fx, lane_id, false))
-	return {"impacts": [ti - T], "done": ti - T + 0.5, "at": tg["p"]}
-
-
-static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:
-	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	if not lanes.has(lane_id):
-		return
-	var ln: Dictionary = lanes[lane_id]
-	if is_instance_valid(ln["root"]):
-		(ln["root"] as Node).queue_free()
-	for p in ln.get("projectiles", []):
-		if dodged and p.get("park", false):
-			# The whole swarm keeps its vector when a target clears the lane.
-			var T: float = fx.now
-			var dir: Vector3 = ((ln["to"] as Vector3) - (ln["from"] as Vector3)).normalized()
-			p["park"] = false
-			p["a"] = p.get("pos", ln["from"])
-			p["c"] = (p["a"] as Vector3) + dir * 120.0 * fx.unit
-			p["b"] = (p["a"] as Vector3).lerp(p["c"], 0.5)
-			p["t0"] = T
-			p["t1"] = T + 2.2
-			p["last"] = T
-
-	lanes.erase(lane_id)
-
-
-# the lanes' warning ramp (two stages: a dim pulse to 0.35, then up to white), run from update()
-static func _lanes_update(fx) -> void:
-	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	for id in lanes:
-		var ln: Dictionary = lanes[id]
-		if not ln.has("warn_t0"):
-			continue
-		var u = clampf((fx.now - float(ln["warn_t0"])) / float(ln["warn_len"]), 0.0, 1.0)
-		var wv = 0.35 * smoothstep(0.0, 0.5, u) + 0.65 * smoothstep(0.5, 1.0, u)
-		for m in ln["mats"]:
-			(m as ShaderMaterial).set_shader_parameter("warn", wv)

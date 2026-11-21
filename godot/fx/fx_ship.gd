@@ -9,6 +9,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -44,7 +45,7 @@ var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
-static var _trail_indices: Dictionary = {}
+static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
 var _last_pos = Vector3.INF
 var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
@@ -53,11 +54,17 @@ var _shield_tm: TriangleMesh = null
 var _shield_pose := Transform3D.IDENTITY
 # Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
 const SHIELD_SKIN_CACHE_LIMIT := 48
-static var _shield_skin_arrays: Dictionary = {}
+static var _shield_skin_arrays: Dictionary = {}   # not GPU: mesh arrays on the CPU, size capped
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
+var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is still playing (a death lets it finish)
+# Issue 1078: which shield failure look plays (2 clean collapse, the game's look since R340; 0 the old per-faction break
+# and 1 energy shear stay only for side-by-side checks) and the shear's quality (true: the cheaper crack network).
+# Read once per ship from the settings (see fail_look_setting).
+var _fail_look := 2
+var _fail_low := false
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
@@ -147,7 +154,10 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
 	hull.formation = squadron
+	hull.shared = fx.get("hull_shared")
+	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
+	t_a = fx.pend("add:analyse", t_a)
 	# issue 370: ShipView's movement jets (braking, side, turning) ask the same attach point service
 	if "attach" in root:
 		root.set("attach", hull)
@@ -171,11 +181,14 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_hide_placeholder_engines()
 	# Detailed wings own one stern trail per moving craft. The hull analyser's
 	# single formation-sized engine would put a giant plume between the craft.
+	t_a = fx.pend("add:damage_root", t_a)
 	if not squadron or root.get("squad_kind") == null or str(root.get("squad_kind")).is_empty():
 		_build_engines(fx)
 		_build_trails(fx)
+	t_a = fx.pend("add:engines", t_a)
 	if shielded:
 		_build_shield(fx)
+	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
 
 
@@ -300,7 +313,7 @@ func _build_engines(fx) -> void:
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		var acc = fac.get("accent")
 		if acc is Color:
-			# a corona round the core in the faction's second colour (faction look data, accent; four factions set one)
+			# a corona round the core in the faction's second colour (faction look data, accent; three factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
@@ -479,7 +492,7 @@ func _build_shield(fx) -> void:
 	var shape := OS.get_environment("VS_SHIELD_SHAPE")
 	if shape.is_empty():
 		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))
-	var skin: Mesh = _shield_skin() if shape == "fitted" else sph
+	var skin: Mesh = _shield_skin(fx) if shape == "fitted" else sph
 	if skin == null:
 		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
@@ -488,6 +501,10 @@ func _build_shield(fx) -> void:
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	_fail_look = fail_look_setting()
+	_fail_low = fail_low_setting()
+	_shield_mat.set_shader_parameter("brk_look", _fail_look)
+	_shield_mat.set_shader_parameter("brk_low", _fail_low)
 	var se = fac.get("shield_edge")
 	if se is Color:
 		_shield_mat.set_shader_parameter("edge_mode", 1)
@@ -515,13 +532,14 @@ func _build_shield(fx) -> void:
 	root.add_child(_shield_mi)
 
 
-func _shield_skin() -> ArrayMesh:
+func _shield_skin(fx = null) -> ArrayMesh:
 	var frames := {}
 	var box := AABB()
 	var view := root as SHIP_VIEW
 	var visual: Node3D = view.hull if view != null else null
 	var bob := visual.position - view.hull_base if visual != null else Vector3.ZERO
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -539,24 +557,84 @@ func _shield_skin() -> ArrayMesh:
 		var bounds: AABB = frame * mi.mesh.get_aabb()
 		box = bounds if frames.is_empty() else box.merge(bounds)
 		frames[mi] = frame
-	var faces := HULL.faces_of(root, meshes, null, frames)
-	if faces.is_empty():
-		return null
-	var digest := HashingContext.new()
-	digest.start(HashingContext.HASH_SHA256)
-	digest.update(var_to_bytes(box))
-	digest.update(faces.to_byte_array())
-	var key := digest.finish().hex_encode()
-	if not _shield_skin_arrays.has(key):
-		var arrays := _bake_shield_skin(box, faces)
-		if arrays.is_empty():
+	# Issue 1289: the skin's cache key needs every hull triangle (about 55 ms for A16 on the PC); the battle's effects keep
+	# it per mesh set and frames (fx.shield_keys), so a later ship of the same hull skips the triangles when it is cached.
+	var keys = fx.get("shield_keys") if fx != null else null
+	var fkey := ""
+	if keys is Dictionary:
+		var parts := PackedStringArray()
+		for mi in frames:
+			parts.append("%d@%s" % [(mi as MeshInstance3D).mesh.get_instance_id(), str(frames[mi])])
+		fkey = "|".join(parts)
+	var key: String = (keys as Dictionary).get(fkey, "") if fkey != "" else ""
+	var faces := PackedVector3Array()
+	if key == "":
+		faces = HULL.faces_of(root, meshes, null, frames)
+		if faces.is_empty():
 			return null
-		if _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
-			_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
-		_shield_skin_arrays[key] = arrays
+		key = SHIELD_CACHE.key_for(box, faces)
+		if fkey != "":
+			keys[fkey] = key
+	var arrays: Array = _shield_skin_arrays.get(key, [])
+	if arrays.is_empty() and faces.is_empty():
+		faces = HULL.faces_of(root, meshes, null, frames)
+	if arrays.is_empty():
+		arrays = SHIELD_CACHE.read_skin(key)
+		if not arrays.is_empty():
+			_remember_shield_skin(key, arrays)
+		elif fx != null and fx.defer_initial_cuts:
+			fx.queue_shield_skin(self, key, box, faces, bob)
+			return null
+		else:
+			arrays = _bake_shield_skin(box, faces)
+			if arrays.is_empty():
+				return null
+			save_shield_skin(key, arrays)
+	return _posed_skin(fx, key, arrays, bob)
+
+
+# Issue 1289: posing a fitted skin (copy, offset, upload, hit collider) cost every arriving ship 100 ms or more in its
+# arrival frame, cache hit or not. A pose depends only on the cached skin and its offset from the core, so the battle's
+# effects keep each pose they built (fx.shield_poses, freed with the battle) and a second ship of the same hull shares it.
+# Both are read only after this: the shield draws the mesh with its own material and hit tests read the collider.
+func _posed_skin(fx, key: String, arrays: Array, bob: Vector3) -> ArrayMesh:
+	var off := bob - hull.shield_centre()
+	var pk := "%s|%.3f|%.3f|%.3f" % [key, off.x, off.y, off.z]
+	var poses = fx.get("shield_poses") if fx != null else null
+	if poses is Dictionary and (poses as Dictionary).has(pk):
+		var e: Array = poses[pk]
+		_shield_tm = e[1]
+		return e[0]
+	var skin := _pose_shield_skin(arrays, bob)
+	if poses is Dictionary:
+		poses[pk] = [skin, _shield_tm]
+	return skin
+
+
+static func _remember_shield_skin(key: String, arrays: Array) -> void:
+	if not _shield_skin_arrays.has(key) and _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
+		_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
+	_shield_skin_arrays[key] = arrays
+
+
+static func save_shield_skin(key: String, arrays: Array) -> void:
+	_remember_shield_skin(key, arrays)
+	SHIELD_CACHE.write_skin(key, arrays)
+
+
+func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> void:
+	if not is_instance_valid(_shield_mi) or gone:
+		return
+	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
+	_shield_mat.set_shader_parameter("fitted_shape", true)
+	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
+	_shield_mi.transform = _shield_pose
+
+
+func _pose_shield_skin(arrays: Array, bob: Vector3) -> ArrayMesh:
 	# The cache is in the unbobbed frame. Hits and the shader use coordinates
 	# relative to the active core, just as they do for the egg.
-	var posed: Array = _shield_skin_arrays[key].duplicate()
+	var posed := arrays.duplicate()
 	posed[Mesh.ARRAY_VERTEX] = Transform3D(Basis.IDENTITY, bob - hull.shield_centre()) * (posed[Mesh.ARRAY_VERTEX] as PackedVector3Array)
 	var skin := ArrayMesh.new()
 	skin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, posed)
@@ -565,7 +643,11 @@ func _shield_skin() -> ArrayMesh:
 	return skin
 
 
-func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
+static func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
+	return finish_shield_geometry(bake_shield_geometry(box, faces))
+
+
+static func bake_shield_geometry(box: AABB, faces: PackedVector3Array) -> Array:
 	# R303: offset sampled hull surfaces, rather than stretching a sphere from the
 	# core. Uniform cells along the whole hull preserve waists and open ring holes.
 	# Only the outside of the offset volume is meshed, never interior armour skins.
@@ -636,49 +718,43 @@ func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
 		if outside[i] == 0 and field[i] > 0.0: field[i] = -threshold
 	# Marching tetrahedra share every edge vertex, including cell diagonals. This
 	# removes the ambiguous saddle faces that can leave seams at thin hull details.
-	var corners := [Vector3i(0,0,0), Vector3i(1,0,0), Vector3i(0,1,0), Vector3i(1,1,0), Vector3i(0,0,1), Vector3i(1,0,1), Vector3i(0,1,1), Vector3i(1,1,1)]
-	var tetrahedra := [[0,1,3,7],[0,3,2,7],[0,2,6,7],[0,6,4,7],[0,4,5,7],[0,5,1,7]]
+	var plane := stride.z
+	var row := stride.y
+	var corners := PackedInt32Array([0, 1, row, row + 1, plane, plane + 1, plane + row, plane + row + 1])
+	var cases := _shield_cases(corners)
 	var vertices := PackedVector3Array()
 	var indices := PackedInt32Array()
 	var shared := {}
+	var quad := PackedInt32Array([0, 0, 0, 0])
 	for z in range(size.z - 1):
 		for y in range(size.y - 1):
+			var start := y * row + z * plane
 			for x in range(size.x - 1):
-				var base := x + y * stride.y + z * stride.z
-				var nodes := PackedInt32Array()
+				var base := start + x
 				var mask := 0
 				for k in 8:
-					var c: Vector3i = corners[k]
-					var node := base + c.x + c.y * stride.y + c.z * stride.z
-					nodes.append(node)
-					if field[node] <= 0.0: mask |= 1 << k
-				if mask == 0 or mask == 255: continue
-				for tet in tetrahedra:
-					var inside := []
-					var air := []
-					var outward := Vector3.ZERO
-					for k in tet:
-						if field[nodes[k]] <= 0.0: inside.append(k)
-						else: air.append(k)
-					if inside.is_empty() or air.is_empty(): continue
-					for k in air: outward += Vector3(corners[k]) / air.size()
-					for k in inside: outward -= Vector3(corners[k]) / inside.size()
-					var quad := PackedInt32Array()
-					if inside.size() == 2:
-						for pair in [[inside[0],air[0]],[inside[0],air[1]],[inside[1],air[1]],[inside[1],air[0]]]:
-							quad.append(_shield_vertex(nodes[pair[0]], nodes[pair[1]], field, size, stride, origin, step, shared, vertices))
-					else:
-						var one: int = inside[0] if inside.size() == 1 else air[0]
-						for other in (air if inside.size() == 1 else inside):
-							quad.append(_shield_vertex(nodes[one], nodes[other], field, size, stride, origin, step, shared, vertices))
-					_shield_face(quad[0], quad[1], quad[2], outward, vertices, indices)
-					if quad.size() == 4: _shield_face(quad[0], quad[2], quad[3], outward, vertices, indices)
+					if field[base + corners[k]] <= 0.0:
+						mask |= 1 << k
+				for polygon in cases[mask]:
+					var edges: Array[Vector2i] = polygon[0]
+					for i in edges.size():
+						var edge := edges[i]
+						quad[i] = _shield_vertex(base + edge.x, base + edge.y, field, size, stride, origin, step, shared, vertices)
+					_shield_face(quad[0], quad[1], quad[2], polygon[1], vertices, indices)
+					if edges.size() == 4:
+						_shield_face(quad[0], quad[2], quad[3], polygon[1], vertices, indices)
 	if indices.is_empty():
 		return []
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_INDEX] = indices
+	return arrays
+
+
+static func finish_shield_geometry(arrays: Array) -> Array:
+	if arrays.is_empty():
+		return []
 	var raw := ArrayMesh.new()
 	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	var st := SurfaceTool.new()
@@ -687,7 +763,44 @@ func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
 	return st.commit().surface_get_arrays(0)
 
 
-func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
+static func _shield_cases(offsets: PackedInt32Array) -> Array[Array]:
+	# Every cell uses the same six tetrahedra. Keep their edge order and winding
+	# while doing the inside/outside classification only once per corner mask.
+	var corners := [Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0),
+		Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(0, 1, 1), Vector3(1, 1, 1)]
+	var tetrahedra := [[0, 1, 3, 7], [0, 3, 2, 7], [0, 2, 6, 7], [0, 6, 4, 7], [0, 4, 5, 7], [0, 5, 1, 7]]
+	var cases: Array[Array] = []
+	for mask in 256:
+		var polygons := []
+		for tet in tetrahedra:
+			var inside: Array[int] = []
+			var air: Array[int] = []
+			for k in tet:
+				if mask & (1 << k):
+					inside.append(k)
+				else:
+					air.append(k)
+			if inside.is_empty() or air.is_empty():
+				continue
+			var outward := Vector3.ZERO
+			for k in air:
+				outward += corners[k] / air.size()
+			for k in inside:
+				outward -= corners[k] / inside.size()
+			var edges: Array[Vector2i] = []
+			if inside.size() == 2:
+				edges = [Vector2i(offsets[inside[0]], offsets[air[0]]), Vector2i(offsets[inside[0]], offsets[air[1]]),
+					Vector2i(offsets[inside[1]], offsets[air[1]]), Vector2i(offsets[inside[1]], offsets[air[0]])]
+			else:
+				var one := inside[0] if inside.size() == 1 else air[0]
+				for other in (air if inside.size() == 1 else inside):
+					edges.append(Vector2i(offsets[one], offsets[other]))
+			polygons.append([edges, outward])
+		cases.append(polygons)
+	return cases
+
+
+static func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
 	var key := mini(a,b) * field.size() + maxi(a,b)
 	if shared.has(key): return shared[key]
 	var pa := Vector3(a % size.x, (a / size.x) % size.y, a / stride.z)
@@ -699,21 +812,25 @@ func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, s
 	return index
 
 
-func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
+static func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
 	# Godot front faces wind clockwise.
+	indices.append(a)
 	if (vertices[c] - vertices[a]).cross(vertices[b] - vertices[a]).dot(outward) < 0.0:
-		indices.append_array(PackedInt32Array([a,c,b]))
+		indices.append(c)
+		indices.append(b)
 	else:
-		indices.append_array(PackedInt32Array([a,b,c]))
+		indices.append(b)
+		indices.append(c)
 
 
-func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
+static func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
 	var lo := Vector3i(p - Vector3.ONE * reach).max(Vector3i.ZERO)
 	var hi := (Vector3i(p + Vector3.ONE * reach) + Vector3i.ONE).min(size - Vector3i.ONE)
 	for z in range(lo.z, hi.z + 1):
 		for y in range(lo.y, hi.y + 1):
+			var start := y * stride.y + z * stride.z
 			for x in range(lo.x, hi.x + 1):
-				var i := x + y * stride.y + z * stride.z
+				var i := start + x
 				field[i] = minf(field[i], Vector3(x,y,z).distance_squared_to(p))
 
 
@@ -774,22 +891,74 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
 	if _shield_mat == null:
 		return
+	# issue 1239 (F2.5): the shader has six ripple slots. Take a slot whose ripple has finished first, else the one that
+	# started earliest, so focused fire (a lance books three) never wipes a ripple that is still to play
+	var slot := -1
+	var oldest := INF
+	for i in 6:
+		var w: Vector4 = _hitw[i]
+		var h: Vector4 = _hits[i]
+		if w.y <= 0.0 or h.w + w.y < fx.now:
+			slot = i
+			break
+		if h.w < oldest:
+			oldest = h.w
+			slot = i
+	_hit_i = slot
 	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
 	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
-	_hit_i = (_hit_i + 1) % 6
 	_shield_mat.set_shader_parameter("hits", _hits)
 	_shield_mat.set_shader_parameter("hitw", _hitw)
 	_shield_until = maxf(_shield_until, T + life + 0.05)
 
 
-func shield_break(fx, quad: int) -> void:
+# Issue 1078, R340 (Ryan picked it Nov 19 2026): the shield failure is the clean collapse, for every shielded ship of
+# every faction and both shield shapes: one even flash, then one band closes from the far side into the breach, a knot
+# and a flat ring of sparks. Dev comparison only: rendering/effects/shield_failure (or VS_SHIELD_FAILURE) = "today"
+# (the old per-faction break) or "shear" (one connected crack network); rendering/effects/shield_failure_quality="low"
+# (or VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network. Anything else plays the collapse.
+const FAIL_LOOKS := ["today", "shear", "collapse"]
+
+
+static func fail_look_setting() -> int:
+	var v := OS.get_environment("VS_SHIELD_FAILURE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure", "collapse"))
+	var i := FAIL_LOOKS.find(v)
+	return i if i >= 0 else 2
+
+
+static func fail_low_setting() -> bool:
+	var v := OS.get_environment("VS_SHIELD_FAILURE_Q")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure_quality", "high"))
+	return v == "low"
+
+
+# Issue 1239 (F2.1): where the shield gave way. hit_lp is the breaking hit's point on the shield in the shield's own
+# frame (relative to hull.shield_centre(), as shield_point gives it); the failure aims there. Without one (a break no
+# shot carries: an ion storm, a special, the benches) it aims at the middle of the struck quadrant, as before.
+func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		return hit_lp.normalized()
+	return hull.quad_dir(quad)
+
+
+func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
-	var qd: Vector3 = hull.quad_dir(quad)
+	if _fail_look == 1:
+		_break_shear(fx, quad, hit_lp)
+		return
+	if _fail_look == 2:
+		_break_collapse(fx, quad, hit_lp)
+		return
+	var qd: Vector3 = _break_aim(quad, hit_lp)
 	var T: float = fx.now
 	_shield_mat.set_shader_parameter("brk_t", T)
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
 	var rad = hull.shield_radii()
 	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
 	var lp: Vector3 = contact["local"]
@@ -832,6 +1001,117 @@ func shield_break(fx, quad: int) -> void:
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
 
 
+# Issue 1078, shear: one crack network runs from the struck side over the whole field (the shader draws it, timed by
+# how far each point is from the struck facing); sparks race along the surface with the front, so the failure reads as
+# one connected tear, not scattered pops. Each faction keeps its colour and character (R163): the Navy throws lattice
+# cells loose as the crack passes, the Hullbreakers' cracks stutter, the Glasswrights' glint.
+const SHEAR_FRONT := 0.55   # seconds for the crack front to cross from the struck facing to the far side (shader too)
+
+
+func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
+	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_until = maxf(_shield_until, T + 1.45)
+	_brk_until = maxf(_brk_until, T + SHEAR_FRONT + 0.4)
+	var rad = hull.shield_radii()
+	var reach: float = rad.length() * 2.0
+	var contact := shield_point(to_world(hull.shield_centre() + qd * reach))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6)
+	var sc: Color = fac["shield"]
+	var st: int = fac["shield_style"]
+	var k = scale_k()
+	var hot := sc.lerp(Color.WHITE, 0.55)
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 8.0 * k, 8.0, 0.18)
+	fx.light(wp + wn * 2.0, T, 0.7, 6.0, sc, 0)
+	fx.shake(T, 0.16, wp)
+	# the front: points spread from the contact to the far side, each lit when the front reaches it
+	var n := 16 if st != 1 else 12
+	for i in n:
+		var spread := lerpf(0.25, 2.6, float(i) / float(n - 1))
+		var d: Vector3 = (qd + fx.rdir() * spread).normalized()
+		var ti: float = T + (1.0 - d.dot(qd)) * 0.5 * SHEAR_FRONT
+		var pi := shield_point(to_world(hull.shield_centre() + d * reach))
+		var pw: Vector3 = pi["p"]
+		var nw: Vector3 = pi["n"]
+		var run: Vector3 = (pw - wp).slide(nw)
+		run = run.normalized() if run.length() > 1e-3 else fx.rcone(nw, 1.5).slide(nw).normalized()
+		var stut := 1.0 if st != 2 else (0.5 + 0.5 * float(i % 2))
+		for j in 3:
+			fx.stk(pw, ti + j * 0.03, 0.22 + fx.rng.randf() * 0.12, hot, 6.0 * stut, 0.1, 0.12, 1,
+				(run + fx.rdir() * 0.25) * (14 + fx.rng.randf() * 10) * k, 2.2)
+		if st == 1:
+			# Navy: a cell of the lattice comes loose where the crack passes
+			fx.spr(pw, ti, 0.6 + fx.rng.randf() * 0.4, sc, 2.6, 0.45 * k, 0.25 * k, 16, (nw + run * 0.5) * (4 + fx.rng.randf() * 4) * k, 0.8)
+		elif st == 3:
+			# Glasswrights: a prismatic glint rides the crack
+			fx.spr(pw, ti, 0.9 + fx.rng.randf() * 0.5, sc, 2.0, 0.6 * k, 0.2 * k, 16, nw * (1.5 + fx.rng.randf() * 2) * k, 0.4, 1.5)
+
+
+# Issue 1078, collapse: the cleaner failure. The field flashes once, evenly, then one bright band closes over it from the
+# far side into the breach and the field pinches out there in a small knot and a flat ring of sparks. No crackle, no
+# scattered pops; the faction still shows in colour and in the band's pattern.
+# R358 (Ryan, Nov 20 2026, issue 1239 pace sheet): 75% slower than R340's first 0.70 s, so the band stays easy to see
+const COLLAPSE_CLOSE := 1.225   # seconds until the band reaches the breach (shader: brk_close)
+const COLLAPSE_TAIL := 0.25   # issue 1239: the knot's fade after the close (shader: exp(-kt * 5.0))
+
+
+# Issue 1239 (Ryan, Nov 20: "close the shield collapse by like 50, 75 or 100% so it's slightly more visible"; he picked
+# 75% slower, R358): the close time, for dev comparisons only. rendering/effects/shield_collapse_close (or
+# VS_SHIELD_CLOSE), in seconds; the game look is COLLAPSE_CLOSE.
+static func collapse_close_setting() -> float:
+	var v := OS.get_environment("VS_SHIELD_CLOSE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_collapse_close", COLLAPSE_CLOSE))
+	var c := float(v)
+	return clampf(c, 0.3, 2.0) if c > 0.0 else COLLAPSE_CLOSE
+
+
+func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
+	var T: float = fx.now
+	var close := collapse_close_setting()
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_mat.set_shader_parameter("brk_close", close)
+	_shield_mat.set_shader_parameter("brk_win", maxf(1.6, close + 0.9))
+	_shield_until = maxf(_shield_until, T + maxf(1.45, close + 0.75))
+	_brk_until = maxf(_brk_until, T + close + COLLAPSE_TAIL)
+	var rad = hull.shield_radii()
+	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		# the knot and its sparks sit where the shot struck, not where the radial ray met the skin (a fitted skin is not
+		# convex, so the two can differ)
+		lp = hit_lp
+		wp = xf() * (hit_lp + hull.shield_centre())
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
+	var sc: Color = fac["shield"]
+	var k = scale_k()
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.3), 6.0 * k, 6.0, 0.15)
+	fx.light(wp + wn * 2.0, T, 0.4, 4.0, sc, 0)
+	fx.shake(T, 0.12, wp)
+	# the knot where the field closes, and its ring of sparks flat along the hull
+	var Tk: float = T + close
+	# the Glasswrights' pale field needs a bigger knot to read against their pale hulls (matches the shader's band)
+	var gk: float = 1.5 if int(fac["shield_style"]) == 3 and not fx.reduce_flashing else 1.0
+	_shield_flash(fx, wp, Tk, sc.lerp(Color.WHITE, 0.5), 5.0 * k * gk, 7.0, 0.14)
+	fx.light(wp + wn * 1.5, Tk, 0.35, 5.0 * gk, sc, 0)
+	var t1: Vector3 = wn.cross(Vector3.UP if absf(wn.y) < 0.9 else Vector3.RIGHT).normalized()
+	var t2: Vector3 = wn.cross(t1)
+	for i in 18:
+		var a: float = TAU * (float(i) + fx.rng.randf() * 0.4) / 18.0
+		var v: Vector3 = (t1 * cos(a) + t2 * sin(a) + wn * 0.15) * (10 + fx.rng.randf() * 6) * k
+		fx.stk(wp, Tk, 0.25 + fx.rng.randf() * 0.1, sc.lerp(Color.WHITE, 0.4), 5.0, 0.08, 0.12, 1, v, 2.5)
+
+
 # Match pop's comfort booking and soft fallback, without its free-standing disc.
 func _shield_flash(fx, p: Vector3, T: float, col: Color, size: float, intensity: float, life: float) -> void:
 	if fx.flash_at(p, T, size, SH.flash_sprite_floor(0, 0.0), life):
@@ -869,6 +1149,7 @@ var _kick_p := Vector3.ZERO     # drift kick still to be delivered
 var _brk := Vector3.ZERO        # thrusters' braking rate per axis (rad/s2)
 var _brk_p := 0.0               # ... and for the slide (units/s2)
 var _brk_at := 0.0              # when the thrusters start braking
+var react_clock := 0.0          # seconds of reaction integrated so far (issue 1467: the frame-rate check reads it)
 
 
 # A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
@@ -918,7 +1199,17 @@ func _react_step(fx, dt: float) -> void:
 	if not _reacting:
 		return
 	var wi := clampi(weight, 0, 4)
-	var h := minf(dt, 1.0 / 30.0)
+	# Issue 1467: integrate the whole frame in steps of at most 1/30 s, each on its own clock, so a slow frame keeps
+	# the same recoil timeline as a fast one (one step at 30 fps and above; a 15 fps frame takes two).
+	var steps := clampi(ceili(dt * 30.0 - 1e-6), 1, 8)
+	var h := minf(dt, 8.0 / 30.0) / float(steps)
+	for si in steps:
+		_react_integrate(fx.now - h * float(steps - 1 - si), h, wi)
+	_react_apply(fx, wi)
+
+
+func _react_integrate(t: float, h: float, wi: int) -> void:
+	react_clock += h
 	# 1. onset: deliver the kick over REACT_ONSET (about 95% of it inside that time)
 	var f := 1.0 - exp(-h * 3.0 / float(REACT_ONSET[wi]))
 	_rv += _kick_v * f
@@ -926,7 +1217,7 @@ func _react_step(fx, dt: float) -> void:
 	_pv += _kick_p * f
 	_kick_p *= 1.0 - f
 	var wr: float = REACT_RECOVER[wi]
-	if fx.now >= _brk_at:
+	if t >= _brk_at:
 		# 2. arrest: a steady thruster burn against the spin and the slide, per axis
 		var ax := [0, 1, 2]
 		for k in ax:
@@ -950,6 +1241,9 @@ func _react_step(fx, dt: float) -> void:
 			_pv += (-_pd * wp * wp - _pv * 2.0 * wp) * h
 	_ra += _rv * h
 	_pd += _pv * h
+
+
+func _react_apply(fx, wi: int) -> void:
 	var age: float = fx.now - _shud_t
 	var sh := _shud * exp(-age / float(REACT_SHUDDER_T[wi]))
 	var w_sh: float = TAU * float(REACT_SHUDDER_HZ[wi])
@@ -1335,6 +1629,8 @@ static func _heavy_mark(e) -> bool:
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true
 		return
@@ -1490,8 +1786,8 @@ func _repair_marks(fx, i: int) -> void:
 		_dmg_request(fx)
 
 
-# A hull resource is read back once per battle. Both the damage rebuild and the
-# death cut use these arrays until the ship has a rebuilt surface of its own.
+# Read a hull surface once per battle. Fragments keep sampling these original
+# UVs even when the damage rebuild and death cut need the changed surface.
 var _arr_cache := {}
 
 

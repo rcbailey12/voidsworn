@@ -1,0 +1,20 @@
+{
+ "ship": "ithar_GW4",
+ "name": "The Heliograph Prism, the Glasswright bomber wing craft (The Glasswrights)",
+ "faction": "ithar",
+ "game_ship": "bomber",
+ "game_code": "ithar_GW4",
+ "sheet": "ithar_GW4",
+ "concept": "docs/ship_pipeline/build_sheets/ithar_GW4/concept.jpg",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "GW4",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5,
+ "lights": {},
+ "light_min_px": 2,
+ "notes": "Issue 1373 (R362, R370: Ryan's Nov 16 W4b pick, re-picked Nov 20 2026): the Glasswright bomber wing craft, built from the build sheet tools/blender/build_sheets/ships/ithar_GW4.py on the shared Glasswright kit (tools/blender/kits/ithar, via ithar_GF1.py's machinery): two plump lobes fused side by side with a seafoam seam, two star torpedoes nested in the belly seam; opaque pearl ribbons and the glowing mosaic core; nothing see-through; no wear. LENGTH 1.6 (CLS_LEN Squadron). The game loads it through godot/render/squadron_wing.gd by its manifest wing_role (bomber).",
+ "parts": []
+}

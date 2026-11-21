@@ -3,8 +3,8 @@ rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode
 rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet, opus or openai> [dryrun]
 rem WORK_MODEL overrides an OpenCode model within its provider. kimicode uses Kimi CLI and WORK_KIMI_MODEL.
 rem PC_WAIT_FOR names the predecessor's status.json; only a checked non-partial push with passing checks releases it.
-rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
-rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
+rem Each arm shares work217\slot_<arm>\repo, with one run owning the slot at a time.
+rem Each run keeps its own work217\issue-<n>-<arm>\<date_time>\out\ (events, report, stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
 rem After the agent finishes, its shots are copied into docs\shots\issue-<n>-<arm>\ so the evidence rides the PR, the change is
 rem committed and pushed, and GitHub opens the PR (auto_pr) and runs the checks. If the push fails: out\change.patch.
@@ -28,9 +28,7 @@ rem      commit stays reachable. Commit text ends with "Run-Number: k".
 rem  (541) Before the push the commit must carry exactly the staged change (out\diffstat.txt); after the push GitHub's branch
 rem      must be that commit with that diff (out\pushed_diffstat.txt). Any difference stops the run loudly: DIFF MISMATCH
 rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
-rem  (disk) Every run ends with its folder size in result.txt. Only when work217\runner_settings.txt says
-rem      remove_repo_copy_after_push=yes (off by default; Ryan turns it on once with WORKHORSE_CLEANUP.bat) does a run whose
-rem      checked_push and no local-only work removes its own repo\ copy; out\ is always kept.
+rem  (disk) Report run folder and shared checkout sizes separately in result.txt. Keep the slot after a push for reuse.
 rem Runner 3 (issue 722, Nov 15 2026; Muse audit 706 findings 6 and 7):
 rem  (model) Every run stamps the resolved model id into out\status.json and result.txt, and result.txt warns when it
 rem      differs from the arm's default, whatever the provider: a same-provider WORK_MODEL override (invisible to the
@@ -45,7 +43,7 @@ rem      warning in result.txt, never a stop.
 rem Dry-run test knobs (ignored unless the third argument is dryrun): WORK_DRY_SCENARIO picks the stand-in model's script;
 rem WORK_TEST_BRANCH pushes for real to that branch (it must not start with codex/, muse/, work/ or opus/, so no PR opens);
 rem WORK_SKIP_CHECKS=1 skips the runner checks; WORK_DRY_SPARSE lists the only folders a lean test clone checks out;
-rem WORK_TEST_FAULT=skipcommit leaves the change uncommitted, as the issue 541 run did. WORK_ROOT moves the run folders.
+rem WORK_TEST_FAULT=skipcommit leaves the change uncommitted, as the issue 541 run did. WORK_ROOT moves the run folders and slots.
 setlocal
 set "PYTHONDONTWRITEBYTECODE=1"
 set "N=%~1"
@@ -96,6 +94,12 @@ rem timeout is written into the commit text instead of eating the run.
 if not defined CHECK_CAP set "CHECK_CAP=1800"
 if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
+set "SLOT_ROOT=%WORK_ROOT%"
+if not defined SLOT_ROOT set "SLOT_ROOT=%VT%\work217"
+rem A manual dry run with the default root must not switch a live slot.
+if not defined WORK_ROOT if /i "%MODE%"=="dryrun" set "SLOT_ROOT=%SLOT_ROOT%\dryrun_slots"
+set "SLOT=%SLOT_ROOT%\slot_%ARM%"
+set "R=%SLOT%\repo"
 if not defined WORK_ROOT set "WORK_ROOT=%VT%\work217"
 set "T=%~dp0"
 rem %TC% is %T% without its trailing backslash, for passing the tools folder as a bare quoted argument (issue 722:
@@ -105,6 +109,12 @@ set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%runner_common.ps1""
 set "PC_RUNNER_TEST=0"
 if /i "%MODE%"=="dryrun" if defined WORK_TEST_AGENT set "PC_RUNNER_TEST=1"
+rem Issue 1186: work_issue.ps1 run holds the arm's slot lock and the issue lock, and the whole process tree of this
+rem batch inherits both, so they stay held through checkout, the agent and final reporting.
+if "%~4"=="locked" if "%PC_RUNNER_LOCKED_ISSUE%"=="%N%" if /i "%WORK_LOCKED_REPO%"=="%R%" goto :locked
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1" run "%N%" "%ARM%" "%MODE%" "%R%"
+exit /b %ERRORLEVEL%
+:locked
 rem Kimi Code runs on its own CLI and saved plan login, never an API key.
 if /i "%ARM%"=="kimicode" set "WORK_HARNESS=kimi"
 rem (722) What will actually run: the Kimi Code CLI model for the kimicode arm whenever the real CLI or its test
@@ -138,11 +148,14 @@ set "GIT_AUTHOR_NAME=Ryan Bailey"
 set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
 set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
-for /f %%s in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "STAMP=%%s"
 set "K=issue-%N%-%ARM%"
 if /i "%MODE%"=="dryrun" set "K=dryrun-%N%-%ARM%"
+:runfolder
+set "STAMP="
+for /f %%s in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "STAMP=%%s"
+if not defined STAMP (echo could not name the run folder & exit /b 14)
 set "A=%WORK_ROOT%\%K%\%STAMP%"
-set "R=%A%\repo"
+if exist "%A%" goto :runfolder
 set "O=%A%\out"
 set "RC=0"
 set "CHECKS_OK=0"
@@ -164,10 +177,18 @@ if not exist "%SETF%" call :settings
 %COMMON% init "%O%" "%BR%"
 if errorlevel 1 exit /b 14
 rem (722) Nothing runs below the free-space floor: no mirror fetch, no model probe, no agent.
-%COMMON% space "%O%" "%SETF%" "%VT%"
+%COMMON% space "%O%" "%SETF%" "%VT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
 rem (722) The Board's hashes guard the running copies; a mismatch warns and the run goes on (%TC% is set above).
 %COMMON% hashcheck "%O%" "%TC%" "%HASHF%"
+rem (1194) Every tmo.bat step runs the canonical watchdog in tools_live: stop when its files differ from its hashes.
+set "TLV="
+if not "%PC_RUNNER_TEST%"=="1" if exist "%VT%\tools_live\current.txt" set /p TLV=<"%VT%\tools_live\current.txt"
+if not "%PC_RUNNER_TEST%"=="1" if exist "%VT%\tools_live\" if not defined TLV (echo tools_live is installed but current.txt is blank; stopped >> "%O%\result.txt" & exit /b 14)
+if defined TLV (
+  %COMMON% hashcheck "%O%" "%VT%\tools_live\%TLV%\pc" "%VT%\tools_live\%TLV%\hashes.txt" strict
+  if errorlevel 1 exit /b 14
+)
 rem (722) Stamp the resolved model before the wait so every later state of the run names it.
 %COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
 if /i "%ARM%"=="openai" (
@@ -192,8 +213,8 @@ if "%PC_RUNNER_TEST%"=="1" goto :toolsready
 if /i "%ARM%"=="kimicode" goto :toolsready
 if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & goto :setupfail)
 :toolsready
-rem parity.bat in a repo checkout reads godot_path.txt one folder above the repo
-copy /y "%VT%\godot_path.txt" "%A%\godot_path.txt" >nul
+rem Keep Godot discovery working when WORK_ROOT is outside the PC bundle.
+copy /y "%VT%\godot_path.txt" "%SLOT%\godot_path.txt" >nul
 set /p G=<"%VT%\godot_path.txt"
 
 rem OpenCode takes its shell from SHELL (on Windows it otherwise falls back to PowerShell 5.1, where the usual shell commands fail)
@@ -251,7 +272,10 @@ powershell -NoProfile -Command "$f='%O%\mock_log.txt'; for($i=0;$i -lt 300;$i++)
 set "SPARSE="
 if /i "%MODE%"=="dryrun" set "SPARSE=%WORK_DRY_SPARSE%"
 %COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
-if errorlevel 1 exit /b 14
+if errorlevel 1 (
+  %PS% disk "%A%" "%R%" >> "%O%\result.txt" 2>&1
+  exit /b 14
+)
 pushd "%R%"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
@@ -286,7 +310,7 @@ if not defined KIMIEXE (echo preflight failed: Kimi Code CLI not found >> "%O%\r
 %COMMON% preflight "%O%" "%R%" kimi "%KIMIEXE%" "%KMODEL%" ""
 if errorlevel 1 goto :probefail
 :ready
-rem Only capture jobs copy the ship files: the launcher sets WORK_SHIPS=1. They are large and every run keeps its checkout (Board, Nov 10).
+rem Only capture jobs copy the ship files: the launcher sets WORK_SHIPS=1 (Board, Nov 10).
 if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%\WORK_TASK.md" >> "%O%\ship_files.txt" 2>&1
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
@@ -426,11 +450,10 @@ goto :finish
 for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v %1 2^>nul ^| findstr /c:"REG_"') do set "%1=%%b"
 exit /b 0
 :settings
-> "%SETF%" echo # Workhorse runner settings (issue 377, issue 722). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
->> "%SETF%" echo # remove_repo_copy_after_push=yes: after checked_push, remove a run's repo copy if it holds no local-only work.
->> "%SETF%" echo remove_repo_copy_after_push=no
+> "%SETF%" echo # Workhorse runner settings (issue 722). The runner only reads this file after creating it.
 >> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
 >> "%SETF%" echo min_free_gb=60
+>> "%SETF%" echo janitor_free_gb=150
 >> "%SETF%" echo # OpenAI monthly estimate budget in USD. November 2026 starts with 94 left.
 >> "%SETF%" echo openai_budget_usd=94
 exit /b 0
@@ -461,6 +484,7 @@ echo could not read the issue from GitHub >> "%O%\result.txt"
 set "RC=6"
 goto :finish
 :probefail
+if exist WORK_TASK.md move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
 set "RC=14"
 goto :finish
 :setupfail
@@ -478,6 +502,5 @@ if errorlevel 1 set "RC=14"
 if defined PC_RUN_TEMP set "TEMP=%PC_RUN_TEMP%"
 if defined PC_RUN_TEMP set "TMP=%PC_RUN_TEMP%"
 if defined PC_RUN_TEMP set "TMPDIR=%PC_RUN_TEMP%"
-rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
-%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" "%DRY%" >> "%O%\result.txt" 2>&1
+%PS% disk "%A%" "%R%" >> "%O%\result.txt" 2>&1
 exit /b %RC%

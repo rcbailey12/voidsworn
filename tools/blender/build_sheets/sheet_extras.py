@@ -306,6 +306,8 @@ def cells():
                 continue   # issue 768: a concept with no true side view (IM5) shows the build's side alone
             v = M['concept_views'][nm]; c = sheet.crop(tuple(v['box']))
             cview[nm] = c.transpose(Image.FLIP_LEFT_RIGHT) if v.get('flip') else c
+            if v.get('rot'):   # issue 1153: a plan drawn bow down (C12) is turned bow left, degrees counter-clockwise
+                cview[nm] = cview[nm].rotate(int(v['rot']), expand=True)
     else:
         a = np.asarray(sheet).astype(int); bgc = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0)
         objs, sizes = ship_box(sheet, bgc)

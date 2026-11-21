@@ -51,6 +51,7 @@ func start(m: Node, o: Dictionary) -> void:
 		errors.append("campaign tables: " + err)
 	C.battle_mode = "external"
 	C.battle_setup = _setup_battle
+	C.battle_restore = _restore_battle   # issue 1451: Continue into the saved round
 	C.battle_requested.connect(_on_battle)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
@@ -94,6 +95,8 @@ func start(m: Node, o: Dictionary) -> void:
 		ui = Fallback.new()
 	if "hide_on_battle" in ui:
 		ui.hide_on_battle = true
+	if "ai_level" in ui:
+		ui.ai_level = ai_level()   # issue 1336: the map's danger bands follow the setting
 	add_child(ui)
 	ui.bind(C)
 	C.changed.connect(_on_changed)
@@ -129,12 +132,23 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
+# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.
+# A missing setting falls back to Standard, the new-player default (R49, issue 1504); a bare host with no main keeps the
+# API default, Veteran.
+func ai_level() -> String:
+	if main != null and "settings" in main:
+		return str(main.settings.get("ai", "standard"))
+	return "veteran"
+
+
 # external battle mode: build the real battle (G1 rules through the API) and give the campaign its B
 func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	api_now = API.new()
 	var e: String = api_now.load_rules()
 	if e != "":
 		errors.append("rules: " + e)
+	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
+	api_now.round_saves = round_saves_on()   # issue 1451: pack the rules state at each round start (round 1 included)
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:
@@ -148,6 +162,35 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	return _bstate(api_now)
 
 
+# Issue 1451: round saves are on for the player's runs; bot runs keep them off (no disk) unless --round-saves asks for them.
+func round_saves_on() -> bool:
+	return not bot or (main != null and main.args.has("round-saves"))
+
+
+# Issue 1451: the battle saved at a round start, rebuilt on a fresh rules API (the campaign's Continue)
+func _restore_battle(sb: Dictionary) -> Dictionary:
+	var a = API.new()
+	var e: String = a.load_rules()
+	if e != "":
+		return {"error": "rules: " + e}
+	var bytes := Marshalls.base64_to_raw(str(sb.get("data", "")))
+	var why: String = a.restore_round(bytes, int(sb.get("size", 0)), str(sb.get("fp", "")))
+	if why != "":
+		return {"error": why}
+	a.round_saves = round_saves_on()
+	api_now = a
+	cfg_now = a.R.B.get("cfg", {})
+	return {"B": a.R.B, "run": a.R.RUN}
+
+
+# Issue 1451: the battle scene's round start has settled (no animation playing, the player to act): write that round's save.
+# True only when it reached the disk (the battle menu offers Save and quit on that alone, Artoo on PR 1486).
+func _save_round() -> bool:
+	if api_now == null or C == null:
+		return false
+	return C.save_battle_round(api_now.take_round_snapshot())
+
+
 func _on_battle() -> void:
 	if in_battle:
 		return
@@ -159,7 +202,18 @@ func _play_battle() -> void:
 	var a = api_now
 	if ui != null:
 		ui.visible = false
-	var r: Dictionary = await main.play_api(a, {"bot": bot, "can_retreat": C.can_retreat()})
+	var po := {"bot": bot, "can_retreat": C.can_retreat()}
+	if a.round_saves:
+		po["on_round"] = _save_round
+	var r: Dictionary = await main.play_api(a, po)
+	if str(r.get("result", "")) == "save_quit":
+		# issue 1451 (and Artoo on the issue): Save and quit is not a result. Nothing is settled; the run stays saved at the round
+		if ui != null:
+			ui.visible = true
+		in_battle = false
+		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
+		C.leave_battle_saved()
+		return
 	battles += 1
 	for x in r.get("errors", []):
 		errors.append("battle %d: %s" % [battles, str(x)])

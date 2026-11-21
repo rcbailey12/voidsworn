@@ -16,9 +16,11 @@ extends Node3D
 
 const WR := preload("res://world/world_rocks.gd")
 const WS := preload("res://world/world_shaders.gd")
-const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const WAKE := preload("res://world/nebula_wake.gd")
+const LS := preload("res://render/line_style.gd")   # issue 1374: the one line style (storm bolt colours)
+const LOOK := preload("res://render/look.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
@@ -36,6 +38,9 @@ var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
 var clock := 0.0
+# Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
+var _wake = null
+var _wake_mats: Array[ShaderMaterial] = []
 
 # Issue 368, R270: route A is the default. today is retained only for historical bench pairs.
 var gas_route := selected_route()
@@ -67,7 +72,18 @@ var _gas_lattice: ImageTexture3D
 var _gas_lattice_origin: Vector3
 const GAS_HEIGHT := 1.75
 const GAS_CLOUD_SCALE := 3.0
-const GAS_CLOUD_MARGIN := 48.0
+# Issue 1263: the cloud footprint (_mask) must reach zero smoothly inside its texture, or the cloud ends in a straight
+# line. The round field (channel r, a Gaussian per hex) eases to zero between GAS_FIELD_FADE and GAS_FIELD_REACH; the
+# edge feather (channel g) is zero past GAS_FEATHER_END hex radii (scaled), which is GAS_FEATHER_REACH units at a hex
+# corner direction. GAS_SHADER samples r up to GAS_WARP units off on each axis (its `wv`), so the field reach must cover
+# the feather reach plus that warp on a diagonal, and the texture margin adds one texel for linear filtering.
+const GAS_FIELD_SIG2 := 84.0 * GAS_CLOUD_SCALE * GAS_CLOUD_SCALE
+const GAS_FIELD_FADE := 14.0 * GAS_CLOUD_SCALE   # the old hard reach: inside it the field is unchanged
+const GAS_FIELD_REACH := 56.0
+const GAS_FEATHER_END := 1.6
+const GAS_FEATHER_REACH := GAS_FEATHER_END * 8.660254 * GAS_CLOUD_SCALE / 0.8660254   # 48 units
+const GAS_WARP := 4.5                            # GAS_SHADER: wv = (noise - 0.5) * 9.0
+const GAS_CLOUD_MARGIN := GAS_FIELD_REACH + 2.0
 const FOG_SHADER := """
 shader_type fog;
 uniform sampler3D noise_tex : filter_linear, repeat_enable;
@@ -82,6 +98,7 @@ uniform float gain_a = 1.0;
 uniform float storm = 0.0;
 void fog() {
 	vec3 p = WORLD_POSITION * 0.012 + vec3(0.0006, 0.0002, 0.00035) * gas_time;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float warp = texture(noise_tex, p * 0.55 + 0.31).r;
 	float n = texture(noise_tex, p + vec3(warp * 0.12)).r;
 	n = mix(n, texture(noise_tex, p * 3.1 - vec3(warp * 0.18)).r, 0.18);
@@ -91,14 +108,19 @@ void fog() {
 	float height = smoothstep(-7.0, -2.0, WORLD_POSITION.y) * (1.0 - smoothstep(23.0, 31.5, WORLD_POSITION.y));
 	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
 	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.045 * gain_a;
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
 	EMISSION = mix(c_dark, c_shadow, n) * 0.65;
 	EMISSION += c_glow * smoothstep(0.7, 0.9, n) * (0.2 + storm * 0.25);
 }
 """
 
-# R82: keep the ends violet even under a warm faction sky.
-const NEBULA_FACTION_END_WEIGHT := 0.25
+# Issue 1268 (Ryan, Nov 20 2026, replaces R82's violet): one rose nebula in every region and against every faction, the
+# hydrogen pink of real glowing gas, so it reads apart from the teal ion storm. Linear RGB, from the NEB1268 r1 sheet (E).
+const NEBULA_LIT := Vector3(0.50, 0.12, 0.20)
+const NEBULA_GLOW := Vector3(1.0, 0.72, 0.76)
+const NEBULA_SHADOW := Vector3(0.09, 0.015, 0.04)
+const NEBULA_DARK := Vector3(0.014, 0.002, 0.006)
 # The one scale table's terrain sizes (issue 710, R247; docs/playbooks/scale.md), world units, HEX_S = 10.
 const GAS_PUFF_MIN := 24.0       # a nebula or storm puff's width
 const GAS_PUFF_MAX := 34.0
@@ -109,18 +131,22 @@ const GAS_MASK_MARGIN := 24.0    # the gas footprint reaches this far past its o
 const DEBRIS_ROCK_MIN := 0.3     # a debris field's own rock, at scale 1 a library rock is 2 units long
 const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
-var faction_end_weight := clampf(float(OS.get_environment("VS_NEB_W")), 0.0, NEBULA_FACTION_END_WEIGHT) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
 const GAS_CARD_SUPPORT := """
 const float MIN_GAS_DENSITY = 0.002;
 // Leave room for rounding when an upper bound drops an empty fragment early.
 const float GAS_DENSITY_BOUND = MIN_GAS_DENSITY * 0.95;
+// Issue 1263 run 2: every bottom-band card was cut by the same thin fade at one height, so the cloud was a slab with a
+// flat floor; seen from the battle camera its near-bottom edge drew one straight line across every patch on the row.
+// The bottom band now starts lower and fades in over 5 band units (half density at -4.0 instead of -3.25).
+const float GAS_FLOOR_FADE = 5.0;
 vec2 gas_band(float band) {
-	return band < 0.5 ? vec2(-4.0, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
+	return band < 0.5 ? vec2(-6.5, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
 }
 float gas_layer(float band, float y) {
 	vec2 limits = gas_band(band);
-	return smoothstep(limits.x, limits.x + 1.5, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
+	float lower = band < 0.5 ? GAS_FLOOR_FADE : 1.5;
+	return smoothstep(limits.x, limits.x + lower, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
 }
 vec2 gas_card_offset(inout vec2 vertex, vec4 card, vec4 centre, mat4 inv_view, float height_scale) {
 	float angle = card.y * 6.2831;
@@ -206,6 +232,7 @@ void fragment() {
 	if (flat_rates > 0.5) { rate = 1.0; }
 	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
 	vec3 p = vW * 0.075 + drift;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float w = wfbm3(p * 0.55 + 4.0);
 	float n = wfbm3(p + vec3(w) * 0.9);
 	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
@@ -221,6 +248,7 @@ void fragment() {
 	float d = shape * foot * layer * field * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	if (d <= MIN_GAS_DENSITY) { discard; }
 	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
@@ -247,17 +275,21 @@ shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 instance uniform float flash = 0.0;
 instance uniform float branch_flash = 0.0;
+""" + LS.GLSL + """
 varying vec4 vc;
 void vertex() { vc = COLOR; }
 void fragment() {
-	// Red marks branches, green the hot tube, blue the outer violet skirt.
-	// Keep the halo chromatic before the existing weapon bloom integrates it.
+	// Red marks branches, green the hot tube, blue the outer corona.
+	// Issue 1269 (Ryan's pick 4, Nov 20): the corona is cool cyan-white, not violet,
+	// so storm lightning (danger) never shares the nebula's violet (cover).
+	// Keep the halo blue-led before the existing weapon bloom integrates it.
 	if (vc.g > 0.5 && !FRONT_FACING) { discard; }
 	float pulse = mix(flash, branch_flash, vc.r);
-	vec3 halo = mix(vec3(0.005, 0.8, 2.0), vec3(1.6, 0.005, 3.2), vc.b);
-	vec3 radiance = mix(halo, vec3(2.2, 2.1, 2.4), vc.g);
-	// The violet corona peaks outside the cyan skirt, never on the hot tube.
-	// Stacking both hues at the center turned their bloom pale white.
+	// Issue 1374 (R362): the colours come from the one line style's role table (render/line_style.gd bolt_*)
+	vec3 halo = mix(LS_BOLT_SKIRT, LS_BOLT_CORONA, vc.b);
+	vec3 radiance = mix(halo, LS_BOLT_CORE, vc.g);
+	// The cyan-white corona peaks outside the cyan skirt, never on the hot tube.
+	// Stacking it on the core at the center turned the bloom pale white.
 	float weight = vc.a;
 	if (vc.b > 0.5) { weight = sin(clamp(vc.a / 0.16, 0.0, 1.0) * 3.14159265) * 0.22; }
 	ALBEDO = radiance * weight * pulse;
@@ -393,6 +425,8 @@ func build(world) -> void:
 		_tick_presenter = presenter
 		presenter.connect("storm_drained", _queue_storm_tick)
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
+	if bool(W.get("nebula_wake")):
+		_wake = WAKE.new(W.quality)
 	var pts: Dictionary = W._terr_pts
 	# Background specks originally drew after gas at priority 0. Put them behind it.
 	for child in W.get_children():
@@ -511,13 +545,18 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	var high: bool = expanded and W.quality == "high"
+	# Issue 1262: Max uses the same bounded cards and baked lattice as High (1070's masking saved 2.2 ms on Max in its
+	# run 1); VS_1262_OLD=cards restores Max's unbounded cards for the before and after timing.
+	var high: bool = expanded and (W.quality == "high" or (W.quality == "max" and not LOOK.perf_old("cards")))
 	if high and _gas_lattice == null and ResourceLoader.exists(GAS_LATTICE_PATH):
 		var source = load(GAS_LATTICE_PATH)
 		_gas_lattice = source.texture()
 		_gas_lattice_origin = source.origin
 	var cached_noise := high and _gas_lattice != null
 	sh.code = _gas_card_shader(storm, high, cached_noise)
+	if _wake != null and not storm:
+		sh.code = WAKE.into_cards(sh.code, _wake.points)
+		_wake_mats.append(m)
 	m.shader = sh
 	if cached_noise:
 		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
@@ -537,21 +576,12 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		_storm_patches.append({"mat": m, "points": ps, "pending": [], "flares": []})
 		_set_flashes([])
 	else:
-		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-		var violet := Vector3(0.434, 0.202, 1.0) # legend #b07cff in linear RGB
-		var faction: Vector3 = b[1]
-		# Match value before the hue blend, so warm skies cannot make brown gas.
-		faction /= maxf(faction.length(), 0.001)
-		var end_tint := faction
-		m.set_shader_parameter("c_dark", Vector3(0.006, 0.002, 0.014).lerp(end_tint * Vector3(0.006, 0.002, 0.014).length(), faction_end_weight))
-		m.set_shader_parameter("c_shadow", Vector3(0.055, 0.012, 0.14))
-		var body := violet.lerp(faction * violet.length(), 0.5)
-		# R82 fixes the violet family: a warm sky may shift it, never neutralise it.
-		body.y = minf(body.y, body.z * 0.24)
-		body.x = minf(body.x, body.z * 0.60)
-		m.set_shader_parameter("c_lit", body * 0.65)
-		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), faction_end_weight))
+		m.set_shader_parameter("c_dark", NEBULA_DARK)
+		m.set_shader_parameter("c_shadow", NEBULA_SHADOW)
+		m.set_shader_parameter("c_lit", NEBULA_LIT)
+		m.set_shader_parameter("c_glow", NEBULA_GLOW)
 		m.set_shader_parameter("dens", 0.5)
+		_sheet_colour_override(m)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
 	gas_mats.append([m, g])
@@ -577,11 +607,14 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var volume := FogVolume.new()
 	volume.name = "StormFog368" if storm else "NebulaFog368"
 	volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
-	volume.size = Vector3(hi.x - lo.x + GAS_CLOUD_MARGIN * 2.0, 38.5, hi.z - lo.z + GAS_CLOUD_MARGIN * 2.0)
+	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
 	shader.code = ION.FOG if storm else FOG_SHADER
+	if _wake != null and not storm:
+		shader.code = WAKE.into_fog(shader.code, _wake.points)
+		_wake_mats.append(mat)
 	mat.shader = shader
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
@@ -629,7 +662,7 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 		f[j * 2 + 1] = 2.0
 	for p in ps:
 		var c := Vector2((p as Vector3).x, (p as Vector3).z)
-		var reach := 14.0 * GAS_CLOUD_SCALE if expanded else 14.0
+		var reach := GAS_FIELD_REACH if expanded else 14.0
 		var x0 := int((c.x - reach - lo.x) / STEP)
 		var z0 := int((c.y - reach - lo.y) / STEP)
 		for zi in range(maxi(z0, 0), mini(z0 + int(reach * 2.0 / STEP) + 2, h)):
@@ -637,7 +670,12 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 			for xi in range(maxi(x0, 0), mini(x0 + int(reach * 2.0 / STEP) + 2, w)):
 				var dx := absf(lo.x + xi * STEP - c.x)
 				var j := (zi * w + xi) * 2
-				f[j] += exp(-(dx * dx + dz * dz) / (84.0 * GAS_CLOUD_SCALE * GAS_CLOUD_SCALE if expanded else SIG2))
+				var q := dx * dx + dz * dz
+				if expanded:
+					# Issue 1263: a round window, so the field reaches zero smoothly instead of at a square's side.
+					f[j] += exp(-q / GAS_FIELD_SIG2) * (1.0 - smoothstep(GAS_FIELD_FADE, GAS_FIELD_REACH, sqrt(q)))
+				else:
+					f[j] += exp(-q / SIG2)
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
 				if expanded: d /= GAS_CLOUD_SCALE
 				if d < f[j + 1]:
@@ -662,7 +700,7 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 			var j := (zi * w + xi) * 2 + 1
 			if gas_route != "today":
 				# The marked hex samples a larger cloud. Feather past the union, including its outside.
-				f[j] = 1.0 - smoothstep(0.65, 1.6, f[j])
+				f[j] = 1.0 - smoothstep(0.65, GAS_FEATHER_END, f[j])
 				continue
 			if f[j] >= 1.0:
 				f[j] = 0.0
@@ -792,8 +830,8 @@ func _ribbon(st: SurfaceTool, path: Array, w_core: float, w_glow: float, branch 
 	for i in path.size() - 1:
 		var p0: Vector3 = path[i]
 		var p1: Vector3 = path[i + 1]
-		var taper0 := lerpf(1.0, 0.06, float(i) / float(path.size() - 1)) if branch else (0.25 if i == 0 else 1.0)
-		var taper1 := lerpf(1.0, 0.06, float(i + 1) / float(path.size() - 1)) if branch else (0.25 if i == path.size() - 2 else 1.0)
+		var taper0 := lerpf(1.0, 0.06, float(i) / float(path.size() - 1)) if branch else _main_taper(i, path.size())
+		var taper1 := lerpf(1.0, 0.06, float(i + 1) / float(path.size() - 1)) if branch else _main_taper(i + 1, path.size())
 		for ring in 6:
 			var a := float(ring) * TAU / 6.0
 			var z := float(ring + 1) * TAU / 6.0
@@ -809,8 +847,15 @@ func _ribbon(st: SurfaceTool, path: Array, w_core: float, w_glow: float, branch 
 			_quad(st, p0, p1, frames[i][axis] * w_glow * 1.3 * taper0, frames[i+1][axis] * w_glow * 1.3 * taper1, 0.16, branch, true)
 
 
-func _quad(st: SurfaceTool, p0: Vector3, p1: Vector3, side0: Vector3, side1: Vector3, alpha: float, branch: bool, violet: bool) -> void:
-	var cm := Color(1.0 if branch else 0.0, 0.0, 1.0 if violet else 0.0, alpha)
+# Issue 1269: the main channel narrows over its last two rings at both ends,
+# so a close (c26) bolt ends in a point instead of a flat cut.
+static func _main_taper(ring: int, count: int) -> float:
+	var from_end := mini(ring, count - 1 - ring)
+	return 0.12 if from_end == 0 else (0.55 if from_end == 1 else 1.0)
+
+
+func _quad(st: SurfaceTool, p0: Vector3, p1: Vector3, side0: Vector3, side1: Vector3, alpha: float, branch: bool, corona: bool) -> void:
+	var cm := Color(1.0 if branch else 0.0, 0.0, 1.0 if corona else 0.0, alpha)
 	var ce := Color(cm.r, cm.g, cm.b, 0.0)
 	for sgn in [1.0, -1.0]:
 		var e0: Vector3 = p0 + side0 * sgn
@@ -903,6 +948,10 @@ func _process(dt: float) -> void:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
+	if _wake != null and not _wake_mats.is_empty():
+		var views = W.get_parent().get("views") if W.get_parent() != null else null
+		_wake.update(dt, (views as Dictionary).values() if views is Dictionary else [])
+		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
 	for burst in _storm_bursts:
@@ -924,7 +973,7 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
 
-static var _piece_radii := {}
+static var _piece_radii := {}   # not GPU: piece radii (numbers)
 
 static func _piece_radius(mesh: Mesh) -> float:
 	var id := mesh.get_instance_id()
@@ -1210,6 +1259,12 @@ const WRECK_DIR := "res://world/wreckage/"
 static var _wreck_mesh_cache: Array = []
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wreck_mesh_cache = []
+	_piece_radii.clear()   # keyed by those meshes' instance ids
+
+
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A
 # piece of debris turns at most TUMBLE_K / max(1, scale) rad per second (scale 1 is a 2-unit rock or a radius-1 wreck
 # piece). Provisional: it binds once the board's motion capture (world_shots.gd --motion) has sheeted it against the
@@ -1423,3 +1478,19 @@ func _exit_tree() -> void:
 	if _chunk_task >= 0:
 		WorkerThreadPool.wait_for_task_completion(_chunk_task)
 		_chunk_task = -1
+
+
+# Issue 1268: capture-only colour options for Ryan's sky sheet. Off unless a capture sets the env vars;
+# the game never sets them, so defaults and faction_looks.json stay as they are.
+static func _sheet_colour(name: String) -> Variant:
+	var raw := OS.get_environment(name)
+	if raw == "": return null
+	var parts := raw.split(",")
+	if parts.size() != 3: return null
+	return Vector3(float(parts[0]), float(parts[1]), float(parts[2]))
+
+
+func _sheet_colour_override(m: ShaderMaterial) -> void:
+	for pair in [["VS_NEBULA_LIT", "c_lit"], ["VS_NEBULA_GLOW", "c_glow"], ["VS_NEBULA_SHADOW", "c_shadow"]]:
+		var c = _sheet_colour(pair[0])
+		if c != null: m.set_shader_parameter(pair[1], c)

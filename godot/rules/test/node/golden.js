@@ -71,9 +71,19 @@ async function pBotF(u){
   const {states}=computeReach(u); let best=null,bs=-1e9;
   for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3); if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
+  if(UNDO_FIX) await undoFixF(u,best&&best.path.length?best:null);
   for(let i=0;i<u.weapons.length;i++){ if(B.over||B.side!=='player'||u.activated) break; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
+  if(UNDO_FIX) undoProbeF(u);
   if(!B.over&&B.side==='player'&&!u.activated&&B.alt) await endActivationF(true,u);
 }
+// ---- issue 1450 fixtures (scenarios with undo): move, undo, the same move again; a turn (round 1: a free one), undo; after any
+// shot or fire on the move, undo must be refused. The hook names carry canUndo, so the twins must agree on every answer.
+var UNDO_FIX=false;
+function undoProbeF(u){ hook(canUndo(u)?'undo ready':'undo none',u); undoMove(u); }
+async function undoFixF(u,best){
+  hook(canUndo(u)?'undo ready':'undo none',u);
+  if(best&&undoMove(u)){ if(guardF(u)) await actF(()=>moveUnit(u,best)); hook(canUndo(u)?'undo ready':'undo none',u); }
+  if(!u.activated&&!u.dead&&!B.over&&B.side==='player'&&canRotate(u)&&canUseF(u)){ if(B.round===1) u.treeFreeTurn=1; if(guardF(u)) await actF(()=>rotateUnit(u,1)); hook(canUndo(u)?'undo ready':'undo none',u); undoMove(u); } }
 
 // ---- ui3d.js attack-move (attackMovePlan, firingSet, tap an enemy out of reach): burn to the best hex for the shot, fire on the way.
 // B.reach is the selected ship's computeReach and B.armed is null (every gun) here.
@@ -117,7 +127,7 @@ async function pBotFull(u){
   if(gone()) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
-  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
   if(gone()) return;
   if(late&&B.cfg.cmdRound===B.round&&canCommand('player')&&!B.busy&&(u.hexMoved||0)>0) await actF(()=>useCommand('player'));
@@ -151,7 +161,7 @@ function snap(turn,actor){ const t0=process.hrtime.bigint(); const units=B.units
 
 // ---- scenarios (scenarios.json, read by both sides); a record after every action, activation and round ----
 async function runScenario(S){
-  UID=1; rndSeed(S.seed); AI_LEVEL=S.ai||'veteran';
+  UID=1; rndSeed(S.seed); AI_LEVEL=S.ai||'veteran'; UNDO_ON=UNDO_FIX=!!S.undo; UNDO=null;
   RUN={admiral:S.admiral,fac:S.fac_player||'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:(S.relics||[]).slice(),inventory:[],fleet:[],boons:(S.boons||[]).map(b=>Object.assign({},b)),patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   if(S.aspect) RUN.aspect=S.aspect; if(S.heat) RUN.heat=S.heat.slice(); if(S.class_track) RUN.classTrack=Object.assign({},S.class_track);
   if(S.lineage) RUN.lineage=JSON.parse(JSON.stringify(S.lineage)); // issue #305: the run snapshot of the flown admiral's tree
@@ -170,7 +180,7 @@ async function runScenario(S){
   B.alt=S.alt!==false; for(const x of B.units) x.activated=false; if(B.alt){ const d=startSideTurn('enemy'); if(d) await d; } // ui3d.js prepBattle
   B.busy=true; await swarmPhase('player'); B.busy=false;
   let g=0;
-  const bot0=S.bot==='full'?pBotFull:pBotF, bot=S.attack_move?async u=>{ await attackFirstF(u); if(!B.over&&!u.dead&&!u.activated&&B.side==='player') await bot0(u); }:bot0;
+  const bot0=S.bot==='full'?pBotFull:pBotF, bot=S.attack_move?async u=>{ await attackFirstF(u); if(UNDO_FIX&&u.hexMoved) undoProbeF(u); if(!B.over&&!u.dead&&!u.activated&&B.side==='player') await bot0(u); }:bot0;
   if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ threatSnap(); const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
   else while(!B.over&&B.round<=S.rounds&&g++<200){ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await bot(u); } if(!B.over) await endTurnF(); }
   hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }

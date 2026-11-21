@@ -108,18 +108,12 @@ func _run() -> void:
 		k += 1
 		for i in 20:
 			fx.step(1.0 / 60.0)
-	fx.torp_lane("L1", "voidsworn_1", fx.ship("corsair_1").to_world(fx.ship("corsair_1").hull.c), 1)
-	fx.torp_launch("L1")
-	for i in 150:
-		fx.step(1.0 / 60.0)
-	var rs: Dictionary = fx.torp_strike("L1", "corsair_1", {"shield": 0, "hull": 30, "section": "mid", "crit": false})
+	# R364: a torpedo is an ordinary volley now (it flies and lands in the same shot)
+	var rs: Dictionary = fx.volley("voidsworn_1", "torp", "corsair_1", {"weapon_id": "torp", "shots": [true], "hits": [{"shield": 0, "hull": 30, "section": "mid", "crit": false}], "quad": 0, "pd": 0})
 	if rs["impacts"].size() != 1:
 		errors += 1
-	fx.torp_lane("L2", "voidsworn_1", Vector3(0, 0, 0), 1)
-	fx.torp_launch("L2")
-	for i in 30:
+	for i in 150:
 		fx.step(1.0 / 60.0)
-	fx.torp_lane_clear("L2")
 	fx.jump_out("ithar_1")
 	for i in 600:
 		fx.step(1.0 / 60.0)

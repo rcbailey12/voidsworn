@@ -191,6 +191,18 @@ def build(K):
                  note='%s orifice of the cluster: a muscle ring squeezing pulses of bile gas aft (no nozzle)' % ('upper port', 'upper starboard', 'lower port', 'lower starboard')[i])
         K.features[-1]['what'] = 'orifice, mouth %.3f across' % (2 * U(r))
 
+    # ---------------- the armour shell (issue 1373, R362: the craft takes the Chorus hull finish of round G) ----------------
+    # the C13 armadillo shell (issue 1291, Ryan Nov 20: grown chitin bands wrapping the body from belly edge to belly edge, lips
+    # aft) at the craft's own scale: bands broken round the gill bladders and along the bone line, the nose and the orifice
+    # cluster left bare; the grown skin paints it (tools/blender/kits/chorus/stack.py, the kit default since PR 1350)
+    import sys as _sys
+    if _k._KITS not in _sys.path:
+        _sys.path.append(_k._KITS)
+    from chorus import plates
+    plates.armadillo(K, _k, U(0.40), U(-0.40), seed=1373, lo=-1.2, band=U(0.065), lap=1.45, thick=U(0.0079),
+                     keep=('CS_spine', 'CS_fork'), scale=LENGTH / 9.5, res=0.3, fill=False,   # fill off: the spore Ryan saw (PC build 9c0acd29)
+                     note='armadillo bands of grown chitin wrapping the craft from belly edge to belly edge, lips aft; broken round the gill bladders and along the bone line (round G, C13)')
+
     # ---------------- colour zones ----------------
     K.colour('dark olive-brown flesh and callused hide (factions.md; R204: colour fixed in the build, not by the concept\'s plum)', U(0.5), U(-0.5), 'whole body')
     K.colour('ochre bone: the spine line and its fork; chitin growth knuckles', U(0.5), U(-0.4), 'the back')

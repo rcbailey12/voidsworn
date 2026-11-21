@@ -1,5 +1,36 @@
 # chorus_C11 build sheet: the bladeback, the Chorus cruiser (version 4: the recipe)
 
+## Issue 1058, run 7 paint proof
+
+The shoulders, flanks and belly grow 18 separate, closed chitin scutes. Each
+plate tapers into the hide at its leading edge and rises to a thick,
+scalloped trailing lip over the next plate. Unequal lengths and offset edges
+break up the rows. The trailing lips cast contact shadows on the shell and
+wet hide beneath them. The matte faces carry fine pores and growth marks
+near the lip. Run 6's repeated ridges made the shell look like rippled sand
+at radius 26. Recesses leave the sac sockets and aft siphons clear.
+
+The dorsal crests become pale, backswept bone spines of varying heights,
+each seated in wet root tissue. The sharper silhouette is meant to read at
+radius 170. The two throat glands and the wet glow inside the maws use the
+amber Ryan chose. The drive vents and flank sacs keep their bile colours.
+The run 6 liner thickness and aft breach position carry forward for the
+authored tear route.
+
+The [Chorus kit](../../../../tools/blender/kits/chorus/plates.py) takes the
+sheet's `K.hpt` section sampler, coverage, count ranges and seeds. C10 and
+C12 to C14 can call `overlapping_plates` with their own station and angle
+ranges, and `dorsal_spines` where the design calls for bone. Register
+`plates.MATERIALS` in `kit.MATS` as C11 does. Add the results as hull
+detail using `carapace` for the shell, `bone` for the spines and
+`carapace_joint` for the wet sockets. On the plate meshes, keep the returned
+`scute_tone` and `scute_progress` point attributes for the atlas bake. A
+Chorus sheet with `"bake": "stack"` picks up the shared
+[finish](../../../../tools/blender/kits/chorus/stack.py) when rebaked.
+
+[Run 7 review and checks](../../../shots/issue-1058-codex/README.md) ·
+[Recipe](../../../../tools/recipe/ships/chorus_C11.json)
+
 **Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 13 machines, zero split, zero inside triangles beyond their piece. Budget: 208646 triangles, 11 surfaces, 20850 inside triangles. Costs reported; the scene gate was not measured.
 
 **Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The existing weapon layout already passes R241, so its geometry is unchanged. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
@@ -18,7 +49,7 @@ the [bow](../../../shots/issue_623_chorus/c11_bow_compare.jpg) and the [stern](.
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
 
-## The recipe (issue 623): unpainted, bake none, the route E11 and E12 took
+## Original recipe proof (issue 623, unpainted)
 
 The ship json is [tools/recipe/ships/chorus_C11.json](../../../../tools/recipe/ships/chorus_C11.json): game_code **B21_11**, the
 `chorus|Cruiser` folder of godot/render/hull_table.gd AI_HULLS. Proved in the Opus sandbox on the sheet hull build (stage 4) and

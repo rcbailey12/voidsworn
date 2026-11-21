@@ -29,6 +29,9 @@
 #   bell_radius     (each open engine bell, issues 592, 967) that engine's             must FAIL (not the centre of an open bell)
 #                   extras.radius doubled
 #   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
+# A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
+# has no engines, braking or boarding points and no breach anchors). The 'pass' case still proves the check accepts that export,
+# so a point the game requires and the export lacks fails there, not here.
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
 import copy, os, sys, json, struct, shutil, subprocess, re
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -94,7 +97,7 @@ def backward(g):
         n['rotation'] = mat_quat(Rp.T @ Raft)
 def port_point(g):      # the first port weapon point; a ship with no port arc (issue 618: Eclipse fires T and F) mirrors its port boarding origin
     n = next((n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))), None)
-    return n or next(n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P')
+    return n or next((n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P'), None)
 def wrong_side(g):
     n = port_point(g)
     if in_turret(g, n):     # issue 676: a ship whose port guns are all turret muzzles (A16, A17 after R241 cut the casemates);
@@ -181,17 +184,31 @@ def turret_no_mesh(g):
     for n in g['nodes']:
         if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
 _g0, _blob0 = CE.read_glb(os.path.join(src, code + '.glb'))
-CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
-         ('backward', backward, 1, 'aimed backward'), ('no_core', no_core, 1, 'hp_core'),
-         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'))
+def has(pre): return any(str(n.get('name', '')).startswith(pre) for n in _g0['nodes'])
+SKIPPED = []
+def want(names, ok, cases):     # issue 1413: add the cases only when the export carries their points; name the rest as skipped
+    global CASES
+    if ok: CASES += cases
+    else: SKIPPED.extend(names)
+CASES = (('pass', None, 0, ''),)
+GUNS, BREACH = has('hp_w'), has('hp_breach_')
+want(['no_slot', 'off_mesh', 'backward', 'no_socket'], GUNS,
+     (('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
+      ('backward', backward, 1, 'aimed backward'), ('no_socket', no_socket, 1, 'no extras.socket')))
+want(['no_core'], has('hp_core'), (('no_core', no_core, 1, 'hp_core'),))
+want(['no_engine'], has('hp_eng_'), (('no_engine', no_engine, 1, 'hp_eng'),))
 if not wing:
-    WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
-    CASES += (('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
-              ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
-              ('breach_inward', breach_inward, 1, 'is not the outward normal'),
-              ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
-              ('liner_only', liner_only, 1, 'no authored interior rooms'),
-              ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+    PORT = port_point(_g0)
+    WRONG_SIDE = 'a port mount must sit' if PORT is not None and str(PORT.get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
+    want(['wrong_side'], PORT is not None, (('wrong_side', wrong_side, 1, WRONG_SIDE),))
+    want(['no_rcs'], has('hp_rcs_'), (('no_rcs', no_rcs, 1, 'hp_rcs'),))
+    want(['no_board'], has('hp_board_'), (('no_board', no_board, 1, 'hp_board'),))
+    want(['breach_count', 'breach_inward', 'hull_trim_near', 'part_near'], BREACH,
+         (('breach_count', breach_count, 1, 'hp_breach'), ('breach_inward', breach_inward, 1, 'is not the outward normal')))
+    want(['breach_near'], BREACH and GUNS, (('breach_near', breach_near, 1, 'from a part (at least'),))
+    CASES += (('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
+              ('liner_only', liner_only, 1, 'no authored interior rooms'))
+    if BREACH: CASES += (('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
 
 def sided_points(g, kind, side):
     return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
@@ -206,7 +223,7 @@ def same_side(g, kind):
 for kind in ('rcs', 'board'):
     if sided_points(_g0, kind, 'P') and sided_points(_g0, kind, 'S'):
         CASES += ((f'same_side_{kind}', lambda g, kind=kind: same_side(g, kind), 1, f'hp_{kind} on each side'),)
-if not wing and any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
+if not wing and BREACH and any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
     CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
@@ -250,6 +267,7 @@ for name in RECTANGULAR_EXHAUSTS:
     CASES += ((f'exhaust_width_{name}', lambda g, name=name: double_exhaust_size(g, name, 0), 1, error),
               (f'exhaust_height_{name}', lambda g, name=name: double_exhaust_size(g, name, 1), 1, error),
               (f'exhaust_plane_{name}', lambda g, name=name: bell_plane(g, name), 1, error))
+if SKIPPED: print('skip', ', '.join(SKIPPED) + ': the export carries none of their points (the pass case proves the check accepts that)')
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)

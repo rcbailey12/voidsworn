@@ -1701,9 +1701,6 @@ static func apply(fx, s, job: Dictionary) -> void:
 	t_b = fx.pend("ba_swap", t_b)
 	_inside_overlay(fx, s, by_mi.keys(), ents, glow)
 	t_b = fx.pend("ba_overlay", t_b)
-	var b := POOLS.Batch.new()
-	var bs := POOLS.Batch.new()
-	var r := RandomNumberGenerator.new()
 	# Section emitters are allocated once per ship by fx_ship, including burning.
 	var inside = res.get("inside")
 	if inside != null:
@@ -1731,12 +1728,8 @@ static func apply(fx, s, job: Dictionary) -> void:
 		mo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mo)
 		s._hole_nodes.append(mo)
-	var hb := Node3D.new()
-	hb.name = "fx_breach_fx"
-	s._dmg_root.add_child(hb)
-	s._hole_nodes.append(hb)
-	b.build(fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else ""), hb, "fx_breach_sprites")
-	bs.build(fx.mat(SH.STREAK, 1), hb, "fx_breach_sparks")
+	# Issue 1232 (Neon's death audit F8.2): every rebuild also made an empty sprite batch, an empty spark batch, their two
+	# materials and a node to hold them; nothing ever filled them, so they are gone.
 	fx.pend("ba_nodes", t_b)
 
 

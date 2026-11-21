@@ -19,6 +19,13 @@ const UiScale := preload("res://ui/ui_scale.gd")
 # play(name) here.
 static var sound: Node = null
 
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit):
+# the sound node reference and the silhouette textures.
+static func clear_static() -> void:
+	sound = null
+	_sil.clear()
+
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
 const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select"}
 const HOVER_CUE := "ui_select"
@@ -309,6 +316,44 @@ static func card(k: float, width: float, picked := false, bar := Color(0, 0, 0, 
 	foot.add_theme_constant_override("separation", px(6, k))
 	v.add_child(foot)
 	return [p, body, foot]
+
+
+# Cards in rows that fill a column: as many columns as fit at the cards' own minimum width, every card one width, every
+# row one height (a grid row stretches its cells), so names never widen a card and feet line up (issue 1217 phase 5).
+static func card_grid(cards: Array, width: float, k: float, gap := 14.0) -> GridContainer:
+	var g := GridContainer.new()
+	var gp := float(px(gap, k))
+	g.add_theme_constant_override("h_separation", int(gp))
+	g.add_theme_constant_override("v_separation", int(gp))
+	var min_w := 1.0
+	for c in cards:
+		if c is Control: min_w = maxf(min_w, (c as Control).custom_minimum_size.x)
+	var cols := maxi(1, int(floor((width + gp) / (min_w + gp))))
+	cols = mini(cols, maxi(1, cards.size()))
+	g.columns = cols
+	var w := floorf((width - gp * (cols - 1)) / float(cols))
+	for c in cards:
+		if c is Control:
+			(c as Control).custom_minimum_size.x = w
+			(c as Control).size_flags_vertical = Control.SIZE_FILL
+			g.add_child(c)
+	g.set_meta("card_w", w)
+	return g
+
+
+# A tab in a strip of tabs: quiet, and the picked one lifts with an underline in the accent (the desk's crest tabs, the
+# Progression tabs).
+static func tab_button(text: String, k: float, picked: bool, accent: Color, cb := Callable()) -> Button:
+	var b := button(text, k, "tab", cb, 18)
+	if picked:
+		var pb: StyleBoxFlat = (button_boxes(k, "quiet")["normal"] as StyleBoxFlat).duplicate()
+		pb.bg_color = Color(GS.CAREER_PICTURE, 0.97)
+		pb.border_color = accent
+		pb.border_width_bottom = maxi(3, px(3, k))
+		for st in ["normal", "hover", "pressed"]:
+			b.add_theme_stylebox_override(st, pb)
+		b.add_theme_color_override("font_color", GS.TEXT)
+	return b
 
 
 # Gives every card in the list the height of the tallest, so their bottoms (and their foot actions) line up.

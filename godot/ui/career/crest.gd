@@ -6,7 +6,7 @@ extends Control
 # Crests: Voidsworn a cracked halo over a sword; Hegemony a wedge in a ring of five stars; Corsairs a skull with a gear
 # for a jaw; Chorus a ring of nine open mouths; Ithar a sail over a falling star; Deathless an open eye over a sealed vault door, a seal ring between them.
 
-const GLOW := {"voidsworn": "#ff7a2a", "hegemony": "#5fa0ff", "corsair": "#e0402c", "chorus": "#d6d24a", "ithar": "#9fffd2", "deathless": "#3dff6a"}
+const GLOW := {"voidsworn": "#ff7a2a", "hegemony": "#5fa0ff", "corsair": "#e0402c", "chorus": "#d6d24a", "ithar": "#9fffd2", "deathless": "#b385ff"}
 
 var fac := ""
 var glyph := ""

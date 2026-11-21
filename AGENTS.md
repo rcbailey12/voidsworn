@@ -21,15 +21,16 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
 ## The job board (Ryan, Nov 2 2026; RULEBOOK 2.4)
 
 - Every job is an open GitHub issue: https://github.com/rcbailey12/voidsworn/issues. The label says who has it: `codex` (Codex on
-  Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`. Who does which kind of
+  Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `neon` (Neon, R363) and `blocked`. Who does which kind of
   work is RULEBOOK 2.6; which seats are live today is LOOP.md "The seats".
 - Agents deliver by pushing a branch named `codex/issue-<number>`, `muse/issue-<number>`, `work/issue-<number>` (or
-  `work/issue-<number>-<arm>`) or `opus/issue-<number>`. Any other one-level `muse/<name>` branch also gets a pull request (Nov 17 audit);
+  `work/issue-<number>-<arm>`), `opus/issue-<number>` or `neon/issue-<number>` (Neon, R363). Any other one-level `muse/<name>` branch also gets a pull request (Nov 17 audit);
   Muse names a scratch branch `muse/wip-<name>` to keep it out. Never push to main (R75); the only exception is LOOP.md and
   FINDINGS.md, which the Board commits straight to main (R102).
 - The push makes GitHub open the pull request by itself (.github/workflows/auto_pr.yml, for those branch shapes) and run the
   checks once (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity, Godot game
-  checks). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
+  checks; a docs-only push skips the Godot jobs, "All checks" is the one mark to read, a conflict with main fails, RULEBOOK
+  12.3). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
   (Actions tab, "checks", "Run workflow"; or `gh workflow run checks.yml --ref <branch>`). The Board reviews and merges;
   nobody merges their own pull request (RULEBOOK 2.2).
 - Codex runs locally on the PC only, in up to four lanes (RULEBOOK 2.7, R301; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
@@ -51,6 +52,8 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   merge before the agent starts; a conflict stops the run with the checkout kept. Briefs never ask the agent to merge.
   The PC runners set the running label and one status comment per job branch, edit it on retries and at the end, and
   clear the label at the end. GitHub reporting failures are logged and never fail the job (RULEBOOK 2.4, issue 846).
+- Ship concept and build issues carry an "Approved pick:" line copied from the fleet list (docs/ship_pipeline/FLEET.md;
+  `node contrib/opus/tools/fleet_list.js --pick "faction|Class"`), so no brief goes out without Ryan's earlier pick (issue 1421).
 - Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
   Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
   (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR

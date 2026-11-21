@@ -23,6 +23,7 @@ const BAKER := preload("res://world/world_bake.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
+const LOOK := preload("res://render/look.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 const BACKDROP_ROCK_ANGLE := 0.05
 # R78 Q18 (the run 5 finale): the board brightens sector by sector as the new sun catches. Six sectors, one per stage of
@@ -33,6 +34,7 @@ const DAWN_COL := Color(1.0, 0.76, 0.46)
 var quality := "max"
 var notes: PackedStringArray = []
 var setting := {}
+var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
@@ -58,6 +60,7 @@ var _yaw := 0.0
 var _sky_tex: Texture2D = null
 var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
 var _under_mat: ShaderMaterial = null
+var _under_mi: MeshInstance3D = null
 var _terr_pts := {"neb": [], "storm": [], "debris": []}   # board positions of those hexes (the living look builds on them)
 var _rock_kind := "stone"
 var _fac := "voidsworn"
@@ -88,7 +91,19 @@ var pending_bakes := 0
 static func sector_setting(run: Dictionary) -> Dictionary:
 	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
 	var biome: Dictionary = map["biome"] if map.get("biome") is Dictionary else {}
-	return SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0)
+	# issue 1272: the sector's anchor planet is its biome's look or that look's remix, keyed by the sector's own map
+	var key := "%s|%s" % [str(run.get("sector", "")), str(map.get("fac", ""))]
+	for col in map.get("cols", []):
+		for n in col: key += str(n.get("type", "")).left(2)
+	return SKY.planet_variant(SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0), key)
+
+
+# Issue 1272: the stop's mood and framing on the sector setting. Dead-star boards and the dawn finale are exempt and keep
+# the sector's own look, base planet included (RULEBOOK 10.10, issue 1271).
+static func stop_setting(s: Dictionary, opts: Dictionary, deadstar: bool, map_kind: String) -> Dictionary:
+	if deadstar or bool(opts.get("finale", false)): return SKY.base_planet(s)
+	if opts.get("stop") is Dictionary: return SKY.stop_mood(s, opts["stop"], map_kind)
+	return s
 
 
 func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
@@ -156,6 +171,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_disc_mats.clear()
 	_disc_light = null
 	quality = String(opts.get("quality", "max"))
+	nebula_wake = bool(opts.get("nebula_wake", false))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
 	var biome: Dictionary = opts.get("biome", {}) if opts.get("biome") is Dictionary else {}
@@ -197,6 +213,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	setting["yaw"] = SKY.setting(biome, fac, mk, deadstar, bseed)["yaw"]
 	setting["deadstar"] = deadstar
 	setting["map"] = mk
+	setting = stop_setting(setting, opts, deadstar, mk)   # issue 1272
 	_yaw = float(setting["yaw"])
 	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
@@ -262,6 +279,9 @@ func set_look() -> void:
 	var sp := BL.spec()
 	if _under_mat != null:
 		_under_mat.set_shader_parameter("vis", float(sp["underlay"]))
+		# Issue 1262: at zero the plane only wrote alpha 0, still running its planet and ring maths per pixel.
+		if _under_mi != null:
+			_under_mi.visible = float(sp["underlay"]) >= 0.001 or LOOK.perf_old("underlay")
 	for c in _old_clouds:
 		if is_instance_valid(c):
 			(c as Node3D).visible = bool(sp["old_clouds"])
@@ -430,7 +450,7 @@ func _make_sky(env: Environment) -> void:
 	var sh := Shader.new()
 	sh.code = SKY.SKY
 	m.shader = sh
-	var lamps: Array = SKY.lamps(setting)
+	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
 	lr.seed = int(setting["seed"]) + 9
@@ -443,6 +463,8 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("band_n", setting["band_n"])
 	m.set_shader_parameter("band", float(setting["band"]))
 	m.set_shader_parameter("star_k", float(setting["stars"]))
+	for k in ["mood_tint", "mood_mix", "mood_gain", "mood_dim"]:   # issue 1272: the stop's mood, cheap uniforms
+		if setting.has(k): m.set_shader_parameter(k, setting[k])
 	# Issue 232 E18/BD8 sheet: the live star occlusion floor, overridable for the density sweep (default 0.15).
 	var sf := OS.get_environment("VS_STAR_FLOOR")
 	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
@@ -484,10 +506,11 @@ func _load_sky(lamps: Array) -> void:
 	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
 		size = Vector2i(768, 384)
 	var key := "sky|%d|%s|%d" % [int(setting["seed"]), setting["region"], size.x]
-	var params := {"seed": float(int(setting["seed"]) % 997) * 0.37, "c1": setting["c1"], "c2": setting["c2"], "c3": setting["c3"],
-		"neb": float(setting["neb"]), "cover": float(setting["cover"]), "dust": float(setting["dust"]), "band": float(setting["band"]),
-		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
-		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
+	var bs: Dictionary = SKY.bake_view(setting)   # issue 1272: a stop mood never rebakes the sector's sky
+	var params := {"seed": float(int(bs["seed"]) % 997) * 0.37, "c1": bs["c1"], "c2": bs["c2"], "c3": bs["c3"],
+		"neb": float(bs["neb"]), "cover": float(bs["cover"]), "dust": float(bs["dust"]), "band": float(bs["band"]),
+		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
+		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
 	var img: Image = await _baker.bake(key, code, params, size, 32)
 	if img == null or _sky_mat == null: return
@@ -514,7 +537,8 @@ func system(with_planet: bool) -> void:
 	var side := -1.0 if r.randf() < 0.5 else 1.0
 	var giant: bool = int(P["kind"]) <= 1
 	var ang := r.randf_range(0.15, 0.18) if giant else r.randf_range(0.11, 0.14)
-	var az := side * r.randf_range(0.36, 0.5)
+	ang *= float(setting.get("frame_scale", 1.0))   # issue 1272 stop framing (boss stops bring the planet nearer)
+	var az := side * (r.randf_range(0.36, 0.5) + float(setting.get("frame_az", 0.0)))   # issue 1272 stop framing
 	var el := -r.randf_range(0.17, 0.22)
 	var dir := turn * Vector3(sin(az) * cos(el), sin(el), -cos(az) * cos(el))
 	var bake_q := _planet_size()
@@ -1185,6 +1209,11 @@ func wisps() -> void:
 static var _wnoise: Texture2D = null
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wnoise = null
+
+
 static func _wisp_noise() -> Texture2D:
 	if _wnoise != null:
 		return _wnoise
@@ -1287,6 +1316,7 @@ func underlay() -> void:
 	# drawn after the lens (which copies the screen, render_priority -30) and before the board's own fills
 	m.render_priority = -20
 	_under_mat = m
+	_under_mi = mi
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# below the feet of the board's rocks and debris, above anything deep

@@ -50,6 +50,14 @@ func frames(n := 3) -> void:
 	for i in n: await process_frame
 
 
+# one press and release of an input action, through the real GUI (focus moves, Accept presses the focused button)
+func press(action: String) -> void:
+	for down in [true, false]:
+		var e := InputEventAction.new(); e.action = action; e.pressed = down
+		root.push_input(e)
+		await process_frame
+
+
 func esc() -> InputEventKey:
 	var e := InputEventKey.new(); e.keycode = KEY_ESCAPE; e.physical_keycode = KEY_ESCAPE; e.pressed = true
 	return e
@@ -116,7 +124,7 @@ func title_checks(snd: FakeSound) -> void:
 			rows += 1
 			var lb: Label = r.get_child(0)
 			if lb.autowrap_mode == TextServer.AUTOWRAP_OFF or lb.get_global_rect().end.x > r.get_child(1).get_global_rect().position.x: unwrapped += 1
-	check(rows == 17 and unwrapped == 0, "all 17 settings names wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
+	check(rows == 18 and unwrapped == 0, "all 18 settings names wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
 	var xs := {}
 	for c in t.settings_panel.find_children("*", "Control", true, false):
 		if c.has_meta("setting_key"): xs[int(round(c.size.x))] = true
@@ -201,10 +209,37 @@ func campaign_checks(snd: FakeSound) -> void:
 	if sc5 != null: over = sc5.get_v_scroll_bar().max_value - sc5.size.y
 	check(sc5 != null and over <= 1.0, "at Larger the desk also fits a 1280x1024 window with no scroll (over by %d px)" % int(over))
 	root.size = Vector2i(1920, 1080); ui._dirty = true; await frames(4)
-	ui.desk_opts_open = true; ui._dirty = true; await frames(3)
+	# issue 1261: Run options opened by keyboard holds the focus; Tab and Accept never reach the desk behind it; Esc closes
+	# it and the focus goes back to Run options
+	var ro_btn: Control = ui.page_box.find_child("RunOptionsButton", true, false)
+	if ro_btn != null: ro_btn.grab_focus()
+	await frames()
+	await press("ui_accept"); await frames(4)
+	var dr: Node = ui.page_box.find_child("RunOptionsDrawer", true, false)
+	var fo: Control = root.gui_get_focus_owner()
+	check(ui.desk_opts_open and dr != null and fo != null and dr.is_ancestor_of(fo), "Accept on Run options opens the drawer and focus starts inside it (%s)" % (str(fo.name) if fo != null else "none"))
+	var fac_before := str(C.picked_faction); var adm_before := str(C.picked_admiral); var escaped := []
+	for i in 24:
+		await press("ui_focus_next"); await frames(2)
+		dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+		if dr == null or fo == null or not dr.is_ancestor_of(fo): escaped.append(str(fo.name) if fo != null else "none")
+	for i in 6:
+		await press("ui_focus_prev"); await frames(2)
+		dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+		if dr == null or fo == null or not dr.is_ancestor_of(fo): escaped.append(str(fo.name) if fo != null else "none")
+	check(escaped.is_empty(), "Tab and Shift+Tab stay inside the open drawer (left it for %s)" % str(escaped))
+	ui.page_box.find_child("MapTrialToggle", true, false).grab_focus(); await frames()
+	var trial0: bool = C.map_trial_choice
+	await press("ui_accept"); await frames(4)
+	dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
+	check(C.map_trial_choice != trial0 and dr != null and fo != null and str(fo.name) == "MapTrialToggle", "Accept inside the drawer changes its option and the focus stays on that control after the redraw (%s)" % (str(fo.name) if fo != null else "none"))
+	if C.map_trial_choice != trial0: C.act("optMapTrial", "1" if trial0 else "0"); await frames(3)
+	check(str(C.picked_faction) == fac_before and str(C.picked_admiral) == adm_before and str(C.page["kind"]) == "admiral", "nothing on the desk behind the drawer was pressed")
 	var ro_open: bool = ui.desk_opts_open
-	ui._unhandled_input(esc()); await frames(3)
-	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral", "Esc closes the Run options drawer first and stays on the desk")
+	ui._unhandled_input(esc()); await frames(4)
+	fo = root.gui_get_focus_owner()
+	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral" and fo != null and str(fo.name) == "RunOptionsButton",
+		"Esc closes the Run options drawer first, stays on the desk, and gives focus back to Run options (%s)" % (str(fo.name) if fo != null else "none"))
 	mus.queue_free()
 	var back: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):
@@ -226,10 +261,63 @@ func campaign_checks(snd: FakeSound) -> void:
 	var was_l := str(C.page["kind"])
 	ui._unhandled_input(esc()); await frames()
 	check(was_l == "lineage" and str(C.page["kind"]) == "legacy" and str(C.prog_tab) == "mastery", "Esc on Lineage goes back to Progression's mastery tab")
+	# phase 5: Progression, Lineage and How to play on the kit frame
+	var bad_pages := []
+	for pg in [["legacy", "", "variants"], ["legacy", "", "legacy"], ["legacy", "", "mastery"], ["legacy", "", "favour"], ["legacy", "", "heat"], ["lineage", tree_id, ""], ["help", "", ""]]:
+		C.act(pg[0], pg[1])
+		if pg[2] != "": C.act("progTab", pg[2])
+		await frames(3)
+		var tag := str(pg[0]) + ":" + str(pg[2])
+		var backs := 0
+		for b in ui.page_box.find_children("*", "Button", true, false):
+			if (b as Button).text == "Back": backs += 1
+		var grids: Array = ui.page_box.find_children("*", "GridContainer", true, false)
+		for g in grids:
+			if not g.has_meta("card_w"): continue
+			var ws := {}
+			for cd in g.get_children(): ws[int(round((cd as Control).size.x))] = true
+			if ws.size() > 1: bad_pages.append(tag + " card widths " + str(ws.keys()))
+		if ui.page_box.find_children("*", "HFlowContainer", true, false).size() > 0: bad_pages.append(tag + " still has a loose card flow")
+		if backs != 1: bad_pages.append(tag + " has %d Back buttons" % backs)
+	check(bad_pages.is_empty(), "Progression (each tab), Lineage and How to play: one Back in the fixed bar, card rows on the kit grid, one card width per grid (%s)" % str(bad_pages))
+	C.act("help"); await frames(3)
+	var names := UI.HELP.filter(func(h): return str(h[0]) != "").map(func(h): return str(h[0]))
+	var named := names.size(); var links := 0
+	for b in ui.page_box.find_children("*", "Button", true, false):
+		if names.has((b as Button).text): links += 1
+	check(links >= named, "How to play has an index link for each of its %d sections (%d links)" % [named, links])
+	var runs0 := float(C.META["stats"]["runs"]); var adm0 := str(C.picked_admiral); var fac0 := str(C.picked_faction)
 	C.act("newRunScreen"); C.act("startRun"); await frames()
 	var was_a := str(C.page["kind"])
+	var roll = func(): return JSON.stringify({"pat": C.RUN["patrons"], "relics": C.RUN["relics"], "foes": C.RUN["foes"], "map": C.RUN["map"], "offer": C.W["aspOffer"]}, "", true)
+	var roll1: String = roll.call()
 	ui._unhandled_input(esc()); await frames()
-	check(was_a == "aspect" and str(C.page["kind"]) == "aspect" and C.RUN != null, "Esc on the aspect page changes nothing until it has a Back (phase 4)")
+	check(was_a == "aspect" and str(C.page["kind"]) == "admiral" and C.RUN == null and C.SAVED_RUN == null and float(C.META["stats"]["runs"]) == runs0
+		and str(C.picked_admiral) == adm0 and str(C.picked_faction) == fac0,
+		"Esc on the flagship page goes Back to the desk: the unplayed run, its save and its count are gone, the picks kept")
+	C.act("pickFaction", "corsair"); C.act("pickFaction", fac0); await frames()
+	C.act("startRun"); await frames(3)
+	check(roll.call() == roll1 and float(C.META["stats"]["runs"]) == runs0 + 1.0,
+		"Back then Launch is no reroll: same patrons, founder relic, foes, map and aspect offer, and the run counted once")
+	var go: Button = ui.page_box.find_child("LaunchButton", true, false)
+	check(go != null and go.disabled and ui._aspect_cards.size() >= 3, "the flagship page opens with Launch waiting for an aspect pick (%d offers)" % ui._aspect_cards.size())
+	var pick_id: String = ui._aspect_cards[1][1] if ui._aspect_cards.size() > 1 else ""
+	var hit: Button = null
+	if ui._aspect_cards.size() > 1:
+		for b in (ui._aspect_cards[1][0] as Node).find_children("*", "Button", true, false): hit = b
+	var found_hit := hit != null   # the button is freed by the re-render, so remember that it was there
+	if found_hit: hit.pressed.emit()
+	await frames(3)
+	go = ui.page_box.find_child("LaunchButton", true, false)
+	check(found_hit and go != null and not go.disabled and ui.aspect_pick == pick_id and go.text.ends_with(str(C.ASPECTS[pick_id]["n"])),
+		"clicking an aspect card picks it and Launch names it (%s)" % (go.text if go != null else "no button"))
+	var bk: Button = null
+	for b in ui.page_box.find_children("*", "Button", true, false):
+		if (b as Button).text == "Back": bk = b
+	check(bk != null, "the flagship page has a Back button")
+	if go != null: go.pressed.emit()
+	await frames(3)
+	check(C.RUN != null and str(C.RUN.get("aspect")) == pick_id and str(C.page["kind"]) != "aspect", "Launch takes the picked aspect and starts the run (page %s)" % str(C.page["kind"]))
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
 

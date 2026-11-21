@@ -11,7 +11,7 @@ extends RefCounted
 
 const LARGE_STATION_SIZE := 46.0
 
-static var _man = null
+static var _man = null   # not GPU: the parsed ship manifest (JSON)
 
 
 static func _manifest() -> Dictionary:

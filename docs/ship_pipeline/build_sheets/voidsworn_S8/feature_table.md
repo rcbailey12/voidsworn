@@ -24,8 +24,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | beam top | 7.138 |
 | beam bow | 7.138 |
 | beam disagreement percent | 0.0 |
-| height side | 6.287 |
-| height bow | 6.287 |
+| height side | 5.5 |
+| height bow | 5.5 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 56.2 |
 | hull beam | 5.32 |
@@ -58,13 +58,13 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | W1 | vision slit 0.2 x 0.06 | 1 | 61.1 | -0.27 | 1.38 | - | - | picture | command deck window, ember-lit, in the spine block's face |
 | W2 | vision slit 0.2 x 0.06 | 1 | 61.1 | 0.00 | 1.38 | - | - | picture | command deck window, ember-lit, in the spine block's face |
 | W3 | vision slit 0.2 x 0.06 | 1 | 61.1 | 0.27 | 1.38 | - | - | picture | command deck window, ember-lit, in the spine block's face |
-| R1 | radiator spire, 1.6 tall, profile blade | 1 | 63.9 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R2 | radiator spire, 2.0 tall, profile raked | 1 | 67.0 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R3 | radiator spire, 2.4 tall, profile stepped | 1 | 70.2 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R4 | radiator spire, 2.6 tall, profile twin | 1 | 73.3 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R5 | radiator spire, 2.4 tall, profile stepped | 1 | 76.5 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R6 | radiator spire, 2.0 tall, profile raked | 1 | 79.6 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
-| R7 | radiator spire, 1.6 tall, profile blade | 1 | 82.8 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: a stack of radiator fins glowing ember between iron posts |
+| R1 | radiator spire, 1.1 tall, profile blade | 1 | 63.9 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R2 | radiator spire, 1.4 tall, profile raked | 1 | 67.0 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R3 | radiator spire, 1.6 tall, profile stepped | 1 | 70.2 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R4 | radiator spire, 1.8 tall, profile twin | 1 | 73.3 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R5 | radiator spire, 1.6 tall, profile stepped | 1 | 76.5 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R6 | radiator spire, 1.4 tall, profile raked | 1 | 79.6 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
+| R7 | radiator spire, 1.1 tall, profile blade | 1 | 82.8 | 0.00 | 1.78 | - | - | picture | sheds the reactor's heat: the lit ember core showing between dark iron ribs |
 | E1 | engine, bell 2.3 across | 1 | 99.8 | 1.15 | -0.17 | exhaust aft | - | picture | port main engine: a riveted drum deep-set in the stern, a deep bell, ember lining and plug |
 | E2 | engine, bell 2.3 across | 1 | 99.8 | -1.15 | -0.17 | exhaust aft | - | picture | starboard main engine: a riveted drum deep-set in the stern, a deep bell, ember lining and plug |
 | Q1p | attitude thruster quad | 1 | 14.4 | 1.08 | 0.43 | - | - | designed | bow attitude thruster on the upper facet |
@@ -135,13 +135,13 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Sear turret tub, starboard | 35.0 to 39.8 | -2.07 to -0.77 | 0.43 to 1.44 | darker iron | a low forged tub at the deck edge, its skirt running down onto the upper facet |
 | Flak tub, starboard | 46.1 to 49.5 | -1.88 to -0.96 | 0.43 to 1.30 | darker iron | an octagonal forged tub at the deck edge, lower than the Sear tubs |
 | Spine block (the spire line's base) | 61.1 to 84.5 | -0.62 to 0.62 | 1.16 to 1.78 | darker iron | a forged block along the centreline aft; the spires stand on it, and it snaps off with them (B-4) |
-| Radiator spire R1 (blade, 1.6 tall) | 62.8 to 65.0 | -0.58 to 0.58 | 2.22 to 3.18 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R2 (raked, 2.0 tall) | 66.0 to 68.1 | -0.65 to 0.65 | 2.22 to 3.58 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R3 (stepped, 2.4 tall) | 69.1 to 71.3 | -0.70 to 0.70 | 2.22 to 3.93 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R4 (twin, 2.6 tall) | 72.2 to 74.5 | -0.75 to 0.75 | 2.22 to 4.18 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R5 (stepped, 2.4 tall) | 75.3 to 77.6 | -0.70 to 0.70 | 2.22 to 3.93 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R6 (raked, 2.0 tall) | 78.6 to 80.7 | -0.65 to 0.65 | 2.22 to 3.58 | ember fins on iron | one of the seven spires of the spire line |
-| Radiator spire R7 (blade, 1.6 tall) | 81.9 to 83.7 | -0.57 to 0.57 | 2.22 to 3.13 | ember fins on iron | one of the seven spires of the spire line |
+| Radiator spire R1 (blade, 1.1 tall) | 62.9 to 64.9 | -0.35 to 0.35 | 2.22 to 2.70 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R2 (raked, 1.4 tall) | 66.1 to 68.1 | -0.38 to 0.38 | 2.22 to 2.98 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R3 (stepped, 1.6 tall) | 69.1 to 71.3 | -0.41 to 0.41 | 2.22 to 3.22 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R4 (twin, 1.8 tall) | 72.2 to 74.5 | -0.42 to 0.42 | 2.22 to 3.40 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R5 (stepped, 1.6 tall) | 75.4 to 77.6 | -0.41 to 0.41 | 2.22 to 3.22 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R6 (raked, 1.4 tall) | 78.7 to 80.7 | -0.38 to 0.38 | 2.22 to 2.98 | ember core between iron ribs | one of the seven spires of the spire line |
+| Radiator spire R7 (blade, 1.1 tall) | 81.9 to 83.7 | -0.35 to 0.35 | 2.22 to 2.66 | ember core between iron ribs | one of the seven spires of the spire line |
 | Belly armour step | 26.3 to 86.3 | -1.29 to 1.29 | -1.71 to -1.40 | darker iron | a second forged layer under the gun deck and the reactor |
 | Dorsal power trunk | 29.8 to 58.0 | -0.20 to 0.20 | 1.20 to 1.42 | darker iron | armoured conduits from the reactor to the turrets and the bow (S8's centre strip) |
 
@@ -215,7 +215,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 401 objects, 64 parts, 1224 close pairs, 741 rays, 14 guns, 0 sensor pairs, 4 turrets swept, 6 cones, 35 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 401 objects, 64 parts, 1224 close pairs, 733 rays, 14 guns, 0 sensor pairs, 4 turrets swept, 6 cones, 35 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -236,7 +236,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Weapons built from the lore, not S8's generic barrels (R221).** the broadside guns are heavy short guns in deep round ports (R244: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md).
 - **Attitude thrusters, deck and belly hatches, lift heads, heat louvres, ember slits, frost running points, a belly armour step added.** a ship in space needs thrusters and access; the spires' reactor needs louvres; S8 shows no underside; every part has a job (R221).
 - **The command deck looks out through ember slits in the spine block's forward face, not a box on the deck.** S8's small lit block before the radiators read as a deck house (R185 (5): no deck house); the same ember windows now sit in the spine block itself.
-- **The spires stand taller than S8's bank: the tallest 2.6 over the spine block (3.1 over the deck) against S8's 1.8.** factions.md: "a row of tall radiator spires"; the battle camera sees the ship from 34 degrees above the board, so the spire line is the silhouette's crown and must read there (voidsworn_S8_battle_cam.jpg).
+- **The spires stand at about S8's bank height: the tallest 1.8 over the spine block (2.3 over the deck) against S8's 1.8.** Ryan, Nov 19 2026 (R331, issue 1158): "can we scale down the giant radiator/orange towers on each ship a bit too?"; the first build's 2.6 tallest read as giant orange towers. Every spire is 70 percent of its first height (1.6, 2.0, 2.35, 2.6, 2.35, 2.0, 1.55 became 1.12, 1.4, 1.65, 1.82, 1.65, 1.4, 1.09), same count, stations, lengths and profiles; the spire line still crowns the silhouette at the battle camera.
+- **The ember is in the fin slats, not a whole lit tower (R331, issue 1158).** The shared Sunward spire option radiator(..., glow='slats'): first three to five glowing fins over a dark core (Nov 19), then from R347 (PR 1164, Nov 20) the core lit the full height between dark iron ribs 0.15 apart, as on the Warden. Warden, Vigil and the later Sunward builds use the same option (R333).
 - **Modelled plates: sleek triangles on the spearhead's facets and cheek plates, ordered rows of forged plates elsewhere.** paint direction sunward.md (R243, "more triangle sleek panels") asks for triangles on the flat fields; modelled on the deck in the first render they read as rows of letters at a distance, so the deck keeps forged rows and the Sunward paint stack lays its triangles there.
 
 ## Designed here, not shown in the picture

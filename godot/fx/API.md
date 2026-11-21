@@ -95,12 +95,8 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
 - Issue 461 (the hits, upgraded; docs/playbooks/deaths_and_hits.md): each weapon family has its own hull-hit recipe (`fx_weapons.family_of`: shell, energy, lance, torpedo, bio), sized by `LADDER_PX` times the firing hull's band (`GUN_K`) times the hit hull's band (`TARGET_K`). What a hit throws lives its own life (`SPARK_LIFE`, `DEBRIS_LIFE`, `GAS_LIFE`, `EMBER_LIFE`; flame keeps the 0.70 s cap, `FLAME_CAP`) and leaves the plate along its outward side. `fx.light(p, t, life, peak, col, shape, reach)`: `reach` (world units) carries a light further and with a slower falloff (`REACH_ATTEN`); torpedo hits (36) and death core flashes (26, 35, 52 by class) use it. Tests: set `fx.dstate["hit_logging"] = true` and read `fx.dstate["hit_log"]` (`fx/test/hit_recipe_check.gd`).
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
 
-Travelling torpedoes (B3; ready now, for when the rules change lands):
-- `fx.torp_lane(lane_id, attacker_id, to_point, turns)`: a lane on the board from the attacker's bow to `to_point` (world), chevrons running toward an impact marker that pulses, in the attacker's weapon colour;
-- `fx.torp_launch(lane_id)`: the torpedo vents, runs out along the lane and holds there, engine burning, until the next turn;
-- `var r = fx.torp_strike(lane_id, target_id, hit)`: the two-stage warning (a dim pulse, then a ramp to white, about 0.8 s, K2 pin), then the torpedo closes and strikes (`hit` as in `volley` hits, or `{}` for a miss); returns `{impacts, done}` like `volley`;
-- `fx.torp_lane_clear(lane_id)`: the target got out of the lane; the torpedo runs on past the marker and burns out.
-Today's rules still resolve torpedoes at once: `volley(..., "torp", ...)` plays launch, flight and impact in one go.
+Torpedoes (R364, Nov 20 2026): they fire now. `volley(..., "torp", ...)` plays launch, flight and impact in one go; the B3 lane,
+parked torpedo and next-turn strike (`torp_lane`, `torp_launch`, `torp_strike`, `torp_lane_clear` and the lane shader) are retired.
 
 ## 4. Shields
 
@@ -119,7 +115,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Cruiser class and above, plus any flagship: running-light emission and engine glow die over 0.3 s, narrow fire/gas jets start on the future split, one thermal tear grows, the hull breaks into uneven pieces at 1.38 effect seconds for a cruiser (2.0 for a capital), then one counted core flash follows 0.28 s later. The 0.16 s flash sits at the visible lip of a torn face, with a contained 0.42 s volume only when the flash budget allows it. Local debris, smoke and sparks mark the split. The pieces carry edge fires/gas and ten small secondary explosions in total, staggered from 0.7 to 3.5 s after splitting. The split stays visible. Bright secondary pops use the shared flash limiter; reduce flashing substitutes soft lifts. Slow coals cool over about ten seconds after the flames subside.
 - Smaller ships: 0.72 s of visible hull spin (0.55 s for craft), a curling smoke/fire ribbon, then an immediate 0.22 s counted pop, shrapnel streamers and tumbling wreck pieces. Smoke has a 44 px floor, ribbon fire 28 px and the core 60 px (all at 1080 lines, scaled by `min_px`). Death fire/core sprites keep their brightness at that floor; explicit smoke/gas floors keep opacity. The ribbon follows the spinning visual mesh and stretches backward before the burst. The surviving chunk keeps fire, smoke and slow-cooling coals. Only visual meshes move during the spin; the shared root and battle outcomes do not change.
 - Whole hulks: all `dark`/`hulk` deaths power down, leave a whole copy of the damaged hull at 0.72 s, vent gas from one surface point, and drift cold. No core, fire, secondary explosions, sparks, lights or slow-motion beat. Other explicit causes retain breakup. Returns 1.32 s; the copy survives removal of the original ship root and follows `clear_wreck` and the 24-wreck cap.
-- Wrecks retain the existing Jolt bodies and the 24-wreck cap. Ribbons and streamers use the existing particle pools and debris ring. Unfinished cuts are polled without blocking the main thread; a finished previous cut is reused when available.
+- Wrecks retain the existing Jolt bodies and the 24-wreck cap. Issue 1237: a wreck section leaves Jolt 4 s after its release (fx_death.gd WRECK_PHYS_S) and drifts on with the same velocity and turn on the effect clock; debris plates fly 2 s as before, then slow (damping 1.4) and are at rest by 5.5 s (DEBRIS_REST_S), so Jolt has nothing awake about 8 s after a kill. Plates never test each other; hulls and wreck sections still knock them, and a knocked plate rests again 1.5 s later. One-shot pictures (death flipbooks, staged flashes and smoke, weapon gas and hull hit pictures) come from `fx.picture(key, make, name)` and go back with `fx.free_picture(weakref(node), node.get_meta("pic_gen"))`, never `free_effect`. The frame's power-down budget (POWER_BUDGET) is shared by every dying ship. Check: fx/test/multi_death_check.gd. Ribbons and streamers use the existing particle pools and debris ring. Unfinished cuts are polled without blocking the main thread; a finished previous cut is reused when available.
 - Authored recipe ships: the version 1 `voidsworn_destruct` GLB extra and interior surfaces are defined in `docs/ship_pipeline/RECIPE.md`, stage 7. `fx_hull.gd` reads them in the installed hull's scaled frame. Damage opens the exterior onto the authored decks, frames and machinery; death carries those surfaces into its pieces. Authored joints guide the irregular fracture, retaining the missing bite, chips, ragged rims and faction matter. Their count follows the build's structure. Ships without that extra keep the #167 procedural cavity and capped-face fallback.
 - Main rigid wreck pieces lock linear Y at the altitude where they separated, and their release velocity has zero Y. They can still tumble. This keeps physics contacts from pushing the main wreck below the board where Ryan cannot see it (`death_plane_check.gd`); it is an existing visibility protection, not a restriction on the rotation or every small thrown fragment. Kinematic main pieces also receive zero Y release velocity.
 - fx hides the ship's own meshes at the break-up. G2 can keep or free the root after `t`; fx keeps its own copies of the meshes.
@@ -375,9 +371,8 @@ Checks: the Forward+ `fx_inside_probe.gd` with `PROBE_BOX=1`; `destruction_steps
 - Homeworld 3's scar-to-breach grading now follows each section's own remaining hull. Low total ship HP no longer promotes healthy sections to damaged geometry. Weapon marks scale with that section's damage, regrade after later hits, and shrink or clear on repair. Repeat gauss hits retain their original entry frame when rebuilding the exit wound.
 - Breach throats are deeper, with opaque recessed backs, internal structure and a continuous lit torn rim. Persistent square chip sprites are replaced by a few soft embers; the plate ejecta use irregular solid shard meshes. Section shard and spark counts are reduced and the shared shard pool holds at most 768 particles on max quality, 384 otherwise.
 - Chorus wounds use wet green membranes, curved tissue strands, pulsing faction glow, ichor and spores. Their deaths rupture the skin 0.35 seconds in and spill real hull fragments and spores, with no metal fire, sparks or core flash. Whole hulks retain the independent cavity and scar meshes after the live ship is removed. Glasswright impact chips use the crystal shard tint and spectral light.
-- The lane shader's chevrons point and travel from shooter to target. Player torpedo lanes and enemy intent lanes share this shader and UV direction.
 - `board.show_blockers(hexes)` outlines the intermediate blockers returned by `api.line_blockers(shooter, target)`. Unreachable-hex tips use `api.entry_reason(id, q, r)`. These calls only explain existing rules. Set-piece hole cells now have solid props; planet, station and Hollow Sun exclusion rims show their exact rule footprints. The planet and station models are retained. Missing station assets and uncovered station edge cells get solid fallback docking hardware.
-- World bakes persist as RGBA PNGs under `user://world_bakes/v2/`. Keys include seed/settings, shader source and dimensions; parameter order does not cause rebakes. The memory cache holds 12 images. Cold starts draw a 512x256 sky and 256x128 planet first, then refine after three seconds in serialized GPU strips. Full-resolution cache hits load directly without the preview delay. GPU work stays on the render thread; no gameplay waits for a full-resolution bake.
+- World bakes persist as RGBA PNGs under `user://world_bakes/v3/`. Keys include seed/settings, shader source and dimensions; parameter order does not cause rebakes. The memory cache holds 24 images. Cold starts draw a 512x256 sky and 256x128 planet first, then refine after three seconds in serialized GPU strips. Full-resolution cache hits load directly without the preview delay. GPU work stays on the render thread; no gameplay waits for a full-resolution bake. Issue 1265: the disk folder is capped at 500 MB (`CACHE_CAP_BYTES`); after each save the least recently used maps go first (last use is kept in `used.json`, refreshed on every disk load), maps the running game holds and the map just saved never go, and `.tmp` files older than a day go; bakes in older version folders (v1, v2) are removed once per run. Checked by `world/test/bake_cache_cap_check.gd`.
 - After creating the ship views, call `world.use_ship_debris(views.values())`. It reads one loaded hull per faction, cuts four sealed chunks per hull on a worker, preserves UVs and source paint/PBR materials, adds scorch weathering, and installs up to four instances per debris hex. Geometry stays inside the old footprint. No GLB paths are required. Empty source lists retain the existing debris; battles without debris skip the cutting work. Worker shutdown is joined when the world leaves the tree.
 - `fx/test/playtest_batch1_check.gd` checks damage grading/repair, organic rupture and retained wounds, loaded stand-in hull cutting, disk cache invalidation/alpha, and both lane directions. `FB1_SHOTS=DIR` captures the four damage examples, lanes, hull chunks and organic rupture on a renderer. These are stand-in hulls, not full-build ship validation.
 - `world/test_blockers.gd` checks the real world/board builders over all 12 shapes, five terrain maps and two seeds. It checks solid geometry at blocking hexes, named entry reasons, and agreement between the blocker query and the sight predicate. Headless rock coverage reads the real submitted batch transforms because the dummy renderer does not retain MultiMesh buffers. No background dressing or exclusion-only outline can satisfy ordinary blocker coverage.
@@ -461,10 +456,9 @@ prism flight, muzzle and impact glints. No shield recipe or shard count changes.
 
 Rockets and torpedoes retain the real closed casings, fins and sampled baked
 exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing
-pulse motion, a short rise off the rail and a fade before impact. Parked lane
-torpedoes keep their running motor. The smoke history still cools separately.
+pulse motion, a short rise off the rail and a fade before impact. The smoke history still cools separately.
 Bay flashes, interceptions and all eight shared-helper regression rows are
-included in the capture adapter. Lane chevrons remain tactical indicators.
+included in the capture adapter.
 
 Attack-run craft and live squadron wings use their real stern history with
 the same textured core and sheath. The luminous centreline ends within 24
@@ -518,7 +512,7 @@ flare is larger than the emitter flare, and both ends cool in green over
 existing public paths.
 
 `faction_looks.json` owns two weapon-only Eclipse colours: `weapon_core` and
-`weapon_sheath`. The Doom and null cannon recipes use the green core; the two
+`weapon_sheath`. The Doom and null cannon recipes use the core colour (deep violet since Nov 21 2026, issue 1503; it was green); the two
 alpha materials take their dark sheath from the same data. Existing ship,
 engine, shield and backdrop colours retain their separate fields.
 
@@ -570,7 +564,7 @@ are Doom, gauss, gauss flak and the gauss exit.
 This section supersedes section 18's smooth arc profiles and kind-5 two-frame,
 26 px limit. Other streak caps and every other beam shader remain unchanged.
 
-Doom keeps the weapon_core green and weapon_sheath violet-black fields. Its
+Doom keeps its own weapon_core (deep violet since Nov 21 2026, issue 1503; it was green) and weapon_sheath violet-black fields. Its
 96-segment channel carries three thin, independently twisting hot filaments.
 Only a filament's central subpixel profile is white. Two advected noise scales
 and the existing flow mask swell and pinch the body, erode its silhouette and
@@ -587,7 +581,7 @@ streak tapers from the muzzle and fades over 0.52 s after impact. A faint ionise
 wake persists to 0.70 s. The head fades at contact, so the lingering trace never
 becomes another slug. Gauss flak uses the same route with its existing 0.02 s
 flight, preserving its burst timing. The existing
-faction weapon field supplies violet-white; Doom alone uses weapon_core green.
+faction weapon field supplies violet-white; Doom alone uses weapon_core deep violet.
 The sharp muzzle flash, displaced-gas ring and hull impact spark burst remain.
 Widths use the game's 1080-line pixel convention, so they scale with resolution;
 the tracer's length follows the shot, with no short screen-space length cap.

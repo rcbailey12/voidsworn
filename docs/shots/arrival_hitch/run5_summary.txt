@@ -1,0 +1,35 @@
+after  s1  again      c_boss   first 5,607  arrival 36 (view 2 fx 33 sync 0 step 0 render 2; pipes ) | kill call 13 worst after 10 fractured pieces 4 | worst 36 ms
+after  s1  arrival    c_boss   first -      arrival 7,820 (view 414 fx 6,323 sync 0 step 0 render 1,083; pipes mesh 36, specialization 30, surface 60) | kill call 16 worst after 11 fractured pieces 4 | worst 7,820 ms
+after  s1  arrival    warden   first -      arrival 1,124 (view 37 fx 972 sync 0 step 0 render 114; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,124 ms
+after  s1  cold       c_boss   first -      arrival 4,278 (view 213 fx 3,823 sync 0 step 0 render 243; pipes mesh 30, specialization 30, surface 53) | kill call 141 worst after 4,016 fractured pieces 4 | worst 4,278 ms
+after  s1  firstkill  c_boss   first -      arrival - | kill call 8 worst after 5 fractured pieces 4 | worst 13 ms
+after  s1  prewarmed  c_boss   first -      arrival 35 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 9 worst after 9 fractured pieces 4 | worst 35 ms
+after  s1  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 7 worst after 3 fractured pieces 2 | worst 24 ms
+after  s2  again      c_boss   first 5,386  arrival 38 (view 2 fx 34 sync 0 step 0 render 2; pipes ) | kill call 14 worst after 10 fractured pieces 4 | worst 38 ms
+after  s2  arrival    c_boss   first -      arrival 5,355 (view 405 fx 4,066 sync 0 step 0 render 884; pipes mesh 36, specialization 30, surface 60) | kill call 13 worst after 10 fractured pieces 4 | worst 5,355 ms
+after  s2  arrival    warden   first -      arrival 1,248 (view 40 fx 1,093 sync 0 step 0 render 115; pipes mesh 1, specialization 6, surface 12) | kill call 12 worst after 6 fractured pieces 2 | worst 1,248 ms
+after  s2  cold       c_boss   first -      arrival 4,810 (view 240 fx 4,287 sync 0 step 0 render 282; pipes mesh 30, specialization 30, surface 53) | kill call 155 worst after 4,491 fractured pieces 4 | worst 4,810 ms
+after  s2  firstkill  c_boss   first -      arrival - | kill call 10 worst after 6 fractured pieces 4 | worst 16 ms
+after  s2  prewarmed  c_boss   first -      arrival 36 (view 2 fx 32 sync 0 step 0 render 2; pipes ) | kill call 11 worst after 11 fractured pieces 4 | worst 36 ms
+after  s2  prewarmed  warden   first -      arrival 24 (view 1 fx 22 sync 0 step 0 render 1; pipes ) | kill call 13 worst after 5 fractured pieces 2 | worst 24 ms
+before s1  again      c_boss   first 6,155  arrival 1,445 (view 943 fx 495 sync 0 step 0 render 7; pipes mesh 30) | kill call 20 worst after 10 fractured pieces 4 | worst 1,445 ms
+before s1  arrival    c_boss   first -      arrival 6,192 (view 450 fx 4,721 sync 0 step 0 render 1,021; pipes mesh 36, specialization 30, surface 60) | kill call 26 worst after 10 fractured pieces 4 | worst 6,192 ms
+before s1  arrival    warden   first -      arrival 1,231 (view 46 fx 1,063 sync 0 step 0 render 122; pipes mesh 1, specialization 6, surface 12) | kill call 10 worst after 6 fractured pieces 2 | worst 1,231 ms
+before s1  cold       c_boss   first -      arrival 4,370 (view 213 fx 3,913 sync 0 step 0 render 244; pipes mesh 30, specialization 30, surface 53) | kill call 140 worst after 4,107 fractured pieces 4 | worst 4,370 ms
+before s1  firstkill  c_boss   first -      arrival - | kill call 18 worst after 6 fractured pieces 4 | worst 24 ms
+before s1  prewarmed  c_boss   skipped: no render/arrival_warm.gd on this commit
+before s1  prewarmed  warden   skipped: no render/arrival_warm.gd on this commit
+before s2  again      c_boss   first 5,732  arrival 1,308 (view 867 fx 434 sync 0 step 0 render 7; pipes mesh 30) | kill call 16 worst after 10 fractured pieces 4 | worst 1,308 ms
+before s2  arrival    c_boss   first -      arrival 5,518 (view 415 fx 4,176 sync 0 step 0 render 927; pipes mesh 36, specialization 30, surface 60) | kill call 17 worst after 10 fractured pieces 4 | worst 5,518 ms
+before s2  arrival    warden   first -      arrival 1,142 (view 38 fx 993 sync 0 step 0 render 111; pipes mesh 1, specialization 6, surface 12) | kill call 7 worst after 3 fractured pieces 2 | worst 1,142 ms
+before s2  cold       c_boss   first -      arrival 4,488 (view 224 fx 4,018 sync 0 step 0 render 245; pipes mesh 30, specialization 30, surface 53) | kill call 143 worst after 4,132 fractured pieces 4 | worst 4,488 ms
+before s2  firstkill  c_boss   first -      arrival - | kill call 11 worst after 5 fractured pieces 4 | worst 16 ms
+before s2  prewarmed  c_boss   skipped: no render/arrival_warm.gd on this commit
+before s2  prewarmed  warden   skipped: no render/arrival_warm.gd on this commit
+gate after s1\firstkill_c_boss : pass
+gate after s1\prewarmed_c_boss : pass
+gate after s1\prewarmed_warden : pass
+gate after s2\firstkill_c_boss : pass
+gate after s2\prewarmed_c_boss : pass
+gate after s2\prewarmed_warden : pass
+ACCEPT 6 of 6 (after prewarmed c_boss, prewarmed warden, firstkill c_boss, two sessions: no frame over 100 ms, kill broke into pieces)

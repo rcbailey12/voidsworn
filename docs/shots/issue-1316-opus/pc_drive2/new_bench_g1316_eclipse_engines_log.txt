@@ -1,0 +1,32 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1316)
+GPU: acquired shared claim 018f9753-04ca-49ea-86bb-f2c8c24bdc9c
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-20b7fb039b404113b5ba28ad595b87d2\godot-profile-47ec64f6f0884ffe90a98a7825c28a60
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 4487 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7385 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 7810 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 8256 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2266 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2165 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 2112 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[look_bench] warm pass done
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[look_bench] g1316_eclipse_engines at 170: 16 cells
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[look_bench] g1316_eclipse_engines at 60: 16 cells
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[look_bench] g1316_eclipse_engines at 26: 16 cells
+[look_bench] late shaders after warm-up (issue 376): 0; pipelines compiled in this run: 430
+[look_bench] stills: 3, warnings: 0
+LOOK_BENCH_DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-20b7fb039b404113b5ba28ad595b87d2\godot-profile-47ec64f6f0884ffe90a98a7825c28a60
+GPU: released shared claim 018f9753-04ca-49ea-86bb-f2c8c24bdc9c

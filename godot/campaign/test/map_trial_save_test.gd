@@ -44,6 +44,10 @@ func _run() -> void:
 	options.free()
 	c.act("startRun")
 	check(c.RUN.get("mapTrial") == true, "launch carries the selected checkbox into the run")
+	c.act("backToSetup")   # issue 1217 phase 4: Back from the flagship page keeps Test maps for the next Launch
+	check(c.RUN == null and c.map_trial_choice, "Back from the flagship page keeps Test maps chosen")
+	c.act("startRun")
+	check(c.RUN.get("mapTrial") == true, "Launch after Back still uses Test maps")
 	c.act("pickAspect", c.W["aspOffer"][0])
 	c.act("closeModal")
 	c.act("optMapTrial", "0")
