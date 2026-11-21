@@ -1,0 +1,6 @@
+waiting for OPUS1439_MEASURE2 exit in opus1439_wait.txt Fri 11/20/2026 18:35:51.83 
+OPUS1433_HOVER start 19:02:51.21 
+OPUS1433_HOVER exit 1 at 19:20:49.77 
+run folder out_20261120_190251_13008
+result: done FAILED: new player_path: exit 1, see player_path_log.txt
+all done Fri 11/20/2026 19:20:50.22 

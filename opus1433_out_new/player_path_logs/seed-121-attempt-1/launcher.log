@@ -1,0 +1,25 @@
+﻿tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\new\tools\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (opus1433_player_path)
+GPU: acquired shared claim 06cb237c-c72d-4490-8a8b-bccf14d83a05
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c0e0379f5fae498aa34693ff39181732\godot-profile-69d412c75af64c89b1f51c1eec1031d7
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+tmo.bat : [player-path] FAIL Godot must resolve user:// inside a dedicated temporary profile from player_path.bat
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\new\contrib\codex\player_path_1119\run.ps
+1:63 char:9
++         & $tmo 1800 $game --log-file $gameLog --resolution 1920x1080  ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([player-path] F...player_path.bat:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\out_new\player_path\seed-121.avi
+1 frames at 30 FPS (movie length: 00:00:00:01), recorded in 00:00:03 (33% of real-time speed).
+CPU render time: 0.00 seconds (average: 2.65 ms/frame)
+GPU render time: 0.00 seconds (average: 0.00 ms/frame)
+Encoding time: 0.01 seconds (average: 13.36 ms/frame)
+--------------------------------------------------------------------------------
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c0e0379f5fae498aa34693ff39181732\godot-profile-69d412c75af64c89b1f51c1eec1031d7
+GPU: released shared claim 06cb237c-c72d-4490-8a8b-bccf14d83a05

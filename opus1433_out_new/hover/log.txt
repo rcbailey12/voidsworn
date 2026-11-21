@@ -1,0 +1,40 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1433)
+GPU: acquired solo claim c3465c6e-2efb-4957-850a-e215a828f663
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9439f228e95c4842b70ce1c6980a7b25\godot-profile-9756163d204041e5aaf75c9828740f80
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 370 ms
+[hover1433] display Windows, window (2560.0, 1440.0)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.045, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked c4506bc9551b32beec21020175240489b909b2cf648f53e72d6a930c3ee14702 4096x2048 in 13440 ms (worker)
+[world] baked 0419e008482bb001897fe5e0062e63152d7699e5453409daab24e5fabdf2d8a6 4096x2048 in 15894 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 16318 ms (worker)
+[world] baked c9f7aa4f45a0ef0c511e5ca8d2f31f8ef10d432f74b54527dce11f28793e14f5 4096x2048 in 1920 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 1862 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[hover1433] move 0 moved=true: worst handler 5 ms, worst frame 14 ms, waits 0, frames with the map computing 29: ok
+[hover1433] move 1 moved=true: worst handler 7 ms, worst frame 16 ms, waits 0, frames with the map computing 12: ok
+[hover1433] move 2 moved=true: worst handler 4 ms, worst frame 13 ms, waits 0, frames with the map computing 11: ok
+[hover1433] move 3 moved=true: worst handler 5 ms, worst frame 10 ms, waits 0, frames with the map computing 49: ok
+[hover1433] RESULT PASS (4 of 4 moves, limit 50 ms worst frame, 0 waits)
+[attach] battle x04 V16_37: skipped 0; rcs hp 142 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 68 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 120 ray 0 centre 0 skip 0
+[attach] battle x07 H7_23: skipped 0; rcs hp 0 ray 12 centre 0 skip 0
+[attach] battle x08 H10_23: skipped 0; rcs hp 34 ray 0 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9439f228e95c4842b70ce1c6980a7b25\godot-profile-9756163d204041e5aaf75c9828740f80
+GPU: released solo claim c3465c6e-2efb-4957-850a-e215a828f663

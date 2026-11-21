@@ -1,0 +1,6 @@
+[hover1433] display Windows, window (2560.0, 1440.0)
+[hover1433] move 0 moved=true: worst handler 5 ms, worst frame 14 ms, waits 0, frames with the map computing 29: ok
+[hover1433] move 1 moved=true: worst handler 7 ms, worst frame 16 ms, waits 0, frames with the map computing 12: ok
+[hover1433] move 2 moved=true: worst handler 4 ms, worst frame 13 ms, waits 0, frames with the map computing 11: ok
+[hover1433] move 3 moved=true: worst handler 5 ms, worst frame 10 ms, waits 0, frames with the map computing 49: ok
+[hover1433] RESULT PASS (4 of 4 moves, limit 50 ms worst frame, 0 waits)

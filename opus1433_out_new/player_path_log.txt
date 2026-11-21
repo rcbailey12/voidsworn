@@ -1,0 +1,20 @@
+Recording seed 121 to C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\out_new\player_path\seed-121.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\out_new\player_path\seed-10.avi
+Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-c90ba873b493\seed-
+121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-c90ba873
+b493\seed-121-attempt-1\game.log
+Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-c90ba873b493\seed-1
+0-attempt-1\launcher.log and 
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-c90ba873b493\seed-10-attempt-1\game.log
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1433\out_20261120_190251_13008\new\contrib\codex\player_path_1119\run.ps
+1:99 char:24
++ ...  ($failures.Count) { throw ($failures -join [Environment]::NewLine) }
++                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Seed 121 failed...empt-1\game.log:String) [], RuntimeException
+    + FullyQualifiedErrorId : Seed 121 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1a 
+   dd-41cc-82e4-c90ba873b493\seed-121-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-p  
+  ath-fbc7b9d7-1add-41cc-82e4-c90ba873b493\seed-121-attempt-1\game.log
+    Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-c90ba873b493\s 
+   eed-10-attempt-1\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-fbc7b9d7-1add-41cc-82e4-  
+  c90ba873b493\seed-10-attempt-1\game.log
+ 
