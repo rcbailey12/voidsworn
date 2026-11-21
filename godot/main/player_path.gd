@@ -395,7 +395,7 @@ func _orders(b: Node) -> void:
 			b._on_key(KEY_ESCAPE)
 		_point(b, target)
 		await _pause(0.25)
-		_click(b, target)
+		await _click(b, target)
 		if b.target == target["id"]:
 			_event("target_preview", {"ship": target["name"], "round": b.V["round"]})
 			await _pause(0.65)
@@ -424,7 +424,7 @@ func _move(b: Node, u: Dictionary, plan: Dictionary) -> bool:
 	# Issue 1457: the first round's plan can be dropped while the preview shows (seed 121, Battle 3: the cruiser braced
 	# in place in round 1). Plan the same hex once more before giving up, as a player clicks again.
 	for attempt in 2:
-		_click(b, plan)
+		await _click(b, plan)
 		if b.plan == null:
 			return false
 		_event("move_preview", {"hex": [plan.q, plan.r], "ship": u["name"], "round": b.V["round"]})
@@ -454,7 +454,7 @@ func _attack_move(b: Node, foes: Array) -> bool:
 	for e in foes:
 		if b._attack_move(e["id"]) == null:
 			continue
-		_click(b, e)
+		await _click(b, e)
 		if b.atk != null:
 			first_preview = true
 			_event("attack_move_preview", {"ship": e["name"]})
@@ -568,3 +568,11 @@ func _point(b: Node, hex: Dictionary) -> void:
 func _click(b: Node, hex: Dictionary) -> void:
 	_point(b, hex)
 	b._on_click()
+	# Artoo on PR 1483: with issue 1433's queued clicks (PR 1443) a click made while the threat map computes is kept
+	# and replayed when it lands, so "no plan yet" can mean "pending". Wait for the replay (bounded) before reading
+	# the plan or target. On a build without the queue there is nothing to wait for.
+	var start := _frame()
+	while "_click_q" in b and not (b.get("_click_q") as Dictionary).is_empty() and _frame() - start < 5 * FPS:
+		await get_tree().process_frame
+	if "_click_q" in b and not (b.get("_click_q") as Dictionary).is_empty():
+		_event("click_pending_timeout", {"hex": [hex.q, hex.r], "round": b.V["round"]})
