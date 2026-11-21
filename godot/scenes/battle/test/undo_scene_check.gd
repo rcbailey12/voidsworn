@@ -21,8 +21,10 @@ func _check(ok: bool, what: String) -> void:
 		fails += 1
 
 
+# issue 1433: the UI pass (reach overlay, card) waits for the threat map to land, so idle includes no worker running
 func _idle() -> bool:
-	return b.api != null and not b.warming and not b.busy and not b.thinking and b.batches.is_empty() and b.api.phase == "player"
+	return b.api != null and not b.warming and not b.busy and not b.thinking and b.batches.is_empty() and b.api.phase == "player" \
+		and not b._threat_busy
 
 
 func _wait_idle(ms: int) -> void:

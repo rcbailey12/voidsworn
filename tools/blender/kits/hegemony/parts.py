@@ -92,6 +92,7 @@ SUBPARTS = {
     'container': ['frame', 'lid', 'seam', 'rib', 'clamp'],
     # issue 1413 (hegemony_O3, the Relay beacon): the oversized recessed relay lens
     'relay_lens': ['face', 'ring', 'lens', 'glow'],
+    'bomb_tube': ['housing', 'frame', 'collar', 'bore', 'ring', 'back', 'warhead'],
 }
 
 
@@ -853,6 +854,35 @@ def _cassette(p, barrels, cal, blen, s, pitch, variant):
 
 
 GUN_BUILDERS['guns'] = _cassette
+
+
+def rocket_rack(rows, cols, cell, depth, variant=0):
+    """the Navy bomb cassette (data.js bombs; issue 1373, the Navy bomber HB1). The sheet kit's K.launcher asks every faction
+    kit for rocket_rack(rows, cols, cell, depth); the Navy answer is a machined module of bomb tubes set into the bow: a pale grey
+    block with a steel-blue trim frame round its face, round bores with machined collars and an implant-blue ring deep inside,
+    the next bomb seated in each bore. Local +X the firing direction, +Z up, origin at the centre of the front face; cell the
+    tube pitch, depth how far the bores run back. Every piece is mount: the cassette is part of the hull (factions.md: modules,
+    rectangular, machined)."""
+    p = Part('launcher')
+    p.type = 'bomb_tube'
+    r = cell * 0.3
+    hw, hh = cols * cell / 2, rows * cell / 2
+    ch = cell * 0.1
+    n = 16
+    ctr = [((i - (cols - 1) / 2) * cell, (j - (rows - 1) / 2) * cell) for j in range(rows) for i in range(cols)]
+    p.add('housing', 'mount', 'hgrey', block(-depth * 1.1, -r * 0.12, hw, hh, ch))
+    p.add('frame', 'mount', 'htrim', block(-r * 0.25, r * 0.08, hw * 1.04, hh * 1.06, ch))
+    for k_, (cy, cz) in enumerate(ctr):
+        T = Matrix.Translation((0, cy, cz))
+        p.add('collar%d' % k_, 'mount', 'hmetal', moved(revolve([(-r * 0.3, r * 1.0), (-r * 0.3, r * 1.28), (r * 0.18, r * 1.28), (r * 0.24, r * 1.18),
+                                                               (r * 0.24, r * 1.0)], 12, closed=True, phase=math.pi / 12), T))
+        p.add('bore%d' % k_, 'mount', 'hgrey2', moved(revolve([(r * 0.2, r * 1.0), (-depth, r * 1.0)], n), T))
+        p.add('ring%d' % k_, 'mount', 'hblue', moved(ring_band(-depth * 0.35, r * 0.98, r * 0.12, r * 0.04, n), T))
+        p.add('back%d' % k_, 'mount', 'dark', moved(revolve([(-depth * 0.99, r * 1.0), (-depth * 0.99, 0.0001)], n), T))
+        p.add('warhead%d' % k_, 'mount', 'hmetal', moved(revolve([(-depth * 0.97, r * 0.82), (-depth * 0.7, r * 0.8), (-depth * 0.55, r * 0.42),
+                                                                 (-depth * 0.5, 0.0001)], n), T))
+    p.fit = dict(exits=[dict(pos=P((r * 0.24, cy, cz)), axis=D((1, 0, 0)), radius=r) for (cy, cz) in ctr], radius=max(hw, hh) * 1.1)
+    return p
 
 
 def craft_drive(w, h, body_len, depth=None, cells=3):
