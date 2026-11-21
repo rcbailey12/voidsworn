@@ -1,6 +1,7 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
-# Issue 1435 (Astra council W3): the window close button and Alt-F4 ended the process straight from SceneTree, past
+# Issue 1435 (Astra council W3). SYNTHETIC: this sends the close notification in a headless run; it is not the
+# acceptance for the real title bar X and Alt-F4 on Windows (the PC proof, pc/1435 close timing). The window close button and Alt-F4 ended the process straight from SceneTree, past
 # main.quit_clean (which frees the scenes, drains the fx jobs and clears the statics before the rendering server goes).
 # This runs the real Main (title screen, headless) with an instrumented quit_clean and a stand-in battle holding an fx
 # with a cut that is still running, then sends the system close the way the window does (the close notification and

@@ -49,25 +49,37 @@ func _fx(world: Node3D) -> Node:
 	return fx
 
 
-# The scene change: the fx leaves the tree (its _exit_tree runs release(false)); returns the caller's time in ms.
+# The scene change as the game does it: the battle node holding the fx leaves the tree and is freed (fx _exit_tree runs
+# release(false)); returns the caller's time in ms for both. This is the fx part of leaving only, not the title rebuild
+# after a quick battle (main.gd quick_battle); the PC proof times the real window close on Windows.
 func _leave(world: Node3D, fx: Node) -> float:
+	var battle: Node = fx.get_parent()
 	var t0 := Time.get_ticks_usec()
-	world.remove_child(fx)
-	var ms := float(Time.get_ticks_usec() - t0) / 1000.0
-	fx.free()
-	return ms
+	world.remove_child(battle)
+	battle.free()
+	return float(Time.get_ticks_usec() - t0) / 1000.0
+
+
+# Each round's stand-in battle: the ship and the fx live under it, as in the game, and leave with it.
+var _cur: Node3D
+
+
+func _round(world: Node3D) -> Node3D:
+	_cur = Node3D.new()
+	world.add_child(_cur)
+	return _cur
 
 
 func _run() -> void:
 	var world := Node3D.new()
 	root.add_child(world)
-	var ship := _load_ship(world)
+	var ship := _load_ship(_round(world))
 	check(ship != null, "A16 loads")
 	if ship == null:
 		quit(1)
 		return
 	# 1. a held cut is retired, not waited for, and reaped once it ends
-	var fx = _fx(world)
+	var fx = _fx(_cur)
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
@@ -93,8 +105,8 @@ func _run() -> void:
 		frames += 1
 	check(FX.retired_count() == 0 and done[0], "the ended job is reaped on a later frame (%d frames)" % frames)
 	# 2. a released fx takes no new cuts
-	ship = _load_ship(world)
-	fx = _fx(world)
+	ship = _load_ship(_round(world))
+	fx = _fx(_cur)
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	s = fx.ship("a16")
@@ -102,11 +114,11 @@ func _run() -> void:
 	DEATH.precompute(fx, s, "blast", true)
 	check(not s.has_meta("cut_task"), "a released fx starts no new cut")
 	fx.queue_free()
-	ship.queue_free()
+	_cur.queue_free()
 	await process_frame
 	# 3. quit drains the retired jobs
-	ship = _load_ship(world)
-	fx = _fx(world)
+	ship = _load_ship(_round(world))
+	fx = _fx(_cur)
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	gate = Semaphore.new()
 	done = [false]
@@ -124,11 +136,10 @@ func _run() -> void:
 	var drain_ms := float(Time.get_ticks_usec() - t_drain) / 1000.0
 	poster.wait_to_finish()
 	check(FX.retired_count() == 0 and done[0], "clear_static waits for the retired job before it returns (%.0f ms)" % drain_ms)
-	ship.queue_free()
 	await process_frame
 	# 4. a real A16 blast cut out at the scene change
-	ship = _load_ship(world)
-	fx = _fx(world)
+	ship = _load_ship(_round(world))
+	fx = _fx(_cur)
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	s = fx.ship("a16")
@@ -136,6 +147,7 @@ func _run() -> void:
 	var real_tid: int = s.get_meta("cut_task", -1)
 	check(real_tid >= 0, "the A16 blast cut is out")
 	var pending := real_tid >= 0 and not WorkerThreadPool.is_task_completed(real_tid)
+	check(pending, "the A16 cut is still running when the battle leaves (the case being timed)")
 	ms = _leave(world, fx)
 	print("EXIT_RELEASE a16 cut: pending_at_leave=%s caller_ms=%.2f retired=%d" % [str(pending), ms, FX.retired_count()])
 	check(ms < CALLER_LIMIT_MS, "leaving with the A16 cut out returns in %.1f ms (under %d)" % [ms, int(CALLER_LIMIT_MS)])
@@ -146,7 +158,6 @@ func _run() -> void:
 		frames += 1
 	print("EXIT_RELEASE a16 cut reaped after %d frames, %.0f ms" % [frames, float(Time.get_ticks_usec() - t_reap) / 1000.0])
 	check(FX.retired_count() == 0, "the A16 cut is reaped on later frames")
-	ship.queue_free()
 	world.queue_free()
 	await process_frame
 	FX.clear_static()
