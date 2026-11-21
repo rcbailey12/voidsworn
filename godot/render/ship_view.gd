@@ -375,6 +375,11 @@ func _look() -> void:
 	if not ResourceLoader.exists("res://render/look.gd"):
 		return
 	var LOOK = load("res://render/look.gd")
+	# issue 1434 (LOAD6: one hull per battle still spent about 460 ms here): the parts are timed so the PC log names them
+	var t_new := 0
+	var t_set := 0
+	var n_new := 0
+	var n_surf := 0
 	for m in meshes:
 		var mi := m as MeshInstance3D
 		if mi.mesh == null:
@@ -383,14 +388,25 @@ func _look() -> void:
 			var src: Material = mi.get_active_material(i)
 			if src == null:
 				continue
+			n_surf += 1
 			var k := "%d|%s" % [src.get_instance_id(), fac]
+			var t0 := Time.get_ticks_usec()
 			if not _look_cache.has(k):
 				_look_cache[k] = LOOK.hull(src, fac, true)
+				n_new += 1
+			var t1 := Time.get_ticks_usec()
 			mi.set_surface_override_material(i, _look_cache[k])
+			t_new += t1 - t0
+			t_set += Time.get_ticks_usec() - t1
 	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
 	# just added is queued once already; touch does not queue it twice)
+	var t2 := Time.get_ticks_usec()
 	if is_inside_tree():
 		load("res://render/mesh_watch.gd").touch(self)
+	stage_us["look_new_mats"] = t_new
+	stage_us["look_assign"] = t_set
+	stage_us["look_touch"] = Time.get_ticks_usec() - t2
+	stage_us["look_counts"] = n_new * 1000 + n_surf   # new materials * 1000 + surfaces (the log is in microseconds)
 
 
 func _collect(n: Node) -> void:

@@ -606,6 +606,11 @@ func _begin(a) -> void:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
 	board.build(api)
 	cam.bounds = board.bounds()
+	if sliced:
+		load_phase = "board_build"
+		await get_tree().process_frame   # issue 1434 (LOAD6: start to board 1.4 to 1.6 s): the board, then the look
+		if gen != _build_gen:
+			return
 	_post_quality(str(args.get("quality", "max")))
 	if sliced:
 		load_phase = "board"

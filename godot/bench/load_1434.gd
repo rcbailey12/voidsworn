@@ -7,6 +7,7 @@ extends SceneTree
 #              read every frame from before the backdrop starts until it is freed (must not move)
 #   leave      a second cold title, New run clicked while its backdrop builds
 #   b1, b2, b3 three default sector 1 fights (start_default, seeds 101, 202, 303), the shape of Battles 1 to 3
+#   b2r        Battle 2 again, its world bakes run again with every shader warm (reported only, see _b2_again)
 # Per battle: the longest main-thread stretch of the ship build (battle.gd load_stats: one ship's setup or its effects
 # registration at most), the worst single ship's setup and registration, and the worst frame from the cover to play,
 # with the load phase of the five worst frames and the time spent in each phase.
@@ -29,7 +30,7 @@ var out_dir := ""
 var lines: Array = []
 var pass_all := true
 var finished: Array = []   # each case adds its name as its last step, so a case cut short by a script error fails the run
-var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3"])
+var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3", "b2r"])
 
 
 func _init() -> void:
@@ -61,8 +62,8 @@ func _pipes() -> int:
 func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
-		out.append("%d ms %s: render cpu %.0f ms, gpu %.0f ms, rest (scripts, waits) %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[4], f[5]])
+		out.append("%d ms %s (began at %d ms): render cpu %.0f ms, gpu %.0f ms, rest %.0f ms of which the process step %.0f ms, %d pipelines compiled, %d world bakes pending" % [
+			f[0], f[1], f[7], f[2], f[3], maxf(0.0, float(f[0]) - float(f[2])), f[6], f[4], f[5]])
 	return out
 
 
@@ -99,7 +100,8 @@ func _battle(tag: String, args: Dictionary) -> void:
 		var bakes: int = int(b.world.pending_bakes) if b.world != null and is_instance_valid(b.world) else -1
 		frames.append([(now - last) / 1000, ph0 if ph0 == b.load_phase else "%s->%s" % [ph0, b.load_phase],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
-			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes])
+			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000])
 		pipes0 = pipes
 		last = now
 	frames.sort_custom(func(x, y): return x[0] > y[0])
@@ -175,7 +177,8 @@ func _title() -> void:
 		var bakes: int = int(sc1.world.pending_bakes) if sc1 != null and is_instance_valid(sc1) and sc1.world != null and is_instance_valid(sc1.world) else -1
 		frames.append([(now - last) / 1000, ph0 if ph0 == ph1 else "%s->%s" % [ph0, ph1],
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
-			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes])
+			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
@@ -336,6 +339,22 @@ func _leave() -> void:
 	finished.append("leave")
 
 
+# b2r (reported, not graded): Battle 2 again in the same process, with its world bakes forced to run again (a fresh
+# bake folder and an empty memory cache) while every shader and pipeline it uses is already warm. LOAD6 showed 5 to 10 s
+# main-thread frames with bakes pending; if they come back here the bakes cause them, if not the first-use shader work does.
+func _b2_again() -> void:
+	var Baker = load("res://world/world_bake.gd")
+	var fresh := OS.get_user_data_dir().path_join("load1434_b2r_bakes_%d" % OS.get_process_id())
+	OS.set_environment("VS_WORLD_CACHE", fresh)
+	Baker._cache.clear()
+	Baker._textures.clear()
+	var keep := pass_all
+	await _battle("b2r", {"seed": 202})
+	_say("[load1434] b2r is reported only (bakes again, shaders warm): its FAIL or PASS above does not count toward RESULT")
+	pass_all = keep
+	# the folder stays: bakes still running would write into it; it lives in this run's own throwaway Godot profile
+
+
 func _run() -> void:
 	_say("[load1434] display %s, window %s, renderer %s" % [DisplayServer.get_name(), str(root.get_visible_rect().size), RenderingServer.get_current_rendering_method()])
 	if "s25" in cases: await _battle("s25", {"scenario": "s25"})
@@ -344,6 +363,7 @@ func _run() -> void:
 	if "b1" in cases: await _battle("b1", {"seed": 101})
 	if "b2" in cases: await _battle("b2", {"seed": 202})
 	if "b3" in cases: await _battle("b3", {"seed": 303})
+	if "b2r" in cases: await _b2_again()
 	for c in cases:
 		if not c in finished:
 			pass_all = false
