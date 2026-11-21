@@ -181,28 +181,69 @@ func _ready() -> void:
 	_live_ids.append(get_instance_id())
 
 
+func _enter_tree() -> void:
+	closed = false
+
+
 func _exit_tree() -> void:
 	_set_physics_awake(true)   # the world can outlive this fx (look bench battles share the root world)
-	release()
+	# Issue 1435: leaving a battle no longer waits here for the death cut, shield and damage jobs (5.7 to 6.5 s on the
+	# caller with one A16 cut out). The jobs still running are retired with their inputs held and reaped over the
+	# next frames; quit drains them all before the rendering server goes (clear_static, and the root's exit as a backstop).
+	release(false)
+
+
+# Issue 1435: once released, this fx takes no new background jobs (death cuts, shield skins, hull damage rebuilds).
+var closed := false
+# Jobs of released fx nodes still running: one entry per release, {"tids": [task ids], "keep": [what their inputs need]}.
+# Each tid is waited for once it is complete (an unawaited task keeps its job alive to the end of the process).
+static var _retired: Array = []
+static var _reaping := false
+static var _exit_hooked := false
 
 
 # Drop everything that holds GPU resources, so it is freed while the rendering server still exists. Background cut
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
-func release() -> void:
+# wait false (issue 1435, the scene change): finished jobs are reaped now, the rest are retired and reaped later.
+func release(wait := true) -> void:
+	var t_rel := Time.get_ticks_usec()
+	closed = true
 	attach_report(true)
 	_end_dim()
+	var tids: Array = []
+	var keep: Array = []
 	for tid in _death_cut_tasks.keys():
-		join_death_cut(tid)
+		if wait or WorkerThreadPool.is_task_completed(tid):
+			join_death_cut(tid)
+		else:
+			tids.append(tid)
+	_death_cut_tasks.clear()
 	for job in _shield_jobs.values():
-		WorkerThreadPool.wait_for_task_completion(job["task"])
+		if wait or WorkerThreadPool.is_task_completed(job["task"]):
+			WorkerThreadPool.wait_for_task_completion(job["task"])
+		else:
+			tids.append(job["task"])
+			keep.append(job)
 	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
-		s.wait_damage()
+		if not wait and s._dmg_task >= 0 and not WorkerThreadPool.is_task_completed(s._dmg_task):
+			tids.append(s._dmg_task)
+			keep.append(s._dmg_job)
+			s._dmg_task = -1
+		else:
+			s.wait_damage()
+		if s.has_meta("cut_job"):
+			keep.append(s.get_meta("cut_job"))
+		if s.has_meta("cut_prev"):
+			keep.append(s.get_meta("cut_prev"))
 		s.remove_meta("cut_task")
 		s.remove_meta("cut_job")
 		s.remove_meta("cut_prev")
+	if not tids.is_empty():
+		_retire(tids, keep)
+		print("[fx] left with %d jobs still running: retired, not waited for (%.1f ms)" % [tids.size(), float(Time.get_ticks_usec() - t_rel) / 1000.0])
 	for w in dstate.get("wrecks", []):
 		for l in w.get("lights", []):
 			l["on"] = false
@@ -228,8 +269,69 @@ func release() -> void:
 		HULL.clear_shader_cache()
 
 
+static func _retire(tids: Array, keep: Array) -> void:
+	_retired.append({"tids": tids, "keep": keep})
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		drain_retired()
+		return
+	if not _reaping:
+		_reaping = true
+		tree.process_frame.connect(reap_retired)
+	# the backstop: a quit that skips clear_static still drains before the rendering server is finished (the root leaves
+	# the tree after every node under it, so this runs after the last fx has retired its jobs)
+	if not _exit_hooked and tree.root != null:
+		_exit_hooked = true
+		tree.root.tree_exiting.connect(drain_retired)
+
+
+# Each frame while any are retired: wait for the finished ones (no wait: they are done), keep the rest.
+static func reap_retired() -> void:
+	for e in _retired.duplicate():
+		var left: Array = []
+		for tid in e["tids"]:
+			if WorkerThreadPool.is_task_completed(tid):
+				WorkerThreadPool.wait_for_task_completion(tid)
+			else:
+				left.append(tid)
+		e["tids"] = left
+		if left.is_empty():
+			_retired.erase(e)
+	if _retired.is_empty() and _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_retired):
+			tree.process_frame.disconnect(reap_retired)
+
+
+# Wait for every retired job now (quit: before the rendering server goes).
+static func drain_retired() -> void:
+	var n := retired_count()
+	var t0 := Time.get_ticks_usec()
+	for e in _retired:
+		for tid in e["tids"]:
+			WorkerThreadPool.wait_for_task_completion(tid)
+	_retired.clear()
+	if n > 0:
+		print("[fx] drained %d retired jobs before quit in %.0f ms" % [n, float(Time.get_ticks_usec() - t0) / 1000.0])
+	if _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_retired):
+			tree.process_frame.disconnect(reap_retired)
+
+
+static func retired_count() -> int:
+	var n := 0
+	for e in _retired:
+		n += (e["tids"] as Array).size()
+	return n
+
+
 # For a clean quit (G2's main.quit_clean calls it): release every live fx node's resources now.
 static func clear_static() -> void:
+	drain_retired()   # issue 1435: every retired job ends here, before the rendering server goes
+	_retired.clear()
 	for iid in _live_ids.duplicate():
 		var n = instance_from_id(iid)
 		if n != null and is_instance_valid(n):
@@ -1277,12 +1379,18 @@ func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
 func queue_shield_skin(ship: SHIP, key: String, box: AABB, faces: PackedVector3Array, bob: Vector3) -> void:
 	# Only the triangle field runs on the worker. Normal generation, uploads
 	# and the posed hit collider stay on the main thread under the cover.
+	if closed:
+		return
 	if not _shield_jobs.has(key):
 		var result := []
-		var task := WorkerThreadPool.add_task(func() -> void:
-			result.append(SHIP.bake_shield_geometry(box, faces)))
+		var task := WorkerThreadPool.add_task(_shield_work(box, faces, result))
 		_shield_jobs[key] = {"task": task, "result": result, "ships": []}
 	_shield_jobs[key]["ships"].append([ship, bob])
+
+
+# A static lambda: it holds no reference to this fx, so a job retired by release(false) runs the same after the fx is gone.
+static func _shield_work(box: AABB, faces: PackedVector3Array, result: Array) -> Callable:
+	return func() -> void: result.append(SHIP.bake_shield_geometry(box, faces))
 
 
 func _finish_shield_skins() -> void:
