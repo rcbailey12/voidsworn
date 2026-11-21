@@ -1,0 +1,26 @@
+OPUS1121N_WAIT.bat waiting for OPUS1524_SHOTS exit in opus1524_wait.txt Sat 11/21/2026  9:20:39.36 
+swapped out while only waiting 09:51:48: replaced by OPUS1121N_WAIT2.bat (waits for OPUS1531_RUN2 exit; Board Nov 21 15:48 UTC)
+OPUS1121N_WAIT2.bat waiting for OPUS1531_RUN2 exit in opus1531b_wait.txt Sat 11/21/2026  9:51:48.14 
+swapped out while only waiting 10:26:37: WAIT2 replaced by OPUS1121N_WAIT3.bat (waits for OPUS1529_PROOF2 exit; Board Nov 21 16:26 UTC)
+OPUS1121N_WAIT3.bat waiting for OPUS1529_PROOF2 exit in opus1529b_wait.txt Sat 11/21/2026 10:26:37.66 
+swapped out while only waiting 10:28:39: replaced by OPUS1121N_WAIT4.bat (waits for OPUS1524_SHOTS2 exit in opus1524b_wait.txt, Board Nov 21 16:27 UTC)
+OPUS1121N_WAIT4.bat waiting for OPUS1524_SHOTS2 exit in opus1524b_wait.txt Sat 11/21/2026 10:28:39.59 
+swapped out while only waiting 10:34:44: replaced by OPUS1121N_WAIT5.bat (waits for OPUS1524_SHOTS3 exit in opus1524c_wait.txt, Board Nov 21 16:33 UTC)
+OPUS1121N_WAIT5.bat waiting for OPUS1524_SHOTS3 exit in opus1524c_wait.txt Sat 11/21/2026 10:34:44.67 
+swapped out while only waiting 11:10:39: replaced by OPUS1121N_WAIT6.bat (waits for OPUS1434_LOAD10 exit in opus1434j_wait.txt, Board Nov 21 17:09 UTC)
+OPUS1121N_WAIT6.bat waiting for OPUS1434_LOAD10 exit in opus1434j_wait.txt Sat 11/21/2026 11:10:39.67 
+swapped out while only waiting 11:12:21: replaced by OPUS1121N_WAIT7.bat (waits for OPUS1434_LOAD11 exit in opus1434k_wait.txt, Board Nov 21 17:11 UTC)
+OPUS1121N_WAIT7.bat waiting for OPUS1434_LOAD11 exit in opus1434k_wait.txt Sat 11/21/2026 11:12:21.69 
+swapped out while only waiting 11:30:11: replaced by OPUS1121N_WAIT8.bat (waits for OPUS1524_SHOTS4 exit in opus1524e_wait.txt, Board Nov 21 17:29 UTC)
+OPUS1121N_WAIT8.bat waiting for OPUS1524_SHOTS4 exit in opus1524e_wait.txt Sat 11/21/2026 11:30:11.23 
+swapped out while only waiting 11:46:48: replaced by OPUS1121N_WAIT9.bat (waits for OPUS1531_RUN3 exit in opus1531c_wait.txt, Board Nov 21 17:46 UTC)
+OPUS1121N_WAIT9.bat waiting for OPUS1531_RUN3 exit in opus1531c_wait.txt Sat 11/21/2026 11:46:48.84 
+swapped out while only waiting 12:11:03: replaced by OPUS1121N_WAIT10.bat (waits for OPUS1434_LOAD12 exit in opus1434l_wait.txt, Board Nov 21 18:10 UTC)
+OPUS1121N_WAIT10.bat waiting for OPUS1434_LOAD12 exit in opus1434l_wait.txt Sat 11/21/2026 12:11:03.91 
+swapped out while only waiting 12:28:13: replaced by OPUS1121N_WAIT11.bat (waits for OPUS1524_SHOTS5 exit in opus1524f_wait.txt, Board Nov 21 18:27 UTC)
+OPUS1121N_WAIT11.bat waiting for OPUS1524_SHOTS5 exit in opus1524f_wait.txt Sat 11/21/2026 12:28:14.33 
+OPUS1121N_MOTION start 14:09:16.17 
+OPUS1121N_MOTION exit 0 at 14:28:52.92 
+run folder out_20261121_140917_26517
+result: done PASS
+all done Sat 11/21/2026 14:28:53.34 
