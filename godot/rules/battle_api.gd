@@ -44,6 +44,12 @@ static func settled_result(raw: String, battle: Dictionary) -> String:
 		return "retreat"
 	return raw
 
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	return RulesScript.nem_entry(table, key, fac)
+
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	return RulesScript.nem_entry_name(table, key, fac)
+
 func battle_result() -> String:
 	_mutex.lock()
 	var raw := str(R.B.get("over"))
@@ -182,6 +188,12 @@ func _clean_cfg(cfg: Dictionary) -> Dictionary:
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
+# The enemy AI level, "standard" or "veteran" (anything else is Veteran). Set it before new_battle: the enemy fleet is rolled
+# there at this level (battle.js genEnemyFleet reads AI_LEVEL), issue 1336.
+func set_ai_level(level: String) -> void:
+	_enter()
+	R.AI_LEVEL = level if level in ["standard", "veteran"] else "veteran"
+	_leave(false)
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_enter(); halted = ""
 	if R != null: R.not_ported = ""   # a new battle starts clean
@@ -236,24 +248,20 @@ func _i_view() -> Dictionary:
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
+			"regenLock": R.jt(u.get("regenLock")),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
 			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones(), "halt": halted if halted != "" else null}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
 	if R.B.get("obj") == null: return o
 	for h in _hexes:
 		var z = R.objZone(h.q, h.r)
 		if z != null: o[str(h.q) + "," + str(h.r)] = z
-	return o
-func _torps() -> Array: # torpedo salvos in flight: they strike at the start of the firing side's next turn
-	var o := []
-	for s in (R.B["torps"] if R.B.get("torps") != null else []):
-		o.append({"id": s["id"], "side": s["side"], "by": s["by"], "target": s["tid"], "aim": {"q": int(s["aim"]["q"]), "r": int(s["aim"]["r"])}, "from": {"q": int(s["from"]["q"]), "r": int(s["from"]["r"])}, "round": int(s["r"])})
 	return o
 
 # Everything that happened since the last call, in order (API.md lists the event types).
@@ -452,6 +460,19 @@ func can_command() -> bool:
 	_enter()
 	var r = _i_can_command(); _leave(false); return r
 func _i_can_command() -> bool: return phase == "player" and R.canCommand("player")
+func command_info() -> Dictionary:
+	_enter()
+	var info := {}
+	if R != null and R.B != null:
+		var cmd = R.commandFor("player")
+		if cmd != null:
+			var fac = R.RUN.get("fac", "voidsworn") if R.RUN != null else "voidsworn"
+			var tier: int = int(R.cmdTier())
+			var next: int = int(R.cmdTier(1))
+			info = {"label": str(cmd["n"]), "power": tier + 1, "effect": R.cmdDesc(cmd, tier, fac),
+				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed"))}
+	_leave(false)
+	return info
 func command() -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
@@ -682,6 +703,27 @@ func teaching_info() -> Dictionary:
 	_leave(false)
 	return out
 
+# Issue 1289: the hulls a battle will bring in after it starts (the rules' reinforcement event, known when the battle
+# starts), so the battle can load and draw them under the loading cover instead of in the frame they arrive. Read only:
+# no dice, no ids taken, so the battle plays exactly as without it. Same fields ShipView.setup reads from a view unit.
+func arrival_previews() -> Array:
+	_enter()
+	var out: Array = []
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var run = R.RUN if R.RUN is Dictionary else {}
+		var fac = B.get("cfg", {}).get("fac") if side == "enemy" else (run["fac"] if R.jt(run.get("fac")) else "voidsworn")
+		var tpl = R.cheapHull(fac)
+		var t: Dictionary = R.HULLS.get(tpl, {})
+		if not t.is_empty():
+			out.append({"id": "arrival_warm_0", "side": side, "tpl": tpl, "fac": t["fac"] if R.jt(t.get("fac")) else fac,
+				"cls": t.get("cls"), "size": t.get("size", 1.0), "facing": 0 if side == "player" else 3, "squadron": false,
+				"flagship": false, "hp": t.get("hp", 1), "maxHp": t.get("hp", 1)})
+	_leave(false)
+	return out
+
 # ---------------- the game's own player-side AI ----------------
 # ai_activate(id): one player ship acts on its own, as the game's battle sim plays your side (sim3d.js botUnit: the Admiral's
 # Command when it pays, abilities, rams, boarding, the best move for its guns and the objective, every gun at its best target,
@@ -769,7 +811,7 @@ func _ai_activate(u) -> void:
 	R.eval_begin()
 	for s in states:
 		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
-		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.torpThreat(u, v) * 0.9 - R.syncPull(u, v) * 1.5
+		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.syncPull(u, v) * 1.5
 		if sc > bs:
 			bs = sc; best = s
 	R.eval_end()

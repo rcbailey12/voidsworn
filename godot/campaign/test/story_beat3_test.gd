@@ -186,10 +186,18 @@ func _initialize() -> void:
 			await settle()
 			check(text_of(ui).contains(row["debrief"]), str(fac) + " battle debrief renders")
 			if i == 0: await shot(str(fac) + "_battle_debrief")
+			if fac == "voidsworn" and i == 0:
+				ui.render(); await settle()
+				check(text_of(ui).count(row["debrief"]) == 1, "redrawing keeps the line on the same victory")
+				c.load_save_text(c.save_text()); c.act("continueRun")
+				check(c.RUN.get("beat3DebriefSeen", false), "first victory records the debrief in the run save")
+				c.afterBattle()
+				c.rewardFlow({"cfg": {"kind": "battle", "fac": "hegemony"}, "kills": 1, "rounds": 3, "lost": [], "xp": []})
+				await settle()
+				check(not text_of(ui).contains(row["debrief"]), "next victory after Continue does not repeat the debrief")
 		for won in [false, true]:
-			var id = row["spotlights"].keys()[0]
-			c.META["admirals"][id] = true  # the harness owns the admiral it flies
-			c.newRun(id, fac); c.RUN["sector"] = 3
+			choose(c, fac, 1)
+			c.load_save_text(c.save_text()); c.act("continueRun")
 			c.endRun(won)
 			await settle()
 			await shot(str(fac) + ("_win" if won else "_loss"))
@@ -198,6 +206,18 @@ func _initialize() -> void:
 			check(is_instance_valid(ui.debrief.overlay), str(fac) + " The record opens after " + str(won))
 			check(all_text(ui.debrief.overlay).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
 			ui.debrief.close_detail(); await settle()
+	var sunward: Dictionary = c.TB.STORY_BEAT3["voidsworn"]
+	for sector in [1, 2, 3]:
+		c.newRun("vex", "voidsworn"); c.RUN["sector"] = sector
+		c.saveRun(); c.load_save_text(c.save_text()); c.act("continueRun"); c.endRun(false)
+		await settle()
+		ui.debrief.open_detail("record"); await settle()
+		check(not all_text(ui.debrief.overlay).contains(sunward["learning"]), "Sector %d loss after Continue has no payoff without a choice" % sector)
+		ui.debrief.close_detail(); await settle()
+	choose(c, "voidsworn", 1)
+	c.tel("battle_end", {"result": "win"}); c.saveRun()
+	c.load_save_text(c.save_text()); c.act("continueRun")
+	check(c.beat3Debrief() == "", "a legacy Sector III win in the saved log prevents a repeat")
 	await reward_checks(c, ui)
 	ui.queue_free()
 	print("PASS: beat 3 screens, all five rewards, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry." if fails == 0 else "FAIL: %d checks" % fails)

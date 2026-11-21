@@ -95,6 +95,23 @@ func exercise_parked(fac: String, kind: String) -> void:
 	rolled.resize(wing.craft.size())
 	var dt := 1.0 / 60.0
 	var edge := HT.HEX_S * sqrt(3.0) * 0.5
+	var corners_by_craft: Array[PackedVector3Array] = []
+	var sterns := PackedVector3Array()
+	for craft: Node3D in wing.craft:
+		var corners := PackedVector3Array()
+		for mesh: MeshInstance3D in craft.find_children("*", "MeshInstance3D", true, false):
+			var box := mesh.get_aabb()
+			for corner in 8:
+				corners.append(craft.to_local(mesh.to_global(box.get_endpoint(corner))))
+		corners_by_craft.append(corners)
+		var engines := craft.find_children("hp_eng_*", "Node3D", true, false)
+		var stern := Vector3(-0.47, 0.0, 0.0)
+		if not engines.is_empty():
+			var centre := Vector3.ZERO
+			for engine: Node3D in engines:
+				centre += craft.to_local(engine.global_position)
+			stern = centre / engines.size()
+		sterns.append(stern)
 	for frame in 2400:
 		var before: Array[Vector3] = []
 		for n in wing.craft: before.append(n.position)
@@ -102,14 +119,13 @@ func exercise_parked(fac: String, kind: String) -> void:
 		for i in wing.craft.size():
 			var n: Node3D = wing.craft[i]
 			fastest = maxf(fastest, n.position.distance_to(before[i]) / dt)
-			var box: AABB = n.get_child(0).get_aabb()
-			for corner in 8:
-				var p := n.to_global(box.get_endpoint(corner)) - at
+			for corner in corners_by_craft[i]:
+				var p := n.to_global(corner) - at
 				farthest = maxf(farthest, Vector2(p.x, p.z).length())
 			if n.basis.y.normalized().dot(Vector3.UP) < -0.6: rolled[i] = 1
 			var hist: Array = wing.trails[i].hist
 			if not hist.is_empty() and hist[0][1] == wing.clock:
-				trails_attached = trails_attached and (hist[0][0] as Vector3).is_equal_approx(n.to_global(Vector3(-0.47, 0.0, 0.0)))
+				trails_attached = trails_attached and (hist[0][0] as Vector3).is_equal_approx(n.to_global(sterns[i]))
 		var gap: float = wing.craft[0].position.distance_to(wing.craft[1].position)
 		nearest = minf(nearest, gap)
 		widest = maxf(widest, gap)

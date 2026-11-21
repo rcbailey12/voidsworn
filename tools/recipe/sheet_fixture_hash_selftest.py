@@ -58,6 +58,31 @@ def main():
         assert metadata.read_bytes() == bound_record
     print('PASS fixture bake writes a bound pair and stale inputs or bytes fail')
 
+    # Issue 1174: --bake --out DIR writes a fresh bound pair into DIR and never touches the committed pair; --check
+    # --quiet-stale exits 3 (rebake) for a stale record, 1 for anything else.
+    calls.clear()
+    dest = work / 'fresh'
+    with patch.multiple(fixture, OUT=metadata, FIXTURE=output, FILES=(str(fixture_input),)), \
+            patch.object(fixture.subprocess, 'run', fake_blender):
+        before = (output.read_bytes(), metadata.read_bytes())
+        with patch.object(fixture.sys, 'argv', ['sheet_fixture_hash.py', '--check', '--quiet-stale']), \
+                contextlib.redirect_stdout(io.StringIO()):
+            assert fixture.main() == 3, 'a stale record did not exit 3 under --quiet-stale'
+        with patch.object(fixture.sys, 'argv', ['sheet_fixture_hash.py', '--check']), \
+                contextlib.redirect_stdout(io.StringIO()):
+            assert fixture.main() == 1, 'a stale record did not fail plain --check'
+        with patch.object(fixture.sys, 'argv', ['sheet_fixture_hash.py', '--bake', 'fake Blender', '--out', str(dest)]), \
+                contextlib.redirect_stdout(io.StringIO()):
+            assert fixture.main() == 0
+        assert (output.read_bytes(), metadata.read_bytes()) == before, '--out wrote over the committed pair'
+        assert gzip.decompress((dest / output.name).read_bytes()) == b'glTF baked fixture'
+        fixture.check(dest / metadata.name, dest / output.name)
+        output.unlink()
+        with patch.object(fixture.sys, 'argv', ['sheet_fixture_hash.py', '--check', '--quiet-stale']), \
+                contextlib.redirect_stdout(io.StringIO()):
+            assert fixture.main() == 1, 'a missing fixture exited as merely stale'
+    print('PASS --bake --out writes a fresh pair beside, --quiet-stale exits 3 only for a stale record')
+
 
 if __name__ == '__main__':
     main()

@@ -3,6 +3,10 @@ extends Node3D
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+static var ship_manifest_path := "res://assets/ships/manifest.json"
+static var ship_cache_dir := "res://gen/ships"
+static var _model_codes: Dictionary = {}   # not GPU: model code strings
+static var _indexed_manifest := ""
 # Local flight amplitudes, in craft lengths and radians. Formation clearance
 # includes the whole weave, bank and (for spores) breathing cycle.
 const WEAVE := Vector3(0.12, 0.09, 0.14)
@@ -37,6 +41,8 @@ var _attitudes: Array[Quaternion] = []
 var _patrol_blend := 0.0
 var sample_t := 0.0
 var trail_mat: ShaderMaterial
+var _model_scene: PackedScene
+var _stern := Vector3(-0.47, 0.0, 0.0)
 # issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
 # each sample's birth time (UV2.x) and the wing's clock, so the mesh is rebuilt only when a sample is added or dropped,
 # not every frame. Same maths as the old per-frame GDScript build.
@@ -76,7 +82,9 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	trail_mat.set_shader_parameter("trail_len", size)
 	trail_mat.set_shader_parameter("width_k", 0.065 if fac == "chorus" else 0.026)
 	trail_mat.set_shader_parameter("alpha_k", 0.22 if fac == "chorus" else 0.56)
-	var lead := CRAFT.make(fac, kind)
+	if count <= 0:
+		return
+	var lead := _make_craft(fac, kind)
 	for i in count:
 		var n: Node3D = lead if i == 0 else lead.duplicate()
 		add_child(n)
@@ -95,6 +103,66 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	fit_formation()
 	_patrol_blend = patrol_target
 	step(0.0)
+
+
+static func _model_code(fac: String, kind: String) -> String:
+	if _indexed_manifest != ship_manifest_path:
+		_indexed_manifest = ship_manifest_path
+		_model_codes.clear()
+		if FileAccess.file_exists(ship_manifest_path):
+			var manifest = JSON.parse_string(FileAccess.get_file_as_string(ship_manifest_path))
+			if manifest is Dictionary and manifest.get("ships") is Dictionary:
+				for code in manifest["ships"]:
+					var row = manifest["ships"][code]
+					if row is Dictionary and row.get("cls") == "Squadron" and row.has("wing_role"):
+						var key := "%s|%s" % [row.get("faction", ""), row["wing_role"]]
+						# Ambiguous entries fall back to the procedural craft.
+						_model_codes[key] = "" if _model_codes.has(key) else code
+	return _model_codes.get(fac + "|" + kind, "")
+
+
+func _make_craft(fac: String, kind: String) -> Node3D:
+	var code := _model_code(fac, kind)
+	var path := ship_cache_dir.path_join(code + ".scn")
+	if code.is_empty() or not ResourceLoader.exists(path, "PackedScene"):
+		return CRAFT.make(fac, kind)
+	_model_scene = ResourceLoader.load(path, "PackedScene") as PackedScene
+	if _model_scene == null:
+		return CRAFT.make(fac, kind)
+	var model := _model_scene.instantiate()
+	if not model is Node3D:
+		model.free()
+		return CRAFT.make(fac, kind)
+	var body := model as Node3D
+	var box := _mesh_bounds(body, body.transform)
+	if box.size.x <= 0.0:
+		body.free()
+		return CRAFT.make(fac, kind)
+	# The formation animates a unit-length root. Fit only its model child so
+	# all poses, including the shorter effect passes, use the same scale.
+	var fit := Transform3D(Basis.from_scale(Vector3.ONE / box.size.x), -box.get_center() / box.size.x)
+	body.transform = fit * body.transform
+	_stern = _engine_origin(body)
+	var craft_root := Node3D.new()
+	craft_root.name = fac + "_" + kind
+	craft_root.add_child(body)
+	return craft_root
+
+
+func _engine_origin(model: Node3D) -> Vector3:
+	var engines := model.find_children("hp_eng_*", "Node3D", true, false)
+	if engines.is_empty():
+		return Vector3(-0.5, 0.0, 0.0)
+	# One ribbon per craft starts at the centre of its authored exhausts.
+	var origin := Vector3.ZERO
+	for engine in engines:
+		var point: Vector3 = engine.position
+		var ancestor := engine.get_parent() as Node3D
+		while ancestor != null:
+			point = ancestor.transform * point
+			ancestor = ancestor.get_parent() as Node3D
+		origin += point
+	return origin / engines.size()
 
 # Measure in each craft's local frame, including nested mesh transforms and
 # off-centre hulls. Never measure the ribbons or the current animated root.
@@ -139,7 +207,7 @@ func _side_reach(a: Vector3, b: Vector3, delta: float) -> float:
 	return a.z + b.z + peak + ((a.x + b.x) * bank_x + (a.y + b.y) * BANK.y) * BANK.z
 
 # Also callable after replacing a preview's craft meshes. Normal play measures
-# CRAFT.make's actual geometry once at setup, without per-frame mesh walks.
+# its actual geometry once at setup, without per-frame mesh walks.
 func fit_formation() -> void:
 	rests.clear()
 	var extents: Array[Vector3] = []
@@ -300,7 +368,7 @@ func step(dt: float) -> void:
 			n.transform = Transform3D(facing.scaled(Vector3.ONE * size), pos)
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
-		var stern := n.to_global(Vector3(-0.47, 0.0, 0.0))
+		var stern := n.to_global(_stern)
 		var changed := false
 		if not hist.is_empty() and stern.distance_to(hist[0][0]) > length * 8.0:
 			hist.clear()

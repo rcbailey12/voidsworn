@@ -1,0 +1,315 @@
+{
+  "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_before_after_1.png",
+  "date": "2026-11-19T23:06:49Z",
+  "sources": [
+    {
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "voidsworn_autocannon_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "b97a993a2e1397c724975308894af8a5a9a2de6af58652396413fb7d619f7e84",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_autocannon_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "438f0d5a6106ce8b5913654ab8ce9a468785324ca079c59815d5ffa7dec3e8cd",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_battery_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "23fbdc733e1cc2d74f24e4c933baa714a3438aabcefe9b826a66ea2fa70951ba",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_battery_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "e89518956ec24cea4e558897bf5c4f50bcc0f034cf43ef71bfc36b03baa7dc6b",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_hbattery_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "5b83ff37c817f598e5bd43fc24b1acc494dd0e767880639dc49aa6ff4e3bc9ad",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_hbattery_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "79bf2b9b9a83950e71cd1de6ae8623ab4173be379023d4de68a899babd085e96",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_turret_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "33eaa12ecef239b619f55678f1d37a77ca19347a0c4d757948231b36555be59b",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_turret_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "0b534806aa8f63dea2d0a5b91d80440f8bb68237351a307ba93afab71c12f47f",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_lance_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "55be437021b26fabb469dd3ecb4cc844d2ae217a0bae682679dff87c14187d53",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_lance_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "d08f3bb6a5ecdc915384cfd5afb0843a4df9e469054af286a6ec739da602d0b5",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_torp_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "4f038c7dfdfc494ef5e8d22dcee2420d0a110fe0c511a5fd58dc48fe8d35d7f2",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_torp_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "ebead7983e3d9862949a73b59c3eb7a2febab63c080ee4c5ce53b055510afa56",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_flak_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "3a98f963a74adfbcd8c6afd262533ddf3c41b8078689ad9f87b5f5defe4114cb",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_flak_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "6b0dea3a5a871f800827b3d60cfd3f635d5d505d8786e7af1078f6ca9eb3e98f",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_autocannon_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "a6f31d0999568860f420abe06055255f758afa87e6d543436c41c9003a0f1e2e",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_autocannon_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "c46d24c1f71dc04bae6938bd8828805aaa45139f9bb71dcca53e94481ab700e3",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "70542104037e5212edc1fe6e8e043ae5dd8918705380db840a8c6903c360d454"
+  ],
+  "stamp_template_sha256": "70542104037e5212edc1fe6e8e043ae5dd8918705380db840a8c6903c360d454",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFdPT4F/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fVkkBQeGyWgcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "967649fd20fad45296907cce37815db99440b2af8a6bf159c5895b191567e130"
+}

@@ -34,6 +34,12 @@ static var _glyphs := {}
 static var _silhouettes := {}
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_glyphs.clear()
+	_silhouettes.clear()
+
+
 static func glyph(id: String) -> Texture2D:
 	if not _glyphs.has(id):
 		var mirror := id in ["turn_left", "back"]

@@ -85,6 +85,9 @@ var _flight_rotation := Quaternion.IDENTITY
 var _flight_heights := Vector2.ZERO
 var _arrival_tween: Tween
 var _engine_mounts: Array[Vector3] = []
+var _token_ships: Array[Node3D] = []
+var _token_glow: MeshInstance3D
+var _token_light: OmniLight3D
 var _wake_samples: Array = []
 var _wake_mesh: ImmediateMesh
 var _wake_node: MeshInstance3D
@@ -215,11 +218,11 @@ func _hull(fac: String, cls: String, length: float, code: String = "") -> Node3D
 	var sv = SV.new()
 	var u = {"fac": fac, "cls": cls, "facing": 0, "tpl": "", "id": "map"}
 	if code != "": u["code"] = code
+	sv.campaign_map = true
 	sv.setup(u, Vector3.ZERO, false)
 	var wrap = Node3D.new(); wrap.add_child(sv)
 	if sv.ring != null: sv.ring.visible = false
 	var k = length / max(0.1, float(sv.L)); wrap.scale = Vector3.ONE * k
-	sv.set_process(false)
 	return wrap
 # A wreck from A4's real death pieces (gen/wreck/<CODE>_wreck.scn, G2's asset build): the chunks of the ship drifted
 # apart and turned, smouldering at the torn edges. null when the build has no wreck pieces (the cloud sandbox).
@@ -525,7 +528,7 @@ func _torus(r0: float, r1: float) -> TorusMesh:
 # white: lime drawn as lime comes out a pale yellow, and no longer matches the lime of the marker and the button. This
 # finds the colour to draw so that the screen shows the colour asked for, as near as the tone map can reach, and never
 # brighter than 1.0 in any channel (so a route cannot bloom). One search per colour, then cached.
-static var _shown_cache := {}
+static var _shown_cache := {}   # not GPU: colour values
 static func _lin(v: float) -> float: return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
 static func _srgb(v: float) -> float:
 	v = clampf(v, 0.0, 1.0)
@@ -565,7 +568,7 @@ func for_screen(want: Color) -> Color:
 	return Color(out, want.a)
 # A pale line: the sage at a share of its strength as the eye reads it on the dark chart. The line blends in linear light,
 # where an alpha of 0.2 shows as about half strength (the first PC capture did), so the alpha is found from the tone map.
-static var _pale_cache := {}
+static var _pale_cache := {}   # not GPU: alpha values
 func pale(share: float) -> Color:
 	var base = for_screen(Color(GS.BONE, 1.0))
 	if _pale_cache.has(share): return Color(base, _pale_cache[share])
@@ -630,6 +633,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	var C = _C(); var t = Node3D.new(); var L = System.look(C.RUN["fac"])
 	_wake_samples.clear()
 	_engine_mounts.clear()
+	_token_ships.clear()
 	var fs = C.flagshipOf()
 	var h = null
 	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), TOKEN_FLAGSHIP_LEN)
@@ -650,16 +654,30 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
 			_add_engine_mounts(e)
-	sys.glow(t, L["light"], 3.6, stern, 2.0, 0.6)
-	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = stern; t.add_child(l)
+	_token_glow = sys.glow(t, L["light"], 3.6, stern, 2.0, 0.6)
+	_token_light = OmniLight3D.new()
+	_token_light.light_color = L["light"]; _token_light.omni_range = 9.0; _token_light.position = stern
+	t.add_child(_token_light)
+	_set_token_drive(0.0)
 	return t
 
 func _add_engine_mounts(h: Node3D) -> void:
 	# _hull wraps the ship view at map scale. Read its actual engine sprites
 	# through both transforms, including the escort's formation offset.
 	var sv = h.get_child(0)
+	_token_ships.append(sv)
 	for engine in sv.engines:
 		_engine_mounts.append(h.transform * sv.transform * engine.position)
+
+func _set_token_drive(burn: float) -> void:
+	for ship in _token_ships:
+		ship.set_fallback_drive(burn)
+	# The shared nozzle sprites supply the pilot glow. The broad light is for flight.
+	if _token_glow != null:
+		_token_glow.visible = burn > 0.0
+		_token_glow.material_override.set_shader_parameter("gain", 0.6 * burn)
+	if _token_light != null:
+		_token_light.light_energy = 2.4 * burn
 
 func _engine_positions() -> Array:
 	var positions: Array = []
@@ -702,7 +720,7 @@ func _refresh() -> void:
 		# your stop and the next jumps keep full models; stops further on are smaller and darker; behind you or cut off, dimmer still
 		_set_tier(d, 0 if (current or av.has(id)) else (2 if (done or bypassed) else 1))
 		if not done: _danger[id] = intel.danger(n)
-		d["nem"] = not done and n["type"] in ["battle", "elite"] and View.nem_node_is(C, n)
+		d["nem"] = not done and View.nem_node_is(C, n)   # issue 1175: rest and event stops in column 4 too
 		if not done or current: _kb_order.append(id)
 	_kb_order.sort_custom(func(a, b):
 		var na = _nodes[a]["n"]; var nb = _nodes[b]["n"]
@@ -1245,8 +1263,10 @@ func _advance_flight(delta: float) -> void:
 	# depths pass naturally. Avoid the old close zoom that lost the whole sun.
 	_cam_focus = _cam_focus.lerp(p + lead, follow)
 	_cam_zoom = lerpf(_cam_zoom, 0.86, follow)
+	var burn := smoothstep(0.0, 0.15, t) * (1.0 - smoothstep(0.85, 1.0, t))
+	_set_token_drive(burn)
 	# Sample every presented frame so the head never lags behind the engines.
-	_wake_samples.append({"time": _t, "engines": _engine_positions()})
+	_wake_samples.append({"time": _t, "engines": _engine_positions(), "burn": burn})
 	if t >= 1.0: _finish_flight()
 
 func _finish_flight() -> void:
@@ -1259,6 +1279,7 @@ func _finish_flight() -> void:
 	var forward := (token.position - _flight_point(0.995)).normalized()
 	token.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5)
 	_flying = false; _flight_id = ""
+	_set_token_drive(0.0)
 	_C().act("enterNode", id)
 	_last_pos = _C().RUN.get("pos")
 	_arrive(false)
@@ -1282,8 +1303,15 @@ func _update_wake() -> void:
 	while not _wake_samples.is_empty() and _t - _wake_samples[0]["time"] > 0.65: _wake_samples.pop_front()
 	_wake_mesh.clear_surfaces()
 	if _wake_samples.size() < 2: return
-	# Keep the fading arrival tip on the engines as the idle bob resumes.
-	_wake_samples.back()["engines"] = _engine_positions()
+	var cutoff := 1.0
+	if _flying:
+		_wake_samples.back()["engines"] = _engine_positions()
+	else:
+		# Leave spent exhaust in space and clear it quickly after arrival.
+		cutoff = 1.0 - smoothstep(0.0, 0.2, _t - float(_wake_samples.back()["time"]))
+		if cutoff <= 0.0:
+			_wake_samples.clear()
+			return
 	for engine in _engine_mounts.size():
 		_wake_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
 		for i in _wake_samples.size():
@@ -1292,7 +1320,8 @@ func _update_wake() -> void:
 			var after: Vector3 = _wake_samples[mini(_wake_samples.size() - 1, i + 1)]["engines"][engine]
 			var side := (after - before).cross(cam.position - p).normalized()
 			var life := clampf(1.0 - (_t - float(_wake_samples[i]["time"])) / 0.65, 0.0, 1.0)
-			_wake_mesh.surface_set_color(Color(1.5, 1.5, 1.5, life * life * 0.85))
+			var alpha := life * life * 0.85 * float(_wake_samples[i]["burn"]) * cutoff
+			_wake_mesh.surface_set_color(Color(1.5, 1.5, 1.5, alpha))
 			_wake_mesh.surface_add_vertex(p - side * life * 0.26)
 			_wake_mesh.surface_add_vertex(p + side * life * 0.26)
 		_wake_mesh.surface_end()

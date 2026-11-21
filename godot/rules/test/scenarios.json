@@ -3118,7 +3118,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37101,
   "admiral": "ashgrove",
   "fleet": [
    "reliquary",
@@ -3690,7 +3690,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31818,
+  "seed": 31821,
   "admiral": "anuket",
   "fleet": [
    "d_harvester",
@@ -3789,7 +3789,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31818,
+  "seed": 31821,
   "admiral": "anuket",
   "fleet": [
    "d_harvester",
@@ -5071,7 +5071,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 37112,
+  "seed": 37115,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -5299,7 +5299,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37102,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -5463,7 +5463,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37103,
   "admiral": "sable",
   "fleet": [
    "c_raider",
@@ -5618,7 +5618,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 37105,
+  "seed": 37107,
   "admiral": "mott",
   "fleet": [
    "c_hulk",
@@ -5988,7 +5988,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37102,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6110,7 +6110,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 37264,
+  "seed": 37304,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -6445,7 +6445,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 37102,
+  "seed": 37111,
   "admiral": "kassar",
   "fleet": [
    "h_dominion",
@@ -6970,7 +6970,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33228,
+  "seed": 33232,
   "admiral": "reyes",
   "fleet": [
    "h_vanguard",
@@ -7100,7 +7100,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33232,
+  "seed": 33236,
   "admiral": "reyes",
   "fleet": [
    "h_vanguard",
@@ -7273,7 +7273,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 7919,
+  "seed": 7921,
   "admiral": "maren",
   "fleet": [
    "h_picket",
@@ -7977,7 +7977,7 @@
   ],
   "cmdRound": 3,
   "note": "Tree fixture: Vex The Last Account (vex:cap:1) fires again on a kill",
-  "seed": 37101,
+  "seed": 37109,
   "lineage": {
    "id": "vex",
    "picks": [],
@@ -8035,7 +8035,7 @@
   ],
   "cmdRound": 2,
   "note": "Tree fixture: Malek Rear Arc Reckoning (malek:A:1:1) pays rear hits +15%",
-  "seed": 1860000000021,
+  "seed": 1860000000147,
   "lineage": {
    "id": "malek",
    "picks": [
@@ -8483,7 +8483,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38210,
+  "seed": 38212,
   "lineage": {
    "id": "nekhet",
    "picks": [
@@ -8897,7 +8897,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 52975,
+  "seed": 52996,
   "note": "Issue 529: Matriarch The Brood Does Not Stop (matriarch:cap:1): an extra swarm that destroys its target strikes another enemy at half damage",
   "lineage": {
    "id": "matriarch",

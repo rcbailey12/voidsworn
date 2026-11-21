@@ -107,7 +107,6 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 {round, side, phase, over, arena, terrain: {"q,r": "rock"|"hulk"|"station"|"planet"|"neb"|"debris"|"storm"},
  cut: ["q,r", ...] (hexes cut away from the board), map: {map, shape, station?, planet?, wrecks?, deadstar?, holes?},
  obj: {type, score, escore, ...}, focus: id of the enemy fleet's current focus target or null,
- torps: [{id, side, by, target, aim: {q, r}, from: {q, r}, round}] (torpedo salvos in flight: they land on `aim` at the start of `side`'s next turn),
  zones: {"q,r": "exit" | "texit" | "guard"} (objective hexes: breakthrough exits, the transports' escape row, the station's guard ring),
  hexes: [{q, r}, ...] (every playable hex of the board; the same read-only array every call, fixed at setup),
  units: [{id, side, tpl, name, cls, fac, size, squadron, q, r, facing, hp, maxHp, sh: [prow, starboard, rear, port] (each side's catch: pool x coverage, routing boost applied), shMax,
@@ -130,6 +129,14 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 
 `api.entry_reason(id, q, r)` explains blocked terrain/set pieces, off-board cells, other ships, spent activations, brace, exhausted movement, or the lack of a route within the remaining movement costs. Use it after the reach query says a destination is unavailable. Blocker reasons include the kind and coordinates. Neither query changes rules state, consumes random numbers or bumps the API version; both hold the normal API mutex.
 
+### Arrivals known at the start (presentation only)
+
+`api.arrival_previews()` returns the ships the battle's mid-battle event will bring (issue 1289): today at most one, the
+reinforcement (`reinf_enemy` or `reinf_ally`), as a view-like `{id, side, tpl, fac, cls, size, facing, squadron, flagship,
+hp, maxHp}` with the hull the event will make (the faction's cheapest hull, `cheapHull`). Empty when there is no such event
+or it has fired. The battle builds that hull under its loading cover (render/arrival_warm.gd). It does not change rules
+state, consume random numbers or bump the API version; it holds the normal API mutex.
+
 ## The event stream: `take_events()`, and the return of `step()`
 
 Events come in order. Every event has a `t` (type) and plain fields; ids are ship ids from `view()`.
@@ -141,7 +148,8 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `activation` | `unit, side` | This ship (or squadron, in a swarm phase) starts its activation. |
 | `move` | `unit, path, late_fire` | Animate the burn along `path` (steps `{q, r, f, rot?, slip?, rev?, over?}`). With `late_fire`, the ship's shots that follow are fired on the move (start them about two-thirds of the way through the burn). A turn in place is a one-step path with `rot: true`. |
 | `fire` | `unit, weapon, weapon_id, kind, arc, name, target, shots: [bool], pd, quad` | One weapon's volley: one entry per shot (hit or miss). `pd` is rockets shot down by point defence; `quad` is the target facing hit. |
-| `hit` | `unit, target, quad, section, shield, hull, crit` | One landed shot: shield damage absorbed, hull damage taken, which section, whether it was a critical. `unit` can be null for station guns. |
+| `hit` | `unit, target, quad, section, shield, hull, crit, regenLock?` | One landed shot: shield damage absorbed, hull damage taken, which section, whether it was a critical. `unit` can be null for station guns. Optional `regenLock: true` means the hit applied an ion regeneration lock. |
+| `regen_unlock` | `unit` | The ship's side started its turn and consumed the ion regeneration lock. |
 | `shield_down` | `unit, quad` | That facing's shield is gone. |
 | `section_down` | `unit, section` | `"prow"` (forward guns silenced), `"mid"` (broadsides and shield generator), `"eng"` (engines crippled). |
 | `system` | `unit, text` | A critical knocked out a system ("Engines hit", "Shield generator down", "<gun> knocked out", "Fire on deck"). |
@@ -161,8 +169,6 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through, a Nemesis withdrawing). |
 | `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
 | `float` | `unit, text, color, dy` | A floating callout over a ship, word for word and in the game's colour ("\u221212 hull", "Shields down", "Critical", "Braced", ability names, boon names). `dy` is the game's vertical offset in pixels (negative is higher; null means 0). |
-| `torpedo` | `unit, target, id, aim, name` | A torpedo salvo launches (no shots are rolled yet); draw its lane to `aim`. |
-| `torpedo_miss` | `id, aim` | A salvo runs wide at impact. A salvo that hits plays as a `fire` event with `torpedo` and `from` fields, at the start of the firing side's next turn. |
 | `risen` | `unit, q, r` | A Deathless wreck reassembles (the endless legion). |
 | `stance` | `unit, stance` | A carrier's wing stance changed. |
 | `nem_signature` | `kind` | Your Nemesis's faction behaviour fired (R42, for his battle voice): `challenge`, `duel`, `line` (at setup), `flee_battle` (he withdraws; his ships then leave as `fled`), `reinforce` (the round 3 reinforcements are his). `B.nemSigs` keeps them with the round, `B.nemFound` the weaknesses found in this battle (with a log line each). |

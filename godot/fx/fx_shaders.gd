@@ -77,9 +77,11 @@ const HIDE := "POSITION = vec4(2.0, 2.0, 2.0, 1.0);"
 
 # Offline Mantaflow, 16 frames, bidirectional motion vectors and optical thickness.
 # COMPAT omits depth sampling; all tiers keep the same baked visual language.
+# Issue 1211: fog_disabled here and on the hull marks (SHARD, HIT_FRAGMENT, HOLE, MARK), like the streaks and the hulls
+# (nebula_hulls.gd, R82), so a nebula never dulls a fireball or a scar.
 const DEATH_FLIPBOOK := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
 """ + COMMON + """
 uniform sampler2D atlas : source_color, filter_linear, repeat_disable;
 uniform sampler2D motion : filter_linear, repeat_disable;
@@ -107,6 +109,12 @@ uniform float calm_intensity = 0.0;
 uniform float pic_spin = 0.0;
 uniform vec2 pic_shape = vec2(1.0);
 uniform float smoke_tone = 1.0;
+// R367 (issue 1399): a faction's own death. fac_fire.a 1 turns the hot gas from the baked orange to fac_mid (cooler) and
+// fac_fire.rgb (hottest), fac_prism puts a rainbow edge on it, fac_smoke keeps that share of the smoke. Defaults: today's.
+uniform vec4 fac_fire = vec4(1.0, 1.0, 1.0, 0.0);
+uniform vec3 fac_mid = vec3(1.0);
+uniform float fac_prism = 0.0;
+uniform float fac_smoke = 1.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -156,15 +164,29 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
+	core = mix(core, mix(fac_fire.rgb, fac_mid, age), fac_fire.a);
 	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * power * fx_gain;
+	float keep = clamp(pulse * 3.0, 0.0, 1.0);
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
 	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * power, thick.b) * fx_gain;
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
+	keep = clamp(thick.b, 0.0, 1.0);
+	if (fac_fire.a > 0.0) {
+		// the baked heat keeps its shape and brightness and takes the faction's colours; its smoke keeps its shading but
+		// loses the baked fire's warm cast (issue 1399 round 2: a Hegemony break bloomed rose-pink), so it reads as soot
+		float lum = dot(ALBEDO, vec3(0.3, 0.55, 0.15));
+		vec3 ramp = mix(fac_mid, fac_fire.rgb, smoothstep(0.12, 1.1, lum)) * lum * 1.5;
+		vec2 c = UV - 0.5;
+		vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
+		ramp = mix(ramp, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
+		vec3 soot = mix(ALBEDO, vec3(lum), 0.85);
+		ALBEDO = mix(ALBEDO, mix(soot, ramp, keep), fac_fire.a);
+	}
 #endif
 	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
@@ -175,6 +197,7 @@ void fragment() {
 	soft = clamp((-hit.z / hit.w - particle_depth) / max(extent * 0.1, 0.05), 0.0, 1.0);
 #endif
 	ALPHA = gas.a * fade * soft * (elapsed < lifetime ? 1.0 : 0.0);
+	ALPHA *= mix(fac_smoke, 1.0, keep);
 }
 """
 
@@ -572,9 +595,10 @@ void vertex() {
 		if (lf > 0.0 && length(head - tail) < lmin) {
 			tail = head - wdir * lmin;
 		}
-		// Cap projected head-to-tail distance, including perspective. These
-		// are actual render-target pixels, also at 4K and with fx_px disabled.
-		float cap_px = k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0));
+		// Cap projected head-to-tail distance, including perspective. The cap is in 1080-line pixels like the width
+		// and length floors (issue 1211: it was raw pixels, so 4K streaks were half length), it never clips the streak's
+		// own length floor (the macro shell asks 26), and it holds with fx_px disabled.
+		float cap_px = max(k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
 		vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head, 1.0);
 		vec4 tc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(tail, 1.0);
 		float projected = length((hc.xy / max(hc.w, 0.0001) - tc.xy / max(tc.w, 0.0001)) * VIEWPORT_SIZE * 0.5);
@@ -820,8 +844,10 @@ void fragment() {
 	float life = max(vAge.y, 0.001); float age = vAge.x;
 	float x = abs(vSide);
 	float px = x * vPixels * 0.5;
-	float hot_width = k == 6 ? 3.0 : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
-	float glow_width = k == 6 ? 11.0 : max(7.0, vPixels * 0.48);
+	// issue 1211: the crackle's fixed core and sheath are 1080-line pixels, so the arc keeps its shape at 4K
+	float fr = max(VIEWPORT_SIZE.y / 1080.0, 0.0001);
+	float hot_width = k == 6 ? 3.0 * fr : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
+	float glow_width = k == 6 ? 11.0 * fr : max(7.0, vPixels * 0.48);
 	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
 	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
 	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
@@ -855,7 +881,7 @@ void fragment() {
 		float q = fract(s * 4.0 + seed);
 		float sign_side = mod(floor(s * 4.0 + seed), 2.0) * 2.0 - 1.0;
 		float target = sign_side * q * 1.7;
-		float d = (vSide - target) * vPixels * 0.5;
+		float d = (vSide - target) * vPixels * 0.5 / fr;
 		float window = smoothstep(0.0, 0.04, q) * (1.0 - smoothstep(0.32, 0.55, q));
 		fork_hot = exp(-2.772589 * d*d / 4.0) * window;
 		fork_glow = exp(-2.772589 * d*d / 25.0) * window;
@@ -871,11 +897,23 @@ void fragment() {
 		tint = mix(tint, rainbow, 0.65);
 	} else if (k == 8) {
 		motion *= 0.7 + 0.5 * spow(0.5 + 0.5 * sin(s * 63.0 - age * 28.0), 6.0);
+		// A white needle with a thin, moving spectrum along either edge.
+		vec3 rainbow = clamp(abs(fract(vSide * 0.30 + s * 0.45 - age * 0.35 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		tint = mix(tint, rainbow, smoothstep(1.1, 3.0, px) * 0.90);
 	} else if (k == 9) {
 		float tissue = fbm(vec2(s * 14.0 - age * 3.0, vSide * 2.0 + seed));
 		core *= 0.5 + tissue;
 		sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
 		hot = mix(hot, tint, 0.5);
+	} else if (k == 11) {
+		// Null lance: two pinched rails around a violet-white core.
+		float pinch = 2.0 + 3.5 * sin(s * 3.14159);
+		float d = (px - pinch) / 1.15;
+		float rails = exp(-d*d) * (0.75 + 0.25 * fast);
+		hot = mix(hot, tint, 0.45);
+		core *= 0.8;
+		sheath = sheath * 0.30 + rails * 1.35;
+		motion = 1.0;
 	}
 	vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
 	ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
@@ -960,7 +998,8 @@ void vertex() {
 	float width = max(trail_len * width_k * (1.0 + age), max(px_world(10.0, depth, PROJECTION_MATRIX), frame_world(8.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y)));
 	vec4 pc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
 	vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head_world, 1.0);
-	vFromHead = (pc.xy / max(pc.w, 0.0001) - hc.xy / max(hc.w, 0.0001)) * VIEWPORT_SIZE * 0.5;
+	// issue 1211: in 1080-line pixels, so the 24 px tail and its flow keep their shape at 4K
+	vFromHead = (pc.xy / max(pc.w, 0.0001) - hc.xy / max(hc.w, 0.0001)) * VIEWPORT_SIZE * 0.5 * (1080.0 / max(VIEWPORT_SIZE.y, 1.0));
 	vSide = UV.y * 2.0 - 1.0;
 	vAge = age;
 	vTint = COLOR.rgb;
@@ -982,7 +1021,7 @@ void fragment() {
 # a1 = (vel, life); a2 = (spin axis, spin rate); a3 = (size, period, tint, drag); a4 = (heat, seed, 0, 0)
 const SHARD := """
 shader_type spatial;
-render_mode cull_back;
+render_mode cull_back, fog_disabled;
 """ + COMMON + """
 varying float vHeat;
 varying float vSeed;
@@ -1036,7 +1075,7 @@ void fragment() {
 # Negative profile keys mark the lead pieces.
 const HIT_FRAGMENT := """
 shader_type spatial;
-render_mode cull_back;
+render_mode cull_back, fog_disabled;
 """ + COMMON + """
 uniform sampler2D fragment_meshes : filter_nearest, repeat_disable;
 uniform sampler2D fragment_instances : filter_nearest, repeat_disable;
@@ -1225,6 +1264,13 @@ uniform vec4 hitw[6];
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
+// issue 1078, R340: the failure look is 2, the clean collapse; 0 the old per-faction break and 1 energy shear stay only
+// for dev comparisons; brk_low gives the shear its cheaper crack network
+uniform int brk_look = 2;
+uniform bool brk_low = false;
+// issue 1239: the collapse's close time (COLLAPSE_CLOSE, fx_ship.gd) and how long the break plays in all (1.6 s, longer for a slower close)
+uniform float brk_close = 1.225;
+uniform float brk_win = 1.6;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
@@ -1267,6 +1313,7 @@ void fragment() {
 	vec3 lp = vL * rad;
 	float I = 0.0;
 	float maxR = length(rad);
+	float web = 0.0;
 	// F3: hits read at distance and on small ships: the hot core, the ripple and its spread never shrink below a few
 	// pixels (wpx = world units per pixel here), and every hit lights the whole bubble faintly in the faction's colour
 	// and pattern for half a second (more when the camera is far out), so a shield hit reads as that ship's shield
@@ -1298,6 +1345,8 @@ void fragment() {
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
 		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
 		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
+		// shear look: each hit briefly lights the crack network round it, so the hit already shows how this shield fails
+		web += mask * (1.0 - f) * (1.0 - f) * S;
 	}
 	// regen shimmer: a band sweeping the bubble from stern to bow
 	float ra = scene_t - regen_t;
@@ -1344,6 +1393,25 @@ void fragment() {
 		C = mix(C, clamp(abs(fract(eh + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * length(col) * 0.7, smoothstep(0.15, 0.7, fres));
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
+	float ba = scene_t - brk_t;
+	bool breaking = ba > 0.0 && ba < brk_win;
+	// issue 1078, shear: one connected crack network over the whole shield (cell borders join up, so a crack never
+	// ends in open field), coarser than any faction's pattern so it reads as a tear, not as the pattern lighting up
+	// (r1: the Navy's tear along its own hex lattice looked like today's look). x = distance to the crack, y = plate.
+	vec2 net = vec2(1.0, 0.0);
+	float hot = 0.0;
+	if (brk_look == 1 && (breaking || web > 0.002)) {
+		if (brk_low) {
+			// the cheaper network: ridge lines of one noise field (one 2D lookup set against 27 cell tests)
+			float rn = fbm(lp.xy * 0.32 + lp.zx * 0.24 + vec2(4.1, 2.7));
+			net = vec2(abs(rn * 2.0 - 1.0) * 0.22, floor(rn * 7.0) / 7.0);
+		} else {
+			net = vor3(normalize(vL) * 2.6 + vec3(4.3, 1.7, 8.2));
+		}
+		float wl = smoothstep(0.05, 0.0, net.x) * min(web, 1.5);
+		total += wl * 1.4 * (0.7 + 0.3 * pat);
+		hot += wl * 0.4;
+	}
 	// break (r4 review: three factions tore the same noise holes in a bright, nearly opaque bubble). Each faction now
 	// breaks in its own way, spreading from the struck facing over the bubble, and the bubble stays see-through:
 	//   0 Voidsworn: the gold veil cracks into sheets; cracks run white-gold ahead of the front, each sheet flares as it
@@ -1353,12 +1421,61 @@ void fragment() {
 	//   2 Corsair: it sputters out in patches; each patch stutters on and off (slow breathing with reduce flashing) and
 	//     dies, dirty red, until nothing is left;
 	//   3 Ithar: the veil sheets away from the struck side (left as it was: the Ithar look is changing).
-	float ba = scene_t - brk_t;
-	if (ba > 0.0 && ba < 1.6) {
+	if (breaking && brk_look != 0) {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
-		float life = 1.0 - ba / 1.6;
+		float life = 1.0 - ba / brk_win;
+		float calm = mix(1.0, 0.3, fx_calm);
+		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.4 * calm;
+		float alive = 1.0;
+		// the Hullbreakers' field stutters (low contrast and slow, flash rules), whichever look plays
+		// (per patch: the shear's plates, or coarse patches for the collapse, so the whole field never strobes)
+		float pid = brk_look == 1 ? net.y : h21(floor(un.xy * 2.5) + floor(un.z * 2.5) * 7.0);
+		float stut = style == 2 ? mix(mix(0.45, 1.0, step(0.45, h21(vec2(pid * 31.0 + 1.0, floor(scene_t * 4.5))))), 0.8, fx_calm) : 1.0;
+		if (brk_look == 1) {
+			// the crack front leaves the struck facing and crosses to the far side in 0.55 s (SHEAR_FRONT)
+			float ct = ba - (dist * 0.55 + net.y * 0.05);
+			float line = smoothstep(0.06, 0.0, net.x);
+			// white-hot where the front is running along the cracks, faction colour behind it, then cooling
+			float lead = line * exp(-ct * ct * 160.0) * 3.0 * calm;
+			float glow = line * step(0.0, ct) * exp(-ct * 2.6) * 1.7;
+			// each plate the crack frees flares, then shears away along the front and is gone (staggered per plate)
+			float pt = ct - net.y * 0.12;
+			alive = pt < 0.0 ? 1.0 : exp(-pt * 8.0);
+			vec3 along = cross(un, normalize(brk_dir));
+			float sh = pt > 0.0 ? exp(-pt * 4.0) * (0.5 + 0.5 * sin(dot(un, along) * 34.0 + net.y * 20.0 - ba * 16.0)) * 0.6 * calm : 0.0;
+			float flare = smoothstep(-0.05, 0.0, pt) * exp(-max(pt, 0.0) * 9.0) * 0.9 * calm;
+			add += ((lead + glow) * (0.65 + 0.35 * pat) + (sh + flare) * pat) * stut;
+			hot += lead * 0.5;
+		} else {
+			// collapse: one even flash, then a single clean band closes from the far side into the breach in 1.225 s
+			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
+			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
+			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band
+			// and knot are brighter and a little wider, and keep the prismatic colour instead of burning toward white
+			// Under reduce flashing the band softens for every faction and the Glasswrights' extra brightness (band and
+			// knot) is dropped (their wider band and knot stay); Artoo on PR 1170: the band is not a sprite flash, so the flash budget never saw it
+			float gw = style == 3 ? 1.0 : 0.0;
+			float flash = exp(-ba * 12.0) * 0.3 * calm;
+			float bp = 1.0 - clamp((ba - 0.08) / max(brk_close - 0.08, 0.05), 0.0, 1.0);
+			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
+			float bd = (dist - bp) / bw;
+			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
+			alive = smoothstep(bp + bw, bp - bw, dist);
+			float kt = ba - brk_close;
+			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
+			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
+			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
+		}
+		// what is left of the field stays faintly visible until the failure reaches it
+		add += alive * 0.28 * pat * (0.3 + 0.7 * fres);
+		total = total * alive + add * life * (0.55 + 0.45 * fres);
+	} else if (breaking) {
+		vec3 un = normalize(vL);
+		float facing = dot(un, normalize(brk_dir));
+		float dist = (1.0 - facing) * 0.5;
+		float life = 1.0 - ba / brk_win;
 		float calm = mix(1.0, 0.3, fx_calm);
 		// a local flare where it gave way (not the whole hemisphere)
 		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.6 * calm;
@@ -1401,6 +1518,8 @@ void fragment() {
 		total = total * alive + add * life * (0.55 + 0.45 * fres);
 	}
 	if (total < 0.002) { discard; }
+	// the shear's running crack and the collapse's band burn toward white (zero in today's look)
+	C = mix(C, vec3(length(col)) * 0.62, clamp(hot, 0.0, 0.75));
 	ALBEDO = clamp(C * total * fx_gain, 0.0, 512.0);
 }
 """
@@ -1413,7 +1532,7 @@ void fragment() {
 # white, then red, then goes black; acid keeps a faint green working glow.
 const HOLE := """
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, fog_disabled;
 """ + COMMON + """
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
@@ -1516,7 +1635,7 @@ void fragment() {
 # metal (ram). Same vertex data as HOLE plus CUSTOM3 (slot direction, half length).
 const MARK := """
 shader_type spatial;
-render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled;
+render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
 """ + COMMON + """
 float segd(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a; vec2 ba = b - a; float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0); return length(pa - ba * h); }
 // An electrical burn (Lichtenberg figure): trunks forking out from the strike point, two levels of branches, jagged.
@@ -1940,144 +2059,6 @@ void fragment() {
 }
 """
 
-# Burnt darkness shared by live hulls and death pieces. No room lights.
-const INTERIOR := preload("res://fx/fx_hull.gd").BURNT
-
-const CHUNK := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + INTERIOR + """
-uniform vec4 seeds[8];
-uniform int n_seeds = 2;
-uniform int me = 0;
-uniform float heat = 1.0;
-uniform float width = 0.4;
-uniform vec3 glow = vec3(1.0, 0.45, 0.1);
-uniform vec3 cell = vec3(0.6, 0.4, 0.5);
-varying vec3 vL;
-varying vec3 vW;
-void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	vec3 s1 = seeds[me].xyz;
-	float best = 1e9;
-	for (int i = 0; i < 8; i++) {
-		if (i >= n_seeds || i == me) { continue; }
-		vec3 s2 = seeds[i].xyz;
-		vec3 dv = s2 - s1;
-		float l = length(dv);
-		if (l < 1e-4) { continue; }
-		float d = abs(dot(vL - 0.5 * (s1 + s2), dv / l));
-		best = min(best, d);
-	}
-	float x = best / max(width, 0.0001);
-	float fl = flick(0.55 + 0.9 * vnoise(vec2(dot(vL, vec3(3.1, 1.7, 2.3)), scene_t * 3.0)), scene_t, 1.0);
-	if (!FRONT_FACING) {
-		// round 2: the piece's inside through its cut face: where the view ray enters this piece's cell (the cut planes
-		// are the bisectors between its seed and the others'), burnt darkness behind it (INTERIOR above)
-		vec3 Dw = vW - CAMERA_POSITION_WORLD;
-		float dw = max(length(Dw), 1e-4);
-		float sc = max(length(MODEL_MATRIX[0].xyz), 1e-5);
-		vec3 D = snorm(transpose(mat3(MODEL_MATRIX)) * (Dw / dw));
-		float dist = dw / sc;
-		vec3 C = vL - D * dist;
-		float tE = -1.0;
-		for (int i = 0; i < 8; i++) {
-			if (i >= n_seeds || i == me) { continue; }
-			vec3 dv = seeds[i].xyz - s1;
-			float l = length(dv);
-			if (l < 1e-4) { continue; }
-			vec3 nn = dv / l;
-			float den = dot(D, nn);
-			if (den < -1e-4) {
-				tE = max(tE, dot(0.5 * (s1 + seeds[i].xyz) - C, nn) / den);
-			}
-		}
-		float near = min(cell.x, min(cell.y, cell.z)) * 0.6;
-		if (tE <= 0.0 || tE > dist) { tE = max(dist - near, 0.0); }
-		vec3 Pe = C + D * tE;
-		vec3 ins = hull_inside(Pe, D, dist - tE, cell, heat, glow, scene_t);
-		// embers along the break on the inner skin too
-		float n = fbm(vL.xy * 1.3 + vL.zx * 0.9);
-		float emb = smoothstep(0.62, 0.8, n) * heat * exp(-x * 1.2);
-		ALBEDO = clamp((ins + vec3(0.12, 0.025, 0.004) * emb) * fx_gain, 0.0, 64.0);
-		ALPHA = 1.0;
-	} else {
-		// round 2: a narrower rim that cools faster (r1 wide band read as a peach wash over the pieces)
-		if (x > 2.0 || heat <= 0.01) { discard; }
-		float g = exp(-x * x * 3.0);
-		vec3 c = mix(vec3(0.9, 0.12, 0.02), vec3(1.0, 0.75, 0.35), clamp(heat * fl - 0.3, 0.0, 1.0));
-		ALBEDO = clamp(c * 3.0 * heat * heat * fl * fx_gain, 0.0, 64.0);
-		ALPHA = clamp(g * (0.4 + 0.6 * heat), 0.0, 1.0);
-	}
-}
-"""
-
-# Legacy fallback/warmup overlay. Live mouths now use fx_hull.damage_material on the actual surface.
-# (cull_front), so it shows only where a breach, slot or gauss hole opened the shell (and on any AI gap). The view ray
-# enters at the nearest hole's plane (up to 8 holes, in the mesh's own frame, set by fx_breach.apply); the rest as INTERIOR.
-const HULLIN := """
-shader_type spatial;
-render_mode unshaded, cull_front, depth_draw_opaque, shadows_disabled, fog_disabled;
-""" + COMMON + INTERIOR + """
-uniform vec4 holes[8];
-uniform vec4 hnrm[8];
-uniform int n_holes = 0;
-uniform vec3 cell = vec3(0.6, 0.4, 0.5);
-uniform vec3 glow = vec3(1.0, 0.45, 0.12);
-uniform float heat = 0.5;
-varying vec3 vL;
-varying vec3 vW;
-void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	vec3 Dw = vW - CAMERA_POSITION_WORLD;
-	float dw = max(length(Dw), 1e-4);
-	float sc = max(length(MODEL_MATRIX[0].xyz), 1e-5);
-	vec3 D = snorm(transpose(mat3(MODEL_MATRIX)) * (Dw / dw));
-	float dist = dw / sc;
-	vec3 C = vL - D * dist;
-	float near = min(cell.x, min(cell.y, cell.z)) * 0.6;
-	float tE = max(dist - near, 0.0);
-	float best = 1e9;
-	for (int i = 0; i < 8; i++) {
-		if (i >= n_holes) { break; }
-		vec3 hc = holes[i].xyz;
-		vec3 hn = snorm(hnrm[i].xyz);
-		float den = dot(D, hn);
-		if (den > -0.02) { continue; }
-		float t = dot(hc - C, hn) / den;
-		if (t <= 0.0 || t > dist) { continue; }
-		float q = length(C + D * t - hc) / max(holes[i].w, 1e-3);
-		if (q < 2.2 && q < best) { best = q; tE = t; }
-	}
-	vec3 Pe = C + D * tE;
-	vec3 ins = hull_inside(Pe, D, dist - tE, cell, heat, glow, scene_t);
-	ALBEDO = clamp(ins * fx_gain, 0.0, 64.0);
-}
-"""
-
-const CRACKS := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
-uniform float t0 = 0.0;
-uniform float dur = 1.0;
-uniform mat4 frame;
-uniform vec3 cut_at = vec3(0.0);
-uniform vec3 cut_axis = vec3(1.0, 0.0, 0.0);
-uniform float width = 0.1;
-uniform vec3 glow = vec3(1.0, 0.3, 0.04);
-varying vec3 cut_p;
-void vertex() { cut_p = (frame * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	float u = clamp((scene_t - t0) / max(dur, 0.0001), 0.0, 1.0);
-	if (u <= 0.0) { discard; }
-	float tear = sin(dot(cut_p, vec3(1.7, 8.3, 5.1))) * width * 0.32;
-	float d = abs(dot(cut_p - cut_at, cut_axis) + tear);
-	float line = 1.0 - smoothstep(width * 0.15, max(width, 0.0001), d);
-	ALBEDO = clamp(glow * line * smoothstep(0.0, 0.7, u) * 1.6 * fx_gain, 0.0, 8.0);
-}
-"""
-
 # Issue 462, the tell: a tear along one or two break lines (a capital has two), drawn as an overlay on the dying hull. It
 # grows across the hull from the hit side (grow, half_span: -1 at the hit side, +1 across), white-hot at its moving tip
 # and ember behind, at least two pixels wide at any camera. straight = 1 for a lance cut (the beam's own line).
@@ -2131,115 +2112,85 @@ void fragment() {
 }
 """
 
-const NOISE3 := """
-// r5: a better hash (Hoskins' hash13), quintic fades and rotated octaves; the old product hash and cubic fade drew a
-// diagonal lattice through the fireballs once their emission amplified the noise (r4 g21: a grid of hard diamonds)
-float h31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
-float vn3(vec3 x) {
+# Issue 1077: a ragged, stepped offset along a cut's axis, so a tear line wanders across the plates: value noise over the
+# cut plane in plate-sized cells, eased so each plate holds a level and the line steps between them, plus a finer octave.
+# fx_jag.x is the reach (ship units), fx_jag.y the plate size; zero reach is a straight line.
+const JAG_FN := """
+uniform vec2 fx_jag = vec2(0.0, 1.0);
+float fxj_hash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+float fxj_vn(vec3 x) {
 	vec3 i = floor(x);
-	vec3 f = fract(x);
-	f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-	return mix(mix(mix(h31(i), h31(i + vec3(1.0, 0.0, 0.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 0.0)), h31(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
-		mix(mix(h31(i + vec3(0.0, 0.0, 1.0)), h31(i + vec3(1.0, 0.0, 1.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 1.0)), h31(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+	vec3 f = smoothstep(0.3, 0.7, fract(x));
+	return mix(mix(mix(fxj_hash(i), fxj_hash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(fxj_hash(i + vec3(0.0, 1.0, 0.0)), fxj_hash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+		mix(mix(fxj_hash(i + vec3(0.0, 0.0, 1.0)), fxj_hash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(fxj_hash(i + vec3(0.0, 1.0, 1.0)), fxj_hash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
 }
-const mat3 NROT = mat3(vec3(0.00, 0.80, 0.60), vec3(-0.80, 0.36, -0.48), vec3(-0.60, -0.48, 0.64));
-float fbm3(vec3 p) { return 0.5 * vn3(p) + 0.25 * vn3(NROT * p * 2.03 + 3.1) + 0.125 * vn3(NROT * NROT * p * 4.07 + 7.7); }
+float fx_jag_offset(vec3 p, vec3 axis) {
+	if (fx_jag.x <= 0.0) { return 0.0; }
+	vec3 q = (p - axis * dot(p, axis)) / max(fx_jag.y, 1e-4);
+	float v = 0.7 * fxj_vn(q) + 0.3 * fxj_vn(q * 2.7 + 5.3);
+	return (v - 0.5) * 2.0 * fx_jag.x;
+}
 """
 
-# Raymarched volumes (max): type 0 a fireball rolling into dark smoke, 1 a breach's venting gas plume. A unit box, back
-# faces drawn; the depth buffer stops the march at the hulls. P = (age or strength, visibility, seed, density).
-const VOL := """
-shader_type spatial;
-render_mode unshaded, blend_premul_alpha, depth_draw_never, depth_test_disabled, cull_front, shadows_disabled, fog_disabled;
-""" + COMMON + NOISE3 + DEPTH + """
-uniform float vtype = 0.0;
-uniform float t0 = 0.0;
-uniform float life = 4.0;
-uniform vec4 P = vec4(0.0, 1.0, 0.0, 0.16);
-uniform vec3 tint = vec3(1.0, 0.55, 0.2);
-uniform vec3 key_dir = vec3(-0.45, -0.70, -0.55);
-uniform vec3 key_col = vec3(3.2);
-uniform vec3 amb = vec3(0.8);
-float field(vec3 pl, float age, inout vec3 em, inout vec3 alb) {
-	em = vec3(0.0);
-	if (vtype < 0.5) {
-		float r = length(pl) * 2.0;
-		// the ball grows to a little over half the box, and density fades to nothing before the box's faces, so its noisy
-		// edge never meets them (r2: hard straight box edges)
-		float rs = 0.2 + 0.42 * (1.0 - exp(-age * 1.6));
-		float n = fbm3(pl * 5.0 + vec3(P.z, -age * 0.6, age * 0.3));
-		// a finer billow so the fire breaks into lobes and smoke pockets instead of one flat bright disc (r5)
-		float nb = vn3(pl * 13.0 + vec3(-age * 0.9, P.z * 2.0, age * 0.5));
-		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4 + (nb - 0.5) * 0.4, 0.0, 1.0) * smoothstep(0.98, 0.72, r);
-		float temp = clamp((1.0 - r / rs) * 1.3 + (n - 0.5) * 1.2 + (nb - 0.5) * 0.5, 0.0, 1.0) * exp(-age * 1.25);
-		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 10.0 * (0.55 + 0.9 * nb) * mix(1.0, 0.18, fx_calm);
-		alb = vec3(0.065, 0.058, 0.052) * (0.7 + 0.6 * nb);
-		float vis = smoothstep(0.0, max(min(life * 0.25, 0.15), 0.001), age) * (1.0 - smoothstep(max(life * 0.55, life - 1.0), max(life, 0.001), age));
-		return d * d * 3.0 * vis;
-	}
-	float y = pl.y + 0.5;
-	// curl the column: the plume wanders and twists as it rises
-	vec2 sway = vec2(fbm3(vec3(y * 2.0 - scene_t * 0.7, P.z, 1.0)) - 0.5, fbm3(vec3(y * 2.0 - scene_t * 0.6, P.z, 7.0)) - 0.5) * y * 0.5;
-	vec2 xz = pl.xz - sway;
-	float rad = 0.05 + 0.42 * y;
-	float q = length(xz) / rad;
-	float n = fbm3(vec3(xz.x * 5.0, pl.y * 7.0 - scene_t * 2.8, xz.y * 5.0) + P.z);
-	float n2 = fbm3(vec3(xz.x * 11.0, pl.y * 13.0 - scene_t * 4.0, xz.y * 11.0) + P.z * 2.0);
-	float puff = 0.6 + 0.4 * sin(scene_t * 4.0 - y * 9.0 + P.z);
-	em = vec3(1.0, 0.45, 0.12) * exp(-y * 14.0) * 2.0;
-	alb = mix(vec3(0.42, 0.38, 0.34), vec3(0.3, 0.33, 0.38), smoothstep(0.0, 0.5, y));
-	float body = (1.0 - q) * 1.3 + (n - 0.5) * 1.8 + (n2 - 0.5) * 0.9 - 0.35;
-	float fade = (1.0 - smoothstep(0.35, 1.0, y)) * smoothstep(0.0, 0.04, y);
-	return max(0.0, body) * fade * puff * P.x * mix(1.0, 0.45, y);
+# Issue 1077 (prototype, off by default: rendering/effects/death_story): structural strain before a big hull splits. The
+# plating along each break line bulges a little and ripples (outward only, so it never sinks into the authored decks),
+# and the dying hull's power-down material and the tear overlay move it the same way. Ship-space points and normals.
+const STRAIN_FN := """
+uniform vec4 fx_strain_at[3];
+uniform vec4 fx_strain_n[3];
+uniform vec3 fx_strain_k = vec3(0.0, 1.0, 0.0);
+uniform vec2 fx_strain_t = vec2(1e9, 1e9);
+float fx_strain_amount(float t) { return smoothstep(fx_strain_t.x, fx_strain_t.y, t); }
+float fx_strain_band(int i, vec3 p) {
+	if (fx_strain_at[i].w <= 0.0) { return 0.0; }
+	float d = dot(p - fx_strain_at[i].xyz, fx_strain_n[i].xyz);
+	float e = 1.0 - smoothstep(0.0, max(fx_strain_n[i].w, 0.0001), abs(d));
+	return e * e;
 }
-varying vec3 vW;
-void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	float age = scene_t - t0;
-	if (vtype < 0.5 && (age < 0.0 || age > life)) { discard; }
-	vec3 cam = CAMERA_POSITION_WORLD;
-	vec3 rd = normalize(vW - cam);
-	mat4 inv_m = inverse(MODEL_MATRIX);
-	vec3 roL = (inv_m * vec4(cam, 1.0)).xyz;
-	vec3 rdL = (inv_m * vec4(rd, 0.0)).xyz;
-	vec3 inv = 1.0 / (abs(rdL) + 1e-6) * sign(rdL + 1e-12);
-	vec3 ta = (vec3(-0.5) - roL) * inv;
-	vec3 tb = (vec3(0.5) - roL) * inv;
-	vec3 tmn = min(ta, tb);
-	vec3 tmx = max(ta, tb);
-	float t0r = max(max(max(tmn.x, tmn.y), tmn.z), 0.0);
-	float t1r = min(min(tmx.x, tmx.y), tmx.z);
-	vec3 svp = scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX);
-	t1r = min(t1r, length(svp));
-	if (t1r <= t0r) { discard; }
-	float dt = (t1r - t0r) / 24.0;
-	float t = t0r + dt * h21(FRAGCOORD.xy + fract(scene_t * 7.0));
-	vec3 lkL = (inv_m * vec4(-key_dir, 0.0)).xyz;
-	vec3 col = vec3(0.0);
-	float Tr = 1.0;
-	float sl = 0.12;
-	vec3 em = vec3(0.0);
-	vec3 alb = vec3(0.0);
-	vec3 em2 = vec3(0.0);
-	vec3 alb2 = vec3(0.0);
-	float scale = length(MODEL_MATRIX[0].xyz);
-	for (int i = 0; i < 24; i++) {
-		vec3 pl = roL + rdL * t;
-		float de = field(pl, age, em, alb);
-		if (de > 0.002) {
-			float ds = field(pl + normalize(lkL) * sl, age, em2, alb2);
-			float lit = 0.3 + 0.7 * exp(-ds * 2.5);
-			float a = 1.0 - exp(-de * P.w * dt * 44.0 / max(scale, 1e-3));
-			col += Tr * a * (alb * (key_col * lit * 0.55 + amb * 0.6) + em * fx_gain);
-			Tr *= 1.0 - a;
-			if (Tr < 0.02) { break; }
-		}
-		t += dt;
-	}
-	ALBEDO = clamp(col, 0.0, 512.0);
-	ALPHA = clamp(1.0 - Tr, 0.0, 1.0);
+vec3 fx_strain_offset(vec3 p, vec3 n, float t) {
+	float a = fx_strain_amount(t) * fx_strain_k.x;
+	if (a <= 0.0) { return vec3(0.0); }
+	float f = max(fx_strain_band(0, p), max(fx_strain_band(1, p), fx_strain_band(2, p)));
+	if (f <= 0.0) { return vec3(0.0); }
+	float w = fx_strain_k.y;
+	float rip = sin(dot(p, vec3(1.0, 0.37, 0.71)) * w) * sin(dot(p, vec3(-0.43, 1.0, 0.29)) * w * 1.37);
+	return n * a * f * (0.35 + 0.65 * rip * rip);
 }
 """
+
+
+# Issue 1077: the tear overlay for the strain prototype. The same tear, on plating moved exactly as the power-down
+# material moves it (plus a hair outward, so the additive overlay never loses its depth test), and hairline stress
+# cracks along every break line, broken into dashes and flickering, that appear while the hull strains.
+static func tear_strain_code() -> String:
+	var c: String = TEAR.replace("uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n" + JAG_FN)
+	# Ryan on pass 4B: "the two straight clean lines of the glow and break". The tear and the hairlines run on a ragged,
+	# stepped line across the plates (fx_jag: its reach and its plate size), not on the straight cut plane
+	c = c.replace("\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9);", "\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9 + fx_jag_offset(cut_p, axis));")
+	assert(c.contains("fx_jag_offset(cut_p, axis)"))
+	c = c.replace("\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n",
+		"\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n\tvec3 sn = normalize(mat3(frame) * NORMAL);\n\tvec3 so = fx_strain_offset(cut_p, sn, scene_t);\n\tVERTEX += inverse(mat3(frame)) * (so * 1.08 + sn * fx_strain_k.x * 0.04 * fx_strain_amount(scene_t));\n")
+	c = c.replace("\tif (dot(col, col) < 1e-6) { discard; }",
+		"""\tfloat amt = fx_strain_amount(scene_t);
+	if (amt > 0.0) {
+		float hw = max(fx_hair.x, pxw * 1.3);
+		for (int i = 0; i < 3; i++) {
+			if (fx_strain_at[i].w <= 0.0) { continue; }
+			float wig = sin(dot(cut_p, vec3(2.3, 9.1, 4.7))) * 0.6 + sin(dot(cut_p, vec3(6.1, 3.7, 12.9))) * 0.4;
+			float d = abs(dot(cut_p - fx_strain_at[i].xyz, fx_strain_n[i].xyz) + wig * hw * 1.2 + fx_jag_offset(cut_p, fx_strain_n[i].xyz));
+			float line = 1.0 - smoothstep(hw * 0.3, hw, d);
+			float dash = smoothstep(0.15, 0.75, sin(dot(cut_p, vec3(3.1, 7.7, 5.3)) * fx_hair.y + float(i) * 1.7) * 0.5 + 0.5);
+			float flick = 0.65 + 0.35 * sin(scene_t * 23.0 + float(i) * 2.1 + dot(cut_p, vec3(0.9, 1.3, 0.7)));
+			col += ember * fx_hair.z * line * dash * flick * amt;
+			// far away the band itself carries the tell (the hairlines are under a pixel at the battle camera): it brightens as a
+			// pixel grows towards a tenth of the band's half width
+			float far = clamp(pxw / max(fx_strain_n[i].w * 0.1, 1e-4), 0.0, 1.0);
+			col += ember * vec3(0.6, 0.45, 0.35) * (0.12 + 0.33 * far) * flick * fx_strain_band(i, cut_p + fx_strain_n[i].xyz * fx_jag_offset(cut_p, fx_strain_n[i].xyz)) * amt;
+		}
+	}
+	if (dot(col, col) < 1e-6) { discard; }""")
+	return c
+
 
 # Screen-space distortion: shockwave rings and heat haze bend the picture behind them (max only).
 # Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength): kind 0 ring, 1 haze blob.

@@ -46,7 +46,7 @@ def main():
     r = H.required_points([], 'Carrier', 'chorus', 2)
     ok(r['bay'] == 1 and r['breach'] == 7 and r['rcs'] == 2, 'a carrier needs a launch point and its class and faction breach count')
     r = H.required_points([('guns', 'T')], 'Squadron', 'chorus')
-    ok(r == dict(weapon_slots=1, core=1, engine=0, bay=0, breach=0, rcs=0, board=0), 'a squadron craft needs a weapon point and a core only')
+    ok(r == dict(weapon_slots=1, core=1, engine=1, bay=0, breach=0, rcs=0, board=0), 'a squadron craft needs a weapon point, an exhaust for its ribbon and a core')
     r = H.required_points([], 'station', 'chorus')
     ok(r['rcs'] == 0 and r['board'] == 0 and r['engine'] == 0 and r['breach'] == 9, 'a station is placed: no engine, braking or boarding origins, and its class and faction breaches')
 

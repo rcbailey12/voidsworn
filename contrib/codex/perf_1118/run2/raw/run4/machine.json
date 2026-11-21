@@ -1,0 +1,8 @@
+{
+    "commit":  "fd1aa1ff83693afabd0eb758e619ee843fa9d44a",
+    "installed_ship_files_checked":  259,
+    "installed_ship_manifest_sha256":  "bb6258bc3f2a8c9e530776c4fd9a228957462beee10a37db73a37da0dc6ff2d1",
+    "installed_gen_manifest_sha256":  "34244bddf5ae0b792bfd99d2313afba5a8beb319661346cfcdf81651652708c5",
+    "gpu_driver_vbios_vram":  "NVIDIA GeForce RTX 5080, 617.42, 98.03.3b.00.fe, 16303 MiB",
+    "cpu":  "AMD Ryzen 7 5800X 8-Core Processor"
+}

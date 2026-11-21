@@ -4,6 +4,7 @@ extends Node3D
 #   godot --path godot res://scenes/battle/lineup.tscn -- --out <folder>
 
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const Board := preload("res://render/board.gd")
 const PG := preload("res://render/placeholder_guard.gd")
@@ -61,7 +62,7 @@ func _ready() -> void:
 				L = 46.0
 			var sv = ShipView.new()
 			rn.add_child(sv)
-			var f2: String = fac if HT.FAC3D.has(fac) else "hegemony"
+			var f2: String = fac if FLOOK.has(fac) else "hegemony"
 			sv.setup({"id": e[0], "fac": f2, "cls": cls, "facing": 0, "code": e[0], "L": L}, Vector3(x + L * 0.5, 0, 0), true)
 			sv.set_process(false)
 			var lbl := Label3D.new()

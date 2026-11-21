@@ -1,18 +1,19 @@
 # Campaign test record (G3)
 
 The evidence behind "G3 campaign rules: done, with parity". Every run below can be repeated with the command next to it.
-Newest first. Each row names the commit the run used and where its log lives.
+Newest first. Each row names the source revision the run used and where its evidence lives.
 
 ## What the oracle is
 
-- The game's own JS campaign files, pinned unchanged: `godot/campaign/test/oracle/`, copied from **8e81d75** (Nov 1 2026: stream B step 9b, the RAMP sector 2 budget, the last rules change; before that f770e06, steps 10 to 12, the lore round 8 strings and the campaign battle-start fix; before that d8b47c6, steps 0 to 4, with one local comment fix). See `oracle/README.md`.
-- The campaign rules in Godot last changed at **ae6073b** (port of stream B step 4, oracle d8b47c6). Step 9b is a number change inside the RAMP table only, so it reaches Godot through the re-exported tables with no code change. Everything after that in `godot/campaign/` is the test harness or notes; the screens (`godot/ui/campaign/`) never change campaign state (every button calls `campaign.act()`), so map and panel work cannot move parity.
+- The Node harness reads the game's own JS campaign files at the repo root. The Godot harness uses `campaign.gd`. The older rows below name the pinned oracle each used at the time.
 - The tables (`data/campaign_tables.json`) are exported from the oracle by `node/export_campaign.js`; every parity run first re-exports them and checks the checksum.
 
 ## Runs
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
+| Nov 19 | Issue 1175 branch `opus/issue-1175` on `7b6e6881` | cloud | `run_parity_campaign.sh 1 30`; `run_nem_scenarios.sh`; `nem_dodge_test.gd` and `node/nem_dodge.js` | **PASS, 30 of 30** with the cross-twin hand-off; Nemesis scenarios PASS (219 records); 0 of 3,000 sectors dodge the Nemesis in both twins (main 78.2%) | [Nemesis column 4 results](../../../docs/shots/nemesis_col4_1175/README.md) |
+| Nov 19 | Issue 1176 working tree on `da81dd82` | Ryan's PC, lane C | Campaign parity steps from `parity_campaign.bat`, with records directed to scratch | **PASS, 30 of 30**. Campaign table export matched byte for byte (`6cc4aef946b793d7`). Seed 1 save hand-off matched for all 40 steps, including 19 steps with a saved run. | [Route choice results](../../../docs/shots/route_choice_1176/README.md) |
 | Nov 1 | 5552c96 (oracle 8e81d75, RAMP step 9b) | Ryan's PC, lane A job `queue\g3_p9b.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4; same step counts as the cloud run) | `docs/shots/g3_campaign/p9b/parity_campaign_log.txt` |
 | Nov 1 | 5552c96 (oracle 8e81d75) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4) | session |
 | Nov 1 | 5552c96 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |

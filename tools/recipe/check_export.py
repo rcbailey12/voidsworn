@@ -34,15 +34,7 @@ SHARED = os.path.normpath(os.path.join(HERE, '..', 'blender', 'kits', 'shared'))
 import gamedata, hardpoints as HP_CONTRACT
 BREACH_CLEAR = .030; BREACH_SECTIONS = ('prow', 'mid', 'eng'); WEAPON_EXTRAS = ('kind', 'size', 'arc', 'arc_deg', 'slot', 'weapon', 'radius', 'socket')
 
-def read_glb(path):
-    b = open(path, 'rb').read(); magic, ver, total = struct.unpack_from('<4sII', b, 0)
-    if magic != b'glTF': raise ValueError('not a glb')
-    off = 12; js = None; blob = b''
-    while off < total:
-        n, kind = struct.unpack_from('<I4s', b, off); data = b[off + 8:off + 8 + n]; off += 8 + n
-        if kind == b'JSON': js = json.loads(data)
-        elif kind == b'BIN\0': blob = data
-    return js, blob
+from glb_io import read_glb  # noqa: E402 (one copy, shared with stage 7)
 
 CT = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
 NC = dict(SCALAR=1, VEC2=2, VEC3=3, VEC4=4)
@@ -95,8 +87,8 @@ def tri_dist(p, A, B, C):
     P = np.broadcast_to(p, A.shape); edge = np.minimum(np.minimum(seg_dist(P, A, B), seg_dist(P, B, C)), seg_dist(P, C, A))
     return np.where(inside, plane, edge)
 
-def open_bell(p, fwd, R, V, tol):
-    """is p the centre of an open engine bell of radius R exhausting along fwd? (issue 592; RECIPE.md stage 7)
+def open_bell(p, fwd, R, V, tol, *, require_clear_mouth=False):
+    """Check the centre of a round engine or bomb-tube exit of radius R along fwd (RECIPE.md stage 7).
     rim:    mesh vertices on the exit plane (within min(tol, 0.25 R) along the axis) at the recorded radius (0.7 R to 1.15 R off the axis)
             in at least 10 of 12 sectors round the axis: the bell is there, at that size, facing that way;
     throat: mesh inside 0.9 R of the axis upstream of the plane (within 2 R): the bell has a throat behind its mouth;
@@ -115,7 +107,42 @@ def open_bell(p, fwd, R, V, tol):
     why = [] if sectors >= 10 else [f'its rim at radius {R:.4f} on the exit plane covers {sectors} of 12 sectors']
     if not throat: why.append('no throat upstream of the exit')
     if plug: why.append(f'{plug} mesh points in the exhaust path')
+    if require_clear_mouth:
+        # Check a thin slice at the mouth. A recessed load is outside this slice, while a smaller
+        # inner rim gives away a falsely enlarged radius even if surrounding armour forms a ring.
+        mouth = int(((np.abs(ax) <= plane_tol * .25) & (rad < .7 * R)).sum())
+        if mouth: why.append(f'{mouth} mesh points inside the claimed opening on the exit plane')
     out.update(ok=not why, why='; '.join(why)); return out
+
+def open_rectangular_exhaust(p, fwd, up, aperture, vertices, tol):
+    """Check the open rim, recessed throat and downstream clearance of a kit's drive slit."""
+    try:
+        half = np.asarray(aperture, dtype=float) * .5
+    except (TypeError, ValueError):
+        half = np.empty(0)
+    if half.shape != (2,) or not np.isfinite(half).all() or not (half > 0).all():
+        return dict(ok=False, why='invalid rectangular exhaust width or height')
+
+    offset = vertices - p
+    side = np.cross(fwd, up)
+    span = np.column_stack((offset @ side, offset @ up)) / half
+    axis = offset @ fwd
+    extent = np.max(np.abs(span), axis=1)
+    height = min(half)
+    plane = min(tol, .25 * height)
+    corners = (np.abs(axis) <= plane) & (extent <= 1.15) & (np.min(np.abs(span), axis=1) >= .85)
+    quadrants = len(set(map(tuple, span[corners] > 0)))
+    throat = int(((axis < -plane) & (axis > -2 * height) & (extent < .9)).sum())
+    plug = int(((axis > plane) & (axis < 2 * height) & (extent < .8)).sum())
+    why = []
+    if quadrants != 4:
+        why.append(f'its rectangular rim covers {quadrants} of 4 corners on the exit plane')
+    if not throat:
+        why.append('no throat upstream of the exit')
+    if plug:
+        why.append(f'{plug} mesh points in the exhaust path')
+    return dict(ok=not why, why='; '.join(why), aperture=list(aperture), rim_corners=quadrants,
+                plane_tolerance=round(plane, 6), throat_vertices=throat, exhaust_vertices=plug)
 
 def main():
     a = sys.argv[1:]; shipj, out = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
@@ -124,6 +151,7 @@ def main():
     weapons = gamedata.weapons(ship['game_ship'])
     cls = gamedata.ship_attr(ship['game_ship'], 'cls', default='Cruiser')
     fac = gamedata.ship_attr(ship['game_ship'], 'fac', default=ship.get('faction'))
+    wing = cls == 'Squadron'
     hangar = int(gamedata.ship_attr(ship['game_ship'], 'hangar', default=0) or 0)
     req = HP_CONTRACT.required_points(weapons, cls, fac, hangar)
     expected_breach = req['breach']
@@ -132,11 +160,15 @@ def main():
     if root is None or 'mesh' not in nodes[root]: probs.append(f'no ship node named {code} with a mesh'); return finish(out, code, probs, notes, {})
     for k in ('translation', 'rotation', 'scale', 'matrix'):
         if k in nodes[root]: probs.append(f'the ship node has a {k}: its mesh and hard points must be in the ship frame as written')
-    contract = nodes[root].get('extras', {}).get('voidsworn_destruct', {})
+    extras = nodes[root].get('extras', {})
+    contract = extras.get('voidsworn_destruct', {})
     interiors = contract.get('interior_materials', [])
-    if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
     seams = contract.get('seams', [])
-    if not seams: probs.append('no authored break seams')
+    if wing:
+        if 'voidsworn_destruct' in extras: probs.append('wing carries an authored destruction contract')
+    else:
+        if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
+        if not seams: probs.append('no authored break seams')
     signatures = set()
     for seam in seams:
         try:
@@ -160,6 +192,8 @@ def main():
         if M is not None: pos = pos @ M[:3, :3].T + M[:3, 3]
         idx = accessor(g, blob, pr['indices']).reshape(-1, 3).astype(np.int64) if 'indices' in pr else np.arange(len(pos)).reshape(-1, 3)
         mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        if wing and mat.startswith(code + '_inside_'):
+            probs.append(f'wing carries interior surface {mat}')
         if mat in interiors:
             IT.append(pos[idx]); interior_seen.add(mat)
             if mat != code + '_inside_skin': rooms.append(pos[idx])
@@ -173,17 +207,18 @@ def main():
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
     LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN; VERTS = np.unique(T.reshape(-1, 3).round(6), axis=0)
-    if not IT: probs.append('no authored interior geometry')
-    else:
-        inside = np.concatenate(IT)
-        area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
-        if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
-        notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
-    if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
-    else:
-        room_geo = np.concatenate(rooms)
-        if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
-            probs.append('no authored interior rooms: room geometry has no area')
+    if not wing:
+        if not IT: probs.append('no authored interior geometry')
+        else:
+            inside = np.concatenate(IT)
+            area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
+            if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
+            notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
+        if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
+        else:
+            room_geo = np.concatenate(rooms)
+            if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
+                probs.append('no authored interior rooms: room geometry has no area')
     if set(interiors) != interior_seen: probs.append('authored interior material list does not match its nonempty surfaces')
     for seam in seams:
         if len(seam.get('p', [])) != 3: continue
@@ -210,15 +245,28 @@ def main():
             if not (np.all(p >= lo) and np.all(p <= hi)): probs.append('hp_core is outside the hull')
             rows.append(row); continue
         d = float(tri_dist(p, A, B, C).min()); row['off_mesh'] = round(d, 4)
-        if d > TOL and nm.startswith('hp_eng_'):
+        extras = n.get('extras') or {}
+        m = re.fullmatch(r'hp_w(\d+)_([A-Za-z0-9_]+)_([FTPS])_(\d+)', nm)
+        aperture = extras.get('aperture') if nm.startswith('hp_eng_') else None
+        if aperture is not None:
+            exhaust = open_rectangular_exhaust(p, fwd, up, aperture, VERTS, TOL)
+            row['exhaust'] = exhaust
+            if not exhaust['ok']:
+                probs.append(f'{nm} is not the centre of an open rectangular exhaust: {exhaust["why"]}')
+        elif d > TOL and nm.startswith('hp_eng_'):
             # issue 592: an engine point is the centre of its bell's exit, and an open bell has no mesh at its centre. It passes
             # when the authored bell is there: its rim on the exit plane at the recorded radius, all round, its throat upstream
             # and its exhaust path clear (open_bell); the 0.012 limit is not loosened for any point
-            bell = open_bell(p, fwd, float((n.get('extras') or {}).get('radius') or 0), VERTS, TOL)
+            bell = open_bell(p, fwd, float(extras.get('radius') or 0), VERTS, TOL)
             row['bell'] = bell
             if not bell.get('ok'): probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open engine bell: {bell["why"]}')
+        elif d > TOL and wing and m and m.group(2) == 'bombs':
+            # A bomb launches from the open centre of its authored tube. Prove the rim, bore and clear exit.
+            tube = open_bell(p, fwd, float(extras.get('radius') or 0), VERTS, TOL, require_clear_mouth=True)
+            row['bomb_tube'] = tube
+            if not tube['ok']:
+                probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open bomb tube: {tube["why"]}')
         elif d > TOL: probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f})')
-        m = re.fullmatch(r'hp_w(\d+)_([A-Za-z0-9_]+)_([FTPS])_(\d+)', nm)
         if m:
             slot, wk, arc = int(m.group(1)), m.group(2), m.group(3); count['gun'] = count.get('gun', 0) + 1
             if slot >= len(weapons) or weapons[slot] != (wk, arc):
@@ -328,6 +376,10 @@ def main():
             probs.append(f'manifest_entry.json breaches {entry.get("breaches")} do not match the written {count.get("breach", 0)}')
         if entry.get('cls') != cls:
             probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (data.js)')
+        if wing:
+            wanted_role = None if unb else ship['game_ship']
+            if entry.get('wing_role') != wanted_role or entry.get('faction') != HP_CONTRACT.faction_key(fac):
+                probs.append('manifest_entry.json wing faction or role differs from the recipe')
     info = dict(cls=cls, faction=HP_CONTRACT.faction_key(fac), expected_breach=expected_breach,
                 required=req, weapons=[dict(slot=s, weapon=wk, arc=arc, hard_points=sorted(by_slot.get(s, []))) for s, (wk, arc) in enumerate(weapons)],
                 hardpoints=count, maps=imgs, tolerance=TOL, tolerance_of_length=TOL_FRAC, ship_length=LEN, breach_clearance=BREACH_CLEAR, rows=rows, turrets=tinfo)
@@ -339,7 +391,7 @@ def finish(out, code, probs, notes, info):
     for w in info.get('weapons', []): print(f"[check] slot {w['slot']} {w['weapon']} {w['arc']}: {len(w['hard_points'])} hard points")
     print('[check] hard points:', json.dumps(info.get('hardpoints', {})))
     for p in probs: print('[check] PROBLEM:', p)
-    print('PASS' if ok else 'FAIL', f'{code} game export:', 'authored rooms and seams retained; every required point is there, the breach count matches the class and faction, and every hard point is on the mesh' if ok else f'{len(probs)} problems')
+    print('PASS' if ok else 'FAIL', f'{code} game export:', 'every required point is there and every hard point passes the mesh checks' if ok else f'{len(probs)} problems')
     sys.exit(0 if ok else 1)
 
 if __name__ == '__main__':

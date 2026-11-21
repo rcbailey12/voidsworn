@@ -1,0 +1,315 @@
+{
+  "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_before_after_4.png",
+  "date": "2026-11-19T23:06:49Z",
+  "sources": [
+    {
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "hegemony_laser_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "76a4895256292fe61f051264f267c511667fdee45d0b468978892b6caf193fa7",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_laser_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "66a478435c155e812eca48ab9abb1f76f79af6131e9c4479689aff203b9c1359",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_turbo_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "76a4895256292fe61f051264f267c511667fdee45d0b468978892b6caf193fa7",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_turbo_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "87b55d89af920d4b62eb556ba26173c2d4d7ddc5819792f05fa8829c60b3f63d",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_hturbo_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "033f226d6960f618cc4bf5e884846354232e3a104225bea0f7dc64b9a20277dd",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_hturbo_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "09abeaa6a0f43facab5d42ed09b49a6b672dfc2e148289775f69f4d09737a51b",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_ion_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "a5bcdc0345377f1ccffd8e2f81be78c32495ca80d0b38b3c2c99c25dd9587dca",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_ion_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "95309cddbe8e3f3b8087ec5fb479b6c5e1ca345ca21c4c687b4668cc5bf941c1",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_flak_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "b36305a78f4463bec0bf96c0b61679041bebc2953e967c4b6a6fe8017411f50b",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_flak_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "60e821965542b3de525e3ca79b69236e274b3875546dd4970e9a36507c32a48e",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ion_lock_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "b1d98282a6d815bf40a871c57d11c38d7002cdbc67a37780f5fd16f4fc23f2b5",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ion_lock_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "a15711956139151f252eadf667f3cc0a3873dd649578bf70114e82c8548f4d9a",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "crit_glass_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "1e677deb91f8f5c52c8533bea1e3b4527ef24fe4eeb84dda39c74a32909607e5",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "crit_glass_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "6efc24a100bd2620b4c692ba4aea3ec199e238c9c9244c7b5f8e81be5d72833f",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "crit_wet_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "2101a67b1b2aa002552bbc01aa67c36478c5af8a3d4f6fae9cb2b5f0044c03fd",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "crit_wet_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "45415b342fdbc4c84e4f7a3270df64dd2c1f47e37d8936b9ebb19a7bb755e68b",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "ac7eef8cbd12ad1cadc4f1644d1d4c230a2c301f1738d4a586bee60d011bbfc4"
+  ],
+  "stamp_template_sha256": "ac7eef8cbd12ad1cadc4f1644d1d4c230a2c301f1738d4a586bee60d011bbfc4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFdPT4F/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fVkkBQeGyWgcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "e46c8c7b829c9187e0c3094470a1e6eef1bed4416f09cc740ce92a93489b478b"
+}

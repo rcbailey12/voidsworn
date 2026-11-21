@@ -15,6 +15,7 @@ import os, sys, math, json
 import bpy, bmesh
 from mathutils import Vector, Matrix
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from cycles_devices import configure_cycles_device
 a = sys.argv[sys.argv.index('--') + 1:]
 OUT, CELL = a[0], a[1]; PREVIEW = '--preview' in a
 ONLY = next((x.split('=', 1)[1].split(',') for x in a if x.startswith('--views=')), None)
@@ -27,13 +28,7 @@ sc = bpy.context.scene
 def setup():
     sc.render.engine = 'CYCLES'; cy = sc.cycles
     if not PREVIEW:
-        prefs = bpy.context.preferences.addons['cycles'].preferences
-        for t in ('OPTIX', 'CUDA'):
-            try:
-                prefs.compute_device_type = t; prefs.get_devices()
-                for d in prefs.devices: d.use = True
-                cy.device = 'GPU'; break
-            except Exception: pass
+        configure_cycles_device(sc)
     cy.samples = 24 if PREVIEW else 96; cy.use_denoising = True
     sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 1.6 if LIGHT == 'studio' else .75
     w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True; bg = w.node_tree.nodes['Background']

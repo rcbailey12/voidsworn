@@ -351,7 +351,7 @@ func _run() -> void:
 		for i in 3:
 			ws.append({"i": 3 + i, "name": "Hellfire torpedo rack", "arc": "T", "kind": "torp", "range": 9, "distance": 6, "hit": 41 + i, "ready": true, "armed": i == 1, "dmg": 30, "cost": "CD 3", "desc": "Turret, 1x30 damage."})
 		var long_ship := ship("Sunward Martyr of the Ninth Pyre", "Pyre-Barge, elite captain", ws, orders(true),
-			"[color=#9fd4ff]Braced: hull damage -40% until its next turn.[/color] [color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
+			"[color=#9fd4ff]Braced: hull damage -40% until its next turn.[/color] [color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
 		var big := rows(20, true)
 		feed(h, {"rows": big})
 		await process_frame
@@ -391,11 +391,16 @@ func _run() -> void:
 func _ship_art() -> void:
 	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ships/manifest.json")).ships
 	var hashes := {}
+	var hull_count := 0
 	for code: String in manifest:
+		# The ledger gets ShipView's faction-and-role key for a wing. The manifest code only selects its 3D craft.
+		if manifest[code].get("cls") == "Squadron":
+			continue
+		hull_count += 1
 		var tex := Icons.silhouette(code)
 		if tex != null:
 			hashes[FileAccess.get_sha256(Icons.DIR + "ships/" + code + ".png")] = true
-	check(hashes.size() == manifest.size() and not hashes.has(""), "every installed hull has a distinct silhouette (%d of %d)" % [hashes.size(), manifest.size()])
+	check(hashes.size() == hull_count and not hashes.has(""), "every installed hull has a distinct silhouette (%d of %d)" % [hashes.size(), hull_count])
 
 
 func _log_states(h, tag: String) -> void:

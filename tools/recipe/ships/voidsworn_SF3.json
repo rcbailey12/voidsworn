@@ -11,12 +11,12 @@
  "concept_camera": "",
  "hull": "sheet_hull",
  "tune": "",
- "bake": "none",
+ "bake": "stack",
  "cell": "SF3",
  "outline_gate": 0.9,
  "outline_third_slack": 5.0,
  "lights": {},
  "light_min_px": 2.0,
- "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/voidsworn_SF3/ (design file tools/blender/build_sheets/ships/voidsworn_SF3.py; issue 769). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, the seam, the small inside and the length (LENGTH 1.6, CLS_LEN Squadron; drawn 3.84 on the board, scale.md) come from it through tools/blender/build_sheets/contract.py. game_ship fighter is the data.js wing; game_code is a placeholder: the game builds every craft in code today (godot/render/squadron_craft.gd, drawn by squadron_wing.gd) and no glb route for a sheet craft exists yet, so no stage 7 install until the Board opens that job. bake none: the Sunward paint stack (issue 756) is applied later.",
+ "notes": "Built from the low-fin build sheet docs/ship_pipeline/build_sheets/voidsworn_SF3/ (design file tools/blender/build_sheets/ships/voidsworn_SF3.py). The sheet provides the masses, parts, mounts and length (1.6, drawn at 3.84 on the board). The Sunward paint stack applies the approved satin finish. Stage 7 uses the fighter rules and writes a Sunward fighter entry under its own export code.",
  "parts": []
 }

@@ -25,6 +25,7 @@ robocopy "%R%\build\godot\gen" "%P%\gen" /E /XD hi damage wreck ships /NFL /NDL 
 rem the recipe ship replaces the A4 C15s_23 (as the 559 trace did): its glb and maps only
 copy /y "%R%\opus209\out7\export\C15s_23\C15s_23.glb" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
 copy /y "%R%\opus209\out7\export\C15s_23\C15s_23_*.jpg" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
+if exist "%R%\opus209\out7\export\C15s_23\C15s_23_*.png" copy /y "%R%\opus209\out7\export\C15s_23\C15s_23_*.png" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
 echo copied %time% >> "%D%\status_a.txt"
 call "%D%\tmo.bat" 3600 "%G%" --headless --path "%P%" --import > "%D%\log_import.txt" 2>&1
 echo import exit %errorlevel% %time% >> "%D%\status_a.txt"

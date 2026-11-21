@@ -39,8 +39,9 @@ point counts.
   in the Babylon game). Godot's own forward is -Z, so a ship node that should fly along its parent's -Z needs a 90 degree turn about Y.
 - Length is about 1.0 (x from about -0.5 to +0.5). Scale by the class length (`length_world` in the glb's extras and in `ships.json`;
   `render/hull_table.gd` CLS_LEN times SHIP_K on the board).
-- Colours: `asset.extras.palette` holds the faction's engine and window colours (FAC3D `eng` and `win`, linear). Weapon colours stay in
-  FAC3D `bolt` and `beam`, shields in `shield` (K1 decision 3).
+- Colours: `asset.extras.palette` holds the engine and window colours the Blender bake used (linear). In the game every faction's
+  engine, weapon and shield colour comes from `godot/fx/faction_looks.json` through `fx/faction_look.gd` (issue 1205, R333); the
+  old hull_table FAC3D table is gone and `render/test/faction_colour_source_check.gd` fails if it returns.
 
 ## Hard points (K1 decision 7)
 

@@ -1,0 +1,21 @@
+{
+ "az": 39.38045569448018,
+ "el": 34.78528368433588,
+ "roll": 11.152856945214117,
+ "dist": 18.147290033724378,
+ "mm": 92.66983457093372,
+ "target": [
+  0.0,
+  0,
+  0
+ ],
+ "sx": 0.011799907095204532,
+ "sy": -0.0092889383672097,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.7547,
+ "body_iou": 0.7691,
+ "note": "C12 sheet: view angles from a coarse grid over azimuth, elevation, roll and lens on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 13, closed, holes filled, largest shape (membranes included); rescored on the stage 5 bow fixes (Board on v3), camera kept"
+}

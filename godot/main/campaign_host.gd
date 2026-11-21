@@ -54,7 +54,10 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_requested.connect(_on_battle)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
-	_seed_campaign(int(o.get("seed", 1)) if bot else randi())
+	if o.has("player_path_seed"):
+		_seed_campaign(int(o["player_path_seed"]))
+	else:
+		_seed_campaign(int(o.get("seed", 1)) if bot else randi())
 	if bot:
 		rng.seed = int(o.get("seed", 1))
 		C.persist_on = false
@@ -70,6 +73,9 @@ func start(m: Node, o: Dictionary) -> void:
 		add_child(story)
 		story.attach(C, not bot)
 	if not bot: C.initFinishedRuns()
+	# issue 1217: the screens' playtest default (campaign_ui.gd bind, R1) must hold before the first page is built, or the
+	# first faction and admiral page offers Select only for each faction's free admiral until something re-renders it
+	if not bot and "playtest_default" in C: C.playtest_default = true
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	C.titleScreen()
 	if o.get("continue", false):
@@ -88,6 +94,8 @@ func start(m: Node, o: Dictionary) -> void:
 		ui = Fallback.new()
 	if "hide_on_battle" in ui:
 		ui.hide_on_battle = true
+	if "ai_level" in ui:
+		ui.ai_level = ai_level()   # issue 1336: the map's danger bands follow the setting
 	add_child(ui)
 	ui.bind(C)
 	C.changed.connect(_on_changed)
@@ -123,12 +131,20 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
+# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336
+func ai_level() -> String:
+	if main != null and "settings" in main:
+		return str(main.settings.get("ai", "veteran"))
+	return "veteran"
+
+
 # external battle mode: build the real battle (G1 rules through the API) and give the campaign its B
 func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	api_now = API.new()
 	var e: String = api_now.load_rules()
 	if e != "":
 		errors.append("rules: " + e)
+	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:

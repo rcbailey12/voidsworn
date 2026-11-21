@@ -17,6 +17,7 @@ on:
       - 'muse/**'
       - 'work/**'
       - 'opus/**'
+      - 'neon/**'
       # A run the PC runner marks partial pushes to <branch>-partial: a mid-work snapshot that fails by nature and opens no
       # pull request, so it gets no checks (each failure mailed Ryan; Nov 15, "I keep seeing GitHub errors"). The resumed
       # run's own branch is checked when it lands.
@@ -138,18 +139,18 @@ jobs:
       - name: Run Godot-only rules safety net
         run: sh godot/rules/test/safety/run_cache_check.sh
   # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
-  # Its own job, so it runs beside the parity job and has its own 30 minute limit. Ship files (godot/gen) are never on
+  # Its own job, so it runs beside the parity job and has its own 40 minute limit. Ship files (godot/gen) are never on
   # GitHub: ships are placeholder blocks.
   # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
   # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
   # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
-  # time limit: load 120 s, import 300 s, the list 780 s, the bot battle 360 s and the fixture 2 minutes, 28 minutes in all
-  # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 30 minute limit
+  # time limit: load 120 s, import 300 s, the list 1080 s (780 s until the list outgrew it, PR 1329) and the bot battle 360 s, 31 minutes in all (the A16 seam has its own job, issue 1174)
+  # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 40 minute limit
   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
   godot-game:
     name: Godot game checks
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
@@ -189,7 +190,7 @@ jobs:
           if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; bad=1; fi
           if [ $code -ne 0 ]; then echo "load_all.gd ended with exit code $code (124 or 137 is its 120 s time limit)"; bad=1; fi
           if [ $bad -ne 0 ]; then
-            echo 'The Godot checks after this step were not run (the A16 fixture step still runs: it needs no Godot): a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
+            echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
       # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
@@ -206,7 +207,7 @@ jobs:
           for d in $skip; do rm -f "$d/.gdignore"; done
           echo "imported files: $(find godot/.godot/imported -type f | wc -l)"
       # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script).
-      # run_checks.sh keeps the whole list inside a 780 s budget; a check the budget never reached counts as failed.
+      # run_checks.sh keeps the whole list inside a 1080 s budget; a check the budget never reached counts as failed.
       - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
@@ -228,11 +229,83 @@ jobs:
           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
           exit $code
-      # (d) the unpainted A16 fixture that fx/test/death_seam_check.gd falls back to is fresh: the sha256 of every file that makes
-      # its geometry matches its record (tools/recipe/sheet_fixture_hash.py; Muse's check of PR 611, BLOCKING 1). Plain Python, no
-      # Blender: a PR that changes an input without regenerating the fixture fails here by name.
-      - name: A16 death fixture is fresh (sheet_fixture_hash.py --check)
-        if: ${{ !cancelled() }}
+  # (d) the A16 death seam (issue 600) on its own job, so a stale fixture record never fails a branch by itself (issue 1174).
+  # The record (tools/recipe/sheet_fixture_hash.py) hashes shared kit files (kit.py, export7.py, contract.py, variants.py,
+  # gamedata.py, shared hardpoints.py and turrets.py), so every shared kit fix (R333) used to fail here until someone rebaked
+  # on the PC: 6 of 8 failed runs on Nov 19 14:00 to 15:51 UTC. Now: a fresh record runs the seam check on the committed
+  # fixture, as before. A stale record bakes A16 again here with pinned Blender 4.5.14 (cached), into the runner's temp
+  # folder only, and runs the same seam check on that bake: a clean seam passes, with "fixture record stale: refresh before
+  # merge" in the summary; a seam failure on the fresh bake fails. A broken record (missing or unreadable) still fails.
+  # godot/tools/ci/godot_checks.txt marks death_seam_check.gd "step:" so the list step does not run it a second time.
+  a16-fixture:
+    name: A16 death seam (fixture or fresh bake)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
+      BLENDER_VERSION: 4.5.14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Merge main in (test the branch as it would land)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+          if git merge -q --no-edit origin/main; then
+            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+          else
+            git merge --abort 2>/dev/null || true
+            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
+          fi
+      - name: Is the A16 fixture record fresh? (sheet_fixture_hash.py --check)
+        id: record
         timeout-minutes: 2
         run: |
-          python3 tools/recipe/sheet_fixture_hash.py --check | tee -a "$GITHUB_STEP_SUMMARY"; exit ${PIPESTATUS[0]}
+          set +e
+          python3 tools/recipe/sheet_fixture_hash.py --check --quiet-stale; code=$?
+          case $code in
+            0) echo "state=fresh" >> "$GITHUB_OUTPUT" ;;
+            3) echo "state=stale" >> "$GITHUB_OUTPUT"
+               echo "fixture record stale: refresh before merge (this run bakes A16 fresh and checks the seam on that bake)" | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "The fixture record is missing or unreadable (exit $code): repair it, a rebake alone will not." | tee -a "$GITHUB_STEP_SUMMARY"; exit 1 ;;
+          esac
+      - name: Get Godot 4.7.2 (headless)
+        run: |
+          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Blender cache (stale record only)
+        if: steps.record.outputs.state == 'stale'
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/blender-${{ env.BLENDER_VERSION }}
+          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
+      - name: Get Blender 4.5.14 for Linux (stale record only)
+        if: steps.record.outputs.state == 'stale'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libice6 > /dev/null
+          if [ ! -x ~/blender-$BLENDER_VERSION/blender ]; then
+            curl -sSL --retry 3 --retry-all-errors -o blender.tar.xz https://download.blender.org/release/Blender4.5/blender-$BLENDER_VERSION-linux-x64.tar.xz
+            mkdir -p ~/blender-$BLENDER_VERSION
+            tar -xJf blender.tar.xz -C ~/blender-$BLENDER_VERSION --strip-components=1
+          fi
+          ~/blender-$BLENDER_VERSION/blender --version | head -1
+      - name: Bake A16 fresh into the runner's temp folder (stale record only)
+        if: steps.record.outputs.state == 'stale'
+        timeout-minutes: 8
+        run: |
+          set +e   # the step shell is bash -e: keep going after a failed bake so its log tail is printed
+          python3 tools/recipe/sheet_fixture_hash.py --bake ~/blender-$BLENDER_VERSION/blender --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
+          code=$?
+          tail -40 "$RUNNER_TEMP/a16_bake.log"
+          exit $code
+      - name: Death seam check (fx/test/death_seam_check.gd)
+        timeout-minutes: 5
+        run: |
+          if [ "${{ steps.record.outputs.state }}" = "stale" ]; then ship="$RUNNER_TEMP/a16/C19_51_unbaked.glb.gz"; src="fresh bake (record stale)"; else ship=""; src="committed fixture"; fi
+          timeout -k 10 300 "$GODOT" --headless --path godot --script res://fx/test/death_seam_check.gd ${ship:+--} $ship 2>&1 | tee "$RUNNER_TEMP/death_seam.log"; code=${PIPESTATUS[0]}
+          { echo "### A16 death seam on the $src"; echo '```'; grep -E '^DEATH_SEAM (ship|fixture|machines|inside|failures)' "$RUNNER_TEMP/death_seam.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/death_seam.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
+          exit $code

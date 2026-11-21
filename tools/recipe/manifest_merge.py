@@ -65,7 +65,7 @@ def read_json(path):
 def merge_entry(entry, previous, code, dest):
     manifest = read_json(previous) if previous else dict(note='', ships={})
     manifest.setdefault('ships', {})[code] = entry
-    dest.write_text(json.dumps(manifest, indent=1), encoding='utf-8')
+    dest.write_text(json.dumps(manifest, indent=1), encoding='utf-8', newline='\n')
 
 
 def main(entry_path, godot, code):
@@ -83,17 +83,23 @@ def main(entry_path, godot, code):
     return 0
 
 
+def is_export_map(code, name):
+    return re.fullmatch(
+        re.escape(code) + r'(?:_[\w-]+\.jpg|(?:_[\w-]+)?_(?:normal|orm)\.png)', name
+    ) is not None
+
+
 def export_snapshot(export, snapshot, code):
-    # The GLB names the texture set. A previous export can leave other JPGs
-    # in the same directory, so the install must never use a wildcard copy.
-    from check_export import read_glb
+    # Read the exact texture set from the GLB. Earlier exports can leave maps
+    # of either format in the same directory.
+    from glb_io import read_glb
 
     glb = code + '.glb'
     copy_verified(export / glb, snapshot / glb)
     doc, _ = read_glb(snapshot / glb)
     maps = {image.get('uri') for image in doc.get('images', [])}
     for name in maps:
-        if not isinstance(name, str) or not re.fullmatch(re.escape(code) + r'_[\w-]+\.jpg', name):
+        if not isinstance(name, str) or not is_export_map(code, name):
             raise ValueError(f'unsupported export texture path {name!r}')
     for name in [ENTRY, *sorted(maps)]:
         copy_verified(export / name, snapshot / name)
@@ -132,6 +138,7 @@ def install(project, code, snapshot, expected, refresh, readback):
 
         def managed(name):
             return (name in files or name in {code + '_damage.glb', code + '_wreck.glb'}
+                    or is_export_map(code, name)
                     or (name.startswith(code + '_') and name.lower().endswith('.jpg')))
 
         # Keep other files in the ship directory, and stage every copy and
@@ -238,6 +245,10 @@ def install_export(export, project, code, godot, job, ship, *options):
                 print(line)
 
     install(project, code, snapshot, expected, refresh, readback)
+    try:
+        shutil.rmtree(snapshot)
+    except OSError as exc:
+        print(f'Could not remove checked export scratch {snapshot}: {exc}', file=sys.stderr)
     return 0
 
 

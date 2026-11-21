@@ -89,6 +89,7 @@ MATS = {
     'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
     'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
     'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
+    'veilroot': ((0.45, 0.68, 0.06), 1.0),  # the Chorus veils' glowing roots and ribs (R341 round 3)
     'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)
     'bilewet': ((0.10, 0.14, 0.025), 0.35),  # dim bile in veins and pores
     # Chorus insides (cutaway only): flesh, bone and organs (R98, R209)
@@ -211,7 +212,8 @@ class Kit:
         if not w:
             return 0.0
         a, sd = w
-        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+        fn = getattr(self, 'wob_fn', None)   # issue 1291: a sheet's own swellings and folds grown into the skin, on top
+        return (fn(x, t) if fn else 0.0) + a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
                     + 0.2 * math.cos(0.9 * x - 1.0 * t))
 
     def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
@@ -761,8 +763,11 @@ class Kit:
         rad = part.fit['radius']
         self.fitdata.append(dict(id=fid, kind='engine', cones=[dict(apex=tuple(p), dir=(-1, 0, 0), r0=rad, half=12.0,
                                                                     length=max(2.5 * 2 * rad, 0.22 * self.length))]))
-        self.features.append(dict(id=fid, kind='engine', what=(getattr(HP, 'ENGINE_WHAT', 'engine, bell %.1f across') % (2 * rad)), count=1,
-                                  pos=tuple(p), aim=(180.0, 0.0), src=src, note=note, exit=tuple(p), radius=rad, inv=[inv] if isinstance(inv, str) else list(inv)))
+        feature = dict(id=fid, kind='engine', what=(getattr(HP, 'ENGINE_WHAT', 'engine, bell %.1f across') % (2 * rad)), count=1,
+                       pos=tuple(p), aim=(180.0, 0.0), src=src, note=note, exit=tuple(p), radius=rad, inv=[inv] if isinstance(inv, str) else list(inv))
+        if (kw or {}).get('craft') and 'w' in part.fit and 'h' in part.fit:
+            feature['aperture'] = [part.fit['w'], part.fit['h']]
+        self.features.append(feature)
 
     def tube(self, fid, pos, r, depth, hood=0.0, grille=False, src='picture', note='', inv=(), what='front tube', bands=2, yaw=0.0, pitch=0.0):
         """a launch tube or scoop from the kit, mouth at pos, facing yaw/pitch"""
@@ -912,11 +917,15 @@ class Kit:
         if inv:
             self.built.append(dict(id=fid, kind='patch', inv=[inv], shaped=True, detailed=lift > 0, subs=['slab', 'lift', 'rivet']))
 
-    def spinal(self, fid, root, length, r=0.55, slot='F', weapon='doom', src='picture', note='', inv=(), **kw):
-        """a fixed forward weapon along the ship's axis (the Eclipse corona arc projector): root on the hull face, +X"""
+    def spinal(self, fid, root, length, r=0.55, slot='F', weapon='doom', src='picture', note='', inv=(), aim=None, band=None, **kw):
+        """a fixed weapon, by default forward along the ship's axis (the Eclipse corona arc projector): root on the hull face, +X.
+        aim: another fixed direction for the organ (issue 1154: the Chorus spitter's dorsal spine glands face up, a weapon the
+        game fires all round, arc T); band: the elevations the fit check tries from its mouth. Both default to the old values."""
         p = Vector(root)
         part = HP.spinal(length, r, **kw)
-        part = self.emit(fid, part, HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        av = Vector(aim or (1.0, 0.0, 0.0)).normalized()
+        upv = Vector((0.0, 0.0, 1.0)) if abs(av.z) < 0.9 else Vector((-1.0, 0.0, 0.0))
+        part = self.emit(fid, part, HP.frame(p, av, upv), inv, keep=False)
         fd = part.fit
         for ob in self.coll.objects:
             if ob.get('grp') == fid and ob.get('role') != 'mount':
@@ -924,17 +933,18 @@ class Kit:
         # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
         # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
         mz = Vector(fd.get('lane_from', fd['muzzles'][0])[1]); hr = fd['radius']   # a kit may start the lane at the mouth (Chorus throats, issue 623)
-        lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
+        lu = upv.cross(av).normalized(); lw = av.cross(lu).normalized()
+        lane = dict(apex=tuple(mz), dir=tuple(av), u=tuple(lu), w=tuple(lw), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
-                                 rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
+                                 rest_yaw=0.0, reach=fd['reach'], band=tuple(band or (-10, 0, 10, 20)), muzzles=[tuple(m[1]) for m in fd['muzzles']],
                                  cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane],
                                  aim=tuple(fd['aim'][1]), bore=fd.get('bore', r)))   # aim, bore: what the recipe's hard points read (issue 618)
         wn_ = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
         what_ = ('%s, %s (fixed)' % (wn_.lower(), getattr(part, 'type', 'organ'))) if getattr(part, 'type', '') == 'throat' and wn_ else \
             'spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector')
-        self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
-                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
+        self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(round(math.degrees(math.atan2(av.y, av.x)), 1), round(math.degrees(math.asin(max(-1.0, min(1.0, av.z)))), 1)), slot=slot,
+                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0) if aim is None else tuple(av),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
     def core(self, fid, centre, r, src='picture', note='', inv=(), part=None):
@@ -1000,9 +1010,68 @@ class Kit:
     def organ_room(self, name, kind, centre, radii, note='', seed=0, n=(22, 12)):
         """a grown organ or chamber inside the hull (a lumpy ellipsoid, never a box that reaches the skin)"""
         V, F = HP.blob(*radii, centre=centre, nu=n[0], nv=n[1], seed=seed, amp=0.1)
+        # issue 1291: a room that reaches the skin shows through it in game (C13's lime "disc" was the fore gland's spine sac
+        # pushing out of the hull beside the knoll). Shrink the room about its centre until every vertex sits inside the hull's
+        # skin with a margin.
+        k_ = self._room_fit(V, centre)
+        moved_ = 0
+        while k_ < 0.7 and moved_ < 8 and getattr(self, 'hull_sections', None):
+            # a room centred at or past the skin: pull it in toward the section's middle before shrinking it
+            s_ = sec_at(self.hull_sections, centre[0]); zc_ = (s_[3] + s_[4]) / 2
+            nc = (centre[0], centre[1] * 0.85, zc_ + (centre[2] - zc_) * 0.85)
+            V = [tuple(v[i] + nc[i] - centre[i] for i in range(3)) for v in V]
+            centre = nc; moved_ += 1
+            k_ = self._room_fit(V, centre)
+        if moved_:
+            print('[inside] %s: moved in to (%.2f, %.2f, %.2f)' % ((name,) + tuple(centre)))
+        if k_ < 1.0:
+            V = [tuple(centre[i] + (v[i] - centre[i]) * k_ for i in range(3)) for v in V]
+            radii = tuple(r_ * k_ for r_ in radii)
+            print('[inside] %s: shrunk to %d%% to stay inside the hull' % (name, round(k_ * 100)))
         self._obj('in_' + name, V, F, kind, inside=True, smooth=True)
         c = centre; r = radii
         self.inside.append(dict(kind='space', name=name, mat=kind, x=(c[0] - r[0], c[0] + r[0]), y=(c[1] - r[1], c[1] + r[1]), z=(c[2] - r[2], c[2] + r[2]), note=note))
+
+    def _room_fit(self, V, centre, margin=0.05):
+        """the scale (<= 1) about centre that keeps every vertex of V inside the hull's skin by margin: a ray from the hull
+        section's middle out through each vertex finds the outer skin (issue 1291). 1.0 when there is no hull yet."""
+        hob = bpy.data.objects.get(self.code + '_hull')
+        if hob is None or not getattr(self, 'hull_sections', None):
+            return 1.0
+        from mathutils.bvhtree import BVHTree
+        dg = bpy.context.evaluated_depsgraph_get()
+        tree = BVHTree.FromObject(hob, dg)
+        mw = hob.matrix_world; mi = mw.inverted()
+        cen = Vector(centre); k = 1.0
+        for v in V:
+            v = Vector(v)
+            s_ = sec_at(self.hull_sections, v.x)
+            o = Vector((v.x, 0.0, (s_[3] + s_[4]) / 2))
+            d = v - o
+            if d.length < 1e-6:
+                continue
+            # the outer skin: the last wall along the ray (the shell's inner wall hides nothing, the skin does)
+            lo_ = mi @ o; ld = (mi.to_3x3() @ d).normalized(); far = None
+            for _ in range(8):
+                hit = tree.ray_cast(lo_, ld)
+                if hit[0] is None:
+                    break
+                far = hit[0]; lo_ = hit[0] + ld * 1e-4
+            if far is None:
+                continue
+            wall = (mw @ far - o).length - margin
+            if d.length > wall:
+                # the scale about the room's centre that brings this vertex back to the wall (along the room's own ray)
+                dv = v - cen
+                lo, hi = 0.0, 1.0
+                for _ in range(20):
+                    mid = (lo + hi) / 2
+                    if ((cen + dv * mid) - o).length <= wall:
+                        lo = mid
+                    else:
+                        hi = mid
+                k = min(k, lo)
+        return max(0.4, k)
 
     def hoop(self, name, x, inset=0.3, w=0.14, t=0.12, kind='bonefr'):
         """a bone frame hoop inside the rounded hull at station x: a ring following the hull's section, inset from the skin"""

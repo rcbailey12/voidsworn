@@ -11,14 +11,22 @@ if not exist "%JOB%\concept.png" (echo Stage 2 FAILED: run stage 1 first, no %JO
 rem issue 592: the cut image is the concept squared with no cut-out of ours (TRELLIS.2 removes the background itself when the
 rem picture has no alpha); a concept with its own alpha keeps it. An existing cut image is kept as it is.
 if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks" mkdir "%USERPROFILE%\Downloads\voidsworn_meshes\picks"
-if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" "%BPY%" "%RC%\ship.py" %SHIP% concept "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" raw
+set "TMO_STEP=recipe 2 write Trellis cut image"
+if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" (
+  call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\ship.py" %SHIP% concept "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" raw
+  if errorlevel 1 goto bad
+)
 if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" (echo Stage 2 FAILED: no cut image for TRELLIS.2 & goto bad)
 set TRELLIS_CODES=%SHIP%
 set "PC_GPU_MODE=shared"
 set "PC_GPU_WEIGHT=2"
-call "%REPO%\tools\pc\tmo.bat" 21600 "%TPY%" "%REPO%\tools\pc\trellis_fleet.py"
+set "TMO_STEP=recipe 2 Trellis shape reference"
+set "TMO_STEP_OUT=%V%\bakeoff"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_SHAPE_CAP% "%TPY%" -u "%REPO%\tools\pc\trellis_fleet.py"
+set "TRELLIS_EXIT=%ERRORLEVEL%"
 set "PC_GPU_MODE="
 set "PC_GPU_WEIGHT="
+if not "%TRELLIS_EXIT%"=="0" (echo Stage 2 FAILED: Trellis exited %TRELLIS_EXIT%. & goto bad)
 if not exist "%B0%" (echo Stage 2 FAILED: no shape reference written. See Downloads\voidsworn_test\bakeoff\trellis_fleet.log & goto bad)
 echo Stage 2 done: %B0%
 if "%RECIPE_NOPAUSE%"=="" pause

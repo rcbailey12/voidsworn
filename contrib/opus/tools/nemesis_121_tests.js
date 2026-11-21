@@ -179,10 +179,11 @@ check('121-12 lines render through nemSay ({beat} filled, pronouns swapped for h
   const logged = T.B.log.some(x => x.m.endsWith(': "' + cfg.line + '"'));
   return m === want && !m.includes('{beat}') && a === T.NEM_VOICE.hegemony[N.persona].again.replace('{beat}', T.NEM_BEAT_WORD.lance) && gm === T.nemFull(N) + ': "' + ad + '"' && gf === gm && swap
     && T.NEM_VOICE.hegemony[N.persona].meet.includes(cfg.line) && logged; });
-// 121-13: behaviour packages unchanged (pinned from main before #121), and the Chorus as a non-first commander keeps its feeding cap
-const BEH_SHA = 'd2af61f99487c283';
+// 121-13: pin behaviour from before #121, without the player-facing description.
+const BEH_SHA = '17b6d5b8668b4e3f';
 check('121-13 NEM_FAC behaviour packages are unchanged; a non-first Chorus commander feeds to 8 (+32% hull)', () => {
-  const sha = crypto.createHash('sha256').update(canon(Object.fromEntries(Object.keys(T.NEM_FAC).sort().map(f => [f, T.NEM_FAC[f].beh])))).digest('hex').slice(0, 16);
+  const rules = Object.fromEntries(Object.entries(T.NEM_FAC).map(([fac, {beh: {d, ...values}}]) => [fac, values]));
+  const sha = crypto.createHash('sha256').update(canon(rules)).digest('hex').slice(0, 16);
   const R = forced(['hegemony', 'chorus', 'ithar']); R.sector = 2; const C = T.nemActive(); T.nemFeedLosses(5); const line = T.nemFeedLosses(9);
   return sha === BEH_SHA && C.fed === 8 && /32% tougher \(fed 8 of 8\)/.test(line) && R.nems.hegemony.fed === 0; });
 // saves: an old save (clock on the commander) migrates the clock onto the run; a new save round-trips

@@ -61,14 +61,22 @@ func _run() -> void:
 			sv.set_process(false)
 			sv.hull.set_process(false)
 			check(sv.squad_kind == ("spore" if faction == "chorus" else kind), "explicit template preserved " + faction + kind)
-			check(sv.meshes.size() == (6 if faction == "chorus" else 3), "complete detailed formation")
-			check(sv.meshes[0].mesh.get_surface_count() >= 3, "real mesh surfaces")
-			var drawn_bow := -INF
-			for surface_index in sv.meshes[0].mesh.get_surface_count():
-				var arrays: Array = sv.meshes[0].mesh.surface_get_arrays(surface_index)
-				for index in arrays[Mesh.ARRAY_INDEX]:
-					drawn_bow = maxf(drawn_bow, arrays[Mesh.ARRAY_VERTEX][index].x)
-			check(drawn_bow > 0.48, "merged mesh actually draws the faceted prow")
+			check(sv.hull.craft.size() == (6 if faction == "chorus" else 3), "complete formation")
+			var lead: Node3D = sv.hull.craft[0]
+			var model: StringName = lead.get_child(0).name
+			if lead.has_node("craft_skin"):
+				check(sv.meshes.size() == sv.hull.craft.size(), "one procedural mesh per craft")
+				check(sv.meshes[0].mesh.get_surface_count() >= 3, "real mesh surfaces")
+				var drawn_bow := -INF
+				for surface_index in sv.meshes[0].mesh.get_surface_count():
+					var arrays: Array = sv.meshes[0].mesh.surface_get_arrays(surface_index)
+					for index in arrays[Mesh.ARRAY_INDEX]:
+						drawn_bow = maxf(drawn_bow, arrays[Mesh.ARRAY_VERTEX][index].x)
+				check(drawn_bow > 0.48, "merged mesh actually draws the faceted prow")
+			else:
+				for craft: Node3D in sv.hull.craft:
+					var box: AABB = sv.hull._mesh_bounds(craft)
+					check(is_equal_approx(box.size.x, 1.0) and box.get_center().is_zero_approx(), "model fits the craft root")
 			var anchor := sv.position
 			var start: Transform3D = sv.hull.craft[0].transform
 			for frame in 60: sv.hull.step(1.0 / 60.0)
@@ -78,6 +86,15 @@ func _run() -> void:
 			for tr in sv.hull.trails:
 				check(tr.hist.size() > 2 and tr.hist.size() <= 20, "bounded stern history")
 				check(tr.node.mesh.get_surface_count() == 1, "each craft has a ribbon")
+			if model != &"craft_skin":
+				sv.hull.step(1.0 / 30.0)
+				for i in sv.hull.craft.size():
+					var engines: Array[Node] = sv.hull.craft[i].find_children("hp_eng_*", "Node3D", true, false)
+					var origin := Vector3.ZERO
+					for engine: Node3D in engines:
+						origin += engine.global_position
+					var sample: Vector3 = sv.hull.trails[i].hist[0][0]
+					check(not engines.is_empty() and sample.is_equal_approx(origin / engines.size()), "trail starts at the model's exhausts")
 			sv.position = Vector3(100, 0, 10)
 			sv.rotation.y = PI / 2.0
 			sv.hull.step(1.0 / 30.0)
@@ -94,12 +111,14 @@ func _run() -> void:
 			fx.launch(unit.id, unit.id)
 			check(fx.dstate.craft_runs.size() == 6, "launch event streams six faction craft")
 			check(fx.dstate.craft_runs[0].node.faction == faction, "launch keeps carrier faction")
+			check(fx.dstate.craft_runs[0].node.craft[0].get_child(0).name == model, "launch uses the same model as the wing")
 			fx.step(4.0)
 			var weapon := "sporeb" if faction == "chorus" or kind == "spore" else ("bombs" if kind == "bomber" else "guns")
 			fx.volley_at(Vector3.ZERO, "sq", Vector3(40, 0, 0), {"faction": faction, "weapon_id": weapon, "shots": [false]})
 			check(fx.dstate.craft_runs.size() == 3, "weapon pass uses three model craft")
 			check(fx.dstate.craft_runs[0].node.faction == faction, "weapon pass keeps point-volley faction")
 			check(fx.dstate.craft_runs[0].node.craft[0].name == faction + "_" + ("spore" if weapon == "sporeb" else kind), "weapon pass uses correct template")
+			check(fx.dstate.craft_runs[0].node.craft[0].get_child(0).name == model, "weapon pass uses the same model as the wing")
 			fx.step(3.0)
 			check(fx.dstate.craft_runs.is_empty(), "weapon craft released")
 			sv.dead = true

@@ -11,9 +11,19 @@ set TPY=%USERPROFILE%\Downloads\trellis2\code\venv\Scripts\python.exe
 for %%I in ("%~dp0..\..") do set REPO=%%~fI
 set R=%REPO%\tools\blender\r209
 set RC=%REPO%\tools\recipe
+rem Recipe watchdog limits in seconds. GPU admission uses a separate clock.
+set "RECIPE_CHECK_CAP=600"
+set "RECIPE_SHAPE_CAP=900"
+set "RECIPE_TRACE_CAP=1800"
+set "RECIPE_PARTS_CAP=1800"
+set "RECIPE_BAKE_CAP=3600"
+set "RECIPE_RENDER_CAP=1800"
+set "RECIPE_LOD_CAP=1800"
+set "RECIPE_EXPORT_CAP=1800"
 if "%SHIP%"=="" set /p SHIP=Ship id (Enter for C15s_23): 
 if "%SHIP%"=="" set SHIP=C15s_23
 set JOB=%V%\recipe\%SHIP%
+set "TMO_STEP_OUT=%JOB%"
 set B0=%V%\bakeoff\%SHIP%_trellis.glb
 if not exist "%JOB%" mkdir "%JOB%"
 rem Pillow and scipy in Blender's own python, before any stage uses it (stage 1's concept write needs Pillow). First run only.
