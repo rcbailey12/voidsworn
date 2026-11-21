@@ -43,9 +43,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 	print("[main] quit (%s) at %d ms" % [route, t0])
 	# issue 1518 (Artoo on PR 1445): what was loading when the close came, so a close timed "during a load" is proven
 	var loading := PackedStringArray()
-	if battle != null and is_instance_valid(battle) and bool(battle.get("warming")):
+	if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
 		loading.append("battle %s" % str(battle.get("load_phase")))
-	if showcase != null and is_instance_valid(showcase) and not bool(showcase.get("showcase_ready")):
+	if showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
 		loading.append("backdrop %s" % str(showcase.get("load_phase")))
 	var svc := get_tree().root.get_node_or_null("WorldBakes")
 	if svc != null and (str(svc.get("_active")) != "" or not (svc.get("_queue") as Array).is_empty()):
