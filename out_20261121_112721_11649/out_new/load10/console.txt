@@ -1,0 +1,32 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d9c315dd8633\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1434)
+GPU: acquired solo claim 10ac1038-2bb3-4c7b-9482-d352a6eec780
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434k\out_20261121_112721_11649\new\contrib\opus\pc\1434\load1434_runs.p
+s1:98 char:26
++   foreach ($c in $cases) {
++                          ~
+Missing closing '}' in statement block or type definition.
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434k\out_20261121_112721_11649\new\contrib\opus\pc\1434\load1434_runs.p
+s1:97 char:37
++ foreach ($set in @('cold', 'warm')) {
++                                     ~
+Missing closing '}' in statement block or type definition.
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434k\out_20261121_112721_11649\new\contrib\opus\pc\1434\load1434_runs.p
+s1:175 char:201
++ ... 18, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' })))
++                                                                         ~
+Unexpected token ')' in expression or statement.
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434k\out_20261121_112721_11649\new\contrib\opus\pc\1434\load1434_runs.p
+s1:177 char:3
++   }
++   ~
+Unexpected token '}' in expression or statement.
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434k\out_20261121_112721_11649\new\contrib\opus\pc\1434\load1434_runs.p
+s1:178 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MissingEndCurlyBrace
+ 
+GPU: released solo claim 10ac1038-2bb3-4c7b-9482-d352a6eec780

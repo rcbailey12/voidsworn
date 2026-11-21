@@ -1,0 +1,109 @@
+{
+  "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+  "source_commit_date": "2026-11-21T17:10:50Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T17:50:52Z",
+  "seed": 31,
+  "build_sha256": "e85cf25e78930f9fda94fc71e7594d890b26284507dbe33692934304d5bbcb1b",
+  "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
+  "fps": 30,
+  "battle": 2,
+  "enemy": "corsair",
+  "objective": "hold",
+  "picture_name": "hullbreakers-b2.jpg",
+  "sources": [
+    {
+      "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+      "source_commit_date": "2026-11-21T17:10:50Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T17:50:29Z",
+      "seed": 31,
+      "build_sha256": "e85cf25e78930f9fda94fc71e7594d890b26284507dbe33692934304d5bbcb1b",
+      "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
+      "fps": 30,
+      "battle": 2,
+      "enemy": "corsair",
+      "objective": "hold"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-31.avi",
+      "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T17:50:29Z",
+      "image_sha256": "beb8f282b9f4a58efb634cac3ae537fe71a57443d3003f09f8a66002c686ead7",
+      "sources": [
+        {
+          "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+          "source_commit_date": "2026-11-21T17:10:50Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "schema": 1,
+          "date": "2026-11-21T17:50:29Z",
+          "seed": 31,
+          "build_sha256": "e85cf25e78930f9fda94fc71e7594d890b26284507dbe33692934304d5bbcb1b",
+          "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
+          "fps": 30,
+          "battle": 2,
+          "enemy": "corsair",
+          "objective": "hold"
+        }
+      ],
+      "source_commit_date": "2026-11-21T17:10:50Z"
+    }
+  ],
+  "stamp_box": [
+    0,
+    632,
+    498,
+    720
+  ],
+  "strip_size": [
+    498,
+    88
+  ],
+  "strip_sha256": [
+    "748054e3bd001b87001cc59fc2ea74fcd668d66d142320540bd41eb8750d3ae6"
+  ],
+  "stamp_template_sha256": "40a36e0da79045f95a5ac9e126c6e77132e6d9447ff82d6f8abefc78d84d1987",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfIAAABYCAIAAACBA+K7AAABV0lEQVR4nO3UMQ0AIQDAQHgFLKz4l/kmSEiaOwWdOtc+A4CK73UAADfZOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOMkh87IwDzR50e2AAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "6b68e12712daf9d7571ac1953908cba45511fd7288d55a7f79dea28aef1bdd24",
+  "frames": [
+    {
+      "seconds": 10.37,
+      "label": "Opening board"
+    },
+    {
+      "seconds": 11.34,
+      "label": "Move preview"
+    },
+    {
+      "seconds": 11.87,
+      "label": "Card / objective"
+    },
+    {
+      "seconds": 27.87,
+      "label": "Target preview"
+    },
+    {
+      "seconds": 70.67,
+      "label": "Reinforcements"
+    },
+    {
+      "seconds": 97.37,
+      "label": "Win"
+    }
+  ]
+}

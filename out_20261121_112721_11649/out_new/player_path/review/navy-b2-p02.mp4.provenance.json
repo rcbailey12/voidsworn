@@ -1,0 +1,60 @@
+{
+  "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+  "source_commit_date": "2026-11-21T17:10:50Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-21T17:57:40Z",
+  "seed": 10,
+  "build_sha256": "e85cf25e78930f9fda94fc71e7594d890b26284507dbe33692934304d5bbcb1b",
+  "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
+  "fps": 30,
+  "battle": 2,
+  "enemy": "corsair",
+  "objective": "hold",
+  "picture_name": "navy-b2-p02.mp4",
+  "sources": [
+    {
+      "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+      "source_commit_date": "2026-11-21T17:10:50Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-21T17:57:40Z",
+      "seed": 10,
+      "build_sha256": "e85cf25e78930f9fda94fc71e7594d890b26284507dbe33692934304d5bbcb1b",
+      "manifest_sha256": "ba5a2e0a33127929a1d7ffa0242d5d78a21964b5cee295fcbdd314d700c553c8",
+      "fps": 30,
+      "battle": 2,
+      "enemy": "corsair",
+      "objective": "hold"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-21T17:57:40Z",
+      "image_sha256": "6ed03e8f969901d849726fcb4e06d3d0ec043e7ad537af44ff267807bde81fe5",
+      "sources": [
+        {
+          "source_commit": "5a0dffb22ad972504181847b9c20a698d41a6e4d",
+          "source_commit_date": "2026-11-21T17:10:50Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-21T17:10:50Z"
+    }
+  ],
+  "seconds_in_battle": 48,
+  "duration_s": 36.1,
+  "stamp_template_sha256": "310f7cc09e7be49168af6bd2bf44494a7f0f7ef4b0f245ff66a0173cf7224f82",
+  "image_sha256": "cc4e48f2ec9ed7f52bdd8e54793d224aa5f54933095f9d6297401a05ba91a6da"
+}

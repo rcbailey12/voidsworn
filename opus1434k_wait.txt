@@ -1,0 +1,6 @@
+OPUS1434K_WAIT.bat waiting for OPUS1524_SHOTS3 exit in opus1524c_wait.txt Sat 11/21/2026 11:12:21.67 
+OPUS1434_LOAD11 start 11:27:21.13 
+OPUS1434_LOAD11 exit 1 at 11:58:20.61 
+run folder out_20261121_112721_11649
+result: done FAILED: new load10, new load10: no load10_result.txt, see load10\console.txt
+all done Sat 11/21/2026 11:58:21.00 
