@@ -49,6 +49,7 @@ PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.
 # from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
 # Stored light, the seafoam of the faction's data glow #9fffd2 (issue 1415: the fleet hulls' cleft, star torpedo, hangar floor).
 LIGHT = (0.35, 1.0, 0.64)
+BEAM = (1.0, 0.97, 0.92)          # the lance's white beam core
 # Warming round (issue 1282, Ryan Nov 20: "put it in, then warm it up"): deep tones lifted so the panel edges glow too.
 TONES = dict(amber=((0.50, 0.06, 0.0), (1.0, 0.42, 0.02)),
              violet=((0.18, 0.01, 0.45), (0.66, 0.14, 1.0)),
@@ -224,6 +225,39 @@ def silver(name='gw_silver'):
     return m
 
 
+# Ryan Nov 21: the colours intermixed, "either as the individual tiles or more as streaks among others". The core's
+# marbled colour field (parts.MIX 'marble') gives the veins; on top, about a third of the tiles take another palette
+# colour of their own, so neighbouring tiles mix inside every vein (as the Nov 16 picks' stained glass does).
+TILE_SWAP = 0.26
+
+
+def tile_swap(nt, tint, cell_colour, glow):
+    """tint (colour socket) with TILE_SWAP of the cells recoloured: the cell's own random picks whether it swaps (red) and
+    to which palette colour (green), graded deep to hot by glow like the core. Returns a colour socket."""
+    N, Ln = nt.nodes, nt.links
+    sep = N.new('ShaderNodeSeparateColor'); Ln.new(cell_colour, sep.inputs[0])
+    ramps = []
+    for which in (0, 1):
+        rp = N.new('ShaderNodeValToRGB'); rp.color_ramp.interpolation = 'CONSTANT'
+        els = rp.color_ramp.elements
+        cols = [TONES[c][which] for c in PALETTE]
+        tot = float(sum(WEIGHTS))
+        els[0].position = 0.0; els[0].color = tuple(cols[0]) + (1,)
+        els[1].position = WEIGHTS[0] / tot; els[1].color = tuple(cols[1]) + (1,)
+        e3 = els.new((WEIGHTS[0] + WEIGHTS[1]) / tot); e3.color = tuple(cols[2]) + (1,)
+        Ln.new(sep.outputs[1], rp.inputs['Fac']); ramps.append(rp)
+    gp = N.new('ShaderNodeMath'); gp.operation = 'POWER'; gp.inputs[1].default_value = 1.5
+    Ln.new(glow, gp.inputs[0])
+    other = N.new('ShaderNodeMix'); other.data_type = 'RGBA'
+    Ln.new(gp.outputs[0], other.inputs['Factor']); Ln.new(ramps[0].outputs['Color'], other.inputs['A'])
+    Ln.new(ramps[1].outputs['Color'], other.inputs['B'])
+    pick = N.new('ShaderNodeMath'); pick.operation = 'LESS_THAN'; pick.inputs[1].default_value = TILE_SWAP
+    Ln.new(sep.outputs[0], pick.inputs[0])
+    out = N.new('ShaderNodeMix'); out.data_type = 'RGBA'
+    Ln.new(pick.outputs[0], out.inputs['Factor']); Ln.new(tint, out.inputs['A']); Ln.new(other.outputs['Result'], out.inputs['B'])
+    return out.outputs['Result']
+
+
 def mosaic(name='gw_mosaic'):
     """glowing stained-glass cells: tint and glow from the core's gw_tint / gw_glow attributes; dark leading between cells;
     each cell its own brightness and facet tilt; rare sparkles. Opaque."""
@@ -253,6 +287,7 @@ def mosaic(name='gw_mosaic'):
     k2 = N.new('ShaderNodeMath'); k2.operation = 'MULTIPLY'
     Ln.new(k.outputs[0], k2.inputs[0]); Ln.new(glow.outputs['Fac'], k2.inputs[1])
     col = N.new('ShaderNodeMix'); col.data_type = 'RGBA'; col.blend_type = 'MULTIPLY'; col.inputs['Factor'].default_value = 1.0
+    tint = type('T', (), {'outputs': {'Color': tile_swap(nt, tint.outputs['Color'], cells.outputs['Color'], glow.outputs['Fac'])}})()
     Ln.new(tint.outputs['Color'], col.inputs['A'])
     # base colour: the tint, darkened on the leading
     dark = N.new('ShaderNodeMix'); dark.data_type = 'RGBA'
@@ -356,6 +391,8 @@ def setup(kit):
         'gw_drive_core': gem('gw_drive_core', (0.80, 0.62, 1.0), 0.9),   # warming round: dimmer, violet, not white
         # stored light (the data glow #9fffd2): a star torpedo's body, a hangar lens floor (issue 1415)
         'gw_light': gem('gw_light', LIGHT, 1.4),
+        # the lance's beam core (faction sheet: the prism lance is stored light let out, a white core with a rainbow fringe)
+        'gw_beam': gem('gw_beam', BEAM, 2.6),
     }
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
@@ -384,6 +421,7 @@ GLOW = {
     'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 0.7), 'gw_drive_core': ((0.80, 0.62, 1.0), 0.9),
     'gw_tip': (LOOK['tip']['base'], 4.0),
     'gw_light': (LIGHT, 1.4),
+    'gw_beam': (BEAM, 2.6),
 }
 
 
@@ -422,6 +460,7 @@ def surface_layers(c, zone, tiles):
         edges = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D', feature='DISTANCE_TO_EDGE')
         edges.inputs['Scale'].default_value = CELLS_PER_LENGTH
         nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
+        tint = tile_swap(nt, tint, cells.outputs['Color'], glow)
         sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
         bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
         bright.inputs[3].default_value = L['cell_lo']; bright.inputs[4].default_value = L['cell_hi']

@@ -17,7 +17,7 @@
       "what": "grown lens point at the port bow / pulsar",
       "count": 1,
       "pos": [
-        5.650000095367432,
+        5.929999828338623,
         1.7200000286102295,
         0.0
       ],
@@ -31,9 +31,9 @@
       "note": "One pulsar lance per hull: a grown lens point at the bow on the hull's own axis; fixed forward, F arc.",
       "muzzle": [
         [
-          6.949999809265137,
+          7.653149604797363,
           1.7200000286102295,
-          1.2246467698671066e-17
+          7.935711062121406e-18
         ]
       ],
       "normal": [
@@ -77,7 +77,7 @@
       "what": "grown lens point at the stbd bow / pulsar",
       "count": 1,
       "pos": [
-        5.650000095367432,
+        5.929999828338623,
         -1.7200000286102295,
         0.0
       ],
@@ -91,9 +91,9 @@
       "note": "One pulsar lance per hull: a grown lens point at the bow on the hull's own axis; fixed forward, F arc.",
       "muzzle": [
         [
-          6.949999809265137,
+          7.653149604797363,
           -1.7200000286102295,
-          1.2246467698671066e-17
+          7.935711062121406e-18
         ]
       ],
       "normal": [
@@ -604,13 +604,16 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 408502,
-      "unjoined_surfaces": 108,
-      "material_surfaces": 10,
+      "triangles": 383514,
+      "unjoined_surfaces": 130,
+      "material_surfaces": 13,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",
@@ -635,8 +638,14 @@
   },
   "mesh_groups": {
     "L1": [
-      "L1_mount_gw_lance",
+      "L1_mount_gw_light",
+      "L1_mount_gw_pearl",
       "L1_mount_gw_silver",
+      "L1_mount_gw_lance",
+      "L1_mount_gw_beam",
+      "L1_mount_gw_gem_amber",
+      "L1_mount_gw_gem_green",
+      "L1_mount_gw_gem_violet",
       "L1_mount_gw_tip"
     ],
     "E1": [
@@ -657,8 +666,14 @@
       "E1_silver_flow_10"
     ],
     "L2": [
-      "L2_mount_gw_lance",
+      "L2_mount_gw_light",
+      "L2_mount_gw_pearl",
       "L2_mount_gw_silver",
+      "L2_mount_gw_lance",
+      "L2_mount_gw_beam",
+      "L2_mount_gw_gem_amber",
+      "L2_mount_gw_gem_green",
+      "L2_mount_gw_gem_violet",
       "L2_mount_gw_tip"
     ],
     "E2": [
@@ -680,14 +695,16 @@
     ],
     "O1": [
       "O1_mount_gw_pearl",
-      "O1_turn_gw_gem_violet"
+      "O1_turn_gw_gem_violet",
+      "O1_mount_gw_light",
+      "O1_mount_gw_silver"
     ]
   },
   "dimensions": [
-    13.762722492218018,
-    6.2005157470703125,
-    2.6739702224731445
+    14.46274995803833,
+    6.093663215637207,
+    2.7569061517715454
   ],
-  "design_sha256": "0df5dcb21ff27b40b8a646830b2ab2858aaca11e8397f4a63b495dc0c427ab50",
-  "kit_sha256": "33ef6f5d0765505db68c668dd3cc8f7faf82574e86891191302b3d30c84fa56e"
+  "design_sha256": "9c1ff5aaf65b61c0467f804c651ef0815f33fd599b72146dce40863c47ff1738",
+  "kit_sha256": "db0f3310c920f0786a9864c0621e55be5cec29525fe4753325b0c50d525437d6"
 }

@@ -1,6 +1,6 @@
 # GA1 Aperture: Glasswright aperture GA1
 
-Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design a428266cfb48.
+Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design fa678c02335a.
 Built from Ryan's Nov 16 pick V1 (contrib/muse/design/glasswright_family_2026_11/, PR 942) in the R337 finish on the
 shared Glasswright kit: opaque pearl ribbons with silver edges over glowing amber, violet and green mosaic; nothing see-through.
 
@@ -12,7 +12,7 @@ Review: [close](close.jpg), [side](side.jpg), [battle camera stand-in](camera170
 Design: [ithar_GA1.py](../../../../tools/blender/build_sheets/ships/ithar_GA1.py) on [hull.py](../../../../tools/blender/kits/ithar/hull.py).
 Recipe ship file: tools/recipe/ships/ithar_GA1.json (game code I16_11).
 
-Budget (Blender, before the recipe): outside 359990 triangles, inside 4808; 11 material surfaces outside.
+Budget (Blender, before the recipe): outside 376388 triangles, inside 4808; 13 material surfaces outside.
 Weapon match and fit: PASS (weapon_match.json, fit.json). Contract: contract.json.
 
 ## Changed from the picture

@@ -31,9 +31,9 @@
       "note": "The bow lance: a drawn-glass waveguide grown from the bow optic on the centreline; fixed forward, F arc.",
       "muzzle": [
         [
-          8.25,
+          8.486249923706055,
           0.0,
-          1.469576190014977e-17
+          1.0580948634282283e-17
         ]
       ],
       "normal": [
@@ -86,7 +86,7 @@
       "count": 1,
       "pos": [
         -0.6,
-        2.187321818498905,
+        1.5373218184989048,
         0.0
       ],
       "src": "picture",
@@ -102,7 +102,7 @@
       "count": 1,
       "pos": [
         -0.6,
-        -2.187321818498905,
+        -1.5373218184989048,
         0.0
       ],
       "src": "picture",
@@ -327,8 +327,8 @@
       "kind": "colour",
       "name": "seafoam stored light",
       "x": [
-        2.1999999999999997,
-        -3.4
+        2.6,
+        -3.8000000000000003
       ],
       "where": "the floor of each hangar lens",
       "note": ""
@@ -350,7 +350,7 @@
       "name": "hp_bay_0",
       "pos": [
         -0.6,
-        2.277321818498905,
+        1.627321818498905,
         0.0
       ],
       "side": "port",
@@ -367,7 +367,7 @@
       "name": "hp_bay_1",
       "pos": [
         -0.6,
-        -2.277321818498905,
+        -1.627321818498905,
         0.0
       ],
       "side": "stbd",
@@ -530,14 +530,16 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 359990,
-      "unjoined_surfaces": 87,
-      "material_surfaces": 11,
+      "triangles": 376388,
+      "unjoined_surfaces": 109,
+      "material_surfaces": 13,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
         "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",
@@ -566,11 +568,17 @@
       "L1_mount_gw_pearl",
       "L1_mount_gw_silver",
       "L1_mount_gw_lance",
+      "L1_mount_gw_beam",
+      "L1_mount_gw_gem_amber",
+      "L1_mount_gw_gem_green",
+      "L1_mount_gw_gem_violet",
       "L1_mount_gw_tip"
     ],
     "O1": [
       "O1_mount_gw_pearl",
-      "O1_turn_gw_gem_violet"
+      "O1_turn_gw_gem_violet",
+      "O1_mount_gw_light",
+      "O1_mount_gw_silver"
     ],
     "H1": [
       "H1_lip",
@@ -611,10 +619,10 @@
     ]
   },
   "dimensions": [
-    16.719985961914062,
-    5.74176812171936,
+    16.953449249267578,
+    5.653027772903442,
     4.090011715888977
   ],
-  "design_sha256": "a428266cfb48c1d23338a0226cec2ce04e4a5c1b4dfdf9fee89f21d13fb83cba",
-  "kit_sha256": "33ef6f5d0765505db68c668dd3cc8f7faf82574e86891191302b3d30c84fa56e"
+  "design_sha256": "fa678c02335a7e53be11c83150d263cbd5c48058d1713f20bbf2d3c2be961a1a",
+  "kit_sha256": "db0f3310c920f0786a9864c0621e55be5cec29525fe4753325b0c50d525437d6"
 }

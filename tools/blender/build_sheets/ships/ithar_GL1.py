@@ -35,7 +35,7 @@ INSIDE_NOTE = 'Two shaped glass decks, open annealed frames and three braided li
 XS, XB = -4.45, 3.70
 W = 1.02
 S = (LENGTH / 26.0) ** 0.7
-TORP = dict(x=0.55, len=2.7, r=0.31)
+TORP = dict(x=0.35, len=2.7, r=0.31)
 
 
 def hk(name):
@@ -79,7 +79,7 @@ TWIST = lambda x: 0.16 * x + 0.30 * math.sin(0.45 * x)
 
 def field():
     hl = hk('hull')
-    return hl.RibbonField(10, TWIST, sway=0.24, leaf_f=2.1, start=0.2, gather=hl.bow_gather(1.6, 4.0, (0.25, math.pi - 0.25, -math.pi / 2), 0.85))
+    return hl.RibbonField(7, TWIST, sway=0.24, leaf_f=2.1, start=0.2, gather=hl.bow_gather(1.6, 4.0, (0.25, math.pi - 0.25, -math.pi / 2), 0.85))
 
 
 LEAVES = [(-3.6, 1.5, 1.35, 0.20), (-2.4, 3.6, 2.20, 0.18), (-1.4, 3.7, 0.75, 0.18), (-3.0, 2.6, 4.75, 0.15)]
@@ -98,17 +98,18 @@ def build(K):
     for k in range(f.n):
         ribbons.append(gw.Ribbon(
             XS + 0.10 + 0.08 * math.sin(2.3 * k), XB - 0.05 - 0.12 * (k % 3), f.centre(k),
-            lambda t, k=k: (0.20 + 0.03 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.45, 0.42 + 0.05 * math.sin(k), tip=0.0)(t),
-            lambda t, v: S * (0.05 + 0.14 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
+            # round 2 (Ryan Nov 21, "sleek"): seven narrow ribbons lying close on the leaf, like the pick's filigree
+            lambda t, k=k: (0.11 + 0.015 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.45, 0.42 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, v: S * (0.015 + 0.035 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
             name='long_ribbon_%d' % k))
     for k, (x0, x1, base, wd) in enumerate(LEAVES):
         top = max(0.0, math.sin(base)) ** 2
         ribbons.append(gw.Ribbon(
             x0, x1, lambda x, base=base: base + 0.8 * TWIST(x),
-            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
-            lambda t, v, top=top: S * (0.22 + 0.14 * (1 - v * v) ** 0.5 + 0.75 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
+            lambda t, wd=wd: 0.75 * wd * gw.leaf(0.7, 0.0, 0.38)(t),
+            lambda t, v, top=top: S * (0.06 + 0.05 * (1 - v * v) ** 0.5 + 0.30 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
             name='leaf_ribbon_%d' % k))
-    hl.lay_ribbons(K, ribbons, skin, 0.035 * S, 0.024 * S, nu=150, nv=8)
+    hl.lay_ribbons(K, ribbons, skin, 0.024 * S, 0.018 * S, nu=150, nv=6)
     hl.shard_cluster(K, 'S1', (XB - 0.35, 0.0, 0.0), 1.35, 0.12, spread=0.09,
                      note='The Prism shards grown into the bow optic: three drawn needles on the centreline; fixed forward, F arc.')
     belly = -height(TORP['x']) * 0.88
@@ -128,7 +129,7 @@ def build(K):
     for i, (x, a, side) in enumerate(((-2.9, 0.0, 'port'), (2.2, math.pi, 'stbd'))):
         K.point('rcs', 'hp_rcs_%d' % i, skin(x, a), side=side)
         K.point('board', 'hp_board_%d' % i, skin(x - 0.5, a), side=side)
-    K.colour('opaque pearl ribbons, silver edges', XB, XS, 'ten long ribbons and four crest leaves sweep stern to bow')
+    K.colour('opaque pearl ribbons, silver edges', XB, XS, 'seven narrow ribbons and four low crest leaves sweep stern to bow')
     K.colour('amber, violet, green mosaic panels', XB, XS, 'the core between the ribbons; glows from within')
     K.colour('soft white bloom', XS + 0.3, XS - 0.3, 'stern drive optic, no flame')
     K.change('Opaque pearl ribbons over a glowing mosaic core instead of the sketch\'s clear glass',
@@ -136,7 +137,8 @@ def build(K):
     K.change('The bow optic is three short drawn needles on the centreline, not an open glass tube',
              'data.js shard F fires three shots, one per needle; the sketch habit of tube optics is written against (README).')
     K.change('The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly',
-             'destroyer.md: the cradle must read as carried, not docked. The sketch\'s pod becomes the weapon itself.')
+             'destroyer.md: the cradle must read as carried, not docked. The sketch\'s pod becomes the weapon itself: a glowing '
+             'capsule in a pointed pearl sheath open down each flank, swept fins fore and aft (Ryan Nov 21: richer torpedo).')
     K.change('A waist before a round stern bulb; one stern optic with a white bloom and a rose-cut face',
              'The sketch\'s bottle-neck stern; family drive language from CD5; no flame.')
 

@@ -14,7 +14,7 @@ Revision r1. Generated from the same Blender model as the pictures. Counts outra
 
 ## Size
 
-Carrier LENGTH 16.5; drawn 26.4 with SHIP_K 1.6. Measured mesh length / beam / height: 16.720 / 5.742 / 4.090.
+Carrier LENGTH 16.5; drawn 26.4 with SHIP_K 1.6. Measured mesh length / beam / height: 16.953 / 5.653 / 4.090.
 
 ## Major masses
 

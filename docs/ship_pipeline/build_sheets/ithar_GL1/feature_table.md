@@ -12,7 +12,7 @@ Revision r1. Generated from the same Blender model as the pictures. Counts outra
 
 ## Size
 
-Destroyer LENGTH 9.5; drawn 15.2 with SHIP_K 1.6. Measured mesh length / beam / height: 9.287 / 2.533 / 2.621.
+Destroyer LENGTH 9.5; drawn 15.2 with SHIP_K 1.6. Measured mesh length / beam / height: 9.287 / 2.364 / 2.558.
 
 ## Major masses
 
@@ -37,5 +37,5 @@ break_pieces names the hull compartments made by these paths, each with its shar
 
 - Opaque pearl ribbons over a glowing mosaic core instead of the sketch's clear glass. R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through.
 - The bow optic is three short drawn needles on the centreline, not an open glass tube. data.js shard F fires three shots, one per needle; the sketch habit of tube optics is written against (README).
-- The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly. destroyer.md: the cradle must read as carried, not docked. The sketch's pod becomes the weapon itself.
+- The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly. destroyer.md: the cradle must read as carried, not docked. The sketch's pod becomes the weapon itself: a glowing capsule in a pointed pearl sheath open down each flank, swept fins fore and aft (Ryan Nov 21: richer torpedo).
 - A waist before a round stern bulb; one stern optic with a white bloom and a rose-cut face. The sketch's bottle-neck stern; family drive language from CD5; no flame.

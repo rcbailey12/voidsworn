@@ -69,6 +69,7 @@
         "S1_mount_gw_lance",
         "S1_mount_gw_silver",
         "S1_mount_gw_tip",
+        "S1_mount_gw_light",
         "S1_mount_gw_pearl"
       ],
       "full_interior": true,
@@ -140,14 +141,15 @@
   "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at the break line.",
   "budget": {
     "outside": {
-      "triangles": 174058,
-      "unjoined_surfaces": 44,
-      "material_surfaces": 8,
+      "triangles": 180446,
+      "unjoined_surfaces": 45,
+      "material_surfaces": 9,
       "materials": [
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
         "gw_lance",
+        "gw_light",
         "gw_mosaic",
         "gw_pearl",
         "gw_silver",

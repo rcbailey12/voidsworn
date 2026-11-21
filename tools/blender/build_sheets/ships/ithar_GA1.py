@@ -36,7 +36,7 @@ INSIDE_NOTE = 'Two shaped glass decks, open annealed frames and three braided li
 XS, XB = -7.75, 6.95
 W = 2.55
 S = (LENGTH / 26.0) ** 0.7
-BAY = dict(x=-0.6, len=5.6, hgt=1.55, depth=0.40)
+BAY = dict(x=-0.6, len=6.4, hgt=1.95, depth=1.05)   # round 2 (Ryan Nov 21): deep openings, as the pick
 TURRET_X = -2.6
 LANCE_X = XB - 0.75
 
@@ -89,7 +89,7 @@ def skin(x, a, inset=0.0):
     q, side = bay_q(x, a)
     dent = 0.0
     if q < 1.0 and abs(math.cos(a)) > 0.3:
-        k = min(1.0, (1.0 - q) / 0.25)
+        k = min(1.0, (1.0 - q) / 0.12)
         dent = BAY['depth'] * k * k * (3 - 2 * k)
         flow = 1.0 + (flow - 1.0) * (1 - k)
     r = math.hypot(p[1] / max(1e-6, width(x) - inset), p[2] / max(1e-6, height(x) - inset))
@@ -176,6 +176,9 @@ def build(K):
         floor = lambda u, w, side=side: (lambda x, zt: (x, side * (width(x) - BAY['depth']) * math.cos(math.asin(max(-0.9, min(0.9, zt / height(x))))), zt))(
             BAY['x'] + 0.45 * BAY['len'] * u, 0.45 * BAY['hgt'] * w)
         hl.lens_bay(K, 'H%d' % (i + 1), rim, floor, side, craft=3, s=1.5, hangar_index=i)
+        # the pick's round launch tunnel at the forward end of each opening, its mouth facing aft into the bay
+        tx = BAY['x'] + 0.5 * BAY['len'] - 0.85
+        hl.launch_tunnel(K, 'T%d' % (i + 1), (tx, side * (width(tx) - BAY['depth'] + 0.05), 0.0), 0.62, facing=-1, s=1.4)
     hl.stern_drive(K, 'E1', (XS + 0.70, 0.0, 0.0), 1.38)
     breaks = (-5.45, -4.15, 3.05)
     breach_x = (4.6, 3.6, 1.6, -2.2, -6.0)

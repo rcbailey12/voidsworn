@@ -10,11 +10,13 @@ contrib/muse/design/glasswright_family_2026_11/) build through this file:
   mosaic_core     the opaque glowing mosaic core (the main colour of the ship), with optional seafoam stored light
   lay_ribbons     the pearl ribbons (real thickness, no solidify) and their silver edge lines
   turret_optic    a grown turning optic: a small pearl seat sunk in the ribbons and a cut stone (arc T)
-  lance           a drawn-glass waveguide fixed forward (pulsar F)
+  bow_optic       the ringed optic a lance or the shards come out of (three stepped pearl rings, silver lines, stored light)
+  lance           the prism lance: a white core with a rainbow fringe out of a bow optic, fixed forward (pulsar F)
   shard_cluster   three short drawn needles gathered at the bow (shard F, the Prism shards)
-  star_torpedo    a star torpedo carried on the keel in a grown glass cradle (startorp F)
+  star_torpedo    a star torpedo: glowing capsule in a pointed pearl sheath with swept fins, on a keel cradle (startorp F)
   stern_drive     a grown stern optic: deep lens, white bloom, rose-cut face; no flame
   lens_bay        a hangar lens grown into a flank with parked Starlings on a glowing floor (data.js hangar)
+  launch_tunnel   a ringed launch tunnel at the forward end of a bay, a Starling nosing out
   insides         decks, annealed frames and braided light cores, cut at every break; layered glass and light
   review/layout   the review renders and the build sheet pictures, manifest and feature table, from the ship module's records
 
@@ -286,46 +288,70 @@ def turret_optic(K, fid, pos, weapon, colour, s=1.0, slot='T', note=''):
     # The seat's top sits 0.08 under the pivot, clear of the barrel (as CD5, issue 1282): at -0.20 it met the barrel and the
     # game's clearance test locked GA1's O1 at rest (PC run, pin-1415b, Nov 20).
     p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28 * s), (0.42 * s, 0.42 * s, 0.20 * s), 48, 16))
-    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.26 * s, 0.12 * s, 10)
+    # round 2 (Ryan Nov 21): a lens you can see, as the picks' domes: a tall cut dome, a stored-light halo and a silver ring
+    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.34 * s, 0.24 * s, 12)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
-    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.20 * s, 0.20 * s, 0.05 * s), 32, 12))
+    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.28 * s, 0.28 * s, 0.06 * s), 32, 12))
+    halo = [(0.47 * s * math.cos(a), 0.47 * s * math.sin(a), -0.11 * s) for a in [TAU * i / 48 for i in range(49)]]
+    p.add('halo', 'mount', 'gw_light', tube_mesh(halo, [0.05 * s] * 49, 10))
+    p.add('halo_silver', 'mount', 'gw_silver', tube_mesh([(q[0] * 1.13, q[1] * 1.13, q[2] - 0.01 * s) for q in halo], [0.022 * s] * 49, 6))
     p.fit = dict(pivot=('p', (0, 0, 0)), reach=0.26 * s, radius=0.28 * s, muzzles=[('p', (0.26 * s, 0, 0))], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.09 * s, blen=0.26 * s, slot=slot, weapon=weapon, part=p, inv=['optics'],
           band=(0, 5, 10, 15, 20, 30), note=note or 'Grown %s optic; the cut stone turns on a seat sunk in the ribbons, 360 degrees.' % colour)
     K.features[-1]['what'] = '%s grown optic / %s' % (colour, weapon)
-    K.built[-1].update(detailed=True, subs=['grown root', 'cut stone', 'stored light'])
+    K.built[-1].update(detailed=True, subs=['grown root', 'cut dome', 'stored light', 'halo ring'])
     smooth_group(K, fid)
+
+
+def bow_optic(p, R, x0=0.0, name='bow_optic'):
+    """a grown ringed optic the lance or the shards come out of (the picks' bow rings): three stepped pearl rings, a silver
+    line on each, and a disc of stored light inside them, facing forward from x0"""
+    p.add(name + '_light', 'mount', 'gw_light', ellipsoid((x0, 0, 0), (0.14 * R, 0.92 * R, 0.92 * R), 40, 14))
+    for k, (dx, rr, tr) in enumerate(((0.00, 1.00, 0.15), (0.12, 0.78, 0.12), (0.22, 0.58, 0.10))):
+        ring = [(x0 + dx * R, rr * R * math.cos(a), rr * R * math.sin(a)) for a in [TAU * i / 48 for i in range(49)]]
+        p.add('%s_ring%d' % (name, k), 'mount', 'gw_pearl', tube_mesh(ring, [tr * R] * 49, 12))
+        p.add('%s_ring%d_silver' % (name, k), 'mount', 'gw_silver',
+              tube_mesh([(q[0] + tr * R * 0.9, q[1], q[2]) for q in ring], [0.025 * R] * 49, 6))
 
 
 def lance(K, fid, root, length, r0, weapon='pulsar', drop=0.0, spread=0.0, note='', what='drawn-glass forward Prism lance',
           collar=0.0):
-    """a drawn-glass waveguide fixed forward from `root`; tapers to a glowing tip. spread: its sideways reach at the tip.
-    collar: the radius of a grown bow optic round the lance root (a ring of stored light in a pearl lip), 0 for none."""
+    """the prism lance (faction sheet: the hull's stored light let out through the bow optic, a white core with a rainbow
+    fringe). Round 2 (Ryan Nov 21, "what happened to the weapons"): a ringed bow optic, a short pearl sheath, then a white beam
+    core wound with three thin amber, green and violet strands (the fringe), ending in a long faceted crystal point.
+    spread: its sideways reach at the tip. collar: the bow optic's radius (0 picks one from r0)."""
     p = own_part()
-    if collar:
-        p.add('bow_optic', 'mount', 'gw_light', ellipsoid((0.0, 0, 0), (0.18 * collar, collar, collar), 40, 16))
-        ring = [(0.10 * collar, collar * 1.02 * math.cos(a), collar * 1.02 * math.sin(a)) for a in [TAU * i / 48 for i in range(49)]]
-        p.add('bow_optic_lip', 'mount', 'gw_pearl', tube_mesh(ring, [0.16 * collar] * 49, 12))
-        p.add('bow_optic_silver', 'mount', 'gw_silver', tube_mesh([(q[0] + 0.15 * collar, q[1], q[2]) for q in ring], [0.035 * collar] * 49, 6))
+    gw = gw_kit('parts')
+    R = collar or 1.15 * r0
+    bow_optic(p, R)
     pts, radii = [], []
     for i in range(101):
         t = i / 100
-        pts.append((length * t, spread * t, -drop * t + 0.25 * r0 * math.sin(math.pi * t)))
-        radii.append(r0 * (1 - t) ** 1.55 + 0.018 * r0 / 0.62)
-    p.add('drawn_waveguide', 'mount', 'gw_lance', tube_mesh(pts, radii, 24))
-    for k in range(5):
-        a = k * TAU / 5
-        line = [(q[0], q[1] + r * math.cos(a + 1.7 * i / 100), q[2] + r * math.sin(a + 1.7 * i / 100))
-                for i, (q, r) in enumerate(zip(pts, radii))]
-        p.add('flowing_vein%d' % k, 'mount', 'gw_silver', tube_mesh(line, [0.016 * r0 / 0.62] * len(line), 6))
+        pts.append((0.10 * R + length * t, spread * t, -drop * t + 0.18 * r0 * math.sin(math.pi * t)))
+        radii.append(0.62 * r0 * (1 - 0.82 * t) ** 1.2)
+    k_sheath = 34
+    p.add('sheath', 'mount', 'gw_lance', tube_mesh(pts[:k_sheath + 1], [r * 1.18 for r in radii[:k_sheath + 1]], 24))
+    lip = [(pts[k_sheath][0], pts[k_sheath][1] + radii[k_sheath] * 1.2 * math.cos(a), pts[k_sheath][2] + radii[k_sheath] * 1.2 * math.sin(a))
+           for a in [TAU * i / 32 for i in range(33)]]
+    p.add('sheath_lip', 'mount', 'gw_silver', tube_mesh(lip, [0.05 * r0] * 33, 6))
+    p.add('beam_core', 'mount', 'gw_beam', tube_mesh(pts, radii, 20))
+    for k, gem in enumerate(('gw_gem_amber', 'gw_gem_green', 'gw_gem_violet')):
+        a0 = k * TAU / 3
+        line = [(q[0], q[1] + r * 1.05 * math.cos(a0 + 5.5 * i / 100), q[2] + r * 1.05 * math.sin(a0 + 5.5 * i / 100))
+                for i, (q, r) in enumerate(zip(pts, radii))][k_sheath - 4:]
+        p.add('fringe_%d' % k, 'mount', gem, tube_mesh(line, [0.07 * r0] * len(line), 8))
     tip = pts[-1]
-    tr = 0.04 * r0 / 0.62
-    p.add('aperture', 'mount', 'gw_tip', ellipsoid((tip[0] - tr * 0.6, tip[1], tip[2]), (tr, tr * 1.1, tr * 1.1), 24, 10))
-    p.fit = dict(pivot=('p', tip), reach=0.06, radius=r0 * 1.03, muzzles=[('p', tip)], aim=('d', (1, 0, 0)))
+    cone = 0.30 * length
+    tv, tf = gw.cut_lens((tip[0] - 0.02 * length, tip[1], tip[2]), (1, 0, 0), radii[-1] * 1.6, cone * 0.35, 6)
+    p.add('crystal_point', 'mount', 'gw_beam', (tv, tf))
+    end = (tip[0] - 0.02 * length + cone * 0.35, tip[1], tip[2])
+    tr = 0.05 * r0
+    p.add('aperture', 'mount', 'gw_tip', ellipsoid((end[0] - tr * 0.6, end[1], end[2]), (tr, tr * 1.1, tr * 1.1), 24, 10))
+    p.fit = dict(pivot=('p', end), reach=0.06, radius=r0 * 1.03, muzzles=[('p', end)], aim=('d', (1, 0, 0)))
     K.gun(fid, root, 0, cal=0.06, blen=length, fixed=True, slot='F', weapon=weapon, part=p, inv=['forward_lances'],
-          band=(0, 5, 10), note=note or 'Drawn-glass waveguide, not a metal barrel; fixed forward, F arc +/-60.')
+          band=(0, 5, 10), note=note or 'Stored light let out through a ringed bow optic: white core, rainbow fringe; fixed forward, F arc +/-60.')
     K.features[-1]['what'] = what
-    K.built[-1].update(detailed=True, subs=['drawn glass', 'silver veins', 'glowing tip'])
+    K.built[-1].update(detailed=True, subs=['ringed bow optic', 'pearl sheath', 'white beam core', 'rainbow fringe', 'crystal point'])
     smooth_group(K, fid)
 
 
@@ -349,6 +375,7 @@ def shard_cluster(K, fid, root, length, r0, n=3, spread=0.16, note=''):
         tr = 0.03 * r0 / 0.2
         p.add('needle%d_tip' % k, 'mount', 'gw_tip', ellipsoid((tip[0] - tr * 0.5, tip[1], tip[2]), (tr, tr, tr), 16, 8))
         tips.append(tip)
+    bow_optic(p, spread * 1.6 + r0 * 1.2, x0=-0.02 * length)
     # the gathered root: a pearl collar the needles grow from, sunk into the bow
     p.add('root', 'mount', 'gw_pearl', ellipsoid((0.02 * length, 0, 0), (0.18 * length, spread * 0.9 + r0, spread * 0.9 + r0), 32, 12))
     tc = tuple(sum(t[i] for t in tips) / len(tips) for i in range(3))
@@ -391,92 +418,162 @@ def _band(rad, x0, x1, a_of, hw, lift=1.05, depth=0.06, nu=40, nv=5):
     return vv, ff
 
 
+def _band_w(rad, x0, x1, a_of, hw_of, lift=1.05, depth=0.06, nu=40, nv=5):
+    """_band with its half width given per station: hw_of(t), t from 0 at x0 to 1 at x1"""
+    vv, ff = [], []
+    for layer, k in ((0, lift), (1, lift - depth)):
+        for i in range(nu + 1):
+            x = x0 + (x1 - x0) * i / nu
+            w = hw_of(i / nu)
+            for j in range(nv + 1):
+                a = a_of(x) + w * (-1 + 2 * j / nv)
+                r = rad(x) * k
+                vv.append((x, r * math.cos(a), r * math.sin(a)))
+    row = nv + 1
+    off = (nu + 1) * row
+    for i in range(nu):
+        for j in range(nv):
+            a_, b_ = i * row + j, i * row + j + 1
+            ff.append((a_, b_, b_ + row, a_ + row))
+            ff.append((off + a_ + row, off + b_ + row, off + b_, off + a_))
+    for i in range(nu):
+        for j in (0, nv):
+            a_, b_ = i * row + j, (i + 1) * row + j
+            ff.append((a_, off + a_, off + b_, b_) if j == 0 else (b_, off + b_, off + a_, a_))
+    for i in (0, nu):
+        for j in range(nv):
+            a_, b_ = i * row + j, i * row + j + 1
+            ff.append((a_, b_, off + b_, off + a_) if i == 0 else (off + a_, off + b_, b_, a_))
+    return vv, ff
+
+
+def _swept_fin(x0, x1, r_root, span, sweep, a, th, n=16):
+    """a thin swept leaf fin standing off a round body at angle a: root chord x0..x1 at radius r_root(x), the outer edge
+    reaching span out and swept sweep back (towards -x) at the tip; th its half thickness at the root"""
+    ca, sa = math.cos(a), math.sin(a)
+    na, nb = -sa, ca
+    vv, ff = [], []
+    for i in range(n + 1):
+        t = i / n
+        x = x0 + (x1 - x0) * t
+        prof = math.sin(math.pi * t) ** 0.7 * (1.0 - 0.45 * t)
+        reach = span * prof
+        rr0 = r_root(x) * 0.92
+        xo = x - sweep * prof * (1.0 - t * 0.3)
+        for (px, rr, tt) in ((x, rr0, th), (xo, rr0 + reach, th * 0.25)):
+            for sg in (1, -1):
+                vv.append((px, rr * ca + sg * tt * na, rr * sa + sg * tt * nb))
+    for i in range(n):
+        b = i * 4
+        ff += [(b, b + 4, b + 6, b + 2), (b + 1, b + 3, b + 7, b + 5), (b + 2, b + 6, b + 7, b + 3), (b, b + 1, b + 5, b + 4)]
+    ff += [(0, 2, 3, 1), (4 * n, 4 * n + 1, 4 * n + 3, 4 * n + 2)]
+    edge = []
+    for i in range(n + 1):
+        t = i / n
+        x = x0 + (x1 - x0) * t
+        prof = math.sin(math.pi * t) ** 0.7 * (1.0 - 0.45 * t)
+        rr = r_root(x) * 0.92 + span * prof
+        xo = x - sweep * prof * (1.0 - t * 0.3)
+        edge.append((xo, rr * ca, rr * sa))
+    return (vv, ff), edge
+
+
 def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
     """a star torpedo carried on the keel in a grown pearl cradle (startorp F). The cradle's two arms rise into the hull
     (cradle_up: how far above the torpedo axis the hull's underside sits), so it reads carried, not docked.
 
-    Round 2 (Ryan Nov 20, "the torpedo on lancet needs more detail"): the body is a small Glasswright ship in its own right:
-    four pearl ribbons twist along a stored-light body with silver edges, a pearl collar behind the cut nose, a glowing mosaic
-    streak down each gap, three leaf vanes and a rose-cut drive lens with a violet bloom at the tail."""
+    Round 3 (Ryan Nov 21, "the torpedo underneath looks very simple and plain"), after the Lancet pick (I11_37): a bright
+    stored-light capsule held in a pointed pearl sheath. The sheath opens in a long window down each flank so the capsule
+    glows through (opaque, nothing see-through, R337); silver filigree runs along the sheath lips; a glowing needle tip at
+    the nose; two swept canards forward, three big swept leaf fins aft (two flat, one under the keel, none upward into
+    the hull), and a rose-cut drive lens with a white bloom at the tail."""
     p = own_part()
     gw = gw_kit('parts')
     L = length
-    rad = lambda x: r0 * max(0.05, math.sin(math.pi * (0.04 + 0.92 * (x / L + 0.5)))) ** 0.55
-    body = [(L * (i / 48 - 0.5), 0, 0) for i in range(49)]
-    p.add('star_body', 'mount', 'gw_light', tube_mesh(body, [rad(q[0]) for q in body], 24))
-    p.add('star_core', 'mount', 'gw_drive_core', ellipsoid((0.05 * L, 0, 0), (0.30 * L, r0 * 0.55, r0 * 0.55), 24, 10))
-    # the cut nose and its pearl collar
-    gv, gf = gw.cut_lens((0.5 * L, 0, 0), (1, 0, 0), r0 * 0.55, r0 * 0.45, 8)
-    p.add('star_nose', 'mount', 'gw_gem_violet', (gv, gf))
-    xc = 0.40 * L
-    ring = [(xc, rad(xc) * 1.07 * math.cos(a), rad(xc) * 1.07 * math.sin(a)) for a in [TAU * i / 32 for i in range(33)]]
-    p.add('star_nose_collar', 'mount', 'gw_pearl', tube_mesh(ring, [r0 * 0.09] * 33, 10))
-    p.add('star_nose_collar_silver', 'mount', 'gw_silver',
-          tube_mesh([(xc + r0 * 0.09, q[1] * 1.03, q[2] * 1.03) for q in ring], [r0 * 0.025] * 33, 6))
-    # four pearl ribbons twisting along the body, silver on each edge (the hull's own language at small size)
-    twist = lambda x: 0.9 * (x / L + 0.5)
-    xa, xb = -0.44 * L, 0.38 * L
-    for k in range(4):
-        a_of = lambda x, k=k: k * TAU / 4 + 0.4 + twist(x)
-        p.add('star_ribbon%d' % k, 'mount', 'gw_pearl', _band(rad, xa, xb, a_of, 0.44, 1.06, 0.08))
-        for sgn in (-1, 1):
+
+    def rad(x):  # pointed at both ends, fuller forward of the middle (a seed pod)
+        t = x / L + 0.5
+        if t <= 0.0 or t >= 1.0:
+            return r0 * 0.02
+        return r0 * max(0.02, math.sin(math.pi * t ** 0.85)) ** 0.62
+
+    # the capsule: stored light, with three silver bands so it reads as a made thing
+    cx, cl = 0.02 * L, 0.36 * L
+    p.add('star_capsule', 'mount', 'gw_light', ellipsoid((cx, 0, 0), (cl, r0 * 0.70, r0 * 0.70), 32, 14))
+    for k, xr in enumerate((-0.22, 0.02, 0.24)):
+        xx = cx + xr * L
+        rr = r0 * 0.70 * max(0.05, 1 - ((xx - cx) / cl) ** 2) ** 0.5 * 1.04
+        ring = [(xx, rr * math.cos(a), rr * math.sin(a)) for a in [TAU * i / 32 for i in range(33)]]
+        p.add('star_capsule_band%d' % k, 'mount', 'gw_silver', tube_mesh(ring, [r0 * 0.035] * 33, 6))
+    # the sheath: two pearl shells meeting fore and aft, a long window down each flank between them
+    xa, xb = -0.50 * L, 0.50 * L
+    def window(t):
+        lo, hi = 0.20, 0.80
+        if t <= lo or t >= hi:
+            return 0.0
+        return 0.95 * math.sin(math.pi * (t - lo) / (hi - lo)) ** 0.55
+    for nm, ac in (('top', math.pi / 2), ('keel', -math.pi / 2)):
+        p.add('star_sheath_%s' % nm, 'mount', 'gw_pearl',
+              _band_w(rad, xa + 0.01 * L, xb - 0.01 * L, lambda x, ac=ac: ac, lambda t: math.pi / 2 + 0.02 - window(t),
+                      1.0, 0.10, nu=64, nv=12))
+    # silver filigree along each window lip, and a fine vine line down the sheath crown
+    for side in (1, -1):
+        for lip in (1, -1):
             line = []
-            for i in range(41):
-                x = xa + (xb - xa) * i / 40
-                w = 0.44 * max(0.15, math.sin(math.pi * (0.04 + 0.92 * i / 40))) ** 0.5
-                a = a_of(x) + sgn * w
-                line.append((x, rad(x) * 1.065 * math.cos(a), rad(x) * 1.065 * math.sin(a)))
-            p.add('star_ribbon%d_silver%s' % (k, 'a' if sgn < 0 else 'b'), 'mount', 'gw_silver',
-                  tube_mesh(line, [r0 * 0.022] * 41, 5))
-    # a streak of glowing mosaic down each gap between the ribbons, following the twist
-    for k in range(4):
-        a_of = lambda x, k=k: k * TAU / 4 + 0.4 + TAU / 8 + twist(x)
-        gem = ('gw_gem_amber', 'gw_gem_violet', 'gw_gem_green', 'gw_gem_amber')[k]
-        p.add('star_streak%d' % k, 'mount', gem, _band(rad, -0.32 * L, 0.32 * L, a_of, 0.24, 1.025, 0.05))
-    # three leaf vanes at the tail
-    xt = -0.40 * L
-    for k in range(3):
-        a = k * TAU / 3 + math.pi / 2
-        ca, sa = math.cos(a), math.sin(a)
-        vv, ff = [], []
-        for i in range(13):
-            t = i / 12
-            x = xt - 0.10 * L + 0.22 * L * t
-            reach = r0 * (0.95 + 0.55 * math.sin(math.pi * t) ** 0.8)
-            for e, th in ((0, 0.020), (1, -0.020)):
-                rr0, rr1 = rad(x) * 0.9, reach
-                for j, rr in enumerate((rr0, rr1)):
-                    vv.append((x, rr * ca - th * L * sa * (1 - j * 0.6), rr * sa + th * L * ca * (1 - j * 0.6)))
-        for i in range(12):
-            b = i * 4
-            ff += [(b, b + 1, b + 5, b + 4), (b + 2, b + 6, b + 7, b + 3), (b + 1, b + 3, b + 7, b + 5), (b, b + 4, b + 6, b + 2)]
-        ff += [(0, 2, 3, 1), (48, 49, 51, 50)]
-        p.add('star_vane%d' % k, 'mount', 'gw_pearl', (vv, ff))
-        edge = [(xt - 0.10 * L + 0.22 * L * (i / 12), r0 * (0.95 + 0.55 * math.sin(math.pi * i / 12) ** 0.8) * ca,
-                 r0 * (0.95 + 0.55 * math.sin(math.pi * i / 12) ** 0.8) * sa) for i in range(13)]
-        p.add('star_vane%d_silver' % k, 'mount', 'gw_silver', tube_mesh(edge, [r0 * 0.03] * 13, 6))
-    # the tail drive: a rose-cut lens over a violet bloom
-    xe = -0.5 * L
-    p.add('star_tail_bloom', 'mount', 'gw_drive_core', ellipsoid((xe + 0.02 * L, 0, 0), (0.03 * L, r0 * 0.34, r0 * 0.34), 18, 8))
-    tv, tf = gw.cut_lens((xe, 0, 0), (-1, 0, 0), r0 * 0.40, r0 * 0.22, 8)
+            for i in range(49):
+                t = 0.16 + 0.68 * i / 48
+                x = xa + (xb - xa) * t
+                a = (0.0 if side > 0 else math.pi) + lip * (window(t) + 0.02) * (1 if side > 0 else -1)
+                line.append((x, rad(x) * 1.01 * math.cos(a), rad(x) * 1.01 * math.sin(a)))
+            p.add('star_lip_%s%s' % ('p' if side > 0 else 's', 'u' if lip > 0 else 'd'), 'mount', 'gw_silver',
+                  tube_mesh(line, [r0 * 0.028] * 49, 5))
+    for nm, ac in (('top', math.pi / 2), ('keel', -math.pi / 2)):
+        vine = []
+        for i in range(61):
+            t = 0.06 + 0.88 * i / 60
+            x = xa + (xb - xa) * t
+            a = ac + 0.35 * math.sin(TAU * 2.0 * t)
+            vine.append((x, rad(x) * 1.012 * math.cos(a), rad(x) * 1.012 * math.sin(a)))
+        p.add('star_vine_%s' % nm, 'mount', 'gw_silver', tube_mesh(vine, [r0 * 0.02] * 61, 5))
+    # the nose: a glowing needle out of a pearl collar
+    xn = 0.44 * L
+    ring = [(xn, rad(xn) * 1.06 * math.cos(a), rad(xn) * 1.06 * math.sin(a)) for a in [TAU * i / 32 for i in range(33)]]
+    p.add('star_nose_collar', 'mount', 'gw_silver', tube_mesh(ring, [r0 * 0.04] * 33, 6))
+    needle = [(xn - 0.06 * L + 0.22 * L * i / 16, 0, 0) for i in range(17)]
+    p.add('star_needle', 'mount', 'gw_light', tube_mesh(needle, [r0 * 0.20 * (1 - i / 16) ** 1.3 + r0 * 0.01 for i in range(17)], 12))
+    # two swept canards forward, three big swept leaf fins aft (flat pair and one under the keel; nothing rises into the hull)
+    for k, a in enumerate((0.0, math.pi)):
+        fin, edge = _swept_fin(0.12 * L, 0.30 * L, rad, r0 * 0.75, 0.14 * L, a, r0 * 0.06)
+        p.add('star_canard%d' % k, 'mount', 'gw_pearl', fin)
+        p.add('star_canard%d_silver' % k, 'mount', 'gw_silver', tube_mesh(edge, [r0 * 0.022] * len(edge), 5))
+    for k, a in enumerate((0.0, math.pi, -math.pi / 2)):
+        fin, edge = _swept_fin(-0.34 * L, -0.02 * L, rad, r0 * (1.35 if k < 2 else 1.0), 0.26 * L, a, r0 * 0.08)
+        p.add('star_fin%d' % k, 'mount', 'gw_pearl', fin)
+        p.add('star_fin%d_silver' % k, 'mount', 'gw_silver', tube_mesh(edge, [r0 * 0.028] * len(edge), 6))
+    # the tail drive: a rose-cut lens over a white bloom
+    xe = -0.47 * L
+    p.add('star_tail_bloom', 'mount', 'gw_beam', ellipsoid((xe, 0, 0), (0.03 * L, r0 * 0.30, r0 * 0.30), 18, 8))
+    tv, tf = gw.cut_lens((xe - 0.01 * L, 0, 0), (-1, 0, 0), r0 * 0.34, r0 * 0.20, 8)
     p.add('star_tail_lens', 'mount', 'gw_drive_cut', (tv, tf))
     # the cradle: two hoops and four arms grown from the hull's belly
     for xs in (-0.28, 0.22):
         for side in (-1, 1):
-            arm = [(xs * L + 0.04 * L * math.sin(math.pi * i / 12), side * r0 * (1.12 - 0.60 * i / 12),
-                    r0 * 0.2 + (cradle_up - r0 * 0.2) * (i / 12) ** 0.8) for i in range(13)]
+            # the arms start above the flat fins and canards (round 3), so the cradle never touches them
+            arm = [(xs * L + 0.04 * L * math.sin(math.pi * i / 12), side * r0 * (1.06 - 0.56 * i / 12),
+                    r0 * 0.45 + (cradle_up - r0 * 0.45) * (i / 12) ** 0.8) for i in range(13)]
             p.add('cradle_%s_%d' % ('aft' if xs < 0 else 'fwd', side), 'mount', 'gw_pearl', tube_mesh(arm, [r0 * 0.20 * (1.0 - 0.3 * i / 12) for i in range(13)], 10))
-        hoop = [(xs * L, r0 * 1.16 * math.cos(a), r0 * 1.16 * math.sin(a)) for a in [math.pi * (-0.15 + 1.3 * i / 24) for i in range(25)]]
+        hoop = [(xs * L, r0 * 1.16 * math.cos(a), r0 * 1.16 * math.sin(a)) for a in [math.pi * (0.12 + 0.76 * i / 24) for i in range(25)]]
         p.add('cradle_hoop_%s' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_pearl', tube_mesh(hoop, [r0 * 0.15] * 25, 10))
         p.add('cradle_hoop_%s_silver' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_silver',
               tube_mesh([(q[0] + r0 * 0.15, q[1], q[2]) for q in hoop], [r0 * 0.03] * 25, 6))
-    nose = (0.5 * L + r0 * 0.45, 0, 0)
+    nose = (0.61 * L, 0, 0)
     p.fit = dict(pivot=('p', nose), reach=0.05, radius=r0 * 1.2, muzzles=[('p', nose)], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.08, blen=L, fixed=True, slot='F', weapon='startorp', part=p, inv=['star_torpedo'], band=(0, 5),
           note=note or 'One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.')
     K.features[-1]['what'] = 'star torpedo carried in a grown keel cradle / startorp'
-    K.built[-1].update(detailed=True, subs=['stored-light body', 'four twisting pearl ribbons with silver edges', 'cut nose and pearl collar',
-                                            'a mosaic streak in each gap', 'three leaf vanes', 'rose-cut tail drive', 'two cradle hoops and four arms'])
+    K.built[-1].update(detailed=True, subs=['stored-light capsule with silver bands', 'pointed pearl sheath with a window down each flank',
+                                            'silver filigree on the lips and crown', 'glowing needle nose in a silver collar',
+                                            'two swept canards', 'three swept leaf fins', 'rose-cut tail drive', 'two cradle hoops and four arms'])
     smooth_group(K, fid)
 
 
@@ -543,6 +640,27 @@ def lens_bay(K, fid, rim, floor, side, craft=3, s=1.0, hangar_index=0, launch=No
                         subs=['pearl lip', 'silver line', 'stored light floor', '%d parked Starlings' % craft]))
     K.point('bay', 'hp_bay_%d' % hangar_index, tuple(launch or (mid[0], mid[1] + side * 0.06 * s, mid[2])),
             side='port' if side > 0 else 'stbd', note='flank hangar lens: Starlings launch outward', dir=(0.5, side * 0.87, 0))
+
+
+def launch_tunnel(K, fid, c, R, facing=-1, s=1.0):
+    """a round launch tunnel mouth (the carrier pick's ringed tube openings): three stepped pearl rings with silver lines, a
+    deep stored-light throat and a Starling nosing out. c is the mouth centre; the tunnel runs along x, its mouth facing
+    `facing` (-1 aft, +1 forward). Opaque: the throat is a lit floor, never a view into the ship."""
+    x, y, z = c
+    for k, (dx, rr, tr) in enumerate(((0.0, 1.0, 0.16), (-0.18, 0.80, 0.13), (-0.34, 0.62, 0.10))):
+        ring = [(x - facing * dx * R, y + rr * R * math.cos(a), z + rr * R * math.sin(a)) for a in [TAU * i / 48 for i in range(49)]]
+        K._obj('%s_ring%d' % (fid, k), *tube_mesh(ring, [tr * R] * 49, 12), 'gw_pearl', smooth=True, grp=fid, role='mount')
+        K._obj('%s_ring%d_silver' % (fid, k), *tube_mesh([(q[0] + facing * tr * R * 0.9, q[1], q[2]) for q in ring], [0.03 * R] * 49, 6),
+               'gw_silver', smooth=True, grp=fid, role='mount')
+    K._obj(fid + '_throat', *ellipsoid((x - facing * 0.55 * R, y, z), (0.22 * R, 0.62 * R, 0.62 * R), 32, 12), 'gw_light',
+           smooth=True, grp=fid, role='mount')
+    cl = 0.50 * s
+    cx = x - facing * 0.25 * R
+    dart = grid_surface(lambda t, v: (cx + facing * cl * (t - 0.5), y + 0.10 * s * math.sin(math.pi * t) * math.cos(v) * 2.2,
+                                      z + 0.08 * s * math.sin(math.pi * t) ** 0.7 * math.sin(v)), 12, 16, 0.0, 1.0)
+    K._obj(fid + '_starling', *dart, 'gw_pearl', smooth=True, grp=fid, role='mount')
+    K.built.append(dict(id=fid, kind='part', inv=['hangar_lenses'], shaped=True, detailed=True,
+                        subs=['three stepped rings', 'silver lines', 'stored-light throat', 'a Starling nosing out']))
 
 
 # ------------------------------------------------------------------------------------------------------------ insides

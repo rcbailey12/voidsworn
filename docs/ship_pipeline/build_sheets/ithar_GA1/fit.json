@@ -12,9 +12,9 @@
     "LANE": 0
   },
   "tested": {
-    "objects": 87,
-    "parts": 5,
-    "close_pairs": 757,
+    "objects": 109,
+    "parts": 7,
+    "close_pairs": 1376,
     "rays": 172,
     "guns": 2,
     "sensor_pairs": 0,
@@ -27,9 +27,9 @@
     {
       "id": "L1",
       "pivot": [
-        8.25,
+        8.486249923706055,
         0.0,
-        1.469576190014977e-17
+        1.0580948634282283e-17
       ],
       "up": [
         0.0,

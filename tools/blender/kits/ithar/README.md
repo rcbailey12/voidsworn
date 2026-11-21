@@ -7,8 +7,8 @@ the interior shows only in the break-up. No wear.
 
 | File | What it holds |
 |---|---|
-| `parts.py` | `Ribbon` (a ribbon laid over the ship's core surface: centre line, leaf width profile, lift and curl), `leaf` (width profiles), `mosaic_tint` (thin streaks of mixed colour down each gap, by weight, graded deep to hot with `TONES`; Ryan's pick C, Nov 20), `cut_lens` (a rose-cut faceted stone for optics and drive lenses). Pure geometry. |
-| `stack.py` | The paint stack: colours sampled from the CD5 concept (`sample_concept` repeats it), `LOOK` values for the bake and the game, and the Cycles materials `gw_pearl`, `gw_silver`, `gw_mosaic`, `gw_gem_*`, `gw_root_*`, `gw_drive*`, `gw_tip`, `gw_lance`. `AUTHORED_LOOK` marks the baked materials so godot/render/look.gd keeps their values (R329). |
+| `parts.py` | `Ribbon` (a ribbon laid over the ship's core surface: centre line, leaf width profile, lift and curl), `leaf` (width profiles), `mosaic_tint` (marbled veins of mixed colour that cross the gaps, by weight, graded deep to hot with `TONES`; Ryan Nov 21, look test D; `GW_MIX=streaks` or `blocks` for a test only), `cut_lens` (a rose-cut faceted stone for optics and drive lenses). Pure geometry. |
+| `stack.py` | The paint stack: colours sampled from the CD5 concept (`sample_concept` repeats it), `LOOK` values for the bake and the game, and the Cycles materials `gw_pearl`, `gw_silver`, `gw_mosaic`, `gw_gem_*`, `gw_root_*`, `gw_drive*`, `gw_tip`, `gw_lance`, `gw_light` (stored light) and `gw_beam` (the lance's white core). `tile_swap` gives about a quarter of the mosaic tiles another palette colour (`TILE_SWAP`, Ryan Nov 21). `AUTHORED_LOOK` marks the baked materials so godot/render/look.gd keeps their values (R329). |
 
 How a ship uses it: the ship file gives a core surface `core(x, a)`, lays its ribbons with `Ribbon(...).mesh(core)` (pearl,
 solidified) and `edge()` (silver lines), paints the core with `gw_mosaic` and writes `gw_tint` and `gw_glow` per vertex from

@@ -12,7 +12,7 @@ Review: [close](close.jpg), [side](side.jpg), [battle camera stand-in](camera170
 Design: [ithar_GS1.py](../../../../tools/blender/build_sheets/ships/ithar_GS1.py) on [hull.py](../../../../tools/blender/kits/ithar/hull.py).
 Recipe ship file: tools/recipe/ships/ithar_GS1.json (game code I14_23).
 
-Budget (Blender, before the recipe): outside 174058 triangles, inside 7496; 8 material surfaces outside.
+Budget (Blender, before the recipe): outside 180446 triangles, inside 7496; 9 material surfaces outside.
 Weapon match and fit: PASS (weapon_match.json, fit.json). Contract: contract.json.
 
 ## Changed from the picture

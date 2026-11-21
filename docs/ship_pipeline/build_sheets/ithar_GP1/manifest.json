@@ -2,7 +2,7 @@
   "code": "ithar_GP1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GP1.py",
-  "design_sha256": "0df5dcb21ff27b40b8a646830b2ab2858aaca11e8397f4a63b495dc0c427ab50",
+  "design_sha256": "9c1ff5aaf65b61c0467f804c651ef0815f33fd599b72146dce40863c47ff1738",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_song",
   "cls": "Cruiser",
@@ -131,8 +131,14 @@
       "name": "L1 whole part",
       "part": "L1",
       "objects": [
-        "L1_mount_gw_lance",
+        "L1_mount_gw_light",
+        "L1_mount_gw_pearl",
         "L1_mount_gw_silver",
+        "L1_mount_gw_lance",
+        "L1_mount_gw_beam",
+        "L1_mount_gw_gem_amber",
+        "L1_mount_gw_gem_green",
+        "L1_mount_gw_gem_violet",
         "L1_mount_gw_tip"
       ],
       "full_interior": true,
@@ -165,8 +171,14 @@
       "name": "L2 whole part",
       "part": "L2",
       "objects": [
-        "L2_mount_gw_lance",
+        "L2_mount_gw_light",
+        "L2_mount_gw_pearl",
         "L2_mount_gw_silver",
+        "L2_mount_gw_lance",
+        "L2_mount_gw_beam",
+        "L2_mount_gw_gem_amber",
+        "L2_mount_gw_gem_green",
+        "L2_mount_gw_gem_violet",
         "L2_mount_gw_tip"
       ],
       "full_interior": true,
@@ -200,7 +212,9 @@
       "part": "O1",
       "objects": [
         "O1_mount_gw_pearl",
-        "O1_turn_gw_gem_violet"
+        "O1_turn_gw_gem_violet",
+        "O1_mount_gw_light",
+        "O1_mount_gw_silver"
       ],
       "full_interior": true,
       "attachment": "separate whole group, grown into its parent skin"
@@ -285,13 +299,16 @@
   "insides": "Each hull: two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
   "budget": {
     "outside": {
-      "triangles": 408502,
-      "unjoined_surfaces": 108,
-      "material_surfaces": 10,
+      "triangles": 383514,
+      "unjoined_surfaces": 130,
+      "material_surfaces": 13,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
+        "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",

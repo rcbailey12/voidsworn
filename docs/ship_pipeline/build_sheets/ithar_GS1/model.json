@@ -342,14 +342,15 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 174058,
-      "unjoined_surfaces": 44,
-      "material_surfaces": 8,
+      "triangles": 180446,
+      "unjoined_surfaces": 45,
+      "material_surfaces": 9,
       "materials": [
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
         "gw_lance",
+        "gw_light",
         "gw_mosaic",
         "gw_pearl",
         "gw_silver",
@@ -374,6 +375,7 @@
       "S1_mount_gw_lance",
       "S1_mount_gw_silver",
       "S1_mount_gw_tip",
+      "S1_mount_gw_light",
       "S1_mount_gw_pearl"
     ],
     "E1": [
@@ -400,5 +402,5 @@
     1.1939030289649963
   ],
   "design_sha256": "6ac656ef50db0b6e6fe7e1b1f2e25cf0c12ddc7aac8e5d02d3c6a832e12fba60",
-  "kit_sha256": "33ef6f5d0765505db68c668dd3cc8f7faf82574e86891191302b3d30c84fa56e"
+  "kit_sha256": "db0f3310c920f0786a9864c0621e55be5cec29525fe4753325b0c50d525437d6"
 }

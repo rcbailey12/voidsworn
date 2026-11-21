@@ -2,7 +2,7 @@
   "code": "ithar_GA1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GA1.py",
-  "design_sha256": "a428266cfb48c1d23338a0226cec2ce04e4a5c1b4dfdf9fee89f21d13fb83cba",
+  "design_sha256": "fa678c02335a7e53be11c83150d263cbd5c48058d1713f20bbf2d3c2be961a1a",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_carrier",
   "cls": "Carrier",
@@ -131,6 +131,10 @@
         "L1_mount_gw_pearl",
         "L1_mount_gw_silver",
         "L1_mount_gw_lance",
+        "L1_mount_gw_beam",
+        "L1_mount_gw_gem_amber",
+        "L1_mount_gw_gem_green",
+        "L1_mount_gw_gem_violet",
         "L1_mount_gw_tip"
       ],
       "full_interior": true,
@@ -141,7 +145,9 @@
       "part": "O1",
       "objects": [
         "O1_mount_gw_pearl",
-        "O1_turn_gw_gem_violet"
+        "O1_turn_gw_gem_violet",
+        "O1_mount_gw_light",
+        "O1_mount_gw_silver"
       ],
       "full_interior": true,
       "attachment": "separate whole group, grown into its parent skin"
@@ -318,14 +324,16 @@
   "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at all three break lines.",
   "budget": {
     "outside": {
-      "triangles": 359990,
-      "unjoined_surfaces": 87,
-      "material_surfaces": 11,
+      "triangles": 376388,
+      "unjoined_surfaces": 109,
+      "material_surfaces": 13,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
         "gw_gem_amber",
+        "gw_gem_green",
         "gw_gem_violet",
         "gw_lance",
         "gw_light",

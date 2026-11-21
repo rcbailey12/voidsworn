@@ -69,7 +69,7 @@ TWIST = lambda x: 0.035 * x + 0.10 * math.sin(0.30 * x)
 
 def field(side):
     hl = hk('hull')
-    return hl.RibbonField(10, lambda x: side * TWIST(x), sway=0.0, leaf_f=1.1, start=0.15)
+    return hl.RibbonField(8, lambda x: side * TWIST(x), sway=0.0, leaf_f=1.1, start=0.15)
 
 
 def light(side):
@@ -125,18 +125,26 @@ def build(K):
         skin = pod(side)
         f = field(side)
         core = hl.mosaic_core(K, '%s_%s_pane_hull' % (CODE, tag), skin, XS, XB, f.gap_of, nu=180, nv=120, thick=0.04,
-                              seed=5 if side > 0 else 8, light=light(side), streak=True)
+                              seed=5 if side > 0 else 8, light=light(side))
         K.mass('%s pane hull' % tag.capitalize(), core, 'opaque glowing stained-glass panes',
                note='One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons.')
+        # Round 2 (Ryan Nov 21, "agree with the prism pods"): no raised ribbons (they read as corn-cob lobes). As the pick,
+        # each pod is big stained-glass panes in a grid of leading: eight flush pearl lines along the pod and a silver ring
+        # round it about every 1.2 units.
         ribbons = []
         for k in range(f.n):
             ribbons.append(gw.Ribbon(
-                XS + 0.15 + 0.10 * math.sin(2.3 * k), XB - 0.35 - 0.10 * (k % 3), f.centre(k),
-                lambda t, k=k: (0.085 + 0.012 * math.sin(1.7 * k)) * gw.leaf(0.35, 0.65, 0.5, tip=0.35)(t),
-                lambda t, v: S * (0.04 + 0.08 * (1 - v * v) ** 0.5),
-                name='%s_ribbon_%d' % (tag, k)))
-        hl.lay_ribbons(K, ribbons, skin, 0.035 * S, 0.030 * S, nu=160, nv=6)
-        hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.50, side * YP, 0.0), 1.30, 0.40,
+                XS + 0.15, XB - 0.30, f.centre(k),
+                lambda t: 0.032 * gw.leaf(0.12, 0.12, 0.5, tip=0.6)(t),
+                lambda t, v: S * (0.012 + 0.016 * (1 - v * v) ** 0.5),
+                name='%s_lead_%d' % (tag, k)))
+        hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=4)
+        for j, xr in enumerate([XS + 0.9 + 1.2 * i for i in range(11)]):
+            if xr > XB - 0.6:
+                break
+            ring = [skin(xr, hl.TAU * i / 72, -0.01) for i in range(73)]
+            K._obj('%s_%s_ring_%d' % (CODE, tag, j), *hl.tube_mesh(ring, [0.035 * S] * 73, 6), 'gw_silver', smooth=True)
+        hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
                  what='grown lens point at the %s bow / pulsar' % tag)
         hl.stern_drive(K, 'E%d' % (1 if side > 0 else 2), (XS + 0.38, side * YP, 0.0), 0.62)

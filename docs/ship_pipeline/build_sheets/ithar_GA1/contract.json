@@ -2,13 +2,13 @@
   "sheet": "ithar_GA1",
   "game_ship": "i_carrier",
   "variant": "",
-  "model_length": 16.71999,
-  "scale": 0.059808662655451324,
+  "model_length": 16.95345,
+  "scale": 0.05898504695398206,
   "length_world": 16.5,
   "t_lines": [
-    -0.32596,
-    -0.24821,
-    0.18242
+    -0.32147,
+    -0.24479,
+    0.1799
   ],
   "l_line": [],
   "l_lines": [],

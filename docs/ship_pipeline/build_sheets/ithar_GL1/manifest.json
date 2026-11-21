@@ -2,7 +2,7 @@
   "code": "ithar_GL1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GL1.py",
-  "design_sha256": "3c43706fa17726da936e9b14d60604f8214c24607a77af5271b78eac903e64eb",
+  "design_sha256": "40823d55e8adbd51e7049c90ee690d9df34e4124f2598166b3a7561491bba4d6",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_blade",
   "cls": "Destroyer",
@@ -92,6 +92,7 @@
         "S1_mount_gw_lance",
         "S1_mount_gw_silver",
         "S1_mount_gw_tip",
+        "S1_mount_gw_light",
         "S1_mount_gw_pearl"
       ],
       "full_interior": true,
@@ -102,12 +103,9 @@
       "part": "T1",
       "objects": [
         "T1_mount_gw_light",
-        "T1_mount_gw_drive_core",
-        "T1_mount_gw_gem_violet",
-        "T1_mount_gw_pearl",
         "T1_mount_gw_silver",
-        "T1_mount_gw_gem_amber",
-        "T1_mount_gw_gem_green",
+        "T1_mount_gw_pearl",
+        "T1_mount_gw_beam",
         "T1_mount_gw_drive_cut"
       ],
       "full_interior": true,
@@ -216,16 +214,14 @@
   "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
   "budget": {
     "outside": {
-      "triangles": 256270,
-      "unjoined_surfaces": 70,
-      "material_surfaces": 12,
+      "triangles": 220844,
+      "unjoined_surfaces": 59,
+      "material_surfaces": 10,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
-        "gw_gem_amber",
-        "gw_gem_green",
-        "gw_gem_violet",
         "gw_lance",
         "gw_light",
         "gw_mosaic",

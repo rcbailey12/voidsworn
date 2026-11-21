@@ -61,9 +61,9 @@
       "what": "star torpedo carried in a grown keel cradle / startorp",
       "count": 1,
       "pos": [
-        0.550000011920929,
+        0.3499999940395355,
         0.0,
-        -1.0284777879714966
+        -1.0309430360794067
       ],
       "aim": [
         0,
@@ -75,9 +75,9 @@
       "note": "One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.",
       "muzzle": [
         [
-          2.0394999980926514,
+          1.996999979019165,
           0.0,
-          -1.0284777879714966
+          -1.0309430360794067
         ]
       ],
       "normal": [
@@ -287,7 +287,7 @@
         3.7,
         -4.45
       ],
-      "where": "ten long ribbons and four crest leaves sweep stern to bow",
+      "where": "seven narrow ribbons and four low crest leaves sweep stern to bow",
       "note": ""
     },
     {
@@ -415,7 +415,7 @@
     ],
     [
       "The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly",
-      "destroyer.md: the cradle must read as carried, not docked. The sketch's pod becomes the weapon itself."
+      "destroyer.md: the cradle must read as carried, not docked. The sketch's pod becomes the weapon itself: a glowing capsule in a pointed pearl sheath open down each flank, swept fins fore and aft (Ryan Nov 21: richer torpedo)."
     ],
     [
       "A waist before a round stern bulb; one stern optic with a white bloom and a rose-cut face",
@@ -424,16 +424,14 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 256270,
-      "unjoined_surfaces": 70,
-      "material_surfaces": 12,
+      "triangles": 220844,
+      "unjoined_surfaces": 59,
+      "material_surfaces": 10,
       "materials": [
+        "gw_beam",
         "gw_drive",
         "gw_drive_core",
         "gw_drive_cut",
-        "gw_gem_amber",
-        "gw_gem_green",
-        "gw_gem_violet",
         "gw_lance",
         "gw_light",
         "gw_mosaic",
@@ -460,16 +458,14 @@
       "S1_mount_gw_lance",
       "S1_mount_gw_silver",
       "S1_mount_gw_tip",
+      "S1_mount_gw_light",
       "S1_mount_gw_pearl"
     ],
     "T1": [
       "T1_mount_gw_light",
-      "T1_mount_gw_drive_core",
-      "T1_mount_gw_gem_violet",
-      "T1_mount_gw_pearl",
       "T1_mount_gw_silver",
-      "T1_mount_gw_gem_amber",
-      "T1_mount_gw_gem_green",
+      "T1_mount_gw_pearl",
+      "T1_mount_gw_beam",
       "T1_mount_gw_drive_cut"
     ],
     "E1": [
@@ -492,9 +488,9 @@
   },
   "dimensions": [
     9.286999702453613,
-    2.53286612033844,
-    2.6206436157226562
+    2.3644580841064453,
+    2.5576759576797485
   ],
-  "design_sha256": "3c43706fa17726da936e9b14d60604f8214c24607a77af5271b78eac903e64eb",
-  "kit_sha256": "33ef6f5d0765505db68c668dd3cc8f7faf82574e86891191302b3d30c84fa56e"
+  "design_sha256": "40823d55e8adbd51e7049c90ee690d9df34e4124f2598166b3a7561491bba4d6",
+  "kit_sha256": "8112e03470e6c76ef0098ec39d3917b4b2eebd7a825f74eca8c289747d13470b"
 }
