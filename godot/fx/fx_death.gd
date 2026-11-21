@@ -13,6 +13,7 @@ const HULL := preload("res://fx/fx_hull.gd")
 
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
+const HULL_GROUP := &"fx_hull_collider"   # the live hull colliders (add_collider); fx._gate_physics watches them (issue 1466)
 const DEBRIS_CAP := 360
 # Issue 1237 (Neon F7.1): a debris plate flies as before for DEBRIS_FREE_S, then takes DEBRIS_SETTLE_DAMP and slows to a
 # stop, and Jolt puts it to sleep; anything still moving at DEBRIS_REST_S is stopped and put to sleep there. A sleeping
@@ -565,9 +566,13 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		d.y = 0.0
 		d = d.normalized()
 		b.global_transform = Transform3D(Basis(d, fx.rng.randf() * TAU), pos + d * 0.3 * fx.unit)
-		b.linear_velocity = vel + d * (2.0 + fx.rng.randf() * 4.0) * fx.unit
+		# issue 1466 (Astra pass 2, finding 2): thrown at the effect clock's speed, as wreck sections are (_release_section),
+		# so the kill slow motion slows the plates too; _debris_speed follows later speed changes
+		var spd: float = maxf(fx.anim_speed(), 0.01)
+		b.set_meta("debris_spd", spd)   # the clock speed this plate's motion is at (_debris_speed)
+		b.linear_velocity = (vel + d * (2.0 + fx.rng.randf() * 4.0) * fx.unit) * spd
 		b.linear_velocity.y = 0.0
-		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6))
+		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6)) * spd
 		b.linear_damp = damp
 		b.angular_damp = damp * 0.5
 		# issue 1236: a plate from a wreck that blocks its hex is kept in that hex (_leash); a reused plate forgets its old one
@@ -594,6 +599,7 @@ static func _settle_debris(fx) -> void:
 		for b in fx.dstate.get("debris", []):
 			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
 				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+				(b as Node).set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
 		fx.dstate["debris_awake"] = awake
 	if awake.is_empty(): return
 	var done: Array = []
@@ -615,6 +621,22 @@ static func _settle_debris(fx) -> void:
 		elif rb.sleeping:
 			done.append(b)
 	for b in done: awake.erase(b)
+
+
+# Issue 1466 (Astra pass 2, finding 2): a plate in flight keeps pace with the effect clock, as wreck sections do in update():
+# when the clock slows for a kill (or eases back), its speed and spin change by the same ratio. Only the plates in flight.
+# Each plate keeps the clock speed its motion is at (debris_spd), so one thrown on a speed-change step at the new speed
+# is not scaled a second time (Artoo on PR 1476); a plate a hull knocked awake starts at the speed it was knocked at.
+static func _debris_speed(fx) -> void:
+	var speed: float = maxf(fx.anim_speed(), 0.01)
+	for b in fx.dstate.get("debris_awake", {}):
+		if not is_instance_valid(b): continue
+		var rb := b as RigidBody3D
+		var was: float = float(rb.get_meta("debris_spd", speed))
+		rb.set_meta("debris_spd", speed)
+		if rb.sleeping or absf(speed - was) < 1e-6: continue
+		rb.linear_velocity *= speed / was
+		rb.angular_velocity *= speed / was
 
 
 # The plates Jolt is still moving (the frame-time check's count; 0 once every plate has come to rest).
@@ -753,8 +775,29 @@ static func add_collider(fx, s) -> void:
 	var cs = CollisionShape3D.new()
 	cs.shape = shape
 	body.add_child(cs)
+	body.set_meta("fx_reach", body_reach(body))
+	body.add_to_group(HULL_GROUP)   # issue 1466: fx._gate_physics wakes the space when this hull moves near debris
 	s.root.add_child(body)
 	s.set_meta("collider", body)
+
+
+# How far a body's colliders reach from its origin (fx._gate_physics, issue 1466): the farthest hull point, else the box.
+static func body_reach(body: Node) -> float:
+	var r := 0.0
+	for ch in body.get_children():
+		var cs := ch as CollisionShape3D
+		if cs == null or cs.shape == null: continue
+		var k: float = cs.transform.basis.get_scale().x
+		var o: float = cs.transform.origin.length()
+		if cs.shape is ConvexPolygonShape3D:
+			for v in (cs.shape as ConvexPolygonShape3D).points: r = maxf(r, o + v.length() * k)
+		elif cs.shape is BoxShape3D:
+			r = maxf(r, o + (cs.shape as BoxShape3D).size.length() * 0.5 * k)
+		elif cs.shape is SphereShape3D:
+			r = maxf(r, o + (cs.shape as SphereShape3D).radius * k)
+		else:
+			r = maxf(r, o + 1.0)
+	return r
 
 
 # ---------------------------------------------------------------- cutting the hull (worker thread)
@@ -3576,7 +3619,11 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		node.freeze = false
 		node.linear_velocity = vel * fx.anim_speed()
 		node.angular_velocity = ang * fx.anim_speed()
-		fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
+		if float(wreck.get("leash_s", 1.0)) < 0.999:
+			# issue 1466: released after its wreck began to shrink, so straight onto the scripted drift (see _leash)
+			_wreck_leave_physics(fx, wreck, node)
+		else:
+			fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
 	elif node.has_meta("story_damp"):
 		var dmp: float = node.get_meta("story_damp")
 		wreck["fires"].append({"node": node, "vel": vel, "ang": ang, "damp": dmp, "adamp": dmp * 0.5})
@@ -3703,6 +3750,7 @@ static func update(fx, dt: float) -> void:
 	_leash_mark(fx)
 	for ship in fx.ships.values(): _update_dying(fx, ship)
 	_settle_debris(fx)
+	_debris_speed(fx)
 	for w in fx.dstate["wrecks"]:
 		var speed: float = maxf(fx.anim_speed(), 0.01)
 		var prev: float = float(w.get("speed", 1.0))
@@ -3855,7 +3903,13 @@ static func _leash(fx, dt: float) -> void:
 		var pieces: Array = w["nodes"] + w.get("frags", [])
 		if sc != prev:
 			for nd in pieces:
-				if is_instance_valid(nd): _draw_in(nd, an, sc, prev)
+				if not is_instance_valid(nd): continue
+				# Issue 1466 (Astra pass 2, finding 1): only the meshes shrink, so a released section still in Jolt would keep
+				# its full-size collider and be shoved by a hull short of the visible metal. As it starts to shrink it leaves
+				# Jolt for the scripted drift it takes at WRECK_PHYS_S anyway (same speed and turn, leash and damping kept).
+				if sc < 0.999 and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+					_wreck_leave_physics(fx, w, nd)
+				_draw_in(nd, an, sc, prev)
 		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
 		for f in w["fires"]:
 			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
