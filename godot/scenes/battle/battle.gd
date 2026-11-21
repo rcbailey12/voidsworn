@@ -550,7 +550,10 @@ func _begin(a) -> void:
 		await get_tree().process_frame
 		if gen != _build_gen:
 			return
+	var tb0 := Time.get_ticks_usec()
+	begin_us = {}
 	TBL = _api_tables()
+	begin_us["tables"] = Time.get_ticks_usec() - tb0
 	if ai_level != "":
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
@@ -601,11 +604,14 @@ func _begin(a) -> void:
 	hud.hide_tipcard()
 	adaptation_heard = false
 	_ghost_clear()
+	begin_us["reset"] = Time.get_ticks_usec() - tb0 - int(begin_us["tables"])
+	var tb1 := Time.get_ticks_usec()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
 	board.build(api)
 	cam.bounds = board.bounds()
+	begin_us["board"] = Time.get_ticks_usec() - tb1
 	if sliced:
 		load_phase = "board_build"
 		await get_tree().process_frame   # issue 1434 (LOAD6: start to board 1.4 to 1.6 s): the board, then the look
@@ -840,6 +846,7 @@ var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arri
 
 # issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
 var load_phase := ""
+var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process step): _begin's parts before the board's frame
 
 
 func _warmup() -> void:
@@ -1069,12 +1076,16 @@ func _make_views_sliced(gen: int) -> bool:
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
-		var tl := Time.get_ticks_usec()
-		sv.setup_look()
-		used += Time.get_ticks_usec() - tl
-		ok = await _ls_yield(gen, true)
-		if not ok:
-			return false
+		# the look a few surfaces per frame (LOAD9: one hull's 17 took up to 840 ms in one go)
+		while true:
+			var tl := Time.get_ticks_usec()
+			var looked: bool = sv.setup_look(int(LOAD_SLICE_MS * 1000.0))
+			used += Time.get_ticks_usec() - tl
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			if looked:
+				break
 		var te := Time.get_ticks_usec()
 		sv.setup_end()
 		sv.set_marker(u["side"] == "player")
@@ -1088,8 +1099,9 @@ func _make_views_sliced(gen: int) -> bool:
 			_ls["worst_stages"] = sv.stage_us.duplicate()
 		# issue 1434 (LOAD5: a first hull's analyse took up to 450 ms): a new hull's triangles and hit BVH get their own
 		# frame. The view holds still until its effects are registered, so the pose (and the geometry key) is the same.
-		var proc_was: bool = sv.is_processing()
-		sv.set_process(false)
+		# the whole view (its hull node bobs on its own) holds still, so the geometry key matches at registration
+		var pm_was: Node.ProcessMode = sv.process_mode
+		sv.process_mode = Node.PROCESS_MODE_DISABLED
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
@@ -1108,7 +1120,7 @@ func _make_views_sliced(gen: int) -> bool:
 		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
 		var tr := Time.get_ticks_usec()
 		_register_fx_ship(u, sv)
-		sv.set_process(proc_was)
+		sv.process_mode = pm_was
 		var fx_us := Time.get_ticks_usec() - tr
 		_ls["fx"] += fx_us
 		if fx_us > _ls["worst_fx"]:

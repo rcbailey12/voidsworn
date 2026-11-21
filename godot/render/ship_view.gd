@@ -334,13 +334,14 @@ func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 var _looked := false
 
 
-func setup_look() -> void:
+func setup_look(budget_us := -1) -> bool:
 	if not _end_pending or _looked:
-		return
+		return true
 	var t0 := Time.get_ticks_usec()
-	_look()
-	stage_us["look"] = Time.get_ticks_usec() - t0
-	_looked = true
+	var done := _look_some(budget_us)
+	stage_us["look"] = int(stage_us.get("look", 0)) + Time.get_ticks_usec() - t0
+	_looked = done
+	return done
 
 
 func setup_end() -> void:
@@ -372,41 +373,59 @@ static var _look_cache := {}
 
 
 func _look() -> void:
+	_look_some(-1)
+
+
+# Issue 1434 (LOAD9: V16_37's 17 surfaces took 450 to 840 ms, all of it assigning the override materials, about 30 to
+# 50 ms each on the PC). The sliced load assigns surfaces until budget_us is spent and comes back next frame; -1 does
+# them all. True when every surface is done. Timings and counts add up over the calls.
+var _look_at := 0   # surfaces done so far, in the order meshes and surfaces are walked
+
+
+func _look_some(budget_us: int) -> bool:
 	if not ResourceLoader.exists("res://render/look.gd"):
-		return
+		return true
 	var LOOK = load("res://render/look.gd")
-	# issue 1434 (LOAD6: one hull per battle still spent about 460 ms here): the parts are timed so the PC log names them
-	var t_new := 0
-	var t_set := 0
-	var n_new := 0
-	var n_surf := 0
+	var start := Time.get_ticks_usec()
+	var idx := 0
+	var did := 0
 	for m in meshes:
 		var mi := m as MeshInstance3D
 		if mi.mesh == null:
 			continue
 		for i in mi.mesh.get_surface_count():
+			if idx < _look_at:
+				idx += 1
+				continue
+			if budget_us >= 0 and did > 0 and Time.get_ticks_usec() - start >= budget_us:
+				return false
+			did += 1
+			idx += 1
+			_look_at = idx
 			var src: Material = mi.get_active_material(i)
 			if src == null:
 				continue
-			n_surf += 1
 			var k := "%d|%s" % [src.get_instance_id(), fac]
 			var t0 := Time.get_ticks_usec()
+			var made := false
 			if not _look_cache.has(k):
 				_look_cache[k] = LOOK.hull(src, fac, true)
-				n_new += 1
+				made = true
 			var t1 := Time.get_ticks_usec()
 			mi.set_surface_override_material(i, _look_cache[k])
-			t_new += t1 - t0
-			t_set += Time.get_ticks_usec() - t1
+			var t2 := Time.get_ticks_usec()
+			stage_us["look_new_mats"] = int(stage_us.get("look_new_mats", 0)) + t1 - t0
+			stage_us["look_assign"] = int(stage_us.get("look_assign", 0)) + t2 - t1
+			stage_us["look_worst_assign"] = maxi(int(stage_us.get("look_worst_assign", 0)), t2 - t1)
+			stage_us["look_counts"] = int(stage_us.get("look_counts", 0)) + (1001 if made else 1)   # new * 1000 + surfaces
 	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
 	# just added is queued once already; touch does not queue it twice)
-	var t2 := Time.get_ticks_usec()
+	var t3 := Time.get_ticks_usec()
 	if is_inside_tree():
 		load("res://render/mesh_watch.gd").touch(self)
-	stage_us["look_new_mats"] = t_new
-	stage_us["look_assign"] = t_set
-	stage_us["look_touch"] = Time.get_ticks_usec() - t2
-	stage_us["look_counts"] = n_new * 1000 + n_surf   # new materials * 1000 + surfaces (the log is in microseconds)
+	stage_us["look_touch"] = Time.get_ticks_usec() - t3
+	_look_at = 0
+	return true
 
 
 func _collect(n: Node) -> void:

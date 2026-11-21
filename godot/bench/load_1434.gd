@@ -134,6 +134,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 		_say("[load1434] %s worst ship %s setup stages (us) %s; worst effects registration %s parts (us) %s; worst hull geometry %d ms (%s)" % [tag, st.get("worst_code", ""),
 			str(st.get("worst_stages", {})), st.get("worst_fx_code", ""), str(st.get("worst_fx_parts", {})),
 			int(st.get("worst_geo", 0)) / 1000, str(st.get("worst_geo_code", "-"))])
+		_say("[load1434] %s start to board parts (us) %s" % [tag, str(b.begin_us)])
 	b.queue_free()
 	for i in 30:
 		await process_frame

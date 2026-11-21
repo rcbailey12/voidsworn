@@ -173,6 +173,31 @@ func _run() -> void:
 	_check(SV.retired_build_count() == 0 and not is_instance_valid(slow_out[0]), "the retired instance was collected and freed over the next frames")
 	SV._manifest = null
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture))
+	# the hull look a surface at a time (LOAD9: one hull's 17 surfaces took up to 840 ms): budget 0 does one per call
+	var lv = SV.new()
+	var lmi := MeshInstance3D.new()
+	var lmesh := ArrayMesh.new()
+	var larr := BoxMesh.new().get_mesh_arrays()
+	for si in 5:
+		lmesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, larr)
+		lmesh.surface_set_material(si, StandardMaterial3D.new())
+	lmi.mesh = lmesh
+	lv.add_child(lmi)
+	lv.meshes = [lmi]
+	lv.fac = "voidsworn"
+	var calls := 0
+	var done := false
+	while not done and calls < 20:
+		done = lv._look_some(0)
+		calls += 1
+	var set_n := 0
+	for si in 5:
+		if lmi.get_surface_override_material(si) != null:
+			set_n += 1
+	_check(done and calls == 5 and set_n == 5 and int(lv.stage_us.get("look_counts", 0)) == 5005,
+		"the hull look goes a surface per call on a zero budget (%d calls, %d of 5 set, counts %d)" % [calls, set_n, int(lv.stage_us.get("look_counts", 0))])
+	lv.free()
+	SV.clear_look_cache()
 	var c = BattleScene.instantiate()
 	c.args["sliced-load"] = true
 	c.args["noworld"] = true
