@@ -216,7 +216,8 @@ if defined OPTSBAD if not defined FAILED set "FAILED=%OPTSBAD%"
 :ending
 if defined FAILED goto failed
 rem (1497) The ship is live, sealed and pictured, so the job's own clone (14 to 16 GB) has done its work: tools_live's head
-rem removes JOB_DIR\repo only when HEAD is COMMIT, every local commit is in the shared mirror and its files are rebuildable
+rem removes JOB_DIR\repo only when HEAD is COMMIT, every file in JOB_DIR\out is relayed, every local commit is in the
+rem shared mirror, nothing is staged or stashed, and its files are rebuildable
 rem or saved first into JOB_DIR\out\checkout_leftovers_repo. The job's out folder, this publish folder and the undo stay.
 rem A refusal is logged and never fails the publish. A later publish from the same job folder needs a new ship_job run.
 set "OJH=%V%\tools_live\%TLV%\pc\jobs\opus_job_head.ps1"

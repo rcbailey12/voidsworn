@@ -32,25 +32,29 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `<checkout>_ships_identity.txt`, and every later checkout in the job must list the same hulls as the first (so OLD and
   NEW arms measure one fleet). Set `OJ_NEED_HULLS` to the codes your fixtures draw and each must be a matching ship.
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
-  then `all done`, and exit 0 only on PASS. After that result is written, a PASS removes the job's own pinned
-  checkouts (rebuildable from their pins, up to 22 GB each): only folders the head's `checkout` listed in the attempt's
-  `checkouts.txt` whose `.git\HEAD` still names the pin. Proven leftovers go as they are: the import cache, a ships copy
-  whose sha256 matches the ships step's copy-time record (`<checkout>_ships_copied.txt`, so a publish later in the night
-  no longer makes every copy look changed) or the shared build, a byte copy of a tracked file, and a `.import`/`.uid`
-  sidecar of one of those. Anything else the job left in the checkout (a `build_info.json`, a changed `.import` file, a
-  new ship file) is saved first into `out_<name>\checkout_leftovers` (tracked changes as `changes.patch`, other files
-  copied and read back by sha256, `leftovers.txt` lists them); more than 200 MB, or a nested repo, keeps the checkout and
-  is logged. Issue 1497: on Nov 21 every passing job kept its whole checkout for one such small file and C: fell from 176
-  to 55 GB in three hours. A failed attempt keeps its checkouts for a day; every tail, pass or fail, also clears the same
-  job's earlier attempts (a passed one now, a failed or unfinished one a day after it last wrote). status.txt ends with
-  `disk: checkouts freed <GB> in all, C: <GB> free`. Links go as links, nothing goes during the Board's PC pause,
-  `out_*`, the logs and the ship records stay, and `OJ_KEEP_CHECKOUTS=1` keeps them. Known and accepted: clearing
-  read-only on git packs also clears it on the mirror's hard-linked copies, the logged GB counts hard-linked bytes the
-  mirror still holds, and an error mid-removal leaves a half-removed checkout behind.
+  then `all done`, and exit 0 only on PASS. Then the checkout step (`opus_job_head.ps1 dropcheckouts <attempt>`) runs
+  for this attempt and the same job's earlier ones. An attempt's pinned checkouts (rebuildable from their pins, up to
+  22 GB each) go only when its `done.txt` says PASS and every file in its `out_*` folders is a blob on a `board/pc-out-*`
+  relay branch (the mirror is fetched when one is missing). At the tail nothing is relayed yet, so the Board runs the same
+  step right after each relay; a later tail of the same job also catches it. A failed or unfinished attempt is never
+  touched by this step (the janitor's rules cover it). Per checkout: listed in `checkouts.txt` by the head, `.git\HEAD`
+  still the pin, every local branch in the mirror, no stash, nothing staged. Proven leftovers go as they are: the import
+  cache, a ships copy whose sha256 matches the ships step's copy-time record (`<checkout>_ships_copied.txt`, so a publish
+  later in the night no longer makes every copy look changed) or the shared build, a byte copy of a tracked file, and a
+  `.import`/`.uid` sidecar of one of those. Anything else the job left (a `build_info.json`, a changed `.import` file, a
+  new ship file) is saved first into `out_<name>\checkout_leftovers` (working-file changes as `changes.patch`, other files
+  copied and read back by sha256, `leftovers.txt` lists them); more than 200 MB, a staged change or a nested repo keeps
+  the checkout and is logged. Issue 1497: on Nov 21 every passing job kept its whole checkout for one such small file and
+  C: fell from 176 to 55 GB in three hours. The step ends with `disk: checkouts freed <GB> in all, C: <GB> free`. Links go
+  as links, nothing goes during the Board's PC pause, `out_*`, the logs and the ship records stay, and
+  `OJ_KEEP_CHECKOUTS=1` skips the step at the tail. Known and accepted: clearing read-only on git packs also clears it on
+  the mirror's hard-linked copies, the logged GB counts hard-linked bytes the mirror still holds, and an error
+  mid-removal leaves a half-removed checkout behind.
 - Ship jobs (`ship_job.bat`): after a PASS the clone's Godot import cache `repo\godot\.godot` goes before the done line
   (`opus_job_head.ps1 dropcache`); the clone stays because the publish installs with its tools. `publish_ship.bat`
-  removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every local commit in the
-  shared mirror or a merge of mirror commits, no stash; installed files matching the collected export count as
+  removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every file in the job's
+  `out` relayed, every local commit in the shared mirror or a merge of mirror commits, no stash or staged change;
+  installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone for the janitor (issue 1396). A second publish from the same job folder needs a new ship run.
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for

@@ -25,10 +25,10 @@ rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
 rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done
 rem                                   PASS" or "done FAILED: ...", then "all done". Exit 0 only on PASS. After that,
-rem                                   a PASS removes the job's own pinned checkouts, saving any small file the job left
-rem                                   in one into out_<name>\checkout_leftovers first (issue 1497); a failure keeps them
-rem                                   a day; earlier attempts of the job are cleared the same way; the GB freed and C:
-rem                                   free go to status.txt (out_* and logs stay; OJ_KEEP_CHECKOUTS=1 keeps them).
+rem                                   dropcheckouts: the checkouts of this job's passed attempts whose results are
+rem                                   relayed go, small leftovers saved first into out_<name>\checkout_leftovers (issue
+rem                                   1497); the Board runs the same step right after each relay; the GB freed and C:
+rem                                   free go to status.txt (out_* and logs stay; OJ_KEEP_CHECKOUTS=1 skips it).
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
 rem The tail removes only the job's own pinned checkouts (RULEBOOK 3.3, R326); nothing else is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
 if /i "%~1"=="init" goto oj_init
@@ -157,18 +157,16 @@ goto oj_tail_end
 :oj_tail_changed
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
-rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 22 GB each, so after a
-rem PASS they go; any small file the job left in one is saved first into out_<name>\checkout_leftovers (issue 1497: on
-rem Nov 21 every passing job kept its checkout for a build_info.json or a few .import files and C: fell to 55 GB).
-rem A failed attempt keeps its checkouts for a day for the post-mortem; every tail, pass or fail, also clears this job's
-rem earlier attempts (a passed one now, a failed or unfinished one after a day). out_*, the logs and the ship records
-rem always stay. OJ_KEEP_CHECKOUTS=1 keeps everything (logged).
-rem It runs after job_wrap end has written the done line, so a slow or stuck removal can never delay or lose the result.
+rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 22 GB each. They go
+rem once the attempt passed and its results are relayed (issue 1497, Artoo on PR 1498): the Board runs
+rem "opus_job_head.ps1 dropcheckouts <attempt>" right after the relay, and every tail does the same for this job's earlier
+rem attempts. Any small file the job left in a checkout is saved first into out_<name>\checkout_leftovers. Here the
+rem result is not relayed yet, so this attempt's checkouts stay and the log says so. A failed attempt is never touched
+rem here. OJ_KEEP_CHECKOUTS=1 skips the step (logged).
+rem It runs after job_wrap end has written the done line, so a slow or stuck step can never delay or lose the result.
 set "OJ_DROP=1"
-set "OJ_PASSED=1"
 if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
-if defined JW_FAILED (>> "%OJ_ST%" echo checkouts of this attempt kept for a day: the job failed& set "OJ_PASSED=0")
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
-if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" %OJ_PASSED% >> "%OJ_ST%" 2>&1
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
 exit /b %OJ_RC%

@@ -21,29 +21,31 @@
 #                                              godot\gen and godot\assets\ships, so the tail can prove a copy unchanged even
 #                                              after a later publish moves the shared build on (issue 1497)
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
-#   dropcheckouts <attempt folder> <passed 1|0>
-#                                              the tail, after the result is written. passed=1: removes this attempt's own
-#                                              pinned checkouts, the rebuildable leftovers RULEBOOK 3.3 / R326 let a job
-#                                              remove. Then, pass or fail, the same for earlier attempts of the same job
-#                                              (voidsworn_test\<job>\out_* beside it): a passed one now, a failed or
-#                                              unfinished one once a day has passed since it last wrote (a failed job keeps
-#                                              its checkout a day for the post-mortem). Only folders listed in that
-#                                              attempt's checkouts.txt by this head's checkout step, directly in an attempt
-#                                              folder voidsworn_test\<job>\out_*, that are plain folders whose .git\HEAD still
-#                                              names the listed pin. Files that are not proven rebuildable (Get-KeptWork:
-#                                              the import cache, a ships copy matching its copy-time record or the shared
-#                                              build, a byte copy of a tracked file, or a sidecar of one of those) are saved
-#                                              first (Save-Leftovers: tracked changes as changes.patch, other files copied
-#                                              and read back by sha256) into <attempt>\out_<name>\checkout_leftovers, at
-#                                              most 200 MB; more than that, or a folder of its own (a nested repo), keeps
-#                                              the checkout. Links are removed as links, never followed. out_*, the logs and
-#                                              every other file stay. The Board's PC pause (gpu_go.txt) removes nothing. A
-#                                              refusal is logged and never fails the job. Ends with the GB freed and C: free.
+#   dropcheckouts <attempt folder>             the tail, and the Board right after it relays the results: removes the
+#                                              pinned checkouts of this attempt and of the same job's earlier attempts
+#                                              (voidsworn_test\<job>\out_* beside it), each only when its done.txt says
+#                                              PASS and every file in its out_* folders is a blob on a board/pc-out relay
+#                                              branch of the shared mirror (fetched when one is missing). A failed or
+#                                              unfinished attempt is never touched here (the janitor's rules cover it).
+#                                              Only folders listed in that attempt's checkouts.txt by this head's checkout
+#                                              step, directly in an attempt folder voidsworn_test\<job>\out_*, that are
+#                                              plain folders whose .git\HEAD still names the listed pin, whose local
+#                                              branches are all in the mirror, with no stash and nothing staged. Files that
+#                                              are not proven rebuildable (Get-KeptWork: the import cache, a ships copy
+#                                              matching its copy-time record or the shared build, a byte copy of a tracked
+#                                              file, or a sidecar of one of those) are saved first (Save-Leftovers:
+#                                              working-file changes as changes.patch, other files copied and read back by
+#                                              sha256) into <attempt>\out_<name>\checkout_leftovers, at most 200 MB; more
+#                                              than that, a staged change or a nested repo keeps the checkout. Links are
+#                                              removed as links, never followed. out_*, the logs and every other file stay.
+#                                              The Board's PC pause (gpu_go.txt) removes nothing. A refusal is logged and
+#                                              never fails the job. Ends with the GB freed and C: free.
 #   dropcache <ship job folder>                ship_job.bat after a PASS: removes only <job>\repo\godot\.godot, Godot's
 #                                              import cache (rebuilt by the next import); the clone stays for the publish
 #   droprepo <ship job folder> <commit> <code> publish_ship.bat after a published PASS: removes the job's own clone
-#                                              <job>\repo when HEAD is <commit>, every local branch and HEAD is in the
-#                                              shared mirror (or is a merge of commits that are), there is no stash, and
+#                                              <job>\repo when HEAD is <commit>, every file in <job>\out is relayed,
+#                                              every local branch and HEAD is in the shared mirror (or is a merge of
+#                                              commits that are), there is no stash or staged change, and
 #                                              its files are rebuildable or saved first as above into
 #                                              <job>\out\checkout_leftovers_repo (installed files under
 #                                              godot\assets\ships\<code> that match the job's collected export count as
@@ -104,6 +106,9 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
   foreach ($e in ($raw -split "`0")) {
     if ($e.Length -lt 4) { continue }
     $code = $e.Substring(0, 2); $rel = $e.Substring(3)
+    # A staged change is never saved and removed: the index can hold bytes no patch of the working files shows (Artoo on
+    # PR 1498: MM after restoring only the file). Save-Leftovers refuses it, so the checkout stays.
+    if ($code[0] -ne ' ' -and $code -ne '??' -and $code -ne '!!') { $keep += "staged: $rel"; continue }
     $mineFile = { $m = Get-Item -LiteralPath (Join-Path $repo $rel.Replace('/', $sep)) -Force -ErrorAction SilentlyContinue
       if ($m -is [IO.FileInfo] -and -not ($m.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $m } else { $null } }
     if ($codeDir -and $export -and $rel.StartsWith($codeDir, [StringComparison]::Ordinal) -and -not $rel.Substring($codeDir.Length).Contains('/')) {
@@ -252,14 +257,81 @@ function Get-AttemptProblem($attempt) {
   }
   return $null
 }
+function Get-BlobSha($path) {
+  # Git's blob id of a file's bytes (sha1 of "blob <size>\0" and the bytes), computed here so no path is piped to git
+  # (PowerShell 5.1 pipes CRLF to native commands, issue 1335).
+  $sha = [Security.Cryptography.SHA1]::Create()
+  $f = [IO.File]::OpenRead($path)
+  try {
+    $h = [Text.Encoding]::ASCII.GetBytes("blob $($f.Length)`0")
+    $null = $sha.TransformBlock($h, 0, $h.Length, $null, 0)
+    $buf = New-Object byte[] 1048576
+    while (($n = $f.Read($buf, 0, $buf.Length)) -gt 0) { $null = $sha.TransformBlock($buf, 0, $n, $null, 0) }
+    $null = $sha.TransformFinalBlock($buf, 0, 0)
+    return (($sha.Hash | ForEach-Object { $_.ToString('x2') }) -join '')
+  } finally { $f.Dispose(); $sha.Dispose() }
+}
+function Get-RelayBlobs([bool]$refresh) {
+  # Every blob on the relay branches board/pc-out-* in the shared mirror: a committed receipt (as the janitor reads it,
+  # Artoo on PR 1266). With $refresh the mirror is fetched first, under the shared lock.
+  if ($refresh) {
+    $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+    while (-not $lock) {
+      try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+      catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+    }
+    try {
+      if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
+      Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+    } finally { $lock.Dispose() }
+  }
+  $set = New-Object 'Collections.Generic.HashSet[string]'
+  $refs = @(Run-Git --git-dir $mirror for-each-ref '--format=%(objectname)' 'refs/heads/board/pc-out-*' | Where-Object { $_ })
+  if ($refs.Count) { foreach ($line in (Run-Git --git-dir $mirror rev-list --objects '--glob=refs/heads/board/pc-out-*')) { $null = $set.Add(("$line" -split ' ', 2)[0]) } }
+  return ,$set
+}
+function Assert-Relayed($root, [string[]]$dirs, $skip) {
+  # Issue 1497 (Artoo on PR 1498): a checkout goes only once the results are relayed. Every file under each of $dirs
+  # (folders under $root; $skip names leftovers folders this file wrote after the relay) must be a blob on a relay branch.
+  $files = @()
+  foreach ($d in $dirs) {
+    $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+    $pending.Push((Get-Item -LiteralPath $d -Force))
+    while ($pending.Count) {
+      foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
+        if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
+        if ($e -is [IO.DirectoryInfo]) { if ($skip -notcontains $e.Name) { $pending.Push($e) }; continue }
+        $files += $e
+      }
+    }
+  }
+  if (-not $files.Count) { throw "no result files under $root to prove the relay" }
+  $sums = @($files | ForEach-Object { Get-BlobSha $_.FullName })
+  $blobs = Get-RelayBlobs $false
+  $missing = @(for ($i = 0; $i -lt $files.Count; $i++) { if (-not $blobs.Contains($sums[$i])) { $i } })
+  if ($missing.Count) {
+    $blobs = Get-RelayBlobs $true
+    $missing = @($missing | Where-Object { -not $blobs.Contains($sums[$_]) })
+  }
+  if ($missing.Count) {
+    throw ("results not relayed yet: {0} of {1} result file(s) are on no board/pc-out branch, e.g. {2}" -f $missing.Count, $files.Count, $files[$missing[0]].FullName)
+  }
+}
 function Drop-Attempt($attempt) {
-  # The listed pinned checkouts of one attempt folder; adds the bytes removed to $script:freed. Every refusal is logged,
-  # never thrown.
+  # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
+  # bytes removed to $script:freed. Every refusal is logged, never thrown.
+  $state = Get-AttemptState $attempt
+  if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
+  $list = Join-Path $attempt 'checkouts.txt'
+  if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
+  $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
+  if (-not $present.Count) { Write-Output "no listed checkout left in $attempt"; return }
+  $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
+  try { Assert-Relayed $attempt $outs @('checkout_leftovers') }
+  catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   $src = $null
   $srcFile = Join-Path $attempt 'ships_source.txt'
   if (Test-Path -LiteralPath $srcFile -PathType Leaf) { $src = ([IO.File]::ReadAllText($srcFile)).Trim() }
-  $list = Join-Path $attempt 'checkouts.txt'
-  if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   foreach ($line in [IO.File]::ReadAllLines($list)) {
     if ($line -notmatch '\A([A-Za-z0-9_-]{1,40}) ([0-9a-f]{40})\z') { if ($line.Trim()) { Write-Output "checkouts.txt line not accepted, ignored: $line" }; continue }
     $name = $Matches[1]; $pin = $Matches[2]
@@ -272,6 +344,7 @@ function Drop-Attempt($attempt) {
       if (-not (Test-PlainDir $git)) { throw 'no .git folder of its own' }
       $headFile = Join-Path $git.FullName 'HEAD'
       if (-not (Test-Path -LiteralPath $headFile -PathType Leaf) -or ([IO.File]::ReadAllText($headFile)).Trim() -ne $pin) { throw "HEAD is no longer the pin $pin" }
+      Assert-Rebuildable $repo
       $rec = Read-ShipRecord ($repo + '_ships_copied.txt')
       $work = @(Get-KeptWork $repo $src $rec $null $null)
       if (Test-Paused) { throw 'the Board PC pause is active' }
@@ -287,21 +360,12 @@ function Drop-Attempt($attempt) {
   }
 }
 function Get-AttemptState($attempt) {
-  # PASS or FAILED from job_wrap's done.txt; '' when the attempt never finished (killed or timed out)
+  # PASS or FAILED from job_wrap's done.txt; '' when the attempt never finished (killed, timed out or still running)
   $done = Join-Path $attempt 'done.txt'
   if (-not (Test-Path -LiteralPath $done -PathType Leaf)) { return '' }
   $first = [string](Get-Content -LiteralPath $done -TotalCount 1)
   if ($first -match '\APASS\b') { return 'PASS' }
   return 'FAILED'
-}
-function Get-LastWrite($attempt) {
-  # The newest write of the attempt's own files at its top (status.txt, done.txt, checkouts.txt) or the folder itself
-  $t = (Get-Item -LiteralPath $attempt -Force).LastWriteTimeUtc
-  foreach ($f in 'status.txt', 'done.txt', 'checkouts.txt') {
-    $p = Get-Item -LiteralPath (Join-Path $attempt $f) -Force -ErrorAction SilentlyContinue
-    if ($p -and $p.LastWriteTimeUtc -gt $t) { $t = $p.LastWriteTimeUtc }
-  }
-  return $t
 }
 function Test-ShipClone($jobDir) {
   # The ship job's own clone <job>\repo: a plain folder with its own .git, in a plain voidsworn_test\<job> folder
@@ -464,22 +528,18 @@ switch ($Action) {
     Write-Output "ships match their cache: $($matched.Count) hull(s), $noGlb older entr(ies) with no ship folder listed unchecked; identity in $B"
   }
   'dropcheckouts' {
+    # The tail and, after the Board relays the results, the Board itself: this attempt and the same job's earlier ones,
+    # each only once it passed and every result file is on a relay branch (Drop-Attempt).
     $attempt = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
     $problem = Get-AttemptProblem $attempt
     if ($problem) { Write-Output "checkouts kept: $problem"; break }
     $script:freed = [long]0
-    if ($B -eq '1') { Drop-Attempt $attempt }
-    else { Write-Output "checkouts of this attempt kept for a day: it did not pass" }
-    # Earlier attempts of the same job: a passed one now, a failed or unfinished one after a day (issue 1497).
+    Drop-Attempt $attempt
     $jobDir = Split-Path -Parent $attempt
     foreach ($sib in @((Get-Item -LiteralPath $jobDir -Force).EnumerateDirectories('out_*'))) {
       if ($sib.FullName.Equals($attempt, [StringComparison]::OrdinalIgnoreCase)) { continue }
       if (Get-AttemptProblem $sib.FullName) { continue }
       if (-not (Test-Path -LiteralPath (Join-Path $sib.FullName 'checkouts.txt') -PathType Leaf)) { continue }
-      $state = Get-AttemptState $sib.FullName
-      $age = [DateTime]::UtcNow - (Get-LastWrite $sib.FullName)
-      if ($state -ne 'PASS' -and $age.TotalHours -lt 24) { Write-Output "earlier attempt kept for a day ($(if ($state) { $state } else { 'unfinished' })): $($sib.FullName)"; continue }
-      Write-Output "earlier attempt ($(if ($state) { $state } else { 'unfinished' }), last wrote $([int]$age.TotalHours) h ago): $($sib.FullName)"
       Drop-Attempt $sib.FullName
     }
     Write-Free $script:freed
@@ -507,6 +567,7 @@ switch ($Action) {
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
+      Assert-Relayed $jobDir @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo')
       $work = @(Get-KeptWork $repo $null @{} "godot/assets/ships/$C/" $export)
       if (Test-Paused) { throw 'the Board PC pause is active' }
       if ($work.Count) {
