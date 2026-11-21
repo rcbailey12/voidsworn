@@ -1,0 +1,22 @@
+{
+ "lod0": {
+  "triangles": 187942,
+  "objects": 59,
+  "materials": 11
+ },
+ "lod1": {
+  "triangles": 180446,
+  "objects": 45,
+  "materials": 7
+ },
+ "lod2": {
+  "triangles": 90228,
+  "objects": 45,
+  "materials": 7
+ },
+ "lod3": {
+  "triangles": 38877,
+  "objects": 44,
+  "materials": 6
+ }
+}
