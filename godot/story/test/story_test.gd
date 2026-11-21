@@ -261,7 +261,7 @@ func t_voice() -> void:
 	ok(str(lines[0]["text"]).contains("Cold Watch"), "voice: {flagship} filled in")
 	var Vjson = JSON.parse_string(_read("res://story/data/voices.json"))
 	var vex_wins = Vjson["admirals"]["vex"]["win"]
-	var close_txt := v.closing(true)
+	var close_txt: String = v.closing(true)
 	var win_ok := false
 	for w in (vex_wins if vex_wins is Array else [vex_wins]):
 		win_ok = win_ok or close_txt.ends_with("\"" + str(w) + "\"")
@@ -362,7 +362,7 @@ func t_arc() -> void:
 	var ctx := {"nem": she, "flags": {}, "seed": 3, "seen": {"arc_voidsworn_1B": 1}, "first_lost": "", "arcs_finished": 0}
 	var b1: Dictionary = a.render(1, ctx)
 	var RL_arc = JSON.parse_string(_read("res://story/data/rival_lines.json"))
-	var exp_deed := T.fill(str(RL_arc["hegemony"]["deed"]["methodical"]), {"nem": she})
+	var exp_deed: String = T.fill(str(RL_arc["hegemony"]["deed"]["methodical"]), {"nem": she})
 	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. " + exp_deed) and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
 	ok(b1["o"][0]["fl"].get("fx_keep") == 1 and b1["o"][1]["fl"].get("greed") == 1 and b1["o"][1]["fl"].get("fx_sell") == 1, "arc: an option's story flag rides in fl (the event system stores it)")
 	var seen := {"arc_voidsworn_1A": 2, "arc_voidsworn_1B": 0}

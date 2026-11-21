@@ -71,7 +71,7 @@ func _pick_from(pool, pool_id: String, extra_salt: String = "") -> String:
 		return pool
 	if not (pool is Array) or pool.is_empty():
 		return ""
-	var n := pool.size()
+	var n: int = pool.size()
 	var seed_val := int(info.get("seed", 0))
 	var rk := str(info.get("run_key", ""))
 	var bag := _spoken_bag()

@@ -60,7 +60,7 @@ func _pick(pool, nem, key: String, seed: int, spoken = null) -> String:
 		return pool
 	if not (pool is Array) or pool.is_empty():
 		return ""
-	var n := pool.size()
+	var n: int = pool.size()
 	var base := _h(str(nem.get("name", "")) + "|" + key + "|" + str(seed))
 	if not (spoken is Dictionary):
 		return str(pool[base % n])

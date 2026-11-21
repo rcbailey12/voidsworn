@@ -3713,7 +3713,7 @@ func battleScreen(cfg: Dictionary) -> void:
 			JSM.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
 		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
-		var r_line := {"chorus": "Your surviving spores coalesce into a fresh " + str(sh["name"]) + ".", "deathless": "An automated reserve berth dispatches " + str(sh["name"]) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + str(sh["name"]) + ".", "ithar": "A distant picket answers your distress pulse: " + str(sh["name"]) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(sh["name"]) + " to reinforce you.")
+		var r_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + str(sh["name"]) + ".", "deathless": "An automated reserve berth dispatches " + str(sh["name"]) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + str(sh["name"]) + ".", "ithar": "A distant picket answers your distress pulse: " + str(sh["name"]) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(sh["name"]) + " to reinforce you."))
 		toast(r_line); tel("reinforced", {})
 	var nd = findNode(cfg["node"]) if jt(cfg.get("node")) else null
 	if nd != null and not jt(nd.get("enc")) and cfg["kind"] != "boss":
@@ -3919,7 +3919,7 @@ func finishBattle(result: String) -> void:
 	B = null
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
-		var p_line := {"chorus": "Your surviving spores coalesce into a fresh " + str(sh2["name"]) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + str(sh2["name"]) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + str(sh2["name"]) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + str(sh2["name"]) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(sh2["name"]) + " to carry the flag.")
+		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + str(sh2["name"]) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + str(sh2["name"]) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + str(sh2["name"]) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + str(sh2["name"]) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(sh2["name"]) + " to carry the flag."))
 		toast("The last ships traded themselves for the win. " + p_line); tel("reinforced", {"why": "pyrrhic"})
 	if result == "loss" or RUN["fleet"].size() == 0:
 		endRun(false); return

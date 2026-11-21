@@ -2323,7 +2323,7 @@ func _modal(md: Dictionary) -> void:
 		"sell":
 			var _s_fac := str(R.get("fac", "")); var _s_nm := str(d["ship"]["name"])
 			h2.call(("Reabsorb " if _s_fac == "chorus" else "Decommission ") + _s_nm + "?")
-			var _s_body := ("Its refits return to the hold and you recover " if _s_fac == "chorus" else ("Its mind-core returns to the Archive and its refits return to the hold. You recover " if _s_fac == "deathless" else "Its crew stands down and its refits return to the hold. You recover ")) + C.numstr(d["value"]) + " " + str(d.get("word", "credits")) + "." + (" A regrown ship has nothing to strip until it has fought." if d["ship"].get("regrown") else "")
+			var _s_body: String = ("Its refits return to the hold and you recover " if _s_fac == "chorus" else ("Its mind-core returns to the Archive and its refits return to the hold. You recover " if _s_fac == "deathless" else "Its crew stands down and its refits return to the hold. You recover ")) + C.numstr(d["value"]) + " " + str(d.get("word", "credits")) + "." + (" A regrown ship has nothing to strip until it has fought." if d["ship"].get("regrown") else "")
 			p.call(_s_body, BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Decommission", "sellConfirm", d["ship"]["uid"], acts)]))
 		"repair_stop":
