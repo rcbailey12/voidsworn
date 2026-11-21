@@ -10,7 +10,6 @@ extends SceneTree
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const PG := preload("res://render/placeholder_guard.gd")
-const PP := preload("res://tools/picture_provenance.gd")
 const SPEED := 12.0
 const RUN := 24.0   # units before and after the target plate
 
@@ -138,7 +137,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		if i % 2 == 0:
 			var p := out.path_join("frames/f_%03d.jpg" % (i / 2))
-			PP.save_jpg(vp.get_texture().get_image(), p, 0.88)
+			preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), p, 0.88)
 			saved.append(p)
 	# the plates the hull's path reached (within 4 units of its centre line) and how far each was pushed
 	var near := 0
@@ -166,6 +165,6 @@ func _run() -> void:
 		im = im.get_region(Rect2i(320, 180, 640, 360))
 		im.resize(426, 240, Image.INTERPOLATE_LANCZOS)
 		sheet.blit_rect(im, Rect2i(0, 0, 426, 240), Vector2i((k % 3) * 426, (k / 3) * 240))
-	PP.save_png(sheet, out.path_join("sheet.png"))
+	preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join("sheet.png"))
 	fx.release()
 	PG.finish(0 if near > 0 else 1)
