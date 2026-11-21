@@ -67,7 +67,7 @@ nearly featureless except for the flak pair and a short spire row.
 | Autocannon, forward, 3 shots | Compact forged casemate at the spearhead root, station 14 percent; three-barrel rotary cluster, all barrels fire per volley |
 | Flak, turret, 3 shots | One pair of small twin tubs at the deck edges, station 60 percent; 3 shots distributed over the pair per the family convention |
 | Broadside band | Plated and louvred, no ports (no broadside slot in data) |
-| Spire line | 3 low spires, stations 68 / 76 / 84 percent, tallest 0.9 |
+| Spire line | 3 low spires, stations 68 / 76 / 84 percent, tallest 0.7 (reduced per Ryan's approval note, Nov 19, 2026: approved with smaller spires) |
 | Command | Ember slits in the spine block face, station 58 percent |
 | Engines | 2 bells, 0.55 across, offsets plus/minus 0.4 |
 | Breaks | Lengthwise along the band; spire line snaps as one piece |
@@ -105,11 +105,21 @@ text for this hull (vs_harrow_t) reads "Twin prow torpedo tubes",
 and data outranks leg inference (R236). A single centreline tube
 would also blunt the spearhead point.
 
-Picture slips: the beauty reads five spires (table: 4) and draws
-flame plumes at the bells (in game the bells glow ember, no plume);
-the tube bores are oversized against the table's offsets. The sheet's
-top view wrongly splits the hull into twin booms: the hull is ONE
-blade, and the sheet's front view plus the beauty govern.
+Round 2 (Ryan's ruling, Nov 19, 2026): the round 1 pictures were
+sent back because the riveted twin-hull read and the hazard
+chevrons made the ship look like a different faction. Round 2 keeps
+the table above and redraws the ship as ONE solid spearhead hull:
+the twin tubes are recessed into the spearhead's cheek plates like
+gun ports, the chevrons are gone (frost-white is one thin stripe
+and a small sigil, as on S8), and the rivet work follows S8's fine
+seam lines. The round 2 beauty, sheet and line-up replace the
+round 1 pictures in this folder.
+
+Picture slips (round 2): the beauty and the sheet's side view draw
+five spires (table: 4). The sheet's third view is the stern, not
+the bow; the bow identity is carried by the sheet's top view and
+the beauty. The sheet's top view draws the spine block as a row of
+lit blocks; the spires themselves are as tabled.
 
 ## Vigil, cruiser (data key penitent), 14.5
 
@@ -125,7 +135,7 @@ along the centre ridge.
 | Battery, starboard, 4 shots | Mirrored, same stations |
 | Lance, forward, 1 shot | Single emitter set in the spearhead face, station 4 percent; housing and dorsal power trunk along the centre ridge to station 30 percent |
 | Deck turrets | None in data; the crowned deck stays clean |
-| Spire line | 5 spires, stations 64 / 70 / 76 / 82 / 88 percent, tallest 1.7 |
+| Spire line | 5 spires, stations 64 / 70 / 76 / 82 / 88 percent, tallest 1.3 (reduced per Ryan's approval note, Nov 19, 2026: approved with smaller spires) |
 | Command | Ember slits in the spine block face, station 60 percent |
 | Engines | 2 bells, 1.2 across, offsets plus/minus 0.8 |
 | Breaks | Lengthwise between the deck rows; spire line snaps as one piece |
