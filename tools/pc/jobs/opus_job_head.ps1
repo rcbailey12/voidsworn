@@ -68,12 +68,14 @@ function Get-KeptWork($repo, $src) {
   #  - a file under godot/gen/ or godot/assets/ships/ whose ships source copy ($src, the LB_SHIPS the ships step
   #    recorded) has the same sha256 (what robocopy copied and left alone);
   #  - a byte copy of a file the pin tracks (the probe copies in godot/bench);
+  #  - an ignored map Godot's glb import extracted beside a tracked munition body: godot/fx/munitions/<body>_*.jpg or
+  #    .png next to a tracked godot/fx/munitions/<body>.glb (issue 1379; the next import writes it again);
   #  - a .import or .uid sidecar whose own file is tracked or proven above.
   # Anything else, such as a new or changed ship file a job wrote, keeps the checkout (Artoo, PR 1326).
   $ErrorActionPreference = 'Continue'
   $raw = (& $gitExe -C $repo -c core.quotepath=false status --porcelain=v1 -z --untracked-files=all --ignored=traditional 2>$null) -join "`n"
   if ($LASTEXITCODE -ne 0) { return @('git status failed') }
-  $keep = @(); $copies = @(); $sidecars = @(); $proven = @{}
+  $keep = @(); $copies = @(); $sidecars = @(); $maps = @(); $proven = @{}
   foreach ($e in ($raw -split "`0")) {
     if ($e.Length -lt 4) { continue }
     $code = $e.Substring(0, 2); $rel = $e.Substring(3)
@@ -81,6 +83,7 @@ function Get-KeptWork($repo, $src) {
     if ($rel.StartsWith('godot/.godot/', [StringComparison]::Ordinal)) { continue }
     if ($rel.EndsWith('/')) { $keep += "new: $rel"; continue }
     if ($rel.EndsWith('.import', [StringComparison]::Ordinal) -or $rel.EndsWith('.uid', [StringComparison]::Ordinal)) { $sidecars += $rel; continue }
+    if ($code -eq '!!' -and $rel -cmatch '\Agodot/fx/munitions/[^/]+\.(?:jpg|png)\z') { $maps += $rel; continue }
     $from = $null
     foreach ($pre in 'gen/', 'assets/ships/') {
       if ($src -and $rel.StartsWith('godot/' + $pre, [StringComparison]::Ordinal)) { $from = Join-Path $src ($rel.Substring(6).Replace('/', $sep)) }
@@ -108,6 +111,14 @@ function Get-KeptWork($repo, $src) {
     for ($i = 0; $i -lt $copies.Count; $i++) {
       if ($i -lt $sums.Count -and $tracked.ContainsKey("$($sums[$i])".Trim())) { $proven[$copies[$i]] = $true } else { $keep += "new: $($copies[$i])" }
     }
+  }
+  foreach ($rel in $maps) {
+    $name = $rel.Substring('godot/fx/munitions/'.Length)
+    $body = $null
+    foreach ($p in $paths.Keys) {
+      if ($p -cmatch '\Agodot/fx/munitions/([^/]+)\.glb\z' -and $name.StartsWith($Matches[1] + '_', [StringComparison]::Ordinal)) { $body = $p; break }
+    }
+    if ($body) { $proven[$rel] = $true } else { $keep += "new: $rel" }
   }
   foreach ($rel in $sidecars) {
     $own = $rel -replace '\.(import|uid)\z', ''
