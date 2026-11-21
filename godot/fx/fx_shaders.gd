@@ -109,6 +109,12 @@ uniform float calm_intensity = 0.0;
 uniform float pic_spin = 0.0;
 uniform vec2 pic_shape = vec2(1.0);
 uniform float smoke_tone = 1.0;
+// R367 (issue 1399): a faction's own death. fac_fire.a 1 turns the hot gas from the baked orange to fac_mid (cooler) and
+// fac_fire.rgb (hottest), fac_prism puts a rainbow edge on it, fac_smoke keeps that share of the smoke. Defaults: today's.
+uniform vec4 fac_fire = vec4(1.0, 1.0, 1.0, 0.0);
+uniform vec3 fac_mid = vec3(1.0);
+uniform float fac_prism = 0.0;
+uniform float fac_smoke = 1.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -158,15 +164,29 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
+	core = mix(core, mix(fac_fire.rgb, fac_mid, age), fac_fire.a);
 	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * power * fx_gain;
+	float keep = clamp(pulse * 3.0, 0.0, 1.0);
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
 	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * power, thick.b) * fx_gain;
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
+	keep = clamp(thick.b, 0.0, 1.0);
+	if (fac_fire.a > 0.0) {
+		// the baked heat keeps its shape and brightness and takes the faction's colours; its smoke keeps its shading but
+		// loses the baked fire's warm cast (issue 1399 round 2: a Hegemony break bloomed rose-pink), so it reads as soot
+		float lum = dot(ALBEDO, vec3(0.3, 0.55, 0.15));
+		vec3 ramp = mix(fac_mid, fac_fire.rgb, smoothstep(0.12, 1.1, lum)) * lum * 1.5;
+		vec2 c = UV - 0.5;
+		vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
+		ramp = mix(ramp, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
+		vec3 soot = mix(ALBEDO, vec3(lum), 0.85);
+		ALBEDO = mix(ALBEDO, mix(soot, ramp, keep), fac_fire.a);
+	}
 #endif
 	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
@@ -177,6 +197,7 @@ void fragment() {
 	soft = clamp((-hit.z / hit.w - particle_depth) / max(extent * 0.1, 0.05), 0.0, 1.0);
 #endif
 	ALPHA = gas.a * fade * soft * (elapsed < lifetime ? 1.0 : 0.0);
+	ALPHA *= mix(fac_smoke, 1.0, keep);
 }
 """
 
@@ -1247,6 +1268,9 @@ uniform float regen_t = -100.0;
 // for dev comparisons; brk_low gives the shear its cheaper crack network
 uniform int brk_look = 2;
 uniform bool brk_low = false;
+// issue 1239: the collapse's close time (COLLAPSE_CLOSE, fx_ship.gd) and how long the break plays in all (1.6 s, longer for a slower close)
+uniform float brk_close = 1.225;
+uniform float brk_win = 1.6;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
@@ -1370,7 +1394,7 @@ void fragment() {
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
 	float ba = scene_t - brk_t;
-	bool breaking = ba > 0.0 && ba < 1.6;
+	bool breaking = ba > 0.0 && ba < brk_win;
 	// issue 1078, shear: one connected crack network over the whole shield (cell borders join up, so a crack never
 	// ends in open field), coarser than any faction's pattern so it reads as a tear, not as the pattern lighting up
 	// (r1: the Navy's tear along its own hex lattice looked like today's look). x = distance to the crack, y = plate.
@@ -1401,7 +1425,7 @@ void fragment() {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
-		float life = 1.0 - ba / 1.6;
+		float life = 1.0 - ba / brk_win;
 		float calm = mix(1.0, 0.3, fx_calm);
 		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.4 * calm;
 		float alive = 1.0;
@@ -1425,7 +1449,7 @@ void fragment() {
 			add += ((lead + glow) * (0.65 + 0.35 * pat) + (sh + flare) * pat) * stut;
 			hot += lead * 0.5;
 		} else {
-			// collapse: one even flash, then a single clean band closes from the far side into the breach in 0.7 s
+			// collapse: one even flash, then a single clean band closes from the far side into the breach in 1.225 s
 			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
 			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
 			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band
@@ -1434,12 +1458,12 @@ void fragment() {
 			// knot) is dropped (their wider band and knot stay); Artoo on PR 1170: the band is not a sprite flash, so the flash budget never saw it
 			float gw = style == 3 ? 1.0 : 0.0;
 			float flash = exp(-ba * 12.0) * 0.3 * calm;
-			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
+			float bp = 1.0 - clamp((ba - 0.08) / max(brk_close - 0.08, 0.05), 0.0, 1.0);
 			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
 			float bd = (dist - bp) / bw;
 			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
 			alive = smoothstep(bp + bw, bp - bw, dist);
-			float kt = ba - 0.7;
+			float kt = ba - brk_close;
 			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
 			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
 			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
@@ -1451,7 +1475,7 @@ void fragment() {
 		vec3 un = normalize(vL);
 		float facing = dot(un, normalize(brk_dir));
 		float dist = (1.0 - facing) * 0.5;
-		float life = 1.0 - ba / 1.6;
+		float life = 1.0 - ba / brk_win;
 		float calm = mix(1.0, 0.3, fx_calm);
 		// a local flare where it gave way (not the whole hemisphere)
 		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.6 * calm;

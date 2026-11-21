@@ -32,6 +32,8 @@ func quit_clean(code := 0) -> void:
 		battle.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if music != null and is_instance_valid(music) and music.has_method("release"):
+		music.release()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
@@ -449,8 +451,11 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
 	b.in_campaign = true
+	if opts.get("on_round") is Callable:
+		b.round_save_cb = opts["on_round"]   # issue 1451: the campaign saves each round start
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
+		b.args["stop"] = stop_of(a, campaign.C.RUN)   # issue 1272: rival, boss and wreck-field stops change the sky
 		# Issue 1271 (replaces R78 Q18's "fifth run only"): from the fifth run on, the final boss gets dawn.
 		# Keep this visual flag out of the rules and saves.
 		b.args["finale"] = finale_for_runs(int(campaign.C.META.get("stats", {}).get("runs", 0)))
@@ -597,3 +602,18 @@ func _bot_campaign(seed: int) -> Dictionary:
 # flagship page takes it away), so 5 is the fifth run, as under R78 Q18. Dawn now plays on every run from there.
 static func finale_for_runs(runs: int) -> bool:
 	return runs >= 5
+
+
+# Issue 1272: what the backdrop needs to know about this fight stop (visual only; never the rules or saves).
+static func stop_of(a, run: Dictionary) -> Dictionary:
+	var cfg = a.R.B.get("cfg") if a != null and a.R.B is Dictionary else null
+	if not cfg is Dictionary: return {}
+	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
+	return {"kind": str(cfg.get("kind", "")), "fac": str(cfg.get("fac", "")), "sector_fac": str(map.get("fac", "")),
+		"node": _id_text(cfg.get("node", "")) + "|" + _id_text(run.get("sector", ""))}
+
+
+# a saved run reads numbers back as floats: 3 and 3.0 must give the same stop
+static func _id_text(v) -> String:
+	if v is float and v == floorf(v): return str(int(v))
+	return str(v)

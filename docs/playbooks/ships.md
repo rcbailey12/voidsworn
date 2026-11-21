@@ -72,16 +72,19 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    live in `CONCEPT_REGISTERS` in the stack: saturated brick rust, brighter worn metal and the concept's violet strength.
    Near-white is exposed metal and small scrapes; R274's larger grey trophy plates remain dark salvaged metal, at R252 size.
    Plate geometry and tiling scale are unchanged in this run; report the painted-output plate measure for review.
-   **The Glasswright finish** (R337, Ryan Nov 18 and 19 2026: "glass like, so almost reflective", restart CD5 from the
-   concept; issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
-   reflective pearl ribbons, many and fine, each a bundle of strands with silver lines and a colour shift, over a core of
-   emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot in the middle, dark at the lead edge);
-   ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and glowing, and optics are small glints,
-   never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the concept first. Never see-through: every intact-hull
-   surface has transmission 0 and the interior shows only in the break-up. No wear. The bake marks it authored_look so the game
-   keeps its values (R329).
+   **The Glasswright finish** (R337, Ryan Nov 18 and 19 2026: "glass like, so almost reflective", restart CD5 from the concept;
+   issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
+   reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
+   lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
+   in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
+   glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
+   concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
+   No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
+   hulls (`godot/render/look.gd` READ ithar rim_light 0, issue 1315): its specular flared white on the pearl lips.
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
-   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of violet-white fire at its edge; all violet, no green on the hull (Ryan, Nov 20 2026,
+   issue 1419, replacing the green corona of Nov 10 and R237; the installed E11 to E14 keep the green until the stack is
+   repainted and rebaked, contrib/opus/plans/eclipse_1419.md). (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
    lift, divided by it (read from look.gd), never lavender or grey; (2) separation by structure, not noise (Ryan, Nov 13 2026
    11:06 CST, on the first E11 picture: "Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of
@@ -92,12 +95,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
    and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
    accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
-   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
-   and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
-   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
-   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
-   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
-   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   (3) the corona is light, not paint (Ryan, same message: "that green looks so plain
+   and stark, just like neon paint"; still binding in violet): the corona line on every shade rim is a faint ring of light, thin at rest,
+   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold violet-white at
+   its hottest (white-gold on the brightest arcs) and deeper violet where dim, in faction_looks.json's Eclipse colours. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows violet-white, white-hot
+   only at its very centre, reading at camera 170; never light pooled in hollows, ribs or sockets, and no green anywhere on the hull. Every light is drawn on one
    emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
    (4) engines are an eclipse ring of pale light round a
    black shade disc, in the game's Eclipse engine colour paled toward white, with shared brightness, tint, hot spots and
@@ -203,7 +206,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
    tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
    treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
-   later Sunward build.
+   later Sunward build. Second case: how bright the spire ember is lives only in the Sunward stack (`SPIRE` in
+   tools/blender/kits/voidsworn/stack.py), never in a ship's sheet; a change there reaches S8, S9, S10, SF3 and SB4 on their
+   next stage 5 rebake (Ryan, Nov 20 2026 13:43 UTC: "A bit brighter", applied to every Sunward ship, not one hull).
 15. **A build is not "in" until build\godot holds it (issue 1311, Board, Nov 20 2026).** A ship job installs only into its
    own clone. After Ryan says yes to its pictures, the Board queues `tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA`
    with the full commit from the job's receipt and the full glb sha256 from its export's CODE_export.json. It refuses a
@@ -268,6 +273,11 @@ review sheets in the job's shots folder. No test export is installed into the li
 - A ship is judged at the battle camera first (camera 170 on the look bench): one silhouette, one main colour, one accent.
 
 ## 2. Inputs (what must exist before a hull is started)
+
+The fleet list (docs/ship_pipeline/FLEET.md, made from docs/ship_pipeline/fleet.json; issue 1421) names, for every ship the
+game draws, the concept Ryan approved, its ruling, its job and whether the new build is installed. Read its row before
+writing a concept or build brief, and copy its "Approved pick" line into the brief. A new pick is added to fleet.json in
+the same pull request that records it.
 
 1. Ryan's picked direction for the faction (docs/playbooks/factions.md, "The concept redo"; FINDINGS has each pick).
 2. A fleet brief for the faction: one written feature table per ship (class, length, beam, weapon slots from data.js, engines,
@@ -481,6 +491,7 @@ Deliver to: tools/recipe/ships/SHIP.json, tools/blender/kits/FACTION/ (only what
 Branch: opus/issue-<number>
 Effort: one Opus worker; GPU jobs through the PC queue
 Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
+Approved pick: <the line from `node contrib/opus/tools/fleet_list.js --pick "FACTION|Class"`: the concept Ryan approved, with its ruling>
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
@@ -500,3 +511,13 @@ An Opus worker builds every ship model and runs the recipe (R205, RULEBOOK 2.6);
 shape no ship. Muse draws. DeepSeek does well-specified tool repairs (a check, a table, a file format). The Board
 writes the fleet briefs, accepts sheets, looks at every sweep and puts one image in front of Ryan. Hand a picture back to the
 Board whenever a gate passes but the ship looks wrong: a pass on the numbers is not a pass on the look.
+
+## 9. Solid objects near ships share the hull finish (Ryan, Nov 20 2026, R362)
+
+Anything solid that flies or floats near a ship is built from the ship part kits and gets the hull finish: the faction's
+paint, the LOOK.hull brightness band (look.gd READ) and the rim light (look_rim.gd), at a detail level that holds up
+beside the hulls at c26. That covers torpedoes and rockets (the torpedo redesign thread), strike craft (fighters,
+bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new of the same kind. Glowing effects
+(beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
+sat beside fully painted hulls and made the whole scene look cheaper (inventory:
+/mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.

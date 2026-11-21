@@ -1,0 +1,2 @@
+[player-path] completed three battles
+rc=0

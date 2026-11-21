@@ -33,6 +33,11 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+# Issue 1451 (R378): the battle in progress, saved at the start of its newest round: {"node", "round", "fp", "size", "data"} (data:
+# the rules snapshot, base64), or null. It belongs with SAVED_RUN (the last checkpoint, usually the map before the stop; kept as the fallback) and clears
+# when the battle is settled. Continue resumes that round when the snapshot fits the game's rules (battle_restore).
+var saved_battle = null
+var battle_restore: Callable = Callable()   # external mode: battle_restore(saved_battle) -> {"B", "run"} or {"error"}
 var saved_in_yard := true   # issue 1175: the save was taken inside a shipyard (Continue reopens it); old saves count as in the yard
 var B = null            # the battle in progress (the stub's, or the rules' B handed back by finish_battle)
 var UID := 1
@@ -209,9 +214,10 @@ func cinderOpen() -> bool:
 # the price of a captured hull at the Cinder Line yards: the Crusade's own ladder (base cost before the owner's faction
 # pricing, times the Crusade class price), then the yard price multiplier, like any other hull for sale there.
 func capturedHullPrice(t: Dictionary) -> float:
-	var base = float(t["cost0"]) if t.get("cost0") != null else float(t["cost"])
+	var base = float(t["cost0"]) if t.get("cost0") != null else (float(t["val"]) if t.get("val") != null else float(t["cost"]))   # issue 1354: val is the price before the shop discount
 	var ladder = (TB.FAC_PRICE["voidsworn"].get(t.get("cls")) if jt(TB.FAC_PRICE.get("voidsworn")) else null)
-	return jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * priceMult())
+	var disc = float(TB.SHOP_DISCOUNT["voidsworn"])   # issue 1384: the Crusade's own hulls carry the shop discount, so a captured hull does too
+	return jsround(jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * disc / 5.0) * 5.0 * priceMult())
 # R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock (legacyHullOn, so
 # the playtest switch keeps working), so a captured battleship waits for u_battleship like the Cathedral.
 func cinderPool() -> Array:
@@ -434,11 +440,15 @@ func _enc(v):
 	if v is float and (v != floor(v) or absf(v) >= 9007199254740992.0): return "#d:" + JSM.hex64(v)
 	return v
 func save_text() -> String:
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log}))
+	# storyGuard (issue 1338): saves from this build on never need the old story-buff repair (_restore_legacy_story_modifier)
+	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
+		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}))
+var last_save_ok := true   # issue 1451: did the newest persist_save reach the disk (true while saves are off)
 func persist_save(meta_only: bool = false) -> void:
 	var now = now_ms()
 	META["updated"] = now
 	if not meta_only: META["runAt"] = now
+	last_save_ok = true
 	if not persist_on: return
 	var data = save_text()
 	# Atomic: the new save is written whole to a temp file, flushed and checked, then renamed over the old one, so a crash or a
@@ -447,7 +457,8 @@ func persist_save(meta_only: bool = false) -> void:
 		var prev = FileAccess.get_file_as_string(save_path)
 		if prev != data and saneSave(_dec(_json_quiet(prev))):
 			if not _write_atomic(save_path + ".bak", prev): push_warning("campaign: could not refresh the backup save")
-	if not _write_atomic(save_path, data): toast("This computer could not save the game (is the disk full?).")
+	if not _write_atomic(save_path, data):
+		last_save_ok = false; toast("This computer could not save the game (is the disk full?).")
 func _write_atomic(path: String, text: String) -> bool:
 	var tmp = path + ".tmp"
 	var f = FileAccess.open(tmp, FileAccess.WRITE)
@@ -486,6 +497,10 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	var sb = o.get("battle")
+	saved_battle = sb if (SAVED_RUN != null and sb is Dictionary and sb.get("data") is String and sb.get("node") is String and sb.get("fp") is String) else null
+	# Issue 1338: only a save written before storyGuard may be missing a story buff the old mid-battle checkpoint erased
+	if SAVED_RUN != null and o.get("storyGuard") != true: SAVED_RUN["storyLegacy"] = true
 	# Older builds showed the line on every Sector III win. Use the saved log when it can prove it already appeared.
 	if SAVED_RUN != null and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
 		var started: float = float(z0(SAVED_RUN.get("t0")))
@@ -752,11 +767,16 @@ func flagshipOf() -> Variant:
 	return null
 func shipValue(tpl) -> float:
 	var H = HULLS.get(tpl)
+	if H != null and (H.get("val") is int or H.get("val") is float): return float(H["val"])   # issue 1354: shop discounts do not lower prize, strip or scrap values
 	if H != null and (H.get("cost") is int or H.get("cost") is float): return float(H["cost"])
 	return 40.0 * float(or_(H.get("cp") if H != null else null, 1))
 func prizeScrap(tpl) -> float: return jsround(shipValue(tpl) * 0.35)
 # issue 1290: what decommissioning pays; a ship regrown from an Eclipse core pays nothing until it has fought (core.js sellValue)
-func sellValue(s) -> float: return 0.0 if s != null and s.get("regrown") else prizeScrap(s["tpl"])
+# issue 1384: after it has fought, a regrown ship pays at most what its regrow cost (corePaid), so regrow, fight, sell never profits
+func sellValue(s) -> float:
+	if s != null and s.get("regrown"): return 0.0
+	if s != null and s.get("corePaid") != null: return minf(float(s["corePaid"]), prizeScrap(s["tpl"]))
+	return prizeScrap(s["tpl"])
 func ensureFlagship() -> Variant:
 	if RUN == null or RUN.get("fleet") == null or RUN["fleet"].size() == 0: return null
 	if flagshipOf() == null:
@@ -1364,6 +1384,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
+	if B == null: saved_battle = null   # a new checkpoint outside a battle replaces any battle save
 	saved_in_yard = page.get("kind") == "shipyard" or (page.get("kind") == "fleet" and page.get("data") is Dictionary and page["data"].get("back") == "shipyard")
 	persist_save()
 func availableNodes() -> Array:
@@ -1473,6 +1494,7 @@ func act(name: String, arg = "") -> void:
 		"sellShip": ACT_sellShip(a)
 		"sellConfirm": ACT_sellConfirm(a)
 		"eventChoice": ACT_eventChoice(a)
+		"eventBack": ACT_eventBack()
 		"battle": ACT_battle(a)
 		"c3continue": ACT_c3continue()
 		"c3retreat": ACT_c3retreat()
@@ -1504,13 +1526,16 @@ func titleScreen() -> void:
 	show_page("title", {"saved": SAVED_RUN != null, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
 func ACT_continueRun() -> void:
 	if SAVED_RUN == null: return
+	if saved_battle != null and _resume_saved_battle(): return
 	RUN = clone(SAVED_RUN)
 	ensureFlagship()
 	if RUN.get("reward") != null:
 		mapScreen(); resumeReward()
 	elif not _resume_node():
 		mapScreen()
+	if SAVED_RUN != null: SAVED_RUN.erase("storyLegacy")   # issue 1338: the old-save repair gets this one Continue only
 	if RUN == null: return
+	RUN.erase("storyLegacy")
 	var rep = (RUN["_repairs"] as Array).size() if RUN.get("_repairs") is Array else 0
 	var lost = int(z0(RUN.get("_shipsDropped")))
 	if rep > 0:
@@ -1787,7 +1812,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["carry"]["inheritance"] = inheritanceSummary(RUN)
-	RUN["over"] = true; SAVED_RUN = null; persist_save()
+	RUN["over"] = true; SAVED_RUN = null; saved_battle = null; persist_save()
 	var nf = nextFacPick() if victory else null
 	var acts = endActions(RUN, nf)
 	var mins = null
@@ -1856,6 +1881,50 @@ func _enter_battle_node(n: Dictionary) -> void:
 		toast("The Hegemony escort you robbed has found you.")
 	battleScreen({"kind": kind, "fac": fac, "col": n["col"], "node": n["id"]})
 
+# Issue 1451: Continue into the round the battle was saved at. False (and the save is dropped) when it cannot be restored: Continue
+# then loads the last checkpoint (usually the map before the stop), as it did before round saves.
+func _resume_saved_battle() -> bool:
+	var sb = saved_battle
+	var why = ""
+	if battle_mode != "external" or not battle_restore.is_valid(): why = "no battle scene"
+	# The snapshot carries its own run (taken at the round start), so it does not need the checkpoint to point at the fight: the
+	# checkpoint is usually the map before the stop was entered (Artoo on PR 1486). It must belong to the same run, and any newer
+	# checkpoint outside a battle has already dropped it (saveRun).
+	elif str(SAVED_RUN.get("t0")) != str(sb.get("t0")) or SAVED_RUN.get("reward") != null: why = "the save belongs to another run"
+	var res = {}
+	if why == "":
+		res = battle_restore.call(sb)
+		if not (res is Dictionary) or res.has("error") or not (res.get("B") is Dictionary) or not (res.get("run") is Dictionary): why = str(res.get("error", "restore failed")) if res is Dictionary else "restore failed"
+	if why != "":
+		saved_battle = null
+		push_warning("campaign: the round save was not used (%s); back to the last checkpoint" % why)
+		if why == "the snapshot is from other rules": toast("The game was updated since this save, so the run goes back to its last checkpoint before this fight.")
+		return false
+	RUN = res["run"]; B = res["B"]
+	var c = B["cfg"]
+	tel("battle_resume", {"round": B["round"], "kind": c.get("kind"), "fac": c.get("fac")})
+	var acts = []
+	A(acts, "battle", "win"); A(acts, "battle", "partial"); A(acts, "battle", "loss")
+	if c.get("kind") != "boss": A(acts, "c3retreat")
+	show_page("battle", {"cfg": c}, acts)
+	pending_battle = c; battle_requested.emit()
+	return true
+# Issue 1451: the battle scene's round start has settled; write the round's snapshot beside the last checkpoint.
+# snap: battle_api take_round_snapshot(). True when it is on disk (or saves are off).
+func save_battle_round(snap: Dictionary) -> bool:
+	if snap.is_empty() or RUN == null or B == null or SAVED_RUN == null or jt(B.get("over")) or jt(B.get("finished")) or not jt(RUN.get("curNode")): return false
+	var prev = saved_battle
+	saved_battle = {"node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
+	persist_save()
+	if not last_save_ok: saved_battle = prev   # keep memory equal to the disk: a later write never jumps to a round the player was not told about
+	return last_save_ok
+# Issue 1451: Save and quit to title from the battle menu. The newest round save stays on disk (if none was written, the last
+# checkpoint is still there, so nothing is lost and nothing is settled); the run is left, not ended.
+func leave_battle_saved() -> void:
+	pending_battle = null
+	persist_save()
+	B = null
+	titleScreen()
 func _resume_node() -> bool:
 	var n = findNode(RUN.get("pos"))
 	if n == null: return false
@@ -2016,12 +2085,18 @@ func ACT_lateBuy(id: String) -> void:
 	tel("shop", {"k": "late", "id": id, "cost": o["cost"]}); shipyardScreen(yard_node)
 # issue 1178: Eclipse core recovery (twin of campaign_run.js coreCost / ACT.restoreCore)
 func coreCost(tpl) -> float: return jsround(shipValue(tpl) * float(TB["LATE_SHOP"]["core"]) * priceMult())
+# issue 1384: after a battle a regrown ship loses its sell-for-0 mark but keeps the cap; a ship regrown in a save from before
+# issue 1384 has no corePaid, so it takes today's regrow price as its cap before the mark is cleared (campaign_run.js settleRegrown)
+func settleRegrown() -> void:
+	for sh in RUN["fleet"]:
+		if sh.get("regrown") and sh.get("corePaid") == null: sh["corePaid"] = coreCost(sh["tpl"])
+		sh.erase("regrown")
 func ACT_restoreCore(a: String) -> void:
 	var cs = or_(RUN.get("cores"), []); var i = int(a)
 	if i < 0 or i >= cs.size() or not HULLS.has(cs[i]): return
 	var tpl = cs[i]; var c = coreCost(tpl)
 	if float(RUN["credits"]) < c or fleetCP() + float(or_(HULLS[tpl].get("cp"), 1)) > float(RUN["cpCap"]): return
-	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); s["regrown"] = true; RUN["fleet"].append(s)
+	RUN["credits"] = float(RUN["credits"]) - c; cs.remove_at(i); var s = newShip(tpl); s["regrown"] = true; s["corePaid"] = c; RUN["fleet"].append(s)
 	tel("shop", {"k": "core", "id": tpl, "cost": c}); toast(ship_with_article(s["name"], true) + " wakes from its core."); shipyardScreen(yard_node)
 func shipyardScreen(n) -> void:
 	yard_node = n
@@ -2116,6 +2191,7 @@ func ACT_sellConfirm(uid: String) -> void:
 	if i < 0: return
 	var s = RUN["fleet"][i]
 	RUN["inventory"].append_array(s["mods"]); hullPay(-sellValue(s)); RUN["fleet"].remove_at(i)
+	changeFleet(func(): ensureFlagship())   # issue 1384: selling the flagship hands the Aspect on at once (campaign_run.js sellConfirm)
 	close_modal(); shipyardScreen(yard_node)
 func _repair_stop_options(kind: String) -> Array:
 	var drydock := kind == "drydock"
@@ -2230,6 +2306,18 @@ func show_event(ev: Dictionary) -> void:
 	for i in range(cur_event["o"].size()):
 		A(acts, "eventChoice", i, eventOptOk(cur_event["o"][i]))
 	show_modal("event", {"ev": cur_event}, acts)
+# issue 1449: a relic trade never takes salvage silently. With one piece the choice names it; with two or more the player picks first.
+func relicTradeNote(o) -> String:
+	var r = o.get("r") if o is Dictionary else null
+	if not (r is Dictionary) or not jt(r.get("payRelic")) or RUN["relics"].is_empty(): return ""
+	return (" You give up " + relicName(RUN["relics"][0]) + ".") if RUN["relics"].size() == 1 else " You choose which piece."
+func relic_pick_modal(i: int) -> void:
+	var acts = []
+	for j in range(RUN["relics"].size()): A(acts, "eventChoice", str(i) + ":" + str(j))
+	A(acts, "eventBack")
+	show_modal("relic_pick", {"ev": cur_event, "i": i, "relics": RUN["relics"].duplicate()}, acts)
+func ACT_eventBack() -> void:
+	if cur_event is Dictionary and not cur_event.is_empty(): show_event(cur_event)
 # B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
 # R1 (EVT-1): a flag gate can name the choices that open it (flagK), not only that the event happened
 func flagIs(id, ks) -> bool:
@@ -2995,7 +3083,8 @@ func applyOutcome(r) -> Array:
 			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(r["payXp"])); out.append(str(f["cap"]["name"]) + " loses " + numstr(r["payXp"]) + " experience.")
 	if jt(r.get("payRelic")):
 		if RUN["relics"].size() > 0:
-			var rl = RUN["relics"].pop_back(); changeFleet(_noop); out.append("You give up " + relicName(rl) + ".")
+			var at: int = int(r["payRelicAt"]) if r.get("payRelicAt") != null and int(r["payRelicAt"]) >= 0 and int(r["payRelicAt"]) < RUN["relics"].size() else RUN["relics"].size() - 1
+			var rl = RUN["relics"].pop_at(at); changeFleet(_noop); out.append("You give up " + relicName(rl) + ".")
 	if jt(r.get("repairOne")):
 		var cands = RUN["fleet"]
 		if jt(upgraded_uid) and cands.size() > 1: cands = cands.filter(func(sh): return sh.get("uid") != upgraded_uid)
@@ -3042,6 +3131,12 @@ func applyOutcome(r) -> Array:
 			out.append("Fleet damage " + ("+10%" if jt(r.get("dmgPctUp")) else "-10%") + " for the next battle only.")
 	if jt(r.get("core")):
 		var p = TB.BEAT3_REWARDS.core.get(RUN["fac"])
+		if p != null and RUN.get("eatenCore") != null and RUN["eatenCore"] == p:   # issue 1384: an eaten core offers nothing, so another patron speaks (campaign_run.js Beat 3)
+			var alt = null
+			for q in or_(RUN.get("patrons"), []):
+				if q != p:
+					alt = q; break
+			if alt != null: p = alt
 		if p != null:
 			RUN["reward"] = {"kind": "story", "rw": {"k": "boon", "p": p}, "stage": "pick", "relics": [], "wrecks": [], "prizes": [], "boonOffer": null, "modOffer": null}
 			out.append("1 free protocol offer from " + str(PATRONS[p]["short"]) + ". Choose 1 protocol or decline for " + numstr(boonDeclineCred()) + " credits.")
@@ -3056,7 +3151,10 @@ func _story_modifiers(outcome: Dictionary, mods: Dictionary) -> Dictionary:
 	return mods
 
 func _restore_legacy_story_modifier() -> void:
-	if jt(RUN.get("storyNext")) or int(RUN["sector"]) != 3: return
+	# Issue 1338: a spent buff cannot be told from an erased one, so only a save from before storyGuard is repaired, and only once
+	var legacy = RUN.get("storyLegacy") == true
+	RUN.erase("storyLegacy")
+	if not legacy or jt(RUN.get("storyNext")) or int(RUN["sector"]) != 3: return
 	# The old mid-battle checkpoint erased the modifier but retained the story choice.
 	var beat = TB.STORY_BEAT3[RUN["fac"]]
 	var choice = str(RUN["flags"].get(beat["id"], ""))
@@ -3094,13 +3192,20 @@ func _arc_played(beat: int) -> bool:
 		if str(k).begins_with(pre): return true
 	return false
 func ACT_eventChoice(a: String) -> void:
-	var i = int(a)
+	var parts := a.split(":")
+	var i = int(parts[0])
+	var j := int(parts[1]) if parts.size() > 1 else -1
 	var o = cur_event["o"][i] if (i >= 0 and i < cur_event["o"].size()) else null
 	if o == null or not eventOptOk(o): return
+	var paying: bool = o.get("r") is Dictionary and jt(o["r"].get("payRelic"))
+	if paying and RUN["relics"].size() > 1 and not (j >= 0 and j < RUN["relics"].size()):
+		relic_pick_modal(i); return   # issue 1449: pick the salvage first
 	eventFlags(cur_event, o, i)
 	if jt(cur_event.get("arc")):
 		_arc_choice(o, i); return
 	var r = o["r"]
+	if paying and j >= 0:
+		r = r.duplicate(); r["payRelicAt"] = j
 	if r is Dictionary and jt(r.get("fight")):
 		var n = findNode(RUN["curNode"])
 		if n != null and jt(n.get("nemCleared")): saveRun()
@@ -3199,7 +3304,7 @@ func factionWinEcon(credits: float, summary: Dictionary) -> Dictionary:
 func rewardFlow(summary: Dictionary) -> void:
 	var cfg = summary["cfg"]; var s = float(RUN["sector"]); var rf = runFx()
 	RUN["stats"]["battles"] = float(RUN["stats"]["battles"]) + 1
-	for sh in RUN["fleet"]: sh.erase("regrown")   # issue 1290: a regrown ship that has fought decommissions like any other
+	settleRegrown()   # issue 1290: a regrown ship that has fought decommissions like any other (capped since issue 1384)
 	if cfg["kind"] == "elite": RUN["stats"]["elites"] = float(RUN["stats"]["elites"]) + 1
 	if cfg["kind"] == "boss": RUN["stats"]["bosses"] = float(RUN["stats"]["bosses"]) + 1
 	var kindMult = 3.0 if cfg["kind"] == "boss" else (1.6 if cfg["kind"] == "elite" else 1.0)
@@ -3394,6 +3499,10 @@ func ACT_rewardNext() -> void:
 func ACT_takeMod(m: String) -> void:
 	RUN["inventory"].append(m); tel("reward_pick", {"k": "mod", "id": m}); toast(modName(m) + " stowed in the hold."); close_modal(); relicStep()
 func boonStep(p, minR) -> void:
+	if RUN != null and RUN.get("eatenCore") != null and RUN["eatenCore"] == p:   # issue 1384: campaign_run.js boonStep remaps an eaten core
+		for q in or_(RUN.get("patrons"), []):
+			if q != p:
+				p = q; break
 	if not PATRONS.has(p):
 		relicStep(); return
 	var offer = RUN["reward"]["boonOffer"] if (RUN.get("reward") != null and RUN["reward"].get("boonOffer") != null) else rollBoonOffer(p, minR)
@@ -3585,7 +3694,7 @@ func teachingBattle(cfg: Dictionary) -> Dictionary:
 	cfg = cfg.duplicate(); cfg["runBattle"] = n; cfg["teachingGate"] = true
 	if float(RUN["sector"]) != 1.0 or n > 2 or cfg.get("kind") == "boss": return cfg
 	cfg["teachingBattle"] = n; cfg["fac"] = "hegemony" if n == 1 else "corsair"
-	if n == 1: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)
+	if n == 1 or n == 2: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)   # R366 (issue 1393): Battle 2 gets Battle 1's open strip; Corsairs and reinforcements stay
 	return cfg
 func saveTeachingHistory() -> void:
 	if RUN == null or RUN.get("teachingGate") != true: return
@@ -3626,9 +3735,10 @@ func battleScreen(cfg: Dictionary) -> void:
 	if jt(RUN.get("verbNext")) and not jt(c.get("verb")): c["verb"] = RUN["verbNext"]   # B4: a next-battle faction verb
 	if jt(RUN.get("storyNext")): c["storyMods"] = RUN["storyNext"].duplicate()
 	var ext = battle_mode == "external" and battle_setup.is_valid()
-	start_battle(c)
-	# Spend the modifier for this attempt, but leave the playable pre-fight save alone until the result is paid.
+	# Spend the modifier for this attempt, but leave the playable pre-fight save alone until the result is paid. Spent before
+	# the battle is set up (the rules never read it), so the round 1 save (issue 1451) already has it spent.
 	if jt(RUN.get("storyNext")): RUN["storyNext"] = null
+	start_battle(c)
 	B["campaign"] = true
 	if not ext:   # external battles: the rules roll the mid-battle event themselves (rules/API.md, cfg.campaign), in the game's order
 		var sc = sectorCond()
@@ -3688,6 +3798,7 @@ func _kinds(ws: Array) -> Array:
 func finishBattle(result: String) -> void:
 	if B == null or jt(B.get("finished")): return
 	B["finished"] = true
+	saved_battle = null   # issue 1451: the fight is being settled; its round save goes with the next checkpoint
 	result = BattleAPI.settled_result(result, B)
 	B["campaignResult"] = result
 	if RUN.get("teachingGate") == true and B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true

@@ -63,6 +63,8 @@ class and faction (issue 363), never from a constant.
   ribs as on the concepts; the fins themselves never glow. Why: Ryan, Nov 19 2026 (R331), on the Sunward concepts: "can we
   scale down the giant radiator/orange towers on each ship a bit too?"; S8 first (issue 1158), then Warden, Vigil, Harrow,
   Hearth and Bastion (R333). Ryan, Nov 20 2026, on the Warden's lit fins reading as copper: "fix ember glow" (issue 1156).
+  The ember is bright: the whole core sits near the tip's level (stack.py SPIRE, root .70 of the tip), the tip still under
+  the 0.8 glow threshold. Why: Ryan, Nov 20 2026 13:43 UTC, on S8 in game beside a brighter mock-up: "A bit brighter".
 - **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed
@@ -156,6 +158,11 @@ ships catch, store and release light.
 
 - **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
   collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
+- **A small elite fleet, never a swarm (Ryan, Nov 20, issue 1298).** "Glasswrights aren't supposed to be a swarm faction like
+  chorus or even hullbreakers. A little more elite." Few ships, each worth more: balance them with more hull on the
+  four fleet hulls (sliver, lancet, prism, aperture; player and enemy copies alike, "so it's consistent"), not with cheaper
+  or more numerous ships. The boss, The Unfinished, is not a fleet hull and keeps its own hull (470). They stay
+  glassy: no armour added, evasion and shields still carry them.
 - **First rule, ahead of any shape rule (R192).** Ryan, Nov 11: "It doesn't match with how I envision the glasswrights being
   artistic, thoughtful in creation and looking to create beauty with function, even in these warships." Every structural
   part is shaped with care and is also the ornament; the weapons are the centrepieces and must make sense.
@@ -178,36 +185,40 @@ ships catch, store and release light.
 
 ## Eclipse (`deathless`)
 
-Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships. I like the green
-glow but it should be on brand with eclipse". This overrides the lore bible's colour line for ships (white-gold and
-violet-white): the green stays, as the light of an eclipse.
+Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships." His colour
+line that day ("I like the green glow but it should be on brand with eclipse") kept a green corona on the hulls. **Superseded
+Nov 20 2026 (issue 1419):** asked "the rim is written as green and the weapons as violet ... my pick is all violet, to match
+the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse is all violet: no green on the hulls.
 
-**In one line:** a black shade with a thin ring of green-white fire at its edge.
+**In one line:** a black shade with a thin ring of violet-white fire at its edge.
 
 - **Who they are (lore 7.1):** the Starwrights who uploaded. Machine bodies in a system they made dark, each with a small core
   of trapped light, all that is left of their sun.
-- **The green, on brand:** a real total eclipse shows a faint green ring in the sun's corona. That is the Eclipse green: a
-  thin, cold green-white line along the rim of every shade plate, and the trapped light core seen through gaps. Never a
-  pooled glow inside ribs or sockets, which reads as undead.
+- **The corona:** a thin, cold violet-white line along the rim of every shade plate, white-gold at its hottest arcs, and the
+  trapped light core seen through gaps, violet-white grading to violet. Never a pooled glow inside ribs or sockets, which
+  reads as undead.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring. The shade sits over the ship
   as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
   slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
-- **Colours:** dark violet-black plates, the green-white corona line, a small bright core. Engines and weapon bolts are
-  violet with a green weapon core, as godot/fx/faction_looks.json sets them (issue 1205 removed the all-green hull_table
-  FAC3D override; faction_looks.json is the one source).
+- **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
+  Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
+  file (issue 1205 removed the all-green hull_table FAC3D override). The only green left there is the Doom gun's
+  `weapon_core` (R263), a weapon ruling of its own, kept until Ryan says otherwise. The hull paint lives in
+  tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
+  the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
-  green like the concept, white-hot only at its very centre, and reads at camera 170.
+  violet-white (Nov 20, all violet), white-hot only at its very centre, and reads at camera 170.
 - **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
   or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
 - **Engines:** no flaming bells. An eclipse ring of pale violet light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
-  skulls, green pooled in hollows, flame.
+  skulls, any green on the hull, glow pooled in hollows, flame.
 - **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
@@ -222,9 +233,26 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
 - **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
   inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
-- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside. The C10 and C11 pictures came
-  out greyer; the colour is set in the build sheet's colour notes and the paint stage, not by more image rounds (R204; Ryan:
-  "we can fix color ourselves rather than get stuck in a loop with color fixes with image generation").
+- **Colours:** muddy olive-brown hide with dark red veins, pores and wrinkles (never maroon, never "red clay"), chitin a bone to
+  horn tone, bile yellow-green light from inside at the veil roots and bile slits. The colour lives in the shared Chorus paint
+  stack (tools/blender/kits/chorus/stack.py) and the build sheet's colour notes, not in more image rounds (R204; Ryan: "we can
+  fix color ourselves rather than get stuck in a loop with color fixes with image generation"). Veils are satin (roughness
+  0.6), not gloss, so they show no white hot spots.
+- **Body and armour (R349, Ryan Nov 20; C13 round G accepted in game Nov 20, PR 1308):** a full body of lumpy fused swellings,
+  deep folds and wrinkles grown into the skin (kit `body.field`), never a smooth tube with plates on top. Armour is grown
+  chitin almost everywhere (Ryan, Nov 20 4:18 PM CT: "cover the chorus ships in armor almost everywhere"): armadillo bands
+  that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
+  higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs; where a fitting cuts
+  a band, a half band still grows on its clear side (`fill`), so the shell hugs each fitting. Sacs and pods show dark veins and
+  only thin bile slits, never round lit windows or glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random
+  yellow circles on the pods ... looks odd").
+  Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
+  `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
+  the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
+  Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
+  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every Chorus ship is gated
+  by the stage 5 detail check unless its recipe says "surface_detail": false. Surface detail must read at
+  camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and

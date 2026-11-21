@@ -1136,8 +1136,14 @@ func _update_feel(delta: float) -> void:
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
-		camera.h_offset = _shake_off.x * unit * 10.0
-		camera.v_offset = _shake_off.y * unit * 10.0
+		var off: Vector2 = Vector2(_shake_off.x, _shake_off.y) * unit * 10.0
+		# issue 1460: the battle camera rig owns h_offset (screen_shift), so hand it the shake and let it add both; a plain
+		# Camera3D (test rigs) still takes the offsets directly
+		if "shake_offset" in camera:
+			camera.shake_offset = off
+		else:
+			camera.h_offset = off.x
+			camera.v_offset = off.y
 
 
 func _update_punch() -> void:
@@ -1174,8 +1180,9 @@ func _update_punch() -> void:
 # Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
 # in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
 # whatever environment the scene uses. A second dip during one is ignored.
-func dim_scene(t: float) -> void:
-	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
+# force: a faction whose own death dims the scene (R367, Eclipse), whatever the scene_dim option says.
+func dim_scene(t: float, force := false) -> void:
+	if (not scene_dim and not force) or reduce_flashing or _dim_t0 >= 0.0:
 		return
 	if camera == null or not is_instance_valid(camera):
 		return
@@ -1559,9 +1566,11 @@ func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictiona
 	return WEAP.volley_points(self, from, kind, to, opts)
 
 
-func shield_break(id: String, quad: int) -> void:
+# hit_lp (issue 1239): the breaking hit's point on the shield, in the shield's frame (a volley's "hit_pts"); INF aims
+# at the middle of the quadrant.
+func shield_break(id: String, quad: int, hit_lp := Vector3.INF) -> void:
 	if ships.has(id):
-		(ships[id] as SHIP).shield_break(self, quad)
+		(ships[id] as SHIP).shield_break(self, quad, hit_lp)
 
 
 func death(id: String, cause := "blast") -> float:
@@ -1677,23 +1686,6 @@ func command(id: String, _cmd := "") -> void:
 		(ships[id] as SHIP).pulse(self, 1.6)
 
 
-# Travelling torpedoes (B3): a lane during the player's turn, the torpedo parked in it, the strike next turn.
-func torp_lane(lane_id: String, attacker_id: String, to_point: Vector3, turns := 1) -> void:
-	WEAP.torp_lane(self, lane_id, attacker_id, to_point, turns)
-
-
-func torp_launch(lane_id: String) -> void:
-	WEAP.torp_launch(self, lane_id)
-
-
-func torp_strike(lane_id: String, target_id: String, hit := {}) -> Dictionary:
-	return WEAP.torp_strike(self, lane_id, target_id, hit)
-
-
-func torp_lane_clear(lane_id: String) -> void:
-	WEAP.torp_lane_clear(self, lane_id, true)
-
-
 func launch(carrier_id: String, squadron_id := "") -> void:
 	WEAP.launch(self, carrier_id, squadron_id)
 
@@ -1767,7 +1759,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0),
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
 	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
 	# Warm it too, or the first hurt sail compiles its pipeline in a fight.

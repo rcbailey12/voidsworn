@@ -176,7 +176,9 @@ ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.ui
 // R78 Q9: the price of a captured hull at the Cinder Line yards. It is sold off the Crusade's own ladder (the base
 // cost before the owner's faction pricing, times the Crusade class price), then the yard price multiplier applies,
 // so a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it.
-function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
+// issue 1384: the Crusade's own hulls carry the 5% shop discount (issue 1354), so a captured hull does too, or a Warden-sized
+// prize costs more than the Warden it stands in for
+function capturedHullPrice(t){ return Math.round(Math.round(Math.round((t.cost0!=null?t.cost0:t.val!=null?t.val:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*SHOP_DISCOUNT.voidsworn/5)*5*priceMult()); }
 // R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock, so a captured
 // battleship waits for u_battleship like the Cathedral, and likewise a carrier for u_carrier, a dreadnought for u_dread.
 function cinderPool(){ return CINDER_PRIZES.filter(h=>{ const cl=HULLS[h].cls; return cl==='Carrier'?!!META.unlocked.u_carrier:cl==='Battleship'?!!META.unlocked.u_battleship:cl==='Dreadnought'?!!META.unlocked.u_dread:true; }); }
@@ -213,8 +215,11 @@ ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) ret
 // issue 1178: Eclipse core recovery (1086 E-B). A win recovers the core of the most valuable ship you lost (one a battle); at a
 // shipyard the core and 20% of the hull's value regrow it at Mk I with no refits and full hull.
 function coreCost(tpl){ return Math.round(shipValue(tpl)*LATE_SHOP.core*priceMult()); }
+// issue 1384: after a battle a regrown ship loses its sell-for-0 mark but keeps the cap. A ship regrown in a save from before
+// issue 1384 has no corePaid, so it takes today's regrow price as its cap before the mark is cleared.
+function settleRegrown(){ RUN.fleet.forEach(sh=>{ if(sh.regrown&&sh.corePaid==null) sh.corePaid=coreCost(sh.tpl); delete sh.regrown; }); }
 ACT.restoreCore=i=>{ const cs=RUN.cores||[], tpl=cs[+i]; if(!tpl||!HULLS[tpl]) return; const c=coreCost(tpl); if(RUN.credits<c||fleetCP()+(HULLS[tpl].cp||1)>RUN.cpCap) return;
-  RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); s.regrown=true; RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
+  RUN.credits-=c; cs.splice(+i,1); const s=newShip(tpl); s.regrown=true; s.corePaid=c; RUN.fleet.push(s); try{ tel('shop',{k:'core',id:tpl,cost:c}); }catch(e){} toast(`The ${s.name} wakes from its core.`); shipyardScreen(yardNode); };
 let yardNode=null;
 function shipyardScreen(n){
   yardNode=n; const st=shipyardStock(n), pm=priceMult();
@@ -259,7 +264,7 @@ ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+d
 ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
 ACT.sellShip=uid=>{ if(RUN.fleet.length<=1) return; const s=RUN.fleet.find(x=>x.uid===uid);
   modal(`<h2>Decommission the ${esc(s.name)}?</h2><p class="muted">Its captain retires and its refits return to the hold. You receive ${sellValue(s)} ${hullWord()}.${s.regrown?' A regrown ship has nothing to strip until it has fought.':''}</p><div class="row"><button class="primary danger" data-act="sellConfirm" data-arg="${uid}">Decommission</button><button data-act="closeModal">Keep it</button></div>`); };
-ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); hullPay(-sellValue(s)); RUN.fleet.splice(i,1); closeModal(); shipyardScreen(yardNode); };
+ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); hullPay(-sellValue(s)); RUN.fleet.splice(i,1); changeFleet(ensureFlagship); closeModal(); shipyardScreen(yardNode); }; // issue 1384: selling the flagship hands the Aspect on at once
 
 // ---------- repair stops ----------
 function repairStopOptions(kind){
@@ -315,10 +320,18 @@ function eventScreen(n){
     if(fight){ battleScreen({kind:'elite',fac:fight.r.fight,col:n.col+1,node:n.id,eventRelic:true}); return; }
   }else ev=nextEvent();
   curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
-  mapScreen();
-  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
-    return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
+  mapScreen(); eventModal();
 }
+function eventModal(){
+  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
+    return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${esc(relicTradeNote(o))}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
+}
+// issue 1449: a relic trade never takes salvage silently. With one piece the choice names it; with two or more the player picks first.
+function relicTradeNote(o){ if(!(o.r&&o.r.payRelic)||!RUN.relics.length) return ''; return RUN.relics.length===1?` You give up ${relicName(RUN.relics[0])}.`:' You choose which piece.'; }
+function relicPickModal(i){
+  modal(`<h2>${esc(curEvent.t)}</h2><p>Which piece of salvage do you give up?</p>${RUN.relics.map((rl,j)=>`<button class="choice" data-act="eventChoice" data-arg="${i}:${j}"><b>${esc(relicName(rl))}</b><small>${esc(RELICS[rl].d)}</small></button>`).join('')}<button data-act="eventBack">Back</button>`);
+}
+ACT.eventBack=()=>{ if(curEvent){ mapScreen(); eventModal(); } };
 // R1 (EVT-1): a flag gate can name the choices that open it (flagK), not only that the event happened
 function flagIs(id,ks){ const v=RUN&&RUN.flags?RUN.flags[id]:null; return v!=null&&(!ks||ks.includes(v)); }
 // B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
@@ -576,7 +589,7 @@ function applyOutcome(r){
   // B4 outcome kinds: more currencies and the Nemesis
   if(r.payMod){ if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`The ${modName(m)} from the hold is used up.`); } }
   if(r.payXp){ const f=flagshipOf()||RUN.fleet[0]; if(f){ f.cap.xp=Math.max(RANK_XP[f.cap.rank]||0,f.cap.xp-r.payXp); out.push(`${f.cap.name} loses ${r.payXp} experience.`); } }
-  if(r.payRelic){ if(RUN.relics.length){ const rl=RUN.relics.splice(RUN.relics.length-1,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
+  if(r.payRelic){ if(RUN.relics.length){ const at=r.payRelicAt>=0&&r.payRelicAt<RUN.relics.length?r.payRelicAt:RUN.relics.length-1, rl=RUN.relics.splice(at,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
   if(r.repairOne){ const candidates=upgradedUid&&RUN.fleet.length>1?RUN.fleet.filter(s=>s.uid!==upgradedUid):RUN.fleet; const s=[...candidates].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; if(s){ s.hp=derive(s).maxHp; out.push(`The ${s.name} is fully repaired.`); } }
   if(r.dmgBig){ const s=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(s){ const dm=Math.round(derive(s).maxHp*r.dmgBig); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); } }
   if(r.xpTop){ const s=[...RUN.fleet].sort((a,b)=>b.cap.xp-a.cap.xp)[0]; if(s){ addXp(s,r.xpTop); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpTop} experience.`); } }
@@ -624,15 +637,17 @@ function applyBeat3Outcome(r){
   if(r.dmgFlag){ const f=flagshipOf(); if(f){ const dmg=Math.round(derive(f).maxHp*r.dmgFlag); f.hp=Math.max(1,f.hp-dmg); out.push(`The ${f.name} takes ${dmg} hull damage.`); } }
   return out;
 }
-ACT.eventChoice=i=>{
-  const o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return; eventFlags(curEvent,o,+i);
+ACT.eventChoice=a=>{
+  const [i,j]=String(a).split(':'), o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return;
+  if(o.r&&o.r.payRelic&&RUN.relics.length>1&&!(j>=0&&+j<RUN.relics.length)){ relicPickModal(+i); return; } // issue 1449: pick the salvage first
+  eventFlags(curEvent,o,+i);
   if(curEvent.beat===3){
     const lines=applyBeat3Outcome(o.r); lines.unshift(o.tx);
     saveRun(); mapScreen();
     modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="${RUN.reward&&RUN.reward.kind==='story'?'storyCore':'closeModal'}">Continue</button>`); return;
   }
   if(o.r&&o.r.fight){ const n=findNode(RUN.curNode); if(n.nemCleared) saveRun(); closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:n.col+1,node:RUN.curNode,eventRelic:true}); return; }
-  const lines=applyOutcome(o.r);
+  const lines=applyOutcome(j!=null&&o.r.payRelic?{...o.r,payRelicAt:+j}:o.r);
   completeNode(); mapScreen();
   modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`);
 };
@@ -657,7 +672,7 @@ function factionWinEcon(credits,summary){
 function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
-  RUN.fleet.forEach(sh=>{ delete sh.regrown; }); // issue 1290: a regrown ship that has fought decommissions like any other
+  settleRegrown(); // issue 1290: a regrown ship that has fought decommissions like any other (capped since issue 1384)
   const kindMult=cfg.kind==='boss'?3:cfg.kind==='elite'?1.6:1;
   const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay

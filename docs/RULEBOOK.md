@@ -306,6 +306,20 @@ copy and its size. Why: repeated full copies filled C:, and deleting a supposedl
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
+Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, reused under the same checks as the Codex lanes.
+The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inherited by the whole work_issue.bat process
+tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
+Codex lane lock works the same way (Artoo on PR 1250). A work217 tools refresh takes every supported arm's slot lock,
+live and dry run, creating any that do not exist yet, so a fresh arm cannot start mid-refresh (Artoo on PR 1334). Logs and results stay in each run's own `out/` folder. The old
+`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
+`docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
+fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
+a profile change sets the previous checkout aside beside the slot. A left-out file that is on disk while Git marks it
+skip-worktree counts as possible hidden work and keeps the checkout. The janitor prunes older `repo-kept-*` copies beside
+each slot like a board lane's, and accepts a runner-managed sparse copy under the same checks. Why: a fresh Workhorse
+checkout per run and picture folders in code jobs drove up disk use (issue 1186).
+
+
 Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
@@ -662,7 +676,10 @@ curved, slowing trails. Why: "It looks so simple and like Microsoft paint." (R14
 6.10 **A bigger ship dies longer, not just larger; each faction breaks its own way; the flash core stays near white so a death
 always reads as a death.** Why: every faction died the same faint puff (deaths_and_hits.md). Set: Board, Nov 11, from Muse's
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
-docs/playbooks/deaths_and_hits.md.
+docs/playbooks/deaths_and_hits.md. R367 (Ryan, Nov 20 2026, decision card: "Full faction deaths"): each metal faction dies in its
+own colours and break as deaths_and_hits.md "How each faction dies" describes, replacing the shared orange fire; the colours
+come from faction_looks.json, the one faction colour file (Eclipse violet-white and white-gold, not green). Built for the
+Glasswrights and Eclipse in issue 1399; the Crusade, Hegemony and Hullbreakers follow.
 
 6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
 sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
@@ -785,8 +802,12 @@ Board. Id: screens-11.
 Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
 program-01.
 
-9.11 **Torpedoes show their hit chance and a visible flight with a clear hit or miss.** Why: his playtest call (R76). Set:
-Ryan, Nov 2. Id: R76b.
+9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
+show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
+defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
+and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
+the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
+Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
 
 9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
@@ -807,6 +828,23 @@ fits 831 design pixels tall (Larger at any 16:9 window) instead. Why: the start 
 built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "the title screen is SUPER basic,
 faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
 1217). Detail: docs/playbooks/screens.md section 2.
+
+9.16 **The game is mouse and keyboard only: no controller play in battle or on the map.** Menus may keep their arrow-key and
+Enter focus. Why: Neon's player audit (Nov 21) found menus promise controller focus while battle and map have no gamepad
+input; Ryan scoped the game to mouse and keyboard. Key rebinding, a colorblind mode and an in-game rules reference are later
+work (issue 1454). Set: Ryan (R380).
+
+9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
+an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
+(Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
+
+9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
+menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
+round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
+
+9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
+options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
+come as a design pack first (issue 1453). Set: Ryan (R377, R379).
 
 ## 10. The campaign map, space and the board
 
@@ -869,6 +907,28 @@ progression is ready to test.** Why: he tests the whole game, not the unlock pat
 Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
 20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
 
+11.7 **On a first run, Battle 2 opens on Battle 1's open strip** (open space, strip arena, line deployment, edge feature);
+its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 2 was a big difficulty jump before the first
+shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
+Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
+
+
+11.8 **Retreat returns the fleet to the stop it came from; the fight stays on the map, and the 10% hull cost stays.** A
+retreat never completes the node or clears a Nemesis meeting. Why: an independent audit (Nov 21, F-05) found a round-1
+retreat skipped any non-boss fight for 10% hull and could lock out Nemesis-held service stops. Both rules copies (3.1).
+Set: Ryan (R381, issue 1480).
+
+11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
+Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
+issue 1484).
+
+11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
+kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+(R383, issue 1479).
+
+11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
+checked against issue 1271. Set: Ryan (R384).
+
 ## 12. Automatic checks
 
 12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
@@ -881,6 +941,9 @@ Why: a fixture typed by hand let 137 checks pass while real play was broken (R15
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.
+A push that changes only .md files and pictures under docs/, contrib/ or the repo root (tools/ci/docs_only.js) runs the
+standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
+main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
 12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
 drifted (R155). Set: Board. Id: R155b.

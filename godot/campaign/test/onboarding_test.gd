@@ -141,6 +141,7 @@ func _run() -> void:
 	var retry = c.teachingBattle({"node": "a", "kind": "battle", "fac": "chorus"})
 	var second = c.teachingBattle({"node": "b", "kind": "battle", "fac": "chorus"})
 	check(c.nodeFaction({"id": "b", "type": "battle"}) == "corsair", "map preview names the second teaching enemy")
+	check(second.get("shape") == "open" and second.get("arena") == "strip" and second.get("dep") == "line" and second.get("edgeFeature") == true, "R366: Battle 2 opens on Battle 1's open strip")
 	check(first.fac == "hegemony" and first.edgeFeature and retry.teachingBattle == 1 and second.fac == "corsair", "campaign pins first two unique fights and preserves reload identity")
 	var event = c.rollBattleEvent(second, "flare")
 	check(c.rollBattleEvent(first, "reinf_ally") == null and event.k == "reinf_enemy" and event.warnR == 2, "first fight suppresses arrivals, second schedules an enemy arrival with a Round 2 warning")

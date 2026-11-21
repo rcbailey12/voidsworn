@@ -1,5 +1,6 @@
 # Audit 706 finding 4: PR body guards cannot catch closing words in commits that land on main.
 # This reports the offending commits after a push; it cannot undo an issue GitHub already closed.
+# The logic and its tests: contrib/opus/tools/main_commit_lint.js and main_commit_lint_tests.js (issue 1488).
 name: Main commit message lint
 on:
   push:
@@ -12,55 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Issue 1488 (audit GH-06): read the pushed commits from the REST compare API instead of cloning all history.
+      # Only the lint script and auto_pr.yml (its STANDING list) are checked out.
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.after }}
-          fetch-depth: 0
+          fetch-depth: 1
+          sparse-checkout: |
+            contrib/opus/tools/main_commit_lint.js
+            .github/workflows/auto_pr.yml
+          sparse-checkout-cone-mode: false
       - name: Reject closing words before standing issues in every pushed commit
         env:
+          GH_TOKEN: ${{ github.token }}
           BEFORE: ${{ github.event.before }}
           AFTER: ${{ github.event.after }}
-        run: |
-          python3 - <<'PY'
-          import os
-          import re
-          import subprocess
-          from pathlib import Path
-
-          # One source of truth: adding an issue to auto_pr.yml also protects it here.
-          config = Path('.github/workflows/auto_pr.yml').read_text(encoding='utf-8')
-          lists = re.findall(r'''^\s+STANDING:\s*['"]([0-9 ]+)['"]\s*(?:#.*)?$''', config, re.M)
-          if len(lists) != 1:
-              raise SystemExit('::error::Expected one quoted STANDING issue list in auto_pr.yml')
-          standing = set(lists[0].split())
-          repo = re.escape(os.environ['GITHUB_REPOSITORY'])
-          # All nine GitHub closing words, any case, optional colon, body or subject.
-          # Recognize local references and explicit references to this repository, not another repo.
-          closing = re.compile(
-              r'\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+'
-              rf'(?:#|{repo}#|https://github\.com/{repo}/issues/)([0-9]+)\b', re.I)
-          before, after = os.environ['BEFORE'], os.environ['AFTER']
-          revision = after if set(before) == {'0'} else f'{before}..{after}'
-
-          def git(*args):
-              return subprocess.check_output(['git', *args], text=True, encoding='utf-8')
-
-          # The push payload can omit commits on large pushes. Read the full range from git instead.
-          commits = git('rev-list', '--reverse', revision).splitlines()
-          failures = []
-          for sha in commits:
-              message = git('show', '-s', '--format=%B', sha)
-              issues = sorted(set(closing.findall(message)) & standing, key=int)
-              if issues:
-                  refs = ', '.join('#' + n for n in issues)
-                  detail = f'Commit {sha} uses closing words before standing issue(s) {refs}. Use Refs instead.'
-                  print('::error::' + detail)
-                  failures.append(detail)
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
-              summary.write('### Main commit message lint\n')
-              if failures:
-                  summary.write('\n'.join('- ' + line for line in failures) + '\n')
-              else:
-                  summary.write(f'PASS: checked all {len(commits)} pushed commit(s) against STANDING in auto_pr.yml.\n')
-          raise SystemExit(1 if failures else 0)
-          PY
+        run: node contrib/opus/tools/main_commit_lint.js

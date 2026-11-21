@@ -9,7 +9,7 @@ extends Node3D
 #   --shots <folder> (screenshot job: saves PNGs at fixed moments and quits) | --quit-after N (seconds)
 #
 # Controls as today's game (index_test.html): click your ship, click a gold hex to move, click an enemy to fire every gun
-# that bears (1-6 pick one), Q/E turn in place, B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
+# that bears (1-6 pick one), Q/E turn in place, Backspace undo a move (issue 1450), B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
 # enemy), Space hurry, Esc cancel, R threat map, V arcs, T top-down, F focus, Home reset view; right-drag orbit,
 # left-drag or WASD pan, wheel zoom.
 
@@ -50,9 +50,10 @@ const REACH_C := Board.REACH_FILL
 const EMBER_3D := ShipView.EMBER   # the ring under the ship that is up (issue 271: ember, lime retired R191)
 const REACH_RING := Board.REACH_RING
 const REACH_HOT := Board.REACH_HOT
-const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
-const TARGET_PLAN := Color(1.0, 0.62, 0.22, 0.9)
-const TARGET_ON := Color(1.0, 0.85, 0.75, 1.0)
+# issue 1374 (R362): every ring and line colour comes from the one line style's role table (render/line_style.gd)
+const TARGET_RING: Color = Board.LS.ROLE["target"]
+const TARGET_PLAN: Color = Board.LS.ROLE["target_plan"]
+const TARGET_ON: Color = Board.LS.ROLE["target_on"]
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
@@ -169,6 +170,9 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save each round start once it has settled (main.play_api)
+var round_saved := 0                       # the newest round handed to round_save_cb
+var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
@@ -410,11 +414,7 @@ func _build_arrow() -> void:
 	path_dots.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_dots)
 	path_line = MeshInstance3D.new()
-	var lm := ShaderMaterial.new()
-	var line_shader := Shader.new()
-	line_shader.code = Board.OUTLINE_SHADER
-	lm.shader = line_shader
-	path_line.material_override = lm
+	path_line.material_override = Board.LS.material()   # issue 1374: the shared line style
 	path_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_line)
 
@@ -433,6 +433,7 @@ func start_default() -> void:
 		if e != "":
 			push_error(e)
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
+		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
 		_begin(a)
 		return
 	var rng := RandomNumberGenerator.new()
@@ -493,7 +494,10 @@ func begin_with(a) -> void:
 
 
 func _begin(a) -> void:
+	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
+	retiring = false
+	_click_q = {}
 	_threat_version = -1
 	api = a
 	warming = true
@@ -517,6 +521,8 @@ func _begin(a) -> void:
 	bot_tried.clear()
 	bot_cmd_used = false
 	roles_opened = false
+	round_saved = 0
+	round_on_disk = 0
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -575,6 +581,7 @@ func _begin(a) -> void:
 			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight,
 			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
+		if args.get("stop") is Dictionary: world_opts["stop"] = args["stop"]   # issue 1272: the stop's sky mood
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
@@ -882,17 +889,6 @@ func _sync(v: Dictionary) -> void:
 	V = v
 	_index_view()
 	_music_feed()
-	if gfx == null or not gfx.has_method("torp_lane"):
-		var live := {}
-		for tp in V.get("torps", []):
-			live[str(tp["id"])] = true
-			if not torp_marks.has(str(tp["id"])):
-				var by: Dictionary = VU.get(tp.get("by"), {})
-				var a: Vector3 = board.hex_world(int(tp["from"]["q"]), int(tp["from"]["r"]), 1.5) if tp.get("from") != null else Vector3.ZERO
-				_torp_marker(str(tp["id"]), a, board.hex_world(int(tp["aim"]["q"]), int(tp["aim"]["r"]), 1.5), str(by.get("fac", "hegemony")))
-		for k in torp_marks.keys():
-			if not live.has(k):
-				_torp_clear(k)
 	for u in V["units"]:
 		if not views.has(u["id"]):
 			_make_view(u)
@@ -918,16 +914,24 @@ func _sync(v: Dictionary) -> void:
 
 func _runner() -> void:
 	busy = true
+	var g := _gen
 	while true:
-		if not is_inside_tree():
+		if _stale(g):
 			return
 		while hold and is_inside_tree():
 			await get_tree().process_frame
+		if _stale(g):
+			return
 		if batches.is_empty():
 			if api.phase == "enemy" and not ended:
-				while _threat_busy:
+				while _threat_busy and not _stale(g):
+					_worker_owns_rules()
 					await get_tree().process_frame
+				if _stale(g):
+					return
 				var b = await _think()
+				if _stale(g):
+					return
 				if b != null:
 					batches.append(b)
 				continue
@@ -942,6 +946,8 @@ func _runner() -> void:
 		if not (bt.get("events", []) as Array).is_empty():
 			last_progress = Time.get_ticks_msec() / 1000.0
 		await _play_batch(bt)
+		if _stale(g):
+			return
 		_sync(bt["view"])
 		_refresh_ui()
 
@@ -970,6 +976,7 @@ func _cmd(f: Callable) -> bool:
 	# a player command: the rules act at once, the picture follows
 	if not _api_join() or busy or ended or api.phase != "player":
 		return false
+	_click_q = {}
 	var ok = f.call()
 	var ev: Array = api.take_events()
 	var np := _api_not_ported()
@@ -1057,23 +1064,91 @@ static func _jt(x) -> bool:  # JS truthiness, as the rules' jt
 	return true
 
 
-func _api_join() -> bool:
-	if api == null:
+# ---------------------------------------------------------------- the rules client (issue 1433)
+# This block alone owns the two worker task ids. The rules API locks _enter/_leave around threat_both and every read
+# (can_command too), so a read while the threat worker runs waits on the worker either way: a join or the mutex.
+# - Pointer handlers (_on_hover, _on_click) set _ptr_depth. Inside them _api_join never waits: it answers false while the
+#   worker runs, the reads answer from the last published result or "pending", and _ptr_stale asks the publish to refresh
+#   the pointer (tip, panel, target) once the result lands.
+# - _refresh_ui waits for the publish instead of reading the live API (its reads all lock the rules).
+# - A click while the worker runs is queued once and revalidated before it is played (_click_replay).
+# - _gen and retiring: a battle that has emitted finished (or been begun again) rejects its stale post-await work.
+# Commands, keys and the HUD still call the blocking _api_join, which finishes the worker first (its result is kept).
+var _ptr_depth := 0
+var _ptr_stale := false
+var _ptr_pos := Vector2.ZERO
+var _click_q := {}
+var _gen := 0
+var _threat_gen := -1
+var retiring := false
+
+
+# true while a threat task is still running; a finished one is reaped (and published) here, without waiting
+func _worker_owns_rules() -> bool:
+	if _threat_tid < 0:
 		return false
-	if _threat_tid >= 0:
-		WorkerThreadPool.wait_for_task_completion(_threat_tid)
-		_threat_tid = -1
-		_threat_done()
+	if not WorkerThreadPool.is_task_completed(_threat_tid):
+		_ptr_stale = true
+		return true
+	_threat_reap()
+	return false
+
+
+# reap the threat task once; publish only for this battle (the version check is in _threat_done)
+func _threat_reap() -> void:
+	WorkerThreadPool.wait_for_task_completion(_threat_tid)
+	_threat_tid = -1
+	if retiring or _threat_gen != _gen:
+		_threat_busy = false
+		return
+	_threat_done()
+
+
+# the non-blocking gate: may the main thread read the rules right now?
+func _api_free() -> bool:
+	if api == null or _worker_owns_rules():
+		return false
 	return not thinking
 
 
+func _api_join() -> bool:
+	if api == null:
+		return false
+	if _ptr_depth > 0:
+		return _api_free()
+	if _threat_tid >= 0:
+		_threat_reap()
+	return not thinking
+
+
+func _stale(g: int) -> bool:
+	return retiring or g != _gen or not is_inside_tree()
+
+
+# mark the battle retired before finished goes out: post-await work from it is rejected from here on
+func _retire() -> void:
+	retiring = true
+	_gen += 1
+	_click_q = {}
+
+
+func _finish(r: Dictionary) -> void:
+	_retire()
+	finished.emit(r)
+
+
 func _exit_tree() -> void:
+	# exit synchronisation stays: drain both tasks, then clear the flags they own
+	retiring = true
+	_gen += 1
 	if _threat_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_threat_tid)
 		_threat_tid = -1
+	_threat_busy = false
 	if _think_tid >= 0:
 		WorkerThreadPool.wait_for_task_completion(_think_tid)
 		_think_tid = -1
+	thinking = false
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
 
@@ -1315,27 +1390,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					_flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
-		"torpedo":
-			# A salvo launches into its lane and waits for the firing side's next turn, as the rules require.
-			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5)
-			var fac := str(VU.get(e["unit"], {}).get("fac", "hegemony"))
-			sfx.torp(fac, _pos(e["unit"]))
-			if gfx != null and gfx.has_method("torp_lane"):
-				gfx.torp_lane(str(e["id"]), str(e["unit"]), aim, 1)
-				gfx.torp_launch(str(e["id"]))
-			else:
-				_torp_marker(str(e["id"]), _pos(e["unit"]), aim, fac)
-			_float(e["unit"], "Torpedoes away", Color("#ffb23e"), -24)
-			await wait(700.0)
-		"torpedo_miss":
-			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5) if e.get("aim") != null else Vector3.ZERO
-			if gfx != null and gfx.dstate.get("lanes", {}).has(str(e["id"])):
-				aim = gfx.dstate["lanes"][str(e["id"])]["to"]
-			if gfx != null and gfx.has_method("torp_lane_clear"):
-				gfx.torp_lane_clear(str(e["id"]))
-			_torp_clear(str(e["id"]))
-			await get_tree().create_timer(1.0).timeout
-			_float_at(aim, "TORPEDO MISS", Color("#ffc781"))
 		"risen":
 			_reassemble(e, batch_view)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
@@ -1374,6 +1428,12 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
+		"undo":
+			# issue 1450: the ship's last move or turn was taken back; it stands at once on the hex and facing the rules give
+			# (no burn back along the path), and the reach overlay is rebuilt from there on the next refresh
+			if views.has(e["unit"]) and not views[e["unit"]].dead:
+				views[e["unit"]].snap_to(board.hex_world(int(e["q"]), int(e["r"])), ShipView.yaw_of(int(e["f"])))
+			reach_map.clear()
 		"pulled":
 			await _play_move(e["unit"], [{"q": e["to"]["q"], "r": e["to"]["r"], "f": VU[e["unit"]]["facing"] if VU.has(e["unit"]) else 0}], false)
 			_float(e["unit"], "Pulled in", Color("#c79bff"))
@@ -1389,6 +1449,9 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				d["sh"][int(e["quad"])] = 0
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(e["unit"]), true)
+			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
+			if gfx != null and gfx.has_method("shield_break"):
+				gfx.shield_break(str(e["unit"]), int(e["quad"]))
 		"section_down":
 			var sec := str(e["section"])
 			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Broadsides and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
@@ -1566,7 +1629,9 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 					var cap := float(ru["sec"][key]["max"])
 					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
+	# not the old lime green
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -2004,46 +2069,25 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
-	var torp_result_scheduled := false
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
-	# issue 1211: what each landing hit does: its number (torpedoes keep their one result line), and the shield break with
+	# issue 1211: what each landing hit does: its number, and the shield break with
 	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
-	var land := {"t_id": str(t_id), "numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
+	var land := {"t_id": str(t_id), "numbers": true, "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
 		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
 		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
 	for g in grp:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
 	_aim_on(a_id, t_id, land)
-	if e.has("torpedo") and e.get("from") != null:
-		from = board.hex_world(int(e["from"]["q"]), int(e["from"]["r"]), 1.5)
-		_torp_clear(str(e["torpedo"]))
-	if e.has("torpedo") and gfx != null and gfx.has_method("torp_strike"):
-		var hit0 := {}
-		if not hits.is_empty():
-			hit0 = {"shield": hits[0]["shield"], "hull": hits[0]["hull"], "section": hits[0].get("section", ""), "crit": hits[0]["crit"]}
-		var r: Dictionary = gfx.torp_strike(str(e["torpedo"]), str(t_id), hit0)
-		var imp: Array = r.get("impacts", [])
-		var result_at := float(imp[-1]) if not imp.is_empty() else 1.0
-		var result_pos: Vector3 = r.get("at", to)
-		_at_fx(result_at, func() -> void: _torpedo_result(hits, result_pos))
-		torp_result_scheduled = true
-		for k in hits.size():
-			var at: float = float(imp[mini(k, imp.size() - 1)]) if not imp.is_empty() else 0.8
-			var h: Dictionary = hits[k]
-			var kk := k
-			_at_fx(at, func() -> void:
-				_land_hit(t_id, h, kk, land)
-				sfx.boom(0.8, _pos(t_id)))
-		# Every side sees the flight and its result before the next action, regardless of round budget.
-		total = maxf(float(r.get("done", 1.2)), result_at + 0.35) / maxf(sp, 0.01)
-	elif gfx != null and gfx.has_method("volley"):
+	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)),
+			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
+		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
 		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)
 		var fires: Array = r.get("fires", [])
 		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
@@ -2114,8 +2158,6 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		await get_tree().create_timer(total * sp * 0.45).timeout
 	else:
 		await get_tree().create_timer(total * sp).timeout
-	if e.has("torpedo") and not torp_result_scheduled:
-		_torpedo_result(hits, to)
 	# the log line and the floating numbers (battle.js fireWeapon)
 	var sh_sum := 0.0
 	var hull_sum := 0.0
@@ -2130,8 +2172,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		parts.append("%d shot down by point defense" % int(e["pd"]))
 	if hits.is_empty():
 		parts.append("all shots miss")
-		if not e.has("torpedo"):
-			_float(t_id, "Miss", Color("#9a9384"))
+		_float(t_id, "Miss", Color("#9a9384"))
 	else:
 		if sh_sum > 0:
 			parts.append("%d to %s shields" % [int(sh_sum), QUAD_NAME[int(e["quad"])]])
@@ -2249,7 +2290,11 @@ func _shield_downs(land: Dictionary) -> void:
 			_float(g["unit"], "Shields down", Color("#9fe2ff"), FLOAT_LANE_SHIELD)
 		sfx.shield(_pos(g["unit"]), true)
 		if gfx != null and gfx.has_method("shield_break"):
-			gfx.shield_break(str(g["unit"]), int(g["quad"]))
+			# issue 1239 (F2.1): the failure closes where the breaking shot struck (the quadrant's middle without one)
+			var pts: Array = land.get("pts", [])
+			var bk := int(land["break_k"])
+			var lp: Vector3 = pts[bk] if str(g["unit"]) == str(land.get("t_id", "")) and bk >= 0 and bk < pts.size() else Vector3.INF
+			gfx.shield_break(str(g["unit"]), int(g["quad"]), lp)
 		elif land["tsv"] != null:
 			fx.shield(land["tsv"], float(land["L"]), int(g["quad"]), land["shield_col"], 0.0, true)
 
@@ -2276,41 +2321,6 @@ func _aim_off(land: Dictionary) -> void:
 		views[t_id].set_selected(str(t_id) == sel and api != null and api.phase == "player", EMBER_3D)
 
 
-var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are not in the build)
-
-
-func _torp_marker(id: String, a: Vector3, aim: Vector3, fac: String) -> void:
-	var col: Color = FLOOK.weapon(fac)
-	var root := Node3D.new()
-	add_child(root)
-	var dir := (aim - a)
-	var park := a + dir * 0.75
-	var dot := Sprite3D.new()
-	dot.texture = Fx.glow_tex()
-	dot.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dot.modulate = Color(col.r * 3, col.g * 3, col.b * 3)
-	dot.pixel_size = 4.0 / 64.0
-	dot.position = park
-	root.add_child(dot)
-	var ring := MeshInstance3D.new()
-	var tm := TorusMesh.new()
-	tm.inner_radius = 5.0
-	tm.outer_radius = 5.6
-	ring.mesh = tm
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(col.r, col.g, col.b, 0.8)
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	ring.material_override = m
-	ring.position = Vector3(aim.x, 0.2, aim.z)
-	root.add_child(ring)
-	torp_marks[id] = root
-
-
-func _torp_clear(id: String) -> void:
-	if torp_marks.has(id):
-		(torp_marks[id] as Node).queue_free()
-		torp_marks.erase(id)
 
 
 func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
@@ -2556,7 +2566,7 @@ func _end_flow() -> void:
 		_quit_report()
 		return
 	if bot or args.has("bot-runs"):
-		finished.emit(result)
+		_finish(result)
 		return
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
@@ -2574,10 +2584,14 @@ var _ui_cache := {}
 
 
 func _ui(id: String) -> Dictionary:
-	if id == "" or not _api_join():
+	if id == "" or api == null:
 		return {}
 	# Rules facts change on moves and turns, even when the log and batch count do not.
 	var k := "%s|%d" % [id, api.version]
+	if _ui_cache.has(k):
+		return _ui_cache[k]   # issue 1433: a published answer needs no rules read, even while a worker runs
+	if not _api_join():
+		return {}
 	if not _ui_cache.has(k):
 		if _ui_cache.size() > 16:
 			_ui_cache.clear()
@@ -2843,6 +2857,8 @@ func _overlay() -> void:
 		_threat_request.call_deferred()
 	if board != null and board.has_method("set_danger"):
 		board.set_danger(_danger_bands())
+	if _threat_busy and _worker_owns_rules():
+		return   # issue 1433: keep the last drawing; the publish redraws it (no blank reach area while the map computes)
 	if not _can_act():
 		_clear_overlay()
 		if threat_on:
@@ -2854,7 +2870,7 @@ func _overlay() -> void:
 	if threat_on:
 		fills = _threat_fills()
 	var u := _sel_unit()
-	var ability_mode := mode in ["nova", "blink"]
+	var ability_mode := mode in ["nova", "blink", "ram"]
 	if _usable(u) and not ability_mode:
 		# F1: every reachable hex blue with a lit edge (style 1) and one bright line around the whole area
 		for k in reach_map:
@@ -2873,12 +2889,32 @@ func _overlay() -> void:
 	if ability_mode:
 		for h in _ability_hexes():
 			fills[board.key(h["q"], h["r"])] = Color(0.92, 0.92, 1.0, 0.26)
-			rings[board.key(h["q"], h["r"])] = Color(1.0, 1.0, 1.0, 0.85)
+			rings[board.key(h["q"], h["r"])] = Board.LS.ROLE["ability"]
 	if mode == "board" and not u.is_empty():
 		for b in _ui(sel).get("board", []):
 			var tu: Dictionary = VU.get(b["target"], {})
 			if not tu.is_empty():
-				rings[board.key(tu["q"], tu["r"])] = Color(1, 0.75, 0.3, 1)
+				rings[board.key(tu["q"], tu["r"])] = Board.LS.ROLE["board"]
+	# issue 1444: the armed ram's run (each hex it crosses) and the ship it hits; the nova shell's 7-hex blast under the
+	# hovered target hex, with every friendly ship inside it ringed red
+	if mode == "ram" and not u.is_empty():
+		var rm = _ui(sel).get("ram")
+		if rm is Dictionary:
+			for p in rm["path"]:
+				var pk0: String = board.key(int(p["q"]), int(p["r"]))
+				fills[pk0] = Board.LS.ROLE["ram_fill"]
+				rings[pk0] = Board.LS.ROLE["ram"]
+			var rt: Dictionary = VU.get(rm["target"], {})
+			if not rt.is_empty():
+				rings[board.key(rt["q"], rt["r"])] = Board.LS.ROLE["danger"]
+	if mode == "nova" and not u.is_empty():
+		var blast := _nova_blast(hover.x, hover.y)
+		for h in blast["hexes"]:
+			var bk: String = board.key(h.x, h.y)
+			fills[bk] = Board.LS.ROLE["blast_fill"]
+			rings[bk] = Board.LS.ROLE["blast"]
+		for f in blast["friends"]:
+			rings[board.key(f["q"], f["r"])] = Board.LS.ROLE["danger"]
 	# the rehearsed position (a planned move, or the attack-move's stopping hex): the ghost, its path, arcs from there,
 	# and orange rings on enemies its guns would reach from there
 	var pst = plan if plan != null else (atk["st"] if atk != null else null)
@@ -2906,6 +2942,10 @@ func _overlay() -> void:
 					break
 	elif ghost != null:
 		ghost.visible = false
+	if mode == "ram" and not u.is_empty() and views.has(sel):
+		var rm2 = _ui(sel).get("ram")
+		if rm2 is Dictionary:
+			_path_dots(u, {"path": rm2["path"]})   # issue 1444: the ram's run as the shared path line
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
 		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
@@ -2943,10 +2983,10 @@ func _path_dots(u: Dictionary, st) -> void:
 	for i in samples.size() - 1:
 		var a: Vector3 = samples[i]
 		var b: Vector3 = samples[i + 1]
-		var side := (b - a).cross(Vector3.UP).normalized() * 0.65
-		for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
-			line.set_color(Color(0.45, 0.78, 1.0, v[1]))
-			line.add_vertex(v[0])
+		# issue 1374: a centred line in the shared style, half on each side of the path
+		var side := (b - a).cross(Vector3.UP).normalized()
+		Board.LS.strip_into(line, a, b, side, side, "path", Color(0, 0, 0, -1), true)
+		Board.LS.strip_into(line, a, b, -side, -side, "path", Color(0, 0, 0, -1), true)
 	path_line.mesh = line.commit()
 	path_line.visible = true
 
@@ -3055,6 +3095,7 @@ func _threat_request() -> void:
 	if quitting or not _threat_idle() or _threat_busy or _threat_current() or not (threat_on or _danger_shown()):
 		return
 	_threat_pending_version = int(api.version)
+	_threat_gen = _gen
 	_threat_busy = true
 	var tid := WorkerThreadPool.add_task(func() -> void:
 		_threat_next = api.threat_both())
@@ -3108,14 +3149,15 @@ var _threat_busy := false
 var _threat_next := {}
 
 
+# polls completion each frame; whoever sees it finished first reaps it once (_threat_reap)
 func _threat_wait(tid: int) -> void:
 	while _threat_tid == tid and not WorkerThreadPool.is_task_completed(tid):
+		if not is_inside_tree():
+			return   # _exit_tree drains it
 		await get_tree().process_frame
 	if _threat_tid != tid:
-		return  # _api_join already finished it
-	WorkerThreadPool.wait_for_task_completion(tid)
-	_threat_tid = -1
-	_threat_done()
+		return  # already reaped
+	_threat_reap()
 
 
 func _threat_done() -> void:
@@ -3126,9 +3168,45 @@ func _threat_done() -> void:
 	_threat_version = _threat_pending_version
 	_threat_cache = _threat_next["dmg"]
 	_danger = _threat_next["n"]
-	if _danger_shown():
-		_refresh_ui.call_deferred()   # the danger badges on the fleet list and the shell
+	# the danger badges on the fleet list and the shell, and any UI pass that waited for this publish
+	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
+	_ptr_refresh.call_deferred()   # the stationary pointer: tip, panel and target as of this result
+	_click_replay.call_deferred()
+
+
+# issue 1433: after a publish, the pointer reads that answered "pending" are redone where the pointer stands
+func _ptr_refresh() -> void:
+	if quitting or retiring or not is_inside_tree() or api == null or board == null or not is_instance_valid(hud):
+		return
+	var was := _ptr_stale
+	_ptr_stale = false
+	if not was or hover.x == 99999:
+		return
+	_ptr_depth += 1
+	if api.phase == "player" and not busy and target == "" and sel != "":
+		hud.set_panel(_panel_info())
+		hud.set_target(_target_info())
+	hud.show_tip(_tip(), _ptr_pos)
+	_ptr_depth -= 1
+
+
+# issue 1433: a click made while the threat worker ran, played once now if nothing it depended on has changed
+func _click_replay() -> void:
+	var q := _click_q
+	_click_q = {}
+	if q.is_empty() or quitting or _stale(int(q["gen"])) or api == null or int(q["v"]) != int(api.version):
+		return
+	if str(q["sel"]) != sel or str(q["mode"]) != mode or str(q["plan_k"]) != plan_k or str(q["target"]) != target or not _can_act():
+		return
+	var at: Vector2i = q["hex"]
+	if at != hover:
+		hover = at
+		board.set_hover(at.x, at.y)
+	_on_click()
+	# the pointer may have moved on since the click: put the hover back where it stands now
+	if is_inside_tree() and not retiring and _ray_hex(_ptr_pos) != hover:
+		_on_hover(_ptr_pos)
 
 
 # target hexes for nova and blink
@@ -3139,6 +3217,163 @@ func _ability_hexes() -> Array:
 	for h in _ui(sel).get("ability", {}).get("hexes", []):
 		out.append({"q": int(h["q"]), "r": int(h["r"])})
 	return out
+
+
+# ---------------------------------------------------------------- issue 1444: forecasts before Ram, Board and Nova
+
+const _HEX_DIRS := [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
+
+
+static func _hex_d(aq: int, ar: int, bq: int, br: int) -> int:
+	return int((absi(aq - bq) + absi(aq + ar - bq - br) + absi(ar - br)) / 2)
+
+
+# Ram is two presses: the first (X or the Ram button) arms it and shows the run, the target, the damage and the recoil;
+# the second (X or the button again, Enter, or a click on the rammed ship) commits. Esc or Cancel drops it.
+static func _strip_bb(t: String) -> String:
+	var re := RegEx.create_from_string("\\[/?[a-z]+(=[^\\]]*)?\\]")
+	return re.sub(t, "", true)
+
+
+func _ram_press() -> void:
+	if sel == "" or not _can_act() or not _usable(_sel_unit()):
+		return
+	if mode == "ram":
+		_ram_commit()
+		return
+	var rm = _ui(sel).get("ram")
+	if not rm is Dictionary:
+		return
+	mode = "ram"
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	plog.note("arms ram")
+	_refresh_ui()
+
+
+func _ram_commit() -> void:
+	mode = ""
+	if sel == "" or not _can_act() or not _api_join() or not (_ui(sel).get("ram") is Dictionary):
+		_refresh_ui()
+		return
+	var id := sel
+	plog.act("ram")
+	sfx.play("ui_confirm")
+	_cmd(func(): return api.ram(id))
+
+
+# the ram forecast in plain words (BBCode); short drops the second line of how to commit
+func _ram_forecast(id: String, short := false) -> String:
+	var rm = _ui(id).get("ram")
+	if not rm is Dictionary:
+		return ""
+	var su: Dictionary = VU.get(id, {})
+	var tu: Dictionary = VU.get(rm["target"], {})
+	var sec := str(SEC_LBL.get(str(rm["section"]), str(rm["section"]))).to_lower()
+	var run := (rm["path"] as Array).size()
+	var t := "[b][color=#ffb23e]Ram %s[/color][/b]: a %d-hex run into it. About [color=#ffad3b]%d hull[/color] to its %s" % [_name(rm["target"]), run, int(rm["dmg"]), sec]
+	if int(rm["soak"]) > 0:
+		t += " (its shield soaks %d)" % int(rm["soak"])
+	t += "; [color=#ff8a72]%d recoil[/color] to your prow." % int(rm["recoil"])
+	if not tu.is_empty() and float(rm["dmg"]) >= float(tu["hp"]):
+		t += " [color=#ffad3b]That should destroy it.[/color]"
+	if not su.is_empty() and float(rm["recoil"]) >= float(su["hp"]):
+		t += "\n[color=#ff4a4a][b]Warning: the recoil will destroy your own ship (hull %s).[/b][/color]" % Campaign.hull_text(su["hp"])
+	t += " The ship stops there for the round."
+	if not short:
+		t += "\n[b]Press X again, click the target or press Enter to ram.[/b] Esc cancels. A ram can't be taken back."
+	return t
+
+
+# one boarding target's odds in plain words (BBCode)
+func _board_odds_text(id: String, b: Dictionary) -> String:
+	var ru = api.unit(id)
+	var crew := int(_z0(ru.get("crew"))) if ru != null else 0
+	var loss := mini(int(b["loss"]), maxi(0, crew - 1))
+	var cap := int(b["chance"])
+	var cap_t := ("[color=#7dff9b]capture likely[/color]" if bool(b["capture"]) else "[color=#ffd27a]capture possible[/color]") if cap > 0 else "[color=#a7b09d]no capture: a raid only[/color]"
+	return "[b]%s[/b]: [color=#ffb23e]%d%% capture chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, cap_t, int(b["kill"]), loss, crew]
+
+
+func _board_tip(id: String, tid: String) -> String:
+	for b in _ui(id).get("board", []):
+		if str(b["target"]) == tid:
+			return "[b][color=#ffc04d]Board[/color][/b]\n%s\n[color=#ff8a3a]Click to send the boarders. Esc cancels.[/color]" % _board_odds_text(id, b)
+	return "[b][color=#ffc04d]Board[/color][/b]\n[color=#a7b09d]Out of reach: boarding needs an enemy ship next to yours.[/color]"
+
+
+# the nova shell's blast around a centre hex: the 7 hexes, every ship inside, and the friendly ones (empty unless the
+# hex is one the shell can be aimed at)
+func _nova_blast(q: int, r: int) -> Dictionary:
+	var out := {"hexes": [], "hit": [], "friends": []}
+	if mode != "nova" or q == 99999:
+		return out
+	var ok := false
+	for h in _ability_hexes():
+		if int(h["q"]) == q and int(h["r"]) == r:
+			ok = true
+			break
+	if not ok:
+		return out
+	var on := {}
+	for h in V.get("hexes", []):
+		on[Vector2i(int(h["q"]), int(h["r"]))] = true
+	var c := Vector2i(q, r)
+	for hv in [c] + _HEX_DIRS.map(func(d): return c + d):
+		if on.is_empty() or on.has(hv):
+			out["hexes"].append(hv)
+	for x in V.get("units", []):
+		if x["dead"] or _hex_d(int(x["q"]), int(x["r"]), q, r) > 1:
+			continue
+		out["hit"].append(x)
+		if x["side"] == "player":
+			out["friends"].append(x)
+	return out
+
+
+func _nova_tip(q: int, r: int) -> String:
+	# issue 1433: nova_preview takes the rules lock; never call it while the threat worker owns the rules (a pointer
+	# handler gets "pending" here and the publish redraws the tip)
+	if not _api_join():
+		return ""
+	var blast := _nova_blast(q, r)
+	if (blast["hexes"] as Array).is_empty():
+		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
+	# the raw damage per ship comes from the rules (rules.gd novaDamage, the same call the hit makes)
+	var t := "[b][color=#ffd27a]Nova shell[/color][/b]\nBlasts this hex and the 6 around it, 30% through shields. Damage before shields and armour:"
+	var foes: Array = []
+	var mine: Array = []
+	for p in api.nova_preview(sel, q, r):
+		var x: Dictionary = VU.get(p["id"], {})
+		if x.is_empty():
+			continue
+		(mine if x["side"] == "player" else foes).append("%s (%s, %d)" % [str(x["name"]), "centre" if bool(p["centre"]) else "ring", int(round(float(p["dmg"])))])
+	if not foes.is_empty():
+		t += "\nHits: %s." % ", ".join(PackedStringArray(foes))
+	if not mine.is_empty():
+		t += "\n[color=#ff4a4a][b]Friendly fire: %s.[/b][/color]" % ", ".join(PackedStringArray(mine))
+	if foes.is_empty() and mine.is_empty():
+		t += "\n[color=#a7b09d]No ship inside the blast.[/color]"
+	t += "\n[color=#ff8a3a]Click to fire. Esc cancels.[/color]"
+	return t
+
+
+# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+func _well_line(q: int, r: int) -> String:
+	var W = api.world_info().get("well") if api != null else null
+	if not W is Dictionary:
+		return ""
+	var R = api.R
+	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	if d <= int(R.WELL_RIM):
+		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+	if d <= int(R.WELL_PULL):
+		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+	if d <= int(R.WELL_ASSIST):
+		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+	return ""
 
 
 func _unit_at(q: int, r: int) -> Dictionary:
@@ -3237,8 +3472,10 @@ func _on_key(k: int) -> void:
 		KEY_TAB:
 			_next_ship()
 		KEY_ENTER, KEY_KP_ENTER:
-			# F1: Enter confirms what is planned (the move, the fire, the attack-move); it never ends a ship
-			if plan != null or target != "":
+			# F1: Enter confirms what is planned (the move, the fire, the attack-move, an armed ram); it never ends a ship
+			if mode == "ram":
+				_ram_commit()
+			elif plan != null or target != "":
 				_confirm()
 			elif _can_act():
 				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
@@ -3263,8 +3500,10 @@ func _on_key(k: int) -> void:
 		KEY_L:
 			hud.toggle_log()
 		KEY_C:
-			if api.has_method("can_command") and api.phase == "player" and not busy and api.can_command():
+			if api.has_method("can_command") and api.phase == "player" and not busy and _api_join() and api.can_command():
 				_on_action("command", null)   # #271 (ui_spec.md follow-up G): Command gets its key
+		KEY_BACKSPACE:
+			_undo("backspace")   # issue 1450: take the last move or turn back, until the ship fires
 		KEY_Q:
 			_rotate(-1)
 		KEY_E:
@@ -3272,8 +3511,7 @@ func _on_key(k: int) -> void:
 		KEY_B:
 			_order("brace")
 		KEY_X:
-			if sel != "" and _can_act():
-				_cmd(func(): return api.ram(sel))
+			_ram_press()
 		KEY_G:
 			if sel != "" and _can_act():
 				mode = "" if mode == "board" else "board"
@@ -3427,6 +3665,33 @@ func _end_activation() -> void:
 	_end_ship("button")
 
 
+# Issue 1450 (Ryan, Nov 21 2026, R376): Backspace or the Undo move button takes the ship's last move or turn back. The rules
+# allow it only while nothing else has happened since (no shot, ram, boarding, ability, order, Command or dice: view undo).
+# Each press takes back one; after the first move is undone the ship is free again and another may go first.
+func _undo(how: String) -> void:
+	if not _can_act() or not api.has_method("undo"):
+		return
+	var id := _active_id()
+	if id == "":
+		id = sel
+	var u: Dictionary = VU.get(id, {})
+	if u.is_empty() or not bool(u.get("undo", false)):
+		if how == "backspace" and not u.is_empty() and u["side"] == "player":
+			hud.toast("Nothing to undo. A move can be taken back only until the ship fires, rams, boards or uses an ability.")
+		return
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	armed = -1
+	mode = ""
+	if _cmd(func(): return api.undo(id)):
+		plog.act("undo", {"how": how})
+		sfx.play("ui_cancel")
+		sel = id
+		reach_map.clear()   # rebuilt from the restored hex on the next refresh
+
+
 func _classic() -> bool:
 	return api != null and api.get("_alt") == false
 
@@ -3447,6 +3712,9 @@ var _hover_uid := ""
 
 
 func _on_hover(p: Vector2) -> void:
+	# issue 1433: a pointer handler never waits on a worker (see the rules client above)
+	_ptr_depth += 1
+	_ptr_pos = p
 	var h := _ray_hex(p)
 	if h != hover:
 		hover = h
@@ -3458,14 +3726,24 @@ func _on_hover(p: Vector2) -> void:
 		if hid != _hover_uid:
 			_hover_uid = hid
 			if api != null and api.phase == "player" and not busy and target == "" and sel != "":
-				hud.set_panel(_panel_info())
-				hud.set_target(_target_info())
+				if _api_free():
+					hud.set_panel(_panel_info())
+					hud.set_target(_target_info())
+				else:
+					_ptr_stale = true   # pending: the publish fills them
 	hud.show_tip(_tip(), p)
+	_ptr_depth -= 1
 
 
 func _on_click() -> void:
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		return   # issue 529: a tree prompt is open; answer it first
+	if _threat_busy and not busy and not warming and not ended and not retiring and api != null and api.phase == "player" \
+			and hover.x != 99999 and _worker_owns_rules():
+		# issue 1433: the threat map is still computing; keep this click (once) and play it when the result lands
+		if _click_q.is_empty():
+			_click_q = {"hex": hover, "gen": _gen, "v": int(api.version), "sel": sel, "mode": mode, "plan_k": plan_k, "target": target}
+		return
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
 	var u := _unit_at(hover.x, hover.y)
@@ -3486,6 +3764,13 @@ func _on_click() -> void:
 		else:
 			_refresh_ui()
 		return
+	if mode == "ram":
+		# issue 1444: a click on the rammed ship commits the armed ram; any other click drops it and acts as normal
+		mode = ""
+		var rm = _ui(sel).get("ram")
+		if rm is Dictionary and not u.is_empty() and str(u["id"]) == str(rm["target"]):
+			_ram_commit()
+			return
 	if mode == "board" and not s.is_empty():
 		mode = ""
 		if not u.is_empty() and u["side"] == "enemy":
@@ -3593,6 +3878,8 @@ func _update_target_plan(tid: String) -> void:
 func _cancel(why: String) -> void:
 	if plan != null or target != "":
 		plog.note("cancels")
+	if mode == "ram":
+		mode = ""
 	plan = null
 	plan_k = ""
 	target = ""
@@ -3605,6 +3892,9 @@ func _cancel(why: String) -> void:
 # F1: commit what is planned, once: the move, the attack-move, or the fire on the target
 func _confirm() -> void:
 	if not _can_act() or not _usable(_sel_unit()) or not _api_join():
+		return
+	if mode == "ram":
+		_ram_commit()   # issue 1444: the armed ram's second step
 		return
 	var id := sel
 	if plan != null:
@@ -3879,6 +4169,14 @@ func _tip() -> String:
 		return ""
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
+	# issue 1444: an armed ram, a boarding pick or a nova aim shows its own forecast first
+	if mode == "nova" and _usable(s):
+		return _nova_tip(hover.x, hover.y)
+	var rm0 = _ui(sel).get("ram") if mode == "ram" else null
+	if rm0 is Dictionary and _usable(s) and not u.is_empty() and str(u["id"]) == str(rm0["target"]):
+		return _ram_forecast(sel)
+	if mode == "board" and _usable(s) and not u.is_empty() and u["side"] == "enemy":
+		return _board_tip(sel, str(u["id"]))
 	if not u.is_empty() and u["side"] == "enemy" and _usable(s):
 		return _attack_tip(u["id"])
 	if not u.is_empty():
@@ -3894,6 +4192,9 @@ func _tip() -> String:
 			var nn := int(_danger.get(board.key(int(s["q"]), int(s["r"])), 0))
 			if nh > 0 or nn > 0:
 				t += "\n[color=#c4a4ff]%d enem%s can reach this hex[/color] [color=#7c8674]now %d[/color]" % [nh, "y" if nh == 1 else "ies", nn]
+		var wl := _well_line(hover.x, hover.y)
+		if wl != "":
+			t += "\n" + wl
 		t += "\n[color=#7c8674]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
 		return t
 	if board.zone_of.has(hk):
@@ -4000,9 +4301,6 @@ func _attack_tip(t_id: String) -> String:
 			sh += float(tg.get("shield", 0))
 			n += 1
 			right = "[b][color=#ffb23e]%d%%[/color][/b] [color=#7c8674]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
-			if vw["kind"] == "torp":
-				right = "%d%% hit; about %d shield, %d hull" % [int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))]
-				right += "\n[color=#a7b09d]%s[/color]" % _torpedo_why()
 		elif float(_z0(vw.get("off"))) > 0:
 			right = "[color=#ff8a72]offline[/color]"
 		elif float(_z0(vw.get("cd"))) > 0:
@@ -4048,6 +4346,8 @@ func _on_action(name: String, arg) -> void:
 	match name:
 		"end":
 			_end_ship("button")
+		"undo":
+			_undo("button")
 		"next":
 			_next_ship("next_button")
 		"confirm":
@@ -4084,10 +4384,7 @@ func _on_action(name: String, arg) -> void:
 					plog.act("ability", {"ab": ab})
 					_cmd(func(): return api.ability(id))
 		"ram":
-			if sel != "" and _can_act():
-				var id := sel
-				plog.act("ram")
-				_cmd(func(): return api.ram(id))
+			_ram_press()
 		"board":
 			mode = "" if mode == "board" else "board"
 			_refresh_ui()
@@ -4174,16 +4471,29 @@ func _on_action(name: String, arg) -> void:
 			ended = true
 			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 			_play_log_out("quit")
-			finished.emit(result)
+			_finish(result)
+		"save_quit", "save_quit_older":
+			if ended or not round_save_cb.is_valid():
+				return
+			# Save and quit is offered only while this round's save is on disk (a failed write offers the older start instead,
+			# by name), so leaving never promises more than Continue will load; the host still tries to write a newer round
+			if name == "save_quit" and round_on_disk != round_saved:
+				_open_menu()
+				return
+			hud.hide_menu()
+			ended = true
+			result = {"result": "save_quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			_play_log_out("quit")
+			_finish(result)
 		"continue":
 			hud.hide_end()
-			finished.emit(result)
+			_finish(result)
 		"retreat":
 			if can_retreat and _can_act():
 				ended = true
 				result = {"result": "retreat", "rounds": int(V["round"]), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 				_play_log_out("retreat")
-				finished.emit(result)
+				_finish(result)
 		"restart":
 			hud.hide_end()
 			hud.hide_menu()
@@ -4309,6 +4619,13 @@ func _open_menu() -> void:
 	items.append(["Controls", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
+	elif in_campaign and round_save_cb.is_valid() and round_saved > 0:
+		# issue 1451: back here at the start of this round. Artoo on PR 1486: when this round's save did not reach the disk, say
+		# what Continue will really load instead of promising this round
+		if round_on_disk == round_saved:
+			items.append(["Save and quit to title", "save_quit"])
+		else:
+			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "from the last checkpoint"), "save_quit_older"])
 	elif not external:
 		items.append(["Fight again", "restart"])
 	items.append(["Copy a problem report", "report"])
@@ -4386,6 +4703,8 @@ func _toggle_opt(k: String) -> void:
 func _refresh_ui() -> void:
 	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
+	if _worker_owns_rules():
+		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
 	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -4521,8 +4840,24 @@ func _card_info() -> Dictionary:
 	elif braced:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
 		say = "Braced: hull damage -40% until its next turn."
+	elif mode == "ram" and ui.get("ram") is Dictionary:
+		# issue 1444: the armed ram's forecast; nothing happens until the second press
+		hint = _ram_forecast(id)
+		var rm: Dictionary = ui["ram"]
+		say = "Ram %s: about %d hull to it, %d recoil to you." % [_name(rm["target"]), int(rm["dmg"]), int(rm["recoil"])]
+		if float(rm["recoil"]) >= float(u["hp"]):
+			say += " The recoil will destroy your ship."
+		btns.append({"text": "Ram (Enter)", "act": "confirm", "on": true, "primary": true})
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+	elif mode == "board" and not (ui.get("board", []) as Array).is_empty():
+		var rows := PackedStringArray()
+		for b in ui["board"]:
+			rows.append(_board_odds_text(id, b))
+		hint = "[color=#ffc04d]Board:[/color] click a gold-ringed enemy to send the boarders. Esc cancels.\n" + "\n".join(rows)
+		say = "Board: click a gold-ringed enemy."
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif plan != null:
-		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. A move can't be taken back once made." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
+		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. Backspace takes a move back until the ship fires." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		say = "Planned move: %d movement%s." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
@@ -4536,23 +4871,15 @@ func _card_info() -> Dictionary:
 		var volley := _volley_preview(id, set, target)
 		var sh := 0.0
 		var hl := 0.0
-		var torp_rows := PackedStringArray()
-		var torp_why := ""
 		for i in set:
 			var tg: Dictionary = volley[i]
 			sh += float(tg.get("shield", 0))
 			hl += float(tg.get("hull", 0))
-			if u["weapons"][i]["kind"] == "torp":
-				torp_rows.append("%s: %d%% hit, about %d shield / %d hull." % [str(u["weapons"][i]["name"]), int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))])
-				torp_why = _torpedo_why()
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
 			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
-			if not torp_rows.is_empty():
-				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
-				say = " ".join(torp_rows)
 			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
@@ -4583,6 +4910,9 @@ func _card_info() -> Dictionary:
 		"tip": "Switch to another ready ship. Once a ship has moved or fired it stays up until it ends."})
 	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
 		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
+	if bool(u.get("undo", false)):
+		btns.append({"text": "Undo move (Backspace)", "act": "undo", "on": true,
+			"tip": "Take back the last move or turn. Allowed until the ship fires, rams, boards or uses an ability."})
 	return {"name": str(u["name"]), "cls": _class_label(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
 		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
 
@@ -4767,10 +5097,6 @@ func _panel_info() -> Dictionary:
 	var Bs0 = api.R.B
 	if Bs0.get("aiFocus") is Dictionary and Bs0["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
 		fl.append("[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
-	for ts in (Bs0["torps"] if Bs0.get("torps") is Array else []):
-		if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-			fl.append("[color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
-			break
 	info["flags"] = " ".join(fl)
 	_panel_sheet(u, ru, info)
 	if u["side"] == "player" and not u["dead"]:
@@ -4781,9 +5107,17 @@ func _panel_info() -> Dictionary:
 		if u.get("ab") != null and u.get("ab") != "launch":
 			var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
 			orders.append({"text": str(A.get("n", u["ab"])), "act": "ability", "ability": str(u["ab"]), "cooldown": int(_z0(u.get("abCd"))), "active": mode == u["ab"], "on": can and u["abReady"], "tip": str(A.get("d", ""))})
-		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
-		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "active": mode == "board", "tip": "Send boarding crews into an adjacent enemy."})
-		if str(u.get("ab", "")) == "launch" and str(u.get("stance", "")) != "":
+		# issue 1444: the Ram and Board tips carry the forecast; Ram arms on the first press and rams on the second
+		var ram_tip := "Charge the first enemy dead ahead (needs a run-up)."
+		if ui.get("ram") is Dictionary:
+			ram_tip = _strip_bb(_ram_forecast(id, true)) + " Press once to see the run, again to ram."
+		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "active": mode == "ram", "tip": ram_tip})
+		var board_tip := "Send boarding crews into an adjacent enemy."
+		for b in ui.get("board", []):
+			board_tip += "\n" + _strip_bb(_board_odds_text(id, b))
+		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "active": mode == "board", "tip": board_tip})
+		# issue 1444: every ship the rules give a wing stance (carriers and Aspect of the Brood flagships) gets the buttons
+		if u.get("stance") != null:
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s" % stn, "act": "stance", "arg": stn, "active": str(u.get("stance")) == stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
@@ -4912,9 +5246,6 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			else:
 				var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
 				tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
-		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
-			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-				tr.append("[color=#ff8a72]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
 		if ru.get("ab") == "launch" or (ru.get("fx") is Dictionary and _jt(ru["fx"].get("hive"))):
 			var WS = TBL.get("WING_STANCES", {}).get(str(ru.get("stance", "strike")) if _jt(ru.get("stance")) else "strike", {})
 			tr.append("Wing stance: %s. %s%s" % [str(WS.get("n", "")), str(WS.get("d", "")), ((" One free change this round." if R.canStance(ru) else " Changed this round.") if ru["side"] == "player" else "")])
@@ -5020,6 +5351,11 @@ func _process(dt: float) -> void:
 		world.step(dt)
 	if api == null:
 		return
+	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
+	if round_save_cb.is_valid() and int(api.round_snap_round) > round_saved and _can_act():
+		round_saved = int(api.round_snap_round)
+		if bool(round_save_cb.call()):
+			round_on_disk = round_saved
 	var vs := get_viewport().get_visible_rect().size
 	for id in views:
 		var sv = views[id]
@@ -5108,7 +5444,7 @@ func _process(dt: float) -> void:
 		_error("softlock: no progress for %d s (phase %s, busy %s, round %s)" % [int(softlock_s), str(api.phase), str(busy), str(V.get("round"))])
 		ended = true
 		result = {"result": "softlock", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start}
-		finished.emit(result)
+		_finish(result)
 
 
 func _float(id, text: String, col: Color, dy := 0.0) -> void:
@@ -5121,15 +5457,6 @@ func _float(id, text: String, col: Color, dy := 0.0) -> void:
 func _float_at(pos: Vector3, text: String, col: Color, dy := 0.0) -> void:
 	var lbl: Label = hud.make_float(text, col)
 	floats.append({"lbl": lbl, "pos": pos, "t": 0.0, "dy": dy * hud.k})
-
-
-func _torpedo_result(hits: Array, at: Vector3) -> void:
-	var shield := 0.0
-	var hull := 0.0
-	for h in hits:
-		shield += float(h["shield"])
-		hull += float(h["hull"])
-	_float_at(at, "TORPEDO MISS" if hits.is_empty() else "TORPEDO HIT: %d shield / %d hull" % [int(shield), int(hull)], Color("#ffc781"), -24)
 
 
 # Presentation queries after _api_join. Each gun tooltip estimates that gun alone.
@@ -5285,13 +5612,11 @@ func _target_info() -> Dictionary:
 	var best_index := -1
 	var gun := ""
 	var kind := ""
-	var delayed := false
 	for i in set:
 		var p: Dictionary = volley[i]
 		es += float(p.get("shield", 0))
 		eh += float(p.get("hull", 0))
 		var weapon: Dictionary = VU[sel]["weapons"][i]
-		delayed = delayed or (weapon["kind"] == "torp" and not bool(VU[sel]["squadron"]))
 		if int(p.get("hit", 0)) > best:
 			best = int(p.get("hit", 0))
 			best_index = int(i)
@@ -5307,16 +5632,11 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
-		if delayed: line += " Includes torpedo impacts estimated at current defenses."
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
-
-
-func _torpedo_why() -> String:
-	return "More evasion means a lower hit chance; point defense can stop shots. Estimate for next turn; moving 3 hexes from aim dodges."
 
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
@@ -5362,7 +5682,7 @@ func _tip_completed(e: Dictionary) -> void:
 	if _side(id) != "player" or _is_wing(id): return
 	if kind == "move" or (kind == "order" and e.get("order") == "brace"):
 		_tip_retire("select", kind)
-	if kind in ["fire", "torpedo"]:
+	if kind == "fire":
 		tip_shot = true
 		_tip_retire("target", "shot_resolved")
 	if kind in ["ram", "board"]: _tip_retire("close", kind)

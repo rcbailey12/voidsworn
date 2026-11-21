@@ -7,6 +7,8 @@ const DEATH = preload("res://fx/fx_death.gd")
 const BREACH = preload("res://fx/fx_breach.gd")
 const FX = preload("res://fx/fx.gd")
 const GUARD = preload("res://tools/ci/check_guard.gd")
+const ROOT = preload("res://tools/ci/world_root.gd")
+const CRAFT_GLB = preload("res://tools/ci/craft_glb.gd")
 var failures := 0
 
 func _init() -> void:
@@ -23,6 +25,11 @@ func _run() -> void:
 	root.add_child(world)
 	var ship: Node3D
 	var args := OS.get_cmdline_user_args()
+	if not args.is_empty() and args[0] != "--legacy-cache" and CRAFT_GLB.is_craft(args[0]):
+		print("AUTHORED_INTERIORS skipped: %s is a strike craft (cls Squadron): no rooms, its death is a hidden spark (fx_death.gd _wing_death)" % args[0])
+		print("AUTHORED_INTERIORS failures=0 interior_triangles=0")
+		quit(0)
+		return
 	if not args.is_empty() and args[0] == "--legacy-cache":
 		var manifest = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json"))
 		var count := 0
@@ -68,15 +75,18 @@ func _run() -> void:
 		ship.set_meta("voidsworn_destruct", {"version": 1, "interior_materials": ["fixture_inside_0"],
 			"seams": [{"p": [-7, 0, 0], "n": [1, 0, 0]}, {"p": [5, 0, 0], "n": [1, 0, 0]},
 				{"p": [0, 0, 0], "n": [0, 1, 0], "span": [-7, 5]}]})
-	world.add_child(ship)
-	ship.scale = Vector3.ONE * (1.7 if args.is_empty() else 40.0)
-	ship.position = Vector3(2, 3, 4)
+	# Issues 1309 and 1355: rooted the way the game roots it (tools/ci/world_root.gd): an unscaled node at world size, the
+	# ship scaled under it (scaling the root left a written GLB, about one unit long, analysed at file size)
+	# A written GLB is held at the length the game draws it (its code and class); only the built fixture keeps a fixed scale.
+	var holder := ROOT.hold(world, ship, -1.0, 1.7 if args.is_empty() else -1.0)
+	holder.position = Vector3(2, 3, 4)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"death_story": "off", "quality": "low", "camera": null, "shake": 0.0})
-	fx.add_ship("authored", ship, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
+	fx.add_ship("authored", holder, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
 	var s = fx.ship("authored")
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	check(s.hull.authored, "GLB extras reached hull reader")
 	# issue 532 (R225 (c): a check reads the ship's own numbers): the seams the ship carries, counted from its own
 	# voidsworn_destruct record, never the fixture's two transverse and one longitudinal (A17 has two transverse, A16 three)
@@ -101,7 +111,7 @@ func _run() -> void:
 	if not breaks.is_empty() and not s.hull.seams.is_empty():
 		_move_first_seam(fx, s, plan, rng)
 	var moving_mesh: MeshInstance3D = s.meshes[0]
-	var analysis_pose: Transform3D = ship.global_transform.affine_inverse() * moving_mesh.global_transform
+	var analysis_pose: Transform3D = holder.global_transform.affine_inverse() * moving_mesh.global_transform
 	moving_mesh.position.y += 0.4
 	DEATH.precompute(fx, s)
 	if s.has_meta("cut_task"):
@@ -142,7 +152,7 @@ func _run() -> void:
 	# No extras is the old #167 path, including the same sealed backing.
 	var legacy := HULL.new()
 	ship.remove_meta("voidsworn_destruct")
-	legacy.analyse(ship, s.meshes, 33)
+	legacy.analyse(holder, s.meshes, 33)
 	if args.is_empty(): check(not legacy.authored and legacy.seams.is_empty(), "legacy hull stays on fallback")
 	fx.remove_ship("authored")
 	world.queue_free()

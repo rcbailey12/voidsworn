@@ -41,6 +41,9 @@ var _attitudes: Array[Quaternion] = []
 var _patrol_blend := 0.0
 var sample_t := 0.0
 var trail_mat: ShaderMaterial
+const TRAIL_LIFE := 0.65
+const TRAIL_LIFE_CHORUS := 0.2
+var trail_life := TRAIL_LIFE
 var _model_scene: PackedScene
 var _stern := Vector3(-0.47, 0.0, 0.0)
 # issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
@@ -53,6 +56,7 @@ uniform float clock_now = 0.0;
 uniform float trail_len = 1.0;
 uniform float width_k = 0.026;
 uniform float alpha_k = 0.56;
+uniform float life = 0.65;
 void vertex() {
     float age = clock_now - UV2.x;
     vec3 back = NORMAL;
@@ -61,8 +65,8 @@ void vertex() {
     vec3 side = cl > 1e-6 ? c / cl : vec3(0.0);
     float width = trail_len * width_k * (1.0 + age);
     VERTEX += back * age * trail_len * 1.2 + side * width * (1.0 - 2.0 * UV.y);
-    COLOR.a = max(0.0, 1.0 - age / 0.65) * alpha_k;
-    UV.x = age / 0.65;
+    COLOR.a = max(0.0, 1.0 - age / life) * alpha_k;
+    UV.x = age / life;
 }
 void fragment() {
     float edge = smoothstep(0.0, 0.38, UV.y) * (1.0 - smoothstep(0.62, 1.0, UV.y));
@@ -80,11 +84,16 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	shader.code = TRAIL
 	trail_mat.shader = shader
 	trail_mat.set_shader_parameter("trail_len", size)
-	trail_mat.set_shader_parameter("width_k", 0.065 if fac == "chorus" else 0.026)
-	trail_mat.set_shader_parameter("alpha_k", 0.22 if fac == "chorus" else 0.56)
+	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
+	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
+	trail_life = TRAIL_LIFE_CHORUS if fac == "chorus" else TRAIL_LIFE
+	trail_mat.set_shader_parameter("width_k", 0.022 if fac == "chorus" else 0.026)
+	trail_mat.set_shader_parameter("alpha_k", 0.14 if fac == "chorus" else 0.56)
+	trail_mat.set_shader_parameter("life", trail_life)
 	if count <= 0:
 		return
 	var lead := _make_craft(fac, kind)
+	finish(lead, fac)
 	for i in count:
 		var n: Node3D = lead if i == 0 else lead.duplicate()
 		add_child(n)
@@ -103,6 +112,38 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	fit_formation()
 	_patrol_blend = patrol_target
 	step(0.0)
+
+
+# R362 (docs/playbooks/ships.md section 9): strike craft take the hull finish, the same LOOK.hull pass ShipView gives a
+# hull (faction brightness band, material rim, and the "look_hull" mark that puts them under the rim light). One material
+# copy per source material and faction, shared by every craft of that kind; duplicates of the lead keep the overrides.
+static var _finish_cache := {}   # not GPU: weak references to shared materials
+
+
+static func finish(root: Node, fac: String) -> void:
+	if root == null or not ResourceLoader.exists("res://render/look.gd"):
+		return
+	var LOOK = load("res://render/look.gd")
+	for n in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or String(mi.name).begins_with("fx_"):
+			continue
+		for i in mi.mesh.get_surface_count():
+			var src: Material = mi.get_active_material(i)
+			if src == null or src.has_meta("look_hull"):
+				continue
+			var k := "%d|%s" % [src.get_instance_id(), fac]
+			var done: Material = null
+			if _finish_cache.has(k):
+				done = _finish_cache[k].get_ref()
+			if done == null:
+				done = LOOK.hull(src, fac, true)
+				if done == src:
+					# The code-built fallback skin (a shader) has no brightness band; it still joins the rim light.
+					done = src.duplicate()
+					done.set_meta("look_hull", fac)
+				_finish_cache[k] = weakref(done)
+			mi.set_surface_override_material(i, done)
 
 
 static func _model_code(fac: String, kind: String) -> String:
@@ -145,6 +186,7 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 	_stern = _engine_origin(body)
 	var craft_root := Node3D.new()
 	craft_root.name = fac + "_" + kind
+	craft_root.set_meta("model_code", code)   # issue 1373: acceptance runs assert the installed model, never the code fallback
 	craft_root.add_child(body)
 	return craft_root
 
@@ -376,7 +418,7 @@ func step(dt: float) -> void:
 		if active and sample:
 			hist.push_front([stern, clock, -n.global_basis.x.normalized()])
 			changed = true
-		while not hist.is_empty() and (clock - float(hist[-1][1]) > 0.65 or hist.size() > 20):
+		while not hist.is_empty() and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
 			hist.pop_back()
 			changed = true
 		# issue 221: the shader ages the ribbon; the mesh only changes with its samples

@@ -24,6 +24,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # Distance: the closest point on the hull's triangles, in the fitted ship frame used by the effects.
 
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
@@ -494,11 +495,12 @@ func _real_hulls(only: Array) -> int:
 		var fac := str(fc[0]) if FLOOK.has(str(fc[0])) else "hegemony"
 		var cls := str(fc[1]) if FLOOK.has(str(fc[0])) else "Cruiser"
 		var root3: Node3D
+		var want: float = ROOT.game_length(code, cls)   # ShipView's own length for this hull (HULL_LEN, else its class)
 		x += 80.0
 		if built:
 			var sv = SV.new()
 			world.add_child(sv)
-			sv.setup({"id": code, "fac": fac, "cls": cls, "facing": 0, "code": code, "L": float(HT.CLS_LEN.get(cls, 10.0)) * HT.SHIP_K}, Vector3(x, 0, 200), true)
+			sv.setup({"id": code, "fac": fac, "cls": cls, "facing": 0, "code": code}, Vector3(x, 0, 200), true)
 			sv.set_process(false)
 			root3 = sv
 		else:
@@ -512,11 +514,14 @@ func _real_hulls(only: Array) -> int:
 			node.code = code
 			world.add_child(node)
 			node.position = Vector3(x, 0, 200)
-			node.add_child(scene)
+			# Issues 1309 and 1355: the hull scaled to its class length under the unscaled stand-in, as ShipView draws it
+			# (tools/ci/world_root.gd); left at the glb's own size, about one unit long, the hit test misses small parts
+			ROOT.hold(world, scene as Node3D, want, -1.0, node)
 			root3 = node
 		# The attach walk uses the hull analysis. Building each fitted shield does not affect its points or triangles.
 		fx.add_ship("real_" + code, root3, {"faction": fac, "cls": cls, "size": 1.0, "code": code, "shielded": false})
 		var s = fx.ship("real_" + code)
+		check(ROOT.at_game_size(s, want), "%s: %s" % [code, ROOT.size_note(s, want)])
 		_walk("real_" + code, s, true)
 		fx.remove_ship("real_" + code)
 		root3.queue_free()

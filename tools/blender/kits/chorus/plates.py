@@ -382,12 +382,15 @@ def _dome_section(tree, centre, axis, radius):
     return at
 
 
-def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide'):
+def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide', flat=False, counts=None):
     """R341 (the Board, Nov 19): small scutes capping the top of each grown dome the shell leaves open (sacs, knolls), lips down
     the dome, so the armour wraps them; never on a gland, maw or vent. domes = [(prefixes, centre, axis, radius, reach)], with
     the hull objects or fittings whose names start with `prefixes` as the dome's surface and `reach` the polar angle (radians
     from the crown) the cap comes down to; an optional sixth value starts the cap that far from the crown, so a gland's knoll is
-    armoured round its slopes with its vent and spines open. One hull-detail object for the ship; returns it."""
+    armoured round its slopes with its vent and spines open. flat (issue 1291 round G, Ryan: "caps, but flatter"): two rings of
+    fewer, wider, thin plates lying close on the dome instead of three rings of keeled scutes, so a cap reads as a shell, not a
+    pinecone. counts (opt-in, C14's many small sacs): the plates in each ring, crown first, in place of the defaults. One
+    hull-detail object for the ship; returns it."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     register(kit_module)
@@ -406,19 +409,21 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
         if not F:
             continue
         sec = _dome_section(BVHTree.FromPolygons(V, F), Vector(centre), Vector(axis), radius)
-        t = 0.075 * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
+        t = (0.032 if flat else 0.075) * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
         k = 0
         ph = start
-        step = (reach - start) / 3.0
-        for n_ in ((4, 8, 12) if not start else (10, 13, 16)):
+        rings = counts or (((5, 8) if flat else (4, 8, 12)) if not start else ((7, 10) if flat else (10, 13, 16)))
+        step = (reach - start) / len(rings)
+        for n_ in rings:
             off = rng.uniform(0, math.tau)
             w = math.tau / n_
             for i in range(n_):
                 lo = off + i * w - 0.24 * w
                 hi = off + (i + 1) * w + 0.24 * w
                 vertices, faces, progress, ridge = _armour_scute(
-                    sec, -ph, step * 1.45, (lo, hi), t * rng.uniform(0.9, 1.1), 1, point=rng.uniform(0.12, 0.22),
-                    sharp=2.5, keels=1, bulge=0.12)
+                    sec, -ph, step * (1.25 if flat else 1.45), (lo, hi), t * rng.uniform(0.9, 1.1), 1,
+                    point=rng.uniform(0.06, 0.12) if flat else rng.uniform(0.12, 0.22),
+                    sharp=1.6 if flat else 2.5, keels=1, bulge=0.03 if flat else 0.12)
                 _append(mesh, vertices, faces)
                 attrs['scute_tone'].extend([rng.uniform(0.1, 0.9)] * len(vertices))
                 attrs['scute_progress'].extend(progress)
@@ -438,3 +443,206 @@ def _attributes(ob, attrs):
     for nm, values in attrs.items():
         attr = ob.data.attributes.new(nm, 'FLOAT', 'POINT')
         attr.data.foreach_set('value', values)
+
+
+# ------------------------------------------------------------------ issue 1291: grown chitin (the spitter's rebuild)
+def _band(section, root, length, lo, hi, t, rng, nu=12, nv=None, sink=0.012):
+    """One armadillo band (issue 1291): a curved chitin plate grown out of the flesh, lying aft, from section angle lo to hi
+    (K.hpt's port convention; a band may run across the back from flank to flank). The root sinks into the skin (it grows out
+    of it), the face carries transverse growth ridges and the lip rolls over thick; both ends thin out into the flesh (fused,
+    never a cut tile). Returns (vertices, faces, growth, ridge) as _armour_scute does."""
+    nv = nv or max(8, int((hi - lo) / 0.05))
+    row = nv + 1
+    r1, r2 = rng.uniform(0.2, 0.42), rng.uniform(0.48, 0.74)
+    # round D: each band's ridges its own strength, so the shell is not a stack of identical rings
+    k1, k2, k3 = rng.uniform(0.2, 0.75), rng.uniform(0.25, 0.9), rng.uniform(0.5, 1.0)
+    ph = rng.uniform(0, math.tau); wav = rng.uniform(0.6, 1.2)
+    vertices, growth, ridge = [], [], []
+    for under in (False, True):
+        for i in range(nu + 1):
+            a = i / nu
+            for j in range(row):
+                e = j / nv
+                ang = lo + (hi - lo) * e
+                end = min(1.0, e / 0.12, (1 - e) / 0.12)            # the ends fuse into the flesh
+                lip = length * (1.0 + 0.06 * math.sin(ph + 4 * e) + 0.03 * math.sin(2 * ph + 11 * e))   # an uneven grown edge
+                x = root - a * lip * (0.75 + 0.25 * end)
+                rk = (k1 * math.exp(-((a - r1) / 0.06) ** 2) + k2 * math.exp(-((a - r2) / 0.07) ** 2)
+                      + k3 * math.exp(-((a - 0.94) / 0.07) ** 2))
+                rk *= 1.0 + 0.25 * math.sin(ph + wav * 14 * e)
+                # round D (issue 1291): the band lies nearly flush on the hide, its lip only a little proud
+                gap = 0.002 + 0.28 * t * a ** 1.6
+                thick = t * (0.24 + 0.4 * a ** 2) * end ** 0.7
+                h = gap * end - sink * (1 - a) ** 3 if under else gap * end - sink * (1 - a) ** 3 + thick * (1 + 0.35 * rk)
+                p_, _ = section(x, ang, out=h)
+                vertices.append(p_)
+                growth.append(a)
+                ridge.append(min(1.0, rk))
+    faces = []
+    sheet = row * (nu + 1)
+    for i in range(nu):
+        for j in range(nv):
+            v = i * row + j
+            top = (v, v + 1, v + row + 1, v + row)
+            faces.append(top)
+            faces.append(tuple(q + sheet for q in reversed(top)))
+    rim = (list(range(row)) + list(range(2 * row - 1, sheet, row)) +
+           list(range(sheet - 2, sheet - row - 1, -1)) + list(range(sheet - 2 * row, 0, -row)))
+    for a_, b_ in zip(rim, rim[1:] + rim[:1]):
+        faces.append((b_, a_, a_ + sheet, b_ + sheet))
+    return vertices, [f[::-1] for f in faces], growth, ridge
+
+
+def _skirt(section, pts_xt, w, h, rng, creases=True, ln_k=1.0):
+    """the hide gathered against a plate's edge (issue 1291): a soft roll of skin along the edge (x, t points) and short crease
+    welts running off it into the flesh. Returns (vertices, faces) in the welt kit's shape."""
+    from chorus import parts
+    V, F = [], []
+
+    def add(vf):
+        o = len(V); V.extend(vf[0]); F.extend(tuple(q + o for q in f) for f in vf[1])
+    P = [section(x, t_, out=0.0) for x, t_ in pts_xt]
+    if len(P) >= 2:
+        add(parts.welt([p for p, _ in P], [n for _, n in P], w, h, n=5))
+    if creases:
+        for k in range(1, len(pts_xt) - 1, 2):
+            x, t_ = pts_xt[k]
+            ln = rng.uniform(0.1, 0.22) * ln_k; dt = rng.uniform(-0.05, 0.05)
+            q = [section(x + ln * f, t_ + dt * f, out=0.0) for f in (0.1, 0.5, 1.0)]
+            add(parts.welt([p for p, _ in q], [n for _, n in q], [w * 0.5, w * 0.4, w * 0.15], [h * 0.6, h * 0.45, h * 0.1], n=4))
+    return V, F
+
+
+# issue 1291 (Ryan, Nov 20 4:18 PM CT: "run it down low too. we should cover the chorus ships in armor almost everywhere"):
+# the armadillo bands wrap the body down to the keel by default; KEEL is how close to the keel line a band end may come
+WRAP = -1.5
+KEEL = -math.pi / 2 + 0.02
+
+
+def armadillo(K, kit_module, x_bow, x_aft, seed, lo=None, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide',
+              close_gaps=True, fill=True, scale=1.0, res=1.0):
+    """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
+    wrapping the body (lo=-1.2 runs each band from belly edge to belly edge; the default wraps to the keel), bands of grown chitin
+    running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
+    round a fitting and both broken ends thin into the flesh; hide rolls and creases gather along the shell's lower edges.
+    close_gaps (issue 1291): when a long step would outrun a short band and leave a bare strip across the back, the next band
+    starts under this one's lip instead (no extra draw from rng, so only those steps change). False keeps the old steps: C13
+    as accepted and published (round G, PR 1308) has one such step and keeps it until Ryan asks for a rebuild.
+    lo=None (the default, Ryan Nov 20: "cover the chorus ships in armor almost everywhere") is WRAP: each band runs down both
+    flanks to the keel, where the two ends meet; a band never crosses the keel. fill (default on): where a fitting cuts a band,
+    a half band still grows ahead of it or behind it, so the shell hugs the fittings instead of leaving a band-long gap.
+    scale (issue 1373, R362): the absolute sizes below (keep-out cells and reach, the band's sink, the hide skirt) are tuned
+    for a ship about 9.5 long; a strike craft passes its length over 9.5 so its shell keeps the same proportions. 1.0 (every
+    ship) multiplies by one and builds the same bytes as before. res (issue 1373): the share of the bands' mesh density a
+    small, many-on-screen object keeps (a craft: about 0.3, with the hide skirt's crease welts left out); 1.0 builds as before.
+    Returns the shell object and the skirt object."""
+    register(kit_module)
+    rng = random.Random(seed)
+    lo = WRAP if lo is None else lo
+    blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18 * scale, 3 * thick),
+                            bury=0.06 * scale, cell=(0.1 * scale, 0.06))
+    mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
+    skirt = ([], [])
+    x = x_bow; nb = 0; runs_n = 0; clamped = 0
+    while x - band > x_aft:
+        L_ = band * lap
+        # round D: uneven bands, wider and narrower, their lower edges ragged
+        L_ = band * lap * rng.uniform(0.75, 1.25)
+        lo_ = lo + rng.uniform(-0.16, 0.16); hi_ = math.pi - lo + rng.uniform(-0.16, 0.16)
+        lo_ = max(lo_, KEEL); hi_ = min(hi_, math.pi - KEEL)   # the two ends meet at the keel, never cross it
+        n = 80
+        cols = []
+        for j in range(n + 1):
+            th = lo_ + (hi_ - lo_) * j / n
+            side = 1 if th < math.pi / 2 else -1
+            thp = th if side > 0 else math.pi - th
+            cols.append((thp, side))
+
+        def runs_of(ok):
+            out = []; j = 0
+            while j <= n:
+                if ok[j]:
+                    k = j
+                    while k + 1 <= n and ok[k + 1]:
+                        k += 1
+                    a_ = lo_ + (hi_ - lo_) * j / n; b_ = lo_ + (hi_ - lo_) * k / n
+                    if b_ - a_ > 0.22:
+                        out.append((a_, b_, j, k))
+                    j = k + 1
+                else:
+                    j += 1
+            return out
+
+        def clear(fs):
+            return [not any(blocked(x - f * L_, thp, side) for f in fs) for (thp, side) in cols]
+        full = clear((0.0, 0.3, 0.6, 0.9))
+        pieces = [(x, L_, a_, b_) for (a_, b_, _, _) in runs_of(full)]
+        if fill:
+            # Ryan (Nov 20, "cover the chorus ships in armor almost everywhere"): where a fitting cuts a band, a half band still
+            # grows on the clear side of it (its front half ahead of the fitting, or its back half behind it), so a big
+            # fitting leaves a hole the size of itself, not a whole band's length either side
+            covered = list(full)
+            for fs, root in (((0.0, 0.15, 0.3, 0.42), x), ((0.55, 0.7, 0.85, 0.97), x - 0.55 * L_)):
+                ok = clear(fs)
+                ok = [o and not c for o, c in zip(ok, covered)]
+                for (a_, b_, j0, k0) in runs_of(ok):
+                    pieces.append((root, L_ * 0.45, a_, b_))
+                    for q in range(j0, k0 + 1):
+                        covered[q] = True
+        for xr, Lr, a_, b_ in pieces:
+            dens = {} if res == 1.0 else dict(nu=max(4, int(round(12 * res))), nv=max(6, int((b_ - a_) / (0.05 / res))))
+            vv, ff, gg, rr = _band(K.hpt, xr, Lr, a_, b_, thick * rng.uniform(0.9, 1.1), rng, sink=0.012 * scale, **dens)
+            _append(mesh, vv, ff)
+            attrs['scute_tone'].extend([rng.uniform(0.2, 0.8)] * len(vv))
+            attrs['scute_progress'].extend(gg)
+            attrs['scute_ridge'].extend(rr)
+            runs_n += 1
+            # the hide gathered at the band's ends (its lower edge on each flank, or where it breaks round a fitting)
+            for tt in (a_, b_):
+                pts = [(xr - Lr * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
+                _append(skirt, *_skirt(K.hpt, pts, 0.14 * scale, 0.014 * scale, rng, creases=res == 1.0, ln_k=scale))
+        step = band * rng.uniform(0.65, 1.35)
+        if close_gaps and step > L_:
+            # issue 1291: a long step after a short band would leave a bare strip across the back; the next band starts under
+            # this one's lip instead. Only the steps that would open a gap change (no extra draw from rng), so a sheet whose
+            # bands never hit the case builds the same bytes as before
+            step = L_ * 0.92; clamped += 1
+        x -= step; nb += 1
+    # the first band's root: the hide it grows out of, rolled against it
+    print('[armadillo] %d bands, %d runs, %d steps clamped' % (nb, runs_n, clamped), flush=True)
+    shell = K.hull_detail('armour_shell', mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])
+    if shell is not None:
+        K.mass('Armour shell', shell, 'grown chitin bands', note=note or 'armadillo bands of grown chitin over the back, lips aft (issue 1291)')
+        _attributes(shell, attrs)
+    sk = K.hull_detail('armour_skirt', skirt, 'flesh2') if skirt[1] else None
+    return shell, sk
+
+
+def fused_patches(K, kit_module, spots, seed, thick=0.05, inv='hide', name='armour_patches'):
+    """issue 1291 (Ryan's "b"): chitin grown into the flesh on the lower flanks: small clusters of overlapping ridged plates,
+    their roots sunk in the hide, the hide rolled round each cluster. spots = [(x, t, size, count)] in K.hpt's terms (t in
+    the port convention, any side). Returns the plates object and the hide object."""
+    register(kit_module)
+    rng = random.Random(seed)
+    mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
+    hide = ([], [])
+    for (x0, t0, sz, cnt) in spots:
+        for k in range(cnt):
+            xr = x0 + sz * rng.uniform(-0.5, 0.6) - k * sz * 0.25
+            tc = t0 + rng.uniform(-0.5, 0.5) * sz
+            half = sz * rng.uniform(0.25, 0.42)
+            vv, ff, gg, rr = _band(K.hpt, xr, sz * rng.uniform(0.45, 0.7), tc - half, tc + half, thick * rng.uniform(0.8, 1.2), rng,
+                                   nu=8, nv=10, sink=0.02)
+            _append(mesh, vv, ff)
+            attrs['scute_tone'].extend([rng.uniform(0.2, 0.8)] * len(vv))
+            attrs['scute_progress'].extend(gg)
+            attrs['scute_ridge'].extend(rr)
+        # the hide rolled round the cluster's fore edge (where the plates grow out of it)
+        pts = [(x0 + sz * 0.62 + 0.04 * math.sin(a * 3), t0 + sz * 0.75 * math.sin(a)) for a in [(-1.3 + 2.6 * i / 8) for i in range(9)]]
+        _append(hide, *_skirt(K.hpt, pts, 0.12, 0.012, rng))
+    ob = K.hull_detail(name, mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])
+    if ob is not None:
+        K.mass('Grown chitin patches', ob, 'grown chitin', note='chitin grown into the flank flesh in small fused clusters (issue 1291)')
+        _attributes(ob, attrs)
+    hd = K.hull_detail(name + '_hide', hide, 'flesh2') if hide[1] else None
+    return ob, hd
