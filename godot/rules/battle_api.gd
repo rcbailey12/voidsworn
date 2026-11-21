@@ -10,6 +10,7 @@ extends RefCounted
 @warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
+const Snap = preload("res://rules/battle_snapshot.gd")
 
 var R                       # the rules (rules.gd); read-only for the game side, use view()
 var phase := "none"         # "player" | "enemy" | "over" | "none" | "halted" (hard stop, see below)
@@ -224,6 +225,7 @@ func _prep() -> void: # ui3d.js prepBattle
 	B["busy"] = true; R.swarmPhase("player"); R.flush_deferred(); B["busy"] = false
 	phase = "over" if R.jt(B.get("over")) else "player"
 	R.emit({"t": "round", "round": int(B["round"])}); R.emit({"t": "side", "side": "player"})
+	_round_capture()
 
 # ---------------- reading state ----------------
 func unit(id: String) -> Variant:
@@ -959,6 +961,7 @@ func _c_end() -> void:
 	if R.jt(B.get("over")):
 		_finish(); return
 	phase = "player"; R.emit({"t": "side", "side": "player"})
+	_round_capture()
 
 func _pendingP() -> Array:
 	var o := []
@@ -1014,8 +1017,84 @@ func _next_round() -> void: # ui3d.js nextRound
 		_finish(); return
 	phase = "player"
 	R.emit({"t": "side", "side": "player"})
+	_round_capture()
 func _finish() -> void:
 	phase = "over"; _queue.clear(); R.emit({"t": "end", "result": R.B["over"]})
+
+# ---------------- issue 1451: round-start snapshots (R378, RULEBOOK 9.18) ----------------
+# With round_saves on (campaign battles), the whole rules state is packed the moment each round starts (after the round-start
+# ticks, the swarm phase and the round hook, when the player is about to act), including the shared random stream, so a battle
+# restored from it plays on with the same dice. The scene writes it to disk later, once the round's animations have settled
+# (battle.gd round_save_cb); taking the bytes here keeps what is saved independent of when the scene gets to it.
+const SNAP_V := 1            # bump when the snapshot's shape changes: an older snapshot then restarts the fight instead
+var round_saves := false
+var round_snap := PackedByteArray()   # the newest round start, packed (empty when packing failed: the last good one stays on disk)
+var round_snap_size := 0
+var round_snap_round := 0             # read without the lock by the scene: which round round_snap holds (0: none)
+var round_snap_error := ""
+var round_snap_ms := 0.0
+static var _fp_cache := ""
+
+func _round_capture() -> void:
+	if not round_saves or phase != "player" or R.jt(R.B.get("over")): return
+	var t0 := Time.get_ticks_usec()
+	if not R.deferred.is_empty():
+		round_snap = PackedByteArray(); round_snap_error = "round %d started with deaths still pending" % int(R.B["round"]); return
+	var root := {"v": SNAP_V, "run": R.RUN, "B": R.B, "arena": R.ARENA, "cut": R.CUT, "solid": R.SOLID, "tmeta": R.TERRAIN_META, "meta": R.META,
+		"uid": R.UID, "ai": R.AI_LEVEL, "rng": JSM.rng_s, "phase": phase, "queue": _queue, "hexes": _hexes, "alt": _alt,
+		"c": [_c_order, _c_i, _c_g, _c_done]}
+	var p := Snap.pack(root)
+	if p.has("error"):
+		round_snap = PackedByteArray(); round_snap_error = str(p["error"]); push_warning("round save skipped: " + round_snap_error); return
+	round_snap = p["bytes"]; round_snap_size = int(p["size"]); round_snap_error = ""
+	round_snap_round = int(R.B["round"])
+	round_snap_ms = (Time.get_ticks_usec() - t0) / 1000.0
+
+# The newest round-start snapshot: {"round", "bytes", "size", "fp", "ms"}, or {} when there is none.
+func take_round_snapshot() -> Dictionary:
+	_enter()
+	var o := {}
+	if not round_snap.is_empty():
+		o = {"round": round_snap_round, "bytes": round_snap, "size": round_snap_size, "fp": snapshot_fingerprint(), "ms": round_snap_ms}
+	_leave(false)
+	return o
+
+# Which rules a snapshot belongs to: the snapshot version, the tables and, where the build carries them, the rules sources and the
+# build's commit. A snapshot from other rules is not restored (the fight restarts from its pre-battle save instead).
+static func snapshot_fingerprint() -> String:
+	if _fp_cache != "": return _fp_cache
+	var parts := ["snap%d" % SNAP_V]
+	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd", "res://rules/jsm.gd"]:
+		if FileAccess.file_exists(f): parts.append(FileAccess.get_file_as_string(f).md5_text().left(12))
+	if FileAccess.file_exists("res://build_info.json"):
+		var bi = JSON.parse_string(FileAccess.get_file_as_string("res://build_info.json"))
+		if bi is Dictionary: parts.append(str(bi.get("commit", "")))
+	_fp_cache = ":".join(PackedStringArray(parts))
+	return _fp_cache
+
+# Put back a battle from take_round_snapshot() (after load_rules on a fresh API). Returns "" or why it cannot be restored. The
+# restored battle is at the start of its round, the player to act; the scene gets a round and a side event, as at any round start.
+func restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
+	_enter(); halted = ""
+	var e := _i_restore_round(bytes, size, fp)
+	_leave(true)
+	return e
+func _i_restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
+	if R == null: return "rules not loaded"
+	if fp != snapshot_fingerprint(): return "the snapshot is from other rules"
+	var u := Snap.unpack(bytes, size)
+	if u.has("error"): return str(u["error"])
+	var S = u["root"]
+	if not (S is Dictionary and int(S.get("v", 0)) == SNAP_V and S.get("B") is Dictionary and S.get("run") is Dictionary): return "the snapshot has the wrong shape"
+	R.not_ported = ""
+	R.RUN = S["run"]; R.B = S["B"]; R.ARENA = S["arena"]; R.CUT = S["cut"]; R.SOLID = S["solid"]; R.TERRAIN_META = S["tmeta"]; R.META = S["meta"]
+	R.UID = S["uid"]; R.AI_LEVEL = S["ai"]; JSM.rng_s = int(S["rng"])
+	R.deferred = []; R.events.clear(); R._runfx = null; R._ob.clear()
+	phase = str(S["phase"]); _queue = S["queue"]; _hexes = S["hexes"]; _alt = bool(S["alt"])
+	_c_order = S["c"][0]; _c_i = int(S["c"][1]); _c_g = int(S["c"][2]); _c_done = S["c"][3]
+	round_snap = bytes; round_snap_size = size; round_snap_round = int(R.B["round"]); round_snap_error = ""
+	R.emit({"t": "round", "round": int(R.B["round"])}); R.emit({"t": "side", "side": "player"})
+	return ""
 
 # Presentation queries use the same hex line and blocker predicates as combat.
 # They return copies and never consume random numbers or change battle state.

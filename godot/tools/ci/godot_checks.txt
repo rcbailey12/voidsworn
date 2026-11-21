@@ -47,10 +47,13 @@ headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or 
 headless|campaign/test/late_fixes_1384.gd|-|-|issue 1384: selling the flagship hands it on, a regrown Eclipse ship never sells above its regrow cost, ascendant and captured hulls carry the Crusade shop discount, an eaten core is remapped in beat 3 and boonStep
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
+headless|campaign/test/round_save_stress.gd|-|1 8 50|issue 1451: round-start saves; 8 seeded campaign fights played straight and with Save and quit, title and Continue at random round starts end and settle identically (the full 120 seeds: args 1 120 50)
+gpu|campaign/test/save_menu_shot.gd|-|{out}/SAVE-1.png|issue 1451 picture SAVE-1: the battle menu's Save and quit to title row; needs a window
 headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
 headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
 headless|campaign/test/sector_routes_test.gd|-|-|issue 1176: 3,000 sectors, two-exit rate, distinct stop types, reachability, rest stops and boss
 headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
+headless|campaign/test/story_buff_resume_test.gd|-|-|issue 1338: a resumed Sector III fight never gets a spent story buff back; a pre-storyGuard save is repaired once
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end

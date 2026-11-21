@@ -183,6 +183,12 @@ Presentation events (no rules meaning; draw them or not):
 - **`version`** goes up after every call that can change the battle (commands, `step()`, `end_turn()`, `new_battle`). `ui_info(id)` and `threat_map()` are cached per version, so asking again before anything changes is instant. Both still return fresh copies.
 - **Checked by** `rules/test/thread_test.gd` (in `parity.bat` and `run_parity.sh`): s4 and s23 played twice, once on one thread and once with every `step()` on a worker while the main thread calls `view()`, `ui_info()`, `threat_map()`, `compute_reach()` and `preview_fire()`; both runs must end identical.
 
+## Round-start snapshots (issue 1451, Nov 21)
+
+- **`round_saves = true`** (set before `new_battle`; campaign battles): at the start of every round (round 1 right after setup, then after each round-start tick, swarm phase and round hook, when the player is about to act; Classic mode too) the whole rules state is packed into `round_snap` (bytes, `battle_snapshot.gd`): the run, `B`, the arena, board cut-outs, terrain meta, ids, AI level, the API's own turn state and the shared random stream (`JSM.rng_s`). `round_snap_round` says which round it holds and may be read without the lock. Packing keeps shared containers shared (a unit in `B.units` and `B.aiFocus`, a campaign ship in `RUN.fleet` and in its unit) and numbers bit for bit.
+- **`take_round_snapshot()`** returns `{round, bytes, size, fp, ms}` (or `{}`), `fp` being `snapshot_fingerprint()`: the snapshot version, the tables and rules sources and the build commit when present.
+- **`restore_round(bytes, size, fp)`** on a fresh API after `load_rules()`: returns `""` or why not (other rules, a damaged copy). The battle is then at that round's start with the player to act, and `take_events()` gives `round` and `side`, as at any round start. From there it plays exactly as the battle that was saved (`campaign/test/round_save_stress.gd`).
+
 ## Errors and the hard stop (Oct 26)
 
 - GDScript has no exceptions: a runtime error returns from the failing function with a default value and play goes on with a wrong number. The API counts script errors raised inside `res://rules/` during each call (a Godot `Logger`), and reads `R.not_ported` (an unported rule, or an unported maths branch in `jsm.gd`).
