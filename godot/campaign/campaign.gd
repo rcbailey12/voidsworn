@@ -1479,6 +1479,7 @@ func act(name: String, arg = "") -> void:
 		"sellShip": ACT_sellShip(a)
 		"sellConfirm": ACT_sellConfirm(a)
 		"eventChoice": ACT_eventChoice(a)
+		"eventBack": ACT_eventBack()
 		"battle": ACT_battle(a)
 		"c3continue": ACT_c3continue()
 		"c3retreat": ACT_c3retreat()
@@ -2243,6 +2244,18 @@ func show_event(ev: Dictionary) -> void:
 	for i in range(cur_event["o"].size()):
 		A(acts, "eventChoice", i, eventOptOk(cur_event["o"][i]))
 	show_modal("event", {"ev": cur_event}, acts)
+# issue 1449: a relic trade never takes salvage silently. With one piece the choice names it; with two or more the player picks first.
+func relicTradeNote(o) -> String:
+	var r = o.get("r") if o is Dictionary else null
+	if not (r is Dictionary) or not jt(r.get("payRelic")) or RUN["relics"].is_empty(): return ""
+	return (" You give up " + relicName(RUN["relics"][0]) + ".") if RUN["relics"].size() == 1 else " You choose which piece."
+func relic_pick_modal(i: int) -> void:
+	var acts = []
+	for j in range(RUN["relics"].size()): A(acts, "eventChoice", str(i) + ":" + str(j))
+	A(acts, "eventBack")
+	show_modal("relic_pick", {"ev": cur_event, "i": i, "relics": RUN["relics"].duplicate()}, acts)
+func ACT_eventBack() -> void:
+	if cur_event is Dictionary and not cur_event.is_empty(): show_event(cur_event)
 # B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
 # R1 (EVT-1): a flag gate can name the choices that open it (flagK), not only that the event happened
 func flagIs(id, ks) -> bool:
@@ -3008,7 +3021,8 @@ func applyOutcome(r) -> Array:
 			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(r["payXp"])); out.append(str(f["cap"]["name"]) + " loses " + numstr(r["payXp"]) + " experience.")
 	if jt(r.get("payRelic")):
 		if RUN["relics"].size() > 0:
-			var rl = RUN["relics"].pop_back(); changeFleet(_noop); out.append("You give up " + relicName(rl) + ".")
+			var at: int = int(r["payRelicAt"]) if r.get("payRelicAt") != null and int(r["payRelicAt"]) >= 0 and int(r["payRelicAt"]) < RUN["relics"].size() else RUN["relics"].size() - 1
+			var rl = RUN["relics"].pop_at(at); changeFleet(_noop); out.append("You give up " + relicName(rl) + ".")
 	if jt(r.get("repairOne")):
 		var cands = RUN["fleet"]
 		if jt(upgraded_uid) and cands.size() > 1: cands = cands.filter(func(sh): return sh.get("uid") != upgraded_uid)
@@ -3113,13 +3127,20 @@ func _arc_played(beat: int) -> bool:
 		if str(k).begins_with(pre): return true
 	return false
 func ACT_eventChoice(a: String) -> void:
-	var i = int(a)
+	var parts := a.split(":")
+	var i = int(parts[0])
+	var j := int(parts[1]) if parts.size() > 1 else -1
 	var o = cur_event["o"][i] if (i >= 0 and i < cur_event["o"].size()) else null
 	if o == null or not eventOptOk(o): return
+	var paying: bool = o.get("r") is Dictionary and jt(o["r"].get("payRelic"))
+	if paying and RUN["relics"].size() > 1 and not (j >= 0 and j < RUN["relics"].size()):
+		relic_pick_modal(i); return   # issue 1449: pick the salvage first
 	eventFlags(cur_event, o, i)
 	if jt(cur_event.get("arc")):
 		_arc_choice(o, i); return
 	var r = o["r"]
+	if paying and j >= 0:
+		r = r.duplicate(); r["payRelicAt"] = j
 	if r is Dictionary and jt(r.get("fight")):
 		var n = findNode(RUN["curNode"])
 		if n != null and jt(n.get("nemCleared")): saveRun()
