@@ -1,0 +1,6 @@
+GPU line 1435 PP2 start Fri 11/20/2026 18:19:54.38 
+OPUS1435_CLOSE_PP2 start 18:19:54.38 
+OPUS1435_CLOSE_PP2 exit 1 at 18:50:25.59 
+run folder out_20261120_181955_9883
+result: done FAILED: new close timing, new player path
+all done Fri 11/20/2026 18:50:26.03 

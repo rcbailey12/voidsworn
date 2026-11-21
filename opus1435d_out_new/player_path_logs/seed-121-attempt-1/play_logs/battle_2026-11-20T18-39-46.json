@@ -1,0 +1,311 @@
+{
+ "acts": [
+  {
+   "acts": [
+    {
+     "at": 1699,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "6,11"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 8134,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 1,
+   "r": 1,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 1699,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 4058,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "7,9"
+    },
+    {
+     "armed": false,
+     "at": 10773,
+     "guns": 2,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 16367,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 1,
+   "r": 1,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 4058,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "at": 658,
+     "cost": 6,
+     "f": 0,
+     "k": "move",
+     "to": "5,13"
+    },
+    {
+     "at": 10081,
+     "cost": 4,
+     "guns": 1,
+     "k": "attack_move",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 13201,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 1,
+   "r": 1,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 658,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 629,
+     "k": "command"
+    },
+    {
+     "armed": false,
+     "at": 4629,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 6927,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 0,
+   "r": 2,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 629,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 801,
+     "cost": 2,
+     "guns": 1,
+     "k": "attack_move",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 3203,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 0,
+   "r": 2,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 801,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1078,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 2103,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Dawn of Cinders",
+   "plans": 0,
+   "r": 3,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 1078,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1135,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3457,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Bright Censure",
+   "plans": 0,
+   "r": 3,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 1135,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 792,
+     "cost": 2,
+     "guns": 2,
+     "k": "attack_move",
+     "target": "Destroyer",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 8853,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 0,
+   "r": 3,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 792,
+   "tpl": "harrow"
+  }
+ ],
+ "battle": {
+  "campaign": true,
+  "enemy": "hegemony",
+  "obj": "rout",
+  "seed": 4018790901
+ },
+ "enemy_s": {
+  "1": 9.37,
+  "2": 6.23,
+  "3": 2.9
+ },
+ "hurries": 0,
+ "result": "win",
+ "rounds": 3,
+ "secs": 91.0,
+ "tips": [
+  {
+   "activation": "1:player:x01",
+   "at": 21745,
+   "id": "select",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x01",
+   "at": 26131,
+   "id": "select",
+   "k": "retire",
+   "r": 1,
+   "why": "move"
+  },
+  {
+   "activation": "1:enemy:x05",
+   "at": 28712,
+   "id": "fired",
+   "k": "retire",
+   "r": 1,
+   "why": "activation_complete"
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 31837,
+   "id": "select",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 32179,
+   "id": "move",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 38475,
+   "id": "move",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 42414,
+   "id": "target",
+   "k": "retire",
+   "r": 1,
+   "why": "shot_resolved"
+  },
+  {
+   "activation": "1:enemy:x04",
+   "at": 51721,
+   "id": "threat",
+   "k": "show",
+   "r": 2,
+   "why": ""
+  },
+  {
+   "activation": "1:enemy:x04",
+   "at": 54150,
+   "id": "threat",
+   "k": "dismiss",
+   "r": 2,
+   "why": "got_it"
+  }
+ ],
+ "v": 1
+}

@@ -1,0 +1,659 @@
+{
+ "acts": [
+  {
+   "acts": [
+    {
+     "at": 1547,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "6,11"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 7152,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 1,
+   "r": 1,
+   "ship": "x01",
+   "targets": 0,
+   "think_ms": 1547,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 3045,
+     "cost": 5,
+     "f": 0,
+     "k": "move",
+     "to": "4,12"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 7885,
+   "end": "rules",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 1,
+   "r": 1,
+   "ship": "x02",
+   "targets": 0,
+   "think_ms": 3045,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "at": 3061,
+     "cost": 6,
+     "f": 0,
+     "k": "move",
+     "to": "7,13"
+    },
+    {
+     "at": 12327,
+     "cost": 3,
+     "guns": 1,
+     "k": "attack_move",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 17154,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Cold Reckoning",
+   "plans": 1,
+   "r": 1,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 3061,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "at": 629,
+     "k": "command"
+    },
+    {
+     "armed": false,
+     "at": 4506,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 6803,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 2,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 629,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 904,
+     "cost": 4,
+     "guns": 2,
+     "k": "attack_move",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 6572,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 2,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 904,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1069,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Frigate",
+   "dur_ms": 2058,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Cold Reckoning",
+   "plans": 0,
+   "r": 3,
+   "ship": "x03",
+   "targets": 1,
+   "think_ms": 1069,
+   "tpl": "warden"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1063,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3366,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 3,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 1063,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 941,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1679,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 3,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 941,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 1105,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3560,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 4,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 1105,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 993,
+     "guns": 2,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x06"
+    },
+    {
+     "armed": false,
+     "at": 4510,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 5019,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 4,
+   "ship": "x02",
+   "targets": 2,
+   "think_ms": 993,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 980,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3295,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 5,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 980,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 904,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1681,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 5,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 904,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 959,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3224,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 6,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 959,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 874,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1600,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 6,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 874,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 960,
+     "guns": 1,
+     "k": "fire",
+     "target": "Frigate",
+     "tid": "x04"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3712,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 7,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 960,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 845,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1519,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 7,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 845,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 891,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3224,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 8,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 891,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 820,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Destroyer",
+   "dur_ms": 1484,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Everwatch",
+   "plans": 0,
+   "r": 8,
+   "ship": "x02",
+   "targets": 1,
+   "think_ms": 820,
+   "tpl": "harrow"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 934,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3281,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 9,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 934,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "armed": false,
+     "at": 932,
+     "guns": 1,
+     "k": "fire",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 3252,
+   "end": "button",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 10,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 932,
+   "tpl": "penitent"
+  },
+  {
+   "acts": [
+    {
+     "at": 823,
+     "cost": 4,
+     "guns": 2,
+     "k": "attack_move",
+     "target": "Destroyer",
+     "tid": "x05"
+    }
+   ],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 9740,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 11,
+   "ship": "x01",
+   "targets": 1,
+   "think_ms": 823,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": true,
+  "enemy": "hegemony",
+  "obj": "rout",
+  "seed": 152043383
+ },
+ "enemy_s": {
+  "1": 9.4,
+  "10": 5.03,
+  "2": 6.87,
+  "3": 13.07,
+  "4": 7.67,
+  "5": 4.77,
+  "6": 1.53,
+  "7": 1.4,
+  "8": 1.4,
+  "9": 2.23
+ },
+ "hurries": 0,
+ "result": "win",
+ "rounds": 11,
+ "secs": 142.8,
+ "tips": [
+  {
+   "activation": "1:player:x01",
+   "at": 9460,
+   "id": "select",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x01",
+   "at": 13520,
+   "id": "select",
+   "k": "retire",
+   "r": 1,
+   "why": "move"
+  },
+  {
+   "activation": "1:enemy:x04",
+   "at": 15542,
+   "id": "fired",
+   "k": "retire",
+   "r": 1,
+   "why": "activation_complete"
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 17904,
+   "id": "select",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "1:player:x02",
+   "at": 18159,
+   "id": "move",
+   "k": "show",
+   "r": 1,
+   "why": ""
+  },
+  {
+   "activation": "1:player:x03",
+   "at": 25801,
+   "id": "move",
+   "k": "dismiss",
+   "r": 1,
+   "why": "got_it"
+  },
+  {
+   "activation": "1:enemy:x05",
+   "at": 32461,
+   "id": "target",
+   "k": "show",
+   "r": 2,
+   "why": ""
+  },
+  {
+   "activation": "1:enemy:x05",
+   "at": 34803,
+   "id": "target",
+   "k": "dismiss",
+   "r": 2,
+   "why": "got_it"
+  },
+  {
+   "activation": "2:player:x03",
+   "at": 38028,
+   "id": "target",
+   "k": "retire",
+   "r": 2,
+   "why": "shot_resolved"
+  },
+  {
+   "activation": "2:player:x03",
+   "at": 38040,
+   "id": "threat",
+   "k": "show",
+   "r": 2,
+   "why": ""
+  },
+  {
+   "activation": "2:player:x03",
+   "at": 40328,
+   "id": "threat",
+   "k": "dismiss",
+   "r": 2,
+   "why": "got_it"
+  }
+ ],
+ "v": 1
+}

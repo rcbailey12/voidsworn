@@ -1,0 +1,7 @@
+close timing, project C:\Users\rcbai\Downloads\voidsworn_test\opus1435d\out_20261120_181955_9883\new\godot, 2026-11-20T18:35:16
+x_load_4s: FAIL: see game.log sent=x pending_cut=False close_to_exit_ms=4219 exit=-1073740286 quit_window=False retired=[] drained=[] crash=False
+x_load_7s: FAIL: see game.log sent=x pending_cut=False close_to_exit_ms=257 exit=-1073741510 quit_window=False retired=[] drained=[] crash=False
+altf4_load_5s: FAIL: see game.log (SKIP: game not in front, closed with the title bar close instead) sent=x pending_cut=False close_to_exit_ms=3797 exit=-1073741510 quit_window=False retired=[] drained=[] crash=False
+x_battle_30s: FAIL: see game.log sent=x pending_cut=False close_to_exit_ms=302 exit=-1073741510 quit_window=False retired=[] drained=[] crash=False
+altf4_battle_30s: FAIL: see game.log (SKIP: game not in front, closed with the title bar close instead) sent=x pending_cut=False close_to_exit_ms=380 exit=-1073741510 quit_window=False retired=[] drained=[] crash=False
+failures=5

@@ -1,0 +1,1 @@
+PC relay note: the close cases in close\ are INVALID (Board, Nov 21 00:37 UTC: PP2 sent the close to the console window); CLOSE3 (opus1435e) reruns them. Export and check export count. Skipped: export binaries (exe, dll, pck), player_path\seed-10.avi (1.6 GB) and seed-121.avi (2.8 GB).

@@ -1,0 +1,134 @@
+{"battle":0,"build":{"commit":"416ffaf0ac6712d14ea70bfc1f9c9ecffc69b3bf","commit_date":"2026-11-21T00:18:14Z"},"frame":45,"headless":false,"kind":"run","manifest_sha256":"0c561fda3543abefce6cee76ae8f947b259d40628729f4205312bce22c96885b","mesh_lod_threshold":1.0,"profile_isolated":true,"sector_enemy":"hegemony","seed":10,"settings":{"ai":"standard","cine":"key","follow":true,"fullscreen":true,"movement":"cinematic","music":true,"music_volume":0.7,"nebula_wake_on":true,"quality":"max","reduce_flashing":false,"reduce_motion":false,"shake":1.0,"sound":true,"speed":1.0,"taa":false,"tips":true,"ui_scale":1.0,"volume":0.8},"user_data_dir":"C:/Users/rcbai/AppData/Local/Temp/voidsworn-player-path-f4b50c99-fa4d-4fcf-a386-c638734d1470/seed-10-attempt-1/profile/Godot/app_userdata/Voidsworn/"}
+{"action":"startRun","battle":0,"choice":"","frame":76,"kind":"campaign_choice","page":"admiral"}
+{"action":"pickAspect","battle":0,"choice":"ram","frame":120,"kind":"campaign_choice","page":"aspect"}
+{"battle":0,"frame":164,"id":"name_flagship","kind":"campaign_card"}
+{"action":"closeModal","battle":0,"choice":"","frame":268,"kind":"campaign_choice","page":"map"}
+{"battle":0,"frame":312,"id":"c_map","kind":"campaign_card"}
+{"battle":0,"frame":427,"id":"c_clock","kind":"campaign_card"}
+{"battle":1,"enemy":"hegemony","frame":645,"kind":"battle_start","node":"0-0","objective":"rout","seed":152043383,"teaching_battle":1}
+{"battle":1,"frame":647,"kind":"voice","text":"Admiral Roderic Vex: \"Hold the line. Let them come to the broadsides.\""}
+{"battle":1,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Vigilant Ash","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Everwatch","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Cold Reckoning","side":"player"},{"asset":"res://gen/ships/H7_23.scn","class":"Frigate","code":"H7_23","parted_hull":true,"ship":"Hegemony picket","side":"enemy"},{"asset":"res://gen/ships/H8_23.scn","class":"Destroyer","code":"H8_23","parted_hull":true,"ship":"Cordon destroyer","side":"enemy"},{"asset":"res://gen/ships/H7_23.scn","class":"Frigate","code":"H7_23","parted_hull":true,"ship":"Hegemony picket","side":"enemy"}],"frame":810,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":1,"frame":810,"kind":"danger","round":1}
+{"battle":1,"frame":810,"hex":[6.0,11.0],"kind":"move_preview","round":1,"ship":"Vigilant Ash"}
+{"battle":1,"frame":1042,"id":"select","kind":"teaching_card","round":1}
+{"battle":1,"frame":1142,"hex":[4.0,12.0],"kind":"move_preview","round":1,"ship":"Everwatch"}
+{"battle":1,"frame":1347,"id":"move","kind":"teaching_card","round":1}
+{"battle":1,"frame":1447,"hex":[7.0,13.0],"kind":"move_preview","round":1,"ship":"Cold Reckoning"}
+{"battle":1,"frame":1659,"kind":"cut_start","text":"lance: Cordon destroyer to Cold Reckoning"}
+{"battle":1,"frame":1683,"kind":"cut_end","text":"lance: Cordon destroyer to Cold Reckoning"}
+{"battle":1,"frame":1692,"id":"target","kind":"teaching_card","round":2}
+{"battle":1,"frame":1792,"kind":"attack_move_preview","ship":"Hegemony picket"}
+{"battle":1,"frame":1906,"id":"threat","kind":"teaching_card","round":2}
+{"battle":1,"frame":2073,"kind":"command","name":"Fire for effect","round":2}
+{"battle":1,"frame":2086,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":1,"frame":2102,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":2184,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":2214,"kind":"target_preview","round":2,"ship":"Cordon destroyer"}
+{"battle":1,"frame":2234,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":2314,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":2377,"kind":"attack_move_preview","ship":"Hegemony picket"}
+{"battle":1,"frame":2492,"kind":"cut_start","text":"torp: Everwatch to Hegemony picket"}
+{"battle":1,"frame":2603,"kind":"cut_end","text":"torp: Everwatch to Hegemony picket"}
+{"battle":1,"frame":2696,"kind":"cut_start","text":"lance: Cordon destroyer to Vigilant Ash"}
+{"battle":1,"frame":2717,"kind":"cut_end","text":"lance: Cordon destroyer to Vigilant Ash"}
+{"battle":1,"frame":2743,"kind":"target_preview","round":3,"ship":"Hegemony picket"}
+{"battle":1,"frame":2949,"kind":"target_preview","round":3,"ship":"Hegemony picket"}
+{"battle":1,"frame":2969,"kind":"cut_start","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":3049,"kind":"cut_end","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":3163,"kind":"target_preview","round":3,"ship":"Hegemony picket"}
+{"battle":1,"frame":3332,"kind":"cut_start","text":"lance: Cordon destroyer to Cold Reckoning"}
+{"battle":1,"frame":3361,"kind":"cut_end","text":"lance: Cordon destroyer to Cold Reckoning"}
+{"battle":1,"frame":3361,"kind":"voice","text":"Admiral Roderic Vex: \"A ship of the line is gone. Chalk her name. Close the gap. The line does not break.\""}
+{"battle":1,"frame":3397,"kind":"target_preview","round":4,"ship":"Hegemony picket"}
+{"battle":1,"frame":3417,"kind":"cut_start","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":3498,"kind":"cut_end","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":3606,"kind":"target_preview","round":4,"ship":"Hegemony picket"}
+{"battle":1,"frame":3626,"kind":"cut_start","text":"torp: Everwatch to Hegemony picket"}
+{"battle":1,"frame":3704,"kind":"cut_end","text":"torp: Everwatch to Hegemony picket"}
+{"battle":1,"frame":3735,"kind":"target_preview","round":4,"ship":"Hegemony picket"}
+{"battle":1,"frame":3887,"kind":"cut_start","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":3911,"kind":"cut_end","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":3939,"kind":"target_preview","round":5,"ship":"Hegemony picket"}
+{"battle":1,"frame":3959,"kind":"cut_start","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4038,"kind":"cut_end","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4164,"kind":"target_preview","round":5,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4224,"kind":"cut_start","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4245,"kind":"cut_end","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4266,"kind":"target_preview","round":6,"ship":"Hegemony picket"}
+{"battle":1,"frame":4286,"kind":"cut_start","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4365,"kind":"cut_end","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4388,"kind":"target_preview","round":6,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4449,"kind":"cut_start","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4470,"kind":"cut_end","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4491,"kind":"target_preview","round":7,"ship":"Hegemony picket"}
+{"battle":1,"frame":4511,"kind":"cut_start","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4591,"kind":"cut_end","text":"lance: Vigilant Ash to Hegemony picket"}
+{"battle":1,"frame":4629,"kind":"cut_start","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4656,"kind":"cut_end","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4667,"kind":"target_preview","round":7,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4738,"kind":"target_preview","round":8,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4758,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":4838,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":4857,"kind":"cut_start","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4884,"kind":"cut_end","text":"lance: Cordon destroyer to Everwatch"}
+{"battle":1,"frame":4895,"kind":"target_preview","round":8,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4965,"kind":"target_preview","round":9,"ship":"Cordon destroyer"}
+{"battle":1,"frame":4985,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5066,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5104,"kind":"cut_start","text":"kill: Everwatch"}
+{"battle":1,"frame":5129,"kind":"cut_end","text":"kill: Everwatch"}
+{"battle":1,"frame":5151,"kind":"target_preview","round":10,"ship":"Cordon destroyer"}
+{"battle":1,"frame":5171,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5251,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5371,"kind":"cut_start","text":"lance: Cordon destroyer to Vigilant Ash"}
+{"battle":1,"frame":5395,"kind":"cut_end","text":"lance: Cordon destroyer to Vigilant Ash"}
+{"battle":1,"frame":5410,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":5613,"kind":"cut_start","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5666,"kind":"cut_end","text":"lance: Vigilant Ash to Cordon destroyer"}
+{"battle":1,"frame":5666,"kind":"cut_start","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":5714,"kind":"cut_end","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":5766,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":1,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Vigilant Ash","side":"player"}],"frame":5767,"kind":"end_card","result":"win","rounds":11}
+{"battle":1,"frame":5857,"kind":"battle_end"}
+{"battle":1,"frame":5870,"id":"c_reward","kind":"campaign_card"}
+{"action":"takeSalvage","battle":1,"choice":"0:mod","frame":5985,"kind":"campaign_choice","page":"battle"}
+{"action":"takeBoon","battle":1,"choice":"0","frame":6029,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":1,"choice":"xmwpot4yg1:lanceadept","frame":6073,"kind":"campaign_choice","page":"battle"}
+{"battle":2,"enemy":"corsair","frame":6220,"kind":"battle_start","node":"1-3","objective":"hold","seed":2908194046,"teaching_battle":2}
+{"battle":2,"frame":6222,"kind":"voice","text":"Admiral Roderic Vex: \"Run out the guns. Present the flank.\""}
+{"battle":2,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Vigilant Ash","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Cold Fury","side":"player"},{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"},{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"}],"frame":6488,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":2,"frame":6488,"kind":"danger","round":1}
+{"battle":2,"frame":6488,"hex":[6.0,11.0],"kind":"move_preview","round":1,"ship":"Vigilant Ash"}
+{"battle":2,"frame":6748,"kind":"cut_start","text":"torp: Hullbreaker gutship to Vigilant Ash"}
+{"battle":2,"frame":6791,"kind":"cut_end","text":"torp: Hullbreaker gutship to Vigilant Ash"}
+{"battle":2,"frame":6794,"id":"objective","kind":"teaching_card","round":1}
+{"battle":2,"frame":6894,"hex":[7.0,9.0],"kind":"move_preview","round":1,"ship":"Cold Fury"}
+{"battle":2,"frame":7133,"id":"reinforce_warn","kind":"teaching_card","round":2}
+{"battle":2,"frame":7233,"hex":[11.0,10.0],"kind":"move_preview","round":2,"ship":"Cold Fury"}
+{"battle":2,"frame":7343,"id":"close","kind":"teaching_card","round":2}
+{"battle":2,"frame":7443,"kind":"command","name":"Fire for effect","round":2}
+{"battle":2,"frame":7457,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":2,"frame":7473,"kind":"cut_start","text":"lance: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":7553,"kind":"cut_end","text":"lance: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":7600,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":7731,"hex":[10.0,11.0],"kind":"move_preview","round":2,"ship":"Vigilant Ash"}
+{"battle":2,"frame":7874,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":7930,"kind":"cut_start","text":"lance: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":7983,"kind":"cut_end","text":"lance: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":7983,"kind":"cut_start","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":8031,"kind":"cut_end","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":8047,"kind":"arrival","ship":"Hullbreaker raider","side":"enemy"}
+{"battle":2,"frame":8272,"kind":"target_preview","round":3,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":8444,"kind":"target_preview","round":4,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":8464,"kind":"cut_start","text":"volley: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":8530,"kind":"cut_end","text":"volley: Vigilant Ash to Hullbreaker gutship"}
+{"battle":2,"frame":8530,"kind":"cut_start","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":8578,"kind":"cut_end","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":8630,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":2,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Vigilant Ash","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Cold Fury","side":"player"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":8631,"kind":"end_card","result":"win","rounds":4}
+{"battle":2,"frame":8721,"kind":"battle_end"}
+{"action":"takeSalvage","battle":2,"choice":"0:mod","frame":8734,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":2,"choice":"xmwpot4yg1:flanker","frame":8778,"kind":"campaign_choice","page":"battle"}
+{"action":"eventChoice","battle":2,"choice":"0","frame":8943,"kind":"campaign_choice","page":"map"}
+{"action":"closeModal","battle":2,"choice":"","frame":8987,"kind":"campaign_choice","page":"map"}
+{"battle":2,"frame":9031,"kind":"failure","reason":"expected route 2-2 is missing after Battle 2"}
