@@ -1,3 +1,0 @@
-# Godot extracts the glb files' embedded maps here on import; the glb files are the source (munitions.py).
-*.jpg
-*.png
