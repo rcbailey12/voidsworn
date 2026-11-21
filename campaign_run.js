@@ -320,10 +320,18 @@ function eventScreen(n){
     if(fight){ battleScreen({kind:'elite',fac:fight.r.fight,col:n.col+1,node:n.id,eventRelic:true}); return; }
   }else ev=nextEvent();
   curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
-  mapScreen();
-  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
-    return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
+  mapScreen(); eventModal();
 }
+function eventModal(){
+  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
+    return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${esc(relicTradeNote(o))}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
+}
+// issue 1449: a relic trade never takes salvage silently. With one piece the choice names it; with two or more the player picks first.
+function relicTradeNote(o){ if(!(o.r&&o.r.payRelic)||!RUN.relics.length) return ''; return RUN.relics.length===1?` You give up ${relicName(RUN.relics[0])}.`:' You choose which piece.'; }
+function relicPickModal(i){
+  modal(`<h2>${esc(curEvent.t)}</h2><p>Which piece of salvage do you give up?</p>${RUN.relics.map((rl,j)=>`<button class="choice" data-act="eventChoice" data-arg="${i}:${j}"><b>${esc(relicName(rl))}</b><small>${esc(RELICS[rl].d)}</small></button>`).join('')}<button data-act="eventBack">Back</button>`);
+}
+ACT.eventBack=()=>{ if(curEvent){ mapScreen(); eventModal(); } };
 // R1 (EVT-1): a flag gate can name the choices that open it (flagK), not only that the event happened
 function flagIs(id,ks){ const v=RUN&&RUN.flags?RUN.flags[id]:null; return v!=null&&(!ks||ks.includes(v)); }
 // B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
@@ -581,7 +589,7 @@ function applyOutcome(r){
   // B4 outcome kinds: more currencies and the Nemesis
   if(r.payMod){ if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`The ${modName(m)} from the hold is used up.`); } }
   if(r.payXp){ const f=flagshipOf()||RUN.fleet[0]; if(f){ f.cap.xp=Math.max(RANK_XP[f.cap.rank]||0,f.cap.xp-r.payXp); out.push(`${f.cap.name} loses ${r.payXp} experience.`); } }
-  if(r.payRelic){ if(RUN.relics.length){ const rl=RUN.relics.splice(RUN.relics.length-1,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
+  if(r.payRelic){ if(RUN.relics.length){ const at=r.payRelicAt>=0&&r.payRelicAt<RUN.relics.length?r.payRelicAt:RUN.relics.length-1, rl=RUN.relics.splice(at,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
   if(r.repairOne){ const candidates=upgradedUid&&RUN.fleet.length>1?RUN.fleet.filter(s=>s.uid!==upgradedUid):RUN.fleet; const s=[...candidates].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; if(s){ s.hp=derive(s).maxHp; out.push(`The ${s.name} is fully repaired.`); } }
   if(r.dmgBig){ const s=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(s){ const dm=Math.round(derive(s).maxHp*r.dmgBig); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); } }
   if(r.xpTop){ const s=[...RUN.fleet].sort((a,b)=>b.cap.xp-a.cap.xp)[0]; if(s){ addXp(s,r.xpTop); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpTop} experience.`); } }
@@ -629,15 +637,17 @@ function applyBeat3Outcome(r){
   if(r.dmgFlag){ const f=flagshipOf(); if(f){ const dmg=Math.round(derive(f).maxHp*r.dmgFlag); f.hp=Math.max(1,f.hp-dmg); out.push(`The ${f.name} takes ${dmg} hull damage.`); } }
   return out;
 }
-ACT.eventChoice=i=>{
-  const o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return; eventFlags(curEvent,o,+i);
+ACT.eventChoice=a=>{
+  const [i,j]=String(a).split(':'), o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return;
+  if(o.r&&o.r.payRelic&&RUN.relics.length>1&&!(j>=0&&+j<RUN.relics.length)){ relicPickModal(+i); return; } // issue 1449: pick the salvage first
+  eventFlags(curEvent,o,+i);
   if(curEvent.beat===3){
     const lines=applyBeat3Outcome(o.r); lines.unshift(o.tx);
     saveRun(); mapScreen();
     modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="${RUN.reward&&RUN.reward.kind==='story'?'storyCore':'closeModal'}">Continue</button>`); return;
   }
   if(o.r&&o.r.fight){ const n=findNode(RUN.curNode); if(n.nemCleared) saveRun(); closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:n.col+1,node:RUN.curNode,eventRelic:true}); return; }
-  const lines=applyOutcome(o.r);
+  const lines=applyOutcome(j!=null&&o.r.payRelic?{...o.r,payRelicAt:+j}:o.r);
   completeNode(); mapScreen();
   modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`);
 };
