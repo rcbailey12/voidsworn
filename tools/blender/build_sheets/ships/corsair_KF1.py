@@ -111,6 +111,42 @@ def build(K):
               variant=var, band=(0, 10, 20, 30, 45),
               note='the fighter\'s guns (data.js guns T): a salvaged twin mount from the Hullbreaker kit on the bow ramp, %s, firing forward' % ('forward to port, the big one' if fid == 'G1' else 'behind it to starboard'))
 
+    # ---------------- the fighter's own shape: long cannon booms past the bow, on armoured sponsons ----------------
+    # Ryan, Nov 21 2026: "a bit more dramatic ... so it feels a bit more like the bomber and is clearly a fighting ship", "keep it
+    # distinct from the bomber but use that type of detailed approach". The bomber has fat bomb barrels at its corners; the
+    # fighter gets two slim banded cannon booms reaching well past the bow, lopsided (port longer and higher), each on a
+    # sponson with exposed machinery, and a ram blade under the bow.
+    def octo(x, r, yc, zc):
+        c = r * 0.58
+        return (U(x), U(r), U(r), U(zc - r), U(zc + r), U(c), U(c), U(yc))
+    for side, (yc, zc, xa, xb, r) in (('p', (0.212, 0.004, -0.17, 0.66, 0.026)), ('s', (-0.206, -0.004, -0.12, 0.59, 0.023))):
+        secs = [octo(xb, r * 0.9, yc, zc), octo(xb - 0.02, r, yc, zc), octo(xa + 0.03, r, yc, zc), octo(xa, r * 0.8, yc, zc)]
+        K.loft('KF1_boom_%s' % side, secs, 'iron', grp='hull')
+        # the muzzle brake: a short wider block with a dark bore face
+        K.loft('KF1_brake_%s' % side, [octo(xb + 0.035, r * 1.35, yc, zc), octo(xb - 0.005, r * 1.35, yc, zc)], 'steel', grp='hull')
+        K.loft('KF1_bore_%s' % side, [octo(xb + 0.037, r * 0.6, yc, zc), octo(xb + 0.030, r * 0.6, yc, zc)], 'dark', grp='hull')
+        # barrel bands, uneven spacing (salvaged and patched)
+        for i, bx in enumerate([xb - 0.07, xb - 0.19, xb - 0.27, xb - 0.42, xa + 0.10][: 5 if side == 'p' else 4]):
+            K.loft('KF1_band_%s%d' % (side, i), [octo(bx + 0.008, r * 1.22, yc, zc), octo(bx - 0.008, r * 1.22, yc, zc)], 'rust', grp='hull')
+        # the sponson: an armoured block from the flank out to the boom, slatted machinery on top
+        sgn = 1 if side == 'p' else -1
+        y_in, y_out = sgn * 0.150, yc
+        ya, yb = min(y_in, y_out), max(y_in, y_out)
+        K.box('KF1_sponson_%s' % side, U(xa + 0.01), U(0.22 if side == 'p' else 0.17), U(ya), U(yb), U(zc - r * 1.3), U(zc + r * 1.5), 'soot2',
+              ch=U(0.006), taper=U(0.012), grp='hull')
+        for i in range(5):
+            x0 = xa + 0.06 + 0.032 * i
+            K.box('KF1_spslat_%s%d' % (side, i), U(x0), U(x0 + 0.012), U(ya + 0.012), U(yb - 0.004), U(zc + r * 1.5 - 0.002), U(zc + r * 1.5 + 0.007),
+                  'iron', grp='hull')
+        PATCH.append(('KF1_sponson_%s' % side, [[(U(x_), y, z) for (y, z) in _k._octa(U((yb - ya) / 2), U((yb - ya) / 2), U(zc - r * 1.3), U(zc + r * 1.5), U(0.006), U(0.003), U((ya + yb) / 2))]
+                                                for x_ in ((0.22 if side == 'p' else 0.17), xa + 0.01)],
+                      dict(PL, seed=37 + sgn, faces=[3 if side == 's' else 7, 5], size=(U(0.035), U(0.08)), inv=[])))
+    K.mark('booms', 'pylon', ['web', 'plate'])
+    # the ram blade under the bow
+    K.box('KF1_ram', U(0.40), U(0.585), U(-0.035), U(0.035), U(sec(BODY, 0.45)[2] - 0.004), U(sec(BODY, 0.45)[2] + 0.024), 'iron', ch=U(0.004),
+          taper=U(0.026), grp='hull')
+    K.mark('ram', 'rib', ['rib'])
+
     # ---------------- deck detail: an ammunition locker and a vent box on the level deck, off centre ----------------
     zd = top(-0.12) / LENGTH
     K.box('KF1_ammo', U(-0.17), U(-0.06), U(0.012), U(0.085), U(zd - 0.002), U(zd + 0.018), 'iron', ch=U(0.003), grp='hull')
@@ -158,5 +194,7 @@ def build(K):
     K.change('The plate mix of the capitals (red, dark iron, grey trophy and violet plates), not the bomber\'s all-red craft mix; drawn at 0.7 of the unit length in game (squadron_wing.gd CRAFT_K)',
              'Ryan, Nov 21 2026: "it\'s ALL red compared to the patchy colors of the rest" and "they look like 2x as big as other fighters"')
     K.change('The vision slit off to starboard, three drive bells', 'Hullbreakers are lopsided, never mirror-even (factions.md); guns T (data.js fighter)')
+    K.change('Two slim banded cannon booms past the bow (port longer and higher), muzzle brakes, armoured sponsons with machinery slats, a ram blade under the bow',
+             'Ryan, Nov 21 2026: "a bit more dramatic ... clearly a fighting ship", "keep it distinct from the bomber but use that type of detailed approach"')
     K.change('Two bigger twin mounts up front on the ramp (port forward, starboard behind), an ammunition locker and a vent box on the deck, and smaller plates on the deck, flanks and chamfers so no bare hull shows',
              'Ryan, Nov 21 2026: "it looks unfinished with the lack of plates" and "can we make the weapon more prominent? right now it just looks like a slab shape"')
