@@ -1,0 +1,97 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1531)
+GPU: still waiting for solo claim
+GPU: acquired solo claim 3df65a06-1b75-4d75-8aad-9d5977770b88
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-d483b9c27e6d421393dd60bf4e3fbfb0\godot-profile-efeef9aa597a4d9c8aa685b3086db878
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 350 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.321, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[world] baked d28299c21a5b1fd0aaec3eec9e0ad27f61fe8b95a5eef18e376203528cb48ca6 4096x2048 in 10464 ms (worker)
+[world] baked 799c67afd6b4523c65ac1379a575bf0c90b7802014812cb0e09aec85e41d6678 4096x2048 in 12866 ms (worker)
+[world] baked 1606be4c3087264734c0cb76027b733050cc905614d7a1542f21da25d5c83832 1024x512 in 13325 ms (worker)
+[world] baked 8c9cd71aab92e089d3ea27a51db81687ffd5682c74f22215270cd2b85083f1c5 4096x2048 in 1876 ms (worker)
+[world] baked 37919171f3cb6f9059a2e21321d4054f94e4467a1df262b630c25efcce6fdd46 1024x512 in 1783 ms (worker)
+[attach] hp_rcs missing on I14_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/01_start.png
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/03_attack_tip.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/05_fire_1.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/07_fire_3.png
+TORP_FIRE r1_x08 weapon=torp shots=1 pd=0
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/08_tl_r1_x08_000.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/09_tl_r1_x08_001.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/10_tl_r1_x08_002.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/11_tl_r1_x08_003.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/12_tl_r1_x08_004.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/13_fire_4.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/14_tl_r1_x08_005.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/15_tl_r1_x08_006.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/16_tl_r1_x08_007.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/17_tl_r1_x08_008.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/18_tl_r1_x08_009.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/19_tl_r1_x08_010.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/20_tl_r1_x08_011.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/21_tl_r1_x08_012.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/22_tl_r1_x08_013.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/23_tl_r1_x08_014.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/24_tl_r1_x08_015.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/25_tl_r1_x08_016.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/26_tl_r1_x08_017.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/27_tl_r1_x08_018.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/28_tl_r1_x08_019.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/29_tl_r1_x08_020.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/30_tl_r1_x08_021.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/31_tl_r1_x08_022.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/32_tl_r1_x08_023.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/33_tl_r1_x08_024.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/34_tl_r1_x08_025.png
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=0
+[attach] hp_breach on I16_11: no authored point fits this request; using the surface ray
+[attach] scorch on I16_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on I11_37: placed on the plating (a surface sample; not a hard point type)
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on ithar|fighter: no authored point fits this request; using the surface ray
+[attach] hp_w on ithar|fighter: no authored point fits this request; using the surface ray
+TORP_FIRE r2_x05 weapon=torp shots=1 pd=0
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[turret] turret_0 on ithar|fighter: its barrels touch the ship at rest; it stays at rest
+[attach] scorch on I14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on ithar|fighter: no authored point fits this request; using the surface ray
+[attach] hp_breach on I14_23: no authored point fits this request; using the surface ray
+TORP_FIRE r4_x05 weapon=torp shots=1 pd=0
+[attach] flare on I16_11: placed on the plating (a surface sample; not a hard point type)
+TORP_FIRE r5_x05 weapon=torp shots=1 pd=0
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\out_new\new0_ithar_3/35_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[16.0,9.7,10.3,14.2,2.2],"enemy_s_max":15.98,"enemy_s_mean":10.47,"movement":"brisk","per_round_by_kind":{"ability":0.09,"activation":0.14,"aiEnd":0.17,"death":0.06,"fire":2.35,"move":7.4,"round":0.2,"tick":0.01,"wing":0.05},"rounds":5},"pipeline_compiles_in_play":24,"result":"win","round":5,"secs":182.364}
+[attach] battle x04 V16_37: skipped 0; rcs hp 318 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 30 ray 0 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 8 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 24 ray 0 centre 0 skip 0; gun hp 14 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 12 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 21 ray 0 centre 0 skip 0
+[attach] battle x07 I16_11: skipped 0; rcs hp 0 ray 192 centre 0 skip 0; breach hp 1 ray 2 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; bay hp 2 ray 0 centre 0 skip 0; gun hp 16 ray 0 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x08 I11_37: skipped 0; rcs hp 0 ray 106 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x09 I14_23: skipped 0; rcs hp 0 ray 60 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0
+[attach] battle x011 ithar|fighter: skipped 0; gun hp 0 ray 6 centre 0 skip 0
+[attach] battle x012 ithar|fighter: skipped 0; gun hp 0 ray 12 centre 0 skip 0
+[attach] battle x013 ithar|fighter: skipped 0; gun hp 0 ray 3 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-d483b9c27e6d421393dd60bf4e3fbfb0\godot-profile-efeef9aa597a4d9c8aa685b3086db878
+GPU: released solo claim 3df65a06-1b75-4d75-8aad-9d5977770b88

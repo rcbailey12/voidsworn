@@ -1,0 +1,44 @@
+[Sat 11/21/2026 10:15:50.13] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T16:15:51Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sat 11/21/2026 10:15:51.27] ready: GPU label 1531
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1 (tools_live version 9204dbb0c395)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 66f92ba6c4e85a3a54aab4fca90f10606a131d29 C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new_ships_identity.txt
+[Sat 11/21/2026 10:16:11.26] step new import start
+[Sat 11/21/2026 10:36:00.83] step new import ok
+[Sat 11/21/2026 10:36:00.86] step new new26 hegemony_3 start
+[Sat 11/21/2026 10:38:40.10] step new new26 hegemony_3 ok
+[Sat 11/21/2026 10:38:40.11] step new new0 hegemony_3 start
+[Sat 11/21/2026 10:42:01.03] step new new0 hegemony_3 ok
+[Sat 11/21/2026 10:42:01.04] step new old26 hegemony_3 start
+[Sat 11/21/2026 10:44:05.79] step new old26 hegemony_3 ok
+[Sat 11/21/2026 10:44:05.81] step new new26 corsair_7 start
+[Sat 11/21/2026 10:47:29.25] step new new26 corsair_7 ok
+[Sat 11/21/2026 10:47:29.26] step new new0 corsair_7 start
+[Sat 11/21/2026 10:50:27.10] step new new0 corsair_7 ok
+[Sat 11/21/2026 10:50:27.11] step new old26 corsair_7 start
+[Sat 11/21/2026 10:53:28.78] step new old26 corsair_7 ok
+[Sat 11/21/2026 10:53:28.79] step new new26 ithar_3 start
+[Sat 11/21/2026 10:57:06.97] step new new26 ithar_3 ok
+[Sat 11/21/2026 10:57:06.98] step new new0 ithar_3 start
+[Sat 11/21/2026 11:01:24.11] step new new0 ithar_3 ok
+[Sat 11/21/2026 11:01:24.12] step new old26 ithar_3 start
+[Sat 11/21/2026 11:04:35.35] step new old26 ithar_3 ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026 11:04:35.79
+checkout new kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1531b\out_20261121_101550_28634\new (it holds 113 path(s) that are not rebuildable leftovers, e.g. new: godot/assets/ships/B19_11/B19_11.glb; new: godot/assets/ships/B19_11/B19_11_base.jpg; new: godot/assets/ships/B19_11/B19_11_normal.png; new: godot/assets/ships/B19_11/B19_11_orm.png; new: godot/assets/ships/B19_11/B19_11_parts_base.jpg)

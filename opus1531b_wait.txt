@@ -1,0 +1,6 @@
+OPUS1531B_WAIT.bat waiting for OPUS1524_SHOTS exit in opus1524_wait.txt Sat 11/21/2026  9:51:48.12 
+OPUS1531_RUN2 start 10:15:49.18 
+OPUS1531_RUN2 exit 0 at 11:05:04.26 
+run folder out_20261121_101550_28634
+result: done PASS
+all done Sat 11/21/2026 11:05:06.40 
