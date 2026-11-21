@@ -35,5 +35,6 @@ def _mkdtemp(suffix=None, prefix=None, dir=None):
 
 
 if _ENABLED and not getattr(tempfile, '_voidsworn_inherited_acl', False):
+    tempfile._voidsworn_stock_mkdtemp = tempfile.mkdtemp
     tempfile.mkdtemp = _mkdtemp
     tempfile._voidsworn_inherited_acl = True
