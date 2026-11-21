@@ -135,6 +135,7 @@ LAYERS = dict(
     band_seam=3.0, band_dark=.96, band_ao=.35, band_grime=.40,
     cavity_pow=1.6, wear_lo=.26, wear_hi=.52,
     scuff=.24, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
+    colour_grain=.15, colour_grain_scale=180.0,                           # issue 1413: fine paint tone, kept modest (Board)
     rivets=0, rivet_pitch=.016, rivet_band=(.0012, .0040),               # hegemony.md 1: flush fasteners, no rivet lines
     trim_size=dict(), trim_aspect=dict(),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # never rust (every zone's rust is 0)
@@ -150,8 +151,8 @@ LAYERS = dict(
 LEGACY_FINISH_ZONE = 'hgrey'  # Existing A4 atlas supplies its own paint colours and seams.
 LEGACY_ALBEDO_BLEND = .45     # A4 already has painted shadows. Keep the second pass light enough for adjacent fittings.
 _Z = dict(
-    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.35),
-    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.35),
+    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.70),   # issue 1413 round 3: .35 to .70, the plating seams read (Ryan, Nov 21: no clay)
+    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.70),
     hgrey2=dict(rust=0, grime=.52, patchwork=1.0, rough=.54, metal=.30, wear=.30, grid='small', grid_seam=.60),
     htrim=dict(rust=0, grime=.22, patchwork=1.0, rough=.25, metal=.62, wear=1.32, grid=None, handling_wear=.45),
     hmetal=dict(rust=0, grime=.20, patchwork=0, rough=.20, metal=.72, wear=1.23, handling_wear=.65),

@@ -472,6 +472,12 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
     grain = c.noise(L['grain_scale'], 2 if bare_roughness is not None else 4, .6)
     height = math_(nt, 'MULTIPLY', grain, L.get('grain', .05))
+    if L.get('colour_grain'):
+        # issue 1413 (Ryan, Nov 21: the Navy Convoy and Relay "look like clay"; PR 1521 measured flat colour, not missing relief):
+        # a fine tone variation in the paint itself at the grain's scale, so a broad plate is never one flat colour. 0 (the
+        # default) leaves a faction's paint exactly as it was.
+        cg = L['colour_grain']
+        col = mulc(nt, col, math_(nt, 'ADD', 1 - cg, math_(nt, 'MULTIPLY', ramp(nt, c.noise(L.get('colour_grain_scale', L['grain_scale']), 4, .6), .38, .62), 2 * cg)))
     rough_grain = grain if bare_roughness is not None else c.noise(L['grain_scale'], 2)
     rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', rough_grain, L.get('rough_grain', .08)))
     if L.get('coat_roughness'):

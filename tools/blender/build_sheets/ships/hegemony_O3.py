@@ -212,6 +212,14 @@ def build(K):
         sn = 'p' if side > 0 else 's'
         K.vent('V1' + sn, (-1.05, side * 0.62, H), (0, 0, 1), 0.3, 0.5, slats=4, inv='vents', note='heat louvre over the relay core\'s cooling plant')
         K.vent('V2' + sn, (0.72, side * 0.55, H), (0, 0, 1), 0.24, 0.42, slats=4, inv='vents', note='heat louvre behind the lens: the emitter\'s cooling')
+        # round 2 (Ryan, Nov 21: "make sure the level of detail is on both so they don't look like clay"): the big flat module
+        # faces get the working fittings a Registry hull carries, in the even Navy order (paired, clear of the bands)
+        K.vent('V3' + sn, (-1.05, side * 0.62, -H), (0, 0, -1), 0.3, 0.5, slats=4, inv='vents', note='belly heat louvre: the cooling plant\'s lower intake')
+        K.hatch('H3' + sn, (0.72, side * 0.55, -H), (0, 0, -1), 0.24, 0.2, inv='hatches', note='belly access plate under the emitter')
+        K.hatch('H4' + sn, (0.15, side * 0.6, H), (0, 0, 1), 0.2, 0.16, inv='hatches', note='small deck access plate over the relay core')
+        for i, x in enumerate((0.72, -1.05)):
+            K.hatch('H5%d%s' % (i, sn), (x, side * (H + 0.004), 0.0), (0, side, 0), 0.26, 0.16, inv='hatches', up=(0, 0, 1),
+                    note='side access plate on the module face, between the rails')
 
     # ---------------- colour zones ----------------
     K.colour('pale grey module plate, steel-blue trim (paint stage)', XF + LD, -RX, 'whole relay')

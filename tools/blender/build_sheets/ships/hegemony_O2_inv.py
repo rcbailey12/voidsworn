@@ -43,8 +43,10 @@ INVENTORY = [
          reads='a machined frame round a recessed pane', src='picture'),
     dict(id='vents', job='the reactor\'s and the holds\' air and heat louvres', type='vent', what='louvres on the drive deck and the rail decks', count=10,
          cells=['mid/top', 'stern/top'], reads='a machined frame, straight slats over a dark recess', src='picture'),
-    dict(id='hatches', job='crew and stores access', type='hatch', what='flank hatches on the band, deck hatches, a belly hatch', count=11,
+    dict(id='hatches', job='crew and stores access', type='hatch', what='flank hatches and access plates on the band, deck hatches and plates, a belly hatch', count=23,
          cells=['bow/top', 'mid/side', 'stern/top', 'mid/below'], reads='a rim, a flush door, a seam, a grip', src='designed'),
+    dict(id='deck_boxes', job='the crew deck\'s air plant and the stores lift (round 2, Ryan Nov 21: no clay)', type='hatchbox',
+         what='framed deck boxes in pairs on the bow deck', count=4, cells=['bow/top'], reads='a raised frame, a lid, a seam', src='designed'),
     dict(id='thrusters', job='braking into a dock and attitude control', type='thruster', what='two retro thrusters on the bow face, two attitude thrusters aft', count=4,
          cells=['bow/side', 'stern/side'], reads='a machined block, rectangular nozzle throats with depth', src='designed'),
 ]
