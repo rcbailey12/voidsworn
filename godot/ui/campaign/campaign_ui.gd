@@ -2389,6 +2389,7 @@ func _modal(md: Dictionary) -> void:
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
 				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 18))
 				if C.jt(r.get("rip")) and not C.jt(r.get("cinder")): pv.add_child(lbl("Kept, she joins with her links ripped out.", 17, VERD))
+				_spec_drawer(pv, FleetManifest.preview_ship(C, r["p"]["tpl"], C.jt(r.get("rip"))), "prize:" + str(i) + ":" + str(r["p"]["tpl"]))   # issue 1449
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				var sm2 = (C.modName(r["o"]["strip"]["mod"]) + " + ") if C.jt(r["o"]["strip"]["mod"]) else ""
 				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("The Cinder Line opens from run 3" if C.jt(r.get("cinder")) else ("Your faction cannot field it" if r.get("gate") != null else "No command points left"))], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:

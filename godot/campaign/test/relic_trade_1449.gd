@@ -118,6 +118,17 @@ func _run() -> void:
 	if before_uid != null and campaign.UID != before_uid: _fail("previewing a hull drew a ship id"); return
 	if campaign.RUN["fleet"].any(func(s): return s["uid"] == ""): _fail("a preview ship joined the fleet"); return
 	print("PASS: shipyard Full specs drawer shows armor, every gun's shots, damage and range, and the ability text")
+
+	# 3. The same drawer on a prize ship after a battle
+	campaign.RUN["reward"] = {"kind": "elite", "stage": "prize", "prizes": [{"tpl": h, "name": "Taken Prize", "cp": campaign.HULLS[h]["cp"], "hpf": 0.6, "wk": [], "ab": null, "regen": 0, "sh": 10}], "prizeSel": null, "wrecks": []}
+	campaign.ACT_prizeStep()
+	ui.spec_open = {}
+	ui.render(); await process_frame
+	var pkey := "prize:0:" + h
+	if not ui.find_children("*", "Button", true, false).any(func(b): return b.has_meta("spec_key") and str(b.get_meta("spec_key")) == pkey): _fail("no Full specs link on the prize card"); return
+	ui.spec_open[pkey] = true
+	if not await _page(gun_line, "SHIP-1_prize_specs", "normal"): return
+	print("PASS: a prize ship's card opens the same Full specs drawer")
 	print("PASS: issue 1449")
 	quit(0)
 
