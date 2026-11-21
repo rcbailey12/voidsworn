@@ -1,0 +1,5 @@
+GitHub audit run on the PC (gh as rcbailey12), Nov 20 PC time 21:25, on Ryan's "Yes do all of those GitHub actions and settings" (03:24 UTC, his own message).
+1) delete_branch_on_merge: true
+2) security_and_analysis: secret_scanning enabled, secret_scanning_push_protection enabled (dependabot_security_updates, non_provider_patterns, validity_checks stay disabled)
+3) ruleset id 27781032 "main: no force-push or delete", enforcement active (JSON sent via --input files)
+Branch cleanup: deleted 277, kept 0, failed 0. See delete_log.txt.
