@@ -32,6 +32,8 @@ func quit_clean(code := 0) -> void:
 		battle.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if music != null and is_instance_valid(music) and music.has_method("release"):
+		music.release()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
