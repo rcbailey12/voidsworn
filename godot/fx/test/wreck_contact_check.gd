@@ -217,6 +217,18 @@ func _slowmo(world: Node3D) -> void:
 	print("WRECK_CONTACT in flight: clock %.2f to %.2f, plates x%.2f, section x%.2f" % [c0, c1, pr, sr])
 	check(c1 > c0 + 0.3, "the clock eased back after the beat")
 	check(absf(pr - sr) < 0.05 and absf(pr - c1 / c0) < 0.05, "plates in flight follow the clock as the section does")
+	# Artoo on PR 1476: on a speed-change step a plate thrown before DEATH.update is already at the new speed and must not
+	# be scaled again, while a plate already in flight is. The step's order, by hand: clock change, a throw, the update.
+	var held: RigidBody3D = fx.dstate["debris"][8]
+	var hv := held.linear_velocity.length()
+	fx._speed = 0.5
+	DEATH.spawn_debris(fx, Vector3(0, 0, -400), Vector3.ZERO, 1, 0.5)
+	var fresh: RigidBody3D = fx.dstate["debris"][fx.dstate["debris"].size() - 1]
+	var fv := fresh.linear_velocity.length()
+	DEATH._debris_speed(fx)
+	print("WRECK_CONTACT speed step: held x%.3f (want %.3f), fresh x%.3f (want 1)" % [held.linear_velocity.length() / maxf(hv, 1e-6), 0.5 / c1, fresh.linear_velocity.length() / maxf(fv, 1e-6)])
+	check(absf(held.linear_velocity.length() / maxf(hv, 1e-6) - 0.5 / c1) < 0.01, "a plate in flight is scaled once on a speed-change step")
+	check(absf(fresh.linear_velocity.length() / maxf(fv, 1e-6) - 1.0) < 0.001, "a plate thrown on that step at the new speed is not scaled again")
 	fx.queue_free()
 	await process_frame
 

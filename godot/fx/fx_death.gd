@@ -568,7 +568,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.global_transform = Transform3D(Basis(d, fx.rng.randf() * TAU), pos + d * 0.3 * fx.unit)
 		# issue 1466 (Astra pass 2, finding 2): thrown at the effect clock's speed, as wreck sections are (_release_section),
 		# so the kill slow motion slows the plates too; _debris_speed follows later speed changes
-		var spd: float = fx.anim_speed()
+		var spd: float = maxf(fx.anim_speed(), 0.01)
+		b.set_meta("debris_spd", spd)   # the clock speed this plate's motion is at (_debris_speed)
 		b.linear_velocity = (vel + d * (2.0 + fx.rng.randf() * 4.0) * fx.unit) * spd
 		b.linear_velocity.y = 0.0
 		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6)) * spd
@@ -598,6 +599,7 @@ static func _settle_debris(fx) -> void:
 		for b in fx.dstate.get("debris", []):
 			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
 				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+				(b as Node).set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
 		fx.dstate["debris_awake"] = awake
 	if awake.is_empty(): return
 	var done: Array = []
@@ -623,18 +625,18 @@ static func _settle_debris(fx) -> void:
 
 # Issue 1466 (Astra pass 2, finding 2): a plate in flight keeps pace with the effect clock, as wreck sections do in update():
 # when the clock slows for a kill (or eases back), its speed and spin change by the same ratio. Only the plates in flight.
+# Each plate keeps the clock speed its motion is at (debris_spd), so one thrown on a speed-change step at the new speed
+# is not scaled a second time (Artoo on PR 1476); a plate a hull knocked awake starts at the speed it was knocked at.
 static func _debris_speed(fx) -> void:
 	var speed: float = maxf(fx.anim_speed(), 0.01)
-	var prev: float = float(fx.dstate.get("debris_speed", speed))
-	fx.dstate["debris_speed"] = speed
-	if absf(speed - prev) < 1e-6: return
-	var f := speed / prev
 	for b in fx.dstate.get("debris_awake", {}):
 		if not is_instance_valid(b): continue
 		var rb := b as RigidBody3D
-		if rb.sleeping: continue
-		rb.linear_velocity *= f
-		rb.angular_velocity *= f
+		var was: float = float(rb.get_meta("debris_spd", speed))
+		rb.set_meta("debris_spd", speed)
+		if rb.sleeping or absf(speed - was) < 1e-6: continue
+		rb.linear_velocity *= speed / was
+		rb.angular_velocity *= speed / was
 
 
 # The plates Jolt is still moving (the frame-time check's count; 0 once every plate has come to rest).
