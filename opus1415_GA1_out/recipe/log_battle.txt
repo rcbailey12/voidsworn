@@ -1,0 +1,1 @@
+[battle] GA1 {"game": {"bow": 70.8, "midship": 59.3, "stern": 50.8, "whole": 59.2}, "studio": {"bow": 29.8, "midship": 51.6, "stern": 49.8, "whole": 47.8}}

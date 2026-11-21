@@ -1,0 +1,27 @@
+start ithar_GA1 I16_11 board/pin-1415b Fri 11/20/2026 19:37:57.52 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          work/issue-1456-openai -> work/issue-1456-openai
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415_GA1\repo
+commit=3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01
+import exit 0 
+1_concept_in start 19:42:59.12 
+1_concept_in exit 0 at 19:43:01.66 
+2_shape_ref start 19:43:01.66 
+2_shape_ref exit 0 at 19:48:57.12 
+3_trace_hull start 19:48:57.12 
+3_trace_hull exit 0 at 19:50:31.00 
+4_parts_kit start 19:50:31.00 
+4_parts_kit exit 0 at 19:51:21.56 
+5_paint_bake start 19:51:21.56 
+5_paint_bake exit 0 at 19:55:14.42 
+6_lod start 19:55:14.42 
+6_lod exit 0 at 19:56:24.52 
+7_export start 19:56:24.52 
+7_export exit 1 at 19:58:28.21 
+checks and shots SKIPPED: stage 7_export failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Fri 11/20/2026 19:58:28.49 
+all done 

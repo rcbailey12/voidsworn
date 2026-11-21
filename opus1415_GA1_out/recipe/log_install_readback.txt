@@ -1,0 +1,7 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-70080e9beb6a4d8999c00def9dd716f8\godot-profile-ea3cd575cc9249ac93b0c13d86e18183
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 on I16_11: its barrels touch the ship at rest; it stays at rest
+INSTALL READBACK FAIL: turret turret_0 (O1) is locked at rest: its barrels touch the ship, but its arc is -180 to 180
+INSTALL READBACK FAIL code=I16_11: 1 problems
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-70080e9beb6a4d8999c00def9dd716f8\godot-profile-ea3cd575cc9249ac93b0c13d86e18183
