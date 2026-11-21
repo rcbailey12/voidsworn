@@ -34,12 +34,15 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS. Then the checkout step (`opus_job_head.ps1 dropcheckouts <attempt>`) runs
   for this attempt and the same job's earlier ones. An attempt's pinned checkouts (rebuildable from their pins, up to
-  22 GB each) go only when its `done.txt` says PASS and every file in its `out_*` folders is a blob on a `board/pc-out-*`
-  relay branch (the mirror is fetched when one is missing). At the tail nothing is relayed yet, so the Board runs the same
+  22 GB each) go only when its `done.txt` says PASS and one `board/pc-out-*` relay branch holds every file of its
+  `out_*` folders at `<job>_<out folder>/<path>` with the same bytes (the relay layout; the mirror is fetched when none
+  does). Same bytes elsewhere prove nothing. At the tail nothing is relayed yet, so the Board runs the same
   step right after each relay; a later tail of the same job also catches it. A failed or unfinished attempt is never
   touched by this step (the janitor's rules cover it). Per checkout: listed in `checkouts.txt` by the head, `.git\HEAD`
-  still the pin, every local branch in the mirror, no stash, nothing staged. Proven leftovers go as they are: the import
-  cache, a ships copy whose sha256 matches the ships step's copy-time record (`<checkout>_ships_copied.txt`, so a publish
+  still the pin, every local branch in the mirror (a local merge only when git rebuilds its exact tree from its two mirror parents),
+  no stash, nothing staged, and no link or junction anywhere between `voidsworn_test` and the folder. Proven leftovers go as they are: the import
+  cache, a ships copy whose sha256 matches the ships step's copy-time record (`<checkout>_ships_copied.txt`, written right after the copy
+  and only for files whose bytes match `build\\godot` then, so a publish
   later in the night no longer makes every copy look changed) or the shared build, a byte copy of a tracked file, and a
   `.import`/`.uid` sidecar of one of those. Anything else the job left (a `build_info.json`, a changed `.import` file, a
   new ship file) is saved first into `out_<name>\checkout_leftovers` (working-file changes as `changes.patch`, other files

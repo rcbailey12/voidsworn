@@ -1,14 +1,13 @@
 @echo off
-rem Issue 1497 selftest part 2 of 2. Run it only after OPUS1497_SELFTEST.bat passed and the Board relayed every file of
-rem that attempt's out_new and out_old folders to a board/pc-out branch on GitHub. It is the step the Board runs after
-rem every relay: tools_live's opus_job_head.ps1 dropcheckouts on the attempt.
-rem What it does, all inside its own folders (Downloads\voidsworn_test\opus1497selftest and the ship stand-in
-rem opus1497selftest_ship_<time> it makes itself); nothing else on the PC is touched or deleted:
+rem Issue 1497 selftest part 2 of 2. Run it only after OPUS1497_SELFTEST.bat passed and the Board relayed, on one
+rem board/pc-out branch, that attempt's out_new and out_old (as opus1497selftest_out_new/ and opus1497selftest_out_old/)
+rem and opus1497selftestship\out (as opus1497selftestship_out/). It runs the steps the Board runs after every relay:
+rem tools_live's opus_job_head.ps1 dropcheckouts on the attempt, and droprepo as publish_ship.bat does.
+rem What it does, only inside the two folders part 1 made; nothing else on the PC is touched or deleted:
 rem   1. dropcheckouts on the newest passed attempt of opus1497selftest: NEW and OLD must go, with their build_info.json
 rem      and changed .import files saved into out_new\checkout_leftovers and out_old\checkout_leftovers.
-rem   2. a ship job stand-in: its own clone, a 64 MB import cache, an installed hull that matches its export (bytes of a
-rem      file already relayed in part 1, so the stand-in's out counts as relayed) and a stray file; dropcache must remove
-rem      only the cache, droprepo must save the stray file and remove the clone.
+rem   2. the ship job stand-in from part 1: dropcache must remove only its import cache, droprepo must save the stray
+rem      file and remove the clone.
 rem   3. the check: PASS only if NEW, OLD and the stand-in clone are gone and the saved files are there. result.txt in
 rem      opus1497selftest\afterrelay_<time> names the GB freed and C: free.
 rem Once queued, never edited; a change ships under a new name (next: OPUS1497_AFTERRELAY2.bat).
@@ -46,16 +45,9 @@ if not exist "%ATT%\out_new\checkout_leftovers\files\godot\build_info.json" set 
 if not exist "%ATT%\out_old\checkout_leftovers\files\godot\build_info.json" set "BAD=%BAD% old's build_info.json not saved;"
 findstr /c:"disk: checkouts freed" "%AR%\dropcheckouts.txt" > nul || set "BAD=%BAD% no freed GB line;"
 
-rem 2. a ship job stand-in in its own new folder
-set "SJ=%VT%\opus1497selftest_ship_%STAMP%"
-set "SRC=%ATT%\out_new\import.txt"
-if exist "%SJ%" (set "BAD=%BAD% ship stand-in folder already exists;" & goto report)
-if not exist "%SRC%" (set "BAD=%BAD% no relayed out_new\import.txt to build the stand-in from;" & goto report)
-mkdir "%SJ%"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" checkout "%SJ%" repo b683f7afa5f699ed04e3accf1784d71a45a619d0 >> "%L%" 2>&1
-if errorlevel 1 (set "BAD=%BAD% ship stand-in clone;" & goto report)
-powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $c = Join-Path $env:SJ 'repo\godot\.godot\imported'; $null = [IO.Directory]::CreateDirectory($c); $f = [IO.File]::Create((Join-Path $c 'selftest.bin')); $f.SetLength(64MB); $f.Dispose(); foreach ($d in (Join-Path $env:SJ 'repo\godot\assets\ships\SELF1497'), (Join-Path $env:SJ 'out\recipe\export\SELF1497')) { $null = [IO.Directory]::CreateDirectory($d); [IO.File]::Copy($env:SRC, (Join-Path $d 'SELF1497.glb')) }; [IO.File]::WriteAllText((Join-Path $env:SJ 'repo\tools\selftest_1497_note.txt'), 'left by a stage')" >> "%L%" 2>&1
-if errorlevel 1 (set "BAD=%BAD% ship stand-in files;" & goto report)
+rem 2. the ship job stand-in part 1 made
+set "SJ=%VT%\opus1497selftestship"
+if not exist "%SJ%\repo\.git\" (set "BAD=%BAD% no ship stand-in clone from part 1;" & goto report)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" dropcache "%SJ%" > "%AR%\ship_dropcache.txt" 2>&1
 type "%AR%\ship_dropcache.txt" >> "%L%"
 if exist "%SJ%\repo\godot\.godot\" set "BAD=%BAD% dropcache left the import cache;"

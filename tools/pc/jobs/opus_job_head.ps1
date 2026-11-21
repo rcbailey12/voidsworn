@@ -17,8 +17,8 @@
 #                                              equal to the copied files. A publish between the two copies fails here.
 #                                              Writes the measured hull identity (code, stamp, scene; sorted) to <out
 #                                              file>. Every code in [codes] (spaces or commas) must be a matching ship.
-#   shiprecord <repo> <out file>               right after the ships copy: sha256, size and path of every untracked file under
-#                                              godot\gen and godot\assets\ships, so the tail can prove a copy unchanged even
+#   shiprecord <repo> <out file> <ships source> right after the ships copy: sha256, size and path of every untracked file
+#                                              under godot\gen and godot\assets\ships that has the same bytes in the source, so the tail can prove a copy unchanged even
 #                                              after a later publish moves the shared build on (issue 1497)
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
 #   dropcheckouts <attempt folder>             the tail, and the Board right after it relays the results: removes the
@@ -200,7 +200,9 @@ function Save-Leftovers($repo, [string[]]$work, $dest) {
   }
   if ($bytes -gt $cap) { throw ("{0} new file(s) of {1:N0} MB are more than the {2:N0} MB the results may take" -f $new.Count, ($bytes / 1MB), ($cap / 1MB)) }
   if (Test-Path -LiteralPath $dest) { throw "$dest already exists" }
+  Assert-NoLinks $dest
   $null = [IO.Directory]::CreateDirectory($dest)
+  Assert-NoLinks $dest
   $list = @("checkout $repo", "HEAD $((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)")
   if ($changed.Count) {
     $patch = Join-Path $dest 'changes.patch'
@@ -245,6 +247,19 @@ function Remove-Owned($path) {
   if (Test-Paused) { throw 'the Board PC pause is active' }
   return (Remove-LinkSafeTree $path)
 }
+function Assert-NoLinks($path) {
+  # Every folder from voidsworn_test down to $path (each one that exists) is a plain folder, never a link or junction
+  # (Artoo on PR 1498: checking only the last folder misses a junction above it).
+  $full = [IO.Path]::GetFullPath($path).TrimEnd('\', '/')
+  if (-not $full.StartsWith($vt + $sep, [StringComparison]::OrdinalIgnoreCase)) { throw "$full is not under $vt" }
+  $at = $vt
+  foreach ($part in ($full.Substring($vt.Length + 1) -split '[\\/]')) {
+    $at = Join-Path $at $part
+    $i = Get-Item -LiteralPath $at -Force -ErrorAction SilentlyContinue
+    if ($null -eq $i) { return }
+    if ($i.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "$at is a link or junction" }
+  }
+}
 function Test-PlainDir($item) { return ($item -is [IO.DirectoryInfo]) -and -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) }
 function Get-AttemptProblem($attempt) {
   # $null when $attempt is a plain voidsworn_test\<job>\out_* folder; else why not
@@ -271,51 +286,59 @@ function Get-BlobSha($path) {
     return (($sha.Hash | ForEach-Object { $_.ToString('x2') }) -join '')
   } finally { $f.Dispose(); $sha.Dispose() }
 }
-function Get-RelayBlobs([bool]$refresh) {
-  # Every blob on the relay branches board/pc-out-* in the shared mirror: a committed receipt (as the janitor reads it,
-  # Artoo on PR 1266). With $refresh the mirror is fetched first, under the shared lock.
-  if ($refresh) {
-    $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
-    while (-not $lock) {
-      try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
-      catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
-    }
-    try {
-      if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
-      Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-    } finally { $lock.Dispose() }
+function Update-Mirror {
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
   }
-  $set = New-Object 'Collections.Generic.HashSet[string]'
-  $refs = @(Run-Git --git-dir $mirror for-each-ref '--format=%(objectname)' 'refs/heads/board/pc-out-*' | Where-Object { $_ })
-  if ($refs.Count) { foreach ($line in (Run-Git --git-dir $mirror rev-list --objects '--glob=refs/heads/board/pc-out-*')) { $null = $set.Add(("$line" -split ' ', 2)[0]) } }
-  return ,$set
+  try {
+    if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
+    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+  } finally { $lock.Dispose() }
+}
+function Find-RelayReceipt($want) {
+  # The first relay branch (board/pc-out-*) whose current tree holds every wanted path ("<job>_<out folder>/<file>")
+  # with exactly that blob; $null when none does. One branch must hold them all, so bytes that happen to sit in another
+  # relay or another job's folder prove nothing (Artoo on PR 1498).
+  $prefixes = @($want.Keys | ForEach-Object { ($_ -split '/', 2)[0] } | Sort-Object -Unique)
+  $tips = @(Run-Git --git-dir $mirror for-each-ref '--format=%(objectname) %(refname)' 'refs/heads/board/pc-out-*' | Where-Object { $_ })
+  foreach ($tip in $tips) {
+    $sha, $ref = "$tip" -split ' ', 2
+    $have = @{}
+    foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha @prefixes)) {
+      if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
+    }
+    $ok = $true
+    foreach ($k in $want.Keys) { if ($have[$k] -ne $want[$k]) { $ok = $false; break } }
+    if ($ok) { return $ref }
+  }
+  return $null
 }
 function Assert-Relayed($root, [string[]]$dirs, $skip) {
-  # Issue 1497 (Artoo on PR 1498): a checkout goes only once the results are relayed. Every file under each of $dirs
-  # (folders under $root; $skip names leftovers folders this file wrote after the relay) must be a blob on a relay branch.
-  $files = @()
+  # Issue 1497 (Artoo on PR 1498): a checkout goes only once the results are relayed. The Board's relay commits each out
+  # folder <vt>\<job>\...\<out> as <job>_<out>/ on a board/pc-out branch; every file under each of $dirs ($skip names
+  # leftovers folders this file writes after the relay) must be there, at its own path, with the same bytes.
+  $want = @{}
   foreach ($d in $dirs) {
+    $full = [IO.Path]::GetFullPath($d).TrimEnd('\', '/')
+    $job = ($full.Substring($vt.Length + 1) -split '[\\/]')[0]
+    $prefix = $job + '_' + (Split-Path -Leaf $full)
     $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
-    $pending.Push((Get-Item -LiteralPath $d -Force))
+    $pending.Push((Get-Item -LiteralPath $full -Force))
     while ($pending.Count) {
       foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
         if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
         if ($e -is [IO.DirectoryInfo]) { if ($skip -notcontains $e.Name) { $pending.Push($e) }; continue }
-        $files += $e
+        $want[$prefix + '/' + $e.FullName.Substring($full.Length + 1).Replace('\', '/')] = Get-BlobSha $e.FullName
       }
     }
   }
-  if (-not $files.Count) { throw "no result files under $root to prove the relay" }
-  $sums = @($files | ForEach-Object { Get-BlobSha $_.FullName })
-  $blobs = Get-RelayBlobs $false
-  $missing = @(for ($i = 0; $i -lt $files.Count; $i++) { if (-not $blobs.Contains($sums[$i])) { $i } })
-  if ($missing.Count) {
-    $blobs = Get-RelayBlobs $true
-    $missing = @($missing | Where-Object { -not $blobs.Contains($sums[$_]) })
-  }
-  if ($missing.Count) {
-    throw ("results not relayed yet: {0} of {1} result file(s) are on no board/pc-out branch, e.g. {2}" -f $missing.Count, $files.Count, $files[$missing[0]].FullName)
-  }
+  if (-not $want.Count) { throw "no result files under $root to prove the relay" }
+  $ref = Find-RelayReceipt $want
+  if (-not $ref) { Update-Mirror; $ref = Find-RelayReceipt $want }
+  if (-not $ref) { throw ("results not relayed yet: no board/pc-out branch holds all {0} result file(s) at their paths, e.g. {1}" -f $want.Count, @($want.Keys | Sort-Object)[0]) }
+  Write-Output "results relayed: all $($want.Count) result file(s) are on $ref"
 }
 function Drop-Attempt($attempt) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
@@ -340,6 +363,7 @@ function Drop-Attempt($attempt) {
       $r = Get-Item -LiteralPath $repo -Force -ErrorAction SilentlyContinue
       if ($null -eq $r) { Write-Output "checkout $name already gone: $repo"; continue }
       if (-not (Test-PlainDir $r)) { throw 'not a plain folder' }
+      Assert-NoLinks $repo
       $git = Get-Item -LiteralPath (Join-Path $repo '.git') -Force -ErrorAction SilentlyContinue
       if (-not (Test-PlainDir $git)) { throw 'no .git folder of its own' }
       $headFile = Join-Path $git.FullName 'HEAD'
@@ -375,6 +399,7 @@ function Test-ShipClone($jobDir) {
   }
   $repo = Join-Path $j.FullName 'repo'
   if (-not (Test-PlainDir (Get-Item -LiteralPath $repo -Force -ErrorAction SilentlyContinue))) { throw "no plain clone folder $repo" }
+  Assert-NoLinks $repo
   if (-not (Test-PlainDir (Get-Item -LiteralPath (Join-Path $repo '.git') -Force -ErrorAction SilentlyContinue))) { throw "$repo has no .git folder of its own" }
   return $repo
 }
@@ -384,7 +409,8 @@ function Test-InMirror($sha) {
   return $LASTEXITCODE -eq 0
 }
 function Assert-Rebuildable($repo) {
-  # Every local branch and HEAD is a commit the shared mirror holds, or a merge (PAINT_BASE) whose parents it holds.
+  # Every local branch and HEAD is a commit the shared mirror holds, or a two-parent merge (PAINT_BASE) of mirror commits
+  # that git merges again to exactly the same tree (Artoo on PR 1498: a merge with its own conflict edits is work).
   $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
   $tips += @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/heads | Where-Object { $_ })
   $stash = @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/stash | Where-Object { $_ })
@@ -392,8 +418,12 @@ function Assert-Rebuildable($repo) {
   foreach ($t in ($tips | Sort-Object -Unique)) {
     if (Test-InMirror $t) { continue }
     $parents = @(((Run-Git -C $repo rev-list --parents -n 1 $t) | Select-Object -Last 1) -split ' ' | Select-Object -Skip 1)
-    if ($parents.Count -lt 2) { throw "commit $t is not in the shared mirror" }
+    if ($parents.Count -ne 2) { throw "commit $t is not in the shared mirror" }
     foreach ($p in $parents) { if (-not (Test-InMirror $p)) { throw "commit $p (a parent of $t) is not in the shared mirror" } }
+    $tree = (Run-Git -C $repo rev-parse "$t^{tree}") | Select-Object -Last 1
+    $again = $null
+    try { $again = (Run-Git -C $repo merge-tree --write-tree $parents[0] $parents[1]) | Select-Object -First 1 } catch { $again = $null }
+    if ("$again".Trim() -ne $tree) { throw "merge $t is not in the shared mirror and git does not rebuild its exact tree from its parents" }
   }
 }
 function Get-TreeBytes($path) {
@@ -552,6 +582,7 @@ switch ($Action) {
       $cacheDir = Get-Item -LiteralPath $cache -Force -ErrorAction SilentlyContinue
       if ($null -eq $cacheDir) { Write-Output "no import cache in $repo"; break }
       if (-not (Test-PlainDir $cacheDir)) { throw "$cache is not a plain folder" }
+      Assert-NoLinks $cache
       $gone = Remove-Owned $cache
       Write-Output ("import cache removed after the PASS ({0:N1} GB): {1}; the clone stays for the publish" -f ($gone / 1GB), $cache)
       Write-Free $gone
@@ -619,6 +650,7 @@ switch ($Action) {
     foreach ($l in (& $gitExe -C $A -c core.quotepath=false ls-files 2>$null)) { $tracked["$l"] = $true }
     $ErrorActionPreference = 'Stop'
     $lines = New-Object 'Collections.Generic.List[string]'
+    $skipped = 0
     $root = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
     foreach ($sub in 'gen', 'assets\ships') {
       $dir = Join-Path (Join-Path $root 'godot') $sub.Replace('\', $sep)
@@ -631,12 +663,19 @@ switch ($Action) {
           if ($e -is [IO.DirectoryInfo]) { $pending.Push($e); continue }
           $rel = $e.FullName.Substring($root.Length + 1).Replace('\', '/')
           if ($tracked.ContainsKey($rel)) { continue }
-          $lines.Add(('{0} {1} {2}' -f (Hash $e.FullName), $e.Length, $rel))
+          # Only a file the copy brought: the same bytes at the same path in the ships source (Artoo on PR 1498; robocopy
+          # skips some files, and a file only in the checkout is never a copy).
+          if (-not $C) { $skipped++; continue }
+          $from = Get-Item -LiteralPath (Join-Path $C ($rel.Substring(6).Replace('/', $sep))) -Force -ErrorAction SilentlyContinue
+          if ($from -isnot [IO.FileInfo] -or ($from.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $from.Length -ne $e.Length) { $skipped++; continue }
+          $h = Hash $e.FullName
+          if ((Hash $from.FullName) -ne $h) { $skipped++; continue }
+          $lines.Add(('{0} {1} {2}' -f $h, $e.Length, $rel))
         }
       }
     }
     [IO.File]::WriteAllLines($B, [string[]]$lines)
-    Write-Output "ships copy recorded: $($lines.Count) file(s) in $B"
+    Write-Output "ships copy recorded: $($lines.Count) file(s) matching $C in $B; $skipped untracked file(s) there did not match the source and are not recorded"
   }
   'hashes' {
     if ($test) { $realu = $env:PC_TEST_REALU } else { $realu = Join-Path $env:APPDATA 'Godot\app_userdata\Voidsworn' }

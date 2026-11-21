@@ -128,7 +128,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REP
 if errorlevel 1 (call "%JW%" fail "ships do not match their cache in %OJ_REPO%, see %OJ_ST%" & exit /b 1)
 rem Issue 1497: the hashes of what was copied, so the tail can prove these files unchanged even after a publish moves
 rem build\godot on during the job. A record that cannot be written only means the tail proves less; it never fails the job.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied.txt" >> "%OJ_ST%" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied.txt" "%LB_SHIPS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 >> "%OJ_ST%" echo note: the ships copy record could not be written; the tail proves copies against build\godot only
 rem Every checkout in one job must measure the same fleet: a publish between two checkouts (OLD and NEW arms) would
 rem give each a self-consistent but different set of hulls (Artoo, PR 1324). The first checkout's identity is the
