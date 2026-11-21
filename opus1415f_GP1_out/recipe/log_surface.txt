@@ -1,0 +1,967 @@
+GPU: waiting for shared claim, weight 2 (1415)
+GPU: acquired shared claim a1685e70-0734-448f-95da-abaf91149791
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\GP1.blend"
+Fra:1 Mem:163.39M (Peak 163.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:164.39M (Peak 164.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0
+Fra:1 Mem:164.39M (Peak 164.39M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_s
+Fra:1 Mem:164.52M (Peak 164.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_p
+Fra:1 Mem:166.72M (Peak 166.72M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4
+Fra:1 Mem:167.00M (Peak 167.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_s
+Fra:1 Mem:167.90M (Peak 167.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_p
+Fra:1 Mem:167.94M (Peak 167.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5
+Fra:1 Mem:168.90M (Peak 168.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_s
+Fra:1 Mem:169.01M (Peak 169.01M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:169.12M (Peak 169.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6
+Fra:1 Mem:169.16M (Peak 169.16M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_s
+Fra:1 Mem:169.34M (Peak 169.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_p
+Fra:1 Mem:169.36M (Peak 169.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7
+Fra:1 Mem:169.46M (Peak 169.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:171.36M (Peak 171.36M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_p
+Fra:1 Mem:171.42M (Peak 171.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:171.51M (Peak 171.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:171.57M (Peak 171.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_3
+Fra:1 Mem:171.77M (Peak 171.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_4
+Fra:1 Mem:171.83M (Peak 171.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:171.86M (Peak 171.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_6
+Fra:1 Mem:171.89M (Peak 171.89M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_7
+Fra:1 Mem:171.99M (Peak 171.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_8
+Fra:1 Mem:172.00M (Peak 172.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_9
+Fra:1 Mem:172.06M (Peak 172.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_light
+Fra:1 Mem:172.15M (Peak 172.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:172.38M (Peak 172.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_lance
+Fra:1 Mem:172.50M (Peak 172.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_amber
+Fra:1 Mem:172.79M (Peak 172.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_green
+Fra:1 Mem:172.88M (Peak 172.90M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_tip
+Fra:1 Mem:173.11M (Peak 173.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:173.61M (Peak 173.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:173.73M (Peak 173.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_2
+Fra:1 Mem:173.76M (Peak 173.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:173.87M (Peak 173.87M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:174.71M (Peak 174.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_1
+Fra:1 Mem:174.93M (Peak 174.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:175.23M (Peak 175.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:175.23M (Peak 175.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_0
+Fra:1 Mem:175.27M (Peak 175.27M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_2
+Fra:1 Mem:175.30M (Peak 175.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:175.30M (Peak 175.30M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:175.43M (Peak 175.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_0
+Fra:1 Mem:175.43M (Peak 175.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_2
+Fra:1 Mem:175.43M (Peak 175.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:175.54M (Peak 175.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_1
+Fra:1 Mem:176.83M (Peak 176.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:176.95M (Peak 176.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_07
+Fra:1 Mem:176.95M (Peak 176.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_s
+Fra:1 Mem:177.02M (Peak 177.02M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_p
+Fra:1 Mem:177.08M (Peak 177.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_06
+Fra:1 Mem:177.13M (Peak 177.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1
+Fra:1 Mem:177.15M (Peak 177.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:177.57M (Peak 177.57M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_05
+Fra:1 Mem:177.79M (Peak 177.79M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:177.86M (Peak 177.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_03
+Fra:1 Mem:177.94M (Peak 177.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2
+Fra:1 Mem:178.14M (Peak 178.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_s
+Fra:1 Mem:178.14M (Peak 178.14M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3
+Fra:1 Mem:178.40M (Peak 178.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_s
+Fra:1 Mem:178.60M (Peak 178.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:180.75M (Peak 180.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_s
+Fra:1 Mem:181.20M (Peak 181.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:181.23M (Peak 181.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5
+Fra:1 Mem:181.35M (Peak 181.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_s
+Fra:1 Mem:181.44M (Peak 181.44M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_01
+Fra:1 Mem:181.83M (Peak 181.83M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_p
+Fra:1 Mem:181.84M (Peak 181.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_2
+Fra:1 Mem:181.98M (Peak 181.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6
+Fra:1 Mem:181.98M (Peak 181.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:182.05M (Peak 182.05M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_s
+Fra:1 Mem:182.09M (Peak 182.09M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7
+Fra:1 Mem:182.32M (Peak 182.32M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_s
+Fra:1 Mem:182.42M (Peak 182.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_p
+Fra:1 Mem:182.61M (Peak 182.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_0
+Fra:1 Mem:182.77M (Peak 182.77M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_0
+Fra:1 Mem:183.10M (Peak 183.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_2
+Fra:1 Mem:183.23M (Peak 183.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_1
+Fra:1 Mem:183.98M (Peak 183.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:184.06M (Peak 184.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_2
+Fra:1 Mem:184.20M (Peak 184.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_3
+Fra:1 Mem:184.23M (Peak 184.23M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_0
+Fra:1 Mem:184.24M (Peak 184.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_4
+Fra:1 Mem:185.41M (Peak 185.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_2
+Fra:1 Mem:185.45M (Peak 185.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_5
+Fra:1 Mem:185.42M (Peak 185.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_1
+Fra:1 Mem:185.52M (Peak 185.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_0
+Fra:1 Mem:186.19M (Peak 186.19M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_2
+Fra:1 Mem:186.20M (Peak 186.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_6
+Fra:1 Mem:186.20M (Peak 186.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:186.21M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_7
+Fra:1 Mem:185.69M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_0
+Fra:1 Mem:185.70M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_2
+Fra:1 Mem:185.70M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_8
+Fra:1 Mem:185.72M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_9
+Fra:1 Mem:185.73M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_1
+Fra:1 Mem:185.81M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_pearl
+Fra:1 Mem:185.87M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_silver
+Fra:1 Mem:185.93M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_beam
+Fra:1 Mem:186.08M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_amber
+Fra:1 Mem:186.09M (Peak 186.21M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_green
+Fra:1 Mem:186.42M (Peak 186.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_07
+Fra:1 Mem:186.53M (Peak 186.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_grown_stern
+Fra:1 Mem:186.56M (Peak 186.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:187.13M (Peak 187.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_06
+Fra:1 Mem:187.38M (Peak 187.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_05
+Fra:1 Mem:187.42M (Peak 187.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_white_bloom
+Fra:1 Mem:188.22M (Peak 188.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:188.35M (Peak 188.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_00
+Fra:1 Mem:188.40M (Peak 188.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_01
+Fra:1 Mem:188.76M (Peak 188.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_04
+Fra:1 Mem:188.78M (Peak 188.78M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_02
+Fra:1 Mem:188.85M (Peak 188.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_03
+Fra:1 Mem:188.91M (Peak 188.91M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_04
+Fra:1 Mem:188.92M (Peak 188.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_05
+Fra:1 Mem:188.94M (Peak 188.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_06
+Fra:1 Mem:188.95M (Peak 188.95M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_03
+Fra:1 Mem:188.99M (Peak 188.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_07
+Fra:1 Mem:189.08M (Peak 189.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_08
+Fra:1 Mem:188.96M (Peak 189.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:189.02M (Peak 189.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_02
+Fra:1 Mem:189.26M (Peak 189.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_01
+Fra:1 Mem:189.33M (Peak 189.33M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_2
+Fra:1 Mem:189.35M (Peak 189.35M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_a
+Fra:1 Mem:189.40M (Peak 189.40M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_1
+Fra:1 Mem:189.49M (Peak 189.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_f
+Fra:1 Mem:189.53M (Peak 189.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_light
+Fra:1 Mem:189.52M (Peak 189.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_0
+Fra:1 Mem:189.58M (Peak 189.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_2
+Fra:1 Mem:189.61M (Peak 189.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_a
+Fra:1 Mem:189.67M (Peak 189.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_1
+Fra:1 Mem:189.67M (Peak 189.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_f
+Fra:1 Mem:189.84M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_light
+Fra:1 Mem:189.92M (Peak 189.92M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:189.98M (Peak 189.98M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_turn_gw_gem_violet
+Fra:1 Mem:190.03M (Peak 190.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_light
+Fra:1 Mem:190.08M (Peak 190.08M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_silver
+Fra:1 Mem:190.80M (Peak 190.80M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.65M (Peak 190.80M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_normal
+Fra:1 Mem:189.65M (Peak 190.80M) | Time:00:00.02 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.73M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.73M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.73M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.73M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.81M (Peak 765.69M) | Time:00:00.36 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.86M (Peak 765.69M) | Time:00:00.36 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.86M (Peak 765.69M) | Time:00:00.36 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.86M (Peak 765.69M) | Time:00:00.36 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.86M (Peak 765.69M) | Time:00:00.36 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.86M (Peak 765.69M) | Time:00:00.36 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:631.91M (Peak 765.69M) | Time:00:00.36 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.88M (Peak 765.69M) | Time:00:00.36 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:631.88M (Peak 765.69M) | Time:00:00.36 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:631.88M (Peak 765.69M) | Time:00:00.37 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:631.88M (Peak 765.69M) | Time:00:00.39 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:631.88M (Peak 765.69M) | Time:00:00.39 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.69M (Peak 765.69M) | Time:00:00.39 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.36M (Peak 766.70M) | Time:00:00.71 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.36M (Peak 766.70M) | Time:00:00.71 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.36M (Peak 766.70M) | Time:00:00.71 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.36M (Peak 766.70M) | Time:00:00.71 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.36M (Peak 766.70M) | Time:00:00.71 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.37M (Peak 766.70M) | Time:00:00.71 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.71M (Peak 766.70M) | Time:00:00.72 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.71M (Peak 766.70M) | Time:00:00.72 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_top.png'
+Time: 00:00.77 (Saving: 00:00.01)
+
+Fra:1 Mem:177.89M (Peak 177.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:177.89M (Peak 177.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_p
+Fra:1 Mem:179.96M (Peak 179.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_1_silver_s
+Fra:1 Mem:180.02M (Peak 180.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2_silver_p
+Fra:1 Mem:180.08M (Peak 180.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_3_silver_s
+Fra:1 Mem:180.18M (Peak 180.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_p
+Fra:1 Mem:180.28M (Peak 180.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5
+Fra:1 Mem:180.39M (Peak 180.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_s
+Fra:1 Mem:180.41M (Peak 180.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:180.51M (Peak 180.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6
+Fra:1 Mem:181.25M (Peak 181.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_s
+Fra:1 Mem:181.29M (Peak 181.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_p
+Fra:1 Mem:181.44M (Peak 181.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7
+Fra:1 Mem:181.46M (Peak 181.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:181.52M (Peak 181.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_p
+Fra:1 Mem:181.67M (Peak 181.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:181.68M (Peak 181.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:181.82M (Peak 181.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_2
+Fra:1 Mem:181.83M (Peak 181.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:181.98M (Peak 181.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_7
+Fra:1 Mem:182.06M (Peak 182.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_8
+Fra:1 Mem:182.12M (Peak 182.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_9
+Fra:1 Mem:182.19M (Peak 182.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_light
+Fra:1 Mem:182.20M (Peak 182.20M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:182.23M (Peak 182.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_lance
+Fra:1 Mem:182.33M (Peak 182.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_beam
+Fra:1 Mem:182.51M (Peak 182.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_green
+Fra:1 Mem:182.59M (Peak 182.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_violet
+Fra:1 Mem:182.60M (Peak 182.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_tip
+Fra:1 Mem:182.65M (Peak 182.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:182.69M (Peak 182.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:182.84M (Peak 182.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:183.11M (Peak 183.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:183.18M (Peak 183.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:183.21M (Peak 183.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:183.22M (Peak 183.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:183.25M (Peak 183.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:183.25M (Peak 183.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:183.98M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_pane_hull
+Fra:1 Mem:183.34M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0
+Fra:1 Mem:183.34M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_s
+Fra:1 Mem:183.39M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:183.53M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2
+Fra:1 Mem:183.53M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_s
+Fra:1 Mem:183.67M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_p
+Fra:1 Mem:183.80M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3
+Fra:1 Mem:183.85M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:183.96M (Peak 183.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_s
+Fra:1 Mem:184.10M (Peak 184.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:184.34M (Peak 184.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5
+Fra:1 Mem:184.42M (Peak 184.42M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_s
+Fra:1 Mem:184.44M (Peak 184.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_s
+Fra:1 Mem:184.56M (Peak 184.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_s
+Fra:1 Mem:184.73M (Peak 184.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_p
+Fra:1 Mem:184.83M (Peak 184.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_0
+Fra:1 Mem:185.36M (Peak 185.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:185.45M (Peak 185.45M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_3
+Fra:1 Mem:185.48M (Peak 185.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_5
+Fra:1 Mem:185.53M (Peak 185.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_light
+Fra:1 Mem:185.53M (Peak 185.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_silver
+Fra:1 Mem:185.59M (Peak 185.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_lance
+Fra:1 Mem:185.60M (Peak 185.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_beam
+Fra:1 Mem:185.65M (Peak 185.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_amber
+Fra:1 Mem:185.73M (Peak 185.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:185.92M (Peak 185.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_white_bloom
+Fra:1 Mem:186.14M (Peak 186.14M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:188.36M (Peak 188.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_02
+Fra:1 Mem:188.40M (Peak 188.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_03
+Fra:1 Mem:188.45M (Peak 188.45M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_05
+Fra:1 Mem:188.46M (Peak 188.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_09
+Fra:1 Mem:188.64M (Peak 188.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:188.73M (Peak 188.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft
+Fra:1 Mem:188.80M (Peak 188.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_a
+Fra:1 Mem:188.82M (Peak 188.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd
+Fra:1 Mem:188.84M (Peak 188.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_f
+Fra:1 Mem:188.91M (Peak 188.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_light
+Fra:1 Mem:188.94M (Peak 188.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:188.98M (Peak 188.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_turn_gw_gem_violet
+Fra:1 Mem:189.11M (Peak 189.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_1
+Fra:1 Mem:189.15M (Peak 189.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_silver
+Fra:1 Mem:189.17M (Peak 189.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_0
+Fra:1 Mem:189.18M (Peak 189.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_2
+Fra:1 Mem:189.87M (Peak 189.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_0
+Fra:1 Mem:189.93M (Peak 189.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_1
+Fra:1 Mem:189.95M (Peak 189.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_02
+Fra:1 Mem:190.01M (Peak 190.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_04
+Fra:1 Mem:190.05M (Peak 190.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_05
+Fra:1 Mem:190.04M (Peak 190.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_0
+Fra:1 Mem:190.14M (Peak 190.14M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_07
+Fra:1 Mem:190.15M (Peak 190.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_0
+Fra:1 Mem:190.18M (Peak 190.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_2
+Fra:1 Mem:190.18M (Peak 190.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:190.21M (Peak 190.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_2
+Fra:1 Mem:190.23M (Peak 190.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_0
+Fra:1 Mem:190.27M (Peak 190.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_0
+Fra:1 Mem:190.29M (Peak 190.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_1
+Fra:1 Mem:190.30M (Peak 190.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_2
+Fra:1 Mem:190.31M (Peak 190.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_2
+Fra:1 Mem:190.37M (Peak 190.37M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:190.38M (Peak 190.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_01
+Fra:1 Mem:190.43M (Peak 190.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_02
+Fra:1 Mem:190.49M (Peak 190.49M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_03
+Fra:1 Mem:190.51M (Peak 190.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:190.52M (Peak 190.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_06
+Fra:1 Mem:190.55M (Peak 190.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_07
+Fra:1 Mem:190.56M (Peak 190.56M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_2
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:190.60M (Peak 190.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_0
+Fra:1 Mem:190.85M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.70M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_hull_albedo
+Fra:1 Mem:189.70M (Peak 190.85M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.76M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.76M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.76M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.76M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.84M (Peak 829.74M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.88M (Peak 829.74M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.88M (Peak 829.74M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.88M (Peak 829.74M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.88M (Peak 829.74M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.88M (Peak 829.74M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:631.93M (Peak 829.74M) | Time:00:00.32 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.91M (Peak 829.74M) | Time:00:00.32 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:631.91M (Peak 829.74M) | Time:00:00.32 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:631.91M (Peak 829.74M) | Time:00:00.32 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:631.91M (Peak 829.74M) | Time:00:00.33 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:631.91M (Peak 829.74M) | Time:00:00.33 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.71M (Peak 829.74M) | Time:00:00.34 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.38M (Peak 829.74M) | Time:00:00.62 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.38M (Peak 829.74M) | Time:00:00.62 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.39M (Peak 829.74M) | Time:00:00.62 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.39M (Peak 829.74M) | Time:00:00.62 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.39M (Peak 829.74M) | Time:00:00.62 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.39M (Peak 829.74M) | Time:00:00.62 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.74M (Peak 829.74M) | Time:00:00.63 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.74M (Peak 829.74M) | Time:00:00.63 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_below.png'
+Time: 00:00.68 (Saving: 00:00.01)
+
+Fra:1 Mem:177.92M (Peak 177.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:177.92M (Peak 177.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_p
+Fra:1 Mem:179.99M (Peak 179.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_1_silver_s
+Fra:1 Mem:180.10M (Peak 180.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2
+Fra:1 Mem:180.16M (Peak 180.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2_silver_p
+Fra:1 Mem:180.22M (Peak 180.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4
+Fra:1 Mem:180.28M (Peak 180.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5
+Fra:1 Mem:180.46M (Peak 180.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_s
+Fra:1 Mem:180.48M (Peak 180.48M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:180.59M (Peak 180.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_s
+Fra:1 Mem:180.80M (Peak 180.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_p
+Fra:1 Mem:181.52M (Peak 181.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7
+Fra:1 Mem:181.72M (Peak 181.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:181.76M (Peak 181.76M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:181.84M (Peak 181.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:181.89M (Peak 181.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_3
+Fra:1 Mem:181.91M (Peak 181.91M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:182.14M (Peak 182.14M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_6
+Fra:1 Mem:182.18M (Peak 182.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_7
+Fra:1 Mem:182.22M (Peak 182.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_light
+Fra:1 Mem:182.28M (Peak 182.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_pearl
+Fra:1 Mem:182.34M (Peak 182.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:182.44M (Peak 182.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_lance
+Fra:1 Mem:182.51M (Peak 182.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_beam
+Fra:1 Mem:182.54M (Peak 182.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_green
+Fra:1 Mem:182.55M (Peak 182.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_violet
+Fra:1 Mem:182.65M (Peak 182.65M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_tip
+Fra:1 Mem:182.70M (Peak 182.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:182.83M (Peak 182.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:182.86M (Peak 182.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:183.01M (Peak 183.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:183.07M (Peak 183.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:183.10M (Peak 183.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:183.23M (Peak 183.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:183.93M (Peak 183.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:183.99M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:183.36M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:183.37M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:183.40M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_pane_hull
+Fra:1 Mem:183.40M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_p
+Fra:1 Mem:183.50M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1
+Fra:1 Mem:183.53M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_s
+Fra:1 Mem:183.55M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:183.65M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2
+Fra:1 Mem:183.67M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_p
+Fra:1 Mem:183.69M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3
+Fra:1 Mem:183.91M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_s
+Fra:1 Mem:183.93M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:186.08M (Peak 186.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4
+Fra:1 Mem:186.10M (Peak 186.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_s
+Fra:1 Mem:186.26M (Peak 186.26M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:186.30M (Peak 186.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_s
+Fra:1 Mem:186.43M (Peak 186.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6
+Fra:1 Mem:186.64M (Peak 186.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_s
+Fra:1 Mem:186.67M (Peak 186.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_s
+Fra:1 Mem:187.44M (Peak 187.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_p
+Fra:1 Mem:187.56M (Peak 187.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:187.88M (Peak 187.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_3
+Fra:1 Mem:187.98M (Peak 187.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_4
+Fra:1 Mem:187.99M (Peak 187.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_7
+Fra:1 Mem:188.09M (Peak 188.09M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_9
+Fra:1 Mem:188.30M (Peak 188.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_light
+Fra:1 Mem:188.34M (Peak 188.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_silver
+Fra:1 Mem:188.39M (Peak 188.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_2
+Fra:1 Mem:188.41M (Peak 188.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_amber
+Fra:1 Mem:188.52M (Peak 188.52M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_green
+Fra:1 Mem:188.54M (Peak 188.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_grown_stern
+Fra:1 Mem:188.58M (Peak 188.58M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:188.71M (Peak 188.71M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_white_bloom
+Fra:1 Mem:188.82M (Peak 188.82M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:189.03M (Peak 189.03M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_01
+Fra:1 Mem:189.13M (Peak 189.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_1
+Fra:1 Mem:189.15M (Peak 189.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_03
+Fra:1 Mem:189.18M (Peak 189.18M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_04
+Fra:1 Mem:189.31M (Peak 189.31M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_07
+Fra:1 Mem:189.34M (Peak 189.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_09
+Fra:1 Mem:189.43M (Peak 189.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:189.37M (Peak 189.43M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_f
+Fra:1 Mem:189.54M (Peak 189.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_light
+Fra:1 Mem:189.59M (Peak 189.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd
+Fra:1 Mem:190.26M (Peak 190.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_light
+Fra:1 Mem:190.37M (Peak 190.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:190.37M (Peak 190.37M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_0
+Fra:1 Mem:190.42M (Peak 190.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_1
+Fra:1 Mem:190.46M (Peak 190.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_2
+Fra:1 Mem:190.50M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_1
+Fra:1 Mem:189.86M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_2
+Fra:1 Mem:189.91M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_01
+Fra:1 Mem:189.99M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_03
+Fra:1 Mem:190.02M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_05
+Fra:1 Mem:190.07M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_07
+Fra:1 Mem:190.08M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_1
+Fra:1 Mem:190.09M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_0
+Fra:1 Mem:190.10M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_2
+Fra:1 Mem:190.11M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:190.23M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_2
+Fra:1 Mem:190.25M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_2
+Fra:1 Mem:190.32M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_0
+Fra:1 Mem:190.32M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_2
+Fra:1 Mem:190.34M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_0
+Fra:1 Mem:190.38M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:190.40M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_01
+Fra:1 Mem:190.40M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_03
+Fra:1 Mem:190.43M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:190.48M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_05
+Fra:1 Mem:190.48M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_06
+Fra:1 Mem:190.48M (Peak 190.50M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_07
+Fra:1 Mem:190.51M (Peak 190.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:190.54M (Peak 190.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_1
+Fra:1 Mem:190.55M (Peak 190.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_2
+Fra:1 Mem:190.60M (Peak 190.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_0
+Fra:1 Mem:190.66M (Peak 190.66M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:190.88M (Peak 190.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.73M (Peak 190.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_normal
+Fra:1 Mem:189.73M (Peak 190.88M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.78M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.78M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.78M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.78M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.86M (Peak 765.78M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.90M (Peak 765.78M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.90M (Peak 765.78M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.90M (Peak 765.78M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.90M (Peak 765.78M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.90M (Peak 765.78M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:631.95M (Peak 765.78M) | Time:00:00.34 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.93M (Peak 765.78M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:631.93M (Peak 765.78M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:631.93M (Peak 765.78M) | Time:00:00.34 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:631.93M (Peak 765.78M) | Time:00:00.35 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:631.93M (Peak 765.78M) | Time:00:00.35 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.73M (Peak 765.78M) | Time:00:00.36 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.73M (Peak 765.78M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.73M (Peak 765.78M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.74M (Peak 765.78M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.74M (Peak 765.78M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.74M (Peak 765.78M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.74M (Peak 765.78M) | Time:00:00.36 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.74M (Peak 765.78M) | Time:00:00.36 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.41M (Peak 766.74M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.76M (Peak 766.74M) | Time:00:00.66 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.76M (Peak 766.74M) | Time:00:00.66 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_port.png'
+Time: 00:00.70 (Saving: 00:00.01)
+
+Fra:1 Mem:177.96M (Peak 177.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:177.96M (Peak 177.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_1
+Fra:1 Mem:180.03M (Peak 180.03M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2
+Fra:1 Mem:180.13M (Peak 180.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2_silver_p
+Fra:1 Mem:180.24M (Peak 180.24M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_3_silver_p
+Fra:1 Mem:180.30M (Peak 180.30M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_s
+Fra:1 Mem:180.36M (Peak 180.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:181.21M (Peak 181.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6
+Fra:1 Mem:181.27M (Peak 181.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_p
+Fra:1 Mem:181.39M (Peak 181.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7
+Fra:1 Mem:181.53M (Peak 181.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:181.55M (Peak 181.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_p
+Fra:1 Mem:181.66M (Peak 181.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:181.74M (Peak 181.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:181.74M (Peak 181.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_2
+Fra:1 Mem:181.84M (Peak 181.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_3
+Fra:1 Mem:181.89M (Peak 181.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_4
+Fra:1 Mem:181.94M (Peak 181.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:182.08M (Peak 182.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_7
+Fra:1 Mem:182.27M (Peak 182.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_8
+Fra:1 Mem:182.38M (Peak 182.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_9
+Fra:1 Mem:182.39M (Peak 182.39M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_pearl
+Fra:1 Mem:182.54M (Peak 182.54M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:182.56M (Peak 182.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_lance
+Fra:1 Mem:182.63M (Peak 182.63M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_beam
+Fra:1 Mem:182.73M (Peak 182.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_amber
+Fra:1 Mem:182.78M (Peak 182.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_green
+Fra:1 Mem:182.81M (Peak 182.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_violet
+Fra:1 Mem:182.86M (Peak 182.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:182.87M (Peak 182.87M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:182.95M (Peak 182.95M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:182.98M (Peak 182.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:183.07M (Peak 183.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:183.15M (Peak 183.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:183.82M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:183.26M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:183.26M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:183.70M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_pane_hull
+Fra:1 Mem:183.70M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_s
+Fra:1 Mem:183.71M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1
+Fra:1 Mem:183.78M (Peak 183.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:183.85M (Peak 183.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_s
+Fra:1 Mem:183.88M (Peak 183.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_p
+Fra:1 Mem:183.90M (Peak 183.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_s
+Fra:1 Mem:183.99M (Peak 183.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:186.17M (Peak 186.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4
+Fra:1 Mem:186.25M (Peak 186.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_2
+Fra:1 Mem:186.27M (Peak 186.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:186.33M (Peak 186.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_s
+Fra:1 Mem:186.73M (Peak 186.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_p
+Fra:1 Mem:186.74M (Peak 186.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6
+Fra:1 Mem:186.88M (Peak 186.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7
+Fra:1 Mem:186.90M (Peak 186.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_0
+Fra:1 Mem:187.73M (Peak 187.73M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:187.82M (Peak 187.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_2
+Fra:1 Mem:187.84M (Peak 187.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_3
+Fra:1 Mem:187.96M (Peak 187.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_6
+Fra:1 Mem:188.23M (Peak 188.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_7
+Fra:1 Mem:188.29M (Peak 188.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_light
+Fra:1 Mem:188.35M (Peak 188.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_pearl
+Fra:1 Mem:188.35M (Peak 188.35M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_1
+Fra:1 Mem:188.41M (Peak 188.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_lance
+Fra:1 Mem:188.43M (Peak 188.43M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_beam
+Fra:1 Mem:188.49M (Peak 188.49M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_amber
+Fra:1 Mem:188.55M (Peak 188.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_violet
+Fra:1 Mem:188.58M (Peak 188.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_tip
+Fra:1 Mem:188.61M (Peak 188.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:188.74M (Peak 188.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_white_bloom
+Fra:1 Mem:188.79M (Peak 188.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:188.96M (Peak 188.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_01
+Fra:1 Mem:189.05M (Peak 189.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_02
+Fra:1 Mem:189.08M (Peak 189.08M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_04
+Fra:1 Mem:189.13M (Peak 189.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_05
+Fra:1 Mem:189.16M (Peak 189.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_07
+Fra:1 Mem:189.17M (Peak 189.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_08
+Fra:1 Mem:189.99M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_09
+Fra:1 Mem:189.58M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:189.58M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_a
+Fra:1 Mem:189.62M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_light
+Fra:1 Mem:189.63M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_a
+Fra:1 Mem:189.64M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_light
+Fra:1 Mem:189.70M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:189.70M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_silver
+Fra:1 Mem:189.73M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_0
+Fra:1 Mem:189.75M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_1
+Fra:1 Mem:189.79M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_2
+Fra:1 Mem:189.85M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:189.94M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_2
+Fra:1 Mem:189.94M (Peak 189.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_01
+Fra:1 Mem:190.11M (Peak 190.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_02
+Fra:1 Mem:190.12M (Peak 190.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_06
+Fra:1 Mem:190.13M (Peak 190.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_0
+Fra:1 Mem:190.21M (Peak 190.21M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_2
+Fra:1 Mem:190.28M (Peak 190.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_0
+Fra:1 Mem:190.29M (Peak 190.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:190.31M (Peak 190.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_2
+Fra:1 Mem:190.31M (Peak 190.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_0
+Fra:1 Mem:190.37M (Peak 190.37M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_1
+Fra:1 Mem:190.37M (Peak 190.37M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_2
+Fra:1 Mem:190.40M (Peak 190.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_1
+Fra:1 Mem:190.44M (Peak 190.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_2
+Fra:1 Mem:190.45M (Peak 190.45M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:190.55M (Peak 190.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_2
+Fra:1 Mem:190.57M (Peak 190.57M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_02
+Fra:1 Mem:190.58M (Peak 190.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_1
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_07
+Fra:1 Mem:190.64M (Peak 190.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:190.92M (Peak 190.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.77M (Peak 190.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_normal
+Fra:1 Mem:189.77M (Peak 190.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.80M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.80M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.80M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.80M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.88M (Peak 829.81M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.92M (Peak 829.81M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.92M (Peak 829.81M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.92M (Peak 829.81M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.92M (Peak 829.81M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.92M (Peak 829.81M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:631.98M (Peak 829.81M) | Time:00:00.34 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.95M (Peak 829.81M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:631.95M (Peak 829.81M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:631.95M (Peak 829.81M) | Time:00:00.34 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:631.95M (Peak 829.81M) | Time:00:00.35 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:631.95M (Peak 829.81M) | Time:00:00.35 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.76M (Peak 829.81M) | Time:00:00.36 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.43M (Peak 829.81M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.43M (Peak 829.81M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.43M (Peak 829.81M) | Time:00:00.65 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.43M (Peak 829.81M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.43M (Peak 829.81M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.44M (Peak 829.81M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.78M (Peak 829.81M) | Time:00:00.66 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.78M (Peak 829.81M) | Time:00:00.66 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_starboard.png'
+Time: 00:00.71 (Saving: 00:00.01)
+
+Fra:1 Mem:178.00M (Peak 178.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:178.00M (Peak 178.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_p
+Fra:1 Mem:180.07M (Peak 180.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_1_silver_s
+Fra:1 Mem:180.17M (Peak 180.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2_silver_s
+Fra:1 Mem:180.27M (Peak 180.27M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_3_silver_p
+Fra:1 Mem:180.29M (Peak 180.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_p
+Fra:1 Mem:180.36M (Peak 180.36M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_s
+Fra:1 Mem:180.59M (Peak 180.59M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:180.69M (Peak 180.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_s
+Fra:1 Mem:181.51M (Peak 181.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_p
+Fra:1 Mem:181.53M (Peak 181.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:181.68M (Peak 181.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:181.80M (Peak 181.80M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:181.91M (Peak 181.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_2
+Fra:1 Mem:181.94M (Peak 181.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_4
+Fra:1 Mem:182.06M (Peak 182.06M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:182.07M (Peak 182.07M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_6
+Fra:1 Mem:182.15M (Peak 182.15M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_8
+Fra:1 Mem:182.16M (Peak 182.16M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_9
+Fra:1 Mem:182.28M (Peak 182.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_light
+Fra:1 Mem:182.29M (Peak 182.29M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_pearl
+Fra:1 Mem:182.53M (Peak 182.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:182.55M (Peak 182.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_beam
+Fra:1 Mem:182.61M (Peak 182.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_amber
+Fra:1 Mem:182.74M (Peak 182.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_violet
+Fra:1 Mem:182.78M (Peak 182.78M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_tip
+Fra:1 Mem:182.83M (Peak 182.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:182.83M (Peak 182.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:182.94M (Peak 182.94M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:183.05M (Peak 183.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:183.13M (Peak 183.13M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:183.20M (Peak 183.20M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:183.20M (Peak 183.20M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:183.90M (Peak 183.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:183.92M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:183.50M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:183.54M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_pane_hull
+Fra:1 Mem:183.55M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0
+Fra:1 Mem:183.59M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1
+Fra:1 Mem:183.60M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_s
+Fra:1 Mem:183.63M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:183.63M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2
+Fra:1 Mem:183.72M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_s
+Fra:1 Mem:183.75M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_p
+Fra:1 Mem:183.92M (Peak 183.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3
+Fra:1 Mem:183.96M (Peak 183.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_s
+Fra:1 Mem:185.67M (Peak 185.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:186.09M (Peak 186.09M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_s
+Fra:1 Mem:186.47M (Peak 186.47M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:186.49M (Peak 186.49M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5
+Fra:1 Mem:186.55M (Peak 186.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6
+Fra:1 Mem:186.64M (Peak 186.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_s
+Fra:1 Mem:186.81M (Peak 186.81M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_p
+Fra:1 Mem:186.83M (Peak 186.83M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7
+Fra:1 Mem:187.55M (Peak 187.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_p
+Fra:1 Mem:187.72M (Peak 187.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_0
+Fra:1 Mem:187.86M (Peak 187.86M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:187.96M (Peak 187.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_3
+Fra:1 Mem:187.97M (Peak 187.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_4
+Fra:1 Mem:188.00M (Peak 188.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_5
+Fra:1 Mem:188.01M (Peak 188.01M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_6
+Fra:1 Mem:188.12M (Peak 188.12M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_8
+Fra:1 Mem:188.22M (Peak 188.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_9
+Fra:1 Mem:188.28M (Peak 188.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_light
+Fra:1 Mem:188.31M (Peak 188.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_2
+Fra:1 Mem:188.34M (Peak 188.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_lance
+Fra:1 Mem:188.34M (Peak 188.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_beam
+Fra:1 Mem:188.51M (Peak 188.51M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_amber
+Fra:1 Mem:188.56M (Peak 188.56M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_green
+Fra:1 Mem:188.58M (Peak 188.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_grown_stern
+Fra:1 Mem:188.60M (Peak 188.60M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:188.66M (Peak 188.66M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_white_bloom
+Fra:1 Mem:188.70M (Peak 188.70M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:188.72M (Peak 188.72M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_00
+Fra:1 Mem:188.74M (Peak 188.74M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_02
+Fra:1 Mem:188.84M (Peak 188.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_03
+Fra:1 Mem:188.93M (Peak 188.93M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_04
+Fra:1 Mem:189.00M (Peak 189.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_05
+Fra:1 Mem:189.00M (Peak 189.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_07
+Fra:1 Mem:189.68M (Peak 189.68M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_09
+Fra:1 Mem:189.81M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:189.28M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft
+Fra:1 Mem:189.46M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_a
+Fra:1 Mem:189.48M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_f
+Fra:1 Mem:189.55M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_light
+Fra:1 Mem:189.56M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_a
+Fra:1 Mem:189.58M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_f
+Fra:1 Mem:189.62M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_0
+Fra:1 Mem:189.64M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_light
+Fra:1 Mem:189.64M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:189.66M (Peak 189.84M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_turn_gw_gem_violet
+Fra:1 Mem:189.71M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_light
+Fra:1 Mem:189.71M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_1
+Fra:1 Mem:189.79M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_2
+Fra:1 Mem:189.81M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_1
+Fra:1 Mem:189.84M (Peak 189.84M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_2
+Fra:1 Mem:189.94M (Peak 189.94M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_01
+Fra:1 Mem:190.04M (Peak 190.04M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_02
+Fra:1 Mem:190.06M (Peak 190.06M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_05
+Fra:1 Mem:190.11M (Peak 190.11M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_07
+Fra:1 Mem:190.12M (Peak 190.12M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_0
+Fra:1 Mem:190.13M (Peak 190.13M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_2
+Fra:1 Mem:190.34M (Peak 190.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:190.38M (Peak 190.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_2
+Fra:1 Mem:190.38M (Peak 190.38M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_0
+Fra:1 Mem:190.46M (Peak 190.46M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_1
+Fra:1 Mem:190.49M (Peak 190.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_0
+Fra:1 Mem:190.49M (Peak 190.49M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:190.51M (Peak 190.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_01
+Fra:1 Mem:190.51M (Peak 190.51M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_02
+Fra:1 Mem:190.54M (Peak 190.54M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_03
+Fra:1 Mem:190.55M (Peak 190.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_06
+Fra:1 Mem:190.61M (Peak 190.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:190.63M (Peak 190.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_1
+Fra:1 Mem:190.65M (Peak 190.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_2
+Fra:1 Mem:190.65M (Peak 190.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_0
+Fra:1 Mem:190.67M (Peak 190.67M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:190.96M (Peak 190.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.81M (Peak 190.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_normal
+Fra:1 Mem:189.81M (Peak 190.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.82M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.82M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.82M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.82M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.90M (Peak 765.85M) | Time:00:00.34 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.95M (Peak 765.85M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.95M (Peak 765.85M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.95M (Peak 765.85M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.95M (Peak 765.85M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.95M (Peak 765.85M) | Time:00:00.34 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:632.00M (Peak 765.85M) | Time:00:00.34 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.97M (Peak 765.85M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:631.97M (Peak 765.85M) | Time:00:00.34 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:631.97M (Peak 765.85M) | Time:00:00.34 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:631.97M (Peak 765.85M) | Time:00:00.36 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:631.97M (Peak 765.85M) | Time:00:00.36 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.78M (Peak 765.85M) | Time:00:00.37 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.45M (Peak 766.79M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.45M (Peak 766.79M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.45M (Peak 766.79M) | Time:00:00.65 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.45M (Peak 766.79M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.45M (Peak 766.79M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.46M (Peak 766.79M) | Time:00:00.65 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.80M (Peak 766.79M) | Time:00:00.65 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.80M (Peak 766.79M) | Time:00:00.65 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_bow.png'
+Time: 00:00.70 (Saving: 00:00.01)
+
+Fra:1 Mem:178.04M (Peak 178.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_pane_hull
+Fra:1 Mem:178.04M (Peak 178.04M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_0_silver_p
+Fra:1 Mem:180.11M (Peak 180.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_1_silver_p
+Fra:1 Mem:180.22M (Peak 180.22M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_2_silver_p
+Fra:1 Mem:180.28M (Peak 180.28M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_3
+Fra:1 Mem:180.41M (Peak 180.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_4_silver_s
+Fra:1 Mem:180.44M (Peak 180.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5
+Fra:1 Mem:180.50M (Peak 180.50M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_5_silver_p
+Fra:1 Mem:180.64M (Peak 180.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6
+Fra:1 Mem:181.47M (Peak 181.47M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_6_silver_s
+Fra:1 Mem:181.55M (Peak 181.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7
+Fra:1 Mem:181.61M (Peak 181.61M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_s
+Fra:1 Mem:181.75M (Peak 181.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | port_lead_7_silver_p
+Fra:1 Mem:181.82M (Peak 181.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_0
+Fra:1 Mem:181.85M (Peak 181.85M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_1
+Fra:1 Mem:181.90M (Peak 181.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_3
+Fra:1 Mem:182.11M (Peak 182.11M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_4
+Fra:1 Mem:182.24M (Peak 182.24M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_5
+Fra:1 Mem:182.25M (Peak 182.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_7
+Fra:1 Mem:182.33M (Peak 182.33M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_8
+Fra:1 Mem:182.36M (Peak 182.38M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_port_ring_9
+Fra:1 Mem:182.40M (Peak 182.40M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_pearl
+Fra:1 Mem:182.46M (Peak 182.46M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_silver
+Fra:1 Mem:182.53M (Peak 182.53M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_lance
+Fra:1 Mem:182.55M (Peak 182.55M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_beam
+Fra:1 Mem:182.58M (Peak 182.58M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_green
+Fra:1 Mem:182.64M (Peak 182.64M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L1_mount_gw_gem_violet
+Fra:1 Mem:182.69M (Peak 182.69M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_grown_stern
+Fra:1 Mem:182.79M (Peak 182.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_deep_lens
+Fra:1 Mem:182.98M (Peak 182.98M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_white_bloom
+Fra:1 Mem:183.10M (Peak 183.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_cut_face
+Fra:1 Mem:183.23M (Peak 183.23M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:183.90M (Peak 183.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:184.02M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:183.43M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_05
+Fra:1 Mem:183.43M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:183.46M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_08
+Fra:1 Mem:183.56M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:183.60M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:183.67M (Peak 184.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_pane_hull
+Fra:1 Mem:185.82M (Peak 185.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0
+Fra:1 Mem:185.82M (Peak 185.82M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_s
+Fra:1 Mem:185.88M (Peak 185.88M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_0_silver_p
+Fra:1 Mem:185.89M (Peak 185.89M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1
+Fra:1 Mem:185.92M (Peak 185.92M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_1_silver_p
+Fra:1 Mem:185.97M (Peak 185.97M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2
+Fra:1 Mem:185.99M (Peak 185.99M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_2_silver_s
+Fra:1 Mem:186.01M (Peak 186.00M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3
+Fra:1 Mem:186.02M (Peak 186.02M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_s
+Fra:1 Mem:186.18M (Peak 186.18M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_3_silver_p
+Fra:1 Mem:186.26M (Peak 186.26M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4
+Fra:1 Mem:187.05M (Peak 187.05M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_s
+Fra:1 Mem:187.10M (Peak 187.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_4_silver_p
+Fra:1 Mem:187.19M (Peak 187.19M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_s
+Fra:1 Mem:187.34M (Peak 187.34M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_5_silver_p
+Fra:1 Mem:187.44M (Peak 187.44M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6
+Fra:1 Mem:187.62M (Peak 187.62M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_6_silver_s
+Fra:1 Mem:187.67M (Peak 187.67M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_s
+Fra:1 Mem:187.75M (Peak 187.75M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | stbd_lead_7_silver_p
+Fra:1 Mem:187.79M (Peak 187.79M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_0
+Fra:1 Mem:187.90M (Peak 187.90M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_1
+Fra:1 Mem:187.96M (Peak 187.96M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_4
+Fra:1 Mem:188.10M (Peak 188.10M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_7
+Fra:1 Mem:188.17M (Peak 188.17M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_8
+Fra:1 Mem:188.20M (Peak 188.20M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_stbd_ring_9
+Fra:1 Mem:188.25M (Peak 188.25M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_pearl
+Fra:1 Mem:188.31M (Peak 188.31M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_2
+Fra:1 Mem:188.41M (Peak 188.41M) | Time:00:00.00 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_lance
+Fra:1 Mem:188.45M (Peak 188.45M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_green_1
+Fra:1 Mem:188.52M (Peak 188.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_beam
+Fra:1 Mem:188.53M (Peak 188.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_green
+Fra:1 Mem:188.70M (Peak 188.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_gem_violet
+Fra:1 Mem:188.73M (Peak 188.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | L2_mount_gw_tip
+Fra:1 Mem:188.75M (Peak 188.75M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_deep_lens
+Fra:1 Mem:189.63M (Peak 189.63M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_cut_face
+Fra:1 Mem:189.73M (Peak 189.73M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_01
+Fra:1 Mem:189.76M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_03
+Fra:1 Mem:189.76M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_2
+Fra:1 Mem:189.21M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_06
+Fra:1 Mem:189.28M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_07
+Fra:1 Mem:189.29M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_09
+Fra:1 Mem:189.40M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | E2_silver_flow_10
+Fra:1 Mem:189.53M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft
+Fra:1 Mem:189.64M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_silver_a
+Fra:1 Mem:189.65M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_aft_light
+Fra:1 Mem:189.67M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_a
+Fra:1 Mem:189.71M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | ithar_GP1_bridge_fwd_silver_f
+Fra:1 Mem:189.71M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_pearl
+Fra:1 Mem:189.72M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_1
+Fra:1 Mem:189.73M (Peak 189.76M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | O1_mount_gw_light
+Fra:1 Mem:189.86M (Peak 189.86M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_0
+Fra:1 Mem:189.93M (Peak 189.93M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_-0.3_1
+Fra:1 Mem:189.96M (Peak 189.96M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_0
+Fra:1 Mem:189.99M (Peak 189.99M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_deck_+0.2_2
+Fra:1 Mem:190.10M (Peak 190.10M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_01
+Fra:1 Mem:190.15M (Peak 190.15M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_02
+Fra:1 Mem:190.20M (Peak 190.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_05
+Fra:1 Mem:190.20M (Peak 190.20M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_frame_06
+Fra:1 Mem:190.22M (Peak 190.22M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_0
+Fra:1 Mem:190.24M (Peak 190.24M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_amber_1
+Fra:1 Mem:190.26M (Peak 190.26M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_0
+Fra:1 Mem:190.28M (Peak 190.28M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_1
+Fra:1 Mem:190.34M (Peak 190.34M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_violet_2
+Fra:1 Mem:190.41M (Peak 190.41M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_port_light_core_green_1
+Fra:1 Mem:190.42M (Peak 190.42M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_0
+Fra:1 Mem:190.52M (Peak 190.52M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_-0.3_1
+Fra:1 Mem:190.53M (Peak 190.53M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_1
+Fra:1 Mem:190.55M (Peak 190.55M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_deck_+0.2_2
+Fra:1 Mem:190.59M (Peak 190.59M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_01
+Fra:1 Mem:190.60M (Peak 190.60M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_02
+Fra:1 Mem:190.61M (Peak 190.61M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_03
+Fra:1 Mem:190.65M (Peak 190.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_frame_04
+Fra:1 Mem:190.65M (Peak 190.65M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_0
+Fra:1 Mem:190.70M (Peak 190.70M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_amber_1
+Fra:1 Mem:190.74M (Peak 190.74M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Synchronizing object | in_stbd_light_core_violet_0
+Fra:1 Mem:191.00M (Peak 191.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Initializing
+Fra:1 Mem:189.85M (Peak 191.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_normal
+Fra:1 Mem:189.85M (Peak 191.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_albedo
+Fra:1 Mem:189.85M (Peak 191.00M) | Time:00:00.01 | Mem:0.00M, Peak:0.00M | Scene, ViewLayer | Updating Images | Loading GP1_parts_orm
+Fra:1 Mem:631.85M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Waiting for render to start
+Fra:1 Mem:631.85M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Scene
+Fra:1 Mem:631.85M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Shaders
+Fra:1 Mem:631.85M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Loading render kernels (may take a few minutes the first time)
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Procedurals
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Background
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Camera
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Meshes Flags
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects
+Fra:1 Mem:631.93M (Peak 829.90M) | Time:00:00.32 | Mem:448.00M, Peak:448.00M | Scene, ViewLayer | Updating Objects | Copying Transformations to device
+Fra:1 Mem:631.97M (Peak 829.90M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems
+Fra:1 Mem:631.97M (Peak 829.90M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Particle Systems | Copying Particles to device
+Fra:1 Mem:631.97M (Peak 829.90M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Meshes
+Fra:1 Mem:631.97M (Peak 829.90M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Objects | Applying Static Transformations
+Fra:1 Mem:631.97M (Peak 829.90M) | Time:00:00.32 | Mem:448.04M, Peak:448.04M | Scene, ViewLayer | Updating Mesh | Computing attributes
+Fra:1 Mem:632.02M (Peak 829.90M) | Time:00:00.32 | Mem:448.06M, Peak:448.06M | Scene, ViewLayer | Updating Mesh | Copying Attributes to device
+Fra:1 Mem:631.99M (Peak 829.90M) | Time:00:00.32 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:632.00M (Peak 829.90M) | Time:00:00.32 | Mem:448.07M, Peak:448.07M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:632.00M (Peak 829.90M) | Time:00:00.32 | Mem:460.39M, Peak:460.39M | Scene, ViewLayer | Updating Scene BVH | Building BVH 0%
+Fra:1 Mem:632.00M (Peak 829.90M) | Time:00:00.34 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:632.00M (Peak 829.90M) | Time:00:00.34 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:472.51M, Peak:484.83M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.31M, Peak:484.83M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:642.80M (Peak 829.90M) | Time:00:00.34 | Mem:483.40M, Peak:484.83M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:717.47M (Peak 829.90M) | Time:00:00.63 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:717.47M (Peak 829.90M) | Time:00:00.63 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:717.48M (Peak 829.90M) | Time:00:00.63 | Mem:557.99M, Peak:558.07M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:717.48M (Peak 829.90M) | Time:00:00.63 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:717.48M (Peak 829.90M) | Time:00:00.63 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:717.48M (Peak 829.90M) | Time:00:00.63 | Mem:558.07M, Peak:558.07M | Scene, ViewLayer | Sample 0/1
+Fra:1 Mem:727.83M (Peak 829.90M) | Time:00:00.64 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Sample 1/1
+Fra:1 Mem:727.83M (Peak 829.90M) | Time:00:00.64 | Mem:565.11M, Peak:565.11M | Scene, ViewLayer | Finished
+Saved: 'C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\surface\surface_stern.png'
+Time: 00:00.69 (Saving: 00:00.01)
+
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+
+Blender quit
+GPU: released shared claim a1685e70-0734-448f-95da-abaf91149791

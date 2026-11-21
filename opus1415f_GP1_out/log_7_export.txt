@@ -1,0 +1,51 @@
+  outline GP1: bow 50.2, midship 83.9, stern 46.0, whole 63.1 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 69.1, midship 70.3, stern 68.3
+  REPORT bow overlap 50.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 83.9 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 46.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 63.1 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera GP1: game bow 49.1 midship 87.4 stern 65.6 whole 69.6, studio bow 20.0 midship 77.1 stern 46.7 whole 51.9
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] I15_11 triangles 402980 hard points {"gun": 3, "engine": 2, "bay": 0, "breach": 3, "core": 1, "rcs": 2, "board": 2} turrets 1 (814 triangles) files ['I15_11.glb', 'I15_11_base.jpg', 'I15_11_emission.jpg', 'I15_11_normal.png', 'I15_11_orm.png', 'I15_11_parts_base.jpg', 'I15_11_parts_normal.png', 'I15_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\export\I15_11
+[check] authored interiors: 20280 triangles, 5 surfaces; authored seams: 2
+[check] 383514 triangles (72730 on part surfaces), box x -0.470 to 0.530, y -0.079 to 0.112, z -0.211 to 0.211
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 1 written (turret_0 O1); marked by the kit: ['O1']
+[check] slot 0 pulsar F: 1 hard points
+[check] slot 1 pulsar F: 1 hard points
+[check] slot 2 turret T: 1 hard points
+[check] hard points: {"board": 2, "breach": 3, "core": 1, "engine": 2, "rcs": 2, "gun": 3}
+PASS I15_11 game export: every required point is there and every hard point passes the mesh checks
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 2 (turret T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_pulsar_F_0 is 0.1433 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w0_pulsar_F_0 rests aimed backward (x -1.00)
+ok   no_socket: the check failed as it must | hp_w0_pulsar_F_0 has no extras.socket
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   wrong_side: the check failed as it must | hp_board_0: a port boarding origin sits on the other side (z +0.196)
+ok   no_rcs: the check failed as it must | need at least 2 hp_rcs (0 written)
+ok   no_board: the check failed as it must | need at least 2 hp_board (0 written)
+ok   breach_count: the check failed as it must | need exactly 3 hp_breach for a Cruiser of ithar (2 written)
+ok   breach_inward: the check failed as it must | hp_breach_0: +Y is not the outward normal (it points z +0.92 on the port side)
+ok   breach_near: the check failed as it must | hp_breach_0 is 0.0000 from a part (at least 0.03)
+ok   no_interior: the check failed as it must | no authored interior geometry
+ok   no_seams: the check failed as it must | no authored break seams
+ok   liner_only: the check failed as it must | no authored interior rooms: an inner liner alone is not comprehensive insides
+ok   hull_trim_near: the check passed as it must | 
+ok   part_near: the check failed as it must | hp_breach_0 is 0.0000 from a part (at least 0.03)
+ok   same_side_rcs: the check failed as it must | need one valid hp_rcs on each side (P and S)
+ok   same_side_board: the check failed as it must | need one valid hp_board on each side (P and S)
+ok   turret_merged: the check failed as it must | turret O1 is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+PASS the export check fails when it should
+INSTALL READBACK PASS code=I15_11 nodes=15
+Installed into C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GP1\repo\godot\assets\ships\I15_11; previous files at C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GP1\repo\godot\.stage7-replaced-jgqsbo7x\previous
+Stage 7 done: PASS. The game's ship folder is C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\export\I15_11

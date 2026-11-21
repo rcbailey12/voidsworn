@@ -1,0 +1,40 @@
+{
+ "cell": "GP1",
+ "hull_objects": 78,
+ "parts": 52,
+ "interiors": 44,
+ "seconds": 3.4,
+ "notes": [
+  {
+   "route": "build sheet ithar_GP1",
+   "contract": {
+    "sheet": "ithar_GP1",
+    "game_ship": "i_song",
+    "variant": "",
+    "model_length": 14.46275,
+    "scale": 0.06914314379363273,
+    "length_world": 14.5,
+    "t_lines": [
+     -0.30077,
+     0.28003
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 3,
+    "guns": 3,
+    "engines": 2,
+    "bays": 0,
+    "points": 8,
+    "turrets": [
+     "O1_turret"
+    ],
+    "interior_objects": 44,
+    "slots": [
+     "0 pulsar F",
+     "1 pulsar F",
+     "2 turret T"
+    ]
+   }
+  }
+ ]
+}

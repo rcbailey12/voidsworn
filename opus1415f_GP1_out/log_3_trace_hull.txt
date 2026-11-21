@@ -1,0 +1,16 @@
+wrote C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\concept.png (1920, 1920)
+[fit] 128 0.9221 {'az': 54.688, 'el': 26.372, 'roll': -3.857, 'dist': 2.251, 'focal': 2702.095, 'cx': 580.214, 'cy': 478.708}
+[fit] 256 0.931 {'az': 55.18, 'el': 27.133, 'roll': -3.626, 'dist': 2.25, 'focal': 2688.23, 'cx': 576.237, 'cy': 482.931}
+[fit] 512 0.9348 {'az': 54.93, 'el': 27.229, 'roll': -3.066, 'dist': 2.238, 'focal': 2668.384, 'cx': 574.299, 'cy': 485.903}
+[fit] B0 overlap at the fitted camera 0.9351 at round 3 hero camera framed 0.7895
+The hull is the build sheet ithar_GP1: no tune. 
+  outline GP1: bow 50.2, midship 83.9, stern 46.0, whole 63.1 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 69.1, midship 70.3, stern 68.3
+  REPORT bow overlap 50.2 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 83.9 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 46.0 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 63.1 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+REPORT GP1 outline overlap 63.1 percent, outline_gate 90 is context only (not a pass bar)
+The overlay is C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\sil\sil_GP1.png (green both, red concept only, yellow ship only).
+Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)

@@ -1,0 +1,36 @@
+start ithar_GP1 I15_11 board/pin-1415f Sat 11/21/2026 11:08:14.22 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   1f2747714..f3b6bb9ea  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]          board/pin-1529d      -> board/pin-1529d
+   80dca8dad..2a4baecdf  opus/issue-1379      -> opus/issue-1379
+   80dca8dad..2a4baecdf  refs/pull/1529/head  -> refs/pull/1529/head
+ + 7eadb7bf3...d2f51645a refs/pull/1529/merge -> refs/pull/1529/merge  (forced update)
+ + cc5a106c9...3a465e054 refs/pull/1541/merge -> refs/pull/1541/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GP1\repo
+commit=b8c7097f29938e73a444a462e958f304ee7a7e7c
+import exit 0 
+1_concept_in start 11:13:18.15 
+1_concept_in exit 0 at 11:13:21.48 
+2_shape_ref start 11:13:21.48 
+2_shape_ref exit 0 at 11:13:22.28 
+3_trace_hull start 11:13:22.29 
+3_trace_hull exit 0 at 11:14:47.05 
+4_parts_kit start 11:14:47.05 
+4_parts_kit exit 0 at 11:15:32.20 
+5_paint_bake start 11:15:32.20 
+5_paint_bake exit 0 at 11:19:58.18 
+6_lod start 11:19:58.19 
+6_lod exit 0 at 11:21:25.27 
+7_export start 11:21:25.27 
+7_export exit 0 at 11:23:24.67 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415f_GP1\repo\godot\assets\ships\I15_11\I15_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026 11:24:06.96 
+all done 
