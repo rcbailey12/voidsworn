@@ -656,7 +656,7 @@ func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, com
 		if cmd.get("ready", false): tip += "\nPress the order twice to give it (click or use C)."
 		orders.append({"act": "command", "label": str(cmd.get("label", "Command")), "on": bool(cmd.get("ready", false)), "glyph": Icons.order(str(cmd.get("id", "command"))),
 			"tip": tip, "active": cmd.get("active", false)})
-	for id in ["end", "next", "cancel"]:
+	for id in ["end", "undo", "next", "cancel"]:   # issue 1450: Undo move sits next to End ship
 		var b := _button_data(id)
 		if id != mode and bool(b.get("on", false)):
 			orders.append({"act": id, "label": _without_key(str(b.text)), "on": true, "glyph": id, "tip": b.get("tip", "Cancel the current plan.")})

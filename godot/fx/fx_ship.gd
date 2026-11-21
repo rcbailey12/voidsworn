@@ -1149,6 +1149,7 @@ var _kick_p := Vector3.ZERO     # drift kick still to be delivered
 var _brk := Vector3.ZERO        # thrusters' braking rate per axis (rad/s2)
 var _brk_p := 0.0               # ... and for the slide (units/s2)
 var _brk_at := 0.0              # when the thrusters start braking
+var react_clock := 0.0          # seconds of reaction integrated so far (issue 1467: the frame-rate check reads it)
 
 
 # A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
@@ -1198,7 +1199,17 @@ func _react_step(fx, dt: float) -> void:
 	if not _reacting:
 		return
 	var wi := clampi(weight, 0, 4)
-	var h := minf(dt, 1.0 / 30.0)
+	# Issue 1467: integrate the whole frame in steps of at most 1/30 s, each on its own clock, so a slow frame keeps
+	# the same recoil timeline as a fast one (one step at 30 fps and above; a 15 fps frame takes two).
+	var steps := clampi(ceili(dt * 30.0 - 1e-6), 1, 8)
+	var h := minf(dt, 8.0 / 30.0) / float(steps)
+	for si in steps:
+		_react_integrate(fx.now - h * float(steps - 1 - si), h, wi)
+	_react_apply(fx, wi)
+
+
+func _react_integrate(t: float, h: float, wi: int) -> void:
+	react_clock += h
 	# 1. onset: deliver the kick over REACT_ONSET (about 95% of it inside that time)
 	var f := 1.0 - exp(-h * 3.0 / float(REACT_ONSET[wi]))
 	_rv += _kick_v * f
@@ -1206,7 +1217,7 @@ func _react_step(fx, dt: float) -> void:
 	_pv += _kick_p * f
 	_kick_p *= 1.0 - f
 	var wr: float = REACT_RECOVER[wi]
-	if fx.now >= _brk_at:
+	if t >= _brk_at:
 		# 2. arrest: a steady thruster burn against the spin and the slide, per axis
 		var ax := [0, 1, 2]
 		for k in ax:
@@ -1230,6 +1241,9 @@ func _react_step(fx, dt: float) -> void:
 			_pv += (-_pd * wp * wp - _pv * 2.0 * wp) * h
 	_ra += _rv * h
 	_pd += _pv * h
+
+
+func _react_apply(fx, wi: int) -> void:
 	var age: float = fx.now - _shud_t
 	var sh := _shud * exp(-age / float(REACT_SHUDDER_T[wi]))
 	var w_sh: float = TAU * float(REACT_SHUDDER_HZ[wi])
