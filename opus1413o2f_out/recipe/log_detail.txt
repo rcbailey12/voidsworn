@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1413)
+GPU: acquired shared claim fef2c47c-338d-4a1d-bac2-dc19b946c372
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\O2.blend"
+PASS detail check: normal relief 2.32 deg (floor 1.34), albedo contrast 0.143 (floor 0.130), roughness spread 0.194 (floor 0.140), 778829 texels
+GPU: released shared claim fef2c47c-338d-4a1d-bac2-dc19b946c372

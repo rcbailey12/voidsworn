@@ -1,0 +1,37 @@
+n/a  into_ship: an unarmed objective prop carries no gun (armed_no_guns proves the gun rule still holds)
+[audit] {"result": "FAIL", "failures": ["the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull's"], "problems": [], "crossing_break_lines": [], "guns": 0, "guns_with_normals": 0}
+[audit] FAIL
+ok   no_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's break lines are empty (r209_t_lines): an empty list tests no break line"], "problems": [], "crossing_break_lines": [], "guns": 0, "guns_with_normals": 0}
+[audit] FAIL
+ok   empty_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's longitudinal seam is not one [z, x0, x1] with x0 below x1: [0.0, 0.2, -0.2]"], "problems": [], "crossing_break_lines": [], "guns": 0, "guns_with_normals": 0}
+[audit] FAIL
+ok   bad_longitudinal: the audit failed as it must
+n/a  no_normals: an unarmed objective prop carries no gun (armed_no_guns proves the gun rule still holds)
+n/a  one_normal_missing: an unarmed objective prop carries no gun (armed_no_guns proves the gun rule still holds)
+[audit] {"problems": [], "parts": 244, "crossing_break_lines": [], "structure_across_seams": ["H3"], "guns_with_normals": 0, "guns_into_ship": 0, "guns": 0, "break_lines": {"t_lines": [-0.21559020227708542, 0.0, 0.21559020227708542], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   no_longitudinal: a build with no longitudinal seam is audited on its transverse seams
+[audit] {"problems": [], "parts": 244, "crossing_break_lines": ["A1"], "structure_across_seams": ["H3"], "guns_with_normals": 0, "guns_into_ship": 0, "guns": 0, "break_lines": {"t_lines": [-0.21559020227708542, 0.0, 0.21559020227708542], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+ok   machine_across: A1 on the seam is refused
+[audit] {"problems": [], "parts": 244, "crossing_break_lines": [], "structure_across_seams": ["B1p", "H3"], "guns_with_normals": 0, "guns_into_ship": 0, "guns": 0, "break_lines": {"t_lines": [-0.21559020227708542, 0.0, 0.21559020227708542], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   structure_across: B1p on the seam is allowed (structure)
+[audit] {"result": "FAIL", "failures": ["no guns recorded (r209_guns is empty)"], "problems": [], "crossing_break_lines": [], "guns": 0, "guns_with_normals": 0}
+[audit] FAIL
+ok   armed_no_guns: the audit failed as it must
+PASS the audit fails when it should
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O2\build\O2.blend"
