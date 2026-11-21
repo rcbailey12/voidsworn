@@ -100,6 +100,10 @@ jobs:
       - name: Tree hand-off (campaign picks reach the battle)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: '"$GODOT" --headless --path godot --script res://campaign/test/tree_handoff_test.gd'
+      # Issue 1447: the enemy AI's ion pulse choice on rules.gd, fixed expectations (twin of contrib/opus/tools/ion_pulse_ai_tests.js).
+      - name: Enemy ion pulse choice (rules.gd)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: '"$GODOT" --headless --path godot --script res://rules/test/ion_pulse_ai_test.gd'
       - name: Nemesis scenarios (JS game and Godot, record by record)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_nem_scenarios.sh

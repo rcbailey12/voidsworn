@@ -143,7 +143,7 @@ function buildChecks() {
     'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
-    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
     'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
     'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
