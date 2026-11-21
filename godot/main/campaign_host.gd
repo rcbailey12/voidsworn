@@ -181,11 +181,12 @@ func _restore_battle(sb: Dictionary) -> Dictionary:
 	return {"B": a.R.B, "run": a.R.RUN}
 
 
-# Issue 1451: the battle scene's round start has settled (no animation playing, the player to act): write that round's save
-func _save_round() -> void:
+# Issue 1451: the battle scene's round start has settled (no animation playing, the player to act): write that round's save.
+# True only when it reached the disk (the battle menu offers Save and quit on that alone, Artoo on PR 1486).
+func _save_round() -> bool:
 	if api_now == null or C == null:
-		return
-	C.save_battle_round(api_now.take_round_snapshot())
+		return false
+	return C.save_battle_round(api_now.take_round_snapshot())
 
 
 func _on_battle() -> void:

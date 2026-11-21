@@ -1909,8 +1909,10 @@ func _resume_saved_battle() -> bool:
 # snap: battle_api take_round_snapshot(). True when it is on disk (or saves are off).
 func save_battle_round(snap: Dictionary) -> bool:
 	if snap.is_empty() or RUN == null or B == null or SAVED_RUN == null or jt(B.get("over")) or jt(B.get("finished")) or not jt(RUN.get("curNode")): return false
+	var prev = saved_battle
 	saved_battle = {"node": RUN["curNode"], "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
 	persist_save()
+	if not last_save_ok: saved_battle = prev   # keep memory equal to the disk: a later write never jumps to a round the player was not told about
 	return last_save_ok
 # Issue 1451: Save and quit to title from the battle menu. The newest round save stays on disk (if none was written, the pre-fight
 # checkpoint is still there, so nothing is lost and nothing is settled); the run is left, not ended.
