@@ -23,7 +23,7 @@ which are lower.
 | Chorus (`chorus`) | 3.5 | 0.04 | 0.08 | issue 1291 floors, kept (C10, C12 least 7.02 / 0.065 / 0.158) |
 | Sunward (`voidsworn`) | 0.94 | 0.26 | 0.13 | S8, S9, S10, S11: least 1.18 / 0.328 / 0.165 |
 | Navy (`hegemony`) | 0.95 | 0.15 | 0.12 | H10, IM5: least 1.19 / 0.193 / 0.151 |
-| Hullbreakers (`hullbreakers`) | 1.31 | 0.30 | 0.17 | A18, A19: least 1.64 / 0.375 / 0.223 |
+| Hullbreakers (`hullbreakers`) | 1.31 | 0.24 | 0.11 | A18, A19, KF1 L: least 1.64 / 0.302 / 0.146 |
 | Eclipse (`eclipse`) | 0.62 | 0.37 | 0.13 | E11: 0.78 / 0.466 / 0.162 |
 | Glasswrights (`ithar`) | 0.6 | 0.02 | 0.01 | CD5, GV2, GW4: least 0.76 / 0.030 / 0.016 (smooth pearl glass by design) |
 | any other | 0.95 | 0.15 | 0.12 | the Navy floor |
@@ -51,10 +51,10 @@ not for the Chorus or Glasswright ones, whose unwraps differ between the two bui
 | IM5 Iron Mandate | Navy | main | 1.19 | 0.202 | 0.151 | 0.58 | accepted | PASS |
 | O2 Convoy | Navy | pin-1413c and main (same) | 1.46 | 0.120 | 0.154 | 0.62 | sent back as clay | FAIL (albedo) |
 | O3 Relay | Navy | main | 1.52 | 0.074 | 0.196 | 0.53 | sent back as clay | FAIL (albedo) |
-| HB1 bomber | Navy | main | 1.34 | 0.153 | 0.109 | 0.35 | published Nov 21 in a "rest are good" batch | FAIL (rough) |
+| HB1 bomber | Navy | main | 1.34 | 0.153 | 0.109 | 0.35 | published Nov 21, then named by Ryan for the Navy paint fix with O2 and O3 | FAIL (rough) |
 | A18 Raider | Hullbreakers | main | 1.64 | 0.387 | 0.223 | 0.76 | accepted | PASS |
 | A19 Gutship | Hullbreakers | main | 1.77 | 0.375 | 0.256 | 0.78 | accepted | PASS |
-| KF1 fighter | Hullbreakers | main | 1.52 | 0.301 | 0.127 | 0.71 | "looks unfinished" | FAIL (rough) |
+| KF1 L fighter | Hullbreakers | 237fd5b2 (pin-1373l) | 7.45 | 0.302 | 0.146 | 0.79 | accepted Nov 21 | PASS |
 | E11 | Eclipse | main | 0.78 | 0.466 | 0.162 | 0.57 | in game | PASS |
 | CD5 Unfinished | Glasswrights | 6b69276a (published run) | 1.48 | 0.034 | 0.016 | 0.55 | accepted | PASS |
 | GV2 fighter | Glasswrights | 84b6e3f4 (pin-1373i) | 0.76 | 0.030 | 0.042 | 0.45 | accepted | PASS |
@@ -65,9 +65,11 @@ not for the Chorus or Glasswright ones, whose unwraps differ between the two bui
 "covered" is the share of outside triangles left out as covered.
 
 **Known limits:**
-- HB1 fails on roughness spread (0.109 against 0.12). A Navy stack fix reaches O2, O3 and HB1 together (R333); otherwise
-  Ryan can opt it out.
-- KF1 fails on roughness spread too. The check does not judge shape.
+- HB1 fails on roughness spread (0.109 against 0.12). It is not counted as an accepted ship: Ryan put it in the Nov 21 Navy
+  paint fix with O2 and O3, and the Navy stack fix reaches all three (R333). Otherwise Ryan can opt it out.
+- KF1 L (Ryan's OK Nov 21, "Engines slightly bigger again and then go") is the least-detailed accepted Hullbreaker on
+  colour and roughness, so it sets those two floors. An earlier KF1 build at main (c2c6795e) measured 1.52 / 0.301 / 0.127
+  and passes them too. The check does not judge shape.
 - The Navy colour margin is thin: H10 is 0.04 over its floor.
 - Cloud and PC bakes of the same ship differ: normal relief read about 0.3 higher in the cloud on O2's old hull-only sample,
   and colour contrast was within 0.05. A floor near a ship's number can therefore flip between the two.

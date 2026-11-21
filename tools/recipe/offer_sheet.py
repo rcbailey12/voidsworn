@@ -137,7 +137,7 @@ def main(argv=None):
     ap.add_argument('--stage', default='installed in game')
     ap.add_argument('--title')
     ap.add_argument('--reference', action='append', default=[], help='a concept or older picture, shown labelled')
-    a = ap.parse_args(argv)
+    a = ap.parse_intermixed_args(argv)   # pictures may come after --reference or --stage on any Python
     try:
         build(a.job_out, a.out, a.pictures, a.stage, a.title, a.reference)
     except Refused as e:

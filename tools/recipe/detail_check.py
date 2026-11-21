@@ -31,7 +31,7 @@ FLOORS = {
     'chorus': dict(normal=3.5, albedo=0.04, rough=0.08),      # issue 1291 floors kept; round G C10, C12 least 7.0/0.065/0.158
     'voidsworn': dict(normal=0.94, albedo=0.26, rough=0.13),  # Sunward S8, S9, S10, S11 least 1.18/0.328/0.165
     'hegemony': dict(normal=0.95, albedo=0.15, rough=0.12),   # Navy H10, IM5 least 1.19/0.193/0.151
-    'hullbreakers': dict(normal=1.31, albedo=0.30, rough=0.17),  # A18, A19 least 1.64/0.375/0.223
+    'hullbreakers': dict(normal=1.31, albedo=0.24, rough=0.11),  # A18, A19, KF1 L least 1.64/0.302/0.146
     'eclipse': dict(normal=0.62, albedo=0.37, rough=0.13),    # E11 0.78/0.466/0.162
     'ithar': dict(normal=0.6, albedo=0.02, rough=0.01),       # Glasswrights, smooth pearl glass by design: CD5, GV2, GW4 least
                                                               # 0.76/0.030/0.016

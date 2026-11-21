@@ -35,5 +35,5 @@ proof O2 hegemony_O2 e031f492561e76b3f6ee807323b7a15e8b0d2641 1     # Navy Convo
 proof C12 chorus_C12 392b9468b495d66cad4ffac29a6fe95d6f27a1fc 0      # Chorus round G, accepted (PC run opus1291c12d)
 proof S10 voidsworn_S10 "$MAIN" 0                                       # Sunward Vigil, accepted
 proof GV2 ithar_GV2 "$MAIN" 0                                           # Glasswright fighter, accepted
-proof KF1 corsair_KF1 "$MAIN" 1                                         # Hullbreaker fighter, "looks unfinished"
-echo "PASS blender_proof: O2 and KF1 fail, C12, S10 and GV2 pass, read from the blend with no atlas files on disk"
+proof KF1 corsair_KF1 237fd5b260efe1be2df04aba5492ed7d41e505c6 0      # Hullbreaker fighter KF1 L, Ryan OK Nov 21
+echo "PASS blender_proof: O2 fails, C12, S10, GV2 and KF1 L pass, read from the blend with no atlas files on disk"
