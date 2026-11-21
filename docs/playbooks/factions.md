@@ -176,6 +176,9 @@ ships catch, store and release light.
 - **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
   mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
   the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
+  The colours mix as thin streaks side by side down each gap between the ribbons, never one colour per block (Ryan Nov 20
+  7:48 PM CT, look test C, issue 1415; tools/blender/kits/ithar/parts.py MIX). Wide bodies also take mosaic_tint's
+  streak style.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.

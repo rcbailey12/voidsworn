@@ -283,7 +283,9 @@ def optic_clamp(optics, flat=0.02):
 def turret_optic(K, fid, pos, weapon, colour, s=1.0, slot='T', note=''):
     """a grown turning optic (CD5 r5): a small flat pearl seat sunk in the ribbons and a cut stone on it, 360 degrees"""
     p = own_part()
-    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.20 * s), (0.42 * s, 0.42 * s, 0.20 * s), 48, 16))
+    # The seat's top sits 0.08 under the pivot, clear of the barrel (as CD5, issue 1282): at -0.20 it met the barrel and the
+    # game's clearance test locked GA1's O1 at rest (PC run, pin-1415b, Nov 20).
+    p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28 * s), (0.42 * s, 0.42 * s, 0.20 * s), 48, 16))
     gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.26 * s, 0.12 * s, 10)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
     p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.20 * s, 0.20 * s, 0.05 * s), 32, 12))

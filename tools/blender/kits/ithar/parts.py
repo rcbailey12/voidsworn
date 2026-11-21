@@ -115,6 +115,13 @@ def _pick(g, bay, palette, weights, seed):
     return colour
 
 
+import os as _os
+# How the panel colours mix (Ryan Nov 20 7:48 PM CT, look test A/B/C, issue 1415: picked C): 'streaks' runs thin streaks of
+# mixed amber, violet and green side by side down each gap between the ribbons, each its own colour and length, for every
+# Glasswright hull. 'blocks' (one colour per leaf panel, R337 round 5) stays for comparison only; GW_MIX overrides it in a test.
+MIX = _os.environ.get('GW_MIX', 'streaks')
+
+
 def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None, streak=False):
     """the colour and glow a core point carries. `gaps` gives (gap index, along-coordinate[, across 0..1]) for the point;
     each gap is cut into leaf-length bays and every bay picks one colour from the palette by weight, so panels read as
@@ -132,6 +139,23 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None, streak=False):
     r = gaps(x, a)
     g, along = r[0], r[1]
     across = r[2] if len(r) > 2 else 0.5
+    if MIX == 'streaks':
+        # thin streaks of mixed colour side by side down each gap, each its own colour and length
+        n = 4
+        ac = min(0.999, max(0.0, across)) * n
+        sub = int(ac)
+        sa = along * 0.55 + 0.37 * sub
+        bay = math.floor(sa)
+        frac = sa - bay
+        colour = _pick(g * 7 + sub, bay, palette, weights, seed + 11)
+        fa = ac - sub
+        rim_c = min(1.0, min(fa, 1 - fa) / 0.22)
+        rim_a = min(1.0, min(frac, 1 - frac) / 0.08)
+        glow = 0.06 + 0.78 * (rim_a * rim_c) ** 0.7 * (0.40 + 0.60 * math.sin(math.pi * fa) ** 1.5) * (0.6 + 0.4 * math.sin(math.pi * min(1.0, max(0.0, across))))
+        if not tones:
+            return colour, glow
+        deep, hot = tones[colour]
+        return tuple(d + (h - d) * glow ** 1.5 for d, h in zip(deep, hot)), glow
     bay = math.floor(along)
     frac = along - bay
     colour = _pick(g, bay, palette, weights, seed)

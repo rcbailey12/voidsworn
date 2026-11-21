@@ -1,16 +1,16 @@
 {
-  "source_commit": "3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01",
-  "source_dirty": false,
-  "source_diff_sha256": "",
+  "source_commit": "aae93e7160a9886c534d4801c8cd11e0b3cc75a5",
+  "source_dirty": true,
+  "source_diff_sha256": "3446f1cd916624b2ba4e090db79bf0bef37bf990d948fcefdc251e422dd30429",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "close.jpg",
-  "date": "2026-11-20T22:53:21Z",
+  "date": "2026-11-21T02:14:50Z",
   "sources": [
     {
-      "source_commit": "3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01",
-      "source_dirty": false,
-      "source_diff_sha256": "",
+      "source_commit": "aae93e7160a9886c534d4801c8cd11e0b3cc75a5",
+      "source_dirty": true,
+      "source_diff_sha256": "3446f1cd916624b2ba4e090db79bf0bef37bf990d948fcefdc251e422dd30429",
       "stage": "sheet built"
     }
   ],
@@ -18,19 +18,19 @@
   "stamp_box": [
     0,
     622,
-    432,
+    564,
     720
   ],
   "strip_size": [
-    432,
+    564,
     98
   ],
   "strip_sha256": [
-    "152de24b782f32125be5fc5287e87a9af458da8cbba532a0f94d05d71b1ca99f"
+    "7e69bdd94f373e066dadccbdf88bfe302292a81584ca436af7034e54e05877f5"
   ],
-  "stamp_template_sha256": "ed32bc0d38cf350bf0503e5184b653f1ad16973d43f77be23462c5bd4c2939e4",
+  "stamp_template_sha256": "d2c1398fbe36fa84ddd832b763efc86bb51a233fbd8244f3ee93324d38bc1f6f",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPUlEQVR4nO3UoQHAIBDAwC8Oie/+c2KyQyvuJojKs887AMysrwMA/sIQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAuQCzosA+v8WctgAAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkElEQVR4nO3VoQHAIADAsDGHxPP/nXgeoCK5oK5jrv0BQMn/OgAAbuYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOQdtuAD6ke1SPAAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "74280305dd4f21468a0e79b8d1741c6bd612419a12e271b6b269495075a708c5"
+  "image_sha256": "e92abdb18df0311d413e4d0980e51d94891f6f6198e9d70e4795be763cba68c4"
 }

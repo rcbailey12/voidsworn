@@ -1,16 +1,16 @@
 {
-  "source_commit": "3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01",
-  "source_dirty": false,
-  "source_diff_sha256": "",
+  "source_commit": "aae93e7160a9886c534d4801c8cd11e0b3cc75a5",
+  "source_dirty": true,
+  "source_diff_sha256": "3446f1cd916624b2ba4e090db79bf0bef37bf990d948fcefdc251e422dd30429",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "camera170.jpg",
-  "date": "2026-11-20T22:53:21Z",
+  "date": "2026-11-21T02:14:50Z",
   "sources": [
     {
-      "source_commit": "3bcb35f24dd3a6abbc8786a1c4b2b6afc67b6c01",
-      "source_dirty": false,
-      "source_diff_sha256": "",
+      "source_commit": "aae93e7160a9886c534d4801c8cd11e0b3cc75a5",
+      "source_dirty": true,
+      "source_diff_sha256": "3446f1cd916624b2ba4e090db79bf0bef37bf990d948fcefdc251e422dd30429",
       "stage": "sheet built"
     }
   ],
@@ -18,19 +18,19 @@
   "stamp_box": [
     0,
     622,
-    432,
+    564,
     720
   ],
   "strip_size": [
-    432,
+    564,
     98
   ],
   "strip_sha256": [
-    "7ffa29b24ece17eb0fc3bb9b14a32baa8da24bff3da55d2859a24c7f1952a726"
+    "05fbdb1829e08adba35dbd662e23bdcfce394212c84a11a69d6a06de9ee6e9db"
   ],
-  "stamp_template_sha256": "d5b0d70e00e08cb5acc424d1d6358bee0a29c7dee363752e6481e94ea4f4b74c",
+  "stamp_template_sha256": "3633f7aa08558e0a5df3a551d1b9c7934b2149f9259dba971e39cb97e2a14276",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPUlEQVR4nO3UoQHAIBDAwC8Oie/+c2KyQyvuJojKs887AMysrwMA/sIQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAuQCzosA+v8WctgAAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkElEQVR4nO3VoQHAIADAsDGHxPP/nXgeoCK5oK5jrv0BQMn/OgAAbuYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOQdtuAD6ke1SPAAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "020e50f5a7d1bcb7cc05c4b455c7fa1b38bfe2b37966613e858be6448550c346"
+  "image_sha256": "5f230600e6f82c1f72d0f04604d78421ae130884e5cfb27981f8cf86173b2125"
 }
