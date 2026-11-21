@@ -1,0 +1,8 @@
+chain CF waiting for 1415D GA1 exit in chain_1119bs5.txt Sat 11/21/2026  7:02:05.24 
+mirror fetch exit 0
+d9017947b0f7a465a7be775081b36090c93f61e8 reachable in the mirror
+1415E GS1 start  7:02:06.19 
+1415E GS1 exit 0 at  7:14:04.59 
+1415E GL1 start  7:14:04.59 
+1415E GL1 exit 0 at  7:40:58.91 
+1415E GP1 start  7:40:58.91 

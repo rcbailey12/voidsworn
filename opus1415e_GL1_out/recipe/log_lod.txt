@@ -1,0 +1,22 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+07:38:18 | INFO: Starting glTF 2.0 export
+07:38:18 | INFO: Extracting primitive: GL1_lod0
+07:38:19 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:38:19 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:38:19 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+07:38:19 | INFO: Primitives created: 12
+07:38:19 | INFO: Extracting primitive: GL1_lod1
+07:38:19 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:38:19 | INFO: Primitives created: 8
+07:38:19 | INFO: Extracting primitive: GL1_lod2
+07:38:19 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:38:19 | INFO: Primitives created: 7
+07:38:19 | INFO: Extracting primitive: GL1_lod3
+07:38:19 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+07:38:19 | INFO: Primitives created: 6
+07:38:20 | INFO: Finished glTF 2.0 export in 1.803682565689087 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\glb\GL1.glb {"lod0": {"triangles": 229760, "objects": 80, "materials": 12}, "lod1": {"triangles": 220844, "objects": 59, "materials": 8}, "lod2": {"triangles": 110198, "objects": 58, "materials": 7}, "lod3": {"triangles": 48570, "objects": 56, "materials": 6}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\GL1.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-a77767ed860c413f86c59e50378902eb

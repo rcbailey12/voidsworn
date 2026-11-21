@@ -1,0 +1,37 @@
+{
+ "cell": "GL1",
+ "hull_objects": 34,
+ "parts": 25,
+ "interiors": 21,
+ "seconds": 2.0,
+ "notes": [
+  {
+   "route": "build sheet ithar_GL1",
+   "contract": {
+    "sheet": "ithar_GL1",
+    "game_ship": "i_blade",
+    "variant": "",
+    "model_length": 9.287,
+    "scale": 0.10767740196393043,
+    "length_world": 9.5,
+    "t_lines": [
+     -0.22074,
+     0.24766
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 4,
+    "guns": 2,
+    "engines": 1,
+    "bays": 0,
+    "points": 7,
+    "turrets": [],
+    "interior_objects": 21,
+    "slots": [
+     "0 shard F",
+     "1 startorp F"
+    ]
+   }
+  }
+ ]
+}

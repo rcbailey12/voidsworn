@@ -1,0 +1,35 @@
+start ithar_GL1 I11_37 board/pin-1415e Sat 11/21/2026  7:14:05.63 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)               -> claude/project-thread-r8cctm
+ - [deleted]             (none)               -> refs/pull/1511/merge
+ * [new branch]          board/pc-out-1434e   -> board/pc-out-1434e
+   b0f69079b..0b68de715  main                 -> main
+ + 70370b1b3...5c30b8a95 refs/pull/1501/merge -> refs/pull/1501/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415e_GL1\repo
+commit=d9017947b0f7a465a7be775081b36090c93f61e8
+import exit 0 
+1_concept_in start  7:19:06.39 
+1_concept_in exit 0 at  7:19:08.88 
+2_shape_ref start  7:19:08.89 
+2_shape_ref exit 0 at  7:19:09.60 
+3_trace_hull start  7:19:09.61 
+3_trace_hull exit 0 at  7:20:30.57 
+4_parts_kit start  7:20:30.57 
+4_parts_kit exit 0 at  7:21:02.45 
+5_paint_bake start  7:21:02.46 
+5_paint_bake exit 0 at  7:38:13.83 
+6_lod start  7:38:13.83 
+6_lod exit 0 at  7:39:21.49 
+7_export start  7:39:21.50 
+7_export exit 0 at  7:40:33.45 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415e_GL1\repo\godot\assets\ships\I11_37\I11_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  7:40:58.90 
+all done 
