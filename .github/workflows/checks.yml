@@ -220,19 +220,13 @@ jobs:
             echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-      # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
-      # them. Left out to keep this short (none is preloaded; the scripts load them at run time and carry on without them):
-      # music, audio, the painted portraits and fx/test results. This step never fails the job by itself.
-      - name: Import the game's fonts and textures (headless)
+      # The game's fonts, crests, world and effect textures and rock models, imported as the editor would, so the checks
+      # below draw with them. From main's cache, re-importing only what changed (issue 1495); fails on a real import error,
+      # and the checks below still run. Details in .github/actions/godot-import/action.yml.
+      - name: Import the game's fonts and textures (headless, from main's cache)
         id: import
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          skip="godot/music godot/audio godot/fx/test godot/portraits/nemesis godot/portraits/alts godot/portraits/sheets godot/portraits/painted"
-          for d in $skip; do touch "$d/.gdignore"; done
-          timeout -k 10 300 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
-          for d in $skip; do rm -f "$d/.gdignore"; done
-          echo "imported files: $(find godot/.godot/imported -type f | wc -l)"
+        uses: ./.github/actions/godot-import
       # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script).
       # run_checks.sh keeps the whole list inside a 1080 s budget; a check the budget never reached counts as failed.
       - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
