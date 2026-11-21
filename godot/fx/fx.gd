@@ -1766,6 +1766,7 @@ const BOARD_LOOKS := {
 		"reach": 22.0, "lines": 3, "inside": 9, "hold": 1900.0},
 }
 var board_look := "B"
+var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
@@ -1773,7 +1774,8 @@ func board_hold_ms() -> float:
 	return float((BOARD_LOOKS.get(board_look, BOARD_LOOKS["B"]) as Dictionary)["hold"])
 
 
-func board(attacker_id: String, target_id: String, _result := "") -> float:
+# pace: the battle's pace (its wait() scale), so the lines and the fight inside end with the battle's hold (Artoo, PR 1549)
+func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
@@ -1828,14 +1830,14 @@ func board(attacker_id: String, target_id: String, _result := "") -> float:
 		ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
 	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.6, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
-	var hold: float = float(bl["hold"]) / 1000.0
+	var hold: float = float(bl["hold"]) / 1000.0 * pace
 	if int(bl["lines"]) > 0 and from_hatch != Vector3.INF:
 		_board_lines(from_hatch, wp, int(bl["lines"]), hold)
 	for j in int(bl["inside"]):
 		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
 		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
 		var ip: Vector3 = s.to_world(smp["p"])
-		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, T + 0.45 + j * (hold - 0.6) / maxf(1.0, float(bl["inside"])),
+		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, T + (0.45 + j * maxf(0.0, hold - 0.6) / maxf(1.0, float(bl["inside"]))) * minf(1.0, pace),
 			0.35, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
 	return maxf(3.2, hold)
 
@@ -1869,10 +1871,14 @@ func _board_lines(a: Vector3, b: Vector3, n: int, hold: float) -> void:
 	m.set_shader_parameter("gain", 0.0)
 	mi.material_override = m
 	add_child(mi)
+	# the draw-out, hold and fade fit inside the battle's hold at any pace, so no line outlives it into the next event
+	var t_in := minf(0.25, hold * 0.2)
+	var t_out := minf(0.35, hold * 0.25)
 	var tw := mi.create_tween()
-	tw.tween_property(m, "shader_parameter/gain", 1.0, 0.25)
-	tw.tween_interval(maxf(0.1, hold - 0.6))
-	tw.tween_property(m, "shader_parameter/gain", 0.0, 0.35)
+	tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
+	tw.tween_interval(maxf(0.0, hold - t_in - t_out))
+	tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
+	board_lines_s = maxf(hold, t_in + t_out)
 	tw.tween_callback(mi.queue_free)
 
 

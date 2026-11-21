@@ -1561,7 +1561,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			# dark gash); the generic pop stays only when the fx layer found no boarding point to draw it at
 			var boarded := 0.0
 			if gfx != null and gfx.has_method("board"):
-				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res))
+				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res, speed))
 			if boarded <= 0.0:
 				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			# issue 1547: hold on the breach long enough to read it before the next event (the enemy turn)
