@@ -1,0 +1,108 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "42648 triangles (2728 on part surfaces), box x -0.454 to 0.546, y -0.195 to 0.195, z -0.408 to 0.408",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 0 written (none); marked by the kit: none"
+ ],
+ "cls": "Squadron",
+ "faction": "ithar",
+ "expected_breach": 0,
+ "required": {
+  "weapon_slots": 1,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "rcs": 0,
+  "board": 0
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_bombs_T_0",
+    "hp_w0_bombs_T_1"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "core": 1,
+  "engine": 1,
+  "gun": 2
+ },
+ "maps": [
+  "ithar_GW4_emission.jpg",
+  "ithar_GW4_normal.png",
+  "ithar_GW4_orm.png",
+  "ithar_GW4_base.jpg",
+  "ithar_GW4_parts_normal.png",
+  "ithar_GW4_parts_orm.png",
+  "ithar_GW4_parts_base.jpg"
+ ],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_core",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4432,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_bombs_T_0",
+   "p": [
+    0.5227,
+    -0.1306,
+    -0.0732
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0021
+  },
+  {
+   "name": "hp_w0_bombs_T_1",
+   "p": [
+    0.5227,
+    -0.1306,
+    0.0732
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0021
+  }
+ ],
+ "turrets": []
+}

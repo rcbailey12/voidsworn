@@ -1,0 +1,35 @@
+{
+ "cell": "GW4",
+ "hull_objects": 33,
+ "parts": 23,
+ "interiors": 3,
+ "seconds": 0.4,
+ "notes": [
+  {
+   "route": "build sheet ithar_GW4",
+   "contract": {
+    "sheet": "ithar_GW4",
+    "game_ship": "bomber",
+    "variant": "",
+    "model_length": 1.53056,
+    "scale": 0.6533556528828456,
+    "length_world": 1.6,
+    "t_lines": [
+     -0.20907
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 2,
+    "guns": 1,
+    "engines": 1,
+    "bays": 0,
+    "points": 1,
+    "turrets": [],
+    "interior_objects": 3,
+    "slots": [
+     "0 bombs T"
+    ]
+   }
+  }
+ ]
+}

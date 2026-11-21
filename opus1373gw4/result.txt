@@ -1,0 +1,51 @@
+start ithar_GW4 ithar_GW4 board/pin-1373g Fri 11/20/2026 17:47:26.97 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                -> refs/pull/1431/merge
+ - [deleted]             (none)                -> refs/pull/1432/merge
+ * [new branch]          board/pc-out-1155c14h -> board/pc-out-1155c14h
+ * [new branch]          board/pc-out-1414c    -> board/pc-out-1414c
+   a86e0d7e1..a5f336c83  claude/project-thread-8hcjwy -> claude/project-thread-8hcjwy
+   ea68b360a..555d18934  main                  -> main
+   625d3f2af..433fffe26  opus/issue-1155       -> opus/issue-1155
+   cb6dc466d..0489ce83f  opus/issue-1399-r2    -> opus/issue-1399-r2
+   7eaffd484..7fa81c515  opus/issue-1415       -> opus/issue-1415
+   d067d7975..2eceb5dad  work/issue-1291-c10   -> work/issue-1291-c10
+   625d3f2af..433fffe26  refs/pull/1172/head   -> refs/pull/1172/head
+ + f5c975e56...ddba5eb90 refs/pull/1172/merge  -> refs/pull/1172/merge  (forced update)
+   d067d7975..2eceb5dad  refs/pull/1351/head   -> refs/pull/1351/head
+ + 946a239a5...c9247fc86 refs/pull/1351/merge  -> refs/pull/1351/merge  (forced update)
+   cb6dc466d..0489ce83f  refs/pull/1418/head   -> refs/pull/1418/head
+ + 4338966a2...f93123646 refs/pull/1418/merge  -> refs/pull/1418/merge  (forced update)
+   7eaffd484..7fa81c515  refs/pull/1428/head   -> refs/pull/1428/head
+ + a41728f59...246f3f566 refs/pull/1428/merge  -> refs/pull/1428/merge  (forced update)
+ * [new ref]             refs/pull/1440/head   -> refs/pull/1440/head
+ * [new ref]             refs/pull/1440/merge  -> refs/pull/1440/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\repo
+commit=3f0732b24cd61861489cc535ed36066f3214a0c4
+import exit 0 
+1_concept_in start 17:51:37.47 
+1_concept_in exit 0 at 17:51:39.57 
+2_shape_ref start 17:51:39.58 
+2_shape_ref exit 0 at 17:58:41.39 
+3_trace_hull start 17:58:41.40 
+3_trace_hull exit 0 at 17:59:48.88 
+4_parts_kit start 17:59:48.88 
+4_parts_kit exit 0 at 18:00:08.99 
+5_paint_bake start 18:00:08.99 
+5_paint_bake exit 0 at 18:03:14.57 
+6_lod start 18:03:14.58 
+6_lod exit 0 at 18:04:04.51 
+7_export start 18:04:04.52 
+7_export exit 0 at 18:04:35.75 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\repo\godot\assets\ships\ithar_GW4\ithar_GW4.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026 18:04:48.73 
+all done 
+pin ok 3f0732b24cd61861489cc535ed36066f3214a0c4 

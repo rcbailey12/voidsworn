@@ -1,0 +1,58 @@
+{
+ "ok": true,
+ "totals": {
+  "room": 0,
+  "bare": 0
+ },
+ "views": {
+  "top": {
+   "stack": 150655,
+   "glow": 5040,
+   "liner": 204,
+   "room": 0,
+   "bare": 0
+  },
+  "below": {
+   "stack": 150480,
+   "glow": 5040,
+   "liner": 379,
+   "room": 0,
+   "bare": 0
+  },
+  "port": {
+   "stack": 90808,
+   "glow": 1470,
+   "liner": 0,
+   "room": 0,
+   "bare": 0
+  },
+  "starboard": {
+   "stack": 90807,
+   "glow": 1470,
+   "liner": 0,
+   "room": 0,
+   "bare": 0
+  },
+  "bow": {
+   "stack": 79656,
+   "glow": 4762,
+   "liner": 0,
+   "room": 0,
+   "bare": 0
+  },
+  "stern": {
+   "stack": 82503,
+   "glow": 875,
+   "liner": 1040,
+   "room": 0,
+   "bare": 0
+  }
+ },
+ "seen_from_outside": {},
+ "objects": {
+  "stack": 36,
+  "glow": 20,
+  "liner": 3
+ },
+ "res": 640
+}

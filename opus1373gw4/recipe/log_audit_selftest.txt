@@ -1,0 +1,37 @@
+[audit] {"problems": ["gun BT aims into the ship (aim . mount normal -1.00)"], "parts": 23, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 1, "guns_into_ship": 1, "guns": 1, "break_lines": {"t_lines": [-0.20907380892251062], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+ok   into_ship: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull's"], "problems": [], "crossing_break_lines": [], "guns": 1, "guns_with_normals": 1}
+[audit] FAIL
+ok   no_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's break lines are empty (r209_t_lines): an empty list tests no break line"], "problems": [], "crossing_break_lines": [], "guns": 1, "guns_with_normals": 1}
+[audit] FAIL
+ok   empty_break_lines: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["the build's longitudinal seam is not one [z, x0, x1] with x0 below x1: [0.0, 0.2, -0.2]"], "problems": [], "crossing_break_lines": [], "guns": 1, "guns_with_normals": 1}
+[audit] FAIL
+ok   bad_longitudinal: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["1 of 1 guns carry no mount normal, so the into-the-ship test could not run for them: BT"], "problems": [], "crossing_break_lines": [], "guns": 1, "guns_with_normals": 0}
+[audit] FAIL
+ok   no_normals: the audit failed as it must
+[audit] {"result": "FAIL", "failures": ["1 of 2 guns carry no mount normal, so the into-the-ship test could not run for them: BT"], "problems": [], "crossing_break_lines": [], "guns": 2, "guns_with_normals": 1}
+[audit] FAIL
+ok   one_normal_missing: the audit failed as it must
+[audit] {"problems": [], "parts": 23, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 1, "guns_into_ship": 0, "guns": 1, "break_lines": {"t_lines": [-0.20907380892251062], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+ok   no_longitudinal: a build with no longitudinal seam is audited on its transverse seams
+[audit] {"problems": [], "parts": 23, "crossing_break_lines": ["BT"], "structure_across_seams": [], "guns_with_normals": 1, "guns_into_ship": 0, "guns": 1, "break_lines": {"t_lines": [-0.20907380892251062], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+ok   machine_across: BT on the seam is refused
+n/a  structure_across: this build marks no part kinds, so every part is held to the machine rule
+PASS the audit fails when it should
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\GW4.blend"

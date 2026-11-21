@@ -1,0 +1,51 @@
+{
+ "name": "The Heliograph Prism, the Glasswright bomber wing craft (The Glasswrights)",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "bomber",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 1,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 0,
+ "files": {
+  "ithar_GW4.glb": {
+   "bytes": 1755792,
+   "sha256": "59d92ed35470f0b61b8e91e190650a3c05d150d58b4ed67fe7550af39a1335a6"
+  },
+  "ithar_GW4_base.jpg": {
+   "bytes": 1177124,
+   "sha256": "cb47ed42bc0b0a9db365816ffb44202474a38fe040e23aef1c9b4e4dca0220aa"
+  },
+  "ithar_GW4_emission.jpg": {
+   "bytes": 544152,
+   "sha256": "e5b255282e7eceaf857e92c3901d919c64144e3d8a4c72cb1b6fbdb2b7cd9178"
+  },
+  "ithar_GW4_normal.png": {
+   "bytes": 1483476,
+   "sha256": "a576c3800c57e0feef10b67fe506a0e2e5c1b4a471970a9fd63652c158fe4a91"
+  },
+  "ithar_GW4_orm.png": {
+   "bytes": 4083864,
+   "sha256": "33a21e40e51d303dc970fd847993921143c1b28ed23719007394bd90c3d82ae7"
+  },
+  "ithar_GW4_parts_base.jpg": {
+   "bytes": 225626,
+   "sha256": "fb6c6d0b19661f40b6743d27b12a6218bc74ccf006d687f49a6a175777f0b474"
+  },
+  "ithar_GW4_parts_normal.png": {
+   "bytes": 66130,
+   "sha256": "90f908ed196d1582964750b1bea4eaa95f0dbd9888c24d229d20d8753955de3f"
+  },
+  "ithar_GW4_parts_orm.png": {
+   "bytes": 1629746,
+   "sha256": "0e40ce54e31ece695c3be98ea95e331ea83f2bbf2ff5f7e92bea6fa86a3cd730"
+  }
+ },
+ "pc_path": "godot/assets/ships/ithar_GW4/",
+ "wing_role": "bomber"
+}

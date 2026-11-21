@@ -1,0 +1,1 @@
+[score] GW4 {'overlap': 56.6, 'concept_covered': 57.7, 'cell_outside': 3.2, 'triangles': 47928}

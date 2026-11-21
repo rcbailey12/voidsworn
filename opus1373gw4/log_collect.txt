@@ -1,0 +1,338 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:04:48 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\
+	    New File  		     285	audit.json100%  
+	    New File  		   38497	bow_blink.gif.provenance.json100%  
+	    New File  		     511	concept_camera.json100%  
+	    New File  		    1641	density.json100%  
+	    New File  		    2464	GW4.json100%  
+	    New File  		     418	log_audit.txt100%  
+	    New File  		    3508	log_audit_selftest.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		   27457	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     124	log_blink.txt100%  
+	    New File  		     568	log_build.txt100%  
+	    New File  		      65	log_clay.txt100%  
+	    New File  		      60	log_close.txt100%  
+	    New File  		     451	log_detail.txt100%  
+	    New File  		    1424	log_export.txt100%  
+	    New File  		     465	log_export_check.txt100%  
+	    New File  		     755	log_export_selftest.txt100%  
+	    New File  		    4632	log_godot.txt100%  
+	    New File  		     653	log_install_cache.txt100%  
+	    New File  		     443	log_install_readback.txt100%  
+	    New File  		    1923	log_lod.txt100%  
+	    New File  		  291534	log_render.txt 44%   89%  100%  
+	    New File  		   52713	log_render_concept.txt100%  
+	    New File  		  106236	log_render_far.txt100%  
+	    New File  		    1240	log_sheet_contract.txt100%  
+	    New File  		      97	log_sil.txt100%  
+	    New File  		     293	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   55654	log_surface.txt100%  
+	    New File  		     688	log_thirds.txt100%  
+	    New File  		     688	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     346	audit_into_ship.json100%  
+	    New File  		     296	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     285	audit_no_longitudinal.json100%  
+	    New File  		     224	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\build\
+	    New File  		     605	GW4_build.json100%  
+	    New File  		    1618	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\glb\
+	    New File  		     306	GW4_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\
+	    New File  		   17545	bench209.json100%  
+	    New File  		    6142	GW4_auto_20.png.provenance.json100%  
+	    New File  		    6144	GW4_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	GW4_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	GW4_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	GW4_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	GW4_hand_20.png.provenance.json100%  
+	    New File  		    6144	GW4_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	GW4_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	GW4_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	GW4_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	GW4_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	GW4_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	GW4_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	GW4_off_20.png.provenance.json100%  
+	    New File  		    6143	GW4_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	GW4_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	GW4_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	GW4_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\r\
+	    New File  		   11376	GW4_battle.png.provenance.json100%  
+	    New File  		   41573	GW4_below.png.provenance.json100%  
+	    New File  		   41670	GW4_below_clay.png.provenance.json100%  
+	    New File  		   41702	GW4_concept.png.provenance.json100%  
+	    New File  		   41825	GW4_concept_cl.png.provenance.json100%  
+	    New File  		   41671	GW4_concept_clay.png.provenance.json100%  
+	    New File  		   41790	GW4_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41610	GW4_hero.png.provenance.json100%  
+	    New File  		   41643	GW4_hero_clay.png.provenance.json100%  
+	    New File  		   41556	GW4_hero_s.png.provenance.json100%  
+	    New File  		   41693	GW4_hero_s_clay.png.provenance.json100%  
+	    New File  		   41604	GW4_side.png.provenance.json100%  
+	    New File  		   41621	GW4_side_clay.png.provenance.json100%  
+	    New File  		   41614	GW4_side_s.png.provenance.json100%  
+	    New File  		   41683	GW4_side_s_clay.png.provenance.json100%  
+	    New File  		   41583	GW4_top.png.provenance.json100%  
+	    New File  		   41544	GW4_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\surface\
+	    New File  		     811	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        87        87         0         0         0         0
+   Bytes :    1.34 m    1.34 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            24318586 Bytes/sec.
+   Speed :            1391.520 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:04:48 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:04:48 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\r\
+	    New File  		  109599	GW4_battle.png100%  
+	    New File  		   4.2 m	GW4_below.png 11%   23%   35%   47%   59%   70%   82%   94%  100%  
+	    New File  		   2.2 m	GW4_below_clay.png 22%   44%   66%   88%  100%  
+	    New File  		   1.0 m	GW4_concept.png 24%   49%   73%   98%  100%  
+	    New File  		   1.0 m	GW4_concept_cl.png 24%   48%   72%   97%  100%  
+	    New File  		  785595	GW4_concept_clay.png 33%   66%  100%  
+	    New File  		  799039	GW4_concept_clay_cl.png 32%   65%   98%  100%  
+	    New File  		   1.6 m	GW4_hero.png 15%   31%   46%   62%   77%   93%  100%  
+	    New File  		   1.0 m	GW4_hero_clay.png 23%   47%   71%   95%  100%  
+	    New File  		   1.6 m	GW4_hero_s.png 15%   30%   46%   61%   77%   92%  100%  
+	    New File  		   1.0 m	GW4_hero_s_clay.png 22%   45%   68%   91%  100%  
+	    New File  		   3.2 m	GW4_side.png 15%   30%   46%   61%   76%   92%  100%  
+	    New File  		   2.0 m	GW4_side_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   3.2 m	GW4_side_s.png 15%   30%   46%   61%   77%   92%  100%  
+	    New File  		   2.0 m	GW4_side_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   4.4 m	GW4_top.png 11%   22%   33%   45%   56%   67%   78%   90%  100%  
+	    New File  		   2.2 m	GW4_top_clay.png 22%   44%   67%   89%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   32.68 m   32.68 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1804013263 Bytes/sec.
+   Speed :           103226.466 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:04:48 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:04:48 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\surface\
+	    New File  		   97614	surface_below.png100%  
+	    New File  		   82698	surface_bow.png100%  
+	    New File  		   81984	surface_port.png100%  
+	    New File  		   81688	surface_starboard.png100%  
+	    New File  		   83163	surface_stern.png100%  
+	    New File  		   97346	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   512.2 k   512.2 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           131123250 Bytes/sec.
+   Speed :            7502.932 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:04:48 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:04:48 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\godot\
+	    New File  		  979235	GW4_auto_20.png 26%   53%   80%  100%  
+	    New File  		   1.3 m	GW4_auto_d1.2.png 18%   37%   56%   75%   94%  100%  
+	    New File  		  212883	GW4_auto_d16.0.png 61%  100%  
+	    New File  		  437897	GW4_auto_d3.0.png 29%   59%   89%  100%  
+	    New File  		  247666	GW4_auto_d8.0.png 52%  100%  
+	    New File  		  979169	GW4_hand_20.png 26%   53%   80%  100%  
+	    New File  		   1.3 m	GW4_hand_d1.2.png 18%   37%   56%   75%   94%  100%  
+	    New File  		  210847	GW4_hand_d17.4.png 62%  100%  
+	    New File  		  208767	GW4_hand_d18.6.png 62%  100%  
+	    New File  		  452513	GW4_hand_d2.9.png 28%   57%   86%  100%  
+	    New File  		  425971	GW4_hand_d3.1.png 30%   61%   92%  100%  
+	    New File  		  249279	GW4_hand_d7.75.png 52%  100%  
+	    New File  		  245473	GW4_hand_d8.25.png 53%  100%  
+	    New File  		  979636	GW4_off_20.png 26%   53%   80%  100%  
+	    New File  		   1.3 m	GW4_off_d1.2.png 18%   37%   56%   75%   94%  100%  
+	    New File  		  212685	GW4_off_d16.0.png 61%  100%  
+	    New File  		  437551	GW4_off_d3.0.png 29%   59%   89%  100%  
+	    New File  		  247456	GW4_off_d8.0.png 52%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :   10.19 m   10.19 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           628692647 Bytes/sec.
+   Speed :           35974.081 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:04:48 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 6:04:48 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\export\ithar_GW4\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4\out\recipe\export\ithar_GW4\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\export\ithar_GW4\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\export\ithar_GW4\
+	    New File  		      28	export_status.txt100%  
+	    New File  		   1.6 m	ithar_GW4.glb 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   1.1 m	ithar_GW4_base.jpg 22%   44%   66%   89%  100%  
+	    New File  		    1712	ithar_GW4_check.json100%  
+	    New File  		  544152	ithar_GW4_emission.jpg 48%   96%  100%  
+	    New File  		    5069	ithar_GW4_export.json100%  
+	    New File  		   1.4 m	ithar_GW4_normal.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   3.8 m	ithar_GW4_orm.png 12%   25%   38%   51%   64%   77%   89%  100%  
+	    New File  		  225626	ithar_GW4_parts_base.jpg 58%  100%  
+	    New File  		   66130	ithar_GW4_parts_normal.png100%  
+	    New File  		   1.5 m	ithar_GW4_parts_orm.png 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		    1486	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\export\ithar_GW4\_gltf_source\
+	    New File  		   2.8 m	GW4_hull_albedo.png 17%   34%   51%   69%   86%  100%  
+	    New File  		   1.8 m	GW4_hull_emission.png 13%   27%   41%   54%   68%   82%   96%  100%  
+	    New File  		   1.4 m	GW4_hull_normal.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   3.8 m	GW4_hull_orm.png 12%   25%   38%   51%   64%   77%   89%  100%  
+	    New File  		  131246	GW4_parts_albedo.png 99%  100%  
+	    New File  		   66130	GW4_parts_normal.png100%  
+	    New File  		   1.5 m	GW4_parts_orm.png 16%   32%   48%   64%   80%   96%  100%  
+	    New File  		   1.6 m	ithar_GW4.bin 15%   30%   45%   60%   75%   90%  100%  
+	    New File  		   15903	ithar_GW4.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   23.90 m   23.90 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1139333590 Bytes/sec.
+   Speed :            65193.191 MegaBytes/min.
+   Ended : Friday, November 20, 2026 6:04:48 PM
+
