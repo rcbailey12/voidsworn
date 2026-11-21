@@ -1136,8 +1136,14 @@ func _update_feel(delta: float) -> void:
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
-		camera.h_offset = _shake_off.x * unit * 10.0
-		camera.v_offset = _shake_off.y * unit * 10.0
+		var off: Vector2 = Vector2(_shake_off.x, _shake_off.y) * unit * 10.0
+		# issue 1460: the battle camera rig owns h_offset (screen_shift), so hand it the shake and let it add both; a plain
+		# Camera3D (test rigs) still takes the offsets directly
+		if "shake_offset" in camera:
+			camera.shake_offset = off
+		else:
+			camera.h_offset = off.x
+			camera.v_offset = off.y
 
 
 func _update_punch() -> void:
