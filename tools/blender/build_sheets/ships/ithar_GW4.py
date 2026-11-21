@@ -81,7 +81,8 @@ def lowest_z(x):
 F.NRIB = 10
 F.HALF = 0.045   # narrow: the ribbons read as the concept's silver veins over the stained panes
 F.TWIST = lambda x: -0.4                   # straight meridian veins bow to stern; -0.4 sets them at 0, 36, 72.. degrees so the grooves (90, 270) stay open
-F.MOSAIC_WEIGHTS = (38, 34, 28)   # Ryan, Nov 20: "more distribution of color"
+# F.MOSAIC_WEIGHTS: the kit's four-colour weights (issue 1415, Ryan Nov 21 1:45 PM CT: less red and amber, more blue, green and
+# purple); the Nov 20 three-colour override would have dropped blue from the marble.
 F.MOSAIC_KW = dict(streak=True)   # Ryan, Nov 20 7:07 PM CT: "random lights rather than integrated"; evenly lit panes with a thin dark rim (kit, issue 1415)
 _gaps0 = F.gaps
 
