@@ -1,5 +1,6 @@
 @echo off
-rem MEASURE3 replaces MEASURE2 (its selftest failed: a -f format inside $o.Add() split into Add arguments). MEASURE2 replaced MEASURE: GPU memory joins the game pid.
+rem MEASURE4 replaces MEASURE3 for the 24-ship run only: MEASURE3 measured cold_1 and cold_2 (relay board/pc-out-1439b), but its
+rem battle24 never ended because s25 plays itself only with --bot. MEASURE4 skips the export and cold runs.
 rem Issue 1439 (Astra items 3 and 6): first-launch cost and graphics memory per stage, before any fix. Measurement only.
 rem Built from tools/pc/jobs/opus_job_template.bat on opus_job_head.bat (issue 1303). GPU solo (frame-time measurement).
 rem Steps on one pinned commit (opus/issue-1439: godot/bench/perf_1439.gd and a 4-line hook in main.gd):
@@ -17,7 +18,7 @@ setlocal EnableExtensions
 set "JOB=opus1439"
 set "LABEL=1439"
 set "TOOLS=godot"
-set "PIN_NEW=6581a07c147e7fecdc9ab8c17392b657349857b5"
+set "PIN_NEW=PIN_PLACEHOLDER"
 set "PIN_OLD="
 
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
@@ -48,17 +49,6 @@ findstr /b /c:"SELFTEST OK" "%O%\selftest.txt" > nul
 if errorlevel 1 (call "%JW%" fail "%1 selftest: see selftest.txt" & exit /b 1)
 set "JW_STEP=%1 import" & call "%JW%" run 1800 "%JW_GODOT%" --headless --path "%OJ_REPO%\godot" --import > "%O%\import.txt" 2>&1
 if defined JW_STOP exit /b 0
-rem ---- the release export, as g2_export.bat makes it, into this attempt folder (the live build\export is not touched)
-set "TPL=%APPDATA%\Godot\export_templates\4.7.2.stable"
-if not exist "%TPL%\windows_release_x86_64.exe" (call "%JW%" fail "%1 export: no export templates in %TPL%" & exit /b 1)
-set "PC_GODOT_EXPORT_TEMPLATES=%TPL%"
-set "EXP=%O%\export"
-if not exist "%EXP%" mkdir "%EXP%"
-set "JW_STEP=%1 export" & set "JW_EXPECT=%EXP%\Voidsworn.pck" & call "%JW%" run 1800 "%JW_GODOT%" --headless --path "%OJ_REPO%\godot" --export-release "Windows Desktop" "%EXP%\Voidsworn.exe" > "%O%\export.txt" 2>&1
-set "PC_GODOT_EXPORT_TEMPLATES="
-if defined JW_STOP exit /b 0
-call :game %1 cold_1
-call :game %1 cold_2
 call :game %1 battle24
 exit /b 0
 
@@ -75,7 +65,7 @@ set "PC_GPU_MODE=solo"
 set "JW_CONTINUE=1"
 set "JW_STEP=%1 %2"
 set "JW_EXPECT=%R%\summary.json"
-if /i "%2"=="battle24" call "%JW%" run 1200 "%JW_GODOT%" --path "%OJ_REPO%\godot" -- --scenario s25 --perf-1439 "%R%" --launch-ms %LMS% --quit-after 1000 > "%R%\log.txt" 2>&1
+if /i "%2"=="battle24" call "%JW%" run 1700 "%JW_GODOT%" --path "%OJ_REPO%\godot" -- --scenario s25 --bot --perf-1439 "%R%" --launch-ms %LMS% --quit-after 1500 > "%R%\log.txt" 2>&1
 if /i not "%2"=="battle24" call "%JW%" run 1800 "%EXP%\Voidsworn.console.exe" -- --perf-1439 "%R%" --player-path-seed 10 --launch-ms %LMS% --quit-after 1600 > "%R%\log.txt" 2>&1
 set "PC_GPU_MODE="
 echo stop> "%R%\stop.txt"
