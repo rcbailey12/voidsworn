@@ -372,7 +372,10 @@ after a PASS (RUNNER_SELFTEST_KEEP=1 keeps it). The watchdog removes the Godot p
 every process of that launch has exited, links as links, never a job's own profile (PC_KEEP_GODOT_PROFILE=1 keeps it).
 Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
 a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
-janitor keeps for one day. When a job_wrap job ends, the janitor runs once more with `--after-job` in a
+janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access, and the picture
+provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
+private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
 janitor holds its lock, any `gpu_slot_N` or `gpu_solo` claim file is non-empty or the Board's pause is on, and stops
 between folders if a GPU claim starts, so a solo measurement is never timed alongside it. The watchdog and scratch_done.ps1 check the

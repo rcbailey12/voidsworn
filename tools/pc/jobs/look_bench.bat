@@ -47,6 +47,11 @@ set "BASE_TEMP=%TEMP%"
 set /p TEMP=<"%LB_HOME%\scratch_path.txt"
 set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
+rem (1535) Python tools make their temporary folders with inherited ACLs (tools\pc\pysite\sitecustomize.py), so the
+rem scratch cleanup can remove them; mkdtemp on Python 3.12.4+ for Windows made private folders it could not delete.
+set "BASE_PYTHONPATH=%PYTHONPATH%"
+if defined PYTHONPATH set "PYTHONPATH=%~dp0..\pysite;%PYTHONPATH%"
+if not defined PYTHONPATH set "PYTHONPATH=%~dp0..\pysite"
 rem The redirection holds the marker open until the tools finish (every step below, through job_wrap end).
 call :run_tools 9>"%TEMP%\.voidsworn-run-active"
 set "RUN_EL=%ERRORLEVEL%"
@@ -55,6 +60,7 @@ set "RUN_SCRATCH=%TEMP%"
 set "TEMP=%BASE_TEMP%"
 set "TMP=%BASE_TEMP%"
 set "TMPDIR=%BASE_TEMP%"
+set "PYTHONPATH=%BASE_PYTHONPATH%"
 if exist "%~dp0..\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\scratch_done.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "look_bench %LB_HOME%" >> "%ST%" 2>&1
 exit /b %RUN_EL%
 
