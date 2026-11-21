@@ -1,0 +1,1 @@
+[score] GP1 {'overlap': 63.8, 'concept_covered': 84.6, 'cell_outside': 27.8, 'triangles': 408502}

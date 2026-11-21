@@ -1,0 +1,14 @@
+chain BS5 waiting for 1413 O3B exit in chain_1119bv.txt Fri 11/20/2026 20:28:59.98 
+HELD 20:47:54 by PC relay (Board, Nov 21 02:47 UTC): waiter stopped while only waiting, disk under 60 GB; Board will requeue after cleanup.
+chain BS5B waiting for 1413 O3B exit in chain_1119bv.txt Fri 11/20/2026 20:52:14.54 
+swapped out while only waiting 21:33:11: BS5B replaced by HELPERS_CHAIN_1119BS5C.bat (waits for 1413 O3C exit; Board Nov 21 03:27 UTC)
+chain BS5C waiting for 1413 O3C exit in chain_1119cd.txt Fri 11/20/2026 21:33:11.83 
+mirror fetch exit 0
+a76a10cc8c4296e809c41643fcd0b0c8531f8152 reachable in the mirror
+1415D GS1 start 22:39:16.10 
+1415D GS1 exit 0 at 22:55:41.02 
+1415D GL1 start 22:55:41.03 
+1415D GL1 exit 0 at 23:09:43.97 
+1415D GP1 start 23:09:43.97 
+1415D GP1 exit 0 at 23:36:36.45 
+1415D GA1 start 23:36:36.45 
