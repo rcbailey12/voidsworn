@@ -39,7 +39,9 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
    Stage 7 installs into the clone's own godot folder, never into Ryan's game.
 4. The installed glb must be this run's: written after the run started. An older one counts as a failed install.
 5. The GPU readback, the authored interiors check and the death seam check on the installed glb. All three must pass (the old
-   S10_RUN_1157.bat let a failed death seam through to the shots).
+   S10_RUN_1157.bat let a failed death seam through to the shots). A strike craft (cls Squadron in the glb, issue 1373) passes
+   the interiors and death seam checks with a "skipped" line (godot/tools/ci/craft_glb.gd): a craft has no rooms and the game
+   hides its death as a spark (fx_death.gd _wing_death).
 6. The in-game shots at camera 170 and 60, only when everything above passed.
 7. Collects deliverables into `out\recipe` on a pass or a fail. It copies `*.txt`, `*.json`, `*.md` and `*.jpg`,
    the review images from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the requested

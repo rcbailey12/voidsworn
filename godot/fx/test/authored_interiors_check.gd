@@ -8,6 +8,7 @@ const BREACH = preload("res://fx/fx_breach.gd")
 const FX = preload("res://fx/fx.gd")
 const GUARD = preload("res://tools/ci/check_guard.gd")
 const ROOT = preload("res://tools/ci/world_root.gd")
+const CRAFT_GLB = preload("res://tools/ci/craft_glb.gd")
 var failures := 0
 
 func _init() -> void:
@@ -24,6 +25,11 @@ func _run() -> void:
 	root.add_child(world)
 	var ship: Node3D
 	var args := OS.get_cmdline_user_args()
+	if not args.is_empty() and args[0] != "--legacy-cache" and CRAFT_GLB.is_craft(args[0]):
+		print("AUTHORED_INTERIORS skipped: %s is a strike craft (cls Squadron): no rooms, its death is a hidden spark (fx_death.gd _wing_death)" % args[0])
+		print("AUTHORED_INTERIORS failures=0 interior_triangles=0")
+		quit(0)
+		return
 	if not args.is_empty() and args[0] == "--legacy-cache":
 		var manifest = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json"))
 		var count := 0
