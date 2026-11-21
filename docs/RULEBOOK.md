@@ -922,8 +922,8 @@ Set: Ryan (R381, issue 1480).
 Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
 issue 1484).
 
-11.10 **Boarding and capturing the Nemesis flagship, a hunt target or a convoy transport counts as destroying it** for
-kills, loot and objectives. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
+kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
 (R383, issue 1479).
 
 11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
