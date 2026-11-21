@@ -829,6 +829,23 @@ built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "
 faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
 1217). Detail: docs/playbooks/screens.md section 2.
 
+9.16 **The game is mouse and keyboard only: no controller play in battle or on the map.** Menus may keep their arrow-key and
+Enter focus. Why: Neon's player audit (Nov 21) found menus promise controller focus while battle and map have no gamepad
+input; Ryan scoped the game to mouse and keyboard. Key rebinding, a colorblind mode and an in-game rules reference are later
+work (issue 1454). Set: Ryan (R380).
+
+9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
+an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
+(Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
+
+9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
+menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
+round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
+
+9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
+options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
+come as a design pack first (issue 1453). Set: Ryan (R377, R379).
+
 ## 10. The campaign map, space and the board
 
 10.1 **The battle board is a cinematic scene, not a board game**: no grey plate, living terrain, a faint grid only near the

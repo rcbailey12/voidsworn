@@ -1,0 +1,54 @@
+{
+  "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_bioplasma.jpg",
+  "date": "2026-11-20T01:10:49Z",
+  "sources": [
+    {
+      "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_bioplasma.png",
+      "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-20T01:10:35Z",
+      "image_sha256": "235370b2af986311ad8dffb1275c6367ce322724c8c038824dcdd565742e0358",
+      "sources": [
+        {
+          "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    216,
+    560
+  ],
+  "strip_size": [
+    216,
+    49
+  ],
+  "strip_sha256": [
+    "914408b099721cc60f9a862ed037d38dd57bb6e5a5bfd05ddca23463aa6bfa69"
+  ],
+  "stamp_template_sha256": "d354997e1bb3eddffffbacf96b2f8f3fe26a64233e70e35ef4cfef9c08101fec",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAC4klEQVR4nO3Zy2okRxCF4YjIunVLPZLHGGbhJxn8/o/ijb2zpVFXRpzjRUuCMR6QBtrkwPkWtakioOAnsy7++fNvJvKCxJ9//E4gIlrzqTVzErZn7XsneHu6v7v/+JZRbnaazoeW2zLNLVoLd3c3gAD3nk97Pj71L5253E3XvjH5sWQmABRIuk9w0EhaZpJG2uFwfPs0gHBejhF0d9LMrIACs5hgsZmFQpSvkMRLOSRBM7PMqgJp87JM8/yuaTQrsAUBmvGyIpIEmVVZgK/urhDlK26eCSPcHYBbwFCXBdJi2w4R7Y2jSBaZhRZesAgnEO4AAOtZPbFnYWnNLK56V/LDmZfl06dfj8eTmRdQBGEAI6bteLy5/fCOWe5F64UsZDETVSggC5cKe6GXRZvMTCui/Ns8Lz99/OX89Pjw8Ffm3qJth+14vF3WLeJ9K1cWnDW5h1m4mQeLWehVe9bTnmCYhylE+U8RsR1ulnV7fPh73Q7Lspj5d8wBLYEsRFiUm5m7F7h3nPfae9k8u7spRPkWd29tOn24/+4JJAqsni0iwi7BmVkW9qxzz6xcD+slcYUo1+IeACvRIsMnd3M3I3viae/nngAvD4imEOWqaJZZPbxFNH/e3c+9zntWgRZtev4YpBDlWi4fEQFWsQrZ3Isgz716AmS02V72a4Uo13L5j5JVrUWvauVGgrZn9Sojp2Vzf34NV4hyRet2RD8h9541tXCLKvReYe7LYdluXq9UiHJF0abj3c/V9zw/ZO3ulmUxreuH0zRvr/uyKUS5NveYlm1aturnzHMcl21aXnfkVwpR/idtXtu8fuus/jXLEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhAUogxBIcoQFKIMQSHKEBSiDEEhyhD+AZwprIU12TqMAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "608742bf5c1de14a64a5a0c92ad786ab100837dd3092c9c0518be936002ce267"
+}

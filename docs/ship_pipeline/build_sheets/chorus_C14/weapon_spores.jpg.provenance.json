@@ -1,0 +1,54 @@
+{
+  "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_spores.jpg",
+  "date": "2026-11-20T01:10:49Z",
+  "sources": [
+    {
+      "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_spores.png",
+      "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-20T01:10:30Z",
+      "image_sha256": "314275a653d4adcbe1a6b6cc40c60875bc7851676fd52b789bae5c0c5dcb0ed6",
+      "sources": [
+        {
+          "source_commit": "2e4c5ad09cd2687a0ab902c57f87300ff269b43f",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    216,
+    560
+  ],
+  "strip_size": [
+    216,
+    49
+  ],
+  "strip_sha256": [
+    "922664212b8b61b36ce6731a17561739a8531428814420b9928d9eeb7ecd66be"
+  ],
+  "stamp_template_sha256": "220401946b96133b1522c77acf7c6c375673ce4fe729a0ed5369cc042a48f06f",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "bb5b4898aaac0e68a0dd379fef21a627d1091ff1d7bd6cb043f14b6c0a3b1602"
+}
