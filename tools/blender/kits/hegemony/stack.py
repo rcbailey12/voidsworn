@@ -151,8 +151,8 @@ LAYERS = dict(
 LEGACY_FINISH_ZONE = 'hgrey'  # Existing A4 atlas supplies its own paint colours and seams.
 LEGACY_ALBEDO_BLEND = .45     # A4 already has painted shadows. Keep the second pass light enough for adjacent fittings.
 _Z = dict(
-    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.35),
-    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.35),
+    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.70),   # issue 1413 round 3: .35 to .70, the plating seams read (Ryan, Nov 21: no clay)
+    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.70),
     hgrey2=dict(rust=0, grime=.52, patchwork=1.0, rough=.54, metal=.30, wear=.30, grid='small', grid_seam=.60),
     htrim=dict(rust=0, grime=.22, patchwork=1.0, rough=.25, metal=.62, wear=1.32, grid=None, handling_wear=.45),
     hmetal=dict(rust=0, grime=.20, patchwork=0, rough=.20, metal=.72, wear=1.23, handling_wear=.65),

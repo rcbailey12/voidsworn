@@ -683,6 +683,25 @@ def relay_lens(half, r, depth, steps=5, ch=0.2, n=32):
         c = (half - ch * 0.9) * 0.92
         p.add('face_boss%d%d' % (yy > 0, zz > 0), 'mount', 'dark', moved(revolve([(x1 - 0.01, 0.1), (x1 + 0.03, 0.1), (x1 + 0.04, 0.07), (x1 + 0.04, 0.001)], 12),
                                                                          Matrix.Translation((0, yy * c, zz * c))))
+    # issue 1413 round 3 (Ryan, Nov 21: "so they don't look like clay"; the detail check read the bare face block as the flattest
+    # surface on the Relay): the face block carries the Navy's flush plates. Each side face gets two plates split along the depth
+    # and a trim strip at the front edge; the front face a trim collar round the mouth and a plate in the middle of each edge
+    e = half - ch - 0.04
+    for sgn in (1, -1):
+        for k, (xa, xb) in enumerate(((0.03, depth * 0.48), (depth * 0.52, depth - 0.07))):
+            p.add('side_plate_y%d%d' % (sgn > 0, k), 'mount', 'hgrey2', _zblock(xa, xb, sgn * half - 0.006, sgn * half + 0.012, -e, e) if sgn > 0 else
+                  _zblock(xa, xb, sgn * half - 0.012, sgn * half + 0.006, -e, e))
+            p.add('side_plate_z%d%d' % (sgn > 0, k), 'mount', 'hgrey2', _zblock(xa, xb, -e, e, sgn * half - 0.006, sgn * half + 0.012) if sgn > 0 else
+                  _zblock(xa, xb, -e, e, sgn * half - 0.012, sgn * half + 0.006))
+        p.add('side_trim_y%d' % (sgn > 0), 'mount', 'htrim', _zblock(depth - 0.05, depth - 0.01, sgn * half - 0.006, sgn * half + 0.008, -e, e) if sgn > 0 else
+              _zblock(depth - 0.05, depth - 0.01, sgn * half - 0.008, sgn * half + 0.006, -e, e))
+        p.add('side_trim_z%d' % (sgn > 0), 'mount', 'htrim', _zblock(depth - 0.05, depth - 0.01, -e, e, sgn * half - 0.006, sgn * half + 0.008) if sgn > 0 else
+              _zblock(depth - 0.05, depth - 0.01, -e, e, sgn * half - 0.008, sgn * half + 0.006))
+    p.add('mouth_collar', 'mount', 'htrim', revolve([(x1 - 0.004, r * 1.10), (x1 + 0.014, r * 1.10), (x1 + 0.014, r * 1.035), (x1 - 0.004, r * 1.035)],
+                                                     n, closed=True, phase=math.pi / n))
+    m = (half + r * 1.10) / 2
+    for k, (yy, zz, wy, wz) in enumerate(((0, m, 0.32, 0.05), (0, -m, 0.32, 0.05), (m, 0, 0.05, 0.32), (-m, 0, 0.05, 0.32))):
+        p.add('face_plate%d' % k, 'mount', 'hpanel', _zblock(x1 - 0.004, x1 + 0.012, yy - wy, yy + wy, zz - wz, zz + wz))
     p.transform(Matrix.Rotation(-math.pi / 2, 4, 'Y'))   # built along +X, turned so the face looks along local +Z
     p.fit = dict(exits=[], radius=r)
     return p
