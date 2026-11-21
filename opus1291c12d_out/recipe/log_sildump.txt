@@ -1,0 +1,6 @@
+[armadillo] 12 bands, 48 runs, 0 steps clamped
+[inside] ganglion: shrunk to 96% to stay inside the hull
+[inside] regrowth_2: moved in to (-0.60, -0.27, -0.41)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\C12.npz (227752, 3, 3) objects 101
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-63cde8c25c7644e197e2f3e301da1410

@@ -1,0 +1,36 @@
+{
+ "cell": "C12",
+ "hull_objects": 4,
+ "parts": 97,
+ "interiors": 23,
+ "seconds": 5.7,
+ "notes": [
+  {
+   "route": "build sheet chorus_C12",
+   "contract": {
+    "sheet": "chorus_C12",
+    "game_ship": "b_drone",
+    "variant": "",
+    "model_length": 6.49738,
+    "scale": 0.15390811118787204,
+    "length_world": 6.5,
+    "t_lines": [
+     0.13082
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 3,
+    "guns": 2,
+    "engines": 4,
+    "bays": 0,
+    "points": 9,
+    "turrets": [],
+    "interior_objects": 23,
+    "slots": [
+     "0 bioplasma F",
+     "1 tendril T"
+    ]
+   }
+  }
+ ]
+}
