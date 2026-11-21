@@ -42,8 +42,8 @@
     "craft|spore": {"ship": "Chorus spore wing", "concept": null, "job": 1373, "note": "Rebuilt on the round G shell in job 1373."},
 
     "obj|station": {"ship": "Defence station (small teaching station)", "concept": null, "keep": "Stays as it is by design."},
-    "obj|transport": {"ship": "Convoy transport", "concept": "contrib/muse/design/class_family_hegemony_2026_11/convoy_beauty.webp", "ruling": "R369", "job": 1413},
-    "obj|beacon": {"ship": "Relay beacon", "concept": "contrib/muse/design/class_family_hegemony_2026_11/relay_beauty.webp", "ruling": "R369", "job": 1413}
+    "obj|transport": {"ship": "Convoy transport", "concept": "docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg", "ruling": "R369", "job": 1413},
+    "obj|beacon": {"ship": "Relay beacon", "concept": "docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg", "ruling": "R369", "job": 1413}
   },
   "other": [
     {"key": "ithar|fighter", "ship": "Glasswright fighter (Starling Shard)", "concept": "contrib/muse/design/glasswright_family_2026_11/img/fighter_starling_v2d.webp", "ruling": "R370", "job": 1373, "note": "Ryan's Nov 16 pick V2d, confirmed Nov 20 over GF1."},

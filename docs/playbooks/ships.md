@@ -521,3 +521,21 @@ bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new
 (beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
 sat beside fully painted hulls and made the whole scene look cheaper (inventory:
 /mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.
+
+**Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
+faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
+nose, x -1.15 to 1.15) and writes `godot/fx/munitions/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+`fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
+`fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
+code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
+the Hullbreaker stack at its craft sizes) into small 512 atlases, so it wears the same paint as the hulls (Ryan, Nov 20:
+"are we going to paint it and add more detail after?"). A munition is a few pixels on the board, so it carries detail at
+the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo may be lifted per faction (`LIFT` in
+munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten"). A kit body
+drives like a ship: a ship-size engine core at its nozzle and the ships' own engine trail (SH.TRAIL, faction engine colour
+and trail style, a short wake), never a flame card, a halo or smoke puffs (Ryan, Nov 20: "the trails/engine effects look
+super basic and weird"; fx_weapons.gd `_kit_trail_*`). A munition shot down by point defence never burns and never
+flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_pd_*.jpg, after "it's hard to distinguish
+whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
+and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
+an orange fireball belong only to a round that reaches the hull.

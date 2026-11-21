@@ -1264,6 +1264,8 @@ static func _lance_recut(fx, s) -> void:
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
+		return
 	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
@@ -3235,9 +3237,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	# issue 1077 (prototype): the strained hull's wreck stays grouped where it broke
 	var story: bool = fx.death_story and s.death_big and not organic
+	# Ryan, Nov 21 2026 (in game): frigates and destroyers still broke apart wildly and their pieces spun off very far.
+	# With the strained death on, a small metal hull's pieces part the same calm way as a big one's: slow, damped to rest
+	# about a fifth of a length apart, turning mostly about the vertical, no shoving from each other
+	var calm: bool = fx.death_story and not organic
 	if organic:
 		_organic_spill(fx, center, h.L, tint)
-	elif story:
+	elif calm:
 		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP, s.id)
 	else:
 		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025, 0.0, s.id)
@@ -3286,7 +3292,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			rb.freeze = s.death_big and not organic
 			rb.collision_layer = DEBRIS_LAYER
 			# a strained wreck's slow pieces part along their break lines; touching neighbours shoved them a further 0.13 L apart
-			rb.collision_mask = HULL_LAYER if story else HULL_LAYER | DEBRIS_LAYER
+			rb.collision_mask = HULL_LAYER if calm else HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
 			var pts: PackedVector3Array = pc["hull"] if pc.has("hull") else PackedVector3Array()
 			if not pc.has("hull"):
@@ -3343,17 +3349,17 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			# Alternating lateral jets open the body as well as separating its length.
 			out = (out + Vector3(0, 0, 0.9 if i % 2 == 0 else -0.9)).normalized()
 		var spd: float = (3.5 if organic else ((1.6 if s.death_tier == "capital" else 2.8) if s.death_big else (0.7 if is_main else 2.1))) * maxf(k, 0.5)
-		if story:
+		if calm:
 			# each main piece parts by about STORY_TRAVEL of the length in all, most of it in the first two seconds
 			spd = h.L * STORY_TRAVEL * STORY_DAMP * (0.8 if is_main else 1.0)
 			node.set_meta("story_damp", STORY_DAMP)
-		var vel: Vector3 = inherited + xf.basis * (out * spd) + fx.rdir() * (0.3 * k if not story else h.L * 0.004)
+		var vel: Vector3 = inherited + xf.basis * (out * spd) + fx.rdir() * (0.3 * k if not calm else h.L * 0.004)
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k
 		vel.y = 0.0
 		# issue 484: the biggest piece of a big hull turns slowly, so it stays readable as the ship's main wreck
-		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
-		if s.death_big and not organic:
+		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big or calm else (1.1 if is_main else 1.6))
+		if (s.death_big or calm) and not organic:
 			# Issue 461 (Board, on 484's cruiser at 6.0 s: "the big bow piece reads dim"): the main pieces tumbled on a
 			# random axis and by 6 s showed the key light their dark bellies. They now turn mostly about the vertical, with
 			# a slight roll and pitch, so their plated tops stay lit while they drift and turn.

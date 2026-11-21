@@ -204,8 +204,8 @@ the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse 
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
   Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
-  file (issue 1205 removed the all-green hull_table FAC3D override). The only green left there is the Doom gun's
-  `weapon_core` (R263), a weapon ruling of its own, kept until Ryan says otherwise. The hull paint lives in
+  file (issue 1205 removed the all-green hull_table FAC3D override). The Doom gun's `weapon_core` is deep violet too (Ryan
+  Nov 21 2026, "Yes make it a violet core", issue 1503; replaces R263's green core): no green is left in that file. The hull paint lives in
   tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
   the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
@@ -244,8 +244,11 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
   higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs; where a fitting cuts
   a band, a half band still grows on its clear side (`fill`), so the shell hugs each fitting. Sacs and pods show dark veins and
-  only thin bile slits, never round lit windows or glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random
-  yellow circles on the pods ... looks odd").
+  no lit spots at all: each sac's crown is cut open into a dark pore with a bore going down and a fleshy lip, never a round lit window, a glowing slit or
+  glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random yellow circles on the pods ... looks odd", Nov 21:
+  "the same weird yellow circle or patch on the sacs"). Gland vents are real openings: the knoll's crown is cut away under
+  the puckered lip and a matte dark bore runs down into it (kit `parts.spinal` style 'gland', zone 'pit'; Ryan Nov 21: "no actual
+  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome.
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
   the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.

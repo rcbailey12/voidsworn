@@ -75,12 +75,13 @@ test('KIT-2 ionpulse not dead against two whole factions', () => {
   return '';
 });
 
+// Issue 1503 (R372, Eclipse all violet): the colour half is fixed. style 'tomb' is kept: it is the browser
+// hull-shape key (ships3d.js buildTomb), not a colour, and the Godot game draws installed Eclipse hulls.
 test('KIT-3 eclipse not in banned green tomb styling', () => {
   const d = G.FACTIONS.deathless;
   const bad = [];
   if (d.glow === '#3dff6a') bad.push('glow #3dff6a');
   if (d.trim === '#1fbf4a') bad.push('trim #1fbf4a');
-  if (d.style === 'tomb') bad.push("style 'tomb'");
   return bad.length ? 'FACTIONS.deathless still uses banned styling: ' + bad.join(', ') : '';
 });
 

@@ -21,32 +21,32 @@
    "turrets": 4,
    "files": {
     "B16_23.glb": {
-     "bytes": 17182188,
-     "sha256": "c1cfc7c799487487680ee471da89483e91d1c71219647bf7a1a71932a196d803"
+     "bytes": 17105992,
+     "sha256": "abf178af67a48ebc5db75ee3a150f6403a23eef574e9782fc5cb14a14d4c206c"
     },
     "B16_23_base.jpg": {
-     "bytes": 963195,
-     "sha256": "51b6b789cf632ac062d423538b63ade51f57baa4a6bd27ac71025a7e617750e4"
+     "bytes": 936240,
+     "sha256": "3f7fa551baaac33dbd6a29ed10d5ffce8b47b0396804a78efeaf5194a9e26aae"
     },
     "B16_23_normal.png": {
-     "bytes": 5984025,
-     "sha256": "da8f0bacd144f5cfb81e1c9396c91bfeb210a7f81ef3d2ff2d1b0c1c9fb8452d"
+     "bytes": 5811240,
+     "sha256": "cd35129c49c790201eab2ff992d9bd96069068faffb38ffd469a98f8c6ae337f"
     },
     "B16_23_orm.png": {
-     "bytes": 5025569,
-     "sha256": "1a7f274284ba8b68a14e50df6bfd80925361d4f133bf774814053ca94805d8ed"
+     "bytes": 4906865,
+     "sha256": "638cb2b56b720adac8da009ce4bb8891f886c125d6d63fa316b5b029a100130e"
     },
     "B16_23_parts_base.jpg": {
-     "bytes": 962647,
-     "sha256": "ebf4b1637ba0f8f031d38a2d25de77226e4a323451a43f1989bece74a2c8be08"
+     "bytes": 976590,
+     "sha256": "9f4075d0b4e7f88815e1caba5cd3f0c6e45672780399d7bca610b036e694226f"
     },
     "B16_23_parts_normal.png": {
-     "bytes": 5511393,
-     "sha256": "57f9460bf9a9ccdbde3219a539d545fe11d28305148d2d4370e505c39cd55960"
+     "bytes": 5522193,
+     "sha256": "0faec74a74043db0ceaa9b8ad276e93707b544b12fc0582e0c94af789455b3ad"
     },
     "B16_23_parts_orm.png": {
-     "bytes": 5167378,
-     "sha256": "e676e984655430889ba831b4aae9e53758ebc0a0c75692f766fd8b9e89cfd49f"
+     "bytes": 5203437,
+     "sha256": "dcc763e5614b14d4863bf27b3018a18866a255a5f006f6d8b86535d85f245331"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B16_23\\"
@@ -119,32 +119,32 @@
    "turrets": 0,
    "files": {
     "B20_11.glb": {
-     "bytes": 11961592,
-     "sha256": "ba51126ac613b58ee027218e6e8c36fd86a39798ab875c1eae16ae2d73fb71fc"
+     "bytes": 12514056,
+     "sha256": "f69ae2f5f222ff7c822d07a5436aec484e4753089ce2cffc71e9af2c9f71ddfa"
     },
     "B20_11_base.jpg": {
-     "bytes": 845467,
-     "sha256": "7b899afc275ec57fee5590d9f441d97ce1aa1fc3f51ec6490a9764bbf07ad440"
+     "bytes": 852900,
+     "sha256": "2c72c606fd710b5ecf70f950b1cbfc7c46344eceb5b97cbdf61f599f514892cc"
     },
     "B20_11_normal.png": {
-     "bytes": 6628474,
-     "sha256": "1f05e437c5a368c30632d6445b6bd417ad7b201fa7bb02b6cdbda3412aad0ab5"
+     "bytes": 6630754,
+     "sha256": "4301c4c9345914d6a8d69575ea515a2f8d4bed2a4ffe6f9328dfef03965a949a"
     },
     "B20_11_orm.png": {
-     "bytes": 4864219,
-     "sha256": "d58c6fc27fa4d498ed8c290d0ad007267818fa339571f8d95e6bb2368279d6bc"
+     "bytes": 4864386,
+     "sha256": "4357a701eaa88eda6a0e570369eeff1a7a0949c8fa33ccdb245ca828fcd63ad2"
     },
     "B20_11_parts_base.jpg": {
-     "bytes": 1038529,
-     "sha256": "0d084534ed531505f5db77a17052d8609b43a973ba7269800ca58d28a8b32854"
+     "bytes": 1046625,
+     "sha256": "df013962cb23f814b188278fb9bb2190db6d05ce04156dd1e0f7dc7423f2d2b3"
     },
     "B20_11_parts_normal.png": {
-     "bytes": 6253635,
-     "sha256": "3b42922c78708538bf27b1647914c1b66350b2d42772ec9bfec475e71de7def9"
+     "bytes": 6167779,
+     "sha256": "074d3834a1c5e2f2d75a99090a432696d5de0367e916f3b649bf95a9a8a7b750"
     },
     "B20_11_parts_orm.png": {
-     "bytes": 5544785,
-     "sha256": "689f8702ef3743218662a6aa707d3a50d57982c49eff41b78ce735238523ca9a"
+     "bytes": 5564088,
+     "sha256": "037e4f3dd35836e7df884dc76ed4f7cd0de3ce697bebbb0c33af4cae5700e6c4"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\"
@@ -1994,6 +1994,206 @@
     }
    },
    "pc_path": "godot/assets/ships/corsair_KB1CC/",
+   "wing_role": "bomber"
+  },
+  "ithar_GV2": {
+   "name": "The Starling Shard, the Glasswright fighter wing craft (The Glasswrights)",
+   "faction": "ithar",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "fighter",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 1,
+    "engine": 1,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 1,
+   "files": {
+    "ithar_GV2.glb": {
+     "bytes": 1125588,
+     "sha256": "0fe554a0f9260c58ed21f90dea3fda39683336a48900e20ed665193d9283221f"
+    },
+    "ithar_GV2_base.jpg": {
+     "bytes": 1149506,
+     "sha256": "73404c60211b0db0ba105909be6036f516b990e362643efdfee380a8c4e0b4e9"
+    },
+    "ithar_GV2_emission.jpg": {
+     "bytes": 541706,
+     "sha256": "306dc2aed46e986559cf9e7d25320202f1c98dc29f71ed7aea3d3430ed70422b"
+    },
+    "ithar_GV2_normal.png": {
+     "bytes": 1089681,
+     "sha256": "cbe0748c9b46d218170f33562b5a3acf07390b6d518b0ba200ab10a50cd4b583"
+    },
+    "ithar_GV2_orm.png": {
+     "bytes": 3547502,
+     "sha256": "89fc94aa2ec24d4b67f6fc18981ac607fc5691c989805f6d35ed2a4bdaddd6e2"
+    },
+    "ithar_GV2_parts_base.jpg": {
+     "bytes": 212055,
+     "sha256": "620d939eaa4b20f2d15587238a78dd2e31d797bd081c60f5a541c4ba3f886057"
+    },
+    "ithar_GV2_parts_normal.png": {
+     "bytes": 63457,
+     "sha256": "e57df2918993ad22e84956613d4e05c942968ccb59d06cec5d486a9f0b7c529b"
+    },
+    "ithar_GV2_parts_orm.png": {
+     "bytes": 1219009,
+     "sha256": "9ca893f1a86f4d162bc463ce73e6b08d794a2ff003627e81fc6af5f63ccea276"
+    }
+   },
+   "pc_path": "godot/assets/ships/ithar_GV2/",
+   "wing_role": "fighter"
+  },
+  "ithar_GW4": {
+   "name": "The Heliograph Prism, the Glasswright bomber wing craft (The Glasswrights)",
+   "faction": "ithar",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "bomber",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 1,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 0,
+   "files": {
+    "ithar_GW4.glb": {
+     "bytes": 4519704,
+     "sha256": "70daffea46489c671a6b36567c51aa3b01d4a46c7eb08f320aafb61746eae993"
+    },
+    "ithar_GW4_base.jpg": {
+     "bytes": 1201193,
+     "sha256": "e8bcb35de2d28d1080c061c5ff908aeefa33e3653c5043c1c21c2d010ce77c69"
+    },
+    "ithar_GW4_emission.jpg": {
+     "bytes": 668681,
+     "sha256": "8c23eebdd2d3d785fd1db215ff2a15be3de8b076424cd7b53f482a330464d7b9"
+    },
+    "ithar_GW4_normal.png": {
+     "bytes": 1500986,
+     "sha256": "44112cd5bf6386983cbed27e453ec40588211a23202d42f016d5c2e2ff9f8626"
+    },
+    "ithar_GW4_orm.png": {
+     "bytes": 4083156,
+     "sha256": "c1a99b0cc6e6b9a7335680943581d4be50f0b49124b91c714d93f377aaae5fb0"
+    },
+    "ithar_GW4_parts_base.jpg": {
+     "bytes": 233591,
+     "sha256": "d51f56a09ca648cd93b21680214fa7c334e3082d21a6a8fe4a33647803f91078"
+    },
+    "ithar_GW4_parts_normal.png": {
+     "bytes": 66130,
+     "sha256": "90f908ed196d1582964750b1bea4eaa95f0dbd9888c24d229d20d8753955de3f"
+    },
+    "ithar_GW4_parts_orm.png": {
+     "bytes": 1626152,
+     "sha256": "4ffa824b46420b9da3d7701b28c90c545007d3bac652ab9017340555651d539d"
+    }
+   },
+   "pc_path": "godot/assets/ships/ithar_GW4/",
+   "wing_role": "bomber"
+  },
+  "chorus_CS1BA2": {
+   "name": "Sealed Gills spore swarm, the Chorus spore swarm craft (the Chorus)",
+   "faction": "chorus",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "spore",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 4,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 0,
+   "files": {
+    "chorus_CS1BA2.glb": {
+     "bytes": 1383648,
+     "sha256": "7b5c4dfaff8979ce9fc8dfc6d8ac5ba75b4204571acfd27da0052d8bc8f28ec7"
+    },
+    "chorus_CS1BA2_base.jpg": {
+     "bytes": 697520,
+     "sha256": "b2a5391de79d2d032530800fa909ee6ee221b99e024c6e69ddcac3040a81a5a2"
+    },
+    "chorus_CS1BA2_normal.png": {
+     "bytes": 6321596,
+     "sha256": "cb9daabed691af164e826b5b4c15b4211c36c1a9dbc0959f03abfce016cd4dc0"
+    },
+    "chorus_CS1BA2_orm.png": {
+     "bytes": 4004003,
+     "sha256": "5f0f513e0d00fae6a50f7c525bd49ccc8f525856819d3d703128a72133d813d4"
+    },
+    "chorus_CS1BA2_parts_base.jpg": {
+     "bytes": 494237,
+     "sha256": "b61a52d0b3685900669c8dbc35b4bf1e5a4738829b4d81618a0fa8c8d352b1cf"
+    },
+    "chorus_CS1BA2_parts_normal.png": {
+     "bytes": 5891429,
+     "sha256": "674c3b13db4e0d32c867b8e746a02eb20caf590d8cb9a54191b04d780e8e33f9"
+    },
+    "chorus_CS1BA2_parts_orm.png": {
+     "bytes": 3663497,
+     "sha256": "911f756fe01ad554ea79889c637e48cd4bae2feeef81541502bb4745f9a69a23"
+    }
+   },
+   "pc_path": "godot/assets/ships/chorus_CS1BA2/",
+   "wing_role": "spore"
+  },
+  "hegemony_HB1": {
+   "name": "Navy bomber, the Hegemony bomber wing craft (Hegemony Navy)",
+   "faction": "hegemony",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "bomber",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 1,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 0,
+   "files": {
+    "hegemony_HB1.glb": {
+     "bytes": 1838088,
+     "sha256": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470"
+    },
+    "hegemony_HB1_base.jpg": {
+     "bytes": 1235704,
+     "sha256": "90eb8af7b65be83be0bb83b063223d4551090dbe86bcfb7b933b5a4945a6674e"
+    },
+    "hegemony_HB1_glow_emission.jpg": {
+     "bytes": 152856,
+     "sha256": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1"
+    },
+    "hegemony_HB1_normal.png": {
+     "bytes": 4524157,
+     "sha256": "d5cb64cd1fed0c62536bacb4b4cfab0f90c0c8efc98629da177f0337eef0dded"
+    },
+    "hegemony_HB1_orm.png": {
+     "bytes": 6307791,
+     "sha256": "2c613b5464b2a657c4817275074bb4589e6f1b7e9492c8a6888088213c5d8c19"
+    },
+    "hegemony_HB1_parts_base.jpg": {
+     "bytes": 350225,
+     "sha256": "a290588688f5ee0171b222ef82247d2f2f3ff05c6334c9dd6bdb353420a3efe5"
+    },
+    "hegemony_HB1_parts_normal.png": {
+     "bytes": 3657766,
+     "sha256": "612793f4a4c592ee4747b85b7f6c8f9c4bb50a624da837a2353d5ccc48ed4b31"
+    },
+    "hegemony_HB1_parts_orm.png": {
+     "bytes": 3180638,
+     "sha256": "1455bd7b5bbf0e681d0b2b2875e0fe310f8a6d709b945c7d4b927a9b73bb6adf"
+    }
+   },
+   "pc_path": "godot/assets/ships/hegemony_HB1/",
    "wing_role": "bomber"
   }
  }
