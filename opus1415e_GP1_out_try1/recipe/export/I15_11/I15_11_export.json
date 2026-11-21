@@ -1,0 +1,667 @@
+{
+ "ship": "ithar_GP1",
+ "code": "I15_11",
+ "cell": "GP1",
+ "game_ship": "i_song",
+ "faction": "ithar",
+ "cls": "Cruiser",
+ "band": "M",
+ "expected_breach": 3,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 427976,
+ "turret_triangles": 806,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    0.15985,
+    0.0,
+    0.09882
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 806,
+   "muzzles": [
+    "hp_w2_turret_T_0"
+   ],
+   "kind": "turret",
+   "id": "O1",
+   "socket": "O1",
+   "slot": 2,
+   "weapon": "turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 0.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "surfaces": 12,
+ "destruction": {
+  "version": 1,
+  "seams": [
+   {
+    "p": [
+     -0.31607118449563015,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      -0.31607118449563015,
+      0.48246268162091593
+     ],
+     [
+      -0.2949997721959215,
+      0.24123134081045797
+     ],
+     [
+      -0.3355217189261305,
+      0.11257462571154705
+     ],
+     [
+      -0.30148328367275495,
+      -0.0
+     ],
+     [
+      -0.3387634746645472,
+      -0.10453358101786511
+     ],
+     [
+      -0.29662065006512983,
+      -0.24123134081045797
+     ],
+     [
+      -0.31607118449563015,
+      -0.48246268162091593
+     ]
+    ]
+   },
+   {
+    "p": [
+     0.29427317177179363,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      0.29427317177179363,
+      0.48246268162091593
+     ],
+     [
+      0.3153445840715023,
+      0.24123134081045797
+     ],
+     [
+      0.2748226373412933,
+      0.11257462571154705
+     ],
+     [
+      0.30886107259466883,
+      -0.0
+     ],
+     [
+      0.2715808816028766,
+      -0.10453358101786511
+     ],
+     [
+      0.3137237062022939,
+      -0.24123134081045797
+     ],
+     [
+      0.29427317177179363,
+      -0.48246268162091593
+     ]
+    ]
+   }
+  ],
+  "interior_materials": [
+   "I15_11_inside_0",
+   "I15_11_inside_skin",
+   "I15_11_inside_2",
+   "I15_11_inside_3",
+   "I15_11_inside_4"
+  ],
+  "machines": [
+   {
+    "name": "E1",
+    "kind": "engine",
+    "lo": [
+     -0.486604,
+     -0.044148,
+     -0.166871
+    ],
+    "hi": [
+     -0.410021,
+     0.044148,
+     -0.083079
+    ]
+   },
+   {
+    "name": "E2",
+    "kind": "engine",
+    "lo": [
+     -0.486604,
+     -0.044148,
+     0.083079
+    ],
+    "hi": [
+     -0.410021,
+     0.044148,
+     0.166871
+    ]
+   },
+   {
+    "name": "L1",
+    "kind": "gun",
+    "lo": [
+     0.403505,
+     -0.029071,
+     -0.155559
+    ],
+    "hi": [
+     0.505737,
+     0.029093,
+     -0.095067
+    ]
+   },
+   {
+    "name": "L2",
+    "kind": "gun",
+    "lo": [
+     0.403505,
+     -0.029071,
+     0.094391
+    ],
+    "hi": [
+     0.505737,
+     0.029093,
+     0.154883
+    ]
+   },
+   {
+    "name": "O1",
+    "kind": "gun",
+    "lo": [
+     0.124757,
+     0.058709,
+     -0.035095
+    ],
+    "hi": [
+     0.194947,
+     0.092133,
+     0.035095
+    ]
+   }
+  ]
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "pulsar",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_pulsar_F_0"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "pulsar",
+   "arc": "F",
+   "hard_points": [
+    "hp_w1_pulsar_F_0"
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "turret",
+   "arc": "T",
+   "hard_points": [
+    "hp_w2_turret_T_0"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 3,
+  "engine": 2,
+  "bay": 0,
+  "breach": 3,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "length_world": 14.5,
+ "sheet": "ithar_GP1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {
+  "hp_breach_0": 0.0,
+  "hp_breach_1": 0.0,
+  "hp_breach_2": 0.0,
+  "hp_rcs_0": 0.006,
+  "hp_rcs_1": 0.0063,
+  "hp_board_0": 0.0035,
+  "hp_board_1": 0.0065
+ },
+ "hard_points": [
+  {
+   "name": "hp_w0_pulsar_F_0",
+   "p": [
+    0.50499,
+    0.12498,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "pulsar",
+   "radius": 0.0021798012723836563,
+   "socket": "L1"
+  },
+  {
+   "name": "hp_w1_pulsar_F_0",
+   "p": [
+    0.50499,
+    -0.12498,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 1,
+   "weapon": "pulsar",
+   "radius": 0.0021798012723836563,
+   "socket": "L2"
+  },
+  {
+   "name": "hp_w2_turret_T_0",
+   "p": [
+    0.18158,
+    0.0,
+    0.09882
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 2,
+   "weapon": "turret",
+   "radius": 0.0037601571948618073,
+   "socket": "O1",
+   "turret": 0
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49426,
+    0.12498,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.03874233461449885,
+   "engine": "E1"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49426,
+    -0.12498,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.03874233461449885,
+   "engine": "E2"
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.35603,
+    0.17456,
+    0.01557
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.3891,
+    0.8518,
+    0.3507
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "prow",
+   "side": "P",
+   "clear": 0.0562
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.0218,
+    -0.21349,
+    0.0278
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0113,
+    -0.9246,
+    0.3807
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "mid",
+   "side": "S",
+   "clear": 0.2241
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    -0.37057,
+    0.19468,
+    0.02189
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    -0.1197,
+    0.918,
+    0.378
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "eng",
+   "side": "P",
+   "clear": 0.0667
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.0,
+    0.12498,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    -0.23251,
+    0.21816,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.21798,
+    -0.21749,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "S",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.30517,
+    0.20979,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.14532,
+    -0.22203,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "S",
+   "radius": 0.0
+  }
+ ],
+ "manifest": {
+  "name": "Glasswright prism GP1",
+  "faction": "ithar",
+  "cls": "Cruiser",
+  "band": "M",
+  "game_ship": "i_song",
+  "length_world": 14.5,
+  "hardpoints": {
+   "gun": 3,
+   "engine": 2,
+   "breach": 3,
+   "core": 1,
+   "rcs": 2,
+   "board": 2
+  },
+  "breaches": 3,
+  "turrets": 1,
+  "files": {
+   "I15_11.glb": {
+    "bytes": 18163008,
+    "sha256": "f9bdd3b77f38914b4cc13d32de3aab54aa3eba94db99280f3fb361ec1c7655b8"
+   },
+   "I15_11_base.jpg": {
+    "bytes": 1499512,
+    "sha256": "977b7095ed249b5e761cc10b2d3b338ef65081dfaaa584f9ba22c567246445f5"
+   },
+   "I15_11_emission.jpg": {
+    "bytes": 535650,
+    "sha256": "8f8a0e3044fc55c536346f3c4b5361bf0d200680e9fca7a52553e22ca588982e"
+   },
+   "I15_11_normal.png": {
+    "bytes": 2099249,
+    "sha256": "18d684cce9fe6017aaa0ee596e0f0ac51f3fed4e6c1fa03740ea8c39959dc996"
+   },
+   "I15_11_orm.png": {
+    "bytes": 4561505,
+    "sha256": "226e2bd108eeb74bdab6cfeeea634aa88764debaf18523d2d403f5238a36f3bc"
+   },
+   "I15_11_parts_base.jpg": {
+    "bytes": 749434,
+    "sha256": "b37b08027b6d1275c5abb10e1829b89866439df9d2e98a18cfb9400d90d684a2"
+   },
+   "I15_11_parts_normal.png": {
+    "bytes": 366274,
+    "sha256": "7d2b4e6f53299d6b7ccfd4f6020012dea50044f8712bfb63013d1ed11319b206"
+   },
+   "I15_11_parts_orm.png": {
+    "bytes": 2414693,
+    "sha256": "299b7351e7de65e31411826d04d60aa803137f66a2435661feb6151994151910"
+   }
+  },
+  "pc_path": "godot/assets/ships/I15_11/"
+ },
+ "files": {
+  "I15_11.glb": {
+   "bytes": 18163008,
+   "sha256": "f9bdd3b77f38914b4cc13d32de3aab54aa3eba94db99280f3fb361ec1c7655b8"
+  },
+  "I15_11_base.jpg": {
+   "bytes": 1499512,
+   "sha256": "977b7095ed249b5e761cc10b2d3b338ef65081dfaaa584f9ba22c567246445f5"
+  },
+  "I15_11_emission.jpg": {
+   "bytes": 535650,
+   "sha256": "8f8a0e3044fc55c536346f3c4b5361bf0d200680e9fca7a52553e22ca588982e"
+  },
+  "I15_11_normal.png": {
+   "bytes": 2099249,
+   "sha256": "18d684cce9fe6017aaa0ee596e0f0ac51f3fed4e6c1fa03740ea8c39959dc996"
+  },
+  "I15_11_orm.png": {
+   "bytes": 4561505,
+   "sha256": "226e2bd108eeb74bdab6cfeeea634aa88764debaf18523d2d403f5238a36f3bc"
+  },
+  "I15_11_parts_base.jpg": {
+   "bytes": 749434,
+   "sha256": "b37b08027b6d1275c5abb10e1829b89866439df9d2e98a18cfb9400d90d684a2"
+  },
+  "I15_11_parts_normal.png": {
+   "bytes": 366274,
+   "sha256": "7d2b4e6f53299d6b7ccfd4f6020012dea50044f8712bfb63013d1ed11319b206"
+  },
+  "I15_11_parts_orm.png": {
+   "bytes": 2414693,
+   "sha256": "299b7351e7de65e31411826d04d60aa803137f66a2435661feb6151994151910"
+  }
+ },
+ "seconds": 13.1,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}
