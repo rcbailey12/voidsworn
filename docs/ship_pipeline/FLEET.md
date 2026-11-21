@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 19 new builds installed, 2 with a build sheet but the old hull in game, 6 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 20 new builds installed, 2 with a build sheet but the old hull in game, 5 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -47,11 +47,11 @@ of this is the playable exe (that is a separate snapshot).
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Drone-spawn | Frigate | `B19_11` | New-format build on main | Pending: Round G skin run (PR 1342). | [chorus_C12_drone_spawn_v10.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg) |  | chorus_C12 | #1291 | Skin is the round G Chorus look (issue 1291), not the concept's colours. |
-| Spitter | Destroyer | `B20_11` | New-format build on main | Pending: Tail band fix, run H (PR 1411). Accepted before that: Ryan, Nov 20 (round G, PR 1308). | [chorus_C13_spitter_v7.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg) |  | chorus_C13 |  |  |
-| Bladeback | Cruiser | `B21_11` | New-format build on main | Pending: Round G armour: the installed files still carry the old armour (PR 1347). | [chorus_C11_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg) | R204 | chorus_C11 | #1291 |  |
-| Brood-sac | Carrier | `B22_11` | Concept picked, old hull in game |  | [chorus_C14_brood_sac_v11.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg) |  |  | #1155 | Built on PR 1172 (draft); waits for its round G re-dress. |
-| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | New-format build on main | Not recorded | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Round G run is PR 1351. |
+| Drone-spawn | Frigate | `B19_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C12_drone_spawn_v10.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg) |  | chorus_C12 | #1291 | Run D published Nov 20 (B19_11); skin is the round G Chorus look, not the concept's colours. |
+| Spitter | Destroyer | `B20_11` | New-format build on main | Pending: Armour almost everywhere (R374): run I on the PC. Accepted before that: Ryan, Nov 20 (round G, PR 1308). | [chorus_C13_spitter_v7.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg) |  | chorus_C13 |  |  |
+| Bladeback | Cruiser | `B21_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C11_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg) | R204 | chorus_C11 | #1291 | Run D published Nov 20 (PR 1347). |
+| Brood-sac | Carrier | `B22_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C14_brood_sac_v11.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg) |  | chorus_C14 | #1155 | Run H published Nov 20 (PR 1172). |
+| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Run E published Nov 20 (PR 1351). |
 
 ## The Glasswrights (`ithar`)
 

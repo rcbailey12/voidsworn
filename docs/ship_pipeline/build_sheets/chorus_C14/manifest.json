@@ -1,0 +1,471 @@
+{
+ "code": "chorus_C14",
+ "sheet_version": 7,
+ "routes_note": "kit = the Chorus parts kit (tools/blender/kits/chorus/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "M1",
+   "kind": "gun",
+   "what": "spine volley, throat (fixed)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spine_pore"
+   ],
+   "turret": false
+  },
+  {
+   "id": "G1",
+   "kind": "gun",
+   "what": "spore cloud, spore patch, a honeycomb of pores (turns)",
+   "count": 3,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spore_patch"
+   ],
+   "turret": true,
+   "pivot_object": "G1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "L1",
+   "kind": "hangar",
+   "what": "launch opening, 2.1 across, on a neck of flesh; empty, a dim glow deep inside",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "launch_mouths"
+   ]
+  },
+  {
+   "id": "L2",
+   "kind": "hangar",
+   "what": "launch opening, 2.1 across, on a neck of flesh; empty, a dim glow deep inside",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "launch_mouths"
+   ]
+  },
+  {
+   "id": "L3",
+   "kind": "hangar",
+   "what": "launch opening, 2.1 across, on a neck of flesh; empty, a dim glow deep inside",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "launch_mouths"
+   ]
+  },
+  {
+   "id": "L4",
+   "kind": "hangar",
+   "what": "launch opening, 2.1 across, on a neck of flesh; empty, a dim glow deep inside",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "launch_mouths"
+   ]
+  },
+  {
+   "id": "L5",
+   "kind": "hangar",
+   "what": "launch opening, 2.1 across, on a neck of flesh; empty, a dim glow deep inside",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "launch_mouths"
+   ]
+  },
+  {
+   "id": "S1p",
+   "kind": "sac",
+   "what": "teardrop sac, 0.8 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S1s",
+   "kind": "sac",
+   "what": "teardrop sac, 0.8 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S2p",
+   "kind": "sac",
+   "what": "teardrop sac, 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S2s",
+   "kind": "sac",
+   "what": "teardrop sac, 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S3p",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S3s",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S4p",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S4s",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S5p",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S5s",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S6p",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S6s",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S7p",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S7s",
+   "kind": "sac",
+   "what": "teardrop sac, 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S8p",
+   "kind": "sac",
+   "what": "teardrop sac, 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S8s",
+   "kind": "sac",
+   "what": "teardrop sac, 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S9p",
+   "kind": "sac",
+   "what": "teardrop sac, 0.8 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "S9s",
+   "kind": "sac",
+   "what": "teardrop sac, 0.8 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "teardrop_sacs"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the giant sac",
+   "route": "hand-built"
+  },
+  {
+   "name": "Front: the puckered face",
+   "route": "hand-built"
+  },
+  {
+   "name": "Front folds",
+   "route": "hand-built"
+  },
+  {
+   "name": "Spore field and patch",
+   "route": "hand-built"
+  },
+  {
+   "name": "Launch opening L1",
+   "route": "hand-built"
+  },
+  {
+   "name": "Launch opening L2",
+   "route": "hand-built"
+  },
+  {
+   "name": "Launch opening L3",
+   "route": "hand-built"
+  },
+  {
+   "name": "Launch opening L4",
+   "route": "hand-built"
+  },
+  {
+   "name": "Launch opening L5",
+   "route": "hand-built"
+  },
+  {
+   "name": "Teardrop sacs",
+   "route": "hand-built"
+  },
+  {
+   "name": "Vents",
+   "route": "hand-built"
+  },
+  {
+   "name": "Armour caps",
+   "route": "hand-built"
+  },
+  {
+   "name": "Armour shell (port)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Armour shell (starboard)",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 12.7 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "12.7 to 27.0 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 2",
+   "stations": "27.0 to 60.9 percent",
+   "bounded_by": [
+    "B-2",
+    "B-3"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "60.9 to 100.0 percent",
+   "bounded_by": [
+    "B-3"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

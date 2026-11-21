@@ -3,7 +3,9 @@ extends SceneTree
 ## (read-only, as contrib/opus/flagship_death_1077/capture.gd): each target at stage 4 damage, then killed, at the
 ## battle camera (radius 170) and a close camera (0.62 of the ship's length). The game's own settings: the strained
 ## one-crack death on (rendering/effects/death_story default), quality max, Forward+.
-## Arguments after --: scratch directory, then a comma list of hull ids (default below), then a tag (before|after).
+## Arguments after --: scratch directory, then a comma list of hull ids (default below), then a tag (before|after), then
+## optionally "burst": the close camera only, a frame every 1/15 s from the kill to half a second after the split (f000.jpg
+## on), for the moves that fall between the five stills (the Sunward magazine row in the tell, the Hegemony arcs at the split).
 ## Output per target and radius: <scratch>/<tag>_<id>_c<r>/<moment>.png (stamped) and <moment>_sheet.jpg (960x540), and
 ## <scratch>/<tag>_capture.json with the commit, renderer and every still's fx time. Nothing outside <scratch> is written.
 ## Run with --fixed-fps 60 at 1920x1080, Forward+, through the canonical watchdog tmo.bat.
@@ -39,6 +41,7 @@ var tag: String
 var failed := false
 var hulls: Dictionary
 var info: Dictionary
+var burst := false
 
 
 func _initialize() -> void:
@@ -54,6 +57,7 @@ func _run() -> void:
 	out = args[0]
 	var ids := (args[1] if args.size() > 1 else TARGETS).split(",", false)
 	tag = args[2] if args.size() > 2 else "before"
+	burst = args.size() > 3 and args[3] == "burst"
 	DirAccess.make_dir_recursive_absolute(out)
 	Engine.max_fps = 0
 	AudioServer.set_bus_mute(0, true)
@@ -79,7 +83,7 @@ func _run() -> void:
 		if not hulls.has(id):
 			_fail("no hull " + id)
 			continue
-		for r in [170, 0]:
+		for r in ([0] if burst else [170, 0]):
 			await _clip(id, r)
 	_write(tag + "_capture.json", info, out)
 	bench._clear()
@@ -135,6 +139,13 @@ func _clip(id: String, radius: int) -> void:
 	var core: float = bench.fx.death_core_at("T") if bench.fx.has_method("death_core_at") else split
 	var marks := {"tell": lerpf(start, split, 0.6), "split": split + 0.05, "core": maxf(core, split) + 0.08,
 		"wreck": split + 1.5, "settled": split + 4.0}
+	if burst:
+		marks = {}
+		var k := 0
+		while start + float(k) / 15.0 <= split + 0.5:
+			marks["f%03d" % k] = start + float(k) / 15.0
+			k += 1
+		marks["settled"] = split + 0.55
 	var row := {"id": id, "fac": spec.fac, "cls": spec.cls, "code": v.code, "L": L, "radius": r, "kill_at": start, "split_at": split,
 		"core_at": core, "stills": {}}
 	while bench.fx.now < float(marks.settled) + 0.05:
@@ -142,7 +153,7 @@ func _clip(id: String, radius: int) -> void:
 		for key in marks:
 			if not row.stills.has(key) and bench.fx.now >= float(marks[key]):
 				var img: Image = bench._grab()
-				if img == null or CAP.save_png(img, folder.path_join(key + ".png")) != OK:
+				if img == null or (not burst and CAP.save_png(img, folder.path_join(key + ".png")) != OK):
 					_fail("could not save %s %s" % [id, key])
 					continue
 				var small: Image = bench._crop(img, Vector2i(960, 540), Vector2i(960, 540)) if radius == 170 else img.duplicate()

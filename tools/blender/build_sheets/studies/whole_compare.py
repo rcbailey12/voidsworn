@@ -54,6 +54,8 @@ for nm, bimg, lab in rows:
     c = None
     if sheet is not None and nm in cv:
         c = sheet.crop(tuple(cv[nm]['box']))
+        if cv[nm].get('rot'):   # issues 1153 and 1155: a view drawn bow up or down, turned to bow left
+            c = c.rotate(int(cv[nm]['rot']), expand=True)
         if cv[nm].get('flip'):
             c = c.transpose(Image.FLIP_LEFT_RIGHT)
     for x, im, l2 in ((14, c, 'concept sheet ' + lab), (654, bimg, 'blockout ' + lab + ', one scale')):
