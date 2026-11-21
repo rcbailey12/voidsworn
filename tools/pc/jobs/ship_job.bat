@@ -252,6 +252,9 @@ set EL=%ERRORLEVEL%
 echo death seam exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
 if defined CHECKFAIL set "FAILED=checks:%CHECKFAIL%"
+rem (1517) stamp the shots with the installed main picture_provenance.py, which lists the dirty files, so offer_sheet.py
+rem can tell this job's own install (assets\ships, .import, .uid) from a source edit even when the pin predates the list
+if defined TLV if exist "%V%\tools_live\%TLV%\picture_provenance.py" set "PICTURE_STAMP_TOOL=%V%\tools_live\%TLV%\picture_provenance.py"
 set "TMO_STEP=ship shots"
 if defined FAILED goto collect
 

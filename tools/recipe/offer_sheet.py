@@ -11,7 +11,8 @@ three detail numbers and their floors under the pictures, and is saved with its 
 usage: python tools/recipe/offer_sheet.py JOB_OUT OUT.jpg [--stage "installed in game"] [--reference CONCEPT] [PICTURE ...]
   JOB_OUT     the ship job's out folder (result.txt and recipe/ inside; a board/pc-out-* relay's <job>_out folder)
   PICTURE     the proof pictures, left to right. Each must be in JOB_OUT, carry a valid provenance stamp of the sheet's
-              stage and be made at exactly the job's commit (its result.txt commit= line). With none: the job's own
+              stage and be made at exactly the job's commit (its result.txt commit= line). A dirty tree passes only when
+              every dirty file is the job's own install (godot/assets/ships, .import, .uid). With none: the job's own
               in-game shots (shots/) for "installed in game", or r/CELL_concept_cl.png and r/CELL_hero.png for "paint proof"
   --reference a concept or older picture to compare against, any path; drawn first with a REFERENCE label, never proof
   --stage     'installed in game' (default) or 'paint proof'
@@ -83,9 +84,30 @@ def proof(path, job_out, info, stage):
         raise Refused(f'{path.name} has no valid provenance stamp ({e})') from None
     if rec['stage'] != stage:
         raise Refused(f'{path.name} is stamped "{rec["stage"]}", not "{stage}"')
-    if not info['commit'] or rec['source_commit'] != info['commit'] or rec.get('source_dirty'):
+    if not info['commit'] or rec['source_commit'] != info['commit']:
         raise Refused(f'{path.name} was made at {rec["source_commit"][:12]}, not the job commit {info["commit"][:12] or "?"}')
+    if rec.get('source_dirty'):
+        paths = rec.get('source_dirty_paths')
+        if paths is None:
+            raise Refused(f'{path.name} was made at the job commit {info["commit"][:12]} but from a dirty tree (working '
+                          f'{rec["source_diff_sha256"][:8]}), and its stamp predates the dirty-file list, so a source edit '
+                          f'cannot be ruled out; retake the shots with tools/picture_provenance.py from main')
+        edits = [p for p in paths if not job_leftover(p)]
+        if edits:
+            raise Refused(f'{path.name} was made at the job commit {info["commit"][:12]} but from a dirty tree with source '
+                          f'edits: {", ".join(edits[:8])}{" ..." if len(edits) > 8 else ""}')
     return rec
+
+
+# A PC ship job's own install, which every in-game shot is taken with (tools/pc/jobs/ship_job.bat allows the same set in a
+# clone): the installed ship under godot/assets/ships and the files Godot's import writes. Anything else is a source edit.
+LEFTOVER_DIRS = ('godot/assets/ships/',)
+LEFTOVER_SUFFIXES = ('.import', '.uid')
+
+
+def job_leftover(path):
+    path = path.replace('\\', '/')
+    return path.startswith(LEFTOVER_DIRS) or path.endswith(LEFTOVER_SUFFIXES)
 
 
 def build(job_out, out, pictures=None, stage='installed in game', title=None, references=()):

@@ -45,12 +45,16 @@ def revision(repo):
     if not re.fullmatch(r'[a-f0-9]{40,64}', commit):
         raise ValueError('picture source has no full git commit')
     changes = git(repo, 'diff', '--binary', 'HEAD')
+    paths = [n for n in git(repo, 'diff', '--name-only', '-z', 'HEAD').decode().split('\0') if n]
     # Include new source files as well as tracked edits. Do not hash PC assets.
     for name in git(repo, 'ls-files', '--others', '--exclude-standard', '-z').decode().split('\0'):
         if name and name != 'CODEX_TASK.md' and Path(name).suffix in {'.py', '.gd', '.js', '.ps1', '.bat'}:
             changes += name.encode() + b'\0' + (Path(repo) / name).read_bytes()
+            paths.append(name)
+    # source_dirty_paths (issue 1517): which files made the tree dirty, so a reader can tell a PC ship job's own install
+    # (godot/assets/ships, Godot's .import and .uid files) from a real source edit
     return dict(source_commit=commit, source_dirty=bool(changes),
-                source_diff_sha256=digest(changes) if changes else '')
+                source_diff_sha256=digest(changes) if changes else '', source_dirty_paths=sorted(set(paths)))
 
 
 def text_lines(record):

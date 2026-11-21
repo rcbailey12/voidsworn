@@ -128,12 +128,14 @@ def check_fixtures(tmp):
 JOB_COMMIT = 'e' * 40
 
 
-def stamp(img, path, stage, commit=JOB_COMMIT):
-    """save a picture with a real provenance stamp made at `commit` (the job clone's revision)"""
+def stamp(img, path, stage, commit=JOB_COMMIT, dirty=None):
+    """save a picture with a real provenance stamp made at `commit` (the job clone's revision); dirty: the files that made
+    the tree dirty, as picture_provenance.revision lists them"""
     from unittest.mock import patch
     from picture_provenance import save_picture
-    with patch('picture_provenance.revision', return_value=dict(source_commit=commit, source_dirty=False,
-                                                                 source_diff_sha256='')):
+    rev = dict(source_commit=commit, source_dirty=bool(dirty), source_diff_sha256='5' * 64 if dirty else '',
+               source_dirty_paths=sorted(dirty or []))
+    with patch('picture_provenance.revision', return_value=rev):
         save_picture(img, path, stage)
 
 
@@ -208,6 +210,23 @@ def check_offer_sheet(tmp):
     rc, text = run([out, tmp / 'sheet_game.jpg'])
     assert rc == 0 and verify(tmp / 'sheet_game.jpg')['stage'] == 'installed in game', text
     ok('a passed job gets a 720 px sheet of its own stamped pictures (a concept only as a labelled reference), stamped with the job commit')
+    # A PC ship job's in-game shots are always taken from a dirty tree: the job's own install (Board, Nov 21: C14H refused)
+    install = ['godot/assets/ships/chorus/B22_11.glb', 'godot/assets/ships/manifest.json', 'godot/assets/ships/x.png.import',
+               'godot/world/sky.tres.import', 'godot/fx/look.gd.uid']
+    out = fake_out(tmp, 'offer_pcdirty', good, renders=False)
+    (out / 'shots').mkdir()
+    stamp(Image.new('RGB', (1280, 720), (40, 60, 90)), out / 'shots' / 'B22_11_b.jpg', 'installed in game', dirty=install)
+    rc, text = run([out, tmp / 'sheet_pcdirty.jpg'])
+    assert rc == 0, text
+    stamp(Image.new('RGB', (1280, 720), (40, 60, 90)), out / 'shots' / 'B22_11_b.jpg', 'installed in game',
+          dirty=install + ['godot/fx/look.gd'])
+    rc, text = run([out, tmp / 'sheet_pcedit.jpg'])
+    assert rc == 1 and 'dirty' in text and 'godot/fx/look.gd' in text and 'manifest' not in text, text
+    # the real C14H shot (opus1291c14h, pin d2a9acd2): stamped dirty before stamps listed their dirty files
+    rc, text = run([FIX.parent / 'offer_fixtures' / 'C14H', tmp / 'sheet_c14h.jpg'])
+    assert rc == 1 and 'dirty' in text and 'predates' in text and 'd2a9acd26c33' in text, text
+    ok('a PC shot from a tree dirty only with the job\'s install passes; a source edit is refused naming it and "dirty"; the real '
+       'C14H shot, stamped before the dirty-file list, is refused saying so')
 
 
 def main():
