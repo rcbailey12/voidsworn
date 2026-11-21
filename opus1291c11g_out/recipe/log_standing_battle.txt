@@ -1,0 +1,2 @@
+  battle camera C11: game bow 51.2 midship 76.5 stern 37.7 whole 55.9, studio bow 35.8 midship 77.8 stern 40.9 whole 53.0
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

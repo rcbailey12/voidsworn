@@ -1,0 +1,2 @@
+recipe\export\B21_11\B21_11.glb 11.4 MB
+recipe\export\B21_11\_gltf_source\B21_11.bin 11.3 MB

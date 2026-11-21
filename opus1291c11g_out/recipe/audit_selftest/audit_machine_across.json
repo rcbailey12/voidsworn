@@ -1,0 +1,27 @@
+{
+ "problems": [
+  "part E1 floats 0.15 game units off the hull"
+ ],
+ "parts": 106,
+ "crossing_break_lines": [
+  "E1"
+ ],
+ "structure_across_seams": [
+  "S1p",
+  "S1s",
+  "S2p",
+  "S2s"
+ ],
+ "guns_with_normals": 3,
+ "guns_into_ship": 0,
+ "guns": 3,
+ "break_lines": {
+  "t_lines": [
+   -0.041351607258794186,
+   0.20675803629397094
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "FAIL"
+}

@@ -1,0 +1,19 @@
+GPU: waiting for shared claim, weight 1 (1291)
+GPU: acquired shared claim 58d61663-063c-49f0-a6b9-2697a5148c99
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5a6b3927fb6c413b89cf3e8ee7c9483c\godot-profile-843072cbb3bd476fb9629ae0e45aaffa
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots facs ["chorus"] sets ["battle", "close"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/chorus_battle.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/chorus_battle_near.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_q.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_s.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_b.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_t.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_d.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11g\out\shots/B21_11_u.jpg
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5a6b3927fb6c413b89cf3e8ee7c9483c\godot-profile-843072cbb3bd476fb9629ae0e45aaffa
+GPU: released shared claim 58d61663-063c-49f0-a6b9-2697a5148c99
