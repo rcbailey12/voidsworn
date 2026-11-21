@@ -1,0 +1,33 @@
+{
+ "acts": [
+  {
+   "acts": [],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 14497,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Cold Fury",
+   "plans": 0,
+   "r": 1,
+   "ship": "x04",
+   "targets": 0,
+   "think_ms": 14497,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": false,
+  "enemy": "hegemony",
+  "obj": "rout",
+  "seed": 657826
+ },
+ "enemy_s": {},
+ "hurries": 0,
+ "result": "quit",
+ "rounds": 1,
+ "secs": 26.7,
+ "tips": [],
+ "v": 1
+}

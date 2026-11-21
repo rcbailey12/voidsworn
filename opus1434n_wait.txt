@@ -1,0 +1,6 @@
+OPUS1434N_WAIT.bat waiting for OPUS1448_SND1B exit in opus1448_wait.txt Sat 11/21/2026 17:05:12.76 
+OPUS1434_LOAD14 start 17:09:12.20 
+OPUS1434_LOAD14 exit 1 at 17:36:45.38 
+run folder out_20261121_170912_15248
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt, new player path
+all done Sat 11/21/2026 17:36:45.75 

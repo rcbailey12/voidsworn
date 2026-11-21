@@ -1,0 +1,11 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8f0b07e642b047c68e4fcdc624e33886\godot-profile-ba7b1a0ef9f44c58ac317cf9f1a20388
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[sfx] 11 cues, 10 clip sets, loaded in 13 ms
+[export-check] OK []
+[main] quit (menu) at 1627 ms
+[main] frames before the close, oldest first: 
+[main] loading at the close: nothing
+[main] quit stages: scenes freed + 2 frames 0 ms, statics and fx drain 255 ms, engine exit from 1882 ms
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8f0b07e642b047c68e4fcdc624e33886\godot-profile-ba7b1a0ef9f44c58ac317cf9f1a20388

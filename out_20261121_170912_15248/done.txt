@@ -1,0 +1,1 @@
+FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt, new player path

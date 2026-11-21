@@ -1,0 +1,25 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+Recording seed 31 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434n\out_20261121_170912_15248\out_new\player_path\seed-31.avi
+Retrying seed 31 after the first map jump timed out
+Recording seed 31 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434n\out_20261121_170912_15248\out_new\player_path\seed-31.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434n\out_20261121_170912_15248\out_new\player_path\seed-10.avi
+Retrying seed 10 after the first map jump timed out
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434n\out_20261121_170912_15248\out_new\player_path\seed-10.avi
+Seed 31 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\seed-3
+1-attempt-2\launcher.log and 
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\seed-31-attempt-2\game.log
+Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\seed-1
+0-attempt-2\launcher.log and 
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\seed-10-attempt-2\game.log
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434n\out_20261121_170912_15248\new\contrib\codex\player_path_1119\run.p
+s1:99 char:24
++ ...  ($failures.Count) { throw ($failures -join [Environment]::NewLine) }
++                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Seed 31 failed....empt-2\game.log:String) [], RuntimeException
+    + FullyQualifiedErrorId : Seed 31 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-198 
+   5-4237-bf5c-7ddd6c27cba7\seed-31-attempt-2\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-pat  
+  h-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\seed-31-attempt-2\game.log
+    Seed 10 failed. See C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-7ddd6c27cba7\s 
+   eed-10-attempt-2\launcher.log and C:\Users\rcbai\AppData\Local\Temp\voidsworn-player-path-f2b9023b-1985-4237-bf5c-  
+  7ddd6c27cba7\seed-10-attempt-2\game.log
+ 

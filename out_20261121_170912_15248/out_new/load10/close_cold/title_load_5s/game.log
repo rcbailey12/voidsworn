@@ -1,0 +1,28 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 27 ms
+[sfx] 71 cues, 67 clip sets, loaded in 299 ms
+[load] battle scene ready in 939 ms
+[world] baked fe0235f535c824917a97c879406c0558bc2810fb8a5c4987389a6db58340c945 4096x2048 in 369 ms (worker; stages ms { "began": 5447, "device": 154, "spirv": 3, "pipeline": 2, "dispatch": 101, "worst_strip": 3, "readback": 38, "save": "deferred (a load is running)", "mips": 15 }; queued at 5446, worker from 5446, handed back at 5815 ms)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 511 ms (worker; stages ms { "began": 5817, "device": 215, "spirv": 3, "pipeline": 1, "dispatch": 8, "worst_strip": 2, "readback": 27, "save": "deferred (a load is running)", "mips": 1 }; queued at 5609, worker from 5817, handed back at 6120 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 469 ms (worker; stages ms { "began": 6131, "device": 241, "spirv": 6, "pipeline": 2, "dispatch": 7, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 1 }; queued at 6122, worker from 6131, handed back at 6591 ms)
+[main] leaving the battle for the title at 6592 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 218 ms (title backdrop)
+[main] battle to title: leave frame 48.2 ms, first title frame 48.0 ms after the leave
+[main] battle to title parts (ms): battle_out 3.9, title_build 32.4, battle_free 8.4, battle exit_tree 1.4, pre@37.3, draw@48.0, step@48.2, draw@53.0, step@53.0, draw@64.9, step@65.0, draw@65.2, step@65.2, draw@65.4
+[main] battle to title: worst frame in the first second 1060.7 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.539, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 8 ships built in 1057 ms over 16 frames (title backdrop): longest stretch 109 ms; ship setup 40 ms (worst 32 ms, V16_37: inst 0, look_new_mats 4, look_assign 6, look_worst_assign 1, look_counts 17, look_touch 0, look 11, fit 0, rest 13), effects registration 240 ms (worst 64 ms, V14_23: analyse 61, damage_root 0, engines 0, shield 0, collider 1), hull geometry 411 ms (worst 106 ms, H7_23), waiting on hull files and worker instances 2 ms; 8 hulls instanced on workers
+[world] saved fe0235f535c824917a97c879406c0558bc2810fb8a5c4987389a6db58340c945 later (stages ms { "save_began": 6644, "save": 3750, "prune": 2 })
+[main] quit (window) at 10570 ms
+[main] frames before the close, oldest first: 6 ms (backdrop world), 6 ms (backdrop world), 6 ms (backdrop world), 6 ms (backdrop world), 7 ms (backdrop world), 6 ms (backdrop world), 6 ms (backdrop world), 6 ms (backdrop world), 156 ms so far (this frame)
+[main] loading at the close: backdrop world, world bake 4e36898eeef0
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[main] quit stages: scenes freed + 2 frames 125 ms, statics and fx drain 67 ms, engine exit from 10762 ms
