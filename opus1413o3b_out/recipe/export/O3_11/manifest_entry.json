@@ -1,0 +1,48 @@
+{
+ "name": "Relay beacon (Hegemony Navy objective)",
+ "faction": "hegemony",
+ "cls": "beacon",
+ "band": "S",
+ "game_ship": "obj_beacon",
+ "length_world": 7.5,
+ "hardpoints": {
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 0,
+ "files": {
+  "O3_11.glb": {
+   "bytes": 993692,
+   "sha256": "ca10bb3b950f73b39fbdb03bb4f5fa39cb3cac28e26fb4ae78c095987e2c4ec6"
+  },
+  "O3_11_base.jpg": {
+   "bytes": 836168,
+   "sha256": "d621c3604a555f7097b39d1f1c1651a15b2133f742ef7e7edbd84aa139e90e26"
+  },
+  "O3_11_glow_emission.jpg": {
+   "bytes": 265815,
+   "sha256": "d8477572e5746338bf898fd03c87c9d3de2e2cd30dc7baf5354f2f4509f4c4a9"
+  },
+  "O3_11_normal.png": {
+   "bytes": 4792436,
+   "sha256": "7e2f2702e29fc472429be39e59556e6b7a042b8187bf32f13821c325b8d6ce80"
+  },
+  "O3_11_orm.png": {
+   "bytes": 5237637,
+   "sha256": "3d710311ab26b69258d309038a72ca04c943500766faa9003f404bae857acfbf"
+  },
+  "O3_11_parts_base.jpg": {
+   "bytes": 597196,
+   "sha256": "6f5d5ca77a55530b4e2cbb951f5273001636a9eaa46c1e1cac10907798b306c3"
+  },
+  "O3_11_parts_normal.png": {
+   "bytes": 4323256,
+   "sha256": "e73694b7bd2f44bf05702cdd3e5d09ec8e745eab4b667d11c66f38b9f2c2dcbb"
+  },
+  "O3_11_parts_orm.png": {
+   "bytes": 4408902,
+   "sha256": "deaaa6f6158fc5e12c19a90edb4f9cf2c7308174111cdbec134b86848965e0ab"
+  }
+ },
+ "pc_path": "godot/assets/ships/O3_11/"
+}

@@ -1,0 +1,336 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:04:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         39	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\
+	    New File  		     295	audit.json100%  
+	    New File  		   38532	bow_blink.gif.provenance.json100%  
+	    New File  		     512	concept_camera.json100%  
+	    New File  		    2985	density.json100%  
+	    New File  		     281	detail_check.json100%  
+	    New File  		     547	licences.json100%  
+	    New File  		     425	log_audit.txt100%  
+	    New File  		    3494	log_audit_selftest.txt100%  
+	    New File  		     821	log_b0dump.txt100%  
+	    New File  		   84181	log_bake.txt100%  
+	    New File  		     155	log_battle.txt100%  
+	    New File  		     126	log_blink.txt100%  
+	    New File  		     568	log_build.txt100%  
+	    New File  		      67	log_clay.txt100%  
+	    New File  		      62	log_close.txt100%  
+	    New File  		     514	log_detail.txt100%  
+	    New File  		    1271	log_export.txt100%  
+	    New File  		     474	log_export_check.txt100%  
+	    New File  		     811	log_export_selftest.txt100%  
+	    New File  		    4618	log_godot.txt100%  
+	    New File  		    1564	log_lod.txt100%  
+	    New File  		  923339	log_render.txt 28%   56%   85%  100%  
+	    New File  		  168048	log_render_concept.txt 77%  100%  
+	    New File  		  335926	log_render_far.txt 39%   78%  100%  
+	    New File  		    1168	log_sheet_contract.txt100%  
+	    New File  		      97	log_sil.txt100%  
+	    New File  		     185	log_sildump.txt100%  
+	    New File  		     682	log_standing.txt100%  
+	    New File  		     682	log_standing4.txt100%  
+	    New File  		    1229	log_standing_all.txt100%  
+	    New File  		     212	log_standing_battle.txt100%  
+	    New File  		      95	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		  132507	log_surface.txt 98%  100%  
+	    New File  		     691	log_thirds.txt100%  
+	    New File  		     691	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	    New File  		    4134	O3.json100%  
+	  New Dir          7	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\audit_selftest\
+	    New File  		     174	audit_armed_no_guns.json100%  
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     306	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     295	audit_no_longitudinal.json100%  
+	    New File  		     306	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\build\
+	    New File  		     599	O3_build.json100%  
+	    New File  		    1540	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\glb\
+	    New File  		     310	O3_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\
+	    New File  		   19436	bench209.json100%  
+	    New File  		    6141	O3_auto_20.png.provenance.json100%  
+	    New File  		    6143	O3_auto_d1.2.png.provenance.json100%  
+	    New File  		    6144	O3_auto_d16.0.png.provenance.json100%  
+	    New File  		    6143	O3_auto_d3.0.png.provenance.json100%  
+	    New File  		    6143	O3_auto_d8.0.png.provenance.json100%  
+	    New File  		    6141	O3_hand_20.png.provenance.json100%  
+	    New File  		    6143	O3_hand_d1.2.png.provenance.json100%  
+	    New File  		    6144	O3_hand_d17.4.png.provenance.json100%  
+	    New File  		    6144	O3_hand_d18.6.png.provenance.json100%  
+	    New File  		    6143	O3_hand_d2.9.png.provenance.json100%  
+	    New File  		    6143	O3_hand_d3.1.png.provenance.json100%  
+	    New File  		    6144	O3_hand_d7.75.png.provenance.json100%  
+	    New File  		    6144	O3_hand_d8.25.png.provenance.json100%  
+	    New File  		    6140	O3_off_20.png.provenance.json100%  
+	    New File  		    6142	O3_off_d1.2.png.provenance.json100%  
+	    New File  		    6143	O3_off_d16.0.png.provenance.json100%  
+	    New File  		    6142	O3_off_d3.0.png.provenance.json100%  
+	    New File  		    6142	O3_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\r\
+	    New File  		   12023	O3_battle.png.provenance.json100%  
+	    New File  		   48248	O3_below.png.provenance.json100%  
+	    New File  		   43697	O3_below_clay.png.provenance.json100%  
+	    New File  		   41633	O3_concept.png.provenance.json100%  
+	    New File  		   41780	O3_concept_cl.png.provenance.json100%  
+	    New File  		   41650	O3_concept_clay.png.provenance.json100%  
+	    New File  		   41825	O3_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41657	O3_hero.png.provenance.json100%  
+	    New File  		   41674	O3_hero_clay.png.provenance.json100%  
+	    New File  		   41695	O3_hero_s.png.provenance.json100%  
+	    New File  		   41684	O3_hero_s_clay.png.provenance.json100%  
+	    New File  		   41755	O3_side.png.provenance.json100%  
+	    New File  		   41616	O3_side_clay.png.provenance.json100%  
+	    New File  		   41629	O3_side_s.png.provenance.json100%  
+	    New File  		   41654	O3_side_s_clay.png.provenance.json100%  
+	    New File  		   50878	O3_top.png.provenance.json100%  
+	    New File  		   43327	O3_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\surface\
+	    New File  		     799	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        86        86         0         0         0         0
+   Bytes :    2.42 m    2.42 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            31043878 Bytes/sec.
+   Speed :            1776.344 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:04:02 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:04:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\r\
+	    New File  		   95925	O3_battle.png100%  
+	    New File  		   2.2 m	O3_below.png 22%   44%   67%   89%  100%  
+	    New File  		   1.9 m	O3_below_clay.png 12%   25%   37%   50%   62%   75%   87%  100%  
+	    New File  		  986436	O3_concept.png 26%   53%   79%  100%  
+	    New File  		 1019993	O3_concept_cl.png 25%   51%   77%  100%  
+	    New File  		  850576	O3_concept_clay.png 30%   61%   92%  100%  
+	    New File  		  873611	O3_concept_clay_cl.png 30%   60%   90%  100%  
+	    New File  		   1.2 m	O3_hero.png 20%   40%   61%   81%  100%  
+	    New File  		   1.0 m	O3_hero_clay.png 23%   46%   70%   93%  100%  
+	    New File  		   1.2 m	O3_hero_s.png 19%   38%   58%   77%   97%  100%  
+	    New File  		   1.1 m	O3_hero_s_clay.png 22%   45%   67%   90%  100%  
+	    New File  		   2.2 m	O3_side.png 22%   44%   66%   88%  100%  
+	    New File  		   2.0 m	O3_side_clay.png 24%   49%   73%   98%  100%  
+	    New File  		   2.2 m	O3_side_s.png 21%   43%   65%   87%  100%  
+	    New File  		   2.0 m	O3_side_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.3 m	O3_top.png 21%   42%   63%   85%  100%  
+	    New File  		   2.0 m	O3_top_clay.png 24%   49%   74%   99%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   25.51 m   25.51 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1337719250 Bytes/sec.
+   Speed :            76544.909 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:04:02 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:04:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\surface\
+	    New File  		   77972	surface_below.png100%  
+	    New File  		   72090	surface_bow.png100%  
+	    New File  		   73729	surface_port.png100%  
+	    New File  		   73660	surface_starboard.png100%  
+	    New File  		   70035	surface_stern.png100%  
+	    New File  		   77990	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   435.0 k   435.0 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            89095200 Bytes/sec.
+   Speed :            5098.068 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:04:02 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:04:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\godot\
+	    New File  		  615868	O3_auto_20.png 42%   85%  100%  
+	    New File  		  799504	O3_auto_d1.2.png 32%   65%   98%  100%  
+	    New File  		  209045	O3_auto_d16.0.png 62%  100%  
+	    New File  		  325644	O3_auto_d3.0.png 40%   80%  100%  
+	    New File  		  226833	O3_auto_d8.0.png 57%  100%  
+	    New File  		  616602	O3_hand_20.png 42%   85%  100%  
+	    New File  		  799489	O3_hand_d1.2.png 32%   65%   98%  100%  
+	    New File  		  208003	O3_hand_d17.4.png 63%  100%  
+	    New File  		  207425	O3_hand_d18.6.png 63%  100%  
+	    New File  		  334778	O3_hand_d2.9.png 39%   78%  100%  
+	    New File  		  318708	O3_hand_d3.1.png 41%   82%  100%  
+	    New File  		  228357	O3_hand_d7.75.png 57%  100%  
+	    New File  		  225997	O3_hand_d8.25.png 57%  100%  
+	    New File  		  615686	O3_off_20.png 42%   85%  100%  
+	    New File  		  799293	O3_off_d1.2.png 32%   65%   98%  100%  
+	    New File  		  208891	O3_off_d16.0.png 62%  100%  
+	    New File  		  325417	O3_off_d3.0.png 40%   80%  100%  
+	    New File  		  226609	O3_off_d8.0.png 57%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    6.95 m    6.95 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           383797315 Bytes/sec.
+   Speed :           21961.058 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:04:02 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 10:04:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\out\recipe\export\O3_11\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11\
+	    New File  		      17	export_status.txt100%  
+	    New File  		    1370	manifest_entry.json100%  
+	    New File  		  993692	O3_11.glb 26%   52%   79%  100%  
+	    New File  		  836168	O3_11_base.jpg 31%   62%   94%  100%  
+	    New File  		    6717	O3_11_export.json100%  
+	    New File  		  265815	O3_11_glow_emission.jpg 49%   98%  100%  
+	    New File  		   4.5 m	O3_11_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   4.9 m	O3_11_orm.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		  597196	O3_11_parts_base.jpg 43%   87%  100%  
+	    New File  		   4.1 m	O3_11_parts_normal.png 12%   24%   36%   48%   60%   72%   84%   97%  100%  
+	    New File  		   4.2 m	O3_11_parts_orm.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11\_gltf_source\
+	    New File  		  970816	O3_11.bin 27%   54%   81%  100%  
+	    New File  		   31837	O3_11.gltf100%  
+	    New File  		  126897	O3_engine_emission.png100%  
+	    New File  		   3.3 m	O3_hull_albedo.png 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   4.5 m	O3_hull_normal.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   4.9 m	O3_hull_orm.png 10%   20%   30%   40%   50%   60%   70%   80%   90%  100%  
+	    New File  		   2.7 m	O3_parts_albedo.png 18%   36%   54%   72%   91%  100%  
+	    New File  		   4.1 m	O3_parts_normal.png 12%   24%   36%   48%   60%   72%   84%   97%  100%  
+	    New File  		   4.2 m	O3_parts_orm.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        20        20         0         0         0         0
+   Bytes :   45.55 m   45.55 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1647001482 Bytes/sec.
+   Speed :            94242.180 MegaBytes/min.
+   Ended : Friday, November 20, 2026 10:04:02 PM
+

@@ -1,0 +1,27 @@
+start hegemony_O3 O3_11 board/pin-1413 Fri 11/20/2026 21:23:42.73 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=hegemony PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   c8a8ff5c5..2a3f911f7  board/pc-in-1119 -> board/pc-in-1119
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\repo
+commit=85819dc18756842942de5c8a97fe8a82e4412b28
+import exit 0 
+1_concept_in start 21:28:50.66 
+1_concept_in exit 0 at 21:28:54.05 
+2_shape_ref start 21:28:54.05 
+2_shape_ref exit 0 at 21:38:26.93 
+3_trace_hull start 21:38:26.94 
+3_trace_hull exit 0 at 21:48:39.48 
+4_parts_kit start 21:48:39.48 
+4_parts_kit exit 0 at 21:49:05.54 
+5_paint_bake start 21:49:05.54 
+5_paint_bake exit 0 at 22:02:36.45 
+6_lod start 22:02:36.45 
+6_lod exit 0 at 22:03:42.60 
+7_export start 22:03:42.60 
+7_export exit 1 at 22:04:02.18 
+checks and shots SKIPPED: stage 7_export failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Fri 11/20/2026 22:04:02.49 
+all done 

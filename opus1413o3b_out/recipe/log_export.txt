@@ -1,0 +1,14 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+22:03:52 | INFO: Starting glTF 2.0 export
+22:03:52 | INFO: Extracting primitive: O3_11
+22:03:54 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:03:57 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:04:00 | INFO: Primitives created: 14
+22:04:00 | INFO: Finished glTF 2.0 export in 7.369538068771362 s
+
+[export7] O3_11 triangles 12388 hard points {"gun": 0, "engine": 0, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 0 (0 triangles) files ['O3_11.glb', 'O3_11_base.jpg', 'O3_11_glow_emission.jpg', 'O3_11_normal.png', 'O3_11_orm.png', 'O3_11_parts_base.jpg', 'O3_11_parts_normal.png', 'O3_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\export\O3_11
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\hegemony_O3\O3.blend"
+
+Blender quit

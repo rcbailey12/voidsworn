@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\repo\tools\recipe\check_export_selftest.py", line 188, in <module>
+    WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
+                                                ^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\Downloads\voidsworn_test\opus1413o3b\repo\tools\recipe\check_export_selftest.py", line 97, in port_point
+    return n or next(n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
