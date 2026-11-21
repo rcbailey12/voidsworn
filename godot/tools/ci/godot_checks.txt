@@ -129,6 +129,7 @@ headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: rele
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
+headless|scenes/battle/test/hover_wait_check.gd|-|-|issue 1433: mouse handlers never wait on the threat worker after a move (under 50 ms); a click while it computes is queued once and played when the result lands; a retired battle publishes nothing
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
 headless|main/test/finale_runs_check.gd|-|-|issue 1271: the dawn finale flag is off on run 4 and on for runs 5, 6 and 9, and battle.gd lights dawn only for the sector 3 boss
