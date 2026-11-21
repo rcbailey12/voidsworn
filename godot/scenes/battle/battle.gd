@@ -153,6 +153,7 @@ var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 var shots_dir := ""
+var torp_ft := {}          # issue 1379: frame times through one torpedo salvo (--torp-shots DIR --torp-ft)
 var t_start := 0.0
 var marker_root: Node3D
 var backdrop: Node3D
@@ -1985,11 +1986,18 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			land["downs"].append(g)
 	_aim_on(a_id, t_id, land)
 	if args.has("torp-shots") and fam == "torp":   # issue 1379 capture: the flight and the hit, close on the pair
-		cam.focus(_pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
 		var tag := "r%s_%s" % [str(V.get("round", 1)), str(a_id)]
-		for fi in 8:
-			var at := 0.5 + fi * 0.2
-			_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
+		print("TORP_FIRE %s weapon=%s shots=%d pd=%d" % [tag, str(e.get("kind", "")), (e.get("shots", []) as Array).size(), int(e.get("pd", 0))])
+		if args.has("torp-ft"):
+			# frame time through the whole salvo and its wake (Artoo on PR 1416), at the battle camera and with no
+			# picture taken, so the reading is the game's own
+			torp_ft = {"tag": tag, "until": game_t + 3.5, "ms": []}
+		else:
+			if float(args.get("torp-cam", 34)) > 0.0:     # --torp-cam 0: the battle camera as the player has it
+				cam.focus(_pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
+			for fi in 12:     # 0.5 to 2.7 s: launch, flight, hit or interception, and the wake cooling after it
+				var at := 0.5 + fi * 0.2
+				_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
 	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
@@ -2130,6 +2138,25 @@ static func shield_break_hit(hits: Array) -> int:
 
 # Issue 1211: run f after `at` seconds of the effect clock (the clock the impacts were planned on, which hit pause and
 # the kill beat slow); the scene timer when the G4 effects are not in the build.
+func _torp_ft_step(dt: float) -> void:
+	var ms: Array = torp_ft["ms"]
+	ms.append(dt * 1000.0)
+	if game_t < float(torp_ft["until"]):
+		return
+	var sorted := ms.duplicate(); sorted.sort()
+	var total := 0.0
+	for x in sorted: total += float(x)
+	var n := sorted.size()
+	var rep := {"tag": torp_ft["tag"], "frames": n, "mean_ms": total / maxf(n, 1), "p95_ms": sorted[int(n * 0.95)] if n > 0 else 0.0,
+		"max_ms": sorted.back() if n > 0 else 0.0, "over_16_7": sorted.filter(func(x): return x > 1000.0 / 60.0).size(),
+		"fps_cap": Engine.max_fps, "vsync": DisplayServer.window_get_vsync_mode()}
+	print("TORP_FT %s" % JSON.stringify(rep))
+	if not shots_dir.is_empty():
+		var f := FileAccess.open(shots_dir.path_join("ft_%s.json" % torp_ft["tag"]), FileAccess.WRITE)
+		if f != null: f.store_string(JSON.stringify(rep, "  "))
+	torp_ft = {}
+
+
 func _at_fx(at: float, f: Callable) -> void:
 	if gfx != null and gfx.has_method("later"):
 		gfx.later(float(gfx.now) + maxf(at, 0.0), f)
@@ -4908,6 +4935,8 @@ var showcase_ready := false
 
 func _process(dt: float) -> void:
 	game_t += dt
+	if not torp_ft.is_empty():
+		_torp_ft_step(dt)
 	cam.keyboard_enabled = not warming and (hud == null or hud.menu == null)
 	if showcase_ready:
 		cam.a += dt * 0.035
