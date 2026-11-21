@@ -103,7 +103,12 @@ var _drag := false
 var _drag_at := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
-var loading := false
+var loading := false:
+	set(v):
+		loading = v
+		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
+		if not v and _queued_jump != "": _run_queued_jump.call_deferred()
+var _queued_jump := ""   # the stop a Jump pressed during loading will fly to
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -202,6 +207,7 @@ func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()
 	if C != null and C.RUN != null: return false
 	cover.queue_free()
+	_queued_jump = ""
 	loading = false
 	_sig = ""
 	return true
@@ -1221,6 +1227,11 @@ func _input(e: InputEvent) -> void:
 		_finish_flight()
 
 func fly_to(id: String) -> void:
+	if loading and not _flying and not backdrop:
+		_queued_jump = id
+		var lbl = ui.get("_jump_lbl") if ui != null else null
+		if lbl is Label and is_instance_valid(lbl): lbl.text = "JUMPING WHEN READY"
+		return
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
@@ -1232,6 +1243,12 @@ func fly_to(id: String) -> void:
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
+
+func _run_queued_jump() -> void:
+	if loading or _queued_jump == "": return
+	var id := _queued_jump
+	_queued_jump = ""
+	fly_to(id)
 
 # Cosine acceleration, constant-speed cruise, then matching braking. The
 # integral is continuous in speed and acceleration, including both endpoints.
