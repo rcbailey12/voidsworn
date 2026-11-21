@@ -169,7 +169,10 @@ func _clip(id: String, radius: int) -> void:
 					continue
 				var small: Image = bench._crop(img, Vector2i(960, 540), Vector2i(960, 540)) if radius == 170 else img.duplicate()
 				if radius != 170: small.resize(960, 540, Image.INTERPOLATE_LANCZOS)
-				small.save_jpg(folder.path_join(key + "_sheet.jpg"), 0.9)
+				# Artoo on PR 1522: a sheet that could not be written fails the run, never a capture JSON naming a missing image
+				if small.save_jpg(folder.path_join(key + "_sheet.jpg"), 0.9) != OK or not FileAccess.file_exists(folder.path_join(key + "_sheet.jpg")):
+					_fail("could not save %s %s sheet" % [id, key])
+					continue
 				row.stills[key] = bench.fx.now - start
 	info.targets["%s_c%d" % [id, int(round(r))]] = row
 	print("CAPTURE1399 ", id, " ", spec.fac, " ", spec.cls, " code=", v.code, " r=", r, " split=%.2f" % (split - start))

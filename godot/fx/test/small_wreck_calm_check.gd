@@ -4,7 +4,9 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # strained death on (the default), a small metal hull's pieces part the calm way a big hull's do. A box frigate and a box
 # destroyer are killed at quality high (physics pieces, Jolt), and 10 s later every wreck piece must sit within FAR_MAX of
 # the length from where the ship was, turn slower than SPIN_MAX, and be all but still. The old path (death_story off) is
-# printed beside it for comparison only.
+# printed beside it for comparison only. The kills run in a child process started with --fixed-fps 60, so Jolt steps once for
+# every 1/60 s effect step (Artoo on PR 1522; death_story_check.gd does the same): a fast headless run can't read fewer
+# physics updates as pieces stopping sooner.
 const FX := preload("res://fx/fx.gd")
 const FAR_MAX := 0.7
 const SPIN_MAX := 0.3
@@ -25,6 +27,17 @@ func check(ok: bool, why: String) -> void:
 
 
 func _run() -> void:
+	if not "--child" in OS.get_cmdline_user_args():
+		var out := []
+		var args := ["--headless", "--fixed-fps", "60", "--path", ProjectSettings.globalize_path("res://"), "--script",
+			"res://fx/test/small_wreck_calm_check.gd", "--", "--child"]
+		var code := OS.execute(OS.get_executable_path(), PackedStringArray(args), out, true)
+		for line in str(out[0] if not out.is_empty() else "").split("\n"):
+			if line.begins_with("SMALL_WRECK") or line.begins_with("  ok") or line.begins_with("  FAIL"): print("  [child] ", line)
+		check(code == 0, "the kills pass in their fixed-fps child process (exit %d)" % code)
+		print("SMALL_WRECK failures=%d" % failures)
+		quit(1 if failures else 0)
+		return
 	for cls in ["Frigate", "Destroyer"]:
 		var calm := await _kill(cls, "strain")
 		var old := await _kill(cls, "off")
