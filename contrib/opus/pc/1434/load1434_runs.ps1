@@ -172,7 +172,7 @@ foreach ($set in @('cold', 'warm')) {
     $rows += New-Object psobject -Property $row
     Say ("close {0} {1}: {2}{3} clean={11} 1518={12} 1519={13}{14} sent={4} hidden_ms={5} first_title_frame_ms={6} worst_title_frame_first_s={7} close_to_exit_ms={8} exit={9}{10}" -f $set, $row.case,
       '', $row.result, $row.sent, $row.hidden_ms, $row.title_first_frame_ms, $row.title_worst_first_second_ms,
-      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' })))
+      $row.close_to_exit_ms, $row.exit_code, $(if ($row.title_parts) { " | $($row.title_parts)" } else { '' }), $row.clean, $row.g1518, $row.g1519, $(if ($row.skip) { " ($($row.skip))" } else { '' }))
     Start-Sleep -Seconds 2
   }
 }
