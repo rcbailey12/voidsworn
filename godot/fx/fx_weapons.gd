@@ -806,7 +806,9 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"]), faction), "dead_at": INF}
 		if (p["mesh"] as Node3D).has_meta("kit"):
 			_kit_trail_start(fx, p, fac)
-		if intercept: p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
+		if intercept:
+			p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
+			_pd_fire(fx, p)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
 		fx.dstate["proj"] = list
@@ -1064,21 +1066,18 @@ static func update(fx, dt: float) -> void:
 		if now < t0:
 			keep.append(p)
 			continue
-		if now >= t1 or now >= float(p["dead_at"]):
-			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
-				var u0 := clampf((float(p["dead_at"]) - t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
-				var pp := _bez(p["a"], p["b"], p["c"], _ease(u0))
-				# shot down short of the hull: a small pop where the round was, its sparks and a puff of its own smoke. The old
-				# pop was 4 k wide with a 24 px floor, a flat white disc bigger than the target's hull at the close camera
-				# (PC run 1379f, Navy seed 3).
-				_burst(fx, pp, Vector3.UP, now, 1.4 * float(p["k"]), "flash", 0.14, p["col"], 2.6, 10.0)
-				_burst(fx, pp, Vector3.UP, now + 0.03, 1.2 * float(p["k"]), "cool", 0.5, p["eng"], 0.5, 0.0, Vector3.ZERO, 0.35)
-				_impact_sparks(fx, pp, ((p["c"] as Vector3)-(p["a"] as Vector3)).normalized(), now, p["k"], Color(0.9,0.62,0.32), 6)
-			if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
-			if p.has("trail"):
-				var fading: Array = fx.dstate.get("ptrails", [])
-				fading.append(p["trail"])
-				fx.dstate["ptrails"] = fading
+		if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
+			# shot down short of the hull (issue 1379 round 5: Ryan could not tell this from a hull hit)
+			if not p.has("down"):
+				p["down"] = now
+				_shot_down(fx, p)
+			if _shot_down_step(fx, p, now, dt):
+				keep.append(p)
+				continue
+			_projectile_free(fx, p)
+			continue
+		if now >= t1:
+			_projectile_free(fx, p)
 			continue
 		keep.append(p)
 		var u := clampf((now-t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
@@ -1225,6 +1224,119 @@ static func _kit_trail_mesh(fx, t: Dictionary) -> void:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fmt)
 	mesh.custom_aabb = POOLS.BIG
 	t["mi"].mesh = mesh
+
+
+# ---------------------------------------------------------------- shot down (issue 1379 round 5)
+# Ryan, Nov 21: "it's hard to distinguish whats a hull hit vs explosion before due to turrets". A round shot down never
+# burns: no fire, no flash on the hull. What the player sees depends on PD_STYLE (Ryan picks; VS_1379_PD overrides for the
+# options sheet):
+#   A  the target's point defence: pale tracer dashes from the target's hull to the round, a spark where they meet, and the
+#      round goes dead (drive out) and tumbles away trailing grey smoke
+#   B  a flak box: dark flak puffs bracket the round, a small dim pop, the round is gone
+#   C  A and B together
+#   old  the round-4 small pop (for the before column)
+const PD_STYLE := "A"
+const PD_TRACER := Color(0.72, 0.88, 1.0)
+const PD_TUMBLE_S := 0.9
+
+
+static func _pd_style() -> String:
+	var e := OS.get_environment("VS_1379_PD")
+	return e if e in ["A", "B", "C", "old"] else PD_STYLE
+
+
+static func _down_point(p: Dictionary) -> Vector3:
+	var u0 := clampf((float(p["dead_at"]) - float(p["t0"])) / maxf(float(p["t1"]) - float(p["t0"]), 0.001), 0.0, 1.0)
+	return _bez(p["a"], p["b"], p["c"], _ease(u0))
+
+
+static func _pd_fire(fx, p: Dictionary) -> void:
+	var st := _pd_style()
+	if not st in ["A", "C"]:
+		return
+	var pp := _down_point(p)
+	var c: Vector3 = p["c"]
+	var k: float = p["k"]
+	# four short dashes from the target's side, a little spread, the last one arriving as the round dies
+	for j in 4:
+		var src: Vector3 = c + fx.rdir() * 0.8 * k + (pp - c).normalized() * 0.6 * k
+		var aim: Vector3 = pp + fx.rdir() * (0.5 if j < 3 else 0.05) * k
+		var ft := maxf(src.distance_to(aim) / (260.0 * fx.unit), 0.05)
+		var tb := float(p["dead_at"]) - ft - (3 - j) * 0.07
+		fx.stk(src, tb, ft, PD_TRACER, 6.0, 5.0 * k, 0.12 * k, 4, (aim - src) / ft, 0.0, 0.0, 1.6, 18.0)
+
+
+static func _shot_down(fx, p: Dictionary) -> void:
+	var st := _pd_style()
+	var pp := _down_point(p)
+	var now: float = fx.now
+	var k: float = p["k"]
+	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()
+	if st == "old":
+		_burst(fx, pp, Vector3.UP, now, 1.4 * k, "flash", 0.14, p["col"], 2.6, 10.0)
+		_burst(fx, pp, Vector3.UP, now + 0.03, 1.2 * k, "cool", 0.5, p["eng"], 0.5, 0.0, Vector3.ZERO, 0.35)
+		_impact_sparks(fx, pp, d, now, k, Color(0.9, 0.62, 0.32), 6)
+		return
+	# cold sparks where the round is holed: white-blue, not fire
+	_impact_sparks(fx, pp, -d, now, k * 0.7, PD_TRACER, 5)
+	if st in ["B", "C"]:
+		for j in 5:
+			var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
+			var tj := now - 0.18 + j * 0.06
+			_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
+			_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
+	if st == "B":
+		_burst(fx, pp, Vector3.UP, now, 0.8 * k, "flash", 0.08, Color(1.0, 0.8, 0.55), 2.0, 5.0)
+		_burst(fx, pp, Vector3.UP, now + 0.03, 1.0 * k, "cool", 0.7, Color(0.2, 0.19, 0.18), 0.5, 0.0, Vector3.ZERO, 0.5)
+		return
+	# A and C: the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke
+	var node = p["mesh"]
+	if is_instance_valid(node) and (node as Node3D).has_meta("motor"):
+		((node as Node3D).get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
+	var e := _ease(clampf((now - float(p["t0"])) / maxf(float(p["t1"]) - float(p["t0"]), 0.001), 0.0, 1.0))
+	var vd: Vector3 = ((p["b"] as Vector3) - (p["a"] as Vector3)).lerp((p["c"] as Vector3) - (p["b"] as Vector3), e)
+	p["down_v"] = vd.normalized() * minf(vd.length(), 40.0 * k * fx.unit) * 0.35 + Vector3(0, -0.8 * k * fx.unit, 0)
+	p["down_p"] = pp
+	p["down_spin"] = fx.rdir() * (5.0 + fx.rng.randf() * 4.0)
+	if p.has("trail"):
+		var fading: Array = fx.dstate.get("ptrails", [])
+		fading.append(p["trail"])
+		fx.dstate["ptrails"] = fading
+		p.erase("trail")
+
+
+static func _shot_down_step(fx, p: Dictionary, now: float, dt: float) -> bool:
+	if not p.has("down_p"):
+		return false
+	var age := now - float(p["down"])
+	if age >= PD_TUMBLE_S:
+		return false
+	var node = p["mesh"]
+	if not is_instance_valid(node):
+		return false
+	var n3 := node as Node3D
+	var drift := (1.0 - exp(-age * 2.0)) / 2.0
+	n3.global_position = (p["down_p"] as Vector3) + (p["down_v"] as Vector3) * drift
+	var spin: Vector3 = p["down_spin"]
+	if spin.length() > 0.0:
+		n3.rotate(spin.normalized(), spin.length() * clampf(dt, 0.0, 0.1))
+	if not p.has("down_scale"):
+		p["down_scale"] = n3.basis.get_scale().x
+	var fade := 1.0 - smoothstep(PD_TUMBLE_S * 0.6, PD_TUMBLE_S, age)
+	n3.basis = n3.basis.orthonormalized().scaled(Vector3.ONE * float(p["down_scale"]) * maxf(fade, 0.01))
+	if now - float(p.get("down_smoke", -1.0)) > 0.08:
+		p["down_smoke"] = now
+		_burst(fx, n3.global_position, Vector3.UP, now, 0.7 * float(p["k"]), "cool", 0.8, Color(0.22, 0.21, 0.2), 0.5, 0.0, Vector3(0, 0.4 * fx.unit, 0), 0.45 * fade)
+	return true
+
+
+static func _projectile_free(fx, p: Dictionary) -> void:
+	if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
+	if p.has("trail"):
+		var fading: Array = fx.dstate.get("ptrails", [])
+		fading.append(p["trail"])
+		fx.dstate["ptrails"] = fading
+		p.erase("trail")
 
 
 static func _ease(u: float) -> float:
