@@ -204,8 +204,8 @@ the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse 
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
   Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
-  file (issue 1205 removed the all-green hull_table FAC3D override). The only green left there is the Doom gun's
-  `weapon_core` (R263), a weapon ruling of its own, kept until Ryan says otherwise. The hull paint lives in
+  file (issue 1205 removed the all-green hull_table FAC3D override). The Doom gun's `weapon_core` is deep violet too (Ryan
+  Nov 21 2026, "Yes make it a violet core", issue 1503; replaces R263's green core): no green is left in that file. The hull paint lives in
   tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
   the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
