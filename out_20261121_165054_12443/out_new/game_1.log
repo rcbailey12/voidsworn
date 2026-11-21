@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[sfx] 71 cues, 67 clip sets, loaded in 158 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.672, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked b318e51e5a5c9f8f28d39f17189b99f7d06b363babb234a5b16c5cc5bb05f771 4096x2048 in 6821 ms (worker)
+[world] baked 422ca85d192f447ac48e70b8e49ff7ae08cb90d542b3d6ee4dafdf685ef53a0b 4096x2048 in 9311 ms (worker)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 9743 ms (worker)
+[world] baked b325e2dba1ecb23c5d854be3bc1aa966ad4886dd7401bc03249c549a7416d573 4096x2048 in 6305 ms (worker)
+[world] baked a274f108eddffa284941daadf14bbbd66b190a7234e6914f34c63d191e47190a 4096x2048 in 8937 ms (worker)
+[world] baked d8002323e9deb4fc943bc39fdc90c8608d6555071d3c866f8c051dcfa5301b1c 4096x2048 in 1286 ms (worker)
+[player-path] FAIL jump to 0-0 did not open

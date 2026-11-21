@@ -1,0 +1,8 @@
+OPUS1448_WAIT.bat waiting for OPUS1121Q_DEATHS exit in opus1121motq_wait.txt Sat 11/21/2026 16:33:23.73 
+HELD 16:41:38: OPUS1448_WAIT stopped while only waiting for the 1415H publishes (Board Nov 21 22:41 UTC); restarts as OPUS1448_WAIT2.bat after
+OPUS1448_WAIT2.bat waiting for OPUS1121Q_DEATHS exit in opus1121motq_wait.txt Sat 11/21/2026 16:50:53.92 
+OPUS1448_SND1B start 16:50:53.93 
+OPUS1448_SND1B exit 1 at 17:09:10.29 
+run folder out_20261121_165054_12443
+result: done FAILED: new record 1
+all done Sat 11/21/2026 17:09:10.71 
