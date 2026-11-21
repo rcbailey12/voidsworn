@@ -31,7 +31,7 @@ foreach ($p in $s.playable_engine_ms.PSObject.Properties) { $o.Add(("Battle {0} 
 if (-not $game) { $o.Add("Windows GPU memory: unavailable (summary.json has no pid)") }
 else { $o.Add("Windows GPU memory: game process $game, $($rows.Count) samples read, $missing unavailable, $($all.Count - $mine.Count) from other processes ignored") }
 $o.Add("")
-$o.Add("{0,-15}{1,9}{2,10}{3,8}{4,10}{5,10}{6,10}{7,10}{8,10}{9,10}" -f 'stage','seconds','worst ms','>100ms','compiles','vram MB','tex MB','buf MB','win ded','win shr')
+$o.Add(("{0,-15}{1,9}{2,10}{3,8}{4,10}{5,10}{6,10}{7,10}{8,10}{9,10}" -f 'stage','seconds','worst ms','>100ms','compiles','vram MB','tex MB','buf MB','win ded','win shr'))
 foreach ($r in $s.stages) {
   $win = @($rows | Where-Object { [int64]$_.unix_ms -ge [int64]$r.first_unix_ms -and [int64]$_.unix_ms -le [int64]$r.last_unix_ms })
   $wd = 'n/a'; $ws = 'n/a'
@@ -40,7 +40,7 @@ foreach ($r in $s.stages) {
     $ws = '{0:N0}' -f ($win | ForEach-Object { [double]$_.shared_mb } | Measure-Object -Maximum).Maximum
   }
   $sec = ([double]$r.last_ms - [double]$r.first_ms) / 1000.0
-  $o.Add("{0,-15}{1,9:N1}{2,10:N0}{3,8}{4,10}{5,10:N0}{6,10:N0}{7,10:N0}{8,10}{9,10}" -f $r.stage, $sec, [double]$r.worst_dt, $r.over_100ms, $r.compiles, [double]$r.vram_mb_peak, [double]$r.texture_mb_peak, [double]$r.buffer_mb_peak, $wd, $ws)
+  $o.Add(("{0,-15}{1,9:N1}{2,10:N0}{3,8}{4,10}{5,10:N0}{6,10:N0}{7,10:N0}{8,10}{9,10}" -f $r.stage, $sec, [double]$r.worst_dt, $r.over_100ms, $r.compiles, [double]$r.vram_mb_peak, [double]$r.texture_mb_peak, [double]$r.buffer_mb_peak, $wd, $ws))
 }
 $o.Add("")
 $o.Add("compiles = pipeline compilations during the stage (canvas, mesh, surface, draw, specialization); vram/tex/buf = Godot's")

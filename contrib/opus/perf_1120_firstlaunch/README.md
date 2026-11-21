@@ -2,7 +2,7 @@
 
 Evidence asked for by Astra items 3 and 6 (contrib/openai/astra_council_1120/report.md). Numbers land here after the PC run.
 
-**How it is measured** (OPUS1439_MEASURE2.bat, GPU solo, on one pinned commit):
+**How it is measured** (OPUS1439_MEASURE3.bat, GPU solo, on one pinned commit):
 - `godot/bench/perf_1439.gd`, added by main for `--perf-1439 <folder>`, samples every frame: frame time, the five
   pipeline compile counters, Godot's video, texture and buffer memory, objects, labelled by stage (title, map, loadN,
   battleN_open for the first 10 s of play, battleN). It also logs the first drawn title frame and the moment each
