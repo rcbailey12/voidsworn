@@ -49,7 +49,7 @@ func start(game: Node) -> void:
 	RenderingServer.frame_post_draw.connect(_drawn)
 	var seed := int(main.args.get("player-path-seed", 0))
 	quick = seed == 0
-	_event("run", {"mode": "quick" if quick else "route", "seed": seed, "settings": main.settings,
+	_event("run", {"mode": "quick" if quick else "route", "seed": seed, "pid": OS.get_process_id(), "settings": main.settings,
 		"window": DisplayServer.window_get_size(), "viewport": get_viewport().get_visible_rect().size,
 		"adapter": RenderingServer.get_video_adapter_name(), "driver": RenderingServer.get_video_adapter_api_version(),
 		"method": str(ProjectSettings.get_setting("rendering/renderer/rendering_method")),
@@ -206,7 +206,7 @@ func _write_summary(note: String) -> void:
 			compiles += int(r["pc_" + m.to_lower()])
 		r["compiles"] = compiles
 		stages.append(r)
-	var summary := {"note": note, "route_note": route_note, "frames": n_frames, "battles": battle_number,
+	var summary := {"note": note, "pid": OS.get_process_id(), "route_note": route_note, "frames": n_frames, "battles": battle_number,
 		"title_drawn_engine_ms": title_drawn_ms, "playable_engine_ms": playable,
 		"launch_unix_ms": str(main.args.get("launch-ms", "")), "stages": stages, "settings": main.settings,
 		"viewport": get_viewport().get_visible_rect().size, "adapter": RenderingServer.get_video_adapter_name()}

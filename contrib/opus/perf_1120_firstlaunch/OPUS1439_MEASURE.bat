@@ -9,13 +9,14 @@ rem      through title, map and Battles 1 to 3 on route seed 10. A route that st
 rem   3. battle24: the same commit run from the checkout (test scenarios are not exported): scenario s25, 24 ships that
 rem      play themselves to the end (load, 24 ships, the kills), fresh profile, same settings.
 rem Every game run has Windows' own dedicated and shared GPU memory sampled once a second (gpu_mem_sampler.ps1, counters
-rem only), then summarize.ps1 writes summary.txt. The game opens fullscreen on the main screen for each run.
+rem only; the game's own process id joins them), then summarize.ps1 writes summary.txt. selftest.ps1 checks that join on a
+rem fixture first. The game opens fullscreen on the main screen for each run.
 rem Results: Downloads\voidsworn_test\opus1439\out_<stamp>_<n>\out_new\<run>\summary.txt. Once queued, never edited.
 setlocal EnableExtensions
 set "JOB=opus1439"
 set "LABEL=1439"
 set "TOOLS=godot"
-set "PIN_NEW=a7858a5ca86f4e4a9fad2309ad85364945ea1db3"
+set "PIN_NEW=PIN_PLACEHOLDER"
 set "PIN_OLD="
 
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
@@ -40,6 +41,10 @@ call "%HEAD%" ships
 set "O=%OJ_OUT%\out_%1"
 if not exist "%O%" mkdir "%O%"
 set "PF=%OJ_REPO%\contrib\opus\perf_1120_firstlaunch"
+rem ---- the Windows scripts' acceptance check on a fixture (two processes, one unreadable sample) before any GPU run
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PF%\selftest.ps1" > "%O%\selftest.txt" 2>&1
+findstr /b /c:"SELFTEST OK" "%O%\selftest.txt" > nul
+if errorlevel 1 (call "%JW%" fail "%1 selftest: see selftest.txt" & exit /b 1)
 set "JW_STEP=%1 import" & call "%JW%" run 1800 "%JW_GODOT%" --headless --path "%OJ_REPO%\godot" --import > "%O%\import.txt" 2>&1
 if defined JW_STOP exit /b 0
 rem ---- the release export, as g2_export.bat makes it, into this attempt folder (the live build\export is not touched)
