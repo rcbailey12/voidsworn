@@ -46,11 +46,13 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 6. The in-game shots at camera 170 and 60, only when everything above passed.
 7. Collects deliverables into `out\recipe` on a pass or a fail, but only when a recipe stage ran in this run. A job that
    stopped earlier (a failed mirror fetch, checkout or import) copies nothing and writes `collect SKIPPED: no recipe stage
-   ran`: everything in `recipe\<SHIP>` is then an earlier run's (issue 1516: 1415E collected the 1415D GP1 build after its
-   fetch failed, and the relay looked like a build of the new pin). Collected files older than the run's start (left by a
-   stage this run skipped) are listed in `out\recipe_from_earlier_runs.txt`. It copies `*.txt`, `*.json`, `*.md` and `*.jpg`,
-   the review images from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the requested
-   `export\<CODE>\` folder. In-game shots still go straight to `out\shots`.
+   ran` (issue 1516: 1415E collected the 1415D GP1 build after its fetch failed, and the relay looked like a build of the
+   new pin). Only files this run wrote (newer than its start) go to `out\recipe`: `*.txt`, `*.json`, `*.md` and `*.jpg`,
+   the review images (png, jpg, jpeg, gif) from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the
+   requested `export\<CODE>\` folder. An older report (from a stage this run skipped or never reached) goes to
+   `out\recipe_from_earlier_runs` for diagnosis; an older picture or export is not copied at all (Artoo on PR 1520: a
+   first-stage failure still copied the old export). Every older file is listed in `out\recipe_from_earlier_runs.txt`.
+   In-game shots still go straight to `out\shots`.
 
 Blender files, loose PNG bake maps, other export codes, the `godot\proj` cache, `sil\`, and `b0.npz` stay under
 `Downloads\voidsworn_test\recipe\<SHIP>` for reruns and diagnosis.
@@ -69,8 +71,8 @@ per ship.
 Static test: `contrib/opus/tools/ship_job_tests.js` (in the standing checks, fast): the FAILED guard after every step that
 can fail and right before the shots, all three checks counted, the installed glb's age checked before the checks, the 3600
 default before the first GPU step, `done` then `all done` on every way out, no delete or move, logs only under `out`,
-the mirror refresh and local clones, the deliverable filters, no collect when no stage ran (with a real cmd run of the
-collect section on Windows), the two backups protected from the janitor list, and every
+the mirror refresh and local clones, the deliverable filters, no collect when no stage ran and only this run's files in `out\recipe` (with a
+real cmd run of the collect section on Windows: failed fetch, stage 1 failed over an old glb, fresh export), the two backups protected from the janitor list, and every
 wrapper in `wrappers/` three lines long. Removing a guard line or the death seam's CHECKFAIL line makes it fail.
 
 `tools\pc\jobs\look_bench.bat` uses the same mirror for its separate tool and game checkouts. It refreshes the mirror

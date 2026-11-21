@@ -164,18 +164,15 @@ assert(look.includes('foreach ($checkout in @($env:TOOL, $env:R))') &&
 pass('mirror refresh and local clone for ship job and both look bench checkouts');
 
 const collect = code.slice(at(/^:collect$/), finish).map(l => l.s);
-const copies = collect.filter(s => /^robocopy /i.test(s));
-assert.equal(copies.length, 3, 'collect uses separate report, shot and export copies');
-assert(copies[0].startsWith('robocopy "%RECIPE%" "%O%\\recipe" *.txt *.json *.md *.jpg /S ') &&
-  copies[0].includes('/XD sil "%RECIPE%\\godot\\proj" "%RECIPE%\\export"'), 'collect only the approved report types outside excluded folders');
-assert(collect.some(s => s.startsWith('for /d %%D in ("%RECIPE%\\clay" "%RECIPE%\\r" "%RECIPE%\\close" "%RECIPE%\\surface" "%RECIPE%\\godot" "%RECIPE%\\shots" "%RECIPE%\\shots_*")')) &&
-  copies[1].includes('"%O%\\recipe\\%%~nxD" *.png *.jpg *.jpeg *.gif /S ') &&
-  copies[1].includes('/XD sil "%RECIPE%\\godot\\proj"'), 'copy images from shot folders, excluding the Godot project cache');
-assert(copies[2].startsWith('robocopy "%RECIPE%\\export\\%CODE%" "%O%\\recipe\\export\\%CODE%" /E ') &&
-  copies[2].includes('/XD sil "%RECIPE%\\export\\%CODE%\\godot\\proj" /XF *.blend b0.npz'),
-  'copy only the requested export folder and omit build scratch even there');
-assert(copies.every(s => s.includes('/XJ')) && !collect.some(s => /^xcopy /i.test(s)), 'collect avoids junctions and never copies the whole recipe');
-assert(copies.every(s => /^if errorlevel 8 if not defined FAILED set "FAILED=collect/.test(collect[collect.indexOf(s) + 1])),
+const collectScript = text.slice(text.indexOf(':collect'), text.indexOf(':collect_skipped'));
+assert(!collect.some(s => /^(robocopy|xcopy) /i.test(s)), 'collect copies through the one filtered PowerShell step, never a whole-folder copy');
+for (const want of ["$exp = 'export\\' + $env:CODE.ToLower() + '\\'", "$low.StartsWith('godot\\proj\\')",
+  "-not $low.StartsWith($exp + 'godot\\proj\\') -and $ext -ne '.blend' -and $e.File.Name -ne 'b0.npz'",
+  "@('.txt', '.json', '.md') -contains $ext", "$pics = @('clay', 'r', 'close', 'surface', 'godot', 'shots')", "($top -like 'shots_*')",
+  "[IO.FileAttributes]::ReparsePoint) -or ($i.Name -eq 'sil')"]) {
+  assert(collectScript.includes(want), 'the collect filter keeps: ' + want);
+}
+assert(collect.some(s => s === 'if errorlevel 1 if not defined FAILED set "FAILED=collect (see log_collect.txt)"'),
   'a failed copy sets FAILED without hiding an earlier build failure');
 assert(collect.some(s => /if not exist "%O%\\recipe\\export\\%CODE%\\%CODE%.glb" if not defined FAILED/.test(s)), 'the stage 7 export guard still checks for the collected GLB');
 pass('collect only reports, shots and the requested export');
@@ -204,20 +201,31 @@ pass('collect only reports, shots and the requested export');
   assert(fetchFail && guard.test(main[main.indexOf(fetchFail) + 1].s), 'a failed fetch says "mirror fetch" and goes straight to collect');
   assert(text.includes("if ($try -ge 3) { throw ('mirror fetch failed ' + $try + ' times') }"), 'the mirror fetch tries three times, then fails');
   assert(/\$wait = 30 \* \$try \* \$try;[^\r\n]*Start-Sleep -Seconds \$wait/.test(text), 'with backoff between tries (30 s, then 120 s)');
-  assert(col.some(s => /recipe_from_earlier_runs\.txt/.test(s) && /LastWriteTimeUtc\.Ticks -lt \[long\]\$env:START_TICKS/.test(s)),
-    'collected files older than this run are listed');
+  // Artoo on PR 1520 (574445c7): a first-stage failure still copied an older export into out\recipe\export. Only files this
+  // run wrote go to out\recipe; older reports go to out\recipe_from_earlier_runs; older pictures and exports are not copied.
+  assert(collectScript.includes("if ($e.File.LastWriteTimeUtc.Ticks -ge $t) { $dest = Join-Path (Join-Path $env:O 'recipe') $e.Rel"),
+    'only files written after the run started go to out\\recipe');
+  assert(collectScript.includes("if ($kind -eq 'report') { $dest = Join-Path (Join-Path $env:O 'recipe_from_earlier_runs') $e.Rel"),
+    'an older report goes to out\\recipe_from_earlier_runs, and nothing else older is copied');
+  assert(collectScript.includes("[IO.File]::WriteAllLines((Join-Path $env:O 'recipe_from_earlier_runs.txt'), [string[]]$old)"), 'every older file is listed');
+  assert(/\$t = \[long\]\$env:START_TICKS/.test(collectScript) && code.findIndex(l => /START_TICKS=%%T/.test(l.s)) < code.findIndex(l => l.s === ':run_tools'),
+    'the cut is the run start, taken before any step');
 }
 if (process.platform === 'win32') {
   // the real collect section under cmd: stale recipe files, a failed fetch, then a run whose stages ran
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'shipjob1516-'));
   try {
     const recipe = path.join(tmp, 'recipe', 'ithar_GP1');
-    fs.mkdirSync(path.join(recipe, 'export', 'G1'), { recursive: true });
-    fs.writeFileSync(path.join(recipe, 'build_report.txt'), 'the 1415D build\n');
-    fs.writeFileSync(path.join(recipe, 'export', 'G1', 'G1.glb'), 'old glb');
-    const old = new Date(Date.now() - 3600e3);
-    for (const f of ['build_report.txt', 'export/G1/G1.glb']) fs.utimesSync(path.join(recipe, f), old, old);
-    const ticks = (BigInt(Date.now()) * 10000n + 621355968000000000n).toString();
+    const put = (f, body, age) => {
+      const p = path.join(recipe, f); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, body);
+      if (age) { const t = new Date(Date.now() - age); fs.utimesSync(p, t, t); }
+    };
+    // the 1415D build left a report, a review picture and an export; this run wrote only its stage 1 report
+    put('build_report.txt', 'the 1415D build\n', 3600e3);
+    put('clay/front.png', 'old picture', 3600e3);
+    put('export/G1/G1.glb', 'old glb', 3600e3);
+    const ticks = (BigInt(Date.now() - 60e3) * 10000n + 621355968000000000n).toString();
+    put('concept_in_report.json', '{"run":"this"}\n', 0);
     const section = lines.slice(lines.findIndex(l => l.trim() === ':collect'), lines.findIndex(l => l.trim() === ':ship'));
     const runCase = (name, extra) => {
       const o = path.join(tmp, name);
@@ -233,16 +241,27 @@ if (process.platform === 'win32') {
     assert.equal(failed.status, 1, failed.res);
     assert(!fs.existsSync(path.join(failed.o, 'recipe')), 'a failed fetch copies nothing from the shared recipe folder');
     assert(/collect SKIPPED: no recipe stage ran/.test(failed.res) && /done FAILED: mirror fetch: /.test(failed.res), failed.res);
-    const ran = runCase('stages_ran', ['set "STAGES_RAN=1"']);
-    assert(fs.existsSync(path.join(ran.o, 'recipe', 'build_report.txt')), 'a run whose stages ran still collects');
-    assert(/recipe_from_earlier_runs/.test(ran.res), ran.res);
-    assert(/build_report\.txt/.test(fs.readFileSync(path.join(ran.o, 'recipe_from_earlier_runs.txt'), 'utf8')), 'the earlier file is listed');
-    console.log('PASS 1516 real cmd run: the collect section');
+    const early = runCase('stage1_failed', ['set "STAGES_RAN=1"', 'set "FAILED=1_concept_in"']);
+    assert.equal(early.status, 1, early.res);
+    assert(fs.existsSync(path.join(early.o, 'recipe', 'concept_in_report.json')), "this run's report is collected");
+    for (const f of ['build_report.txt', 'clay/front.png', 'export/G1/G1.glb']) {
+      assert(!fs.existsSync(path.join(early.o, 'recipe', f)), `the earlier run's ${f} stays out of out\\recipe\n${early.res}`);
+    }
+    assert(fs.existsSync(path.join(early.o, 'recipe_from_earlier_runs', 'build_report.txt')), 'the older report is kept apart for diagnosis');
+    assert(!fs.existsSync(path.join(early.o, 'recipe_from_earlier_runs', 'export')), 'the older export is not copied anywhere');
+    const list = fs.readFileSync(path.join(early.o, 'recipe_from_earlier_runs.txt'), 'utf8');
+    assert(/export export\\G1\\G1\.glb \(not copied\)/.test(list) && /picture clay\\front\.png \(not copied\)/.test(list), list);
+    assert(/done FAILED: 1_concept_in /.test(early.res), early.res);
+    put('export/G1/G1.glb', 'fresh glb', 0);
+    const passed1516 = runCase('stages_passed', ['set "STAGES_RAN=1"']);
+    assert.equal(passed1516.status, 0, passed1516.res);
+    assert(fs.existsSync(path.join(passed1516.o, 'recipe', 'export', 'G1', 'G1.glb')), "this run's export is collected");
+    console.log('PASS 1516 real cmd run: fetch failed, stage 1 failed over an old glb, and a fresh export');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
   }
 }
-pass('1516: a failed mirror fetch collects nothing from the shared recipe folder and the result names the fetch');
+pass('1516: a failed fetch collects nothing; otherwise only files this run wrote reach out\\recipe');
 
 assert(main.some(l => /^ren "%O%" "out_before_%STAMP%" \|\| exit \/b 1$/.test(l.s)), 'stop if the earlier out folder could not be renamed');
 const janitor = main.findIndex(l => /out_before_for_janitor\.txt/.test(l.s));
