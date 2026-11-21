@@ -297,7 +297,7 @@ def build(K):
     for fid, x, th, lean in MOUTHS:
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13, door=6, door_open=float(__import__('os').environ.get('C14_DOOR_OPEN', '0')))
+        part = HP.launch_mouth(R_MOUTH, 2.2, neck=NECK, lip=1.5, flare=0.75, seed=int(fid[1]) * 13, door=6)   # issue 1543: closed between launches, plain flesh (Ryan Nov 21)
         K.organ(fid, part, pos, ax, fwd=(1, 0, 0), inv='launch_mouths', kind='hangar',
                 what='launch opening, %.1f across, on a neck of flesh; empty, a dim glow deep inside' % (2 * R_MOUTH),
                 note='a spore squadron is born deep in the chamber below and leaves through the mouth', aperture=(2.5, 0.0))
@@ -426,6 +426,8 @@ def build(K):
         vs = [ob.matrix_world @ v.co for v in ob.data.vertices]
         floor = min(vs, key=lambda v: (v - (Vector(pos) - ax * 2.2)).length)
         K.point('bay', 'hp_bay_%d' % i, tuple(floor), side='port' if pos[1] > 0.1 else 'stbd' if pos[1] < -0.1 else 'top', note='launch opening %s floor' % fid, dir=tuple(ax))
+        for ob in [o for o in _bpy.data.objects if o.get('door_lobe') and o.get('door') == fid]:
+            ob['door_bay'] = i      # issue 1543: this opening's door opens when a squadron leaves from hp_bay_<i>
     for i, side in enumerate((1, -1)):
         pos, nrm = K.hpt(0.4, side_th(-0.45, side), out=0.02)
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')

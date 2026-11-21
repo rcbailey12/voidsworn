@@ -661,7 +661,12 @@ class Kit:
         part.transform(M)
         groups = {}
         names = []
+        doors = []
         for c in part.comps:
+            if c['role'] == 'door':
+                doors.append(c)
+                names.append(c['name'])
+                continue
             key = (c['role'], c['mat'])
             V, F = groups.setdefault(key, ([], []))
             o = len(V); V.extend(c['verts']); F.extend([tuple(x + o for x in f) for f in c['faces']])
@@ -688,6 +693,19 @@ class Kit:
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
                         ob['gun_fixed'] = 1
+        R3 = M.to_3x3()
+        for c in doors:
+            # issue 1543: a door lobe is its own object (it turns on its hinge in the game), a body part of its organ, with its
+            # hinge point, turning axis (a negative turn opens it), the door's centre and the way out, all in world space;
+            # export7.py hangs it on a door_<n>_lobe_<k> node (HARDPOINTS.md "Doors")
+            k_ = int(''.join(ch for ch in c['name'] if ch.isdigit()) or 0)
+            ob = self._obj('%s_door_%d' % (fid, k_), c['verts'], c['faces'], c['mat'], grp=fid, role='body', smooth=getattr(HP, 'SMOOTH', False))
+            ob['door_lobe'] = 1; ob['door'] = fid; ob['door_k'] = k_
+            ob['door_hinge'] = list(M @ Vector(c['hinge'])); ob['door_axis'] = list((R3 @ Vector(c['axis'])).normalized())
+            ob['door_centre'] = list(M @ Vector(c['centre'])); ob['door_out'] = list((R3 @ Vector((0, 0, 1))).normalized())
+            # the lobe's own vertices where these points were written: the stages after the sheet move and scale the whole ship
+            # into the export frame, so export7 fits that move from these to the lobe's vertices then and carries the hinge with it
+            ob['door_src'] = [float(x) for v in c['verts'] for x in v]
         for ob in [o for o in self.coll.objects if o.get('grp') == fid and o.type == 'MESH']:
             # R226: the part's kind and whether it is a machine, from the faction kit (parts.py MACHINES); the audit reads them
             ob['part_kind'] = part.kind; ob['machine'] = int(part.kind in getattr(HP, 'MACHINES', ()))

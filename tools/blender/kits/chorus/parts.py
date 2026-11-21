@@ -1570,9 +1570,12 @@ def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0, door=0, door_o
     # Ryan (Nov 21): the ridges down the bore read as "random teeth inside"; the wall stays smooth
     p.add('boreg', 'mount', 'pit', revolve([(-D_ * 0.8, r * 0.76), (-D_ * 0.92, r * 0.6), (-D_ * 0.99, r * 0.42)], 40, axis='Z'))
     if door:
-        # issue 1543: a lobed flesh door just inside the lip (built in the part for looks; the sheet splits the lobes into
-        # their own hinged nodes for the game)
+        # issue 1543: a lobed flesh door just inside the lip, closed. Each lobe is its own 'door' piece carrying its hinge
+        # (point and turning axis, in the part's frame); the build kit writes each as its own object with the hinge in world
+        # space (kit.py emit) and the export hangs it on a hinge node the game turns (export7.py, HARDPOINTS.md "Doors").
+        # door_open is for a still preview only (0 closed, 1 open); the game opens the door, never the build.
         for k, lb in enumerate(door_lobes(r * 0.97, H - r * 0.08, n=int(door), seed=seed, open_=door_open)):
-            p.add('door%d' % k, 'body', 'flesh', (lb['verts'], lb['faces']))
+            p.add('door%d' % k, 'door', 'flesh', (lb['verts'], lb['faces']))
+            p.comps[-1]['hinge'] = lb['hinge']; p.comps[-1]['axis'] = lb['axis']; p.comps[-1]['centre'] = (0.0, 0.0, lb['hinge'][2])
     p.fit = dict(exit=P((0, 0, H + r * 0.1)), axis=D((0, 0, 1)), radius=r, floor=P((0, 0, -D_)))
     return p
