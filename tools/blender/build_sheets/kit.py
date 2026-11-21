@@ -542,7 +542,10 @@ class Kit:
             inside = bool(ob.get('inside'))
             if inside and not depth:
                 continue
-            lo = -(depth + 0.1) if inside else -reach
+            lo = -(depth + 1.0) if inside else -reach
+            # rooms are cleared wider than the cut: a room corner beside the hole would see out through it and read as
+            # outside its plating in the death seam check (C14 run I: 18 such triangles)
+            rr = r * 1.6 if inside else r
             mw = ob.matrix_world
             bm = bmesh.new(); bm.from_mesh(ob.data)
             kill = []
@@ -551,12 +554,13 @@ class Kit:
                 for v in f.verts:
                     d = mw @ v.co - p0
                     along = d.dot(ax)
-                    if lo < along < reach and (d - ax * along).length < r:
+                    if lo < along < reach and (d - ax * along).length < rr:
                         kill.append(f)
                         break
             if kill:
                 bmesh.ops.delete(bm, geom=kill, context='FACES')
                 bm.to_mesh(ob.data); ob.data.update(); n += len(kill)
+                ob['open_cut'] = 1   # export7: the solidify rim round the cut takes the outside material
             bm.free()
         return n
 
