@@ -525,4 +525,8 @@ the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo ma
 munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten"). A kit body
 drives like a ship: a ship-size engine core at its nozzle and the ships' own engine trail (SH.TRAIL, faction engine colour
 and trail style, a short wake), never a flame card, a halo or smoke puffs (Ryan, Nov 20: "the trails/engine effects look
-super basic and weird"; fx_weapons.gd `_kit_trail_*`).
+super basic and weird"; fx_weapons.gd `_kit_trail_*`). A munition shot down by point defence never burns and never
+flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_pd_*.jpg, after "it's hard to distinguish
+whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
+and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
+an orange fireball belong only to a round that reaches the hull.
