@@ -237,10 +237,12 @@ func _kill() -> Array:
 			by = u["id"]
 	if tid == "" or by == "":
 		return [{"cls": cls, "unavailable": kind}]
-	battle.cine = "key"
+	# MOTION_CAM_R and MOTION_CINE (run R, Nov 21): a close look at a small death. Run Q at the battle camera (170) drew
+	# the frigate's death a few pixels wide, and the player's kill cut-in turned the camera off the dying ship.
+	battle.cine = OS.get_environment("MOTION_CINE") if OS.get_environment("MOTION_CINE") != "" else "key"
 	var sv = battle.views[tid]
 	battle.cam.t = sv.position
-	battle.cam.r = 170.0
+	battle.cam.r = float(OS.get_environment("MOTION_CAM_R")) if OS.get_environment("MOTION_CAM_R") != "" else 170.0
 	battle.cam.snap()
 	await create_timer(0.5).timeout
 	var folder := out.path_join(cls)
