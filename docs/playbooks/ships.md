@@ -556,3 +556,9 @@ flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_p
 whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
 and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
 an orange fireball belong only to a round that reaches the hull.
+A munition leaves its own ship (Ryan, Nov 21: the torpedo "appears out of thin air" and "shoots straight up"; picks from
+board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its mount, slides clear along the tube with
+its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
+nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
+(fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
