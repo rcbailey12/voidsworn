@@ -1,0 +1,239 @@
+[
+    {
+        "case":  "x_load_4s",
+        "how":  "x",
+        "wait_s":  4,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  4961,
+        "sent":  "x",
+        "hidden_ms":  186,
+        "close_to_exit_ms":  640,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  5114,
+        "title_retired":  [
+
+                          ],
+        "stage_scenes_2frames_ms":  55,
+        "stage_statics_drain_ms":  141,
+        "game_ms_engine_exit_from":  5310,
+        "request_to_close_seen_ms":  153,
+        "engine_exit_ms":  291,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    },
+    {
+        "case":  "altf4_load_5s",
+        "how":  "altf4",
+        "wait_s":  5,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  5724,
+        "sent":  "altf4",
+        "hidden_ms":  2815,
+        "close_to_exit_ms":  6669,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  8481,
+        "title_retired":  [
+                              "[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)"
+                          ],
+        "stage_scenes_2frames_ms":  124,
+        "stage_statics_drain_ms":  267,
+        "game_ms_engine_exit_from":  8872,
+        "request_to_close_seen_ms":  2757,
+        "engine_exit_ms":  3521,
+        "fx_retired":  [
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)",
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)"
+                       ],
+        "cut_pending_at_close":  true,
+        "fx_drained":  [
+                           "[fx] drained 1 retired jobs before quit in 230 ms",
+                           "[fx] drained 1 retired jobs before quit in 230 ms"
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    },
+    {
+        "case":  "x_battle_30s",
+        "how":  "x",
+        "wait_s":  30,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  30542,
+        "sent":  "x",
+        "hidden_ms":  47,
+        "close_to_exit_ms":  1171,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  30522,
+        "title_retired":  [
+
+                          ],
+        "stage_scenes_2frames_ms":  109,
+        "stage_statics_drain_ms":  39,
+        "game_ms_engine_exit_from":  30670,
+        "request_to_close_seen_ms":  -20,
+        "engine_exit_ms":  1043,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    },
+    {
+        "case":  "altf4_battle_30s",
+        "how":  "altf4",
+        "wait_s":  30,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  30730,
+        "sent":  "altf4",
+        "hidden_ms":  47,
+        "close_to_exit_ms":  1260,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  30713,
+        "title_retired":  [
+
+                          ],
+        "stage_scenes_2frames_ms":  107,
+        "stage_statics_drain_ms":  40,
+        "game_ms_engine_exit_from":  30860,
+        "request_to_close_seen_ms":  -17,
+        "engine_exit_ms":  1130,
+        "fx_retired":  [
+
+                       ],
+        "cut_pending_at_close":  false,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    },
+    {
+        "case":  "title_load_5s",
+        "how":  "x",
+        "wait_s":  10,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  10553,
+        "sent":  "x",
+        "hidden_ms":  3645,
+        "close_to_exit_ms":  6021,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  14111,
+        "title_leave_frame_ms":  534,
+        "title_first_frame_ms":  551.2,
+        "title_retired":  [
+                              "[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)"
+                          ],
+        "stage_scenes_2frames_ms":  675,
+        "stage_statics_drain_ms":  38,
+        "game_ms_engine_exit_from":  14824,
+        "request_to_close_seen_ms":  3558,
+        "engine_exit_ms":  1750,
+        "fx_retired":  [
+                           "[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)",
+                           "[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)"
+                       ],
+        "cut_pending_at_close":  true,
+        "fx_drained":  [
+
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    },
+    {
+        "case":  "title_battle_30s",
+        "how":  "x",
+        "wait_s":  36,
+        "window":  true,
+        "game_exe":  "Godot_v4.7.2-stable_win64",
+        "wrapper_exe":  "Godot_v4.7.2-stable_win64_console",
+        "window_class":  "Engine",
+        "request_ms_since_start":  36551,
+        "sent":  "x",
+        "hidden_ms":  4380,
+        "close_to_exit_ms":  8257,
+        "exit_code":  0,
+        "wrapper_exit_code":  0,
+        "quit_window":  true,
+        "quit_lines":  1,
+        "game_ms_close_seen":  40855,
+        "title_leave_frame_ms":  114,
+        "title_first_frame_ms":  591,
+        "title_retired":  [
+                              "[fx] left with 1 jobs still running: retired, not waited for (0.1 ms)"
+                          ],
+        "stage_scenes_2frames_ms":  134,
+        "stage_statics_drain_ms":  1287,
+        "game_ms_engine_exit_from":  42276,
+        "request_to_close_seen_ms":  4304,
+        "engine_exit_ms":  2532,
+        "fx_retired":  [
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.1 ms)",
+                           "[fx] left with 1 jobs still running: retired, not waited for (0.1 ms)"
+                       ],
+        "cut_pending_at_close":  true,
+        "fx_drained":  [
+                           "[fx] drained 1 retired jobs before quit in 1257 ms",
+                           "[fx] drained 1 retired jobs before quit in 1257 ms"
+                       ],
+        "crash":  false,
+        "still_in_use":  [
+
+                         ],
+        "result":  "PASS"
+    }
+]

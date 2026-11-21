@@ -1,0 +1,12 @@
+OPUS1435G_WAIT.bat waiting for OPUS1460_DEBAND exit in opus1460_wait.txt Fri 11/20/2026 19:52:58.65 
+HELD 20:47:52 by PC relay (Board, Nov 21 02:47 UTC): waiter stopped while only waiting, disk under 60 GB; Board will requeue after cleanup.
+OPUS1435G_WAIT2.bat waiting for OPUS1460_DEBAND exit in opus1460_wait.txt Fri 11/20/2026 20:52:14.17 
+HELD 00:07:18 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule). Requeue after space is freed.
+OPUS1435G_WAIT3.bat waiting for OPUS1434_LOAD5 exit in opus1434e_wait.txt Sat 11/21/2026  6:14:35.79 
+swapped out while only waiting 06:45:30: WAIT3 replaced by OPUS1435G_WAIT4.bat (waits for OPUS1379_BODY_RUN7 exit; Board Nov 21 12:44 UTC)
+OPUS1435G_WAIT4.bat waiting for OPUS1379_BODY_RUN7 exit in opus1379h_wait.txt Sat 11/21/2026  6:45:30.27 
+OPUS1435_CLOSE5 start  7:37:31.29 
+OPUS1435_CLOSE5 exit 0 at  7:54:35.80 
+run folder out_20261121_073733_24900
+result: done PASS
+all done Sat 11/21/2026  7:54:36.21 

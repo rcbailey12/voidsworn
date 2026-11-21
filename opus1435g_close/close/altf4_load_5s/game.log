@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 30 ms
+[sfx] 71 cues, 67 clip sets, loaded in 321 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.261, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[main] quit (window) at 8481 ms
+[fx] left with 1 jobs still running: retired, not waited for (0.8 ms)
+[fx] drained 1 retired jobs before quit in 230 ms
+[main] quit stages: scenes freed + 2 frames 124 ms, statics and fx drain 267 ms, engine exit from 8872 ms

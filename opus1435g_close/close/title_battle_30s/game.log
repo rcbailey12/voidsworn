@@ -1,0 +1,65 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 30 ms
+[sfx] 71 cues, 67 clip sets, loaded in 319 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+[world] baked 01574ecd31c3d864ddb2d4aa44f7e27bfc1d02575c7bfb36036fdf59a879e3e4 4096x2048 in 11317 ms (worker)
+[world] baked 9aaf9407a87eca54ab36148a169d89e051bd9212d3eae02e87664c5d58bb2486 1024x512 in 11703 ms (worker)
+[world] baked be75d4103bf05a7858f001785266eca515263832236a364369875f438096d2b2 1024x512 in 329 ms (worker)
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[main] leaving the battle for the title at 31437 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x010 C16s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[main] battle to title: leave frame 114.0 ms, first title frame 591.0 ms after the leave
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[fx] late shader: mat SPRITE #define SOFT frame 1734 32298.6 ms
+[fx] late shader: mat STREAK frame 1734 32383.4 ms
+[fx] late shader: mat RING frame 1734 32437.9 ms
+[fx] late shader: mat RIBBON frame 1734 32476.3 ms
+[fx] late shader: mat ECLIPSE_ARC frame 1734 32528.4 ms
+[fx] late shader: mat NULL_SLUG frame 1734 32568.8 ms
+[fx] late shader: mat SHARD frame 1734 32599.1 ms
+[fx] late shader: hit fragments frame 1734 32711.1 ms
+[fx] late shader: mat DISTORT frame 1734 32824.1 ms
+[fx] late shader: death debris body frame 1734 32853.1 ms
+[fx] late shader: mat TEAR frame 1734 32948.8 ms
+[fx] late shader: death strain tear frame 1734 32976.6 ms
+[sfx] 71 cues, 67 clip sets, loaded in 276 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.774, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 1736 37338.4 ms
+[fx] late shader: mat SHIELD frame 1736 37451.8 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[main] quit (window) at 40855 ms
+[fx] left with 1 jobs still running: retired, not waited for (0.1 ms)
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[fx] drained 1 retired jobs before quit in 1257 ms
+[main] quit stages: scenes freed + 2 frames 134 ms, statics and fx drain 1287 ms, engine exit from 42276 ms

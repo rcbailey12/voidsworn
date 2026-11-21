@@ -1,0 +1,33 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[sfx] 71 cues, 67 clip sets, loaded in 305 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.434, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[main] leaving the battle for the title at 8868 ms
+[fx] left with 3 jobs still running: retired, not waited for (0.7 ms)
+[main] battle to title: leave frame 534.0 ms, first title frame 551.2 ms after the leave
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[sfx] 71 cues, 67 clip sets, loaded in 284 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.004, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 26936099ee13cdb17e5d40f2d3eb73a3b8047a02b93a3f448987e9cbe51a8126 4096x2048 in 8797 ms (worker)
+[main] quit (window) at 14111 ms
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[main] quit stages: scenes freed + 2 frames 675 ms, statics and fx drain 38 ms, engine exit from 14824 ms
