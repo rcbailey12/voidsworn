@@ -120,6 +120,10 @@ const work = path.join(tmp, 'work');
 git(['init', '-q', '-b', 'main', work]);
 write(path.join(work, 'godot', 'project.godot'), 'fixture\n');
 write(path.join(work, 'godot', 'assets', 'ships', 'a4_props.gd'), 'extends Node\n');
+// Issue 1379 (Artoo on PR 1529): a tracked munition body. Its maps stay embedded on import (the committed .glb.import), so any
+// image file beside it is somebody's work, even an ignored one whose name starts with the body's.
+write(path.join(work, 'godot', 'fx', 'munition_bodies', 'corsair_rockets.glb'), 'body\n');
+write(path.join(work, 'godot', 'fx', 'munition_bodies', '.gitignore'), '*.jpg\n*.png\n');
 git(['add', '-A'], work);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-q', '-m', 'one'], work);
 const one1 = git(['rev-parse', 'HEAD'], work);
@@ -267,6 +271,13 @@ write(path.join(shipsSrc, 'assets', 'ships', 'S2', 'S2.glb'), 'published ship');
 write(path.join(so, 'assets', 'ships', 'S2', 'S2.glb'), 'a re-export the job wrote over the copy');
 write(path.join(so, 'assets', 'ships', 'S9', 'S9.glb'), 'a new ship the job made');
 write(path.join(so, 'gen', 'orphan.res.import'), 'a sidecar with no proven file');
+// Ignored images beside the munition bodies are work (Artoo on PR 1529): a root image with no body, and a hand-painted map
+// named like the body's. Their own checkout, so the shipout list above keeps its five examples.
+r = run('checkout', attempt, 'mapsout', two);
+assert.equal(r.status, 0, r.out);
+const mo = path.join(attempt, 'mapsout', 'godot', 'fx', 'munition_bodies');
+write(path.join(mo, 'stray_albedo.jpg'), 'an ignored map with no tracked body');
+write(path.join(mo, 'corsair_rockets_corsair_rockets_hull_albedo.jpg'), 'a hand-painted map named like an extracted one');
 // Same size and same time, different bytes: only a hash match proves a copy.
 write(path.join(shipsSrc, 'gen', 'same.res'), 'AAAA'); write(path.join(so, 'gen', 'same.res'), 'BBBB');
 fs.utimesSync(path.join(shipsSrc, 'gen', 'same.res'), 1700000000, 1700000000); fs.utimesSync(path.join(so, 'gen', 'same.res'), 1700000000, 1700000000);
@@ -440,6 +451,12 @@ assert(!fs.existsSync(path.join(attempt, 'shipout')), 'the ship output checkout 
 for (const [f, text] of [['assets/ships/S2/S2.glb', 'a re-export the job wrote over the copy'], ['assets/ships/S9/S9.glb', 'a new ship the job made'],
   ['gen/orphan.res.import', 'a sidecar with no proven file'], ['gen/same.res', 'BBBB']]) {
   assert.equal(fs.readFileSync(path.join(sl, ...f.split('/')), 'utf8'), text, f + ' is saved with the results');
+}
+// mapsout: the ignored munition images are never treated as rebuildable; they are saved with the results first (PR 1529)
+const ml = path.join(attempt, 'out_mapsout', 'checkout_leftovers', 'files', 'godot', 'fx', 'munition_bodies');
+assert(!fs.existsSync(path.join(attempt, 'mapsout')), 'the munition image checkout goes once its images are saved: ' + r.out);
+for (const [f, text] of [['stray_albedo.jpg', 'an ignored map with no tracked body'], ['corsair_rockets_corsair_rockets_hull_albedo.jpg', 'a hand-painted map named like an extracted one']]) {
+  assert.equal(fs.readFileSync(path.join(ml, f), 'utf8'), text, 'munition_bodies/' + f + ' is saved with the results');
 }
 assert(fs.existsSync(path.join(attempt, 'big', 'godot', 'huge.bin')) && /checkout big kept: .*could not be saved .*more than/.test(r.out), 'more than the cap keeps the checkout: ' + r.out);
 // staged and stashed: kept, with the staged bytes and the stash still there

@@ -541,7 +541,7 @@ sat beside fully painted hulls and made the whole scene look cheaper (inventory:
 
 **Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
 faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
-nose, x -1.15 to 1.15) and writes `godot/fx/munitions/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+nose, x -1.15 to 1.15) and writes `godot/fx/munition_bodies/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
 `fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
 `fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
 code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
