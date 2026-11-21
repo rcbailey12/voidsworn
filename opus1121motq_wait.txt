@@ -1,0 +1,6 @@
+OPUS1121Q_WAIT.bat waiting for OPUS1121P_MOTION exit in opus1121motp_wait.txt Sat 11/21/2026 15:42:11.94 
+OPUS1121Q_DEATHS start 16:29:12.05 
+OPUS1121Q_DEATHS exit 0 at 16:47:38.37 
+run folder out_20261121_162913_31750
+result: done PASS
+all done Sat 11/21/2026 16:47:38.92 
