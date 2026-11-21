@@ -1,0 +1,46 @@
+{
+ "code": "voidsworn_S11",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "torp",
+   "arc": "F",
+   "shots": 1,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "bow_launcher",
+     "mount": "launcher",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "turret",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "G1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "G2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  }
+ ],
+ "game_ship": "harrow",
+ "variant": ""
+}
