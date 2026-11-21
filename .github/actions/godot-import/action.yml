@@ -12,6 +12,9 @@ description: Restore the Godot import cache, import what changed, fail on import
 runs:
   using: composite
   steps:
+    # The key is worked out before the restore, so 'godot/**/*.import' there means the 33 tracked import settings files
+    # only: a settings-only edit gets a new key, and this file is in the key so a change to the skip list or the import
+    # command does too (Artoo on PR 1496).
     - name: Import cache from main
       id: cache
       uses: actions/cache/restore@v4
@@ -21,7 +24,7 @@ runs:
           godot/.godot/uid_cache.bin
           godot/.godot/editor/filesystem_cache10
           godot/**/*.import
-        key: godot-import-4.7.2-${{ hashFiles('godot/project.godot', 'godot/**/*.png', 'godot/**/*.jpg', 'godot/**/*.webp', 'godot/**/*.svg', 'godot/**/*.ttf', 'godot/**/*.otf', 'godot/**/*.glb', '!godot/music/**', '!godot/audio/**', '!godot/fx/test/**', '!godot/portraits/nemesis/**', '!godot/portraits/alts/**', '!godot/portraits/sheets/**', '!godot/portraits/painted/**') }}
+        key: godot-import-4.7.2-${{ hashFiles('.github/actions/godot-import/action.yml', 'godot/project.godot', 'godot/**/*.import', 'godot/**/*.png', 'godot/**/*.jpg', 'godot/**/*.webp', 'godot/**/*.svg', 'godot/**/*.ttf', 'godot/**/*.otf', 'godot/**/*.glb', '!godot/music/**', '!godot/audio/**', '!godot/fx/test/**', '!godot/portraits/nemesis/**', '!godot/portraits/alts/**', '!godot/portraits/sheets/**', '!godot/portraits/painted/**') }}
         restore-keys: godot-import-4.7.2-
     - name: Import what changed (headless)
       shell: bash
