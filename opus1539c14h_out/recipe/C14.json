@@ -1,0 +1,125 @@
+{
+ "cell": "C14",
+ "route": "build sheet chorus_C14 + the chorus paint stack (kits/chorus/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 119.8,
+ "geometry_seconds": 22.0,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 11,
+  "part_objects": 181,
+  "glow_objects": 43,
+  "interior_objects": 28,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 11.6,
+  "bake_H_albedo_s": 9.1,
+  "bake_H_orm_s": 7.6,
+  "bake_H_normal_s": 13.7,
+  "zones_H": [
+   "carapace",
+   "flesh",
+   "flesh2",
+   "maw",
+   "pore"
+  ],
+  "bake_P_masks_s": 9.7,
+  "bake_P_albedo_s": 8.8,
+  "bake_P_orm_s": 7.6,
+  "bake_P_normal_s": 11.7,
+  "zones_P": [
+   "chitin",
+   "flesh",
+   "flesh2",
+   "hide",
+   "maw",
+   "pit",
+   "pore",
+   "tissue"
+  ],
+  "glow_materials": [
+   "chorus_light_bile",
+   "chorus_light_bilewet",
+   "chorus_light_membrane",
+   "chorus_light_veilroot"
+  ],
+  "inside_materials": [
+   "chorus_inside_bonefr",
+   "chorus_inside_brood",
+   "chorus_inside_engroom",
+   "chorus_inside_ganglion",
+   "chorus_inside_gland",
+   "chorus_inside_gut",
+   "chorus_inside_organ",
+   "chorus_inside_septum",
+   "chorus_inside_vat"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.5029,
+    "area": 3.22521,
+    "texels_per_unit2": 2615845.7
+   },
+   "parts": {
+    "uv_share": 0.3128,
+    "area": 2.46186,
+    "texels_per_unit2": 2131592.1
+   }
+  },
+  "stack_seconds": 94.4
+ },
+ "density": {
+  "paint_flags": [],
+  "mesh_flags": [
+   "launch: tris_per_unit2 14874.7 is 0.15 of the hull's 97226.1",
+   "launch: edges_per_unit2 8771.9 is 0.53 of the hull's 16530.4"
+  ],
+  "hull": {
+   "area": 3.22521,
+   "triangles": 313575,
+   "tris_per_unit2": 97226.1,
+   "edges_per_unit2": 16530.4,
+   "texels_per_unit2": 2615845.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 45.45,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "chorus_C14",
+  "game_ship": "b_brood",
+  "variant": "",
+  "model_length": 16.47944,
+  "scale": 0.06068166233250059,
+  "length_world": 16.5,
+  "t_lines": [
+   -0.22149,
+   0.11833,
+   0.26093
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 4,
+  "guns": 2,
+  "engines": 4,
+  "bays": 5,
+  "points": 14,
+  "turrets": [
+   "G1_turret"
+  ],
+  "interior_objects": 28,
+  "slots": [
+   "0 bioplasma F",
+   "1 spores T"
+  ]
+ },
+ "triangles": 517973,
+ "objects": 235,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

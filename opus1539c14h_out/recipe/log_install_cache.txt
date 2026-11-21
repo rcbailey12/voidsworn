@@ -1,0 +1,9 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1539c14h\repo\tools\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e42147c9faa4421cb7a50f124f235307\voidsworn-run-2683acb042174f2d8b2b016e3472c590\godot-profile-ab2496d52c834ee1a735427635a94d04
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[assets] A4 ship B22_11
+[assets] check B22_11 loads=true skins=0 heavy_skins=0 hardpoints=27 hull_meshes=2 holes=0 heavies=0 wreck_chunks=0
+[assets] check: 1 A4 ships in the manifest
+[assets] ships refreshed: 1 A4 ships in res://gen/manifest.json
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e42147c9faa4421cb7a50f124f235307\voidsworn-run-2683acb042174f2d8b2b016e3472c590\godot-profile-ab2496d52c834ee1a735427635a94d04

@@ -1,0 +1,7 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1539c14h\repo\tools\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e42147c9faa4421cb7a50f124f235307\voidsworn-run-f5e87905719d41f1a182634fa174f3ac\godot-profile-d0cf7abc29f34bd6970c662373931b3a
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 (G1) on B22_11: arc -180 to 180, trains -123.7 to 122.5 from rest; 116 degrees of its arc are kept clear of the ship
+INSTALL READBACK PASS code=B22_11 nodes=29
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e42147c9faa4421cb7a50f124f235307\voidsworn-run-f5e87905719d41f1a182634fa174f3ac\godot-profile-d0cf7abc29f34bd6970c662373931b3a

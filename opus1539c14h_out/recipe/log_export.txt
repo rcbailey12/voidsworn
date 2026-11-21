@@ -1,0 +1,16 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1539c14h\repo\tools\pc\run_timeout.ps1
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+11:35:06 | INFO: Starting glTF 2.0 export
+11:35:06 | INFO: Extracting primitive: B22_11
+11:35:08 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+11:35:11 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+11:35:14 | INFO: Primitives created: 16
+11:35:14 | INFO: Extracting primitive: turret_0_turn
+11:35:14 | INFO: Primitives created: 2
+11:35:14 | INFO: Finished glTF 2.0 export in 7.543306350708008 s
+
+[export7] B22_11 triangles 519217 hard points {"gun": 4, "engine": 4, "bay": 5, "breach": 7, "core": 1, "rcs": 4, "board": 2} turrets 1 (10180 triangles) files ['B22_11.glb', 'B22_11_base.jpg', 'B22_11_normal.png', 'B22_11_orm.png', 'B22_11_parts_base.jpg', 'B22_11_parts_normal.png', 'B22_11_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\export\B22_11
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\C14.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e42147c9faa4421cb7a50f124f235307\runner-step-1db4b79d47f1402c9589f1c09448ccca
