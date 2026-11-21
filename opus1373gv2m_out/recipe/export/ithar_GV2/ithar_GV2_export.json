@@ -1,0 +1,242 @@
+{
+ "ship": "ithar_GV2",
+ "code": "ithar_GV2",
+ "cell": "GV2",
+ "game_ship": "fighter",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 29332,
+ "turret_triangles": 38,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    0.19992,
+    0.0,
+    0.1415
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 38,
+   "muzzles": [
+    "hp_w0_guns_T_0"
+   ],
+   "kind": "turret",
+   "id": "G1",
+   "socket": "G1",
+   "slot": 0,
+   "weapon": "guns",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 0.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "door_triangles": 0,
+ "doors": [],
+ "surfaces": 5,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_guns_T_0"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "ithar_GV2",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_guns_T_0",
+   "p": [
+    0.21592,
+    0.0,
+    0.1455
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "guns",
+   "radius": 0.001999224516549851,
+   "socket": "G1",
+   "turret": 0
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.31388,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.011995347099299107,
+   "engine": "Ec"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.09996,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "The Starling Shard, the Glasswright fighter wing craft (The Glasswrights)",
+  "faction": "ithar",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "fighter",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 1,
+   "engine": 1,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 1,
+  "files": {
+   "ithar_GV2.glb": {
+    "bytes": 1125624,
+    "sha256": "7d7f4291b02e9bbfb57f0fac913233f568035080bf5939ddb90f1eaa4658c4b8"
+   },
+   "ithar_GV2_base.jpg": {
+    "bytes": 1109953,
+    "sha256": "b60bcaa2d0bbde5a7e7cf1f710ea0adfa879bcdb79a1f5fa1df447c794b873bf"
+   },
+   "ithar_GV2_emission.jpg": {
+    "bytes": 432727,
+    "sha256": "68e89ab70b5b520f28349abb8788afe75e800698aad781f6524b08a3a636f9a8"
+   },
+   "ithar_GV2_normal.png": {
+    "bytes": 4407920,
+    "sha256": "36ba726163105149c1ede5fa3630c60c6e1fe57353ed51eeb6f6bd2e8d3b55dc"
+   },
+   "ithar_GV2_orm.png": {
+    "bytes": 4366249,
+    "sha256": "88016d42bb1edf9756bec2d6b7a6ff3519edb733d51473fbdb1f05054b9cd601"
+   },
+   "ithar_GV2_parts_base.jpg": {
+    "bytes": 212055,
+    "sha256": "620d939eaa4b20f2d15587238a78dd2e31d797bd081c60f5a541c4ba3f886057"
+   },
+   "ithar_GV2_parts_normal.png": {
+    "bytes": 1919433,
+    "sha256": "d91e365669ea5d12106ba6d224d710d59386d61fa2d5b170dc8f9f3dd8c099f4"
+   },
+   "ithar_GV2_parts_orm.png": {
+    "bytes": 1915817,
+    "sha256": "eea318865424c2e46f0321c87bcdca9607d47e0bd4d09db5a651816d58d64c31"
+   }
+  },
+  "pc_path": "godot/assets/ships/ithar_GV2/",
+  "wing_role": "fighter"
+ },
+ "files": {
+  "ithar_GV2.glb": {
+   "bytes": 1125624,
+   "sha256": "7d7f4291b02e9bbfb57f0fac913233f568035080bf5939ddb90f1eaa4658c4b8"
+  },
+  "ithar_GV2_base.jpg": {
+   "bytes": 1109953,
+   "sha256": "b60bcaa2d0bbde5a7e7cf1f710ea0adfa879bcdb79a1f5fa1df447c794b873bf"
+  },
+  "ithar_GV2_emission.jpg": {
+   "bytes": 432727,
+   "sha256": "68e89ab70b5b520f28349abb8788afe75e800698aad781f6524b08a3a636f9a8"
+  },
+  "ithar_GV2_normal.png": {
+   "bytes": 4407920,
+   "sha256": "36ba726163105149c1ede5fa3630c60c6e1fe57353ed51eeb6f6bd2e8d3b55dc"
+  },
+  "ithar_GV2_orm.png": {
+   "bytes": 4366249,
+   "sha256": "88016d42bb1edf9756bec2d6b7a6ff3519edb733d51473fbdb1f05054b9cd601"
+  },
+  "ithar_GV2_parts_base.jpg": {
+   "bytes": 212055,
+   "sha256": "620d939eaa4b20f2d15587238a78dd2e31d797bd081c60f5a541c4ba3f886057"
+  },
+  "ithar_GV2_parts_normal.png": {
+   "bytes": 1919433,
+   "sha256": "d91e365669ea5d12106ba6d224d710d59386d61fa2d5b170dc8f9f3dd8c099f4"
+  },
+  "ithar_GV2_parts_orm.png": {
+   "bytes": 1915817,
+   "sha256": "eea318865424c2e46f0321c87bcdca9607d47e0bd4d09db5a651816d58d64c31"
+  }
+ },
+ "seconds": 12.0,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

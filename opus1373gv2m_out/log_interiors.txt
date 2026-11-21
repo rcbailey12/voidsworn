@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4b6a08a03a76479fbbf21c5408f77df2\voidsworn-run-dfb1556e79634a91940a88d6f9eb2280\godot-profile-e76f0c81e22144478b7b9bc6de0727ca
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUTHORED_INTERIORS skipped: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2m\repo\godot\assets\ships\ithar_GV2\ithar_GV2.glb is a strike craft (cls Squadron): no rooms, its death is a hidden spark (fx_death.gd _wing_death)
+AUTHORED_INTERIORS failures=0 interior_triangles=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4b6a08a03a76479fbbf21c5408f77df2\voidsworn-run-dfb1556e79634a91940a88d6f9eb2280\godot-profile-e76f0c81e22144478b7b9bc6de0727ca

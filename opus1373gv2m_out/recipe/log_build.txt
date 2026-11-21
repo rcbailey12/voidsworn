@@ -1,0 +1,5 @@
+Info: Saved as "GV2.blend"
+[209] {"cell": "GV2", "hull_objects": 18, "parts": 5, "interiors": 3, "seconds": 0.6, "notes": [{"route": "build sheet ithar_GV2", "contract": {"sheet": "ithar_GV2", "game_ship": "fighter", "variant": "", "model_length": 1.60062, "scale": 0.6247576614218284, "length_world": 1.6, "t_lines": [-0.04998], "l_line": [], "l_lines": [], "muzzles": 1, "guns": 1, "engines": 1, "bays": 0, "points": 1, "turrets": ["G1_turret"], "interior_objects": 3, "slots": ["0 guns T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
