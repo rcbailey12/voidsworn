@@ -1,0 +1,8 @@
+relay receipt written: board/pc-out-1497st3 out_20261121_090234_17414
+result kept on the PC only: out_new/selftest_big.bin (the relay listed it in skipped_over_10MB.txt)
+results relayed: 3 of 4 result file(s) are on board/pc-out-1497st3 under out_20261121_090234_17414, 1 over 10 MB listed as skipped
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\out_new\checkout_leftovers
+checkout new removed after the job (23.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\out_old\checkout_leftovers
+checkout old removed after the job (22.0 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old
+disk: checkouts freed 45.9 GB in all, C: 115.0 GB free

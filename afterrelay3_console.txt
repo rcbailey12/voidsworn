@@ -1,0 +1,18 @@
+issue 1497 selftest part 2, Sat 11/21/2026  9:32:16.24, tools_live pre-merge copy C:\Users\rcbai\Downloads\voidsworn_test\board1119\prehead1497c\tools\pc\jobs\opus_job_head.bat
+attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414, relay board/pc-out-1497st3
+result kept on the PC only: out_new/selftest_big.bin (the relay listed it in skipped_over_10MB.txt)
+results relayed: 3 of 4 result file(s) are on board/pc-out-1497st3 under out_20261121_090234_17414, 1 over 10 MB listed as skipped
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\out_new\checkout_leftovers
+checkout new removed after the job (23.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new
+saved 0 changed and 70 new file(s), 0.1 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\out_old\checkout_leftovers
+checkout old removed after the job (22.0 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old
+disk: checkouts freed 45.9 GB in all, C: 115.0 GB free
+import cache removed after the PASS (0.1 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3ship\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.1 GB in all, C: 115.1 GB free
+result kept on the PC only: recipe/export/SELF1497/SELF1497.glb (the relay listed it in skipped_over_10MB.txt)
+results relayed: 1 of 2 result file(s) are on board/pc-out-1497st3 under opus1497st3ship_out, 1 over 10 MB listed as skipped
+saved 0 changed and 1 new file(s), 0.0 MB, to C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3ship\out\checkout_leftovers_repo
+ship clone removed after the publish (17.4 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3ship\repo
+disk: checkouts freed 17.4 GB in all, C: 117.1 GB free
+selftest part 2 PASS: no checkout left behind after the relay
+all done
