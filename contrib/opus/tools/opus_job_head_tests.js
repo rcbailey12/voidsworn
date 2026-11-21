@@ -445,7 +445,7 @@ git(['add', 'local.txt'], sb.repo);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'local'], sb.repo);
 write(path.join(exportDir(sb.j), 'S5.glb'), 'x');
 r = run('droprepo', sb.j, git(['rev-parse', 'HEAD'], sb.repo), 'S5', relay([[path.join(sb.j, 'out'), 'opus1497b_out']]), 'opus1497b_out');
-assert(fs.existsSync(sb.repo) && /ship clone kept: commit [0-9a-f]{40} is not in the shared mirror/.test(r.out), 'an unpushed commit keeps the clone: ' + r.out);
+assert(fs.existsSync(sb.repo) && /ship clone kept: commit [0-9a-f]{40} is on no branch or tag of the shared mirror/.test(r.out), 'an unpushed commit keeps the clone: ' + r.out);
 const sm = shipJob('opus1497c', one1);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'merge', '-q', '--no-ff', '--no-edit', two], sm.repo);
 write(path.join(exportDir(sm.j), 'S5.glb'), 'x');
@@ -459,7 +459,30 @@ git(['add', 'godot/project.godot'], se.repo);
 git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'merge with edits'], se.repo);
 write(path.join(exportDir(se.j), 'S5.glb'), 'y');
 r = run('droprepo', se.j, git(['rev-parse', 'HEAD'], se.repo), 'S5', relay([[path.join(se.j, 'out'), 'opus1497d_out']]), 'opus1497d_out');
-assert(fs.existsSync(se.repo) && /ship clone kept: merge [0-9a-f]{40} is not in the shared mirror and git does not rebuild its exact tree/.test(r.out), 'a merge with its own edits keeps the clone: ' + r.out);
+assert(fs.existsSync(se.repo) && /ship clone kept: merge [0-9a-f]{40} is on no branch or tag of the shared mirror and git does not rebuild its exact tree/.test(r.out), 'a merge with its own edits keeps the clone: ' + r.out);
+// a commit the mirror holds as an object but on no ref (its branch was deleted) keeps the clone (Artoo on PR 1498)
+const fixedEnv = { ...process.env, GIT_AUTHOR_NAME: 'f', GIT_AUTHOR_EMAIL: 'f@example.invalid', GIT_COMMITTER_NAME: 'f',
+  GIT_COMMITTER_EMAIL: 'f@example.invalid', GIT_AUTHOR_DATE: '1700000000 +0000', GIT_COMMITTER_DATE: '1700000000 +0000' };
+const mirrorDir = path.join(vt, 'repo-mirror.git');
+const orphanTree = git(['rev-parse', `${two}^{tree}`]);
+const mk = cwdArgs => { const rr = spawnSync('git', [...cwdArgs, 'commit-tree', orphanTree, '-p', two, '-m', 'orphan'], { env: fixedEnv, encoding: 'utf8' }); assert.equal(rr.status, 0, rr.stderr); return rr.stdout.trim(); };
+const orphan = mk(['--git-dir', mirrorDir]);
+const so2 = shipJob('opus1497f');
+assert.equal(mk(['-C', so2.repo]), orphan, 'the same commit exists in the clone');
+git(['reset', '-q', '--hard', orphan], so2.repo);
+git(['branch', '-f', 'main', orphan], so2.repo);
+r = run('droprepo', so2.j, orphan, 'S5', relay([[path.join(sa.j, 'out'), 'opus1497f_out']]), 'opus1497f_out');
+assert(fs.existsSync(so2.repo) && /ship clone kept: commit [0-9a-f]{40} is on no branch or tag of the shared mirror/.test(r.out), 'an unreferenced mirror object is not a backup: ' + r.out);
+// a local-only tag keeps the clone even when HEAD and the branches are on the mirror
+const st = shipJob('opus1497g');
+write(path.join(st.repo, 'tagged.txt'), 'tagged work');
+git(['add', 'tagged.txt'], st.repo);
+git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'tagged'], st.repo);
+git(['tag', 'keepme'], st.repo);
+git(['reset', '-q', '--hard', two], st.repo);
+r = run('droprepo', st.j, two, 'S5', relay([[path.join(sa.j, 'out'), 'opus1497g_out']]), 'opus1497g_out');
+assert(fs.existsSync(st.repo) && /ship clone kept: commit [0-9a-f]{40} is on no branch or tag of the shared mirror/.test(r.out), 'a local-only tag keeps the clone: ' + r.out);
+assert.equal(git(['rev-parse', 'keepme'], st.repo).length, 40, 'the tag survives');
 // a link above the import cache: dropcache refuses, and the folder the link points to survives
 const sl2 = shipJob('opus1497e');
 const elsewhereGodot = path.join(tmp, 'elsewhere_godot');

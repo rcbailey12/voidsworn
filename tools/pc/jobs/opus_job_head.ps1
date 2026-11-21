@@ -424,26 +424,36 @@ function Test-ShipClone($jobDir) {
   return $repo
 }
 function Test-InMirror($sha) {
+  # The commit is on a branch or tag the shared mirror keeps, not merely an object in it: an object no ref reaches is
+  # pruned in time (Artoo on PR 1498).
   $ErrorActionPreference = 'Continue'
-  & $gitExe --git-dir $mirror cat-file -e "$sha^{commit}" 2>$null
-  return $LASTEXITCODE -eq 0
+  $refs = @(& $gitExe --git-dir $mirror for-each-ref --contains $sha '--format=%(refname)' --count=1 2>$null)
+  return ($LASTEXITCODE -eq 0 -and $refs.Count -gt 0 -and "$($refs[0])".Trim())
 }
 function Assert-Rebuildable($repo) {
   # Every local branch and HEAD is a commit the shared mirror holds, or a two-parent merge (PAINT_BASE) of mirror commits
   # that git merges again to exactly the same tree (Artoo on PR 1498: a merge with its own conflict edits is work).
-  $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
-  $tips += @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/heads | Where-Object { $_ })
+  # Every ref the checkout has (branches, tags, notes, any other; HEAD too) is checked, peeled to its commit. Only
+  # refs/remotes/ is left out: those are copies of the mirror's own refs, never local work.
   $stash = @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/stash | Where-Object { $_ })
   if ($stash.Count) { throw 'it has a stash' }
+  $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
+  foreach ($ref in @(Run-Git -C $repo for-each-ref '--format=%(refname)' | Where-Object { $_ -and -not "$_".StartsWith('refs/remotes/') })) {
+    $peeled = $null
+    try { $peeled = (Run-Git -C $repo rev-parse --verify -q "$ref^{commit}") | Select-Object -Last 1 } catch { $peeled = $null }
+    if (-not $peeled) { throw "ref $ref does not name a commit" }
+    $tips += $peeled
+  }
   foreach ($t in ($tips | Sort-Object -Unique)) {
     if (Test-InMirror $t) { continue }
+    # not on a mirror ref: only a two-parent merge git rebuilds exactly (below) may go
     $parents = @(((Run-Git -C $repo rev-list --parents -n 1 $t) | Select-Object -Last 1) -split ' ' | Select-Object -Skip 1)
-    if ($parents.Count -ne 2) { throw "commit $t is not in the shared mirror" }
-    foreach ($p in $parents) { if (-not (Test-InMirror $p)) { throw "commit $p (a parent of $t) is not in the shared mirror" } }
+    if ($parents.Count -ne 2) { throw "commit $t is on no branch or tag of the shared mirror" }
+    foreach ($p in $parents) { if (-not (Test-InMirror $p)) { throw "commit $p (a parent of $t) is on no branch or tag of the shared mirror" } }
     $tree = (Run-Git -C $repo rev-parse "$t^{tree}") | Select-Object -Last 1
     $again = $null
     try { $again = (Run-Git -C $repo merge-tree --write-tree $parents[0] $parents[1]) | Select-Object -First 1 } catch { $again = $null }
-    if ("$again".Trim() -ne $tree) { throw "merge $t is not in the shared mirror and git does not rebuild its exact tree from its parents" }
+    if ("$again".Trim() -ne $tree) { throw "merge $t is on no branch or tag of the shared mirror and git does not rebuild its exact tree from its parents" }
   }
 }
 function Get-TreeBytes($path) {
