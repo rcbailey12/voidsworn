@@ -59,6 +59,7 @@ headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent r
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
+headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
