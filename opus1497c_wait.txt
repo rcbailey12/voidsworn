@@ -1,0 +1,6 @@
+OPUS1497ST3_RUN.bat waiting for OPUS1497_SELFTEST2 exit in opus1497_wait.txt Sat 11/21/2026  8:54:32.99 
+OPUS1497_SELFTEST3 start  9:02:33.31 
+OPUS1497_SELFTEST3 exit 0 at  9:22:43.59 
+run folder out_20261121_090234_17414
+result: done PASS
+all done Sat 11/21/2026  9:22:44.02 

@@ -1,0 +1,39 @@
+[Sat 11/21/2026  9:02:34.36] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T15:02:36Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sat 11/21/2026  9:02:36.97] ready: GPU label 1497
+head C:\Users\rcbai\Downloads\voidsworn_test\board1119\prehead1497c\tools\pc\jobs\opus_job_head.bat
+head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1 (tools_live version 9204dbb0c395)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 3f5041c56ad03a45ecb76d16919c8495e2fb868e C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new
+ships match their cache: 45 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new_ships_identity.txt
+ships copy recorded: 941 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sat 11/21/2026  9:03:26.10] step new import start
+[Sat 11/21/2026  9:20:52.45] step new import ok
+new: build_info.json written inside the checkout, as the player path jobs do
+new: out_new\selftest_big.bin written, 11 MB: the relay leaves it out
+checkout old 624796c5ace0128da645956eeed571e20d954e61 C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old
+ships match their cache: 45 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old_ships_identity.txt
+ships copy recorded: 941 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414\old are the same fleet as the first checkout
+old: build_info.json written inside the checkout, as the player path jobs do
+checkout repo 3f5041c56ad03a45ecb76d16919c8495e2fb868e C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3ship\repo
+ship stand-in ready in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3ship: relay its out folder with this job's out_new and out_old
+survey of the PC's checkouts written to out_new\survey.txt (read only)
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026  9:22:43.02
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414 (results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3\out_20261121_090234_17414 (the Board writes it when it relays))
+disk: checkouts freed 0.0 GB in all, C: 104.5 GB free
