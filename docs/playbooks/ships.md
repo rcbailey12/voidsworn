@@ -223,8 +223,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    its faction's floors (docs/ship_pipeline/detail_floors.md), and a FAIL fails the stage. A pick or publish picture of a
    build is made only with `tools/recipe/offer_sheet.py JOB_OUT OUT.jpg`, which refuses a job whose
    `out/recipe/log_detail.txt` has no PASS, takes as proof only the job's own pictures stamped with its commit and the
-   sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`), and
-   prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
+   sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`; a shot
+   from a dirty tree only when every dirty file is the install ship_job.bat recorded for that job: its own ship files, its
+   manifest row, the watchdog hand-off, .import and .uid, issue 1539),
+   and prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
    same job. A ship under its floor passes only with a dated opt-out holding Ryan's own words in its recipe json
    (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
    while the check only reported their flat skins (it failed Chorus ships alone), and he caught it himself: "Just make sure
@@ -542,7 +544,7 @@ sat beside fully painted hulls and made the whole scene look cheaper (inventory:
 
 **Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
 faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
-nose, x -1.15 to 1.15) and writes `godot/fx/munitions/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+nose, x -1.15 to 1.15) and writes `godot/fx/munition_bodies/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
 `fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
 `fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
 code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
@@ -557,3 +559,9 @@ flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_p
 whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
 and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
 an orange fireball belong only to a round that reaches the hull.
+A munition leaves its own ship (Ryan, Nov 21: the torpedo "appears out of thin air" and "shoots straight up"; picks from
+board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its mount, slides clear along the tube with
+its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
+nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
+(fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).

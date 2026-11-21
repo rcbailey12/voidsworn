@@ -5,7 +5,7 @@
 # Who fires what (data.js): Sunward torp (harrow), Hullbreaker torp and htorp (their rockets trait: four small rockets a volley).
 # The Glasswright star torpedo is a glowing effect and stays one (ships.md section 9). No other faction fires torpedoes.
 # Run: V/bin/python tools/blender/build_sheets/munitions/munitions.py [out dir] [export|flat|review]   (bpy 4.5 wheel, cloud or PC)
-# With no arguments it writes the picked bodies to godot/fx/munitions/<faction>_<look>.glb, which the game loads.
+# With no arguments it writes the picked bodies to godot/fx/munition_bodies/<faction>_<look>.glb, which the game loads.
 import importlib.util
 import math
 import os
