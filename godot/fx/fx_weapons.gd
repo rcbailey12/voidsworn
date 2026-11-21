@@ -804,6 +804,8 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": from, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": pk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"]), faction), "dead_at": INF}
+		if (p["mesh"] as Node3D).has_meta("kit"):
+			_kit_trail_start(fx, p, fac)
 		if intercept: p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
@@ -995,12 +997,24 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 	var mat: ShaderMaterial = fx.mat(DRIVE, 1)
 	mat.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
 	mat.set_shader_parameter("extent", 2.5 if lk == "star" else 1.8)
+	if kit != null:
+		# Ryan, Nov 20 ("the trails/engine effects look super basic and weird"): a kit body drives like a ship. Its own
+		# nozzle glows (the baked engine map); the core is the ship's size for that nozzle (fx_ship: r x 2.8), not a halo
+		# twice the body's width, and the trail is the ships' engine trail (_kit_trail_*), not a flame card and puffs.
+		drive.position.x = -1.28
+		mat.set_shader_parameter("extent", KIT_CORE)
+		node.set_meta("kit", true)
 	mat.set_shader_parameter("seed", fx.rng.randf() * TAU)
 	drive.material_override = mat
 	node.set_meta("motor", mat)
 	drive.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	drive.extra_cull_margin = 3.0
 	node.add_child(drive)
+	if kit != null:
+		node.scale = Vector3.ONE * k * fx.unit * (0.55 if lk == "rockets" else 1.0)
+		node.visible = false
+		fx.add_child(node)
+		return node
 	var plume := MeshInstance3D.new()
 	plume.name = "exhaust"
 	plume.mesh = quad
@@ -1057,6 +1071,10 @@ static func update(fx, dt: float) -> void:
 				_burst(fx, pp, Vector3.UP, now, 4.0 * float(p["k"]), "flash", 0.24, p["col"], 3.2, 24.0)
 				_impact_sparks(fx, pp, ((p["c"] as Vector3)-(p["a"] as Vector3)).normalized(), now, p["k"], Color(0.9,0.62,0.32), 6)
 			if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
+			if p.has("trail"):
+				var fading: Array = fx.dstate.get("ptrails", [])
+				fading.append(p["trail"])
+				fx.dstate["ptrails"] = fading
 			continue
 		keep.append(p)
 		var u := clampf((now-t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
@@ -1071,11 +1089,16 @@ static func update(fx, dt: float) -> void:
 			var scale: Vector3 = node.scale
 			node.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(scale), pos)
 			node.visible = true
-			(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
+			if node.has_meta("exhaust"):
+				(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
 			var fade := smoothstep(0.0, 0.06, now - t0) * (1.0 - smoothstep(t1 - 0.08, t1, now))
 			(node.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", fade)
-		_projectile_exhaust(fx, p, d)
+		if p.has("trail"):
+			_kit_trail_push(fx, p)
+		else:
+			_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
+	_kit_trails_update(fx)
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
 # and let each short puff cool independently. There is no persistent hot ribbon.
 static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
@@ -1102,6 +1125,102 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
 			for j in 3:
 				var f := float(j) / 3.0
 				fx.dst(tail-d*size*(0.5+f*4.0), tt, 0.16, size*(0.4+f*0.5), size*(1.1+f), 1, 0.12*(1.0-f)*(1.0-f))
+
+
+# Issue 1379 r4: a kit-built torpedo or rocket leaves the ships' own engine trail (fx_ship _update_trails, SH.TRAIL): a
+# world-space strip through the nozzle's recent positions in the faction's engine colour and trail style (Hullbreakers
+# sooty). It is short because the round is small and fast; it keeps fading after the hit until its last sample cools.
+const KIT_CORE := 0.62          # the drive core billboard on a kit body (body units; the nozzle exit radius is about 0.17)
+const KIT_TRAIL_LIFE := 0.38    # seconds a trail sample lives (a short wake: longer read as ruler lines at rocket speed)
+const KIT_TRAIL_PTS := 28
+
+
+static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
+	var mi := MeshInstance3D.new()
+	mi.name = "fx_kit_trail"
+	mi.top_level = true
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+	var style: int = 1 if String(fac.get("engine_extra", "")) == "soot" else int(fac.get("trail", 0))
+	mat.set_shader_parameter("trail_style", float(style))
+	mi.material_override = mat
+	mi.extra_cull_margin = 16384.0
+	mi.visible = false
+	fx.add_child(mi)
+	mi.global_transform = Transform3D.IDENTITY
+	var r: float = 0.17 * float(p["k"]) * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
+	p["trail"] = {"mi": mi, "hist": [], "r": r, "eng": p["eng"], "seed": float(p["seed"]), "mesh_time": fx.now}
+
+
+static func _kit_trail_push(fx, p: Dictionary) -> void:
+	var node = p["mesh"]
+	if not is_instance_valid(node) or not (node as Node3D).visible:
+		return
+	var t: Dictionary = p["trail"]
+	var hist: Array = t["hist"]
+	var at: Vector3 = (node as Node3D).global_transform * Vector3(-1.3, 0, 0)
+	if hist.is_empty() or (hist[0][0] as Vector3).distance_to(at) > 0.02 * fx.unit:
+		hist.push_front([at, fx.now])
+		t["dirty"] = true
+
+
+static func _kit_trails_update(fx) -> void:
+	var live: Array = []
+	for p in fx.dstate.get("proj", []):
+		if p.has("trail"):
+			live.append(p["trail"])
+	var fading: Array = fx.dstate.get("ptrails", [])
+	var keep: Array = []
+	for t in live + fading:
+		var hist: Array = t["hist"]
+		while not hist.is_empty() and (hist.size() > KIT_TRAIL_PTS or fx.now - float(hist.back()[1]) >= KIT_TRAIL_LIFE):
+			hist.pop_back()
+			t["dirty"] = true
+		var mi: MeshInstance3D = t["mi"]
+		if not is_instance_valid(mi):
+			continue
+		if t in fading and hist.size() < 2:
+			mi.queue_free()
+			continue
+		if t in fading:
+			keep.append(t)
+		mi.visible = hist.size() >= 2
+		if not mi.visible:
+			continue
+		if t.get("dirty", false):
+			t["dirty"] = false
+			t["mesh_time"] = fx.now
+			_kit_trail_mesh(fx, t)
+		(mi.material_override as ShaderMaterial).set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / KIT_TRAIL_LIFE)
+	fx.dstate["ptrails"] = keep
+
+
+static func _kit_trail_mesh(fx, t: Dictionary) -> void:
+	var hist: Array = t["hist"]
+	var n := hist.size()
+	var eng: Color = t["eng"]
+	var r: float = t["r"]
+	var verts := PackedVector3Array(); var nrm := PackedVector3Array(); var uv := PackedVector2Array()
+	var c0 := PackedFloat32Array(); var c1 := PackedFloat32Array(); var idx := PackedInt32Array()
+	for i in n:
+		var d: Vector3 = ((hist[mini(i + 1, n - 1)][0] as Vector3) - (hist[maxi(i - 1, 0)][0] as Vector3)).normalized()
+		for sd in [-0.5, 0.5]:
+			verts.append(hist[i][0]); nrm.append(d)
+			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / KIT_TRAIL_LIFE, 0.0, 1.0), sd))
+			c0.append_array([eng.r, eng.g, eng.b, 0.55])
+			c1.append_array([r * 1.8, r * 4.0, float(t["seed"]), 0.0])
+	for i in n - 1:
+		var q := i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts; arr[Mesh.ARRAY_NORMAL] = nrm; arr[Mesh.ARRAY_TEX_UV] = uv
+	arr[Mesh.ARRAY_CUSTOM0] = c0; arr[Mesh.ARRAY_CUSTOM1] = c1; arr[Mesh.ARRAY_INDEX] = idx
+	var fmt := (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fmt)
+	mesh.custom_aabb = POOLS.BIG
+	t["mi"].mesh = mesh
 
 
 static func _ease(u: float) -> float:

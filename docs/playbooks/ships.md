@@ -522,4 +522,7 @@ code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack
 the Hullbreaker stack at its craft sizes) into small 512 atlases, so it wears the same paint as the hulls (Ryan, Nov 20:
 "are we going to paint it and add more detail after?"). A munition is a few pixels on the board, so it carries detail at
 the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo may be lifted per faction (`LIFT` in
-munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten").
+munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten"). A kit body
+drives like a ship: a ship-size engine core at its nozzle and the ships' own engine trail (SH.TRAIL, faction engine colour
+and trail style, a short wake), never a flame card, a halo or smoke puffs (Ryan, Nov 20: "the trails/engine effects look
+super basic and weird"; fx_weapons.gd `_kit_trail_*`).
