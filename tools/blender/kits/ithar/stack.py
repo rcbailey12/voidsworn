@@ -39,21 +39,24 @@ CONCEPT = dict(
     violet=[(210, 138, 222), (155, 71, 151), (104, 29, 85)],
     green=[(172, 200, 92), (109, 137, 51), (66, 90, 17)],
 )
-PALETTE = ('amber', 'violet', 'green')
-WEIGHTS = (55, 27, 18)
+# Ryan Nov 21 1:45 PM CT (1415G sheets): "tone down red and amber with a bit more blue and green and purple". Amber drops
+# from 55 to 32 and turns golden rather than red; a sapphire blue joins the palette.
+PALETTE = ('amber', 'violet', 'green', 'blue')
+WEIGHTS = (32, 26, 22, 20)
 
 # The glowing panel colour (PANEL; GLOW below is the bake's list of glowing stone zones): the concept's bright tone pushed to
 # full saturation (the panel glows, so it carries its own light). Round 5: emerald, not lime.
-PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10))
+PANEL = dict(amber=(0.90, 0.32, 0.02), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10), blue=(0.04, 0.28, 1.0))
 # Round 5 (outside read, Nov 19: "flat orange, purple and lime gravel"): each panel is lit from behind, so its colour runs
 # from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
 # Stored light, the seafoam of the faction's data glow #9fffd2 (issue 1415: the fleet hulls' cleft, star torpedo, hangar floor).
 LIGHT = (0.35, 1.0, 0.64)
 BEAM = (1.0, 0.97, 0.92)          # the lance's white beam core
 # Warming round (issue 1282, Ryan Nov 20: "put it in, then warm it up"): deep tones lifted so the panel edges glow too.
-TONES = dict(amber=((0.50, 0.06, 0.0), (1.0, 0.42, 0.02)),
+TONES = dict(amber=((0.46, 0.12, 0.0), (1.0, 0.58, 0.10)),      # Nov 21: golden, less red
              violet=((0.18, 0.01, 0.45), (0.66, 0.14, 1.0)),
-             green=((0.01, 0.24, 0.04), (0.24, 0.82, 0.06)))
+             green=((0.01, 0.24, 0.04), (0.24, 0.82, 0.06)),
+             blue=((0.01, 0.05, 0.38), (0.12, 0.48, 1.0)))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
@@ -244,7 +247,9 @@ def tile_swap(nt, tint, cell_colour, glow):
         tot = float(sum(WEIGHTS))
         els[0].position = 0.0; els[0].color = tuple(cols[0]) + (1,)
         els[1].position = WEIGHTS[0] / tot; els[1].color = tuple(cols[1]) + (1,)
-        e3 = els.new((WEIGHTS[0] + WEIGHTS[1]) / tot); e3.color = tuple(cols[2]) + (1,)
+        acc = WEIGHTS[0] + WEIGHTS[1]
+        for c, w in zip(cols[2:], WEIGHTS[2:]):          # any number of palette colours
+            e = els.new(acc / tot); e.color = tuple(c) + (1,); acc += w
         Ln.new(sep.outputs[1], rp.inputs['Fac']); ramps.append(rp)
     gp = N.new('ShaderNodeMath'); gp.operation = 'POWER'; gp.inputs[1].default_value = 1.5
     Ln.new(glow, gp.inputs[0])
