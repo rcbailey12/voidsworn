@@ -1,0 +1,6 @@
+OPUS1529C_WAIT.bat waiting for OPUS1531_RUN2 exit in opus1531b_wait.txt Sat 11/21/2026 10:59:13.25 
+OPUS1529_PROOF3 start 11:05:13.15 
+OPUS1529_PROOF3 exit 0 at 11:26:40.16 
+run folder out_20261121_110513_9075
+result: done PASS
+all done Sat 11/21/2026 11:26:40.59 
