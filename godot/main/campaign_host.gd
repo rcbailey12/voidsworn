@@ -11,6 +11,7 @@ const Campaign := preload("res://campaign/campaign.gd")
 const UI_G3 := "res://ui/campaign/campaign_ui.gd"
 const Fallback := preload("res://main/campaign_fallback_ui.gd")
 const Teaching := preload("res://ui/campaign/campaign_tips.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: ui_boss when a boss or Nemesis fight is entered
 
 # the G3 parity bot's weights (campaign/test/parity_campaign.gd), minus the stub battle buttons: real battles decide fights
 const STAY := {"closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
@@ -193,7 +194,17 @@ func _on_battle() -> void:
 	if in_battle:
 		return
 	in_battle = true
+	if not bot and is_boss_fight(C.pending_battle):
+		Kit.play("ui_boss")
 	_play_battle.call_deferred()
+
+
+# A sector flagship, the finale or a Nemesis battle (issue 1448): the fights that open on the boss chord.
+static func is_boss_fight(cfg) -> bool:
+	if not (cfg is Dictionary):
+		return false
+	var nm = cfg.get("nemesis")
+	return str(cfg.get("kind", "")) == "boss" or (nm is Dictionary and not nm.is_empty())
 
 
 func _play_battle() -> void:
