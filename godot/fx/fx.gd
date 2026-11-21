@@ -207,6 +207,7 @@ static var _exit_hooked := false
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 # wait false (issue 1435, the scene change): finished jobs are reaped now, the rest are retired and reaped later.
 func release(wait := true) -> void:
+	var t_rel := Time.get_ticks_usec()
 	closed = true
 	attach_report(true)
 	_end_dim()
@@ -242,6 +243,7 @@ func release(wait := true) -> void:
 		s.remove_meta("cut_prev")
 	if not tids.is_empty():
 		_retire(tids, keep)
+		print("[fx] left with %d jobs still running: retired, not waited for (%.1f ms)" % [tids.size(), float(Time.get_ticks_usec() - t_rel) / 1000.0])
 	for w in dstate.get("wrecks", []):
 		for l in w.get("lights", []):
 			l["on"] = false
@@ -304,10 +306,14 @@ static func reap_retired() -> void:
 
 # Wait for every retired job now (quit: before the rendering server goes).
 static func drain_retired() -> void:
+	var n := retired_count()
+	var t0 := Time.get_ticks_usec()
 	for e in _retired:
 		for tid in e["tids"]:
 			WorkerThreadPool.wait_for_task_completion(tid)
 	_retired.clear()
+	if n > 0:
+		print("[fx] drained %d retired jobs before quit in %.0f ms" % [n, float(Time.get_ticks_usec() - t0) / 1000.0])
 	if _reaping:
 		_reaping = false
 		var tree := Engine.get_main_loop() as SceneTree
