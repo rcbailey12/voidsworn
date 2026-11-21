@@ -1,0 +1,4 @@
+Info: Saved as "GW4.blend"
+[209] {"cell": "GW4", "hull_objects": 33, "parts": 23, "interiors": 3, "seconds": 1.1, "notes": [{"route": "build sheet ithar_GW4", "contract": {"sheet": "ithar_GW4", "game_ship": "bomber", "variant": "", "model_length": 1.53056, "scale": 0.6533556528828456, "length_world": 1.6, "t_lines": [-0.20907], "l_line": [], "l_lines": [], "muzzles": 2, "guns": 1, "engines": 1, "bays": 0, "points": 1, "turrets": [], "interior_objects": 3, "slots": ["0 bombs T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-43aab573f5814a42add9e2815dd825c1

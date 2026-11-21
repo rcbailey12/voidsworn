@@ -1,0 +1,31 @@
+start ithar_GW4 ithar_GW4 board/pin-1373i Sat 11/21/2026  0:21:00.75 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          board/pc-out-1415d-GA1 -> board/pc-out-1415d-GA1
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4i\repo
+commit=84b6e3f481f05d5728ffd407b00e492207db9b91
+import exit 0 
+1_concept_in start  0:25:23.23 
+1_concept_in exit 0 at  0:25:25.65 
+2_shape_ref start  0:25:25.65 
+2_shape_ref exit 0 at  0:25:26.37 
+3_trace_hull start  0:25:26.38 
+3_trace_hull exit 0 at  0:26:41.00 
+4_parts_kit start  0:26:41.01 
+4_parts_kit exit 0 at  0:27:07.89 
+5_paint_bake start  0:27:07.89 
+5_paint_bake exit 0 at  0:30:21.64 
+6_lod start  0:30:21.64 
+6_lod exit 0 at  0:31:16.68 
+7_export start  0:31:16.68 
+7_export exit 0 at  0:31:50.20 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4i\repo\godot\assets\ships\ithar_GW4\ithar_GW4.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  0:32:03.54 
+all done 

@@ -1,0 +1,24 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+00:30:25 | INFO: Starting glTF 2.0 export
+00:30:25 | INFO: Extracting primitive: GW4_lod0
+00:30:25 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+00:30:25 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:30:25 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+00:30:26 | INFO: Primitives created: 6
+00:30:26 | INFO: Extracting primitive: GW4_lod1
+00:30:26 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:30:26 | INFO: Primitives created: 6
+00:30:26 | INFO: Extracting primitive: GW4_lod2
+00:30:26 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:30:26 | INFO: Primitives created: 5
+00:30:26 | INFO: Extracting primitive: GW4_lod3
+00:30:26 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+00:30:26 | INFO: Primitives created: 4
+00:30:26 | INFO: Finished glTF 2.0 export in 1.139913558959961 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\glb\GW4.glb {"lod0": {"triangles": 114328, "objects": 56, "materials": 6}, "lod1": {"triangles": 114328, "objects": 56, "materials": 6}, "lod2": {"triangles": 57954, "objects": 55, "materials": 5}, "lod3": {"triangles": 23316, "objects": 54, "materials": 4}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\GW4.blend"
+
+Blender quit
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-843ab54eb4844722b7c9819295a952f6

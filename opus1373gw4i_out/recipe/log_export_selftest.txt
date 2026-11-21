@@ -1,0 +1,8 @@
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 0 (bombs T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_bombs_T_0 is 0.2002 off the mesh (limit 0.0120) and is not the centre of an open bomb tube: its rim at radius 0.0418 on the exit plane covers 0 of 12 sectors; no throat upstream of the exit
+ok   backward: the check failed as it must | hp_w0_bombs_T_0 rests aimed backward (x -1.00)
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_socket: the check failed as it must | hp_w0_bombs_T_0 has no extras.socket
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+PASS the export check fails when it should
