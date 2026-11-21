@@ -1,0 +1,1 @@
+[publish] kept corsair_KF1 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\corsair_KF1_20261121_094437

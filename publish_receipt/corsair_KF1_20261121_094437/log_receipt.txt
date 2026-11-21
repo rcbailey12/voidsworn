@@ -1,0 +1,2 @@
+[publish] receipt ok: corsair_KF1 corsair_KF1 commit 237fd5b260efe1be2df04aba5492ed7d41e505c6, glb a7c36d580c20e9fa800e2c765c7a45a3031b6dd39baccf4d7c40d3b401f647ca, 8 listed and 8 checked files
+SHIP=corsair_KF1

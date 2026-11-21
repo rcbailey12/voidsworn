@@ -1,0 +1,27 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1373kf1l",
+ "ship": "corsair_KF1",
+ "code": "corsair_KF1",
+ "commit": "237fd5b260efe1be2df04aba5492ed7d41e505c6",
+ "glb": "a7c36d580c20e9fa800e2c765c7a45a3031b6dd39baccf4d7c40d3b401f647ca",
+ "files": {
+  "corsair_KF1.glb": "a7c36d580c20e9fa800e2c765c7a45a3031b6dd39baccf4d7c40d3b401f647ca",
+  "corsair_KF1_base.jpg": "fe25978eb7af1237a6e2bb443a6d3adeda4abed8350c319f1097ac98846a9631",
+  "corsair_KF1_glow_emission.jpg": "67b190187c4664e8076655b6e8090d06eaf3a7b2c896747107362ac5a76938f7",
+  "corsair_KF1_normal.png": "fd45032bcc756b32dc2ec7922b976560c755386d4e5d20d4311c47189255c50c",
+  "corsair_KF1_orm.png": "c03ca1b25ece8d7554823d9caf37cf40a39555dace084aec7a88412833db651c",
+  "corsair_KF1_parts_base.jpg": "5ee06bc51469b704c649534d5f6f954e62d0aeb5ea50dadf13e46a4639cf6577",
+  "corsair_KF1_parts_normal.png": "7b79a507bd9e29b68fdcad48188f1ec5e37f3c6a15501b73e4b5f03fa18b9da7",
+  "corsair_KF1_parts_orm.png": "c7a7c3d76e260b64265fda23d46cf16d9ce1ab21f8011e899a5aa045473f677c"
+ },
+ "checked": [
+  "corsair_KF1.glb",
+  "corsair_KF1_base.jpg",
+  "corsair_KF1_glow_emission.jpg",
+  "corsair_KF1_normal.png",
+  "corsair_KF1_orm.png",
+  "corsair_KF1_parts_base.jpg",
+  "corsair_KF1_parts_normal.png",
+  "corsair_KF1_parts_orm.png"
+ ]
+}
