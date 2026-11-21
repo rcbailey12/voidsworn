@@ -1,0 +1,37 @@
+start chorus_C12 B19_11 board/pin-1291-holes4 Sat 11/21/2026  9:29:19.79 
+inputs STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                 -> opus/issue-1291-holes
+ - [deleted]             (none)                 -> refs/pull/1416/merge
+ - [deleted]             (none)                 -> refs/pull/1473/merge
+ * [new branch]          board/pc-out-1399small -> board/pc-out-1399small
+   18e36ad4e..54ea4de3e  main                   -> main
+   d3b13e633..48a0d7c7c  opus/issue-1379        -> opus/issue-1379
+   e84477ef1..427b0d262  opus/issue-1517        -> opus/issue-1517
+   e84477ef1..427b0d262  refs/pull/1521/head    -> refs/pull/1521/head
+ + 9eff20cba...cba8636db refs/pull/1521/merge   -> refs/pull/1521/merge  (forced update)
+ * [new ref]             refs/pull/1529/head    -> refs/pull/1529/head
+ * [new ref]             refs/pull/1529/merge   -> refs/pull/1529/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\repo
+commit=d2a9acd26c3305641229d000d8890ba8a753dcfb
+import exit 0 
+3_trace_hull start  9:34:37.50 
+3_trace_hull exit 0 at  9:35:57.66 
+4_parts_kit start  9:35:57.66 
+4_parts_kit exit 0 at  9:36:56.04 
+5_paint_bake start  9:36:56.05 
+5_paint_bake exit 0 at  9:43:35.37 
+6_lod start  9:43:35.37 
+6_lod exit 0 at  9:50:40.45 
+7_export start  9:50:40.45 
+7_export exit 0 at  9:52:05.01 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c12g\repo\godot\assets\ships\B19_11\B19_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Sat 11/21/2026  9:52:39.71 
+all done 

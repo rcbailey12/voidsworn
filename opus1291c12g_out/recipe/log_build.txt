@@ -1,0 +1,8 @@
+[armadillo] 12 bands, 48 runs, 0 steps clamped
+[inside] ganglion: shrunk to 96% to stay inside the hull
+[inside] regrowth_2: moved in to (-0.60, -0.27, -0.41)
+Info: Saved as "C12.blend"
+[209] {"cell": "C12", "hull_objects": 4, "parts": 103, "interiors": 23, "seconds": 5.9, "notes": [{"route": "build sheet chorus_C12", "contract": {"sheet": "chorus_C12", "game_ship": "b_drone", "variant": "", "model_length": 6.49738, "scale": 0.15390811118787204, "length_world": 6.5, "t_lines": [0.13082], "l_line": [], "l_lines": [], "muzzles": 3, "guns": 2, "engines": 4, "bays": 0, "points": 9, "turrets": [], "interior_objects": 23, "slots": ["0 bioplasma F", "1 tendril T"]}}]}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
