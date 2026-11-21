@@ -2775,7 +2775,7 @@ func _overlay() -> void:
 	if threat_on:
 		fills = _threat_fills()
 	var u := _sel_unit()
-	var ability_mode := mode in ["nova", "blink"]
+	var ability_mode := mode in ["nova", "blink", "ram"]
 	if _usable(u) and not ability_mode:
 		# F1: every reachable hex blue with a lit edge (style 1) and one bright line around the whole area
 		for k in reach_map:
@@ -2800,6 +2800,26 @@ func _overlay() -> void:
 			var tu: Dictionary = VU.get(b["target"], {})
 			if not tu.is_empty():
 				rings[board.key(tu["q"], tu["r"])] = Board.LS.ROLE["board"]
+	# issue 1444: the armed ram's run (each hex it crosses) and the ship it hits; the nova shell's 7-hex blast under the
+	# hovered target hex, with every friendly ship inside it ringed red
+	if mode == "ram" and not u.is_empty():
+		var rm = _ui(sel).get("ram")
+		if rm is Dictionary:
+			for p in rm["path"]:
+				var pk0: String = board.key(int(p["q"]), int(p["r"]))
+				fills[pk0] = Board.LS.ROLE["ram_fill"]
+				rings[pk0] = Board.LS.ROLE["ram"]
+			var rt: Dictionary = VU.get(rm["target"], {})
+			if not rt.is_empty():
+				rings[board.key(rt["q"], rt["r"])] = Board.LS.ROLE["danger"]
+	if mode == "nova" and not u.is_empty():
+		var blast := _nova_blast(hover.x, hover.y)
+		for h in blast["hexes"]:
+			var bk: String = board.key(h.x, h.y)
+			fills[bk] = Board.LS.ROLE["blast_fill"]
+			rings[bk] = Board.LS.ROLE["blast"]
+		for f in blast["friends"]:
+			rings[board.key(f["q"], f["r"])] = Board.LS.ROLE["danger"]
 	# the rehearsed position (a planned move, or the attack-move's stopping hex): the ghost, its path, arcs from there,
 	# and orange rings on enemies its guns would reach from there
 	var pst = plan if plan != null else (atk["st"] if atk != null else null)
@@ -2827,6 +2847,10 @@ func _overlay() -> void:
 					break
 	elif ghost != null:
 		ghost.visible = false
+	if mode == "ram" and not u.is_empty() and views.has(sel):
+		var rm2 = _ui(sel).get("ram")
+		if rm2 is Dictionary:
+			_path_dots(u, {"path": rm2["path"]})   # issue 1444: the ram's run as the shared path line
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
 		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
@@ -3062,6 +3086,159 @@ func _ability_hexes() -> Array:
 	return out
 
 
+# ---------------------------------------------------------------- issue 1444: forecasts before Ram, Board and Nova
+
+const _HEX_DIRS := [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
+
+
+static func _hex_d(aq: int, ar: int, bq: int, br: int) -> int:
+	return int((absi(aq - bq) + absi(aq + ar - bq - br) + absi(ar - br)) / 2)
+
+
+# Ram is two presses: the first (X or the Ram button) arms it and shows the run, the target, the damage and the recoil;
+# the second (X or the button again, Enter, or a click on the rammed ship) commits. Esc or Cancel drops it.
+static func _strip_bb(t: String) -> String:
+	var re := RegEx.create_from_string("\\[/?[a-z]+(=[^\\]]*)?\\]")
+	return re.sub(t, "", true)
+
+
+func _ram_press() -> void:
+	if sel == "" or not _can_act() or not _usable(_sel_unit()):
+		return
+	if mode == "ram":
+		_ram_commit()
+		return
+	var rm = _ui(sel).get("ram")
+	if not rm is Dictionary:
+		return
+	mode = "ram"
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	plog.note("arms ram")
+	_refresh_ui()
+
+
+func _ram_commit() -> void:
+	mode = ""
+	if sel == "" or not _can_act() or not _api_join() or not (_ui(sel).get("ram") is Dictionary):
+		_refresh_ui()
+		return
+	var id := sel
+	plog.act("ram")
+	sfx.play("ui_confirm")
+	_cmd(func(): return api.ram(id))
+
+
+# the ram forecast in plain words (BBCode); short drops the second line of how to commit
+func _ram_forecast(id: String, short := false) -> String:
+	var rm = _ui(id).get("ram")
+	if not rm is Dictionary:
+		return ""
+	var su: Dictionary = VU.get(id, {})
+	var tu: Dictionary = VU.get(rm["target"], {})
+	var sec := str(SEC_LBL.get(str(rm["section"]), str(rm["section"]))).to_lower()
+	var run := (rm["path"] as Array).size()
+	var t := "[b][color=#ffb23e]Ram %s[/color][/b]: a %d-hex run into it. About [color=#ffad3b]%d hull[/color] to its %s" % [_name(rm["target"]), run, int(rm["dmg"]), sec]
+	if int(rm["soak"]) > 0:
+		t += " (its shield soaks %d)" % int(rm["soak"])
+	t += "; [color=#ff8a72]%d recoil[/color] to your prow." % int(rm["recoil"])
+	if not tu.is_empty() and float(rm["dmg"]) >= float(tu["hp"]):
+		t += " [color=#ffad3b]That should destroy it.[/color]"
+	if not su.is_empty() and float(rm["recoil"]) >= float(su["hp"]):
+		t += "\n[color=#ff4a4a][b]Warning: the recoil will destroy your own ship (hull %s).[/b][/color]" % Campaign.hull_text(su["hp"])
+	t += " The ship stops there for the round."
+	if not short:
+		t += "\n[b]Press X again, click the target or press Enter to ram.[/b] Esc cancels. A ram can't be taken back."
+	return t
+
+
+# one boarding target's odds in plain words (BBCode)
+func _board_odds_text(id: String, b: Dictionary) -> String:
+	var ru = api.unit(id)
+	var crew := int(_z0(ru.get("crew"))) if ru != null else 0
+	var loss := mini(int(b["loss"]), maxi(0, crew - 1))
+	var cap := int(b["chance"])
+	var cap_t := ("[color=#7dff9b]capture likely[/color]" if bool(b["capture"]) else "[color=#ffd27a]capture possible[/color]") if cap > 0 else "[color=#a7b09d]no capture: a raid only[/color]"
+	return "[b]%s[/b]: [color=#ffb23e]%d%% capture chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, cap_t, int(b["kill"]), loss, crew]
+
+
+func _board_tip(id: String, tid: String) -> String:
+	for b in _ui(id).get("board", []):
+		if str(b["target"]) == tid:
+			return "[b][color=#ffc04d]Board[/color][/b]\n%s\n[color=#ff8a3a]Click to send the boarders. Esc cancels.[/color]" % _board_odds_text(id, b)
+	return "[b][color=#ffc04d]Board[/color][/b]\n[color=#a7b09d]Out of reach: boarding needs an enemy ship next to yours.[/color]"
+
+
+# the nova shell's blast around a centre hex: the 7 hexes, every ship inside, and the friendly ones (empty unless the
+# hex is one the shell can be aimed at)
+func _nova_blast(q: int, r: int) -> Dictionary:
+	var out := {"hexes": [], "hit": [], "friends": []}
+	if mode != "nova" or q == 99999:
+		return out
+	var ok := false
+	for h in _ability_hexes():
+		if int(h["q"]) == q and int(h["r"]) == r:
+			ok = true
+			break
+	if not ok:
+		return out
+	var on := {}
+	for h in V.get("hexes", []):
+		on[Vector2i(int(h["q"]), int(h["r"]))] = true
+	var c := Vector2i(q, r)
+	for hv in [c] + _HEX_DIRS.map(func(d): return c + d):
+		if on.is_empty() or on.has(hv):
+			out["hexes"].append(hv)
+	for x in V.get("units", []):
+		if x["dead"] or _hex_d(int(x["q"]), int(x["r"]), q, r) > 1:
+			continue
+		out["hit"].append(x)
+		if x["side"] == "player":
+			out["friends"].append(x)
+	return out
+
+
+func _nova_tip(q: int, r: int) -> String:
+	var blast := _nova_blast(q, r)
+	if (blast["hexes"] as Array).is_empty():
+		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
+	# the raw damage per ship comes from the rules (rules.gd novaDamage, the same call the hit makes)
+	var t := "[b][color=#ffd27a]Nova shell[/color][/b]\nBlasts this hex and the 6 around it, 30% through shields. Damage before shields and armour:"
+	var foes: Array = []
+	var mine: Array = []
+	for p in api.nova_preview(sel, q, r):
+		var x: Dictionary = VU.get(p["id"], {})
+		if x.is_empty():
+			continue
+		(mine if x["side"] == "player" else foes).append("%s (%s, %d)" % [str(x["name"]), "centre" if bool(p["centre"]) else "ring", int(round(float(p["dmg"])))])
+	if not foes.is_empty():
+		t += "\nHits: %s." % ", ".join(PackedStringArray(foes))
+	if not mine.is_empty():
+		t += "\n[color=#ff4a4a][b]Friendly fire: %s.[/b][/color]" % ", ".join(PackedStringArray(mine))
+	if foes.is_empty() and mine.is_empty():
+		t += "\n[color=#a7b09d]No ship inside the blast.[/color]"
+	t += "\n[color=#ff8a3a]Click to fire. Esc cancels.[/color]"
+	return t
+
+
+# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+func _well_line(q: int, r: int) -> String:
+	var W = api.world_info().get("well") if api != null else null
+	if not W is Dictionary:
+		return ""
+	var R = api.R
+	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	if d <= int(R.WELL_RIM):
+		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+	if d <= int(R.WELL_PULL):
+		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+	if d <= int(R.WELL_ASSIST):
+		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+	return ""
+
+
 func _unit_at(q: int, r: int) -> Dictionary:
 	for u in V.get("units", []):
 		if not u["dead"] and int(u["q"]) == q and int(u["r"]) == r:
@@ -3158,8 +3335,10 @@ func _on_key(k: int) -> void:
 		KEY_TAB:
 			_next_ship()
 		KEY_ENTER, KEY_KP_ENTER:
-			# F1: Enter confirms what is planned (the move, the fire, the attack-move); it never ends a ship
-			if plan != null or target != "":
+			# F1: Enter confirms what is planned (the move, the fire, the attack-move, an armed ram); it never ends a ship
+			if mode == "ram":
+				_ram_commit()
+			elif plan != null or target != "":
 				_confirm()
 			elif _can_act():
 				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
@@ -3195,8 +3374,7 @@ func _on_key(k: int) -> void:
 		KEY_B:
 			_order("brace")
 		KEY_X:
-			if sel != "" and _can_act():
-				_cmd(func(): return api.ram(sel))
+			_ram_press()
 		KEY_G:
 			if sel != "" and _can_act():
 				mode = "" if mode == "board" else "board"
@@ -3436,6 +3614,13 @@ func _on_click() -> void:
 		else:
 			_refresh_ui()
 		return
+	if mode == "ram":
+		# issue 1444: a click on the rammed ship commits the armed ram; any other click drops it and acts as normal
+		mode = ""
+		var rm = _ui(sel).get("ram")
+		if rm is Dictionary and not u.is_empty() and str(u["id"]) == str(rm["target"]):
+			_ram_commit()
+			return
 	if mode == "board" and not s.is_empty():
 		mode = ""
 		if not u.is_empty() and u["side"] == "enemy":
@@ -3543,6 +3728,8 @@ func _update_target_plan(tid: String) -> void:
 func _cancel(why: String) -> void:
 	if plan != null or target != "":
 		plog.note("cancels")
+	if mode == "ram":
+		mode = ""
 	plan = null
 	plan_k = ""
 	target = ""
@@ -3555,6 +3742,9 @@ func _cancel(why: String) -> void:
 # F1: commit what is planned, once: the move, the attack-move, or the fire on the target
 func _confirm() -> void:
 	if not _can_act() or not _usable(_sel_unit()) or not _api_join():
+		return
+	if mode == "ram":
+		_ram_commit()   # issue 1444: the armed ram's second step
 		return
 	var id := sel
 	if plan != null:
@@ -3829,6 +4019,14 @@ func _tip() -> String:
 		return ""
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
+	# issue 1444: an armed ram, a boarding pick or a nova aim shows its own forecast first
+	if mode == "nova" and _usable(s):
+		return _nova_tip(hover.x, hover.y)
+	var rm0 = _ui(sel).get("ram") if mode == "ram" else null
+	if rm0 is Dictionary and _usable(s) and not u.is_empty() and str(u["id"]) == str(rm0["target"]):
+		return _ram_forecast(sel)
+	if mode == "board" and _usable(s) and not u.is_empty() and u["side"] == "enemy":
+		return _board_tip(sel, str(u["id"]))
 	if not u.is_empty() and u["side"] == "enemy" and _usable(s):
 		return _attack_tip(u["id"])
 	if not u.is_empty():
@@ -3844,6 +4042,9 @@ func _tip() -> String:
 			var nn := int(_danger.get(board.key(int(s["q"]), int(s["r"])), 0))
 			if nh > 0 or nn > 0:
 				t += "\n[color=#c4a4ff]%d enem%s can reach this hex[/color] [color=#7c8674]now %d[/color]" % [nh, "y" if nh == 1 else "ies", nn]
+		var wl := _well_line(hover.x, hover.y)
+		if wl != "":
+			t += "\n" + wl
 		t += "\n[color=#7c8674]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
 		return t
 	if board.zone_of.has(hk):
@@ -4033,10 +4234,7 @@ func _on_action(name: String, arg) -> void:
 					plog.act("ability", {"ab": ab})
 					_cmd(func(): return api.ability(id))
 		"ram":
-			if sel != "" and _can_act():
-				var id := sel
-				plog.act("ram")
-				_cmd(func(): return api.ram(id))
+			_ram_press()
 		"board":
 			mode = "" if mode == "board" else "board"
 			_refresh_ui()
@@ -4470,6 +4668,22 @@ func _card_info() -> Dictionary:
 	elif braced:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
 		say = "Braced: hull damage -40% until its next turn."
+	elif mode == "ram" and ui.get("ram") is Dictionary:
+		# issue 1444: the armed ram's forecast; nothing happens until the second press
+		hint = _ram_forecast(id)
+		var rm: Dictionary = ui["ram"]
+		say = "Ram %s: about %d hull to it, %d recoil to you." % [_name(rm["target"]), int(rm["dmg"]), int(rm["recoil"])]
+		if float(rm["recoil"]) >= float(u["hp"]):
+			say += " The recoil will destroy your ship."
+		btns.append({"text": "Ram (Enter)", "act": "confirm", "on": true, "primary": true})
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+	elif mode == "board" and not (ui.get("board", []) as Array).is_empty():
+		var rows := PackedStringArray()
+		for b in ui["board"]:
+			rows.append(_board_odds_text(id, b))
+		hint = "[color=#ffc04d]Board:[/color] click a gold-ringed enemy to send the boarders. Esc cancels.\n" + "\n".join(rows)
+		say = "Board: click a gold-ringed enemy."
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif plan != null:
 		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. Backspace takes a move back until the ship fires." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		say = "Planned move: %d movement%s." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
@@ -4721,9 +4935,17 @@ func _panel_info() -> Dictionary:
 		if u.get("ab") != null and u.get("ab") != "launch":
 			var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
 			orders.append({"text": str(A.get("n", u["ab"])), "act": "ability", "ability": str(u["ab"]), "cooldown": int(_z0(u.get("abCd"))), "active": mode == u["ab"], "on": can and u["abReady"], "tip": str(A.get("d", ""))})
-		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
-		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "active": mode == "board", "tip": "Send boarding crews into an adjacent enemy."})
-		if str(u.get("ab", "")) == "launch" and str(u.get("stance", "")) != "":
+		# issue 1444: the Ram and Board tips carry the forecast; Ram arms on the first press and rams on the second
+		var ram_tip := "Charge the first enemy dead ahead (needs a run-up)."
+		if ui.get("ram") is Dictionary:
+			ram_tip = _strip_bb(_ram_forecast(id, true)) + " Press once to see the run, again to ram."
+		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "active": mode == "ram", "tip": ram_tip})
+		var board_tip := "Send boarding crews into an adjacent enemy."
+		for b in ui.get("board", []):
+			board_tip += "\n" + _strip_bb(_board_odds_text(id, b))
+		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "active": mode == "board", "tip": board_tip})
+		# issue 1444: every ship the rules give a wing stance (carriers and Aspect of the Brood flagships) gets the buttons
+		if u.get("stance") != null:
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s" % stn, "act": "stance", "arg": stn, "active": str(u.get("stance")) == stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
