@@ -1,0 +1,16 @@
+OPUS1434B_WAIT.bat waiting for OPUS1379_BODY_RUN4 exit in opus1379e_wait.txt Fri 11/20/2026 19:36:39.09 
+swapped out while only waiting 19:55:13: replaced by OPUS1434B_WAIT2.bat (waits for OPUS1379_BODY_RUN5 exit; Board Nov 21 01:54 UTC)
+OPUS1434B_WAIT2.bat waiting for OPUS1379_BODY_RUN5 exit in opus1379f_wait.txt Fri 11/20/2026 19:55:16.09 
+HELD 20:47:49 by PC relay (Board, Nov 21 02:47 UTC): waiter stopped while only waiting, disk under 60 GB; Board will requeue after cleanup.
+OPUS1434B_WAIT3.bat waiting for OPUS1379_BODY_RUN5 exit in opus1379f_wait.txt Fri 11/20/2026 20:52:14.09 
+swapped out while only waiting 21:16:17: WAIT3 replaced by OPUS1434B_WAIT4.bat (waits for OPUS1457_PP2 exit; Board Nov 21 03:15 UTC)
+OPUS1434B_WAIT4.bat waiting for OPUS1457_PP2 exit in opus1457pp2_wait.txt Fri 11/20/2026 21:16:18.08 
+swapped out while only waiting 22:15:18: WAIT4 replaced by OPUS1434B_WAIT5.bat (waits for OPUS1379_BODY_RUN6 exit; Board Nov 21 04:14 UTC)
+OPUS1434B_WAIT5.bat waiting for OPUS1379_BODY_RUN6 exit in opus1379g_wait.txt Fri 11/20/2026 22:15:19.69 
+swapped out while only waiting 22:36:50: WAIT5 replaced by OPUS1434B_WAIT6.bat (waits for OPUS1457_MAIN1 exit; Board Nov 21 04:36 UTC)
+OPUS1434B_WAIT6.bat waiting for OPUS1457_MAIN1 exit in opus1457main1_wait.txt Fri 11/20/2026 22:36:50.39 
+OPUS1434_LOAD2 start 23:28:51.18 
+OPUS1434_LOAD2 exit 1 at  0:01:51.38 
+run folder out_20261120_232852_27457
+result: done FAILED: new load, new load: a graded item failed, see load\load_result.txt, new player path
+all done Sat 11/21/2026  0:01:51.81 

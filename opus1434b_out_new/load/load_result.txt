@@ -1,0 +1,12 @@
+[load1434] display Windows, window (2560.0, 1440.0), renderer forward_plus
+[load1434] s25 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] s25: 24 ships in 5393 ms over 27 frames; longest build stretch 556 ms; worst ship setup 146 ms (corsair|bomber), worst effects registration 518 ms; waiting on hull files 0 ms; scene ready 1187 ms; worst frame cover to play 5654 ms; to play 28566 ms
+[load1434] title FAIL (slice FAIL, ready PASS, click PASS (16 ms), bus PASS)
+[load1434] title: backdrop 9 ships; longest build stretch 566 ms; worst frame while it built 10276 ms; backdrop ready after 25230 ms; sfx bus -21.42 dB before, never moved
+[load1434] b1 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] b1: 7 ships in 3760 ms over 11 frames; longest build stretch 540 ms; worst ship setup 540 ms (V16_37), worst effects registration 263 ms; waiting on hull files 0 ms; scene ready 1361 ms; worst frame cover to play 2324 ms; to play 15070 ms
+[load1434] b2 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] b2: 7 ships in 5784 ms over 13 frames; longest build stretch 517 ms; worst ship setup 517 ms (V16_37), worst effects registration 514 ms; waiting on hull files 0 ms; scene ready 1379 ms; worst frame cover to play 8927 ms; to play 26745 ms
+[load1434] b3 FAIL (slice FAIL, ready PASS, cover FAIL)
+[load1434] b3: 7 ships in 3947 ms over 13 frames; longest build stretch 500 ms; worst ship setup 500 ms (V16_37), worst effects registration 247 ms; waiting on hull files 0 ms; scene ready 1385 ms; worst frame cover to play 6793 ms; to play 18820 ms
+[load1434] RESULT FAIL (limit 500 ms for each graded item: slice, ready, cover frame, title click, bus)
