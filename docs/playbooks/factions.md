@@ -248,7 +248,8 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random yellow circles on the pods ... looks odd", Nov 21:
   "the same weird yellow circle or patch on the sacs"). Gland vents are real openings: the knoll's crown is cut away under
   the puckered lip and a matte dark bore runs down into it (kit `parts.spinal` style 'gland', zone 'pit'; Ryan Nov 21: "no actual
-  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome.
+  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome. An organ whose bore runs down into the body (C14's launch mouths) cuts the hull and any
+  band open under it (`K.open_hull`, after the armour; Ryan Nov 21: "There are no actual holes, it's just caps").
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
   the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.

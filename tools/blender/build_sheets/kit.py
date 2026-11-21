@@ -528,6 +528,30 @@ class Kit:
         self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
         return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
 
+    def open_hull(self, pos, axis, r, reach=1.5, keep_grp=None):
+        """cut the hull open where an organ's opening goes into the body (Ryan, Nov 21 2026, C14 run H: "There are no actual
+        holes, it's just caps"): faces whose centre lies within r of the opening's axis and within reach of pos along it are
+        removed from the hull and from every other outside mesh there (armour bands, hull detail), so the organ's own bore
+        shows through instead of skin or a plate closing it like a cap. The hull's shell (solidify, rim on) walls the cut.
+        keep_grp: the organ's own group, left whole. Call it after the armour. Returns the number of faces removed."""
+        import bmesh
+        p0 = Vector(pos); ax = Vector(axis).normalized(); n = 0
+        for ob in [o for o in self.coll.objects if o.type == 'MESH' and not o.name.startswith('in_')
+                   and (keep_grp is None or o.get('grp') != keep_grp)]:
+            mw = ob.matrix_world
+            bm = bmesh.new(); bm.from_mesh(ob.data)
+            kill = []
+            for f in bm.faces:
+                d = mw @ f.calc_center_median() - p0
+                along = d.dot(ax)
+                if abs(along) < reach and (d - ax * along).length < r:
+                    kill.append(f)
+            if kill:
+                bmesh.ops.delete(bm, geom=kill, context='FACES')
+                bm.to_mesh(ob.data); ob.data.update(); n += len(kill)
+            bm.free()
+        return n
+
     def hpt(self, x, th, out=0.0):
         """a point on the rounded hull at station x and section angle th (radians: 0 = port beam, pi/2 = the top, -pi/2 the
         belly), pushed `out` along the outward normal: (point, normal). For laying grown detail on the hull (issue 623)."""

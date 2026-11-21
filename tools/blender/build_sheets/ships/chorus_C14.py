@@ -362,6 +362,12 @@ def build(K):
                      keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'),
                      note='armadillo bands of grown chitin wrapping the sac down to the keel, lips aft; broken round the creased front, '
                           'the honeycomb field, the five launch necks, the sacs, siphons and vents; hide rolled at the edges')
+    # Ryan (Nov 21, run H: "There are no actual holes, it's just caps"): the skin and any band are cut open under each launch
+    # mouth, so its bore runs down into the body as a real hole instead of stopping on skin or a plate
+    for fid, x, th, lean in MOUTHS:
+        pos, nrm = K.hpt(x, th, out=-0.05)
+        ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
+        print('[open_hull] %s: %d faces cut' % (fid, K.open_hull(pos, ax, R_MOUTH * 1.05, keep_grp=fid)))
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 6.2, -5.15, 'whole body')
@@ -422,7 +428,7 @@ def build(K):
     for i, (fid, x, th, lean) in enumerate(MOUTHS):
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        ob = _bpy.data.objects['%s_mount_maw' % fid]
+        ob = _bpy.data.objects['%s_mount_pit' % fid]
         vs = [ob.matrix_world @ v.co for v in ob.data.vertices]
         floor = min(vs, key=lambda v: (v - (Vector(pos) - ax * 2.2)).length)
         K.point('bay', 'hp_bay_%d' % i, tuple(floor), side='port' if pos[1] > 0.1 else 'stbd' if pos[1] < -0.1 else 'top', note='launch opening %s floor' % fid, dir=tuple(ax))
