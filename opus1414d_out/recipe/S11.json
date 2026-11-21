@@ -1,0 +1,228 @@
+{
+ "cell": "S11",
+ "route": "build sheet voidsworn_S11 + the voidsworn paint stack (kits/voidsworn/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 155.4,
+ "geometry_seconds": 0.5,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 56,
+  "part_objects": 156,
+  "glow_objects": 42,
+  "interior_objects": 38,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [
+   {
+    "file": "sunward_trim.png",
+    "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "trim sheet: forged rivets, scuffs (rows: rivets, scuffs)"
+   },
+   {
+    "file": "sunward_decals.png",
+    "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+    "licence": "CC0",
+    "used": "decal atlas: half-sun crest, spine line, deck row numbers, heat-shed marks"
+   }
+  ],
+  "decals": [
+   {
+    "rule": "half-sun crest",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2161,
+     0.012,
+     0.0342
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "spine line",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.4058,
+     0.0,
+     0.0175
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "deck row numbers",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.1591,
+     0.0998,
+     -0.0027
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "deck row numbers",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.0833,
+     -0.1088,
+     -0.0027
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "heat-shed marks port",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     -0.0875,
+     0.07,
+     0.0314
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "heat-shed marks starboard",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     -0.0875,
+     -0.07,
+     0.0311
+    ],
+    "room": 1.0
+   }
+  ],
+  "bake_H_masks_s": 11.2,
+  "bake_H_albedo_s": 17.0,
+  "bake_H_orm_s": 14.9,
+  "bake_H_normal_s": 49.8,
+  "zones_H": [
+   "siron",
+   "siron2",
+   "sworn"
+  ],
+  "bake_P_masks_s": 9.8,
+  "bake_P_albedo_s": 9.6,
+  "bake_P_orm_s": 7.7,
+  "bake_P_normal_s": 15.8,
+  "zones_P": [
+   "dark",
+   "siron",
+   "siron2",
+   "siron2_engine",
+   "siron2_gun",
+   "siron2_radiator",
+   "siron_engine",
+   "siron_gun",
+   "siron_radiator",
+   "sworn",
+   "sworn_engine",
+   "sworn_gun",
+   "sworn_radiator"
+  ],
+  "bake_engine_glow_s": 1.9,
+  "engine_glow": {
+   "engines": 2,
+   "map": "S11_engine_emission.png",
+   "res": 2048
+  },
+  "glow_materials": [
+   "p3_frost",
+   "p3_glow",
+   "p3_vent",
+   "p3_window"
+  ],
+  "inside_materials": [
+   "ps_inside_bridge",
+   "ps_inside_core",
+   "ps_inside_crew",
+   "ps_inside_deck",
+   "ps_inside_engroom",
+   "ps_inside_frame",
+   "ps_inside_hold",
+   "ps_inside_machinery",
+   "ps_inside_magazine"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.6113,
+    "area": 1.04743,
+    "texels_per_unit2": 9791402.7
+   },
+   "parts": {
+    "uv_share": 0.4396,
+    "area": 0.43531,
+    "texels_per_unit2": 16943504.5
+   }
+  },
+  "stack_seconds": 153.6
+ },
+ "density": {
+  "paint_flags": [
+   "radiator: paint_detail_share 0.219 is 0.73 of the hull's 0.3"
+  ],
+  "mesh_flags": [],
+  "hull": {
+   "area": 1.04743,
+   "triangles": 17136,
+   "tris_per_unit2": 16360.1,
+   "edges_per_unit2": 16900.5,
+   "texels_per_unit2": 9791402.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 468.71,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "voidsworn_S11",
+  "game_ship": "harrow",
+  "variant": "",
+  "model_length": 9.488,
+  "scale": 0.10539629098284241,
+  "length_world": 9.5,
+  "t_lines": [
+   -0.07905,
+   0.332
+  ],
+  "l_line": [
+   0.04652543604952606,
+   -0.4110455348330854,
+   -0.11066610553198453
+  ],
+  "l_lines": [
+   [
+    0.04652543604952606,
+    -0.4110455348330854,
+    -0.11066610553198453
+   ],
+   [
+    -0.01578309457468065,
+    -0.07377740368798968,
+    0.3214586874976693
+   ]
+  ],
+  "muzzles": 4,
+  "guns": 3,
+  "engines": 2,
+  "bays": 0,
+  "points": 10,
+  "turrets": [
+   "G1_turret",
+   "G2_turret"
+  ],
+  "interior_objects": 38,
+  "slots": [
+   "0 torp F",
+   "1 turret T"
+  ]
+ },
+ "triangles": 47512,
+ "objects": 254,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

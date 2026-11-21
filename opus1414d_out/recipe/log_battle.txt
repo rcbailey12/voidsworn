@@ -1,0 +1,1 @@
+[battle] S11 {"game": {"bow": 59.7, "midship": 80.8, "stern": 52.0, "whole": 65.0}, "studio": {"bow": 54.5, "midship": 90.1, "stern": 65.3, "whole": 70.9}}

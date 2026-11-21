@@ -1,0 +1,366 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "authored interiors: 16616 triangles, 10 surfaces; authored seams: 4",
+  "45220 triangles (28084 on part surfaces), box x -0.499 to 0.501, y -0.061 to 0.152, z -0.115 to 0.115",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 2 written (turret_0 G1, turret_1 G2); marked by the kit: ['G1', 'G2']"
+ ],
+ "cls": "Destroyer",
+ "faction": "voidsworn",
+ "expected_breach": 3,
+ "required": {
+  "weapon_slots": 2,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 3,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "torp",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_torp_F_0",
+    "hp_w0_torp_F_1"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "turret",
+   "arc": "T",
+   "hard_points": [
+    "hp_w1_turret_T_0",
+    "hp_w1_turret_T_1"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "board": 2,
+  "breach": 3,
+  "core": 1,
+  "engine": 2,
+  "rcs": 4,
+  "gun": 4
+ },
+ "maps": [
+  "V15_37_parts_normal.png",
+  "V15_37_parts_orm.png",
+  "V15_37_parts_base.jpg",
+  "V15_37_glow_emission.jpg",
+  "V15_37_normal.png",
+  "V15_37_orm.png",
+  "V15_37_base.jpg"
+ ],
+ "tolerance": 0.012000000357627869,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0000000298023224,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.137,
+    0.0005,
+    -0.0943
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    -0.137,
+    0.0005,
+    0.0943
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.2951,
+    0.0069,
+    -0.0699
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "clear": 0.0327
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    -0.1107,
+    0.0069,
+    0.0968
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "clear": 0.0475
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    -0.3608,
+    -0.0181,
+    -0.0901
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.768,
+    -0.64
+   ],
+   "clear": 0.0319
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.2213,
+    -0.0105,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4975,
+    -0.0053,
+    -0.058
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0083
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.4975,
+    -0.0053,
+    0.058
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0083
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.2319,
+    -0.0313,
+    -0.0625
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    -0.3478,
+    0.0139,
+    -0.0984
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_2",
+   "p": [
+    0.2319,
+    -0.0313,
+    0.0624
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_3",
+   "p": [
+    -0.3478,
+    0.0139,
+    0.0984
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_torp_F_0",
+   "p": [
+    0.2825,
+    0.0495,
+    -0.0379
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0084
+  },
+  {
+   "name": "hp_w0_torp_F_1",
+   "p": [
+    0.2825,
+    0.0495,
+    0.0379
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0084
+  },
+  {
+   "name": "hp_w1_turret_T_0",
+   "p": [
+    0.0824,
+    0.057,
+    -0.095
+   ],
+   "fwd": [
+    0.817,
+    0.07,
+    -0.572
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0025
+  },
+  {
+   "name": "hp_w1_turret_T_1",
+   "p": [
+    0.0824,
+    0.057,
+    0.095
+   ],
+   "fwd": [
+    0.817,
+    0.07,
+    0.572
+   ],
+   "turret": "turret_1",
+   "off_mesh": 0.0025
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "G1",
+   "socket": "G1",
+   "p": [
+    0.0401,
+    0.0427,
+    -0.0653
+   ],
+   "fwd": [
+    0.819,
+    0.0,
+    -0.574
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w1_turret_T_0"
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "turret_1",
+   "id": "G2",
+   "socket": "G2",
+   "p": [
+    0.0401,
+    0.0427,
+    0.0653
+   ],
+   "fwd": [
+    0.819,
+    0.0,
+    0.574
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w1_turret_T_1"
+   ],
+   "off_mesh": 0.0
+  }
+ ]
+}

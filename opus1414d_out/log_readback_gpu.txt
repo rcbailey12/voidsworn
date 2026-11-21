@@ -1,0 +1,11 @@
+GPU: waiting for shared claim, weight 1 (1414)
+GPU: acquired shared claim c8ad3c2b-739a-4a6e-b975-e01f7a97ad67
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f6254a513be44611adb3106989d7cb1c\godot-profile-6acf2b127fd34c9f99d5a31d6c615ffc
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+INSTALL READBACK PASS code=V15_37 nodes=20
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f6254a513be44611adb3106989d7cb1c\godot-profile-6acf2b127fd34c9f99d5a31d6c615ffc
+GPU: released shared claim c8ad3c2b-739a-4a6e-b975-e01f7a97ad67

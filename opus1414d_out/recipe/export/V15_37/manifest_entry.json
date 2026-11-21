@@ -1,0 +1,53 @@
+{
+ "name": "Harrow-class destroyer (Sunward Crusade)",
+ "faction": "voidsworn",
+ "cls": "Destroyer",
+ "band": "M",
+ "game_ship": "harrow",
+ "length_world": 9.5,
+ "hardpoints": {
+  "gun": 4,
+  "engine": 2,
+  "breach": 3,
+  "core": 1,
+  "rcs": 4,
+  "board": 2
+ },
+ "breaches": 3,
+ "turrets": 2,
+ "files": {
+  "V15_37.glb": {
+   "bytes": 6687360,
+   "sha256": "e18f3f0c3e99cda1489d32c01f7f40654b87dce34cb7fa83561a8290ac54f38b"
+  },
+  "V15_37_base.jpg": {
+   "bytes": 1221524,
+   "sha256": "065003d6097cb5b5267fe2c6306a74432e0c02cebe39023c2244e987e332db2f"
+  },
+  "V15_37_glow_emission.jpg": {
+   "bytes": 540850,
+   "sha256": "0ab9f242c3dbd00936cdc06ba3ccbb57a14dfd2b2a6c1e855b3eadd0291d74a5"
+  },
+  "V15_37_normal.png": {
+   "bytes": 4580160,
+   "sha256": "6fa5e5022c117cdb6fed2d962b5b58f9a70a3a1fad572e2b30901e6762ca34cb"
+  },
+  "V15_37_orm.png": {
+   "bytes": 6578515,
+   "sha256": "2f27168e46e230093e311c16228311bbf9b8825288d44b1684a1b49013d302c3"
+  },
+  "V15_37_parts_base.jpg": {
+   "bytes": 1040489,
+   "sha256": "4120f59c9871d7aa5c14404475250eb95866f90c4992495344948fb76a227b89"
+  },
+  "V15_37_parts_normal.png": {
+   "bytes": 3192503,
+   "sha256": "62193428e02291179f38ce0a20519a15b4e4ce8ce5a815383f26c39ab4a9bd99"
+  },
+  "V15_37_parts_orm.png": {
+   "bytes": 6255295,
+   "sha256": "2ce5e4a4b05ea01f32abf6bbcc7b7e352648ba5213a8fdf291fe6b9eb849263a"
+  }
+ },
+ "pc_path": "godot/assets/ships/V15_37/"
+}

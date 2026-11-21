@@ -1,0 +1,61 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (9.5 = LENGTH 9.5)",
+  "ok   2 transverse seams at the sheet's stations",
+  "ok   2 longitudinal seams at the sheet's heights and spans",
+  "ok   4 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (2) has muzzles of its own",
+  "ok   2 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   2 engine exits and bell radii are the sheet's",
+  "ok   38 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (torp F) was refused: T1: weapon 'torp' arc 'F' names 0 slots of the data.js list [('turret', 'T')]",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-1.25 to -0.25) runs across the transverse seam B-1: one compartment each",
+  "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+ ],
+ "record": {
+  "sheet": "voidsworn_S11",
+  "game_ship": "harrow",
+  "variant": "",
+  "model_length": 9.488,
+  "scale": 0.10539629098284241,
+  "length_world": 9.5,
+  "t_lines": [
+   -0.07905,
+   0.332
+  ],
+  "l_line": [
+   0.04652543604952606,
+   -0.4110455348330854,
+   -0.11066610553198453
+  ],
+  "l_lines": [
+   [
+    0.04652543604952606,
+    -0.4110455348330854,
+    -0.11066610553198453
+   ],
+   [
+    -0.01578309457468065,
+    -0.07377740368798968,
+    0.3214586874976693
+   ]
+  ],
+  "muzzles": 4,
+  "guns": 3,
+  "engines": 2,
+  "bays": 0,
+  "points": 10,
+  "turrets": [
+   "G1_turret",
+   "G2_turret"
+  ],
+  "interior_objects": 38,
+  "slots": [
+   "0 torp F",
+   "1 turret T"
+  ]
+ }
+}

@@ -1,0 +1,12 @@
+chain BV waiting for 1415B GA1 exit in chain_1119bs3.txt Fri 11/20/2026 17:50:46.77 
+swapped out while only waiting 19:27:27: replaced by HELPERS_CHAIN_1119BV2.bat (waits for 1373 PROBE15 exit; Board Nov 21 01:26 UTC)
+chain BV2 waiting for 1373 PROBE15 exit in chain_1119bw.txt Fri 11/20/2026 19:27:27.43 
+swapped out while only waiting 19:42:02: BV2 replaced by HELPERS_CHAIN_1119BV3.bat (waits for 1291 C13J exit; Board Nov 21 01:40 UTC)
+chain BV3 waiting for 1291 C13J exit in chain_1119bx.txt Fri 11/20/2026 19:42:02.50 
+correction: the BV2 waiter was actually stopped at 19:42:27 (my first stop call missed it); it was still only waiting. BV3 has been waiting since 19:42:02.
+mirror fetch exit 0
+813f88f5eee053b29a71515efdae7b1932d5ccf1 reachable in the mirror
+85819dc18756842942de5c8a97fe8a82e4412b28 reachable in the mirror
+1414D S11 start 20:26:05.04 
+1414D S11 exit 0 at 20:54:58.85 
+1413 O2B start 20:54:58.85 
