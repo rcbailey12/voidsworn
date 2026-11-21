@@ -1,0 +1,7 @@
+issue 1535 proof, job TEMP C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f70eab0f6a724f1db92167744300cb8a
+this job's token: not elevated
+ "python": "3.12.10",
+ "probe_protected": "False",
+ "control_protected": "True",
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f70eab0f6a724f1db92167744300cb8a
+PASS: the picture check removed its folder, mkdtemp inherits access, and the whole job TEMP is gone

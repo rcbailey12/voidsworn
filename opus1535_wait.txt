@@ -1,0 +1,6 @@
+OPUS1535_RUN.bat waiting for OPUS1497_AFTERRELAY4 exit in opus1497d_wait.txt Sat 11/21/2026 10:23:35.17 
+OPUS1535_TEMP_PROOF start Sat 11/21/2026 10:42:36.12 
+OPUS1535_TEMP_PROOF exit 0 at 10:43:26.23 
+run folder out_20261121_104236_2094
+result: done PASS
+all done Sat 11/21/2026 10:43:26.62 

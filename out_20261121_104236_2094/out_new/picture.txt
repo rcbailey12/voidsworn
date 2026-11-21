@@ -1,0 +1,31 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer
+PASS consecutive Review saves keep only their own input and revision
+PASS refused save without new or explicitly reused inputs
+PASS refused unsupported output format
+PASS cached inputs survive reuse, composite inputs deduplicate, retries retain inputs and copies stay separate
+PASS real build-sheet publisher isolates every copy and retains both composite input revisions
+PASS PNG has a visible stamp, full revision, UTC date, and exact restored alpha/pixels
+PASS JPEG, WebP and every animated GIF frame carry verifiable strips
+PASS composites preserve both input revisions and cached pictures are never relabelled
+PASS real look-bench moments, overviews and fleet skies isolate inputs while retaining reused captures
+PASS real look-bench sheets retain both revisions and compare original pixels with zero label noise
+PASS refused unstamped sheet input
+PASS refused unstamped PR picture
+PASS refused PC picture link
+PASS refused file URL
+PASS refused web picture link
+PASS refused reference-style PC link
+Rewrote picture link: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f70eab0f6a724f1db92167744300cb8a\picture889-93a765d3fc73b7b1\out\shots\PROVENANCE_889.png -> docs/shots/issue-889/PROVENANCE_889.png
+PASS refused uncommitted picture/sidecar
+PASS runner copies stamped evidence, rewrites PC links, and checks the staged pair
+PASS checkout picture links are rewritten, logged, and accepted with the staged pair
+PASS prepare refuses outside checkout paths, file URLs, web URLs and UNC paths
+PASS refused modified or removed strip
+PASS refused sidecar stage disagrees with burned text
+PASS actual PowerShell PR body entry refuses bad evidence and accepts the staged pair
+PASS Windows playtest prepare and five capture exit checks, including missing and stale evidence
+PASS checkout stamp keeps its Git revision, working tree state and shared font
+PASS non-Git Godot PNG/JPEG stamps verify with full build commit and date; missing/unknown commit exits 1
+PASS headless Windows fixture exe stamps the packed commit and refuses missing or unknown revisions
+PASS picture provenance self-test; its own folder removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f70eab0f6a724f1db92167744300cb8a\picture889-93a765d3fc73b7b1

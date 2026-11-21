@@ -1,0 +1,11 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+{
+ "python": "3.12.10",
+ "site_loaded": true,
+ "temp": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-f70eab0f6a724f1db92167744300cb8a",
+ "probe": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-f70eab0f6a724f1db92167744300cb8a\\probe1535-_t04wmve",
+ "probe_protected": "False",
+ "control_protected": "True",
+ "control_removed_by_its_maker": true
+}
+PASS probe 1535: mkdtemp under the job TEMP inherits its access

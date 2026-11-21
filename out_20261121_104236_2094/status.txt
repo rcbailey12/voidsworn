@@ -1,0 +1,26 @@
+[Sat 11/21/2026 10:42:36.95] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-21T16:42:37Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+found pil: C:\Users\rcbai\AppData\Local\Programs\Python\Python312\python.exe
+all tools found
+[Sat 11/21/2026 10:42:38.42] ready: GPU label 1535
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1 (tools_live version 9204dbb0c395)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 9c5e2124a06e6eebc7a38fc81a48e771a589d5a3 C:\Users\rcbai\Downloads\voidsworn_test\opus1535\out_20261121_104236_2094\new
+[Sat 11/21/2026 10:42:51.74] step new picture provenance check start
+[Sat 11/21/2026 10:43:19.49] step new picture provenance check ok
+[Sat 11/21/2026 10:43:19.51] step new mkdtemp probe start
+[Sat 11/21/2026 10:43:21.05] step new mkdtemp probe ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026 10:43:21.98
+checkout new removed after the job (17.5 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1535\out_20261121_104236_2094\new
