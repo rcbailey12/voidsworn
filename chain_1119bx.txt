@@ -1,0 +1,9 @@
+chain BX waiting for 1373 PROBE15 exit in chain_1119bw.txt Fri 11/20/2026 19:42:02.47 
+swapped out while only waiting 19:49:17: replaced by HELPERS_CHAIN_1119BX2.bat (waits for 1415B GA1 exit; BW held; Board Nov 21 01:48 UTC)
+chain BX2 waiting for 1415B GA1 exit in chain_1119bs3.txt Fri 11/20/2026 19:49:18.51 
+mirror fetch exit 0
+8dd88341aa40ccaa045d8d56af56d6949cd61ed1 reachable in the mirror
+1291 C13J start 19:59:19.91 
+1291 C13J exit 0 at 20:25:26.51 
+after-job janitor ran 20:25:27.27 
+all done Fri 11/20/2026 20:25:27.27 

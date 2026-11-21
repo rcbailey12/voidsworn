@@ -1,0 +1,5 @@
+[audit] {"problems": [], "parts": 129, "crossing_break_lines": [], "structure_across_seams": ["H3", "S1p", "S1s", "S3p", "S3s", "S4p", "SB1"], "guns_with_normals": 3, "guns_into_ship": 0, "guns": 3, "break_lines": {"t_lines": [-0.1362984424078456, 0.3145348670950283], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\build\C13.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-593a1f217cc74c28bd572218749ecccf

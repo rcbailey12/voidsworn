@@ -1,0 +1,10 @@
+{
+ "result": "FAIL",
+ "failures": [
+  "3 of 3 guns carry no mount normal, so the into-the-ship test could not run for them: W1, W2, W3"
+ ],
+ "problems": [],
+ "crossing_break_lines": [],
+ "guns": 3,
+ "guns_with_normals": 0
+}
