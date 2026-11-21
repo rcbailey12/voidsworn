@@ -153,6 +153,7 @@ var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 var shots_dir := ""
+var torp_snapped := 0      # issue 1531: torpedo salvos captured so far (--torp-max)
 var torp_ft := {}          # issue 1379: frame times through one torpedo salvo (--torp-shots DIR --torp-ft)
 var t_start := 0.0
 var marker_root: Node3D
@@ -1678,6 +1679,26 @@ func _name(id) -> String:
 	return str(VU[id]["name"]) if VU.has(id) else "?"
 
 
+# issue 1524: the ship a "command" event pulses: the unit it names (an enemy boss), else that side's living flagship.
+# The player's flagship is the rules' pflag (the run's flagUid; the view's "flagship" marks enemy objectives and bosses),
+# read through api.unit (no rules state is written); a view flagship of that side stands in when none is flagged.
+func _command_ship(e: Dictionary) -> String:
+	if e.get("unit") != null and VU.has(e["unit"]):
+		return str(e["unit"])
+	var side := str(e.get("side", ""))
+	var spare := ""
+	for id in VU:
+		var u: Dictionary = VU[id]
+		if str(u.get("side", "")) != side or bool(u.get("dead", false)) or bool(u.get("squadron", false)):
+			continue
+		var ru = api.unit(str(id)) if api != null and api.has_method("unit") else null
+		if ru is Dictionary and _jt(ru.get("pflag")):
+			return str(id)
+		if spare == "" and bool(u.get("flagship", false)):
+			spare = str(id)
+	return spare
+
+
 func _side(id) -> String:
 	return str(VU[id]["side"]) if VU.has(id) else "enemy"
 
@@ -1848,7 +1869,15 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
 			sfx.boom(0.8, _pos(e["target"]))
-			_flash(_pos(e["target"]) + Vector3(0, 2, 0), 30.0, Color(1, 0.7, 0.4), 0.6)
+			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
+			# the rammer's bow, the biggest shove and the zoom punch. The generic pop stays only when the fx layer drew nothing.
+			var rammed := false
+			if gfx != null and gfx.has_method("volley"):
+				var rr: Dictionary = gfx.volley(str(e["unit"]), "torp", str(e["target"]), {"weapon_id": "ram", "shots": [true],
+					"hits": [{"shield": 0, "hull": int(e["dmg"]), "section": str(e["section"]), "crit": false}]})
+				rammed = not (rr.get("impacts", []) as Array).is_empty()
+			if not rammed:
+				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 30.0, Color(1, 0.7, 0.4), 0.6)
 			_log("%s rams %s at full speed: %d to its %s, %d back to the ram." % [_name(e["unit"]), _name(e["target"]), int(e["dmg"]), SEC_NAME.get(str(e["section"]), str(e["section"])), int(e["recoil"])], _who(e["unit"]))
 			var d: Dictionary = disp.get(e["target"], {})
 			if d.has("hp"):
@@ -1868,7 +1897,13 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
 				_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
-			_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
+			# issue 1524 (fx/API.md 11): the approved boarding breach (pried hatch, venting gas, light from inside, then a
+			# dark gash); the generic pop stays only when the fx layer found no boarding point to draw it at
+			var boarded := 0.0
+			if gfx != null and gfx.has_method("board"):
+				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res))
+			if boarded <= 0.0:
+				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			await wait(600.0)
 		"command_warning":
 			var C = _command(str(e["id"]))
@@ -1880,6 +1915,11 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var C = _command(str(e["id"]))
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
 			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
+			# issue 1524 (fx/API.md 11): the flagship's command pulse under the banner
+			# (the player's command names no unit: it pulses that side's living flagship)
+			var cmd_ship := _command_ship(e)
+			if cmd_ship != "" and gfx != null and gfx.has_method("command"):
+				gfx.command(cmd_ship, str(e["id"]))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
 			# issue 1236: the wreck sits in the hex it blocks. Its death pieces are kept inside that hex from the start;
@@ -2327,7 +2367,7 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 # fx3d.js cineWants and cineFrame: a side-on shot of the big moments (lances, torpedoes and novas on bosses or a nearly
 # dead target, capital volleys on them, kills of bigger ships), letterboxed, back to the board after
 func _cine_wants(kind: String, a_id, t_id) -> bool:
-	if cine == "off" or bot or shots_dir != "":
+	if cine == "off" or bot or (shots_dir != "" and not args.has("torp-cine")):   # --torp-cine: captures keep the cut-in (issue 1379)
 		return false
 	if cine == "all":
 		return true
@@ -2432,11 +2472,20 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			# picture taken, so the reading is the game's own
 			torp_ft = {"tag": tag, "until": game_t + 3.5, "ms": []}
 		else:
+			var launch := args.has("torp-launch")   # the launch itself: close on the firing ship, dense frames (a clip)
+			torp_snapped += 1
+			if args.has("torp-max") and torp_snapped > int(args["torp-max"]):   # --torp-max N: only the first N salvos
+				launch = false
 			if float(args.get("torp-cam", 34)) > 0.0:     # --torp-cam 0: the battle camera as the player has it
-				cam.focus(_pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
-			for fi in 12:     # 0.5 to 2.7 s: launch, flight, hit or interception, and the wake cooling after it
-				var at := 0.5 + fi * 0.2
-				_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
+				cam.focus(from if launch else _pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
+			if launch:
+				var fdt := float(args.get("torp-dt", 0.05))
+				for fi in int(1.8 / fdt):     # 0 to 1.8 s: hatch, push out, ignition, the turn and the run in
+					_at_fx(fi * fdt, func() -> void: _snap("tl_%s_%03d" % [tag, fi]))
+			elif not args.has("torp-max") or torp_snapped <= int(args["torp-max"]):
+				for fi in 12:     # 0.5 to 2.7 s: launch, flight, hit or interception, and the wake cooling after it
+					var at := 0.5 + fi * 0.2
+					_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
 	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:

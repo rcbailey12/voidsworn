@@ -589,6 +589,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	if code == "" and root.get("code") != null:
 		code = str(root.get("code"))
 	_read_turrets(root)
+	_read_doors(root)
 	_read_points(root)
 	_find_core(faces)
 	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
@@ -1155,7 +1156,10 @@ func bay(i: int, toward_local: Vector3) -> Dictionary:
 	var pts: Array = points.get("bay", [])
 	if not pts.is_empty():
 		_took("bay", "hp")
-		return _hp(pts[posmod(i, pts.size())])
+		var pt: Dictionary = pts[posmod(i, pts.size())]
+		var r := _hp(pt)
+		r["bay"] = int(pt["i"])   # issue 1543: which hp_bay_<n>, so launch() opens that mouth's door
+		return r
 	var d := toward_local - core
 	d.y = 0.0
 	var out := (d.normalized() + Vector3.UP).normalized() if d.length() > 1e-4 else Vector3.UP
@@ -1623,3 +1627,115 @@ func turret_step(t: float) -> void:
 		var y := turret_yaw(k, t)
 		tt["yaw"] = y
 		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(Basis(Vector3.UP, deg_to_rad(y)), Vector3.ZERO)
+
+
+# ---------------------------------------------------------------- doors (issue 1543)
+# Ryan (Nov 21 2026): a launch mouth has a flesh door "in sections with the opening spreading from the middle", closed between
+# launches, plain flesh. A door reaches the game as a node door_<n> (docs/ship_pipeline/HARDPOINTS.md "Doors"; extras: the bay
+# it opens for and open_deg) with one node door_<n>_lobe_<k> per lobe at its hinge: local +X the hinge line, -Z toward the
+# door's centre, +Y out of the mouth; a turn of open_deg (negative: the tip folds down into the bore) about +X opens it.
+# launch() opens the door of the bay a squadron leaves from (door_cycle): the lobes ease open before the first craft leaves,
+# hold while the squadron is out, then ease shut. Like a turret's, a door's pose is a pure function of the effect clock (fx.now);
+# fx_ship.update writes it onto the lobe nodes every frame. The rules never see a door (RULEBOOK 7.4).
+const DOOR_RE := "^door_(\\d+)$"
+const DOOR_OPEN := 0.28      # seconds to open (the first craft leaves 0.3 after the launch call: fx_weapons.launch)
+const DOOR_CLOSE := 0.5      # seconds to shut, after the hold
+var doors: Array = []        # {node, name, id, bay, deg, lobes: [{node, rest}], wins: [[t_open, t_shut]], f}
+var _door_of := {}           # door node instance id -> index
+
+
+func _read_doors(root: Node3D) -> void:
+	doors = []
+	_door_of = {}
+	var re := RegEx.new()
+	re.compile(DOOR_RE)
+	var found: Array = []
+	for nd in root.find_children("door_*", "Node3D", true, false):
+		var m := re.search(String(nd.name))
+		if m == null:
+			continue
+		var ex = (nd as Node3D).get_meta("extras", {})
+		if not ex is Dictionary:
+			ex = {}
+		found.append([int(m.get_string(1)), nd, ex])
+	found.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	for row in found:
+		var d3: Node3D = row[1]
+		var ex: Dictionary = row[2]
+		var lobes: Array = []
+		var lre := RegEx.create_from_string("^%s_lobe_(\\d+)$" % String(d3.name))
+		for c in d3.get_children():
+			if c is Node3D and lre.search(String(c.name)) != null:
+				lobes.append({"node": c, "rest": (c as Node3D).transform})
+		_door_of[d3.get_instance_id()] = doors.size()
+		doors.append({"node": d3, "name": String(d3.name), "id": str(ex.get("id", d3.name)), "bay": int(ex.get("bay", row[0])),
+			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
+
+
+# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+func _door_above(n: Node, root: Node) -> int:
+	var p := n.get_parent()
+	while p != null and p != root:
+		if _door_of.has(p.get_instance_id()):
+			return int(_door_of[p.get_instance_id()])
+		p = p.get_parent()
+	return -1
+
+
+# The door that opens for bay i (hp_bay_<i>), or -1.
+func door_for_bay(i: int) -> int:
+	for k in doors.size():
+		if int(doors[k]["bay"]) == i:
+			return k
+	return -1
+
+
+# Open bay i's door from t_open, hold it open until t_hold (the last craft clear), then shut it. A second launch from the same
+# bay while the door is still held open extends that hold, so it never shuts between squadrons. One that comes while the door is
+# closing gets its own window: the door's pose is the most open of its windows, so it reopens from where it is (it keeps
+# closing until the new opening passes it, then opens), never jumping back to fully open (Artoo on PR 1544).
+func door_cycle(i: int, t_open: float, t_hold: float) -> void:
+	var k := door_for_bay(i)
+	if k < 0:
+		return
+	var wins: Array = doors[k]["wins"]
+	for w in wins:
+		if t_open >= float(w[0]) and t_open <= float(w[1]):
+			w[1] = maxf(float(w[1]), t_hold)
+			return
+	wins.append([t_open, t_hold])
+
+
+# How far door k is open at time t: 0 shut, 1 open; eased in and out (smoothstep), never a snap (RULEBOOK 7.1).
+func door_open_at(k: int, t: float) -> float:
+	var f := 0.0
+	for w in doors[k]["wins"]:
+		var a := float(w[0])
+		var b := float(w[1])
+		var g := 0.0
+		if t < a or t > b + DOOR_CLOSE:
+			g = 0.0
+		elif t < a + DOOR_OPEN:
+			g = smoothstep(0.0, 1.0, (t - a) / DOOR_OPEN)
+		elif t <= b:
+			g = 1.0
+		else:
+			g = 1.0 - smoothstep(0.0, 1.0, (t - b) / DOOR_CLOSE)
+		f = maxf(f, g)
+	return f
+
+
+func door_step(t: float) -> void:
+	for k in doors.size():
+		var d: Dictionary = doors[k]
+		var wins: Array = d["wins"]
+		while not wins.is_empty() and float(wins[0][1]) + DOOR_CLOSE < t - 1.0:
+			wins.pop_front()
+		var f := door_open_at(k, t)
+		if f == float(d["f"]) and f == 0.0:
+			continue
+		d["f"] = f
+		var b := Basis(Vector3.RIGHT, deg_to_rad(float(d["deg"]) * f))
+		for lb in d["lobes"]:
+			if is_instance_valid(lb["node"]):
+				(lb["node"] as Node3D).transform = (lb["rest"] as Transform3D) * Transform3D(b, Vector3.ZERO)

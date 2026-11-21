@@ -181,7 +181,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# why marks came and went between runs)
 	for m in meshes:
 		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -382,6 +382,8 @@ func update(fx, dt: float) -> void:
 		return
 	if not hull.turrets.is_empty():
 		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+	if not hull.doors.is_empty():
+		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
