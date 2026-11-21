@@ -1,0 +1,8 @@
+OPUS1531C_WAIT.bat waiting for OPUS1524_SHOTS4 exit in opus1524e_wait.txt Sat 11/21/2026 11:46:48.82 
+stopped while only waiting 12:15:03: OPUS1531C_WAIT (RUN3) replaced by OPUS1531D_WAIT.bat (RUN4, Board Nov 21 18:14 UTC). From here on the line 'OPUS1531_RUN3 exit' in this log means RUN4.
+OPUS1531D_WAIT.bat waiting for OPUS1524_SHOTS4 exit in opus1524e_wait.txt Sat 11/21/2026 12:15:03.45 (runs RUN4; its end line below is named OPUS1531_RUN3 by Board ruling) 
+OPUS1531_RUN4 start 12:21:03.19 
+OPUS1531_RUN3 exit 0 at 12:43:13.84 (this is RUN4) 
+run folder out_20261121_122103_23934
+result: done PASS
+all done Sat 11/21/2026 12:43:14.26 
