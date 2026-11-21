@@ -70,32 +70,32 @@
    "turrets": 0,
    "files": {
     "B19_11.glb": {
-     "bytes": 7963164,
-     "sha256": "23d8807b9be59d7aacd71ea1cf75d477e2b998caf92ca2bfc01d882044aa589a"
+     "bytes": 8090796,
+     "sha256": "11da0fb7f016b4ea578b7bc554ba4b28c5ec39bcd2d1dd98a2be2fd365ec509a"
     },
     "B19_11_base.jpg": {
-     "bytes": 804493,
-     "sha256": "83f342d4441617615b70a3708e3424fd4648e2169eda80fd1b4a17c861287191"
+     "bytes": 806429,
+     "sha256": "e747e119994545d52cb36ba8e62554623cf5332521295dee318adb91b4a2d7c1"
     },
     "B19_11_normal.png": {
-     "bytes": 6740826,
-     "sha256": "11a6b232d0536657400bd56af2b9ec4d2c09deae2878df294f238fddfc112e97"
+     "bytes": 6742129,
+     "sha256": "41107292758a5888ebf6d1a40e90c32cc891d8b598e369b09567358660ba01e5"
     },
     "B19_11_orm.png": {
-     "bytes": 4639364,
-     "sha256": "6b535c9b03087c4487ab9732ce2737f93bd466e2082f0a29ad7629e259291017"
+     "bytes": 4630662,
+     "sha256": "c3315561614d847c019ce34bdef6f5e745d9b0ffffc62e6d0555aa6c76b61fe8"
     },
     "B19_11_parts_base.jpg": {
-     "bytes": 1024223,
-     "sha256": "4895e58ca38e67e77ba963671fe3b2a27c406c115f0865e1726473ccac921732"
+     "bytes": 1031221,
+     "sha256": "f9ab6f9161afd199177fe43e82051a68a93e0bafd3d945db6ec901357423377d"
     },
     "B19_11_parts_normal.png": {
-     "bytes": 6180319,
-     "sha256": "43f284b441cfe0b2387ab7123fdae1053a18b36ecdbf4ed6f86aec497185f844"
+     "bytes": 6131586,
+     "sha256": "ae640d720ba7b95d6fa0c77c2ca2c5c108b68050026c289fac7bef19d17f7387"
     },
     "B19_11_parts_orm.png": {
-     "bytes": 5565703,
-     "sha256": "33ce6f800defe4928f63646b47acdc38525f443779b0dc56177d2a36b5ddafad"
+     "bytes": 5574876,
+     "sha256": "9cd3bf47d5ba08621727f1480689f71d3b5a9b6e45fd2cdf0cfa99754e4bc4e2"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\"
@@ -168,32 +168,32 @@
    "turrets": 0,
    "files": {
     "B21_11.glb": {
-     "bytes": 11806256,
-     "sha256": "8b8764a779206ee8f5ecf45859b3d0bd6583f55daff532fc684e01a92c89d4ca"
+     "bytes": 11913328,
+     "sha256": "56c9f6be63bdbb9ca9a5be9596c20e3dc8e330c78fb1ddce23d147fc9aa72ae5"
     },
     "B21_11_base.jpg": {
-     "bytes": 841042,
-     "sha256": "5b2993f054a4d995e25d3f20dfdf7825991a3a725e501cce4f65980312e54b6d"
+     "bytes": 840975,
+     "sha256": "2366e4367fc7942ae182e6186b36c9b6e0dcb8e0343b0d4bb515b69f96c66caa"
     },
     "B21_11_normal.png": {
-     "bytes": 6607486,
-     "sha256": "4ec49be3eb4fd60a4fce8f6fe631d820c0992e3e6f06c03d984ea9021647d08a"
+     "bytes": 6607470,
+     "sha256": "3005d87a78b3fa6faf9dbffb5c1f7206e4a53a90cb12b319038c260cd4d852f3"
     },
     "B21_11_orm.png": {
-     "bytes": 4817995,
-     "sha256": "ce330e07f4cdf57b59aeb9cd5b4118589de69c434839eb6784954bedb857029d"
+     "bytes": 4817908,
+     "sha256": "7ca7b8b780295edc91536602386a1e570eff37bffd8e9b2b6485746584b96bfa"
     },
     "B21_11_parts_base.jpg": {
-     "bytes": 1008716,
-     "sha256": "7337a21ec9dbc543b45decdcfebc54ac7b05f5f91a4ba529a615a7248fb9fd74"
+     "bytes": 1038017,
+     "sha256": "0e0939e6821fce036cff76667b2e1b923cb72b3eca4e21619c2fa5f3fcbded90"
     },
     "B21_11_parts_normal.png": {
-     "bytes": 5764760,
-     "sha256": "3899067665441f86117c27e04765a03833b81ee29a91e8c87fed06ff96f20b14"
+     "bytes": 5870605,
+     "sha256": "4a75c82560d0e860ae96b3fb247f7e9c65601a34e52835ddaa1ce66c8922efe5"
     },
     "B21_11_parts_orm.png": {
-     "bytes": 5459706,
-     "sha256": "ac17fae42928835c454f03aff3179443680fb4aa0ceb48dd30899a079942238a"
+     "bytes": 5601169,
+     "sha256": "577d5a9d8bbe125cc144ffb7ebd767970272ee9c5df04e666bf3f377ad31b614"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B21_11\\"
@@ -2195,6 +2195,57 @@
    },
    "pc_path": "godot/assets/ships/hegemony_HB1/",
    "wing_role": "bomber"
+  },
+  "corsair_KF1": {
+   "name": "Narrow Glacis fighter, the Hullbreaker fighter wing craft (Ashfall Hullbreakers)",
+   "faction": "corsair",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "fighter",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 3,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 1,
+   "files": {
+    "corsair_KF1.glb": {
+     "bytes": 9462636,
+     "sha256": "a7c36d580c20e9fa800e2c765c7a45a3031b6dd39baccf4d7c40d3b401f647ca"
+    },
+    "corsair_KF1_base.jpg": {
+     "bytes": 1049113,
+     "sha256": "fe25978eb7af1237a6e2bb443a6d3adeda4abed8350c319f1097ac98846a9631"
+    },
+    "corsair_KF1_glow_emission.jpg": {
+     "bytes": 215303,
+     "sha256": "67b190187c4664e8076655b6e8090d06eaf3a7b2c896747107362ac5a76938f7"
+    },
+    "corsair_KF1_normal.png": {
+     "bytes": 7772286,
+     "sha256": "fd45032bcc756b32dc2ec7922b976560c755386d4e5d20d4311c47189255c50c"
+    },
+    "corsair_KF1_orm.png": {
+     "bytes": 6934664,
+     "sha256": "c03ca1b25ece8d7554823d9caf37cf40a39555dace084aec7a88412833db651c"
+    },
+    "corsair_KF1_parts_base.jpg": {
+     "bytes": 631455,
+     "sha256": "5ee06bc51469b704c649534d5f6f954e62d0aeb5ea50dadf13e46a4639cf6577"
+    },
+    "corsair_KF1_parts_normal.png": {
+     "bytes": 7735611,
+     "sha256": "7b79a507bd9e29b68fdcad48188f1ec5e37f3c6a15501b73e4b5f03fa18b9da7"
+    },
+    "corsair_KF1_parts_orm.png": {
+     "bytes": 5518140,
+     "sha256": "c7a7c3d76e260b64265fda23d46cf16d9ce1ab21f8011e899a5aa045473f677c"
+    }
+   },
+   "pc_path": "godot/assets/ships/corsair_KF1/",
+   "wing_role": "fighter"
   }
  }
 }

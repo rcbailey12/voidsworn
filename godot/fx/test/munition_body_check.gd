@@ -1,6 +1,6 @@
 extends SceneTree
 # Issue 1379 run 2 (R362, docs/playbooks/ships.md section 9): torpedoes and rockets are built from the faction part kits and
-# take the hull finish. Checks, headless: each body file in fx/munitions/ loads, keeps the code casing's frame (+X the nose,
+# take the hull finish. Checks, headless: each body file in fx/munition_bodies/ loads, keeps the code casing's frame (+X the nose,
 # about 2.3 long, round about X), every surface carries the faction's hull look (LOOK.hull's "look_hull" mark), a projectile
 # of that faction and look uses the kit body (no code casing mesh in it), and a faction with no file keeps the code casing.
 # Rebuild the files: tools/blender/build_sheets/munitions/munitions.py.

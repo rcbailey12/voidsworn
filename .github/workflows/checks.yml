@@ -99,8 +99,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Picture provenance self-test dependency
-        run: python -m pip install Pillow
+      - name: Picture provenance and detail check self-test dependencies
+        run: python -m pip install Pillow numpy
       - name: No em dashes in changed text files (house rule)
         run: node contrib/opus/tools/check_em_dashes.js
       - name: Run all standing checks
