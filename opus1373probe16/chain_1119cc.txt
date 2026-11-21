@@ -1,0 +1,14 @@
+chain CC waiting for 1373I GW4 exit in chain_1119ca.txt Fri 11/20/2026 20:54:12.31 
+swapped out while only waiting 20:55:48: CC replaced by HELPERS_CHAIN_1119CC2.bat (runs OPUS1373I_PROBE16B.bat; Board Nov 21 02:55 UTC)
+chain CC2 waiting for 1373I GW4 exit in chain_1119ca.txt Fri 11/20/2026 20:55:48.75 
+HELD 00:07:23 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule). Requeue after space is freed.
+chain CC2 waiting for 1373I GW4 exit in chain_1119ca.txt Sat 11/21/2026  6:14:35.71 
+PROBE16 prep  6:14:36.08 
+clone at 84b6e3f481f05d5728ffd407b00e492207db9b91
+kit ithar_GV2 copied from opus1373gv2i
+kit ithar_GW4 copied from opus1373gw4i
+entries ok: 5
+import exit 0 at  6:15:38.61 
+PROBE16 start  6:15:38.61 
+1373I PROBE16 exit 0 at  6:16:41.41 
+all done Sat 11/21/2026  6:16:41.41 
