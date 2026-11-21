@@ -1,0 +1,6 @@
+OPUS1121O_WAIT.bat waiting for OPUS1468_SHADER3 exit in opus1468c_wait.txt Sat 11/21/2026 14:35:53.43 
+OPUS1121O_MOTION start 15:04:56.22 
+OPUS1121O_MOTION exit 1 at 15:23:19.66 
+run folder out_20261121_150456_18760
+result: done FAILED: capture final
+all done Sat 11/21/2026 15:23:20.08 
