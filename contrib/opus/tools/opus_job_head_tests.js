@@ -501,7 +501,7 @@ assert(fs.existsSync(path.join(elsewhereGodot, '.godot', 'keep.bin')) && /import
 r = run('survey');
 assert.equal(r.status, 0, r.out);
 assert(/attempt checkout [\d.]+ GB FAILED .*out_3/.test(r.out) && /ship clone [\d.]+ GB .*opus1497b/.test(r.out) && /nothing was removed/.test(r.out), 'the survey lists what is left: ' + r.out);
-assert(fs.existsSync(path.join(failedToday, 'new')) && fs.existsSync(sb.repo), 'the survey removes nothing');
+assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(sb.repo), 'the survey removes nothing');
 
 const before = path.join(tmp, 'before.txt'), after = path.join(tmp, 'after.txt');
 assert.equal(run('hashes', before).status, 0);
