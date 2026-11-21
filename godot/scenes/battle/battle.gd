@@ -153,6 +153,7 @@ var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 var shots_dir := ""
+var torp_snapped := 0      # issue 1531: torpedo salvos captured so far (--torp-max)
 var torp_ft := {}          # issue 1379: frame times through one torpedo salvo (--torp-shots DIR --torp-ft)
 var t_start := 0.0
 var marker_root: Node3D
@@ -2093,13 +2094,16 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			torp_ft = {"tag": tag, "until": game_t + 3.5, "ms": []}
 		else:
 			var launch := args.has("torp-launch")   # the launch itself: close on the firing ship, dense frames (a clip)
+			torp_snapped += 1
+			if args.has("torp-max") and torp_snapped > int(args["torp-max"]):   # --torp-max N: only the first N salvos
+				launch = false
 			if float(args.get("torp-cam", 34)) > 0.0:     # --torp-cam 0: the battle camera as the player has it
 				cam.focus(from if launch else _pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
 			if launch:
 				var fdt := float(args.get("torp-dt", 0.05))
 				for fi in int(1.8 / fdt):     # 0 to 1.8 s: hatch, push out, ignition, the turn and the run in
 					_at_fx(fi * fdt, func() -> void: _snap("tl_%s_%03d" % [tag, fi]))
-			else:
+			elif not args.has("torp-max") or torp_snapped <= int(args["torp-max"]):
 				for fi in 12:     # 0.5 to 2.7 s: launch, flight, hit or interception, and the wake cooling after it
 					var at := 0.5 + fi * 0.2
 					_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
