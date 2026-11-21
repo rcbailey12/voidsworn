@@ -54,7 +54,7 @@ var bg: ColorRect
 var page_box: Control
 var map3d: Control                    # the 3D sector map, kept alive between renders (it animates)
 var use_3d_map := true                # always true: the flat map (map_view.gd) is retired (R51 audit); kept for the shot harness
-var ai_level := "veteran"             # the battle setting the shell uses (godot/main settings "ai"); the map's danger bands follow it
+var ai_level := "standard"             # the battle setting the shell uses (godot/main settings "ai"); the map's danger bands follow it
 var map_quality := "high"             # the 3D map's detail, "high" or "low" (R51): from the game's Graphics setting, then the map's own toggle
 var modal_box: Control
 var toast_box: VBoxContainer
