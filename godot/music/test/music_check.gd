@@ -112,6 +112,14 @@ func _run() -> void:
 	m.call("set_volume", 0.7)
 	m.call("set_on", false)
 	_ok(AudioServer.is_bus_mute(AudioServer.get_bus_index("music")), "music off mutes the bus")
+	# issue 1457: quit_clean releases every track, so the title music is not a resource in use at exit
+	m.call("play_title")
+	m.call("release")
+	var held := 0
+	for p in m.find_children("*", "AudioStreamPlayer", true, false):
+		if (p as AudioStreamPlayer).stream != null or (p as AudioStreamPlayer).playing:
+			held += 1
+	_ok(held == 0 and (m.get("_streams") as Dictionary).is_empty(), "release frees every track before quit")
 	m.free()
 	print("MUSIC CHECK ", "PASS" if fails.is_empty() else "FAIL (%d)" % fails.size())
 	quit(0 if fails.is_empty() else 1)
