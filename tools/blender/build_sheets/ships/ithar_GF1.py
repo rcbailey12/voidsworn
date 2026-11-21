@@ -56,6 +56,7 @@ X0, X1 = -0.5 * LENGTH + 0.03 * LENGTH, 0.5 * LENGTH   # the core; the stern sto
 HW, HH = 0.095 * LENGTH, 0.070 * LENGTH   # the core's half-beam and half-height at its widest (about 5 to 1)
 BOW_EXP = 0.75   # how fast the core swells from its bow point (t=1 is the bow, X1); lower is a blunter, rounder bow (the bomber sets it)
 MOSAIC_WEIGHTS = None           # the mosaic's amber, violet, green shares; None: the kit's (the bomber sets its own)
+MOSAIC_GRID = (64, 40)         # the mosaic core's vertex grid (along, around): colour is per vertex, so thin streaks on a big body need more
 MOSAIC_KW = {}                 # extra kit mosaic_tint options (a wide body passes streak=True, issue 1415); none: the kit default
 
 
@@ -200,7 +201,7 @@ def body(K):
     ribs = ribbons()
 
     # ---------------- the core: the glowing stained-glass mosaic seen between the ribbons ----------------
-    nu, nv = 64, 40
+    nu, nv = MOSAIC_GRID
     vf = grid(core, nu, nv, X0, X1)
     hull = K._obj(CODE + '_mosaic_core', *vf, 'gw_mosaic', smooth=True)
     # the core's glass wall: a thin inward shell (stage 4's sheet contract reads the hull thickness from a shell modifier)

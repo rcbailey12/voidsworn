@@ -94,6 +94,7 @@ def gaps(x, a, ribs):
 
 
 F.gaps = gaps
+F.MOSAIC_GRID = (160, 240)   # ten gaps of four thin streaks each round the twin lobes (kit MIX 'streaks', Ryan Nov 20 7:48 PM CT)
 F.CORE_NOTE = 'two plump lobes fused side by side, the same size and shape, fully closed; a groove top and bottom where they meet (W4b)'
 F.STONES = [(0.0, 'c')]
 F.STONE_RING = (0.0, 0.0)

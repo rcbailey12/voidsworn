@@ -63,6 +63,7 @@ F.core = core
 F.NRIB = 4
 F.HALF = 0.42
 F.TWIST = lambda x: 2.6 * (x - F.X0) / LENGTH * TAU / 2.0   # two ribbons wound tightly, about one and a half turns nose to stern
+F.MOSAIC_GRID = (110, 64)    # four gaps of four thin streaks each (kit MIX 'streaks', Ryan Nov 20 7:48 PM CT)
 F.CORE_NOTE = 'a small double-lobed dart: a rear lobe, a pinched waist, a big fore lobe and a needle nose (V2d)'
 F.STONES = [(0.0, 'c')]
 F.STONE_RING = (0.0, 0.0)
