@@ -941,6 +941,9 @@ Why: a fixture typed by hand let 137 checks pass while real play was broken (R15
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.
+A push that changes only .md files and pictures under docs/, contrib/ or the repo root (tools/ci/docs_only.js) runs the
+standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
+main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
 12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
 drifted (R155). Set: Board. Id: R155b.
