@@ -418,7 +418,14 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         nsp = int(kw.get('spines', 16))
         # the knoll: a lumpy dome whose crown is the vent; its body runs back into the hull (mount)
         kc = L * 0.98 - RK * 0.92
-        p.add('knoll', 'mount', 'flesh', blob(RK * 0.92, RK * 1.12, RK * 1.08, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1))
+        KV, KF = blob(RK * 0.92, RK * 1.12, RK * 1.08, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1)
+        # Ryan (Nov 21, C13 run K: "these are clearly not holes"): the crown is cut open under the lip ring and a bore runs down
+        # into the knoll, so the vent is a real opening with depth, never a dark cap on a closed dome
+        def _open(f):
+            c = [KV[i] for i in f]
+            cx = sum(v[0] for v in c) / len(c); cr = sum(math.hypot(v[1], v[2]) for v in c) / len(c)
+            return not (cx > kc and cr < r * 0.98)
+        p.add('knoll', 'mount', 'flesh', (KV, [f for f in KF if _open(f)]))
         # the puckered lip: a thick lumpy ring sunk a little into the crown, pucker folds gathered into the hole
         m = 60; pts = []; rad = []
         for k in range(m):
@@ -428,6 +435,14 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             rad.append(r * (0.25 + 0.06 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
         pts.append(pts[0]); rad.append(rad[0])
         p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
+        # Ryan (Nov 20, C13 run I: "There's no actual holes like the concept"): the vent is a real dark hole. A dark crater sits
+        # inside the lip ring over the knoll's crown, deepest at its centre, so the opening reads black from the battle camera
+        # the bore: a lumpy throat from the lip down into the knoll, its floor closed deep inside (dark, matte: no flare)
+        bp = [(L * 1.0 - r * 0.02, r * 1.0), (L * 1.0 - r * 0.35, r * 0.9), (L * 1.0 - r * 0.9, r * 0.74), (L * 1.0 - r * 1.5, r * 0.55),
+              (L * 1.0 - r * 1.9, r * 0.3), (L * 1.0 - r * 2.05, 0.001)]
+        BV, BF = revolve(bp, 28)
+        BV = [(x, y * (1 + 0.08 * math.sin(5 * math.atan2(z, y) + seed)), z * (1 + 0.08 * math.sin(5 * math.atan2(z, y) + seed))) for (x, y, z) in BV]
+        p.add('crater', 'mount', 'pit', (BV, [tuple(reversed(f)) for f in BF] + list(BF)))
         for k in range(22):
             a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
             ca, sa = math.cos(a), math.sin(a)
@@ -1011,8 +1026,16 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
         creases = veins = 0
     cz = h - r * 1.0
     # hang > 1: a pendulous lobe, swelling away from the body and narrowing to a soft neck where it grows out
-    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.15 if window == 'slit' else 0.06,
-                                         squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None))
+    SV, SF = blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.15 if window == 'slit' else 0.06,
+                  squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None)
+    has_pore = window == 'slit' and glow
+    pr = r * (0.2 if armour else 0.17)
+    if has_pore:
+        # Ryan (Nov 21: "these are clearly not holes"): the crown is cut open and a bore runs down into the sac (below)
+        SF = [f for f in SF if not (sum(SV[i][2] for i in f) / len(f) > cz and max(math.hypot(SV[i][0], SV[i][1]) for i in f) < pr * 0.95)]
+        ring_v = [v for v in SV if v[2] > cz and pr * 0.8 < math.hypot(v[0], v[1]) < pr * 1.4]
+        top_z = sum(v[2] for v in ring_v) / max(1, len(ring_v)) if ring_v else cz + r
+    p.add('sac', 'mount', 'flesh', (SV, SF))
     # the root: a broad swelling where the sac grows out of the body, so it reads as a bulge of the flank, not a ball stuck on
     p.add('rootf', 'mount', 'flesh', blob(r * (0.85 if hang > 1 else 1.1), r * (0.8 if hang > 1 else 1.05), r * (0.55 if hang > 1 else 0.3), centre=(0, 0, 0.0), nu=28, nv=10, seed=seed + 7, amp=0.08))
     # the socket: wrinkle rolls round the base, where the sac meets the hull (z about 0)
@@ -1053,6 +1076,17 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             p.add('vein%d' % i, 'body', 'vein', welt(pts, nrm, r * 0.022, r * 0.01, n=4))
         else:
             p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
+    if window == 'slit' and glow:
+        # Ryan (Nov 20, on C13 run I): "There's no actual holes like the concept" and "the same weird yellow circle or patch on
+        # the sacs": a slit-window sac shows no lit bile at all. Its crown carries one dark pore, a real hole like the concept's
+        # bulbs: a dark pit sunk in the skin with a rolled lip of flesh round it
+        top = Vector((0, 0, top_z))
+        BV, BF = revolve([(top.z + r * 0.02, pr * 1.02), (top.z - r * 0.12, pr * 0.85), (top.z - r * 0.32, pr * 0.6), (top.z - r * 0.48, pr * 0.25),
+                          (top.z - r * 0.52, 0.001)], 20, axis='Z')
+        p.add('pore_pit', 'body', 'pit', (BV, [tuple(reversed(f)) for f in BF] + list(BF)))
+        ring = [Vector((pr * 1.05 * math.cos(2 * math.pi * k / 28), pr * 1.05 * math.sin(2 * math.pi * k / 28), top.z + r * 0.01)) for k in range(29)]
+        p.add('pore_lip', 'body', 'flesh2', tube(ring, [r * 0.05] * 29, n=6, cap0=False, cap1=False))
+        glow = 0
     for i in range(glow):
         a = 2 * math.pi * (i + 0.3) / max(1, glow); th = max(thb + 0.05, rnd.uniform(-0.2, 0.6))
         if armour:

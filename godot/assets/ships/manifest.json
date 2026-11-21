@@ -21,32 +21,32 @@
    "turrets": 4,
    "files": {
     "B16_23.glb": {
-     "bytes": 17182188,
-     "sha256": "c1cfc7c799487487680ee471da89483e91d1c71219647bf7a1a71932a196d803"
+     "bytes": 17105992,
+     "sha256": "abf178af67a48ebc5db75ee3a150f6403a23eef574e9782fc5cb14a14d4c206c"
     },
     "B16_23_base.jpg": {
-     "bytes": 963195,
-     "sha256": "51b6b789cf632ac062d423538b63ade51f57baa4a6bd27ac71025a7e617750e4"
+     "bytes": 936240,
+     "sha256": "3f7fa551baaac33dbd6a29ed10d5ffce8b47b0396804a78efeaf5194a9e26aae"
     },
     "B16_23_normal.png": {
-     "bytes": 5984025,
-     "sha256": "da8f0bacd144f5cfb81e1c9396c91bfeb210a7f81ef3d2ff2d1b0c1c9fb8452d"
+     "bytes": 5811240,
+     "sha256": "cd35129c49c790201eab2ff992d9bd96069068faffb38ffd469a98f8c6ae337f"
     },
     "B16_23_orm.png": {
-     "bytes": 5025569,
-     "sha256": "1a7f274284ba8b68a14e50df6bfd80925361d4f133bf774814053ca94805d8ed"
+     "bytes": 4906865,
+     "sha256": "638cb2b56b720adac8da009ce4bb8891f886c125d6d63fa316b5b029a100130e"
     },
     "B16_23_parts_base.jpg": {
-     "bytes": 962647,
-     "sha256": "ebf4b1637ba0f8f031d38a2d25de77226e4a323451a43f1989bece74a2c8be08"
+     "bytes": 976590,
+     "sha256": "9f4075d0b4e7f88815e1caba5cd3f0c6e45672780399d7bca610b036e694226f"
     },
     "B16_23_parts_normal.png": {
-     "bytes": 5511393,
-     "sha256": "57f9460bf9a9ccdbde3219a539d545fe11d28305148d2d4370e505c39cd55960"
+     "bytes": 5522193,
+     "sha256": "0faec74a74043db0ceaa9b8ad276e93707b544b12fc0582e0c94af789455b3ad"
     },
     "B16_23_parts_orm.png": {
-     "bytes": 5167378,
-     "sha256": "e676e984655430889ba831b4aae9e53758ebc0a0c75692f766fd8b9e89cfd49f"
+     "bytes": 5203437,
+     "sha256": "dcc763e5614b14d4863bf27b3018a18866a255a5f006f6d8b86535d85f245331"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B16_23\\"
@@ -119,32 +119,32 @@
    "turrets": 0,
    "files": {
     "B20_11.glb": {
-     "bytes": 11961592,
-     "sha256": "ba51126ac613b58ee027218e6e8c36fd86a39798ab875c1eae16ae2d73fb71fc"
+     "bytes": 12514056,
+     "sha256": "f69ae2f5f222ff7c822d07a5436aec484e4753089ce2cffc71e9af2c9f71ddfa"
     },
     "B20_11_base.jpg": {
-     "bytes": 845467,
-     "sha256": "7b899afc275ec57fee5590d9f441d97ce1aa1fc3f51ec6490a9764bbf07ad440"
+     "bytes": 852900,
+     "sha256": "2c72c606fd710b5ecf70f950b1cbfc7c46344eceb5b97cbdf61f599f514892cc"
     },
     "B20_11_normal.png": {
-     "bytes": 6628474,
-     "sha256": "1f05e437c5a368c30632d6445b6bd417ad7b201fa7bb02b6cdbda3412aad0ab5"
+     "bytes": 6630754,
+     "sha256": "4301c4c9345914d6a8d69575ea515a2f8d4bed2a4ffe6f9328dfef03965a949a"
     },
     "B20_11_orm.png": {
-     "bytes": 4864219,
-     "sha256": "d58c6fc27fa4d498ed8c290d0ad007267818fa339571f8d95e6bb2368279d6bc"
+     "bytes": 4864386,
+     "sha256": "4357a701eaa88eda6a0e570369eeff1a7a0949c8fa33ccdb245ca828fcd63ad2"
     },
     "B20_11_parts_base.jpg": {
-     "bytes": 1038529,
-     "sha256": "0d084534ed531505f5db77a17052d8609b43a973ba7269800ca58d28a8b32854"
+     "bytes": 1046625,
+     "sha256": "df013962cb23f814b188278fb9bb2190db6d05ce04156dd1e0f7dc7423f2d2b3"
     },
     "B20_11_parts_normal.png": {
-     "bytes": 6253635,
-     "sha256": "3b42922c78708538bf27b1647914c1b66350b2d42772ec9bfec475e71de7def9"
+     "bytes": 6167779,
+     "sha256": "074d3834a1c5e2f2d75a99090a432696d5de0367e916f3b649bf95a9a8a7b750"
     },
     "B20_11_parts_orm.png": {
-     "bytes": 5544785,
-     "sha256": "689f8702ef3743218662a6aa707d3a50d57982c49eff41b78ce735238523ca9a"
+     "bytes": 5564088,
+     "sha256": "037e4f3dd35836e7df884dc76ed4f7cd0de3ce697bebbb0c33af4cae5700e6c4"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\"
