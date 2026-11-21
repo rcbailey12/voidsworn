@@ -5,10 +5,11 @@ extends SceneTree
 #   s25        the 24-unit scenario, first so its hull files load cold
 #   title      main.gd's title with its backdrop at sound volume 0.25: worst frame while it builds, and the shared sfx bus
 #              read every frame from before the backdrop starts until it is freed (must not move)
+#   leave      a second cold title, New run clicked while its backdrop builds
 #   b1, b2, b3 three default sector 1 fights (start_default, seeds 101, 202, 303), the shape of Battles 1 to 3
 # Per battle: the longest main-thread stretch of the ship build (battle.gd load_stats: one ship's setup or its effects
-# registration at most), the worst single ship's setup and registration, and the worst frame from the cover to play
-# (that one includes the existing shader warm-up and is reported, not graded).
+# registration at most), the worst single ship's setup and registration, and the worst frame from the cover to play,
+# with the load phase of the five worst frames and the time spent in each phase.
 # Graded separately (Artoo on PR 1445), every one must hold for PASS:
 #   slice   the longest ship build stretch under 500 ms
 #   ready   the battle reached play (warming cleared) / the backdrop reached showcase_ready before its time limit
@@ -16,6 +17,7 @@ extends SceneTree
 #   click   the title's Settings link, clicked by a real mouse press and release while the backdrop is still building,
 #           opens its drawer within 500 ms
 #   bus     the title's shared sfx bus never moved
+#   leave   New run clicked while the title backdrop builds: the backdrop's exit under 100 ms on the main thread (_leave)
 # Run: godot --path godot [--fullscreen] --script res://bench/load_1434.gd -- --out <folder>
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
@@ -23,6 +25,7 @@ const LIMIT_MS := 500
 var out_dir := ""
 var lines: Array = []
 var pass_all := true
+var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3"])
 
 
 func _init() -> void:
@@ -30,6 +33,9 @@ func _init() -> void:
 	var i := a.find("--out")
 	if i >= 0 and i + 1 < a.size():
 		out_dir = a[i + 1]
+	var c := a.find("--cases")   # a subset for a quick trial, e.g. --cases leave,b1 (the PC job runs them all)
+	if c >= 0 and c + 1 < a.size():
+		cases = a[c + 1].split(",")
 	_run.call_deferred()
 
 
@@ -180,13 +186,52 @@ func _click(at: Vector2) -> void:
 		root.push_input(e)
 
 
+# leave: a cold title, then New run (main.new_run, what the button calls) while the backdrop is still building, ideally
+# with a kit hull instance in flight on a worker (Artoo on PR 1445). Graded: the backdrop battle's own _exit_tree on the
+# main thread under 100 ms (it hands running work on instead of waiting). Reported: the whole transition through the next
+# painted frame, which includes the campaign's own start.
+func _leave() -> void:
+	var m = MainScript.new()
+	root.add_child(m)
+	var w0 := Time.get_ticks_msec()
+	var in_flight := false
+	while Time.get_ticks_msec() - w0 < 240000:
+		await process_frame
+		var sc = m.showcase
+		if sc == null or not is_instance_valid(sc) or sc.api == null:
+			continue
+		if not sc.load_stats.is_empty() or sc.showcase_ready:
+			break
+		if not sc._inst_tasks.is_empty():
+			in_flight = true
+			break
+	var building: bool = m.showcase != null and is_instance_valid(m.showcase) and m.showcase.load_stats.is_empty()
+	var t0 := Time.get_ticks_usec()
+	m.new_run()
+	await RenderingServer.frame_post_draw
+	var total_ms := (Time.get_ticks_usec() - t0) / 1000
+	for i in 3:
+		await process_frame
+	var BS = load("res://scenes/battle/battle.gd")
+	var exit_ms: int = int(BS.last_exit_us) / 1000
+	var ok: bool = building and exit_ms < 100
+	pass_all = pass_all and ok
+	_say("[load1434] leave %s: New run clicked %s (a kit instance on a worker %s); backdrop exit %d ms on the main thread (limit 100); title to next painted frame %d ms (includes the campaign's own start); work handed on %d" % [
+		"PASS" if ok else "FAIL", "while the backdrop was building" if building else "after the backdrop finished (not a valid test)",
+		"in flight" if in_flight else "not caught in flight", exit_ms, total_ms, load("res://render/ship_view.gd").retired_build_count()])
+	m.queue_free()
+	for i in 30:
+		await process_frame
+
+
 func _run() -> void:
 	_say("[load1434] display %s, window %s, renderer %s" % [DisplayServer.get_name(), str(root.get_visible_rect().size), RenderingServer.get_current_rendering_method()])
-	await _battle("s25", {"scenario": "s25"})
-	await _title()
-	await _battle("b1", {"seed": 101})
-	await _battle("b2", {"seed": 202})
-	await _battle("b3", {"seed": 303})
+	if "s25" in cases: await _battle("s25", {"scenario": "s25"})
+	if "title" in cases: await _title()
+	if "leave" in cases: await _leave()
+	if "b1" in cases: await _battle("b1", {"seed": 101})
+	if "b2" in cases: await _battle("b2", {"seed": 202})
+	if "b3" in cases: await _battle("b3", {"seed": 303})
 	_say("[load1434] RESULT %s (limit %d ms for each graded item: slice, ready, cover frame, title click, bus)" % ["PASS" if pass_all else "FAIL", LIMIT_MS])
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)

@@ -927,7 +927,7 @@ var _preload := {}   # hull resource path -> the loaded resource (null while its
 
 
 func _preload_hulls(v: Dictionary) -> void:
-	_drop_preload()
+	_drop_preload(false)
 	for u in v.get("units", []):
 		var p := ShipView.hull_res(u)
 		if p == "" or _preload.has(p) or not ResourceLoader.exists(p):
@@ -937,19 +937,31 @@ func _preload_hulls(v: Dictionary) -> void:
 
 
 # every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process), and
-# every worker instantiation is waited for; an instance never handed to a ship is freed
-func _drop_preload() -> void:
+# every worker instantiation is waited for; an instance never handed to a ship is freed. wait false (leaving the tree,
+# Artoo on PR 1445): what is still running is handed to ShipView.retire_build and collected over the next frames, so a
+# click that leaves the title never waits here for a hull load or a worker instance.
+func _drop_preload(wait := true) -> void:
+	var loads: Array = []
 	for p in _preload:
 		if _preload[p] == null:
-			ResourceLoader.load_threaded_get(p)
+			if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				ResourceLoader.load_threaded_get(p)
+			else:
+				loads.append(p)
 	_preload.clear()
+	var insts: Array = []
 	for k in _inst_tasks:
 		var e: Dictionary = _inst_tasks[k]
-		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
-		var n = e["out"][0]
-		if n != null and is_instance_valid(n) and not (n as Node).is_inside_tree() and (n as Node).get_parent() == null:
-			(n as Node).free()
+		if wait or WorkerThreadPool.is_task_completed(int(e["tid"])):
+			WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+			var n = e["out"][0]
+			if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
+				(n as Node).free()
+		else:
+			insts.append(e)
 	_inst_tasks.clear()
+	if not loads.is_empty() or not insts.is_empty():
+		ShipView.retire_build(loads, insts)
 
 
 # Issue 1434, PC run 1 (OPUS1434_LOAD2): one ship's build still took up to 566 ms (V16_37 setup, about 520 ms in every
@@ -1388,8 +1400,15 @@ func _finish(r: Dictionary) -> void:
 	finished.emit(r)
 
 
+# issue 1434: how long the last battle's _exit_tree took on the main thread, and whether it left a build part way
+static var last_exit_us := 0
+static var last_exit_mid_build := false
+
+
 func _exit_tree() -> void:
-	_drop_preload()   # issue 1434: a build stopped part way still collects its threaded hull loads
+	var t_exit := Time.get_ticks_usec()
+	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
+	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait
 	# exit synchronisation stays: drain both tasks, then clear the flags they own
 	retiring = true
 	_gen += 1
@@ -1403,6 +1422,7 @@ func _exit_tree() -> void:
 	thinking = false
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
+	last_exit_us = Time.get_ticks_usec() - t_exit
 
 
 # Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live

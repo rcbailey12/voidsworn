@@ -47,10 +47,83 @@ static func manifest() -> Dictionary:
 # drop the static caches before the engine shuts down (resources held in statics outlive the RenderingServer and crash
 # the exit on Windows: PC bot runs ended with an access violation after the summary)
 static func clear_static() -> void:
+	drain_build()   # issue 1434: retired hull loads and worker instances end before the rendering server goes
+	_retired_loads.clear()
+	_retired_insts.clear()
 	_manifest = null
 	_look_cache.clear()
 	_pm = null
 	_gt = null
+
+
+# Issue 1434 (Artoo on PR 1445): a battle that leaves mid-build (the title backdrop when the player clicks) must not wait
+# on the main thread for its hull loads and worker instances still running. It hands them here: each frame the finished
+# ones are collected (a threaded load is got, a worker task is waited for, which is instant once it is complete, and its
+# instance is freed), and a quit drains the rest before the rendering server goes (clear_static, and the root's exit).
+static var _retired_loads: Array = []   # resource paths whose threaded load still runs
+static var _retired_insts: Array = []   # {"tid", "out": [instance]}
+static var _reaping := false
+static var _exit_hooked := false
+
+
+static func retire_build(paths: Array, insts: Array) -> void:
+	_retired_loads.append_array(paths)
+	_retired_insts.append_array(insts)
+	if _retired_loads.is_empty() and _retired_insts.is_empty():
+		return
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		drain_build()
+		return
+	if not _reaping:
+		_reaping = true
+		tree.process_frame.connect(reap_build)
+	if not _exit_hooked and tree.root != null:
+		_exit_hooked = true
+		tree.root.tree_exiting.connect(drain_build)
+
+
+static func _free_inst(e: Dictionary) -> void:
+	var n = e["out"][0]
+	if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
+		(n as Node).free()
+
+
+static func reap_build() -> void:
+	for p in _retired_loads.duplicate():
+		if ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(p)
+			_retired_loads.erase(p)
+	for e in _retired_insts.duplicate():
+		if WorkerThreadPool.is_task_completed(int(e["tid"])):
+			WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+			_free_inst(e)
+			_retired_insts.erase(e)
+	if _retired_loads.is_empty() and _retired_insts.is_empty() and _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_build):
+			tree.process_frame.disconnect(reap_build)
+
+
+# everything retired, now (quit)
+static func drain_build() -> void:
+	for p in _retired_loads:
+		ResourceLoader.load_threaded_get(p)
+	_retired_loads.clear()
+	for e in _retired_insts:
+		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+		_free_inst(e)
+	_retired_insts.clear()
+	if _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_build):
+			tree.process_frame.disconnect(reap_build)
+
+
+static func retired_build_count() -> int:
+	return _retired_loads.size() + _retired_insts.size()
 
 
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)

@@ -153,9 +153,24 @@ func _run() -> void:
 		"kit hulls built from worker instances (%d views, %d kit ships of %d expected, %d tasks left)" % [k.views.size(), kits, hulls_n, k._inst_tasks.size()])
 	_check(staged == kits, "every kit ship timed its setup stages (%d of %d)" % [staged, kits])
 	_check(int(k.load_stats.get("worker_insts", 0)) == kits, "every kit hull was instanced on a worker (%d of %d)" % [int(k.load_stats.get("worker_insts", 0)), kits])
+	# leaving mid-build never waits on the main thread for a worker instance (Artoo on PR 1445): a task still running
+	# (300 ms) is handed on, collected over the next frames, and its instance freed
+	var slow_out := [null]
+	var slow := WorkerThreadPool.add_task(func() -> void:
+		OS.delay_msec(300)
+		slow_out[0] = Node3D.new())
+	k._inst_tasks[999] = {"tid": slow, "out": slow_out}
+	var td := Time.get_ticks_usec()
 	k.stop_build()
 	k.queue_free()
 	await process_frame
+	var leave_ms := (Time.get_ticks_usec() - td) / 1000
+	_check(leave_ms < 150 and SV.retired_build_count() == 1, "leaving mid-build did not wait for a running worker instance (%d ms, %d retired)" % [leave_ms, SV.retired_build_count()])
+	var tr0 := Time.get_ticks_msec()
+	while SV.retired_build_count() > 0 and Time.get_ticks_msec() - tr0 < 5000:
+		await process_frame
+	await process_frame
+	_check(SV.retired_build_count() == 0 and not is_instance_valid(slow_out[0]), "the retired instance was collected and freed over the next frames")
 	SV._manifest = null
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture))
 	var c = BattleScene.instantiate()
