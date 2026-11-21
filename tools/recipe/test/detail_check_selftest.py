@@ -128,12 +128,14 @@ def check_fixtures(tmp):
 JOB_COMMIT = 'e' * 40
 
 
-def stamp(img, path, stage, commit=JOB_COMMIT):
-    """save a picture with a real provenance stamp made at `commit` (the job clone's revision)"""
+def stamp(img, path, stage, commit=JOB_COMMIT, dirty=None):
+    """save a picture with a real provenance stamp made at `commit` (the job clone's revision); dirty: the files that made
+    the tree dirty, as picture_provenance.revision lists them"""
     from unittest.mock import patch
     from picture_provenance import save_picture
-    with patch('picture_provenance.revision', return_value=dict(source_commit=commit, source_dirty=False,
-                                                                 source_diff_sha256='')):
+    rev = dict(source_commit=commit, source_dirty=bool(dirty), source_diff_sha256='5' * 64 if dirty else '',
+               source_dirty_files=dict(dirty or {}))
+    with patch('picture_provenance.revision', return_value=rev):
         save_picture(img, path, stage)
 
 
@@ -208,6 +210,48 @@ def check_offer_sheet(tmp):
     rc, text = run([out, tmp / 'sheet_game.jpg'])
     assert rc == 0 and verify(tmp / 'sheet_game.jpg')['stage'] == 'installed in game', text
     ok('a passed job gets a 720 px sheet of its own stamped pictures (a concept only as a labelled reference), stamped with the job commit')
+    # A PC ship job's in-game shots are always taken from a dirty tree (Board, Nov 21: C14H refused). Artoo on PR 1540: each
+    # dirty file must be exactly the install ship_job.bat recorded, the watchdog hand-off on an older pin included.
+    import hashlib
+
+    def blob(data):
+        return hashlib.sha1(b'blob %d\0' % len(data) + data).hexdigest()
+    base = {'note': 'n', 'ships': {'B16_23': {'name': 'old'}, 'V16_37': {'name': 'S10 before'}}}
+    mine = {'note': 'n', 'ships': {'B16_23': {'name': 'old'}, 'V16_37': {'name': 'S10 this job'}}}
+    other = {'note': 'n', 'ships': {'B16_23': {'name': 'changed'}, 'V16_37': {'name': 'S10 this job'}}}
+    handoff = blob(b'@echo off\nrem the tools_live watchdog\n')
+
+    def pc_job(name, installed, dirty_extra=None, record=True):
+        out = fake_out(tmp, 'offer_' + name, good, renders=False)
+        (out / 'shots').mkdir()
+        inst = json.dumps(installed, indent=1).encode() + b'\n'
+        if record:
+            (out / 'tmo_handoff.txt').write_text(handoff + '\n', encoding='utf-8')
+            (out / 'base_manifest.json').write_text(json.dumps(base, indent=1) + '\n', encoding='utf-8')
+            (out / 'installed_manifest.json').write_bytes(inst)
+        dirty = {'godot/assets/ships/manifest.json': blob(inst), 'godot/assets/ships/previews/V16_37.jpg': '1' * 40,
+                 'godot/assets/ships/previews/V16_37_damage.jpg': '2' * 40, 'godot/world/sky.tres.import': '3' * 40,
+                 'godot/fx/look.gd.uid': '4' * 40, 'tools/pc/tmo.bat': handoff}
+        dirty.update(dirty_extra or {})
+        stamp(Image.new('RGB', (1280, 720), (40, 60, 90)), out / 'shots' / 'V16_37_b.jpg', 'installed in game', dirty=dirty)
+        return run([out, tmp / ('sheet_' + name + '.jpg')])
+    rc, text = pc_job('pcinstall', mine)
+    assert rc == 0, text
+    for name, installed, extra, record, why in (
+            ('pcedit', mine, {'godot/fx/look.gd': '6' * 40}, True, 'godot/fx/look.gd'),
+            ('pcbat', mine, {'tools/pc/tmo.bat': '7' * 40}, True, 'tools/pc/tmo.bat'),
+            ('pcnorecord', mine, None, False, 'tools/pc/tmo.bat'),
+            ('pcotherrow', other, None, True, 'manifest.json'),
+            ('pcotherhull', mine, {'godot/assets/ships/previews/B16_23.jpg': '8' * 40}, True, 'B16_23.jpg'),
+            ('pcmanifesthash', mine, {'godot/assets/ships/manifest.json': '9' * 40}, True, 'manifest.json')):
+        rc, text = pc_job(name, installed, extra, record)
+        assert rc == 1 and 'dirty' in text and why in text, (name, text)
+    # the real C14H shot (opus1291c14h, pin d2a9acd2): stamped dirty before stamps listed their dirty files
+    rc, text = run([FIX.parent / 'offer_fixtures' / 'C14H', tmp / 'sheet_c14h.jpg'])
+    assert rc == 1 and 'dirty' in text and 'predates' in text and 'd2a9acd26c33' in text, text
+    ok('a PC shot dirty only with the job\'s recorded install (its ship files, its manifest row, the watchdog hand-off) passes; '
+       'a source edit, another tmo.bat, no record, another hull\'s row or files, or a mismatched manifest is refused by name; '
+       'the real C14H shot, stamped before the dirty-file list, is refused saying so')
 
 
 def main():

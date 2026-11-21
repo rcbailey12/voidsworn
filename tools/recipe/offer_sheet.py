@@ -11,7 +11,8 @@ three detail numbers and their floors under the pictures, and is saved with its 
 usage: python tools/recipe/offer_sheet.py JOB_OUT OUT.jpg [--stage "installed in game"] [--reference CONCEPT] [PICTURE ...]
   JOB_OUT     the ship job's out folder (result.txt and recipe/ inside; a board/pc-out-* relay's <job>_out folder)
   PICTURE     the proof pictures, left to right. Each must be in JOB_OUT, carry a valid provenance stamp of the sheet's
-              stage and be made at exactly the job's commit (its result.txt commit= line). With none: the job's own
+              stage and be made at exactly the job's commit (its result.txt commit= line). A dirty tree passes only when
+              every dirty file is the job's own recorded install (see job_install). With none: the job's own
               in-game shots (shots/) for "installed in game", or r/CELL_concept_cl.png and r/CELL_hero.png for "paint proof"
   --reference a concept or older picture to compare against, any path; drawn first with a REFERENCE label, never proof
   --stage     'installed in game' (default) or 'paint proof'
@@ -83,9 +84,79 @@ def proof(path, job_out, info, stage):
         raise Refused(f'{path.name} has no valid provenance stamp ({e})') from None
     if rec['stage'] != stage:
         raise Refused(f'{path.name} is stamped "{rec["stage"]}", not "{stage}"')
-    if not info['commit'] or rec['source_commit'] != info['commit'] or rec.get('source_dirty'):
+    if not info['commit'] or rec['source_commit'] != info['commit']:
         raise Refused(f'{path.name} was made at {rec["source_commit"][:12]}, not the job commit {info["commit"][:12] or "?"}')
+    if rec.get('source_dirty'):
+        files = rec.get('source_dirty_files')
+        if files is None:
+            raise Refused(f'{path.name} was made at the job commit {info["commit"][:12]} but from a dirty tree (working '
+                          f'{rec["source_diff_sha256"][:8]}), and its stamp predates the dirty-file list, so a source edit '
+                          f'cannot be ruled out; retake the shots with tools/picture_provenance.py from main')
+        edits = [p for p, blob in sorted(files.items()) if not job_install(p, blob, job_out, info)]
+        if edits:
+            raise Refused(f'{path.name} was made at the job commit {info["commit"][:12]} but from a dirty tree with '
+                          f'changes that are not this job\'s recorded install: {", ".join(edits[:8])}'
+                          f'{" ..." if len(edits) > 8 else ""}')
     return rec
+
+
+# A PC ship job's in-game shots are taken from its clone after it installed the ship (issue 1539). A dirty file passes only
+# when it is exactly that install, checked against what tools/pc/jobs/ship_job.bat recorded in the job's out folder:
+#   *.import, *.uid                       Godot's import bookkeeping
+#   tools/pc/tmo.bat                      the watchdog hand-off: its blob must equal the hash in tmo_handoff.txt
+#   godot/assets/ships/manifest.json      must equal installed_manifest.json and differ from the commit's manifest
+#                                         (base_manifest.json, or git) only in this job's own "ships" row
+#   godot/assets/ships/.../CODE[._]...   this job's own ship files (its CODE folder, previews), named by its code
+def job_install(path, blob, job_out, info):
+    path = path.replace('\\', '/')
+    out = Path(job_out)
+    if path.endswith(('.import', '.uid')):
+        return True
+    if path == 'tools/pc/tmo.bat':
+        rec = out / 'tmo_handoff.txt'
+        return blob is not None and rec.is_file() and rec.read_text(encoding='utf-8', errors='replace').strip() == blob
+    if path == 'godot/assets/ships/manifest.json':
+        return blob is not None and manifest_row_only(out, info, blob)
+    if path.startswith('godot/assets/ships/'):
+        code = info.get('code', '')
+        parts = path[len('godot/assets/ships/'):].split('/')
+        return bool(code) and code != '?' and any(p == code or p.startswith((code + '.', code + '_')) for p in parts)
+    return False
+
+
+def _blob(data):
+    import hashlib
+    data = data.replace(b'\r\n', b'\n')       # *.json is eol=lf in git (.gitattributes): the hash git records
+    return hashlib.sha1(b'blob %d\0' % len(data) + data).hexdigest()
+
+
+def manifest_row_only(out, info, blob):
+    import json
+    import subprocess
+    inst = out / 'installed_manifest.json'
+    if not inst.is_file() or _blob(inst.read_bytes()) != blob:
+        return False
+    base_text = None
+    try:
+        base_text = subprocess.check_output(['git', '-C', str(HERE.parent.parent), 'show',
+                                             info['commit'] + ':godot/assets/ships/manifest.json'], stderr=subprocess.DEVNULL)
+    except (OSError, subprocess.CalledProcessError):
+        if (out / 'base_manifest.json').is_file():
+            base_text = (out / 'base_manifest.json').read_bytes()
+    if base_text is None:
+        return False
+    try:
+        base, new = json.loads(base_text), json.loads(inst.read_bytes())
+    except ValueError:
+        return False
+    code = info.get('code', '')
+    if not isinstance(base, dict) or not isinstance(new, dict) or code in ('', '?'):
+        return False
+    bs, ns = dict(base.get('ships') or {}), dict(new.get('ships') or {})
+    bs.pop(code, None)
+    ns.pop(code, None)
+    rest = lambda m: {k: v for k, v in m.items() if k != 'ships'}  # noqa: E731
+    return bs == ns and rest(base) == rest(new) and code in (new.get('ships') or {})
 
 
 def build(job_out, out, pictures=None, stage='installed in game', title=None, references=()):

@@ -256,6 +256,17 @@ if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
 if defined CHECKFAIL set "FAILED=checks:%CHECKFAIL%"
 set "TMO_STEP=ship shots"
 if defined FAILED goto collect
+rem (1517) stamp the shots with the installed main picture_provenance.py, which lists the dirty files, so offer_sheet.py
+rem can tell this job's own install (assets\ships, .import, .uid) from a source edit even when the pin predates the list
+rem A pre-merge proof (OPUS1539_PROOF.bat) sets PICTURE_STAMP_TOOL to its branch copy first; otherwise tools_live's.
+if not defined PICTURE_STAMP_TOOL if defined TLV if exist "%V%\tools_live\%TLV%\picture_provenance.py" set "PICTURE_STAMP_TOOL=%V%\tools_live\%TLV%\picture_provenance.py"
+if defined PICTURE_STAMP_TOOL echo shots stamped with %PICTURE_STAMP_TOOL% >> "%RES%"
+rem (1539) record the install the shots are taken with, so offer_sheet.py can match each dirty file in their stamps:
+rem the watchdog hand-off hash and the manifest before and after this job's install (only its own row may differ)
+if defined TMO_OK copy /y "%C%\.git\ship_job_tmo_handoff.txt" "%O%\tmo_handoff.txt" > nul
+git -C "%C%" show HEAD:godot/assets/ships/manifest.json > "%O%\base_manifest.json" 2>> "%RES%"
+copy /y "%C%\godot\assets\ships\manifest.json" "%O%\installed_manifest.json" > nul
+if defined FAILED goto collect
 
 rem 6. the shots, only now: everything above passed, so the installed glb is this run's and checked
 call "%TMO%" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
