@@ -2076,7 +2076,7 @@ async function useAbility(u,arg){
     u.abCd=abilityCd(u);
     const hitList=alive().filter(x=>hdist(x,c)<=1);
     for(const x of hitList){
-      const dmg=(hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1)*storyDamageMult(u);
+      const dmg=novaDamage(u,x,c);
       const quad=shieldQuad(x,u);
       const r=applyHit(u,{pierce:.3,crit:5},x,dmg,quad);
       if(r.shield&&typeof fxText==='function') fxText(x,'\u2212'+r.shield,'#7fd6c8',-18);
@@ -2090,6 +2090,8 @@ async function useAbility(u,arg){
   if(a!=='launch') log(`${u.name}: ${ABILITIES[a].n}.`, u.side==='player'?'p':'e');
   return true;
 }
+// issue 1444: the nova shell's raw damage to one ship in the blast (before shields and armour); the hit and the screen's forecast both use it
+function novaDamage(u,x,c){ return (hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1)*storyDamageMult(u); }
 function novaTargets(u){ return boardHexes().filter(h=>{ const d=hdist(u,h); return d>=3&&d<=9&&inArc(u,h,'F'); }); }
 
 // ---------- enemy AI ----------

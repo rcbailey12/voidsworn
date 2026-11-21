@@ -240,7 +240,7 @@ func _nova() -> void:
 	_sync(b)
 	b.hover = Vector2i(int(c["q"]), int(c["r"]))
 	var tip := b._tip()
-	_check(tip.contains("Friendly fire: %s (ring)" % str(pal["name"])) and tip.contains("[color=#ff4a4a]"), "NOVA-1 the tip names the friendly ship inside the blast in red")
+	_check(tip.contains("Friendly fire: %s (ring, %d)" % [str(pal["name"]), int(round(20.0 * float(me["dmg"])))]) and tip.contains("[color=#ff4a4a]"), "NOVA-1 the tip names the friendly ship inside the blast in red")
 	b._overlay()
 	var tb: TestBoard = b.board
 	var n := 0
@@ -251,6 +251,28 @@ func _nova() -> void:
 	pal["q"] = int(pal["q"]) + 8
 	_sync(b)
 	_check(not b._tip().contains("Friendly fire"), "NOVA-1 no friendly-fire line when no friend is inside")
+	# Artoo on PR 1459: the numbers are the rules' own (novaDamage): a squadron takes x1.5, a flagship carrying the
+	# story power bonus adds it, per ship in the blast
+	var foe = api.R.alive("enemy")[0]
+	foe.merge({"q": int(c["q"]), "r": int(c["r"])}, true)
+	_check(foe != null, "NOVA-1 fixture: an enemy at the blast centre")
+	if foe != null:
+		foe["isSq"] = true
+		_sync(b)
+		var want := int(round(40.0 * float(me["dmg"]) * 1.5))
+		_check(b._tip().contains("%s (centre, %d)" % [str(foe["name"]), want]), "NOVA-1 a squadron at the centre shows %d (40 x1.5), not 40" % want)
+		api.R.B["cfg"]["storyMods"] = {"power": true}
+		me["pflag"] = true
+		_sync(b)
+		var mult := 1.0 + float(api.R.TB.BEAT3_REWARDS.power)
+		var want2 := int(round(40.0 * float(me["dmg"]) * 1.5 * mult))
+		var tip2 := b._tip()
+		_check(want2 != want and tip2.contains("%s (centre, %d)" % [str(foe["name"]), want2]), "NOVA-1 a flagship with the story power bonus (x%.2f) shows %d on the squadron" % [mult, want2])
+		var pv: Array = api.nova_preview(me["id"], int(c["q"]), int(c["r"]))
+		var same := not pv.is_empty()
+		for pr in pv:
+			same = same and is_equal_approx(float(pr["dmg"]), float(api.R.novaDamage(api.unit(me["id"]), api.unit(pr["id"]), {"q": int(c["q"]), "r": int(c["r"])})))
+		_check(same, "NOVA-1 every forecast number is the rules' novaDamage, the call the hit makes")
 	_done(b)
 
 

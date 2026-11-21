@@ -3197,14 +3197,15 @@ func _nova_tip(q: int, r: int) -> String:
 	var blast := _nova_blast(q, r)
 	if (blast["hexes"] as Array).is_empty():
 		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
-	var ru = api.unit(sel)
-	var mul := float(ru.get("dmg", 1.0)) if ru != null and _jt(ru.get("dmg")) else 1.0
-	var t := "[b][color=#ffd27a]Nova shell[/color][/b]\nBlasts this hex and the 6 around it: about %d damage at the centre, %d on the ring, 30%% through shields." % [int(round(40.0 * mul)), int(round(20.0 * mul))]
+	# the raw damage per ship comes from the rules (rules.gd novaDamage, the same call the hit makes)
+	var t := "[b][color=#ffd27a]Nova shell[/color][/b]\nBlasts this hex and the 6 around it, 30% through shields. Damage before shields and armour:"
 	var foes: Array = []
 	var mine: Array = []
-	for x in blast["hit"]:
-		var where := "centre" if int(x["q"]) == q and int(x["r"]) == r else "ring"
-		(mine if x["side"] == "player" else foes).append("%s (%s)" % [str(x["name"]), where])
+	for p in api.nova_preview(sel, q, r):
+		var x: Dictionary = VU.get(p["id"], {})
+		if x.is_empty():
+			continue
+		(mine if x["side"] == "player" else foes).append("%s (%s, %d)" % [str(x["name"]), "centre" if bool(p["centre"]) else "ring", int(round(float(p["dmg"])))])
 	if not foes.is_empty():
 		t += "\nHits: %s." % ", ".join(PackedStringArray(foes))
 	if not mine.is_empty():

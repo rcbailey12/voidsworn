@@ -684,6 +684,19 @@ func _threat_map_raw(only_id = null, both := false) -> Variant:
 	R.eval_end()
 	return {"dmg": out, "n": cnt} if both else out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
+# issue 1444: the nova forecast for a centre hex: every live ship within 1 hex, with the raw damage the shell would deal it
+# (rules.gd novaDamage, the same call the hit makes: centre or ring, x1.5 on craft, the player's story damage modifier)
+func nova_preview(id: String, q: int, r: int) -> Array:
+	_enter()
+	var o = _i_nova_preview(id, q, r); _leave(false); return o
+func _i_nova_preview(id: String, q: int, r: int) -> Array:
+	var u = unit(id)
+	var o := []
+	if u == null: return o
+	var c := {"q": q, "r": r}
+	for x in R.alive():
+		if R.hdist(x, c) <= 1: o.append({"id": x["id"], "centre": R.hdist(x, c) == 0, "dmg": R.novaDamage(u, x, c)})
+	return o
 func world_info() -> Dictionary:
 	_enter()
 	var r = _i_world_info(); _leave(false); return r
