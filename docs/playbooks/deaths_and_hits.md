@@ -134,7 +134,9 @@ Fast, because they die often and must not clutter the board:
 - 0.0 to 0.72: the hull spins, trailing a curling ribbon of fire, then gas.
 - 0.72: the pop. Frigate: 216 px flash for 0.18 s, 180 px body for about a second. A destroyer sits between frigate and
   cruiser: about 255 px (the same 1.4 step taken half way).
-- Two to four chunks and their streamers fly; one surviving chunk keeps coals for about six seconds.
+- Two to four chunks part with their streamers; one surviving chunk keeps coals for about six seconds. With the strained
+  death on (the default), the chunks part as calmly as a big hull's: slow, turning gently, at rest about half a length
+  apart (Ryan, Nov 21 2026, in game: they "spin off super far"). Check: fx/test/small_wreck_calm_check.gd.
 
 ### Small craft (wings)
 
