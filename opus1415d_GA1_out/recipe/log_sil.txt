@@ -1,0 +1,1 @@
+[score] GA1 {'overlap': 37.6, 'concept_covered': 37.6, 'cell_outside': 0.0, 'triangles': 359990}

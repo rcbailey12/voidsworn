@@ -1,0 +1,8 @@
+[check] authored interiors: 4808 triangles, 5 surfaces; authored seams: 3
+[check] 359990 triangles (41782 on part surfaces), box x -0.506 to 0.494, y -0.115 to 0.130, z -0.165 to 0.178
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 1 written (turret_0 O1); marked by the kit: ['O1']
+[check] slot 0 pulsar F: 1 hard points
+[check] slot 1 turret T: 1 hard points
+[check] hard points: {"bay": 2, "board": 2, "breach": 5, "core": 1, "engine": 1, "rcs": 2, "gun": 2}
+PASS I16_11 game export: every required point is there and every hard point passes the mesh checks
