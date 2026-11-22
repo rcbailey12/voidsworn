@@ -333,8 +333,8 @@ a ton of balance passes and checks on it because some seem great and others seem
 reduce damage"). The rule that follows: **every option must be worth taking**. A relic, refit, rider or Mastery step that a
 player would skip is as much a failure as one that dominates.
 
-How each build part proves it, on fresh sims (the balance sim was fixed on the morning of Nov 22, so older numbers do not
-count):
+How each build part proves it, on fresh sims with the fixed bot on main (PR 1638; any number from before commit 85d380a5
+does not count) (R404):
 
 1. **Measure every option alone**, against a run without it, in `node sim3d.js campaign` (rounds, hull left, ships lost; win
    rate is at its ceiling and is not the measure), with the sample size in the report.
