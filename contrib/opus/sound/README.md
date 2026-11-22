@@ -7,7 +7,7 @@ wiring into godot/ stays parked until the ship rebuilds are done, and only after
   music bed, then 112 sound effect takes (menus as mechanical clicks and relays, the five ladder steps, deaths, hits,
   faction guns and deaths, map and battle beds). About 34,100 of the 121,000 monthly credits (pricing FAQ: 200 per
   sound effect, 900 per music minute; stem splitting cost is not published).
-- `../tools/sound/elevenlabs_gen.js`: makes the files. Resumes safely, stops at a credit cap, writes `manifest.jsonl`
+- `../tools/sound/elevenlabs_gen.js`: makes the files. Live calls go only to api.elevenlabs.io (no redirects). Each song, stems zip and take is its own resumable step with its own manifest row; PASS needs all of them. The credit cap on the key at elevenlabs.io is the real ceiling; `--max-credits` is a second stop read from the account balance. A paid call is not retried after a 5xx or a lost answer. Writes `manifest.jsonl`
   (prompt, settings, sha256, request id) next to the files. Offline check: `node elevenlabs_gen_selftest.js`.
 - Key: Ryan double-clicks `tools/pc/elevenlabs_api_key.bat` once. It saves `VOIDSWORN_ELEVENLABS_API_KEY` as a Windows
   user setting, never in a file. He should give the key only Sound Effects and Music access and a credit cap.

@@ -7,23 +7,29 @@
 //
 // Key: VOIDSWORN_ELEVENLABS_API_KEY (saved by tools/pc/elevenlabs_api_key.bat). If the running process started before
 // the key was saved, the script reads it from HKCU\Environment. The key is never written to a file or a log.
-// Re-running is safe: a take whose file already exists is skipped, so a stopped run resumes where it left off.
-// API facts (docs read Nov 22 2026): POST /v1/sound-generation (text, duration_seconds 0.5..30, loop, prompt_influence,
-// model_id), POST /v1/music (prompt, music_length_ms 3000..600000, force_instrumental, model_id),
-// POST /v1/music/stem-separation (multipart file, returns a zip). Header xi-api-key. Credits (pricing FAQ): sound effect
-// 200 per generation, music 900 per minute; stem separation cost is not published, so it is counted as 0 and the
-// account balance is read before and after instead.
+// Live requests go only to https://api.elevenlabs.io, with redirects refused (Artoo on PR 1577, finding 1). The offline
+// selftest uses ELEVENLABS_MOCK=1, which only allows a loopback base and only the dummy ELEVENLABS_MOCK_KEY, never the
+// real key.
+// Resume (finding 2): every output is its own step (song, stems zip, sound take) with its own manifest row. A rerun makes
+// any missing step, including stems for a song already saved. PASS needs every file AND its manifest row.
+// Spending (finding 3): the real ceiling is the credit cap Ryan sets on the key at elevenlabs.io. --max-credits is a
+// second stop: it uses the account's own used-credit count (GET /v1/user/subscription) after every paid call, and the
+// published estimate (200 per sound effect, 900 per music minute; stem cost unpublished) only if that read fails.
+// A paid call is never retried after an error that could mean it ran (5xx, timeout); only 429 (not run) is retried.
+// API facts (docs read Nov 22 2026): POST /v1/sound-generation, POST /v1/music, POST /v1/music/stem-separation (zip),
+// header xi-api-key.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 
+const LIVE_BASE = 'https://api.elevenlabs.io';
 const CREDITS_SFX = 200;
 const CREDITS_MUSIC_PER_MIN = 900;
 
 function args(argv) {
-  const a = { dry: false, max: 60000, only: null, base: process.env.ELEVENLABS_BASE || 'https://api.elevenlabs.io' };
+  const a = { dry: false, max: 60000, only: null, base: LIVE_BASE, mock: process.env.ELEVENLABS_MOCK === '1' };
   for (let i = 2; i < argv.length; i++) {
     const k = argv[i];
     if (k === '--list') a.list = argv[++i];
@@ -36,10 +42,14 @@ function args(argv) {
   }
   if (!a.list || !a.out) throw new Error('need --list and --out');
   if (!(a.max > 0)) throw new Error('--max-credits must be a positive number');
+  if (a.mock) {
+    if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(a.base)) throw new Error('mock mode needs a loopback --base');
+  } else if (a.base !== LIVE_BASE) throw new Error('live runs only talk to ' + LIVE_BASE);
   return a;
 }
 
-function readKey() {
+function readKey(a) {
+  if (a.mock) return (process.env.ELEVENLABS_MOCK_KEY || '').trim();   // never the real key in mock mode
   let k = process.env.VOIDSWORN_ELEVENLABS_API_KEY || '';
   if (!k && process.platform === 'win32') {
     try {
@@ -51,9 +61,9 @@ function readKey() {
   return k.trim();
 }
 
-// Expands the list into takes: one entry per file to make, with its credit estimate.
+// Expands the list into steps: one per output file, with its credit estimate. A song with stems has two steps.
 function plan(list, only) {
-  const takes = [];
+  const steps = [];
   const ids = new Set();
   for (const it of list.items) {
     if (!/^[a-z0-9_]+$/.test(it.id || '')) throw new Error('bad id ' + it.id);
@@ -62,16 +72,18 @@ function plan(list, only) {
     if (only && !only.has(it.id)) continue;
     const n = it.takes || 1;
     for (let t = 1; t <= n; t++) {
+      const file = `${it.id}_t${t}.mp3`;
       if (it.kind === 'sfx') {
         if (!(it.seconds >= 0.5 && it.seconds <= 30)) throw new Error(it.id + ': seconds must be 0.5..30');
-        takes.push({ it, t, file: `${it.id}_t${t}.mp3`, credits: CREDITS_SFX });
+        steps.push({ it, t, step: 'sfx', file, credits: CREDITS_SFX });
       } else if (it.kind === 'music') {
         if (!(it.seconds >= 3 && it.seconds <= 600)) throw new Error(it.id + ': seconds must be 3..600');
-        takes.push({ it, t, file: `${it.id}_t${t}.mp3`, credits: Math.ceil(it.seconds / 60 * CREDITS_MUSIC_PER_MIN) });
+        steps.push({ it, t, step: 'song', file, credits: Math.ceil(it.seconds / 60 * CREDITS_MUSIC_PER_MIN) });
+        if (it.stems) steps.push({ it, t, step: 'stems', file: file.replace(/\.mp3$/, '_stems.zip'), song: file, credits: 0 });
       } else throw new Error(it.id + ': kind must be sfx or music');
     }
   }
-  return takes;
+  return steps;
 }
 
 async function post(base, key, route, body, form) {
@@ -80,85 +92,125 @@ async function post(base, key, route, body, form) {
   if (form) payload = form;
   else { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(body); }
   for (let attempt = 1; attempt <= 4; attempt++) {
-    const r = await fetch(base + route, { method: 'POST', headers, body: payload });
+    let r;
+    try {
+      r = await fetch(base + route, { method: 'POST', headers, body: payload, redirect: 'error', signal: AbortSignal.timeout(900000) });
+    } catch (e) {
+      const err = new Error('no answer on ' + route + ' (' + e.name + '); not retried, the call may have been charged');
+      err.ambiguous = true;
+      throw err;
+    }
     if (r.ok) return { buf: Buffer.from(await r.arrayBuffer()), req: r.headers.get('request-id') || r.headers.get('x-request-id') || '' };
     const text = (await r.text()).slice(0, 400);
-    if ((r.status === 429 || r.status >= 500) && attempt < 4) { await new Promise(s => setTimeout(s, 5000 * attempt)); continue; }
+    if (r.status === 429 && attempt < 4) { await new Promise(s => setTimeout(s, 10000 * attempt)); continue; }
     const err = new Error(`HTTP ${r.status} on ${route}: ${text}`);
     err.status = r.status;
+    err.ambiguous = r.status >= 500;
     throw err;
   }
 }
 
-async function balance(base, key) {
+async function usedCredits(base, key) {
   try {
-    const r = await fetch(base + '/v1/user/subscription', { headers: { 'xi-api-key': key } });
+    const r = await fetch(base + '/v1/user/subscription', { headers: { 'xi-api-key': key }, redirect: 'error' });
     if (!r.ok) return null;
     const j = await r.json();
-    return { tier: j.tier, used: j.character_count, limit: j.character_limit };
+    return Number.isFinite(j.character_count) ? { tier: j.tier, used: j.character_count, limit: j.character_limit } : null;
   } catch (e) { return null; }
 }
 
 function sha(buf) { return crypto.createHash('sha256').update(buf).digest('hex'); }
 
+function readManifest(file) {
+  const rows = new Map();
+  if (!fs.existsSync(file)) return rows;
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    try { const r = JSON.parse(line); rows.set(r.file, r); } catch (e) { /* a torn last line is ignored */ }
+  }
+  return rows;
+}
+
+function save(out, name, buf) {
+  const file = path.join(out, name);
+  fs.writeFileSync(file + '.part', buf);
+  fs.renameSync(file + '.part', file);
+}
+
+// A step is done only when its file exists and its manifest row matches the file's size.
+function done(out, rows, s) {
+  const f = path.join(out, s.file);
+  const r = rows.get(s.file);
+  return fs.existsSync(f) && !!r && r.bytes === fs.statSync(f).size;
+}
+
 async function main() {
   const a = args(process.argv);
   const list = JSON.parse(fs.readFileSync(a.list, 'utf8'));
-  const takes = plan(list, a.only);
+  const steps = plan(list, a.only);
   fs.mkdirSync(a.out, { recursive: true });
-  const todo = takes.filter(x => !fs.existsSync(path.join(a.out, x.file)));
-  const est = todo.reduce((s, x) => s + x.credits, 0);
-  console.log(`list ${path.basename(a.list)}: ${takes.length} takes, ${todo.length} still to make, about ${est} credits (cap ${a.max})`);
-  if (a.dry) { for (const x of todo) console.log(`  would make ${x.file} (${x.credits})`); console.log('DRY RUN: nothing sent'); return 0; }
-  const key = readKey();
-  if (!key) { console.log('FAILED: no key saved. Double-click tools\\pc\\elevenlabs_api_key.bat first.'); return 2; }
-  const before = await balance(a.base, key);
-  if (before) console.log(`account: ${before.tier}, ${before.used} of ${before.limit} credits used`);
   const manifest = path.join(a.out, 'manifest.jsonl');
-  let spent = 0, made = 0, failed = 0;
-  for (const x of todo) {
-    if (spent + x.credits > a.max) { console.log(`STOP: the next take would pass the ${a.max} credit cap`); break; }
-    const it = x.it;
+  let rows = readManifest(manifest);
+  const todo = steps.filter(s => !done(a.out, rows, s));
+  const est = todo.reduce((n, s) => n + s.credits, 0);
+  console.log(`list ${path.basename(a.list)}: ${steps.length} steps, ${todo.length} still to make, estimate ${est} credits ` +
+    `(stems not priced; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
+  if (a.dry) { for (const s of todo) console.log(`  would make ${s.file} (${s.step}, est ${s.credits})`); console.log('DRY RUN: nothing sent'); return 0; }
+  const key = readKey(a);
+  if (!key) { console.log('FAILED: no key saved. Double-click ELEVENLABS_API_KEY.bat first.'); return 2; }
+  const redact = t => String(t).split(key).join('[redacted]');
+  const before = await usedCredits(a.base, key);
+  if (before) console.log(`account: ${before.tier}, ${before.used} of ${before.limit} credits used`);
+  else console.log('account balance unreadable: the stop uses the estimate');
+  let estSpent = 0, made = 0, failed = 0, stopped = '';
+  for (const s of todo) {
+    const now = before ? await usedCredits(a.base, key) : null;
+    const spent = now ? now.used - before.used : estSpent;
+    if (spent + s.credits > a.max) { stopped = `the next step would pass ${a.max} credits (${spent} used so far)`; break; }
+    const it = s.it;
     const started = new Date().toISOString();
     try {
       let res, params;
-      if (it.kind === 'sfx') {
+      if (s.step === 'sfx') {
         params = { text: it.prompt, duration_seconds: it.seconds, loop: !!it.loop, prompt_influence: it.influence ?? 0.5,
           model_id: it.model || list.sfx_model || 'eleven_text_to_sound_v2' };
         res = await post(a.base, key, '/v1/sound-generation?output_format=mp3_44100_192', params);
-      } else {
+      } else if (s.step === 'song') {
         params = { prompt: it.prompt, music_length_ms: Math.round(it.seconds * 1000), force_instrumental: it.instrumental !== false,
           model_id: it.model || list.music_model || 'music_v1' };
         res = await post(a.base, key, '/v1/music?output_format=' + (it.format || 'mp3_44100_192'), params);
-      }
-      const file = path.join(a.out, x.file);
-      fs.writeFileSync(file + '.part', res.buf);
-      fs.renameSync(file + '.part', file);
-      spent += x.credits; made++;
-      const rec = { id: it.id, take: x.t, file: x.file, kind: it.kind, cue: it.cue || null, group: it.group || null, params,
-        bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, started, source: 'ElevenLabs API, Creator plan (commercial)' };
-      if (it.kind === 'music' && it.stems) {
+      } else {
+        const songFile = path.join(a.out, s.song);
+        if (!done(a.out, rows, { file: s.song })) { console.log(`SKIP ${s.file}: its song ${s.song} is not made yet`); failed++; continue; }
+        params = { from: s.song };
         const form = new FormData();
-        form.append('file', new Blob([res.buf], { type: 'audio/mpeg' }), x.file);
-        const st = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
-        const zip = x.file.replace(/\.mp3$/, '_stems.zip');
-        fs.writeFileSync(path.join(a.out, zip), st.buf);
-        rec.stems = { file: zip, bytes: st.buf.length, sha256: sha(st.buf) };
+        form.append('file', new Blob([fs.readFileSync(songFile)], { type: 'audio/mpeg' }), s.song);
+        res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
+      save(a.out, s.file, res.buf);
+      estSpent += s.credits; made++;
+      const rec = { id: it.id, take: s.t, step: s.step, file: s.file, kind: it.kind, cue: it.cue || null, group: it.group || null,
+        params, bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, started,
+        source: 'ElevenLabs API, Creator plan (commercial)' };
       fs.appendFileSync(manifest, JSON.stringify(rec) + '\n');
-      console.log(`made ${x.file}${rec.stems ? ' + stems' : ''}`);
+      rows.set(s.file, rec);
+      console.log(`made ${s.file}`);
     } catch (e) {
       failed++;
-      console.log(`FAILED ${x.file}: ${String(e.message).split(key).join('[redacted]')}`);
-      if (e.status === 401 || e.status === 402 || e.status === 403) { console.log('STOP: key or plan problem, not retrying'); break; }
+      console.log(`FAILED ${s.file}: ${redact(e.message)}`);
+      if (e.status === 401 || e.status === 402 || e.status === 403) { stopped = 'key or plan problem'; break; }
+      if (e.ambiguous) { stopped = 'an answer was lost or the server failed; check the balance before rerunning'; break; }
     }
   }
-  const after = await balance(a.base, key);
-  if (after) console.log(`account after: ${after.used} of ${after.limit} credits used` + (before ? ` (this run ${after.used - before.used})` : ''));
-  console.log(`made ${made}, failed ${failed}, estimated ${spent} credits`);
-  const left = takes.filter(x => !fs.existsSync(path.join(a.out, x.file))).length;
-  console.log(left === 0 && failed === 0 ? 'ELEVENLABS GEN PASS' : `ELEVENLABS GEN INCOMPLETE: ${left} takes not made`);
-  return left === 0 && failed === 0 ? 0 : 1;
+  const after = before ? await usedCredits(a.base, key) : null;
+  if (after) console.log(`account after: ${after.used} of ${after.limit} used (this run ${after.used - before.used})`);
+  if (stopped) console.log('STOP: ' + stopped);
+  rows = readManifest(manifest);
+  const left = steps.filter(s => !done(a.out, rows, s));
+  console.log(`made ${made}, failed ${failed}, estimate ${estSpent} credits, ${left.length} of ${steps.length} steps not done`);
+  for (const s of left.slice(0, 20)) console.log('  not done: ' + s.file);
+  console.log(left.length === 0 ? 'ELEVENLABS GEN PASS' : 'ELEVENLABS GEN INCOMPLETE');
+  return left.length === 0 ? 0 : 1;
 }
 
 if (require.main === module) main().then(c => process.exit(c), e => { console.log('FAILED: ' + e.message); process.exit(2); });

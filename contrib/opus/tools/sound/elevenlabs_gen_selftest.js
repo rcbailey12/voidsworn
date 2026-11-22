@@ -1,14 +1,22 @@
-// Offline selftest for elevenlabs_gen.js: a fake API on localhost, no key or network needed.
+// Offline selftest for elevenlabs_gen.js: a fake API on loopback, no real key or network.
+// Covers Artoo's PR 1577 findings: live base locked, mock never sends the real key, redirects refused, stems resume
+// separately, PASS needs files and manifest rows, a 5xx is not retried, the stop reads the account's used credits.
 'use strict';
 const http = require('http'), fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
-const KEY = 'test_key_123';
+const MOCK_KEY = 'mock_key_123', REAL = 'real_key_must_not_leave';
 const calls = [];
+let used = 0, failStems = false, fail500 = false;
 const srv = http.createServer((q, r) => {
-  let n = 0; q.on('data', c => n += c.length); q.on('end', () => {
-    calls.push(q.method + ' ' + q.url.split('?')[0] + ' key=' + (q.headers['xi-api-key'] === KEY));
-    if (q.headers['xi-api-key'] !== KEY) { r.writeHead(401); return r.end('bad key ' + KEY); }
-    if (q.url.startsWith('/v1/user/subscription')) { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'creator', character_count: calls.length, character_limit: 121000 })); }
-    r.writeHead(200, { 'request-id': 'req' + calls.length }); r.end(Buffer.alloc(64, calls.length));
+  q.on('data', () => {}); q.on('end', () => {
+    const route = q.url.split('?')[0];
+    calls.push({ route, key: q.headers['xi-api-key'] });
+    if (route === '/v1/redirect') { r.writeHead(302, { location: 'http://127.0.0.1:1/' }); return r.end(); }
+    if (q.headers['xi-api-key'] !== MOCK_KEY) { r.writeHead(401); return r.end('bad key'); }
+    if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'creator', character_count: used, character_limit: 121000 })); }
+    if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
+    if (fail500) { r.writeHead(500); return r.end('boom'); }
+    used += route === '/v1/sound-generation' ? 200 : route === '/v1/music' ? 900 : 300;
+    r.writeHead(200, { 'request-id': 'req' + calls.length }); r.end(Buffer.alloc(64, calls.length % 250));
   });
 });
 srv.listen(0, '127.0.0.1', async () => {
@@ -19,29 +27,54 @@ srv.listen(0, '127.0.0.1', async () => {
     { id: 'a', kind: 'sfx', seconds: 1, takes: 2, prompt: 'click' },
     { id: 'm', kind: 'music', seconds: 60, takes: 1, stems: true, prompt: 'song' } ] }));
   const out = path.join(dir, 'out');
-  // async child (a sync spawn would block this process's fake server)
+  const gen = path.join(__dirname, 'elevenlabs_gen.js');
   const run = (extra, env) => new Promise(res => {
-    const c = spawn(process.execPath, [path.join(__dirname, 'elevenlabs_gen.js'), '--list', list, '--out', out, '--base', base, ...extra],
-      { env: Object.assign({}, process.env, env) });
-    let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', () => res({ stdout: o }));
+    const c = spawn(process.execPath, [gen, '--list', list, '--out', out, ...extra],
+      { env: Object.assign({}, process.env, { VOIDSWORN_ELEVENLABS_API_KEY: REAL }, env) });
+    let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', code => res({ out: o, code }));
   });
+  const mock = { ELEVENLABS_MOCK: '1', ELEVENLABS_MOCK_KEY: MOCK_KEY };
   const fails = [];
   const ck = (c, m) => { if (!c) fails.push(m); };
-  let r = await run(['--max-credits', '300'], { VOIDSWORN_ELEVENLABS_API_KEY: KEY });
-  ck(/STOP: the next take would pass/.test(r.stdout), 'cap stop'); ck(fs.existsSync(path.join(out, 'a_t1.mp3')) && !fs.existsSync(path.join(out, 'a_t2.mp3')), 'cap made one');
-  r = await run([], { VOIDSWORN_ELEVENLABS_API_KEY: KEY });
-  ck(/ELEVENLABS GEN PASS/.test(r.stdout), 'pass: ' + r.stdout);
-  ck(fs.existsSync(path.join(out, 'm_t1_stems.zip')), 'stems zip');
+  const count = r => calls.filter(c => c.route === r).length;
+
+  let r = await run(['--base', base, '--dry']);
+  ck(/live runs only talk to https:\/\/api\.elevenlabs\.io/.test(r.out) && r.code === 2, 'live mode refuses a custom base');
+  r = await run(['--base', 'http://example.com:80', '--dry'], mock);
+  ck(/mock mode needs a loopback/.test(r.out), 'mock refuses a non-loopback base');
+
+  failStems = true;
+  r = await run(['--base', base], mock);
+  ck(r.code === 1 && /INCOMPLETE/.test(r.out) && /not done: m_t1_stems\.zip/.test(r.out), 'failed stems is not a PASS');
+  ck(fs.existsSync(path.join(out, 'm_t1.mp3')), 'song kept after stems failed');
+  failStems = false;
+  const songsBefore = count('/v1/music');
+  r = await run(['--base', base], mock);
+  ck(r.code === 0 && /ELEVENLABS GEN PASS/.test(r.out), 'resume completes: ' + r.out);
+  ck(count('/v1/music') === songsBefore, 'resume made stems from the saved song, no new song');
   const man = fs.readFileSync(path.join(out, 'manifest.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
-  ck(man.length === 3 && man.every(x => x.sha256 && x.params), 'manifest rows');
-  ck(calls.filter(c => c.startsWith('POST /v1/sound-generation')).length === 2, 'sfx calls once each (resume skipped a_t1)');
-  r = await run([], { VOIDSWORN_ELEVENLABS_API_KEY: KEY });
-  ck(/0 still to make/.test(r.stdout), 'rerun skips all');
+  ck(man.length === 4 && man.every(x => x.sha256 && x.bytes), 'one manifest row per output');
+
+  fs.unlinkSync(path.join(out, 'manifest.jsonl'));
+  r = await run(['--base', base, '--dry'], mock);
+  ck(/4 still to make/.test(r.out), 'files without manifest rows are not done');
+
   fs.rmSync(out, { recursive: true });
-  r = await run([], { VOIDSWORN_ELEVENLABS_API_KEY: 'wrong' });
-  ck(/STOP: key or plan problem/.test(r.stdout) && !r.stdout.includes('wrong'), 'bad key stops, key redacted');
-  r = await run(['--dry'], { VOIDSWORN_ELEVENLABS_API_KEY: '' });
-  ck(/DRY RUN/.test(r.stdout), 'dry run without key');
+  r = await run(['--base', base, '--max-credits', '300'], mock);
+  ck(/STOP: the next step would pass 300 credits/.test(r.out) && count('/v1/sound-generation') >= 1, 'stop uses used credits');
+
+  fs.rmSync(out, { recursive: true });
+  fail500 = true;
+  const sfxBefore = count('/v1/sound-generation');
+  r = await run(['--base', base], mock);
+  ck(count('/v1/sound-generation') === sfxBefore + 1 && /STOP: an answer was lost or the server failed/.test(r.out), '5xx not retried');
+  fail500 = false;
+
+  ck(calls.filter(c => c.route !== '/v1/redirect').every(c => c.key === MOCK_KEY), 'the real key never reached the server');
+  ck(!/real_key_must_not_leave/.test(r.out), 'real key not printed');
+  let redirectRefused = false;
+  try { await fetch(base + '/v1/redirect', { redirect: 'error' }); } catch (e) { redirectRefused = true; }
+  ck(redirectRefused, 'redirect: error refuses a redirect');
   srv.close();
   console.log(fails.length ? 'SELFTEST FAIL: ' + fails.join('; ') : 'ELEVENLABS GEN SELFTEST PASS');
   process.exit(fails.length ? 1 : 0);
