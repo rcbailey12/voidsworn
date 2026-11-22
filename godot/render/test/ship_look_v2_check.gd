@@ -182,6 +182,27 @@ func _run() -> void:
 	LOOK.tune = {}
 	check(not _hull("ithar").refraction_enabled, "ithar: never refraction (transparent pass; Fable H12)")
 	check(_hull("ithar").clearcoat_enabled and _hull("deathless").clearcoat_enabled, "ithar and deathless: clearcoat")
+	# 7b. every faction's hull just before and just after its first hit (damage_material copies what _exterior sets): the
+	# detail layer, coat, backlight and glow all carry over (Astra via the Board, PR 1786)
+	for fac in LOOK.DETAIL_FACTIONS:
+		var before := _hull(fac)
+		before.emission = Color(1.0, 0.4, 0.1)
+		var after := HULL.damage_material(before, Transform3D.IDENTITY, {}, 10.0)
+		var p := after.get_shader_parameter
+		check(p.call("hull_detail") == true and p.call("hull_detail_albedo") == before.detail_albedo
+			and p.call("hull_detail_normal") == before.detail_normal and Vector3(p.call("hull_detail_scale")).is_equal_approx(before.uv2_scale),
+			fac + ": first hit keeps the detail layer")
+		# an unset uniform reads null and takes the shader default (coat 0, coat roughness 0.3, backlight black)
+		var coat = p.call("hull_coat")
+		var coat_r = p.call("hull_coat_rough")
+		check(is_equal_approx(0.0 if coat == null else float(coat), before.clearcoat if before.clearcoat_enabled else 0.0)
+			and (not before.clearcoat_enabled or is_equal_approx(0.3 if coat_r == null else float(coat_r), before.clearcoat_roughness)),
+			fac + ": first hit keeps the coat")
+		var bv = p.call("hull_back")
+		var back: Color = Color(0, 0, 0, 0) if bv == null else bv
+		check(back.is_equal_approx(before.backlight if before.backlight_enabled else Color(0, 0, 0, 0)), fac + ": first hit keeps the backlight")
+		check(is_equal_approx(float(p.call("hull_emission_energy")), before.emission_energy_multiplier)
+			and Color(p.call("hull_emission_color")).is_equal_approx(before.emission), fac + ": first hit keeps the V2 glow")
 	# 8. two hulls from one glb fitted at different lengths get their own grain scale (ShipView look cache, Board audit)
 	var shared := _hull("corsair")
 	var f1 := LOOK.fitted(shared, 1.5) as BaseMaterial3D
