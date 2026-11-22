@@ -2152,7 +2152,9 @@ func shipyardScreen(n) -> void:
 	for cls in fleetClasses():
 		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
-	RUN["inYard"] = n["id"]; saveRun()   # issue 1556: every stock roll, buy, sale, repair and refit is on disk at once (twin: campaign_run.js)
+	if n.get("id") != null: RUN["inYard"] = n["id"]
+	else: RUN.erase("inYard")
+	saveRun()   # issue 1556: every stock roll, buy, sale, repair and refit is on disk at once (twin: campaign_run.js)
 # a class as players see it (data.js clsName, lore round 8 row 4.0): cls stays the lookup key
 func clsName(c) -> String: return str(TB.get("CLS_NAME", {}).get(str(c), str(c)))
 func fleetClasses() -> Array:
