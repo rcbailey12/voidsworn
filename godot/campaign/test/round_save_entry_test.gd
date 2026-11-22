@@ -129,7 +129,7 @@ func _case(label: String, seed: int, fac: String, want: String, ambush := false)
 func _init() -> void:
 	_rmdir(DIR); DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DIR))
 	_case("battle", 11, "voidsworn", "battle")
-	_case("elite", 12, "corsair", "elite")
+	_case("elite", 14, "corsair", "elite")   # seed 12 until R414 (option C): the new enemy fleet changed the opening, so the fight no longer reached round 2
 	_case("ambush", 13, "ithar", "battle", true)
 	var ev := false
 	for s in range(20, 60):   # an event that offers a fight
