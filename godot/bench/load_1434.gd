@@ -62,19 +62,36 @@ var _watch: Node = null
 var _draw_step := ""
 
 
+var _draw_ins := {}   # hull-prep installs before the draws of this row
+var _draw_made: Array = []   # new shaders before the draws of this row
+var _draw_pipes := {}   # pipelines inside the draws of this row, by source
+var _pipe_at_pre := {}
+
+
 func _on_pre_draw() -> void:
 	_pre_us = Time.get_ticks_usec()
+	_pipe_at_pre = _pipe_counts()
 	if _watch != null and is_instance_valid(_watch):
 		var fx = _watch.get("gfx")
 		if fx != null and is_instance_valid(fx) and str(fx.get("prep_step")) != "" and fx.get("prep_step") != null:
 			var st := str(fx.get("prep_step"))
 			if not _draw_step.contains(st):
 				_draw_step = st if _draw_step == "" else _draw_step + " + " + st
+		# Artoo on PR 1445 (LOAD18): the installs and new shaders made before this draw, taken here so a later
+		# coroutine step cannot add to them before the row is written
+		if fx != null and is_instance_valid(fx) and fx.has_method("installs_take"):
+			var d: Dictionary = fx.installs_take()
+			for k in d: _draw_ins[k] = int(_draw_ins.get(k, 0)) + int(d[k])
+	_draw_made.append_array(SKEEP.made)
+	SKEEP.made.clear()
 
 
 func _on_post_draw() -> void:
 	if _pre_us > 0:
 		_draw_us += Time.get_ticks_usec() - _pre_us
+		# the pipelines counted from this draw's start to its end, by source
+		var now := _pipe_counts()
+		for k in now: _draw_pipes[k] = int(_draw_pipes.get(k, 0)) + int(now[k]) - int(_pipe_at_pre.get(k, now[k]))
 	_pre_us = 0
 
 
@@ -101,12 +118,11 @@ func _fx_work(node) -> String:
 		if int(p[k]) >= 1000:
 			out.append("%s %d ms" % [str(k), int(p[k]) / 1000])
 	var said := ", ".join(out) if not out.is_empty() else "-"
-	# issue 1434 (LOAD17): what hull prep installed since the last row
+	# issue 1434 (LOAD17): what hull prep installed before this row's draws (taken at frame_pre_draw)
 	var ins := PackedStringArray()
-	if fx.has_method("installs_take"):
-		var d: Dictionary = fx.installs_take()
-		for k in d: ins.append("%s %d" % [str(k), int(d[k])])
-	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed: " + ", ".join(ins) if not ins.is_empty() else "")
+	for k in _draw_ins: ins.append("%s %d" % [str(k), int(_draw_ins[k])])
+	_draw_ins = {}
+	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed before the draw: " + ", ".join(ins) if not ins.is_empty() else "")
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
@@ -152,20 +168,35 @@ func _pipes() -> int:
 # the last call, "draw 80, surface 3" ("-" when none). Godot counts a pipeline built at draw time under "draw"; "surface"
 # and "mesh" ones are made ahead of the draw, "specialization" ones in the background
 const PIPE_SOURCES := ["CANVAS", "MESH", "SURFACE", "DRAW", "SPECIALIZATION"]
-var _pipe_last := {}
 
 
+func _pipe_counts() -> Dictionary:
+	var d := {}
+	for src in PIPE_SOURCES:
+		var m: String = "PIPELINE_COMPILATIONS_" + src
+		if ClassDB.class_has_integer_constant("Performance", m):
+			d[src] = int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
+	return d
+
+
+# the pipelines counted inside this row's draws by source, "draw 80, surface 3" ("-" when none). A count, not a time:
+# how long creation took needs a trace (Artoo on PR 1445)
 func _pipes_by() -> String:
 	var out := PackedStringArray()
 	for src in PIPE_SOURCES:
-		var m: String = "PIPELINE_COMPILATIONS_" + src
-		if not ClassDB.class_has_integer_constant("Performance", m):
-			continue
-		var n := int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
-		var d: int = n - int(_pipe_last.get(src, n))
-		_pipe_last[src] = n
-		if d > 0: out.append("%s %d" % [src.to_lower(), d])
+		if int(_draw_pipes.get(src, 0)) > 0: out.append("%s %d" % [src.to_lower(), int(_draw_pipes[src])])
+	_draw_pipes = {}
 	return ", ".join(out) if not out.is_empty() else "-"
+
+
+# the new shaders made before this row's draws (taken at frame_pre_draw)
+func _made_take() -> String:
+	var n := _draw_made.size()
+	if n == 0:
+		return "-"
+	var said := ", ".join(PackedStringArray(_draw_made.slice(0, 6))) + (" and %d more" % (n - 6) if n > 6 else "")
+	_draw_made = []
+	return "%d: %s" % [n, said]
 
 
 # one line per recorded frame: where its wall-clock time went
@@ -173,7 +204,7 @@ func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
 		out.append("%d ms %s (began at %d ms): draw %.0f ms, before the draw %.0f ms (process step %.0f ms), render cpu %.0f ms, gpu %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (" (by source: %s)" % f[11]) + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]) + (", new shaders %s" % f[12]))
+			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (" (inside the draw by source: %s)" % f[11]) + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]) + (", new shaders %s" % f[12]))
 	return out
 
 
@@ -205,7 +236,9 @@ func _battle(tag: String, args: Dictionary) -> void:
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
 	_pipes_by()
-	SKEEP.take_made()
+	SKEEP.made.clear()
+	_draw_made = []
+	_draw_ins = {}
 	var gaps := 0
 	var stalls := 0
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
@@ -226,7 +259,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(b), _pipes_by(), SKEEP.take_made()])
+			_take_draw(), _fx_work(b), _pipes_by(), _made_take()])
 		pipes0 = pipes
 		last = now
 	_shift_process(frames)
@@ -293,7 +326,9 @@ func _title() -> void:
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
 	_pipes_by()
-	SKEEP.take_made()
+	SKEEP.made.clear()
+	_draw_made = []
+	_draw_ins = {}
 	_take_draw()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
@@ -320,7 +355,7 @@ func _title() -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(sc1), _pipes_by(), SKEEP.take_made()])
+			_take_draw(), _fx_work(sc1), _pipes_by(), _made_take()])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
