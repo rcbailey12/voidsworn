@@ -111,6 +111,7 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 		await process_frame
 	var pipes0 := _pipes()
+	var headless := DisplayServer.get_name() == "headless"
 	# the kill, then 12 s of effect time at 60 a second
 	var t0 := Time.get_ticks_usec()
 	var t_fx: float = fx.now
@@ -125,7 +126,7 @@ func _run() -> void:
 		if step_ms > 12.0: print("DEATH_COST hitch at %.2fs step %.1f ms, fx parts (usec): %s" % [fx.now - t_fx, step_ms, str(fx.prof_take())])
 		var pp := _pipes()
 		await process_frame
-		await RenderingServer.frame_post_draw
+		if not headless: await RenderingServer.frame_post_draw   # headless never draws, so this signal never comes (CI)
 		frames.append([_ms(f0), step_ms, fx.now - t_fx, _pipes() - pp])
 	var hitches: Array = []
 	var pipe_frames: Array = []
