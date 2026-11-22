@@ -179,6 +179,7 @@ gpu|render/test/door_check.gd|-|-|issue 1543: the installed C14 (B22_11) launch 
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window
 gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
 gpu|campaign/test/nem_col4_shots.gd|-|{out}|issue 1175: the orders rail with a column 4 shipyard holding the Nemesis meeting and the flagship stop with its objective and board; needs a window, draws no ship
+gpu|campaign/test/retreat_map_1480_shots.gd|-|{out}|issue 1480 RET-1: the map after a real retreat, the fleet back on the stop it jumped from and the fight still on the map; needs a window and the built hulls
 gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
 gpu|campaign/test/post_win_shots.gd|compat|{out}|issue 1177: victory with salvage, promotions, drydock and field repairs cards, no ship models needed
 gpu|campaign/test/map_approach_shots.gd|-|{out} --no-tips|sector approach at a matched jump, region fleets, far stops, Map key, spacing and uncapped frame times (issues 420 and 438)
