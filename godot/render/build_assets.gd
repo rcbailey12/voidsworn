@@ -156,6 +156,9 @@ func _compress(img: Image, normal := false, _srgb := true) -> Texture2D:
 	# the ship texture rule (godot/assets/ships/README.md, A4): BC7 high quality for colour, ORM and emissive; BC5 for
 	# normal maps (RGTC from the normal source); mipmaps on; nothing HDR. Falls back to S3TC where BC7 is unavailable.
 	if normal:
+		# Issue 1777 (engine audit item): this already writes true BC5. Godot 4.7 has no Image.COMPRESS_RGTC; S3TC with the
+		# normal source compresses the two normal channels as RGTC_RG (BC5, 8 bits each), measured in
+		# render/test/ship_look_v2_check.gd, which fails if that ever changes.
 		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_NORMAL)
 	elif img.compress(Image.COMPRESS_BPTC, Image.COMPRESS_SOURCE_GENERIC) != OK:
 		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_GENERIC)

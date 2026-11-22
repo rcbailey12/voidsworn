@@ -83,9 +83,145 @@ const RIM_SCRIPT := "res://render/look_rim.gd"
 static var tune := {}   # not GPU: look numbers read from json
 
 
-# Issue 1679: one launch option for the SG comparison. Set before any hull materials are cached.
+# Issue 1679: one launch option for the SG comparison. Set before any hull materials are cached. Ship Look V2 (issue 1777)
+# graduates it: the V2 switch turns it on too.
 static func fleet_lighting_enabled() -> bool:
-	return OS.get_environment("VS_FLEET_LIGHTING") == "1"
+	return OS.get_environment("VS_FLEET_LIGHTING") == "1" or ship_look_v2_enabled()
+
+
+# Issue 1777 (Ship Exteriors V2, RULEBOOK 3.14 law 6): the one switch for the whole V2 ship look, off by default until Ryan
+# has seen the before and after pictures (VS_SHIP_LOOK_V2=1 turns it on; the bench and the checks may set `v2_force`).
+# Going default-on later is this one function. Set before any hull materials are cached.
+static var v2_force := -1   # -1 follows the launch option, 0 off, 1 on (checks and bench only)
+static func ship_look_v2_enabled() -> bool:
+	if v2_force >= 0:
+		return v2_force == 1
+	return OS.get_environment("VS_SHIP_LOOK_V2") == "1"
+
+
+# What V2 changes, in one place (tuning values judged by eye on the six-faction sheets, RULEBOOK 0.4):
+#   ambient       flat ambient share of the key (was 0.25: 0.50 at key 2.0); the space reflections (world.gd, the #1679 sky
+#                 lobes) now carry the shadow sides' readability, so the flat fill can drop and shadows deepen
+#   normal_bias   the key light's shadow normal bias (was 2.0, which floated every turret and rib shadow off its deck)
+#   bias          the key light's depth bias, raised a little with the lower normal bias to keep acne off the plated hulls
+#   rim_spec      the rim light's specular (was 8.0: the wet white streaks on beveled decks, S8, S9, S10)
+#   emit          per faction, multiplies the baked hull glow on top of READ emit, so the hot accents (Sunward ember spires,
+#                 engine bells, core slits, Directorate bays, Eclipse corona) clear the 0.8 glow threshold; Glasswrights
+#                 stay at READ (their glow is capped on purpose, issue 362)
+#   detail        per faction micro-detail layer (godot/assets/ships/detail/, made by
+#                 contrib/opus/tools/issue1777/make_detail_maps.py): normal relief plus a colour grain, on object-space
+#                 triplanar UVs so every hull gets the same grain size whatever its atlas; tiles is grain tiles per game unit
+const V2 := {
+	"ambient": 0.095, "normal_bias": 0.3, "bias": 0.06, "rim_spec": 3.0,
+	"emit": {"voidsworn": 1.6, "hegemony": 1.35, "corsair": 1.3, "chorus": 1.25, "ithar": 1.0, "deathless": 1.45},
+	"tiles": 0.9,
+	"reach": [1.8, 120.0, 420.0],   # the key light's shadow reach: camera radius times k, clamped (battle.gd, each frame)
+	# Godot 4.7 material channels per faction (Ryan's engine audit, PR 1781), judged on the sheets; damaged hulls keep them
+	# (fx_hull.gd EXTERIOR). aniso: anisotropy (along the glTF tangents); coat/coat_rough: clearcoat; sss: subsurface
+	# scattering strength; back: backlight colour (light through thin membranes); refract: Glasswright refraction, kept
+	# off until its PC cost and sorting are measured (it moves the hull into the transparent pass). Anisotropy is wired but
+	# 0 for Sunward and the Directorate: with no flow map it follows the glTF tangents, which run every way across a baked
+	# atlas, and the cloud probe (contrib/opus/tools/issue1777/README.md) showed blotchy smeared highlights instead of a
+	# brushed sheen. It needs a direction the hull's look carries (an authored flow map, #1778) before it goes on.
+	"pbr": {
+		"voidsworn": {"aniso": 0.0},
+		"hegemony": {"aniso": 0.0},
+		"corsair": {},
+		"chorus": {"coat": 0.35, "coat_rough": 0.35, "sss": 0.25, "back": [0.30, 0.10, 0.08]},
+		"ithar": {"coat": 0.6, "coat_rough": 0.08, "refract": 0.0},
+		"deathless": {"coat": 0.25, "coat_rough": 0.2},
+	},
+}
+
+
+static func shadow_reach(cam_r: float) -> float:
+	var k: Array = v2_of("reach")
+	return clampf(cam_r * float(k[0]), float(k[1]), float(k[2]))
+
+
+# Issue 1777: the faction's native Godot material channels (V2 "pbr").
+static func _pbr_channels(m: BaseMaterial3D, faction: String) -> void:
+	var p: Dictionary = (v2_of("pbr") as Dictionary).get(faction, {})
+	if float(p.get("aniso", 0.0)) > 0.0:
+		m.anisotropy_enabled = true
+		m.anisotropy = float(p["aniso"])
+	if float(p.get("coat", 0.0)) > 0.0:
+		m.clearcoat_enabled = true
+		m.clearcoat = float(p["coat"])
+		m.clearcoat_roughness = float(p.get("coat_rough", 0.3))
+	if float(p.get("sss", 0.0)) > 0.0:
+		m.subsurf_scatter_enabled = true
+		m.subsurf_scatter_strength = float(p["sss"])
+	var back: Array = p.get("back", [])
+	if back.size() >= 3:
+		m.backlight_enabled = true
+		m.backlight = Color(float(back[0]), float(back[1]), float(back[2]))
+	if float(p.get("refract", 0.0)) > 0.0:
+		m.refraction_enabled = true
+		m.refraction_scale = float(p["refract"])
+const DETAIL_DIR := "res://assets/ships/detail/"
+const DETAIL_FACTIONS := ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]
+static var _detail := {}   # faction -> [grain texture, normal texture]
+
+
+static func v2_of(key: String):
+	var t: Dictionary = tune.get("v2", {})
+	return t.get(key, V2[key])
+
+
+# The faction's micro-detail pair [grain, normal], or [] when the faction has none (an unknown faction id).
+static func detail_maps(faction: String) -> Array:
+	if not faction in DETAIL_FACTIONS:
+		return []
+	if not _detail.has(faction):
+		var g := DETAIL_DIR + faction + "_grain.png"
+		var n := DETAIL_DIR + faction + "_n.png"
+		_detail[faction] = [load(g), load(n), _alpha_of(load(g))] if ResourceLoader.exists(g) and ResourceLoader.exists(n) else []
+	return _detail[faction]
+
+
+# The grain's alpha (the layer's share), read once per faction.
+static func _alpha_of(t: Texture2D) -> float:
+	var img := t.get_image() if t != null else null
+	if img == null:
+		return 0.0
+	if img.is_compressed():
+		img.decompress()
+	return img.get_pixel(0, 0).a
+
+
+# Issue 1777: lay the faction's micro-detail on a hull material. Godot's detail layer mixes the detail normal in by the
+# grain's alpha (a), which would flatten the baked relief by that share; the normal scale is raised by 1 / (1 - a) so the
+# baked relief keeps its full depth and the micro relief rides on top. Tiles are per object-space unit here; ShipView
+# rescales them per hull once it knows the hull's fitted scale (detail_fit).
+static func _detail_layer(m: BaseMaterial3D, faction: String) -> void:
+	var maps := detail_maps(faction)
+	if maps.is_empty():
+		return
+	var grain := maps[0] as Texture2D
+	var a := float(maps[2])
+	m.detail_enabled = true
+	m.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+	m.detail_uv_layer = BaseMaterial3D.DETAIL_UV_2
+	m.detail_albedo = grain
+	m.detail_normal = maps[1]
+	m.uv2_triplanar = true
+	m.uv2_world_triplanar = false
+	m.uv2_triplanar_sharpness = 4.0
+	m.uv2_scale = Vector3.ONE * float(v2_of("tiles"))
+	if not m.normal_enabled:
+		m.normal_enabled = true   # no baked normal map: Godot's flat default sits under the detail
+	m.normal_scale = m.normal_scale / maxf(1.0 - a, 0.2)
+	m.set_meta("look_detail", faction)
+
+
+# Issue 1777: after ShipView fits a hull (scale k from object space to game units), keep the grain the same size in game
+# units on every hull. Only materials that carry the detail layer change.
+static func detail_fit(m: Material, k: float) -> void:
+	var b := m as BaseMaterial3D
+	if b == null or not b.detail_enabled or not b.has_meta("look_detail"):
+		return
+	b.uv2_scale = Vector3.ONE * float(v2_of("tiles")) * absf(k)
 
 
 static func read_of(faction: String) -> Dictionary:
@@ -102,6 +238,8 @@ static func read_of(faction: String) -> Dictionary:
 
 static func rim_of() -> Dictionary:
 	var r := RIM.duplicate()
+	if ship_look_v2_enabled():
+		r["spec"] = float(v2_of("rim_spec"))   # issue 1777: no wet white glare on beveled decks
 	r.merge(tune.get("rim", {}), true)
 	return r
 
@@ -137,7 +275,7 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	# r10 lighting pass: a slightly cool ambient against the warm key, so shadow sides read as depth, not flat grey
 	env.ambient_light_color = Color(0.86, 0.9, 1.0)
-	env.ambient_light_energy = 0.25 * key_e
+	env.ambient_light_energy = (float(v2_of("ambient")) if ship_look_v2_enabled() else 0.25) * key_e
 	env.glow_enabled = true
 	env.glow_hdr_threshold = 0.8
 	env.glow_hdr_scale = 2.0
@@ -165,6 +303,10 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		key.shadow_enabled = true
 		# Smooth the stippled self-shadows on the densely plated painted hulls.
 		key.shadow_normal_bias = 2.0
+		# Issue 1777: V2 tightens it so turrets, spires and ribs cast real contact shadows onto the decks
+		if ship_look_v2_enabled():
+			key.shadow_normal_bias = float(v2_of("normal_bias"))
+			key.shadow_bias = float(v2_of("bias"))
 		# issue 1437 (item 8): Low takes the cheaper soft filter and two splits; Max and High keep today's
 		var low := q == "low"
 		RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_SOFT_LOW if low else RenderingServer.SHADOW_QUALITY_SOFT_HIGH)
@@ -240,10 +382,16 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 		if authored:
 			ao_light = float(ex.get("ao_light", ao_light))
 		m.ao_light_affect = ao_light
+	var v2 := ship_look_v2_enabled()
+	if v2:
+		_detail_layer(m, faction)
+		_pbr_channels(m, faction)
 	if authored:
 		m.rim_enabled = true
 		m.rim = float(ex.get("rim", 0.08))
 		m.rim_tint = float(ex.get("rim_tint", 0.15))
+		if v2:
+			m.emission_energy_multiplier *= float((v2_of("emit") as Dictionary).get(faction, 1.0))
 		return m
 	if r.is_empty():
 		var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
@@ -264,6 +412,8 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 		c.a = a
 		m.albedo_color = c
 	m.emission_energy_multiplier *= float(r.get("emit", 1.0))
+	if v2:
+		m.emission_energy_multiplier *= float((v2_of("emit") as Dictionary).get(faction, 1.0))
 	m.metallic *= float(r.get("metal", 1.0))
 	m.metallic_specular = float(r.get("spec", m.metallic_specular))
 	return m

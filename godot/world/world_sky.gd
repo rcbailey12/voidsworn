@@ -372,12 +372,23 @@ void fragment() {
 # Issue 1679, SG option. Broad, subdued lobes in linear light. The sun side is warmer and brighter than the back-bounce.
 const FLEET_REFLECTIONS := """
 uniform bool fleet_reflections = false;
+// Issue 1777 (Ship Look V2): more lobes on top of the 1679 gradient, seen only by the reflection probe (cubemap pass):
+// a tight warm sun lobe for a real specular highlight on metal plates, a cool bounce band low on the far side (the
+// nebula and planet light), and dark-space troughs straight up and straight down so curved armor keeps deep contrast.
+uniform bool fleet_reflections_v2 = false;
 
 vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 	float sun_side = dot(direction, sun_direction);
 	float warm = smoothstep(0.0, 1.0, sun_side);
 	float cool = smoothstep(0.0, 1.0, -sun_side);
-	return vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	vec3 c = vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	if (fleet_reflections_v2) {
+		float lobe = pow(max(sun_side, 0.0), 24.0);
+		float band = exp(-pow((direction.y + 0.18) / 0.22, 2.0)) * smoothstep(0.2, -0.6, sun_side);
+		float trough = smoothstep(0.55, 0.95, abs(direction.y));
+		c = c * (1.0 - 0.75 * trough) + vec3(0.9, 0.74, 0.52) * lobe + vec3(0.045, 0.07, 0.11) * band;
+	}
+	return c;
 }
 """
 
