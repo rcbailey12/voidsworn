@@ -42,7 +42,10 @@ function mcNodeScore(n){
     else if(n.rw.k==='repair'&&dmg>.2) s+=25; else if(n.rw.k==='cred') s+=3; else if(n.rw.k==='mod') s+=5; }
   return s;
 }
-function mcChooseNode(avail){ let bid=avail[0], bs=-1e9; for(const id of avail){ const n=findNode(id); if(!n) continue; const sc=mcNodeScore(n); if(sc>bs){ bs=sc; bid=id; } } return bid; }
+// Issue 1632: an objective lost with survivors is a retreat (issue 1480, R381): the fight stays on the map and the fleet goes back one
+// stop. The bot then prefers another route, and gives the run up after three retreats from one fight, as a player would.
+var mcRetreats={};
+function mcChooseNode(avail){ let bid=avail[0], bs=-1e9; for(const id of avail){ const n=findNode(id); if(!n) continue; const sc=mcNodeScore(n)-100*(mcRetreats[id]||0); if(sc>bs){ bs=sc; bid=id; } } return bid; }
 function mcMaybeVerb(S){ const V=verbFor(); if(!V||!verbCanUse()) return; const free=verbFree(V), c=V.cost||{};
   const ok=free||(!c.cred&&!c.mod&&!c.xp)||(c.cred&&RUN.credits>=300)||(c.mod&&RUN.inventory.length>=2)||(c.xp&&((flagshipOf()||RUN.fleet[0]||{cap:{xp:0}}).cap.xp>=(c.xp+30)));
   if(!ok) return; const lines=useVerb(); if(lines) S.verbUses++; }
@@ -82,6 +85,7 @@ async function mcFight(cfgIn,S,isNem){
   // on the map, a state the shipped game cannot reach (it has no round cap).
   const finRes=res==='timeout'?(B.cfg.kind==='boss'?'loss':'retreat'):res;
   try{ finishBattle(finRes); }catch(e){ S.errors.push('finishBattle: '+(e&&e.message||e)); }
+  { const nd=cfgIn.node&&RUN&&!RUN.over&&findNode(cfgIn.node); if(nd&&!nd.done&&!RUN.curNode){ mcRetreats[nd.id]=(mcRetreats[nd.id]||0)+1; S.retreats=(S.retreats||0)+1; } }
   if(nemB){ nemB.res=res; if(RUN&&RUN.nem){ nemB.adaptA=RUN.nem.adapt.length; nemB.revA=RUN.nem.revealed.length; } S.nem.push(nemB); }
   if(RUN) S.econ.push({at:'postbattle',s:RUN.sector,credits:RUN.credits,ships:RUN.fleet.length,missing:mcMissing(),cp:fleetCP()});
 }
@@ -152,18 +156,28 @@ function mcEvent(n,S){
   if(o.r&&o.r.fight) return {battle:{kind:'elite',fac:o.r.fight,col:n.col+1,node:n.id,eventRelic:true}};
   applyOutcome(o.r||{}); completeNode(); return {};
 }
+// Issue 1632: drydocks and field repairs became one repair stop with two choices (drydockScreen and fieldRepairs are gone). The full
+// service when its extra hull is worth more than the stipend at the paid repair price, or when the fleet or flagship is below half
+// hull; otherwise repairs and credits (the issue 1177 pick that tools/late_run_1178/sim_1178.js used).
+function mcRepairStop(n){
+  RUN.curNode=n.id;
+  const o=repairStopOptions(n.type), pm=priceMult();
+  const fl=(typeof flagshipOf==='function'&&flagshipOf())||null, flFrac=fl?Math.max(0,fl.hp)/derive(fl).maxHp:1;
+  ACT.repairStop(((o[0].hp-o[1].hp)/2*pm>o[1].credits||mcFleetHpFrac()<.5||flFrac<.5)?'service':'stipend');
+}
 function mcEnterNode(id,S){
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
-  if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
+  if(n.type==='battle'||n.type==='elite'||n.type==='boss'||nemNodeIs(n)){ // issue 1632, as campaign_run.js enterNode: an unmet Nemesis meets you at any column 4 stop (issue 1175)
     let kind=n.type, fac=nodeFaction(n);
+    if(n.type==='boss'&&nemNodeIs(n)){ ensureNemesis(); return {battle:{kind:'boss',fac,col:n.col,node:id,nemesis:nemBattleCfg()},nemesis:true}; } // issue 1480: the revived rival joins the boss fight
     if(nemNodeIs(n)){ ensureNemesis(); const fa=nemBeh().fleet; return {battle:Object.assign({kind:'elite',fac:RUN.nem.fac,col:n.col,node:id,nemesis:nemBattleCfg()},ARCHETYPES[fa]?{arch:fa}:{}),nemesis:true}; }
     if(RUN.ambush&&kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; }
     return {battle:{kind,fac,col:n.col,node:id}};
   }
   if(n.type==='event') return mcEvent(n,S);
   if(n.type==='shipyard'){ mcShipyard(n,S); return {}; }
-  if(n.type==='drydock'){ const cr=RUN.credits, mi=mcMissing(); drydockScreen(n); S.regroups.push({type:'drydock',s:RUN.sector,creditsIn:cr,missing:mi,missingOut:mcMissing()}); return {}; }
-  if(n.type==='field'){ fieldRepairs(n); return {}; }
+  if(n.type==='drydock'){ const cr=RUN.credits, mi=mcMissing(); mcRepairStop(n); S.regroups.push({type:'drydock',s:RUN.sector,creditsIn:cr,missing:mi,missingOut:mcMissing()}); return {}; }
+  if(n.type==='field'){ mcRepairStop(n); return {}; }
   return {};
 }
 function mcFreshStats(cfg){ return {fac:cfg.fac,admiral:cfg.admiral,ai:cfg.ai,seed:cfg.seed,won:false,sectorReached:1,timeouts:0,verbUses:0,
@@ -175,7 +189,7 @@ async function mcRunOne(cfg){
     META=defaultMeta(); if(cfg.admiral) META.admirals[cfg.admiral]=true; AI_LEVEL=cfg.ai; SPEED=0;
     mcRestoreBaseHullCosts();
     if(cfg.priceMult&&cfg.priceMult!==1) for(const id of Object.keys(HULLS)){ const h=HULLS[id]; if(h.cost!=null&&factionOfTpl(id)===cfg.fac) h.cost=Math.max(5,Math.round(h.cost*cfg.priceMult/5)*5); }
-    rndSeed(cfg.seed>>>0);
+    rndSeed(cfg.seed>>>0); mcRetreats={};
     newRun(cfg.admiral,cfg.fac,{});
     if(cfg.cpDelta) RUN.cpCap+=cfg.cpDelta;
     if(cfg.credMult&&cfg.credMult!==1) RUN.credits=Math.round(RUN.credits*cfg.credMult);
@@ -191,9 +205,12 @@ async function mcRunOne(cfg){
       S.sectorReached=Math.max(S.sectorReached,RUN.sector);
       if(RUN.reward){ mcRewardStep(S); continue; }
       mcMaybeVerb(S);
-      const avail=availableNodes();
-      if(!avail.length){ S.errors.push('no available nodes, sector '+RUN.sector); break; }
-      const step=mcEnterNode(mcChooseNode(avail),S);
+      const cur=RUN.curNode&&findNode(RUN.curNode); // issue 1632: a service stop whose Nemesis meeting was just won opens as the stop itself
+      const reopen=cur&&cur.nemCleared&&!cur.done, avail=reopen?[]:availableNodes();
+      if(!reopen&&!avail.length){ S.errors.push('no available nodes, sector '+RUN.sector); break; }
+      const pickId=reopen?cur.id:mcChooseNode(avail);
+      if((mcRetreats[pickId]||0)>=3){ S.abandoned=true; endRun(false,true); break; }
+      const step=mcEnterNode(pickId,S);
       if(step&&step.battle) await mcFight(step.battle,S,step.nemesis);
     }
     if(guard>=800) S.errors.push('run guard exhausted');
