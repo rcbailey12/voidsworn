@@ -17,11 +17,15 @@ function args(argv) {
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-function todayParts(repo, cueName) {
+// An item's optional "today" field names the baseline exactly: "cue" or "cue:variant" (null = no clip today). It wins
+// over reading the free-text "cue" label, which missed "(ithar variant: ...)" labels (Artoo on PR 1753, finding 1).
+function todayParts(repo, cueName, today) {
   const cues = JSON.parse(fs.readFileSync(path.join(repo, 'godot/audio/cues.json'), 'utf8'));
   const index = JSON.parse(fs.readFileSync(path.join(repo, 'godot/audio/clips/index.json'), 'utf8'));
-  const base = String(cueName || '').split(' ')[0];
-  const variant = (String(cueName).match(/\((\w+) variant\)/) || [])[1];
+  if (today === null) return [];
+  const exact = typeof today === 'string' ? today.split(':') : null;
+  const base = exact ? exact[0] : String(cueName || '').split(' ')[0];
+  const variant = exact ? exact[1] : (String(cueName).match(/\((\w+) variant[):]/) || [])[1];
   const c = cues[base];
   if (!c) return [];
   const out = [];
@@ -43,7 +47,7 @@ function main() {
   const player = (src, label) => `<figure><audio controls preload="none" src="${esc(src)}"></audio><figcaption>${esc(label)}</figcaption></figure>`;
   let rows = '', missing = 0, charged = 0, estimated = 0;
   for (const it of list.items) {
-    const today = it.kind === 'music' ? [] : todayParts(a.repo, it.cue);
+    const today = it.kind === 'music' ? [] : todayParts(a.repo, it.cue, it.today);
     const todayHtml = today.length ? today.map((p, i) => player(copy(p.file, `${it.id}_today${i}${path.extname(p.file)}`), p.label)).join('')
       : `<p class="none">${it.kind === 'music' ? 'today: the current OpenGameArt tracks' : 'no clip today'}</p>`;
     let freeHtml = '<p class="none">not pulled yet</p>';
