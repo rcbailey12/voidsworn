@@ -1,0 +1,412 @@
+{
+ "about": "Issue 1690 (Wave 1A, R412): ship hit reactions, firing recoil and miss readability. A torpedo on the hull and on the shield, a Navy ion lance on an unhurt and on a wounded Sunward hull (one brownout), heavy battery and gauss recoil seen from the shooter, and a battery volley and a torpedo that miss, at camera 170 and 26. Run with --moments res://bench/look_moments_1690.json on main 28d08009 plus this rows file and the bench's misses key (before) and codex/issue-1690 f14574dc plus the same (after).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "26": [
+   768,
+   432
+  ],
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_torp_hull",
+   "label": "Hullbreaker torpedo on a Navy cruiser's hull: the kick, engine stutter and brownout",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.08,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.45,
+     1
+    ],
+    [
+     "impact",
+     0.9,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_torp_shield",
+   "label": "the same torpedo absorbed by the shield: a small push, no stutter or brownout",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.08,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.45,
+     1
+    ],
+    [
+     "impact",
+     0.9,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_ion_fresh",
+   "label": "Navy ion lance on an unhurt Sunward hull: one brownout and the crawl",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.05,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.4,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_ion_wounded",
+   "label": "the same ion lance on a wounded Sunward hull: one brownout on top of the wound flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "hull",
+   "sync_t": {
+    "hp": 63,
+    "maxHp": 100,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.05,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.4,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_recoil_battery",
+   "label": "Navy cruiser fires its heavy battery: barrel kickback and hull recoil",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     1
+    ],
+    [
+     "fire",
+     0.04,
+     1
+    ],
+    [
+     "fire",
+     0.1,
+     1
+    ],
+    [
+     "fire",
+     0.2,
+     1
+    ],
+    [
+     "fire",
+     0.4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_recoil_gauss",
+   "label": "Sunward cruiser fires gauss: the heavier recoil",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     1
+    ],
+    [
+     "fire",
+     0.04,
+     1
+    ],
+    [
+     "fire",
+     0.1,
+     1
+    ],
+    [
+     "fire",
+     0.2,
+     1
+    ],
+    [
+     "fire",
+     0.4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_miss_battery",
+   "label": "a battery volley with two misses: the shots pass by and fade",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "battery",
+   "shots": 4,
+   "misses": 2,
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.15,
+     1
+    ],
+    [
+     "impact",
+     0.35,
+     1
+    ],
+    [
+     "impact",
+     0.7,
+     1
+    ],
+    [
+     "impact",
+     1.2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1690 wave 1A",
+   "id": "w1a_miss_torp",
+   "label": "a torpedo that misses: it runs past and fades",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "shots": 1,
+   "misses": 1,
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.5,
+     1
+    ],
+    [
+     "impact",
+     0.9,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ]
+   ]
+  }
+ ]
+}
