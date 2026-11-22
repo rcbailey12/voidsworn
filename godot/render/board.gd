@@ -27,15 +27,9 @@ var planet_node: MeshInstance3D = null   # the board planet, when the map has on
 var planet_pending := false              # issue 1765: its maps are still loading or baking
 var planet_t0 := 0                       # issue 1765: when they started (one load deadline shared with the world)
 var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
-# the board planet's look per battle: [kind (0 rock, 1 terran, 3 ice, 4 lava, 5 barren; world_planet.gd BOARD_LOOKS draws
-# each), colour a, b, atmosphere]. The colours are the old map shader's, kept for anything that reads the table.
-const PLANET_LOOKS := [
-	[0, Color(0.55, 0.42, 0.3), Color(0.22, 0.15, 0.1), Color(0.9, 0.65, 0.4)],
-	[1, Color(0.36, 0.42, 0.24), Color(0.07, 0.15, 0.3), Color(0.45, 0.7, 1.0)],
-	[3, Color(0.82, 0.88, 0.94), Color(0.42, 0.52, 0.62), Color(0.6, 0.8, 1.0)],
-	[4, Color(0.28, 0.2, 0.16), Color(0.08, 0.06, 0.05), Color(1.0, 0.45, 0.2)],
-	[5, Color(0.5, 0.48, 0.46), Color(0.2, 0.19, 0.19), Color(0.6, 0.62, 0.7)],
-]
+# the board planet's look per battle, picked by the battle seed: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren. Every colour
+# lives in world_planet.gd BOARD_LOOKS, the one planet palette (issue 1765; the old map shader's copies are gone).
+const PLANET_LOOKS := [0, 1, 3, 4, 5]
 var ox := 0.0
 var oz := 0.0
 var cells: Array = []        # [{q, r}]
@@ -1087,9 +1081,9 @@ func _planet() -> void:
 	planet_node = mi
 	# Issue 1765 (R419, Planets V2): the planet's surface comes from world_planet.gd. Rocky and barren worlds draw the
 	# authored 8K R01 relief, turned and tinted per battle; terran, ice and volcanic worlds bake a 4K surface with a
-	# 16-bit relief map. The campaign map's icon shader is no longer used here.
+	# relief map. The campaign map's icon shader is no longer used here.
 	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
-	var look: Array = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	var look_kind: int = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
 	var sun := mi.position + sun_dir.normalized() * 100000.0
 	var shell := MeshInstance3D.new()
 	var ss := SphereMesh.new()
@@ -1103,8 +1097,8 @@ func _planet() -> void:
 	props.add_child(shell)
 	planet_pending = true
 	planet_t0 = Time.get_ticks_msec()
-	mi.set_meta("planet_look", int(look[0]))
-	await PL.install_board(mi, shell, int(look[0]), seed_v, sun)
+	mi.set_meta("planet_look", look_kind)
+	await PL.install_board(mi, shell, look_kind, seed_v, sun)
 	planet_pending = false
 
 

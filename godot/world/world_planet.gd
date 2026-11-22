@@ -20,24 +20,40 @@ const R01_SIZE := Vector2i(8192, 4096)
 static func rocky_available() -> bool:
 	return OS.get_environment("VS_PLANET_REMIX") != "0" and FileAccess.file_exists(R01_DIR + "colour.json") and FileAccess.file_exists(R01_DIR + "relief.json")
 
-# The board planet's five looks, by board look kind (board.gd PLANET_LOOKS[i][0]): 0 rocky, 1 terran, 3 ice, 4 volcanic,
+# The board planet's five looks, by board look kind (board.gd PLANET_LOOKS[i]): 0 rocky, 1 terran, 3 ice, 4 volcanic,
 # 5 barren. "bake" is this file's recipe kind for the baked looks (-1: drawn from R01). Palettes stay in the grounded range
 # (no indigo to purple, RULEBOOK 10.9) and inside R420's band 2 (lit disc mean 0.03 to 0.25 linear, RULEBOOK 3.14; the ice
 # world is held down from snow white to stay inside it). "bump" scales the relief shading; "glint" the sun's sheen on water or ice.
 const BOARD_LOOKS := {
-	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)]},
-	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.03, "glint": 1.0},
-	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5},
-	4: {"bake": 3, "flat": Vector3(0.36, 0.23, 0.15), "a": Vector3(0.68, 0.42, 0.25), "b": Vector3(0.11, 0.09, 0.08), "c": Vector3(0.88, 0.66, 0.46), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37)},
-	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)]},
+	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)], "gain": 1.5, "stand_gain": 0.3, "stand_clouds": 0.25},
+	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.03, "glint": 1.0, "stand_gain": 0.65},
+	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5, "stand_gain": 0.68, "stand_clouds": 0.2},
+	4: {"bake": 3, "flat": Vector3(0.36, 0.23, 0.15), "a": Vector3(0.68, 0.42, 0.25), "b": Vector3(0.18, 0.145, 0.125), "c": Vector3(0.88, 0.66, 0.46), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37), "stand_gain": 0.3, "stand_clouds": 0.25},
+	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)], "gain": 1.35, "stand_gain": 0.33},
 }
 const BOARD_SIZE := Vector2i(4096, 2048)
 # R01 longitudes (u) whose equator band is clean of remix swirls, judged on the colour map (issue 1765)
 const R01_CLEAN := [[0.05, 0.28]]
 
 
+# Issue 1765 (Fable, PR 1776 M4): one compiled shader per source text for the whole run, not a new one per battle.
+static var _shaders := {}
+
+static func clear_static() -> void:
+	_shaders.clear()
+
+static func shader(code: String) -> Shader:
+	var sh: Shader = _shaders.get(code)
+	if sh == null:
+		sh = Shader.new()
+		sh.code = code
+		_shaders[code] = sh
+	return sh
+
+
 # Dresses the board's planet sphere and its air shell for one battle. Waits for the maps (the battle's loading cover is
-# still up, board.gd wait_planet); the sphere keeps a flat, lit stand-in until then and wherever maps cannot be made.
+# still up, board.gd wait_planet); until then, and wherever maps cannot be made or miss the cover, the sphere draws a
+# procedural stand-in in the look's own palette (noise land, seas on a terran world, weather), never a plain ball.
 static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind: int, seed_v: int, sun_position: Vector3) -> void:
 	var L: Dictionary = BOARD_LOOKS.get(look_kind, BOARD_LOOKS[0])
 	var r := RandomNumberGenerator.new()
@@ -47,10 +63,17 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	_board_air(air, L, light_dir)
 	# the lit stand-in, until the maps arrive (or for good, where they cannot be made)
 	var stand_in := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = BOARD_SURFACE
-	stand_in.shader = sh
-	stand_in.set_shader_parameter("flat_col", L["flat"])
+	stand_in.shader = shader(BOARD_SURFACE)
+	var flat: Vector3 = L["flat"]
+	stand_in.set_shader_parameter("flat_col", flat)
+	# its gain holds the stand-in near the finished look's band 2 brightness (planet_v2_shots.gd --only standin)
+	var g := float(L.get("stand_gain", 1.0))
+	stand_in.set_shader_parameter("col_a", L.get("a", flat * 1.3) * g)
+	stand_in.set_shader_parameter("col_b", L.get("b", flat * 0.5) * g)
+	stand_in.set_shader_parameter("col_c", L.get("c", flat * 1.6) * g)
+	stand_in.set_shader_parameter("stand_sea", 1.0 if int(L["bake"]) == 2 else 0.0)
+	stand_in.set_shader_parameter("stand_clouds", 0.0 if not bool(L.get("clouds", true)) or float(L["atmo_k"]) <= 0.0 else float(L.get("stand_clouds", 0.4)))
+	stand_in.set_shader_parameter("stand_seed", float(posmod(seed_v * 13 + look_kind * 5, 97)) * 1.37)
 	stand_in.set_shader_parameter("sun", light_dir)
 	stand_in.set_shader_parameter("atmo", L["atmo"])
 	stand_in.set_shader_parameter("atmo_k", float(L["atmo_k"]))
@@ -74,7 +97,10 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 		var u := r.randf_range(float(windows[0]), float(windows[1]))
 		var opts := {"turn": TAU * (1.0 - u), "tilt": PI * 0.5 + r.randf_range(-0.25, 0.25), "tint": tints[r.randi() % tints.size()],
 			"clouds": bool(L["clouds"]), "atmo": L["atmo"], "atmo_k": float(L["atmo_k"]), "seed": r.randf() * 50.0,
-			"desat": float(L.get("desat", 0.0))}
+			"desat": float(L.get("desat", 0.0)), "gain": float(L.get("gain", 1.0))}
+		# Fable (PR 1776 H11) asked for more clean windows. Tried in cloud renders (issue 1765): turning the strip end
+		# over end, or mirroring it, carries the swirled longitudes beside the window onto the close-up limb, so neither
+		# ships. More ground needs a cleaner remix of the data itself (a follow-up job).
 		await install_rocky(planet, air, sun_position, opts)
 		return
 	planet.set_meta("planet_code", "BAKE%d" % int(L["bake"]))
@@ -88,7 +114,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	params["pass_id"] = 1
 	var b: Image = await baker.bake(key + "|b", code, params, size, 32)
 	params["pass_id"] = 2
-	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true)
+	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true)   # one 32-bit float height channel
 	if not is_instance_valid(planet) or a == null or b == null or h == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	stand_in.set_shader_parameter("tex_a", baker.texture(a))
@@ -104,9 +130,7 @@ static func _board_air(air: MeshInstance3D, L: Dictionary, light_dir: Vector3) -
 		air.visible = false
 		return
 	var atmosphere := ShaderMaterial.new()
-	var atmosphere_shader := Shader.new()
-	atmosphere_shader.code = ATMO
-	atmosphere.shader = atmosphere_shader
+	atmosphere.shader = shader(ATMO)
 	atmosphere.set_shader_parameter("atmo", L["atmo"])
 	atmosphere.set_shader_parameter("sun", light_dir)
 	atmosphere.set_shader_parameter("shell", 1.03)
@@ -128,9 +152,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var clouds := bool(opts.get("clouds", true))
 	var ground := ShaderMaterial.new()
-	var ground_shader := Shader.new()
-	ground_shader.code = ROCKY_SURFACE
-	ground.shader = ground_shader
+	ground.shader = shader(ROCKY_SURFACE)
 	ground.set_shader_parameter("colour_map", baker.texture(colour))
 	ground.set_shader_parameter("surface_data", baker.texture(data))
 	ground.set_shader_parameter("sun", light_dir)
@@ -144,9 +166,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 			air.visible = false
 		else:
 			var atmosphere := ShaderMaterial.new()
-			var atmosphere_shader := Shader.new()
-			atmosphere_shader.code = ATMO
-			atmosphere.shader = atmosphere_shader
+			atmosphere.shader = shader(ATMO)
 			atmosphere.set_shader_parameter("atmo", opts.get("atmo", Vector3(0.72, 0.39, 0.19)))
 			atmosphere.set_shader_parameter("sun", light_dir)
 			atmosphere.set_shader_parameter("shell", 1.03)
@@ -162,9 +182,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	cloud_mesh.height *= 1.012
 	cloud.mesh = cloud_mesh
 	var cloud_material := ShaderMaterial.new()
-	var cloud_shader := Shader.new()
-	cloud_shader.code = ROCKY_CLOUDS
-	cloud_material.shader = cloud_shader
+	cloud_material.shader = shader(ROCKY_CLOUDS)
 	cloud_material.set_shader_parameter("surface_data", baker.texture(data))
 	cloud_material.set_shader_parameter("sun", light_dir)
 	_remix(cloud_material, opts)
@@ -180,6 +198,7 @@ static func _remix(m: ShaderMaterial, opts: Dictionary) -> void:
 	m.set_shader_parameter("remix_tint", opts.get("tint", Vector3.ONE))
 	m.set_shader_parameter("remix_seed", float(opts.get("seed", 0.0)))
 	m.set_shader_parameter("remix_desat", float(opts.get("desat", 0.0)))
+	m.set_shader_parameter("remix_gain", float(opts.get("gain", 1.0)))
 
 
 # Shared by the R01 and the baked board surfaces: the remix turn, explicit mip levels from the direction's own footprint
@@ -190,6 +209,7 @@ uniform float remix_tilt = 0.0;
 uniform vec3 remix_tint = vec3(1.0);
 uniform float remix_seed = 0.0;
 uniform float remix_desat = 0.0;   // an airless barren world drains the data's iron red toward grey rock
+uniform float remix_gain = 1.0;    // the look's lift into band 2 (RULEBOOK 3.14) on every face and tint
 vec2 r01_uv(vec3 d) {
 	return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
 }
@@ -284,7 +304,7 @@ void fragment() {
 	albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.55, 0.15))) * 1.5, remix_desat);
 	// mineral provinces: broad patches of the battle's tint, so a turned face also reads as a new world
 	float prov = smoothstep(0.35, 0.75, wvn3(d * 2.3 + remix_seed));
-	albedo *= mix(vec3(1.0), remix_tint, 0.55 + 0.45 * prov);
+	albedo *= mix(vec3(1.0), remix_tint, 0.55 + 0.45 * prov) * remix_gain;
 	vec3 colour = albedo*(0.022 + lambert*0.88*day)*(1.0-shadow*shadow_strength);
 	float spec_power = mix(90.0,7.0,data.b);
 	float sheen = pow(max(dot(bumped,normalize(l+v)),0.0),spec_power)*(1.0-data.b)*0.055*day;
@@ -330,7 +350,7 @@ shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
 uniform sampler2D tex_a : source_color, filter_linear_mipmap, repeat_enable;   // albedo, ocean or ice sheen (a)
 uniform sampler2D tex_b : filter_linear_mipmap, repeat_enable;                 // clouds, city lights, relief, lava
-uniform sampler2D tex_h : filter_linear_mipmap, repeat_enable;                 // 16-bit relief in RG
+uniform sampler2D tex_h : filter_linear_mipmap, repeat_enable;                 // relief, one 32-bit float channel
 uniform float has_tex = 0.0;
 uniform vec3 flat_col = vec3(0.3);
 uniform vec3 sun = vec3(0.45, 0.7, 0.55);
@@ -344,10 +364,18 @@ uniform float turn = 0.0;
 uniform vec3 cloud_col = vec3(1.0);   // ash on a volcanic world, white weather elsewhere
 uniform vec3 city = vec3(1.0, 0.72, 0.38);
 uniform vec3 lava_col = vec3(1.0, 0.36, 0.08);
+// the procedural stand-in (cold cache, a bake that missed the loading cover, no bake possible): the look's own palette
+uniform vec3 col_a = vec3(0.4);
+uniform vec3 col_b = vec3(0.15);
+uniform vec3 col_c = vec3(0.6);
+uniform float stand_sea = 0.0;
+uniform float stand_clouds = 0.0;
+uniform float stand_seed = 0.0;
 varying vec3 local_direction;
 varying vec3 world_point;
 varying vec3 world_centre;
 varying vec3 local_light;
+""" + NOISE.NOISE + """
 vec2 bp_uv(vec3 d) { return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359); }
 vec3 bp_spin(vec3 d, float a) { return vec3(cos(a)*d.x + sin(a)*d.z, d.y, -sin(a)*d.x + cos(a)*d.z); }
 vec4 bp_sample(sampler2D map, vec3 d, float lod) {
@@ -379,10 +407,25 @@ void fragment() {
 		alb = a.rgb;
 		ocean = a.a;
 		b = bp_sample(tex_b, d, lod);
-		h = dot(bp_sample(tex_h, d, lod).rg, vec2(65280.0, 255.0)) / 65535.0;
+		h = bp_sample(tex_h, d, lod).r;
 		cloud = bp_sample(tex_b, bp_spin(d, TIME * cloud_rate), lod).r;
 		vec3 toward_light = bp_spin(normalize(normalize(local_direction) + normalize(local_light) * 0.012), turn);
 		shadow = bp_sample(tex_b, bp_spin(toward_light, TIME * cloud_rate), lod).r;
+	} else {
+		// warped noise continents, a second field for highlands or ice, detail fading where the sphere is small on screen
+		vec3 p = d * 2.2 + stand_seed;
+		vec3 w = vec3(wfbm3(p), wfbm3(p + 4.7), wfbm3(p + 9.3)) - 0.5;
+		float fine = 1.0 - smoothstep(1.5, 5.0, lod);
+		float t = wfbm3(p * 1.6 + w * 1.8) + (wfbm3(d * 26.0 + stand_seed) - 0.5) * 0.25 * fine;
+		float t2 = wfbm3(d * 5.3 + w * 1.2 + stand_seed + 17.0);
+		float land = smoothstep(0.44, 0.52, t);
+		alb = mix(col_b, col_a, mix(smoothstep(0.3, 0.7, t), land, stand_sea));
+		alb = mix(alb, col_c, smoothstep(0.55, 0.72, t2) * (stand_sea > 0.5 ? land : 1.0) * 0.8);
+		ocean = stand_sea * (1.0 - land);
+		h = mix(t, max(t, 0.48), stand_sea);
+		vec3 q = bp_spin(d, TIME * cloud_rate);
+		float cf = wfbm3(vec3(q.x * 4.0, q.y * 11.0, q.z * 4.0) + w * 2.5 + stand_seed + 31.0);
+		cloud = smoothstep(0.52, 0.72, cf) * stand_clouds;
 	}
 	// relief from the surface derivatives (stable at the poles and across the wrap); seas stay flat
 	vec3 dpdx = dFdx(world_point);

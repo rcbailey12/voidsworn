@@ -74,6 +74,11 @@ static func clear_static() -> void:
 	_old_swept = false
 	_textures.clear()
 	_cache.clear()
+	# Issue 1765 (Artoo, PR 1776): a service whose deferred add never landed (its tree quit first) belongs to nobody
+	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten.
+	if is_instance_valid(_pending) and not _pending.is_inside_tree(): _pending.free()
+	_pending = null
+	_pending_tree = null
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
@@ -89,8 +94,9 @@ func authored(path: String, size: Vector2i, float_mips := false) -> Image:
 	while not job.done: await _tree().process_frame
 	return job.image
 
-# half_mips (issue 1765): the image is turned to half floats before its mips are made, for a 16-bit height packed in R
-# and G (the board planet's relief), so averaging the high and low bytes never rounds the high byte into false ridges.
+# half_mips (issue 1765): the map holds a 16-bit height packed in R and G (the board planet's relief). It is decoded to
+# one 32-bit float channel before its mips are made: exact, half the memory of half floats in four channels (Fable,
+# PR 1776 M4), and averaging never rounds the high byte into false ridges.
 func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false) -> Image:
 	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
@@ -199,9 +205,21 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 					prune(folder, CACHE_CAP_BYTES, keep, key)
 	elif source == "loaded":
 		touch(folder, key)
-	if img != null and job.get("half_mips", false): img.convert(Image.FORMAT_RGBAH)
+	if img != null and job.get("half_mips", false): img = height_float(img)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
 	return {"image": img, "source": source, "error": error}
+
+
+# Issue 1765: a 16-bit height packed big-endian in R and G, as one 32-bit float channel (0 to 1). Worker thread only.
+static func height_float(img: Image) -> Image:
+	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	var src := img.get_data()
+	var n := img.get_width() * img.get_height()
+	var out := PackedFloat32Array()
+	out.resize(n)
+	for i in n:
+		out[i] = float(src[i * 4] * 256 + src[i * 4 + 1]) / 65535.0
+	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
@@ -238,7 +256,7 @@ static func _finish_image(key: String, img: Image, keep: Dictionary = {}, half_m
 			var path := folder.path_join(key + ".png")
 			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
 				prune(folder, CACHE_CAP_BYTES, keep, key)
-		if half_mips: img.convert(Image.FORMAT_RGBAH)
+		if half_mips: img = height_float(img)
 		img.generate_mipmaps()
 	return {"image": img, "source": "baked"}
 

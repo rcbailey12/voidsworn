@@ -35,6 +35,8 @@ var body_r := 1.0
 var body_sun := Vector3.UP
 var tag := "now"
 var only := ""
+var standin := false
+var seed_add := 0   # --seed N: another battle's face of each look
 var timing := 0   # --timing N: after each board look's camera 170 still, N frames of GPU render time (run the GPU solo)
 var started := 0
 var cam: Camera3D
@@ -133,6 +135,7 @@ func _run() -> void:
 		if argv[i] == "--tag" and i + 1 < argv.size(): tag = argv[i + 1]
 		if argv[i] == "--only" and i + 1 < argv.size(): only = argv[i + 1]
 		if argv[i] == "--timing" and i + 1 < argv.size(): timing = int(argv[i + 1])
+		if argv[i] == "--seed" and i + 1 < argv.size(): seed_add = int(argv[i + 1])
 	DirAccess.make_dir_recursive_absolute(out)
 	var we := WorldEnvironment.new()
 	var env := Environment.new()
@@ -166,6 +169,12 @@ func _run() -> void:
 	if only == "" or only == "board":
 		for k in LOOK_KINDS:
 			await _board(k, new_board)
+	# the procedural stand-in a battle keeps when its maps miss the loading cover (Fable, PR 1776 H11)
+	if new_board and (only == "" or only == "standin"):
+		standin = true
+		for k in LOOK_KINDS:
+			await _board(k, new_board)
+		standin = false
 	if only == "" or only == "backdrop":
 		for i in SKY.PLANETS.size():
 			await _backdrop("backdrop_%d" % i, SKY.PLANETS[i], 4100 + i, BAKER.PLANET_SIZE, 1.0)
@@ -209,9 +218,10 @@ func _board(k: int, new_board: bool) -> void:
 	body_c = mi.position
 	body_r = rad
 	body_sun = SUN_DIR.normalized()
-	var seed_v := 7 + k
+	var seed_v := 7 + k + seed_add
 	if new_board:
 		var pl_script: GDScript = load("res://world/world_planet.gd")
+		if standin: mi.set_meta("planet_frozen", true)
 		await pl_script.call("install_board", mi, shell, k, seed_v, sun)
 		for i in 600:
 			if not (mi.material_override is ShaderMaterial) or (mi.material_override as ShaderMaterial).get_shader_parameter("has_tex") != 0.0 \
@@ -245,14 +255,15 @@ func _board(k: int, new_board: bool) -> void:
 	var t := Vector3(0, 0, 0)
 	cam.position = t + Vector3(0, cos(0.98), sin(0.98)) * 170.0
 	cam.look_at(t, Vector3.UP)
-	await _save("board_%d_c170" % k)
-	if timing > 0:
+	var pre := ("standin" if standin else "board") + ("" if seed_add == 0 else "_s%d" % seed_add)
+	await _save(pre + "_%d_c170" % k)
+	if timing > 0 and not standin:
 		await _time_frames("board_%d_c170" % k)
 	# close: low over the lit limb
 	var limb := Vector3(SUN_DIR.x, 0, SUN_DIR.z).normalized() * rad * 0.55
 	cam.position = limb + Vector3(-0.35, 0.55, 0.85).normalized() * 70.0
 	cam.look_at(limb + Vector3(0, -8, 0), Vector3.UP)
-	await _save("board_%d_close" % k)
+	await _save(pre + "_%d_close" % k)
 
 func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin: float) -> void:
 	_clear()

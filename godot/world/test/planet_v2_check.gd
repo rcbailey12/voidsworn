@@ -3,9 +3,12 @@ extends SceneTree
 # planet share of R420's Godot headless anti-drift gates (RULEBOOK 3.14, global_cohesion_standard.md 6.2: the unwired
 # asset gate for all five PLANET_LOOKS and the zero-purple gate on PLANETS and PLANETS_ALT). Band 2 brightness needs a
 # render: world/planet_v2_shots.gd measures it and fails an after run outside 0.03 to 0.25.
-# 1. board.gd draws its planet through world_planet.gd install_board and never through the campaign map's icon shader;
-#    battle.gd waits for it behind the loading cover (silent-regression trap 1 of the World V2 plan: an asset only a
-#    shot script ever loads).
+# 1. The real board (board.gd built from a planet map, Fable on PR 1776: not a source search) draws its planet through
+#    world_planet.gd for each of its five looks, never the campaign map's icon shader; wait_planet holds until the maps
+#    are in, and a planet that misses its 20 s deadline is frozen on its stand-in; battle.gd waits for it behind the
+#    loading cover (silent-regression trap 1 of the World V2 plan: an asset only a shot script ever loads).
+# 1b. The stand-in is the look's own procedural surface, never a plain ball, and every material shares one shader.
+# 3b. The relief is one exact 32-bit float channel.
 # 2. Every board look gets a lit surface at once: rocky (0) and barren (5) then switch to the authored 8K R01 relief,
 #    rocky with its cloud layer and air, barren with neither; terran (1), ice (3) and volcanic (4) keep the baked board
 #    surface (headless has no GPU bake, so it stays the lit stand-in here; the PC shots show the baked maps).
@@ -17,6 +20,15 @@ const PL := preload("res://world/world_planet.gd")
 const SKY := preload("res://world/world_sky.gd")
 const BAKER := preload("res://world/world_bake.gd")
 const WORLD := preload("res://world/world.gd")
+const BOARD := preload("res://render/board.gd")
+
+class StubRules extends RefCounted:
+	var v := {}
+	var w := {}
+	func view() -> Dictionary:
+		return v
+	func world_info() -> Dictionary:
+		return w
 
 var failures := 0
 
@@ -63,10 +75,60 @@ func _code(mi: MeshInstance3D) -> String:
 
 
 func _run() -> void:
-	# 1. wiring
-	var board_src := FileAccess.get_file_as_string("res://render/board.gd")
-	_check(board_src.contains("PL.install_board("), "board.gd _planet() does not call world_planet.gd install_board")
-	_check(not board_src.contains("map3d_shaders"), "board.gd still loads the campaign map's icon shader for its planet")
+	# 1. wiring, through the real board
+	var hexes: Array = []
+	for r in range(-3, 4):
+		for q in range(-4, 5):
+			hexes.append({"q": q, "r": r})
+	_check(BOARD.PLANET_LOOKS == [0, 1, 3, 4, 5], "board.gd PLANET_LOOKS is not the five kinds (%s)" % str(BOARD.PLANET_LOOKS))
+	for i in BOARD.PLANET_LOOKS.size():
+		var rules := StubRules.new()
+		rules.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+		rules.w = {"seed": 20 + i}
+		var board: Node3D = BOARD.new()
+		root.add_child(board)
+		board.build(rules)
+		var mi: MeshInstance3D = board.planet_node
+		var want: int = BOARD.PLANET_LOOKS[posmod(20 + i, 5)]
+		_check(mi != null, "board seed %d: no planet built from a planet map" % (20 + i))
+		if mi == null:
+			board.queue_free()
+			continue
+		_check(int(mi.get_meta("planet_look", -1)) == want, "board seed %d: look %s, want %d" % [20 + i, str(mi.get_meta("planet_look", -1)), want])
+		var first := _code(mi)
+		_check(first == PL.BOARD_SURFACE, "board look %d: the first material is not world_planet.gd's stand-in" % want)
+		var stand := mi.material_override as ShaderMaterial
+		if stand != null:
+			var ca: Vector3 = stand.get_shader_parameter("col_a")
+			var cb: Vector3 = stand.get_shader_parameter("col_b")
+			_check(ca.distance_to(cb) > 0.05, "board look %d: the stand-in has one flat colour" % want)
+			_check(stand.shader == PL.shader(PL.BOARD_SURFACE), "board look %d: the stand-in compiled its own shader" % want)
+		_check(board.planet_pending, "board look %d: the board does not hold the loading cover for its planet" % want)
+		await board.wait_planet()
+		_check(not board.planet_pending, "board look %d: wait_planet returned with the maps still pending" % want)
+		var code := _code(mi)
+		_check(code == (PL.ROCKY_SURFACE if want == 0 or want == 5 else PL.BOARD_SURFACE), "board look %d: wrong surface after the cover" % want)
+		_check(not code.contains("map3d") and not first.contains("map3d"), "board look %d: the campaign map's icon shader" % want)
+		_check(not bool(mi.get_meta("planet_frozen", false)), "board look %d: frozen although its maps arrived in time" % want)
+		board.queue_free()
+		await process_frame
+	# a board whose maps miss the 20 s deadline freezes on the stand-in (counted from the planet's own start)
+	var slow := StubRules.new()
+	slow.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+	slow.w = {"seed": 20}   # rocky: R01 is already in memory, so only the freeze keeps it out
+	var sb: Node3D = BOARD.new()
+	root.add_child(sb)
+	sb.build(slow)
+	sb.planet_t0 -= 21000
+	await sb.wait_planet()
+	_check(bool(sb.planet_node.get_meta("planet_frozen", false)), "a board planet 21 s late was not frozen on its stand-in")
+	while sb.planet_pending:
+		await process_frame
+	var has_tex = (sb.planet_node.material_override as ShaderMaterial).get_shader_parameter("has_tex")
+	_check(_code(sb.planet_node) == PL.BOARD_SURFACE and (has_tex == null or float(has_tex) < 0.5),
+		"a frozen board planet still swapped its maps in (%s)" % str(sb.planet_node.get_meta("planet_code", "")))
+	sb.queue_free()
+	await process_frame
 	var battle_src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(battle_src.contains("board.wait_planet()"), "battle.gd does not wait for the board planet behind the loading cover")
 	_check(PL.rocky_available(), "the R01 maps are missing from godot/world/rocks/r01")
@@ -81,6 +143,7 @@ func _run() -> void:
 			_done = false
 			_install(mi, shell, k, seed_v, sun)
 			_check(_code(mi) != "", "look %d: no surface material before its maps arrive" % k)
+			_check(mi.material_override.shader == PL.shader(PL.BOARD_SURFACE), "look %d: a new stand-in shader per planet" % k)
 			while not _done:
 				await process_frame
 			var code := _code(mi)
@@ -107,8 +170,6 @@ func _run() -> void:
 	while not _done:
 		await process_frame
 	_check(_code(late[0]) == PL.BOARD_SURFACE, "a frozen planet still swapped to R01 after the cover lifted")
-	var bsrc := FileAccess.get_file_as_string("res://render/board.gd")
-	_check(bsrc.contains("Time.get_ticks_msec() - planet_t0 < 20000"), "board.gd wait_planet no longer counts from the planet's own start")
 	(late[0] as Node).queue_free()
 	(late[1] as Node).queue_free()
 	# 3. the remix differs per battle
@@ -130,6 +191,12 @@ func _run() -> void:
 	for i in WORLD.MOON_LOOKS.size():
 		for key in ["a", "b", "c"]:
 			_check(not _purple(WORLD.MOON_LOOKS[i][key]), "moon look %d %s leans indigo to purple" % [i, key])
+	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
+	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)
+	packed.set_pixel(1, 0, Color8(0x9c, 0x41, 0, 255))
+	var hf := BAKER.height_float(packed)
+	_check(hf.get_format() == Image.FORMAT_RF, "the relief is not one 32-bit float channel (format %d)" % hf.get_format())
+	_check(absf(hf.get_pixel(1, 0).r - float(0x9c41) / 65535.0) < 1e-6, "the relief float is not the exact 16-bit height")
 	_check(BAKER.MOON_SIZE.x >= 2048, "moons bake below 2K (%s)" % str(BAKER.MOON_SIZE))
 	print("planet_v2_check: %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
 	quit(0 if failures == 0 else 1)
