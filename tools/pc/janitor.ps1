@@ -444,6 +444,39 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
   }
 }
 
+# Issue 1396 (Board, Nov 22: the first dry run ran 1 h 47 min without finishing). Each run has a time cap
+# (PC_JANITOR_CAP_SECONDS, 2700 s): the TEMP folders get the first half, the job folders the rest. A run that reaches its
+# cap stops before the next folder, which only keeps things, and says where it stopped; a live run writes that name to
+# janitor_resume.txt so the next run starts there and wraps around, and every folder is reached in turn. A dry run reads
+# the file and never writes it. Folders that take 10 s or more get a "folder time" line.
+function Read-JanitorResume($path) {
+  $resume = @{ temp = ''; root = '' }
+  try {
+    foreach ($line in [IO.File]::ReadAllLines($path)) {
+      if ($line -match '\A(temp|root) (.+)\z') { $resume[$Matches[1]] = $Matches[2] }
+    }
+  } catch {}
+  return $resume
+}
+function Get-RotatedFolders($parent, $start) {
+  $all = @((Get-Item -LiteralPath $parent -Force).EnumerateDirectories() | Sort-Object Name)
+  if (-not $start -or -not $all.Count) { return $all }
+  $at = 0
+  while ($at -lt $all.Count -and [string]::Compare($all[$at].Name, $start, [StringComparison]::OrdinalIgnoreCase) -lt 0) { $at++ }
+  if ($at -ge $all.Count) { return $all }
+  return @($all[$at..($all.Count - 1)]) + @(if ($at) { $all[0..($at - 1)] })
+}
+function Test-JanitorCap($kind, $dir, $limit) {
+  if ($script:clock.Elapsed.TotalSeconds -lt $limit) { return $false }
+  Log "time cap: stopped the $kind folders at $($dir.Name) after $([int]$script:clock.Elapsed.TotalSeconds) s (cap $limit s); the next run starts there"
+  $script:resume[$kind] = $dir.Name
+  return $true
+}
+function Write-FolderTime($dir, $since) {
+  $s = [int]($script:clock.Elapsed.TotalSeconds - $since)
+  if ($s -ge 10 -or $test) { Log "folder time: $($dir.FullName) $s s" }
+}
+
 $trigger = $args[0]
 if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
   Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
@@ -491,6 +524,14 @@ try {
   $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
+  $script:clock = [Diagnostics.Stopwatch]::StartNew()
+  $script:cacheMirrorCommits = $true
+  $capSeconds = 2700
+  if ($env:PC_JANITOR_CAP_SECONDS -match '\A[0-9]{1,6}\z') { $capSeconds = [int]$env:PC_JANITOR_CAP_SECONDS }
+  $resumePath = Join-Path $root 'janitor_resume.txt'
+  $script:resume = Read-JanitorResume $resumePath
+  $resumeAt = @{ temp = $script:resume.temp; root = $script:resume.root }
+  $script:resume.temp = ''; $script:resume.root = ''
   Log "free space before: $($drive.AvailableFreeSpace) bytes"
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
@@ -517,7 +558,10 @@ try {
   $script:commandLines = Get-CommandLines
   Assert-GpuQuiet
   Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
-  foreach ($dir in (Get-Item -LiteralPath $temp -Force).EnumerateDirectories()) {
+  Log "time: lanes and runner records done at $([int]$script:clock.Elapsed.TotalSeconds) s"
+  foreach ($dir in (Get-RotatedFolders $temp $resumeAt.temp)) {
+    if (Test-JanitorCap 'temp' $dir ([int]($capSeconds / 2))) { break }
+    $since = $script:clock.Elapsed.TotalSeconds
     Assert-GpuQuiet
     $records = $recordedScratch[$dir.FullName]
     $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
@@ -525,18 +569,23 @@ try {
     if (-not $hasOwner -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $dir.Name -match $legacyScratch) {
       # Older scratch from before ownership tokens: our exact tool names, a day untouched, no process naming it.
       Clear-ScratchFolder $dir $Matches['issue'] 'scratch named by our tools' 24 $temp $now $dryRun $activeLegacy -Legacy
+      Write-FolderTime $dir $since
       continue
     }
     if (-not $records -and -not $hasOwner -and $dir.Name -notmatch '^(voidsworn|issue|tune2-|stage7-checked-)') { continue }
     $issue = if ($records) { $records[0].Issue } elseif ($hasOwner -and
         $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
     Clear-ScratchFolder $dir $issue 'owned TEMP scratch' 3 $temp $now $dryRun $activeLegacy -TempScratch -Records $records -HasOwner $hasOwner
+    Write-FolderTime $dir $since
   }
-  foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories()) {
+  Log "time: TEMP folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
+  foreach ($dir in (Get-RotatedFolders $root $resumeAt.root)) {
     # Issue 1396: suffixed job folders (opus1369b, opus1211_run6, opus1373probe2) and playtest folders (pt1120c) too.
     $issue = ''
     if ($dir.Name -match $helperJobName) { $issue = $Matches['issue'] }
     elseif ($dir.Name -notmatch $playtestJobName) { continue }
+    if (Test-JanitorCap 'root' $dir $capSeconds) { break }
+    $since = $script:clock.Elapsed.TotalSeconds
     Assert-GpuQuiet
     $script:helperGone = $false
     Clear-ScratchFolder $dir $issue 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
@@ -544,6 +593,13 @@ try {
       Invoke-JobRelayCleanup $dir $issue $temp $dryRun $activeLegacy
       Clear-JobCheckouts $dir $issue $temp $now $dryRun $activeLegacy $mirror
     }
+    Write-FolderTime $dir $since
+  }
+  Log "time: job folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
+  if (-not $dryRun) {
+    $lines = @(foreach ($k in @('temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
+    if ($lines.Count) { [IO.File]::WriteAllLines($resumePath, [string[]]$lines) }
+    elseif (Test-Path -LiteralPath $resumePath -PathType Leaf) { Remove-Item -LiteralPath $resumePath -Force }
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }

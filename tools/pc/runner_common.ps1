@@ -451,10 +451,17 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   $superseded = @($script:cleanupSuperseded)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
-  $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
-  if ($gitExit -ne 0 -or -not $remote.Count) { throw 'fetched history not verified' }
-  $pushed = New-Object 'Collections.Generic.HashSet[string]'
-  foreach ($id in $remote) { $null = $pushed.Add($id) }
+  # The janitor reads the mirror's commits once per run (issue 1396: a dry run over every job checkout took hours). A
+  # copy read earlier in the run can only lack newer commits, so it can only keep more, never remove more.
+  if ($script:cacheMirrorCommits -and $script:mirrorCommitCache -and $script:mirrorCommitCache.Mirror -eq $mirror) {
+    $pushed = $script:mirrorCommitCache.Set
+  } else {
+    $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
+    if ($gitExit -ne 0 -or -not $remote.Count) { throw 'fetched history not verified' }
+    $pushed = New-Object 'Collections.Generic.HashSet[string]'
+    foreach ($id in $remote) { $null = $pushed.Add($id) }
+    if ($script:cacheMirrorCommits) { $script:mirrorCommitCache = @{ Mirror = $mirror; Set = $pushed } }
+  }
   $onlyLocal = foreach ($line in $local) {
     $id = ($line -split ' ', 2)[0]
     if ($pushed.Contains($id)) { continue }

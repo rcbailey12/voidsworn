@@ -644,7 +644,25 @@ try {
   assert.match(dry, /shared generated copy could not be verified/);
   assert.match(dry, /free space before: [\d]+ bytes[\s\S]*free space after: [\d]+ bytes\r?\nall done$/);
   assert.deepEqual(fs.readdirSync(salvageRoot), ['earlier']);
+  // Issue 1396 (the first PC dry run ran 1 h 47 min unfinished): the time cap stops before the next folder and says where;
+  // a dry run never writes janitor_resume.txt; a resume file makes the job folders start at its name and wrap around.
+  const resumeFile = path.join(pc, 'janitor_resume.txt');
+  const jobTimes = report => report.split(/\r?\n/).filter(l => l.startsWith('folder time: ' + pc + path.sep)).map(l => l.slice(13).replace(/ \d+ s$/, ''));
+  const capDry = runJanitor('--dry-run', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  assert.match(capDry, /time cap: stopped the temp folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
+  assert.match(capDry, /time cap: stopped the root folders at (?:opus|pt)\S* after \d+ s \(cap 0 s\); the next run starts there/);
+  assert(!/folder time: /.test(capDry) && !/job relay check exit/.test(capDry), 'a capped run reaches no folder: ' + capDry);
+  assert(!fs.existsSync(resumeFile), 'a dry run never writes janitor_resume.txt');
+  const allJobs = jobTimes(dry);
+  assert(allJobs.includes(path.join(pc, 'opus1396relay')) && allJobs.length > 5, 'every job folder has a folder time line in test mode: ' + allJobs);
+  write(resumeFile, 'root opus1396relay\r\n');
+  const resumed = jobTimes(runJanitor('--dry-run'));
+  assert.equal(resumed[0], path.join(pc, 'opus1396relay'), 'the job folders start at the resume name: ' + resumed);
+  assert.deepEqual([...resumed].sort(), [...allJobs].sort(), 'and wrap around to reach every job folder once');
+  assert.equal(read(resumeFile), 'root opus1396relay\r\n', 'a dry run leaves the resume file as it was');
+  fs.rmSync(resumeFile);
   const live = runJanitor('--low-space');
+  assert(!fs.existsSync(resumeFile), 'a run that reached every folder leaves no resume file');
   const reportFile = fs.readdirSync(pc).find(name => /^janitor_\d{8}-\d{4}\.txt$/.test(name));
   assert(reportFile && read(path.join(pc, reportFile)).includes('all done'));
   for (const dir of remove) {
@@ -687,6 +705,12 @@ try {
   assert.deepEqual(fs.readdirSync(store).sort(), Object.keys(stored).map(hash => `${hash}.bin`).sort());
   assert.match(live, /0 new bytes in the shared store, 1 already stored\)/);
   decision(live, failedSalvage, 'untracked path cannot be verified');
+  // A live run that reaches its cap writes where each loop stopped, for the next run.
+  const capLive = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  const stopped = [...capLive.matchAll(/time cap: stopped the (temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
+  assert.equal(stopped.length, 2, 'both loops stop at a zero cap: ' + capLive);
+  assert.equal(read(resumeFile).replace(/\r\n/g, '\n'), stopped.join('\n') + '\n');
+  fs.rmSync(resumeFile);
   assert(fs.existsSync(failedSalvage));
   const historyBackup = path.join(salvageRoot, 'board_b_repo-kept-local-history', 'salvage.bundle');
   const restored = makeCopy('restored', 2);

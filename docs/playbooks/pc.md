@@ -77,6 +77,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
+Each janitor run stops itself after 45 minutes (the TEMP folders get the first half): it says where it stopped and a live run writes that folder to `janitor_resume.txt`, so the next run starts there; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
 
 ## What the Board checks
