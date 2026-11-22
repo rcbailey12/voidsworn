@@ -8,7 +8,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #    while fx_power keeps the wear's steady value; repaired, the turret tracks again and the wisp node is freed
 # 3. a one-shot blowout only when a section crosses into stage 3 or 4: none on a view rebuilt already hurt, none on a
 #    repeat sync at the same stage
-# 4. an ion hit's crawl: 2 or 3 threads and a half second power dip
+# 4. an ion hit's crawl: 2 or 3 threads (the dip is the hit's own brownout, issue 1690)
 # 5. the shield-break beat (brief section 3) is still 0.08 s on main
 const FX := preload("res://fx/fx.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
@@ -294,10 +294,12 @@ func _run() -> void:
 
 		# 4. the ion crawl
 		var r0: int = fx.pools["rib"].emitted
+		var pd0 := _log(s, "power_dip")
 		WEAP._ion_crawl(fx, s, s.to_world(Vector3(0, 2.5, 0)), Vector3.UP, fx.now, Color(0.5, 0.7, 1.0), 1.0)
-		check(_log(s, "power_dip") >= 1, "%s: an ion hit dips the hull's power" % faction)
-		check(s.power_flicker(fx.now + 0.25) <= 0.35 and s.power_flicker(fx.now + 0.6) == 1.0, "%s: the dip lasts half a second" % faction)
+		# issue 1690 (Artoo on PR 1699): the hit's own brownout (hit_power) is the ion dip; the crawl adds none of its own
 		var r1: int = fx.pools["rib"].emitted
+		settle(0.1)
+		check(_log(s, "power_dip") == pd0, "%s: the crawl adds no second power dip" % faction)
 		check(r1 - r0 >= 2 and r1 - r0 <= 3, "%s: 2 or 3 crawl threads (%d)" % [faction, r1 - r0])
 		settle(1.0)
 
