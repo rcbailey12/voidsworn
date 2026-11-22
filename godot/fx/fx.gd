@@ -2120,8 +2120,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
+		var rb_ref := weakref(rb)   # issue 1482: the lambda holds a weak reference, never the body (a freed capture errors)
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
-			free_effect(weakref(rb))
+			free_effect(rb_ref)
 			# issue 1279: the warm debris would drift far below the board for the whole battle and keep Jolt stepping;
 			# stopped, they sleep (the space with them) until a death reuses them from the pool
 			for b in dstate["debris"]:
