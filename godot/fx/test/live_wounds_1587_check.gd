@@ -66,6 +66,7 @@ func _ship(sid: String, faction: String, pos: Vector3):
 	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": meshes, "shielded": false})
 	fx._later.clear()
 	var s = fx.ship(sid)
+	s.wound_log_on = true
 	for i in 3:
 		s._anchors["a%d" % i] = {"p": Vector3((i - 1) * 7, 2.5, 0), "n": Vector3.UP, "t": {}}
 	return s
@@ -261,6 +262,18 @@ func _run() -> void:
 	rb.sync(fx, _state(30, 10, 30))
 	flush(rb)
 	check(_log(rb, "blowout") == 0, "a view rebuilt already hurt does not vent")
+	# Artoo on PR 1631: a fresh ship whose first sync is healthy and whose very next hit crosses a threshold does vent
+	var fr = _ship("fresh", "hegemony", Vector3(60, 0, 80))
+	fr.sync(fx, _state(100, 100, 100))
+	fr.sync(fx, _state(100, 30, 100))
+	flush(fr)
+	check(_log(fr, "blowout") == 1, "a real threshold hit right after arrival still vents")
+	var quiet = _ship("quiet", "hegemony", Vector3(120, 0, 80))
+	quiet.wound_log_on = false
+	quiet.sync(fx, _state(100, 100, 100))
+	quiet.sync(fx, _state(100, 10, 100))
+	settle(5.0)
+	check(quiet.wound_log.is_empty(), "the wound history stays off in play")
 	check(WEAP.BREAK_HULL_BEAT == 0.08, "the shield-break beat is 0.08 s (brief section 3, already on main)")
 	print("live_wounds_1587_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)

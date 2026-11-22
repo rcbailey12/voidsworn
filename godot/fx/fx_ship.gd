@@ -53,8 +53,10 @@ var _was_moving := false
 var _jammed := {}            # section -> {"k": turret, "next": the next spark pop} (issue 1587)
 var _power_dip_until := -1.0
 var _power_shown := -1.0
-var _born := 0.0
-var wound_log: Array = []    # one-shot wound events (blowouts, coughs), for the checks: [kind, section or nozzle, time]
+var _stages_seen := false   # the first stage update is the ship's state as it arrives (a rebuilt view): no blowout
+# one-shot wound events for the checks only ([kind, section or nozzle, time]); off in play (Artoo on PR 1631)
+var wound_log_on := false
+var wound_log: Array = []
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
@@ -162,7 +164,6 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	if meshes.is_empty():
 		meshes = _find_meshes(root)
 	_seed = hash(sid)
-	_born = fx.now
 	hull = HULL.new()
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
@@ -1553,10 +1554,11 @@ func _apply_stages(fx, want: Array) -> void:
 			_scar_stage[i] = maxi(_scar_stage[i], stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
-			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on a view rebuilt with the
-			# damage already there, which reaches here within half a second of the ship's arrival)
-			if up and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)) and fx.now > _born + 0.5:
+			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on the ship's first stage
+			# update, which is its state as it arrives: a view rebuilt with the damage already there)
+			if up and _stages_seen and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)):
 				_blowout(fx, i)
+	_stages_seen = true
 
 	_refresh_wounds(fx)
 	_refresh_damage_emitters(fx)
@@ -2224,7 +2226,12 @@ func _cough(fx) -> void:
 	for j in 5:
 		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
 			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
-	wound_log.append(["cough", sick_nozzle, fx.now])
+	_wlog(["cough", sick_nozzle, fx.now])
+
+
+func _wlog(e: Array) -> void:
+	if wound_log_on:
+		wound_log.append(e)
 
 
 # Jam one turret in each mid or prow section at stage 3+, free it when the section is repaired below 3.
@@ -2310,7 +2317,7 @@ func _wound_step(fx) -> void:
 				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)
 		if not fx.reduce_flashing:
 			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
-		wound_log.append(["spark", k, fx.now])
+		_wlog(["spark", k, fx.now])
 	_write_flick(power_flicker(fx.now, fx.reduce_flashing))
 
 
@@ -2347,7 +2354,7 @@ func power_dip(fx, dur := 0.5) -> void:
 	if dead or gone:
 		return
 	_power_dip_until = maxf(_power_dip_until, fx.now + dur)
-	wound_log.append(["power_dip", -1, fx.now])
+	_wlog(["power_dip", -1, fx.now])
 
 
 # A section pushed into stage 3 or 4 vents once: a 1.2 s jet of bright vapour along its breach normal, 3 or 4 tumbling
@@ -2374,7 +2381,7 @@ func _blowout(fx, i: int) -> void:
 	for j in 3 + posmod(_seed + i, 2):
 		fx.shd(p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
 	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
-	wound_log.append(["blowout", i, fx.now])
+	_wlog(["blowout", i, fx.now])
 
 
 # ---------------------------------------------------------------- small events
