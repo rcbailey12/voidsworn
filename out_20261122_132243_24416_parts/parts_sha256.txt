@@ -1,0 +1,6 @@
+3fd1d0734f2a9c2891e95b29dd03dc1e81d4453d8084ab9e85718a72d465582a  B21_11.scn  49582625 bytes
+8067f9f2eb9425eaa1dc65db9605fe217bf1c2b9bdc75372d7c03ab3fd668fc9  D21_23.scn  52825992 bytes
+8f23622ad12a40651e6bd813767b25842df67c4f09cad3848a4d486129b24d9d  H10_23.scn  57018444 bytes
+d56692fef354c16b2a989fdc5b0f8778e4401b5597a11f3c0555becae1bc442e  I15_11.scn  45654217 bytes
+957a15998c2e971b5ca19c72b4152a437666ee306baea2188e83c6f6d2601328  V16_37.scn  51072915 bytes
+Rejoin on Windows: copy /b NAME.scn.part000+NAME.scn.part001+... NAME.scn ; on Linux: cat NAME.scn.part* > NAME.scn ; then compare sha256.
