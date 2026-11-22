@@ -473,6 +473,11 @@ func _update_trails(fx, _moved: bool) -> void:
 	if _trails.is_empty():
 		return
 	var xfm = xf()
+	# issue 1586 (Neon on PR 1666): a torch death's over-flaring drive keeps its exhaust while the flare runs, from the
+	# nozzles where the spiralling hull really is
+	var flaring: bool = dead and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
+	if flaring:   # the same pose fx_death._small_pose gives the dying hull
+		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
@@ -488,7 +493,7 @@ func _update_trails(fx, _moved: bool) -> void:
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		if not dead and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])
 				changed = true
