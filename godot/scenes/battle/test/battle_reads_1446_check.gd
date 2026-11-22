@@ -69,7 +69,7 @@ func _shot(code: String, what: String, at: Vector3) -> void:
 	var img: Image = root.get_texture().get_image()
 	if img.get_height() > 720:
 		img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
-	var err: int = Prov.save_png(img, shots.path_join(code + ".png"), Prov.capture_stage())
+	var err: int = preload("res://tools/picture_provenance.gd").save_png(img, shots.path_join(code + ".png"), Prov.capture_stage())
 	_check(err == OK, "shot %s saved with its stamp (error %d)" % [code, err])
 
 
@@ -179,7 +179,11 @@ func _run() -> void:
 	R.syncShields(fu)
 	_resync()
 
-	# ---- ARC-1: the inspected enemy's arcs and its own reach next turn
+	# ---- ARC-1: the inspected enemy's arcs and its own reach next turn. Both fleet overlays off (threat map, danger
+	# bands): the worker computes this one enemy's map only, never the fleet-wide scan (Artoo on PR 1622)
+	b.threat_on = false
+	b.danger_on = false
+	b.api.version += 1
 	b.inspect = foe
 	b._overlay()
 	await _frames(2)
@@ -194,6 +198,7 @@ func _run() -> void:
 		b._overlay()
 		await process_frame
 	_check(b._one_current() and not b._threat_one.is_empty(), "ARC-1: its own reach for next turn came from the threat worker (%d hexes)" % b._threat_one.size())
+	_check(not b._threat_current() and not b._threat_next.has("dmg"), "ARC-1: with both fleet overlays off, inspecting one enemy runs no fleet-wide scan")
 	b._overlay()
 	await _shot("ARC-1", "the inspected enemy's gun arcs and its reach next turn", b._pos(foe))
 	b.inspect = ""

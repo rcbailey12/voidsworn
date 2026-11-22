@@ -504,6 +504,7 @@ func _begin(a) -> void:
 	retiring = false
 	_click_q = {}
 	_threat_version = -1
+	_threat_one_ver = -1
 	api = a
 	warming = true
 	hud.loading(true)
@@ -3353,6 +3354,7 @@ func _threat_current() -> bool:
 var _threat_one := {}
 var _threat_one_for := ""
 var _threat_one_pending := ""
+var _threat_one_ver := -1
 
 
 func _inspected_enemy() -> String:
@@ -3367,7 +3369,7 @@ func _one_want() -> String:
 
 
 func _one_current() -> bool:
-	return _threat_current() and _threat_one_for == _one_want()
+	return _threat_one_ver >= 0 and _threat_idle() and _threat_one_ver == int(api.version) and _threat_one_for == _one_want()
 
 
 func _threat_wanted() -> bool:
@@ -3383,10 +3385,13 @@ func _threat_request() -> void:
 	_threat_pending_version = int(api.version)
 	_threat_gen = _gen
 	_threat_busy = true
-	var one := _one_want()
+	# issue 1446: the fleet map only when an overlay needs it, the one enemy's map only when one is inspected; each has
+	# its own version, so inspecting an enemy with both fleet overlays off never pays for every enemy's reach
+	var all := (threat_on or _danger_shown()) and not _threat_current()
+	var one := _one_want() if not _one_current() else ""
 	_threat_one_pending = one
 	var tid := WorkerThreadPool.add_task(func() -> void:
-		var r: Dictionary = api.threat_both()   # the API caches it per version, so a second ask for another enemy is cheap
+		var r: Dictionary = api.threat_both() if all else {}
 		if one != "":
 			r["one"] = api.threat_map(one)
 		_threat_next = r)
@@ -3456,11 +3461,14 @@ func _threat_done() -> void:
 	if not _threat_idle() or _threat_pending_version != int(api.version):
 		_threat_request.call_deferred()
 		return
-	_threat_version = _threat_pending_version
-	_threat_cache = _threat_next["dmg"]
-	_threat_one = _threat_next.get("one", {})
-	_threat_one_for = _threat_one_pending
-	_danger = _threat_next["n"]
+	if _threat_next.has("dmg"):
+		_threat_version = _threat_pending_version
+		_threat_cache = _threat_next["dmg"]
+		_danger = _threat_next["n"]
+	if _threat_next.has("one"):
+		_threat_one = _threat_next["one"]
+		_threat_one_for = _threat_one_pending
+		_threat_one_ver = _threat_pending_version
 	# the danger badges on the fleet list and the shell, and any UI pass that waited for this publish
 	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
