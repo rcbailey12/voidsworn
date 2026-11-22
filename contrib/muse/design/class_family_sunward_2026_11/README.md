@@ -8,9 +8,8 @@ Owner: muse. Council: Rey blind first, then DeepSeek, Qwen, Grok, Flash
 
 Concept designs for the Sunward Crusade starter trio (Warden frigate,
 Harrow destroyer, Vigil cruiser), derived from the accepted flagship S8
-Daybreak, plus feature tables for the two heavies that follow once Ryan
-picks the trio (Hearth carrier, Bastion battleship; tables only this
-round, no pictures).
+Daybreak, plus feature tables and, from round 3, pictures for the two
+heavies (Hearth carrier, Bastion battleship).
 
 The feature tables in designs.md outrank every picture in this folder.
 Where a picture and a table disagree, the table is the design and the
@@ -27,8 +26,13 @@ per ship in designs.md so nobody has to guess.
 - harrow_beauty.webp, harrow_sheet.webp: Harrow (destroyer, 9.5).
 - vigil_beauty.webp, vigil_sheet.webp: Vigil (cruiser, data key
   penitent, 14.5).
-- family_lineup.webp: the trio with S8 at relative game scale (drawn
-  scale approximate; true lengths are in designs.md).
+- hearth_beauty.webp, hearth_sheet.webp: Hearth (carrier, data key
+  reliquary, 16.5). Round 3.
+- bastion_beauty.webp, bastion_sheet.webp: Bastion (battleship, data
+  key cathedral, 21.0). Round 3.
+- family_lineup.webp: all six ships drawn from the tables at true
+  relative length (round 3; replaces the generated four-ship
+  line-up, whose scale was approximate).
 
 ## Council record
 
@@ -48,3 +52,16 @@ per ship in designs.md so nobody has to guess.
   with hazard chevrons, a different faction. Round 2 Harrow beauty,
   sheet and line-up pictures replace the round 1 files here; the
   Harrow feature table is unchanged. See designs.md and prompts.md.
+- Round 3 (Nov 22, 2026): Hearth and Bastion pictures, drawn from
+  the accepted new-ship references (S8, Harrow round 2, Warden,
+  Vigil) per Ryan's R368 note. Council: blind Rey leg first, then
+  DeepSeek (DeepThink on, Search off), Qwen (Qwen3.8-Max, single
+  response), Gemini on Hydrogen (the Flash seat, as disclosed
+  above); Grok seat empty, bot wall on the cloud browser before
+  sign-in, recorded not waited on. Chair rulings and every picture
+  slip are in designs.md. This round also fixes the spire tables
+  to the final ruled heights (Board ruling, Nov 19, 2026: Warden
+  0.65, Harrow 0.85, Vigil 1.2, Hearth 1.1, Bastion 1.55), stated
+  once in the family law, and replaces the line-up with a drawn
+  six-ship scale check. The builds that follow these concepts use
+  the R411 ship detail standard (Board note, Nov 22, 2026).
