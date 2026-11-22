@@ -169,4 +169,5 @@ func _run() -> void:
 	fx.release()
 	world.queue_free()
 	print("DEATH_COST failures=%d" % failures)
-	quit(1 if failures else 0)
+	# the PC before/after job runs this file on the old code too, where the reach lines fail by design: times only there
+	quit(0 if OS.get_environment("VS_1395_BASELINE") == "1" else (1 if failures else 0))
