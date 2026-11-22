@@ -1,0 +1,199 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1395)
+GPU: acquired solo claim 4c0189da-e8c7-40d3-9ac9-b9d1fa141aab
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-502dbfdb5e3e4d06969a175c3166e6f8\godot-profile-5e6f46a571114b02a72ff0701aebde73
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_glow_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_glow_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:63)
+DEATH_COST ship res://assets/ships/C19_51/C19_51.glb
+[turret] turret_0 (P1) on a16: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on a16: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on a16: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on a16: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on a16: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on a16: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on a16: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on a16: arc -180 to 180, trains all round
+DEATH_COST precompute ready_ms=1076.6 frames=2441 cut_ms=991.4 hulls_and_reach_ms=-1.00 reach_only_ms=-1.00 (old code: -1, it has neither timer)
+DEATH_COST hitch at 0.02s step 30.5 ms, fx parts (usec): { "power_down": 30290, "L:l_power_down_step": 30307, "later": 30323, "ships": 90, "weap_death": 74, "lights_pools": 25 }
+DEATH_COST hitch at 0.03s step 16.1 ms, fx parts (usec): { "power_down": 15557, "L:l_power_down_step": 15577, "debris": 170, "later": 15852, "ships": 76, "weap_death": 90, "lights_pools": 33 }
+DEATH_COST hitch at 0.05s step 15.9 ms, fx parts (usec): { "power_down": 15662, "L:l_power_down_step": 15683, "later": 15702, "ships": 84, "weap_death": 99, "lights_pools": 25 }
+DEATH_COST hitch at 0.50s step 17.2 ms, fx parts (usec): { "flash": 25, "L:_chain_blast": 16829, "later": 16847, "ships": 122, "weap_death": 184, "lights_pools": 70 }
+DEATH_COST hitch at 1.57s step 12.6 ms, fx parts (usec): { "flash": 22, "L:_chain_blast": 12256, "later": 12270, "ships": 87, "weap_death": 201, "lights_pools": 47 }
+DEATH_COST hitch at 2.30s step 36.6 ms, fx parts (usec): { "debris": 401, "L:_throw_frags": 455, "L:_big_core": 35537, "later": 36011, "ships": 79, "weap_death": 459, "lights_pools": 54 }
+DEATH_COST hitch at 3.53s step 45.4 ms, fx parts (usec): { "later": 6, "ships": 59, "weap_death": 45325, "lights_pools": 41 }
+DEATH_COST hitch at 3.55s step 109.2 ms, fx parts (usec): { "later": 72, "ships": 75, "weap_death": 109032, "lights_pools": 47 }
+DEATH_COST hitches over 12 ms (time after the kill, ms): 0.02s 41.8, 0.03s 44.9, 0.05s 17.5, 0.07s 2315.3, 0.47s 88.7, 0.50s 88.3, 1.57s 14.4, 2.02s 43.6, 2.30s 38.5, 3.53s 47.7, 3.55s 111.8
+DEATH_COST frames kill_call_ms=21.9 worst=2315.3 (step 1.4) at 0.07s, 111.8 (step 109.2) at 3.55s, 88.7 (step 10.7) at 0.47s, 88.3 (step 17.2) at 0.50s, 47.7 (step 45.4) at 3.53s, 44.9 (step 16.1) at 0.03s
+DEATH_COST reach pieces=2 face_read worst_ms=33.99 total_ms=50.30 biggest_piece_face_points=389343 | worker number on 0 pieces, worst_ms=0.000, worst gap to the face read 0.0000%
+  ok   the kill left its wreck pieces (2)
+  FAIL every main piece has its worker-measured reach (0 of 2)
+  ok   the worker reach matches the face read (worst gap 0.0000%)
+ERROR: The object does not have any 'meta' values with the key 'reach_pre'.
+   at: get_meta (core/object/object.cpp:1053)
+   GDScript backtrace (most recent call first):
+       [0] _run (res://fx/test/death_cost_check.gd:129)
+ERROR: The object does not have any 'meta' values with the key 'reach_pre'.
+   at: get_meta (core/object/object.cpp:1053)
+   GDScript backtrace (most recent call first):
+       [0] _run (res://fx/test/death_cost_check.gd:129)
+ERROR: every main piece has its worker-measured reach (0 of 2)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/death_cost_check.gd:49)
+       [1] _run (res://fx/test/death_cost_check.gd:153)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+ERROR: Can't open file from path 'res://assets/ships/C19_51_glow_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: res://assets/ships/C19_51_glow_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/death_cost_check.gd:36)
+       [1] _run (res://fx/test/death_cost_check.gd:156)
+DEATH_COST ship res://assets/ships/C19_51/C19_51.glb
+[turret] turret_0 (P1) on b16: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on b16: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on b16: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on b16: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on b16: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on b16: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on b16: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on b16: arc -180 to 180, trains all round
+DEATH_COST tell meshes=9 copies_ms=0.25
+DEATH_COST flush rows=192 upload_ms=0.07
+DEATH_COST particles emitters=8 make_ms=0.34 (first call includes material setup)
+DEATH_COST failures=1
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-502dbfdb5e3e4d06969a175c3166e6f8\godot-profile-5e6f46a571114b02a72ff0701aebde73
+GPU: released solo claim 4c0189da-e8c7-40d3-9ac9-b9d1fa141aab
