@@ -5,7 +5,9 @@ extends SceneTree
 #   - a low-detail or flat outlier scan (scan_06 had 14,844 triangles, scan_07 was a flat boomerang 0.43 by 1.9);
 #   - a scan file that no longer matches its scans.json hash, or a manifest count the loader does not expect;
 #   - every kind drawing on the same scan list, or the warm tan cast back on iron and carbon;
-#   - crystal clusters back to a few hundred triangles, or without their rock collar (COLOR_0.r 0) and glass (1).
+#   - crystal clusters back to a few hundred triangles, or without their rock collar (COLOR_0.r 0) and glass (1);
+#   (Fable M5, H1 on PR 1782) a facet distribution the shader thresholds were not tuned on; a kind's squeeze drawing a
+#   rock flatter than DRAWN_ASPECT; a kind's base albedo outside R420 band 3 (0.04 to 0.30 linear luminance).
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const WR := preload("res://world/world_rocks.gd")
@@ -40,6 +42,7 @@ func _run() -> void:
 	_check(rocks.size() == WR.SCAN_COUNT, "scans.json lists %d scans, world_rocks.gd expects %d" % [rocks.size(), WR.SCAN_COUNT])
 	_check(WR.scan_names().size() == WR.SCAN_COUNT, "the loader refused the scan package (%d names)" % WR.scan_names().size())
 	var names := {}
+	var exts := {}
 	for entry in rocks:
 		var nm := str(entry.name)
 		names[nm] = true
@@ -62,7 +65,26 @@ func _run() -> void:
 				b.sort()
 				var spread := b[int(b.size() * 0.98)] - b[int(b.size() * 0.02)]
 				_check(spread >= MIN_FACET_RANGE, "%s COLOR_0.b spans %.2f (p2 to p98, minimum %.2f): the facet channel is crushed" % [f.file, spread, MIN_FACET_RANGE])
-				print("%s: %d triangles, aspect %.2f, facet spread %.2f" % [f.file, tris, aspect, spread])
+				# the shape ROCK_SHADER's thresholds (0.04, 0.16 hollows; 0.66, 0.95 ridges) were tuned on: scan_facet.py's
+				# rank ** 1.5, mean about 0.4, about 30% under 0.16 and 24% over 0.66
+				var mean := 0.0
+				var low := 0
+				var high := 0
+				for v in b:
+					mean += v
+					if v < 0.16: low += 1
+					if v > 0.66: high += 1
+				mean /= b.size()
+				var lo_share := float(low) / b.size()
+				var hi_share := float(high) / b.size()
+				_check(mean >= 0.3 and mean <= 0.52, "%s facet mean %.2f (want 0.30 to 0.52)" % [f.file, mean])
+				# a far mesh averages its clustering cell, which pulls the tails in, so its floor is lower
+				var tail_min := 0.1 if lo else 0.18
+				_check(lo_share >= tail_min and lo_share <= 0.42, "%s facet share under 0.16 is %.2f (want %.2f to 0.42)" % [f.file, lo_share, tail_min])
+				_check(hi_share >= tail_min and hi_share <= 0.38, "%s facet share over 0.66 is %.2f (want %.2f to 0.38)" % [f.file, hi_share, tail_min])
+				print("%s: %d triangles, aspect %.2f, facet spread %.2f mean %.2f under 0.16 %.2f over 0.66 %.2f" % [f.file, tris, aspect, spread, mean, lo_share, hi_share])
+			if not lo:
+				exts[nm] = ext
 	# each kind draws on its own scans, all of them in the package
 	var pools := {}
 	for kind in WR.KINDS:
@@ -73,7 +95,24 @@ func _run() -> void:
 		pools[str(pool)] = true
 	_check(pools.size() >= 4, "only %d different scan pools across the five kinds" % pools.size())
 	var src := FileAccess.get_file_as_string("res://world/world_rocks.gd")
-	_check(not src.contains("if (kind != 3 && kind != 4) { a *= vec3(1.12, 1.0, 0.84); }"), "the warm tan cast is back on iron and carbon")
+	_check(src.count("vec3(1.12, 1.0, 0.84)") == 1 and src.contains("if (kind == 0) { a *= vec3(1.12, 1.0, 0.84); }"), "the warm tan cast must stay on stone only (kind == 0)")
+	_check(src.contains("sq = min(max(sq, vec3(%.2f * max(d.x, max(d.y, d.z))) / e), vec3(1.0));" % WR.DRAWN_ASPECT), "ROCK_SHADER lost its drawn-aspect floor (%.2f)" % WR.DRAWN_ASPECT)
+	# every kind's squeeze, at both ends of its seeded range, on every scan it draws: the drawn box stays rounder than
+	# DRAWN_ASPECT (the same formula as ROCK_SHADER's vertex squeeze)
+	for kind in WR.KINDS:
+		var k0 := float(WR.KINDS[kind].get("shape", 0.0))
+		var base: Vector3 = WR.KINDS[kind]["base"]
+		var luma := 0.2126 * base.x + 0.7152 * base.y + 0.0722 * base.z
+		_check(luma >= 0.04 and luma <= 0.30, "%s base luminance %.3f is outside R420 band 3 (0.04 to 0.30)" % [kind, luma])
+		if k0 == 0.0:
+			continue
+		for nm in WR.names_for(kind):
+			if not exts.has(nm):
+				continue
+			for jitter in [0.6, 1.4]:
+				var d := _drawn(exts[nm], k0 * jitter)
+				var a := minf(d.x, minf(d.y, d.z)) / maxf(d.x, maxf(d.y, d.z))
+				_check(a >= WR.DRAWN_ASPECT - 0.005, "%s draws %s at aspect %.2f (shape %.2f), flatter than %.2f" % [kind, nm, a, k0 * jitter, WR.DRAWN_ASPECT])
 	# crystal clusters
 	var crystals: Array = WR.lib().get("crystals", [])
 	_check(crystals.size() >= 3, "rocks.json lists %d crystal clusters" % crystals.size())
@@ -93,6 +132,21 @@ func _run() -> void:
 		print("%s: %d triangles, %d of %d vertices glass" % [nm, tris, glass, r.size()])
 	print("rock_scan_check: %d failures" % failures)
 	quit(1 if failures > 0 else 0)
+
+
+# ROCK_SHADER's squeeze on a mesh box e with shape k (vertex(): pow, clamp 0.55 to 1, then the drawn-aspect floor)
+func _drawn(e: Vector3, k: float) -> Vector3:
+	var mx := maxf(e.x, maxf(e.y, e.z))
+	var mn := minf(e.x, minf(e.y, e.z))
+	var sq := Vector3.ONE
+	for i in 3:
+		var v: float = pow(e[i] / mx, k) if k > 0.0 else pow(mn / e[i], -k)
+		sq[i] = clampf(v, 0.55, 1.0)
+	var d := e * sq
+	var top := maxf(d.x, maxf(d.y, d.z))
+	for i in 3:
+		sq[i] = minf(maxf(sq[i], WR.DRAWN_ASPECT * top / e[i]), 1.0)
+	return e * sq
 
 
 # The first primitive of a .glb: triangle count, box, COLOR_0 r and b as 0 to 1 floats.

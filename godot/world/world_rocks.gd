@@ -16,6 +16,21 @@ extends RefCounted
 # on screen and the deep field reads as far away (and never as a hex obstacle).
 
 const LIB_DIR := "res://world/rocks/"
+# Issue 1361 before/after capture on one commit: VS_1361_OLD=1 draws main's old look (world_rocks_v1.gd shaders and
+# kinds, every scan for every kind) from the old rock files in VS_1361_OLD_DIR (the PC job's old checkout). Off in play.
+static var OLD := OS.get_environment("VS_1361_OLD") == "1"
+static var lib_dir := _lib_dir()
+
+
+static func _lib_dir() -> String:
+	var d := OS.get_environment("VS_1361_OLD_DIR").replace("\\", "/")
+	if OS.get_environment("VS_1361_OLD") != "1" or d == "":
+		return LIB_DIR
+	return d if d.ends_with("/") else d + "/"
+
+
+static func _v1():
+	return load("res://world/world_rocks_v1.gd")
 
 static var _meshes := {}      # name -> Mesh
 static var _lib: Dictionary = {}   # not GPU: rocks.json
@@ -33,21 +48,24 @@ static func clear_static() -> void:
 # copy must not make some of the seeded choices turn into fallback spheres.
 # Issue 1361: six scans (scan_06 and the flat boomerang scan_07 were retired; scans.json "retired").
 const SCAN_COUNT := 6
+# Issue 1361: the flattest a rock may be drawn after its kind's squeeze (shortest over longest side), as ROCK_SHADER
+# enforces it (0.32) and world/test/rock_scan_check.gd checks it with the same formula (Fable M5 on PR 1782).
+const DRAWN_ASPECT := 0.32
 static func scan_names() -> Array:
 	if OS.get_environment("VS_PLANET_REMIX") == "0": return []
 	if not _scans_checked:
 		_scans_checked = true
-		var path := LIB_DIR + "scans.json"
+		var path := lib_dir + "scans.json"
 		if not FileAccess.file_exists(path): return []
 		var manifest = JSON.parse_string(FileAccess.get_file_as_string(path))
-		if not manifest is Dictionary or manifest.get("rocks", []).size() != SCAN_COUNT:
+		if not manifest is Dictionary or manifest.get("rocks", []).size() != (8 if OLD else SCAN_COUNT):
 			push_error("R01 scan manifest is incomplete")
 			return []
 		for entry in manifest.rocks:
 			for suffix in ["", "_lo"]:
 				# An exported game packs only the imported scene and its remap, not the .glb itself, so a plain
 				# file check fails there; ResourceLoader.exists sees the remap (mesh() loads the same way).
-				var glb: String = LIB_DIR + str(entry.name) + str(suffix) + ".glb"
+				var glb: String = lib_dir + str(entry.name) + str(suffix) + ".glb"
 				if not (ResourceLoader.exists(glb) or FileAccess.file_exists(glb)):
 					push_error("Missing scanned rock: " + str(entry.name) + suffix)
 					return []
@@ -157,6 +175,10 @@ void vertex() {
 		float k = shape_k * (0.6 + 0.8 * fract(ic.w * 431.7));
 		vec3 sq = k > 0.0 ? pow(e / max(e.x, max(e.y, e.z)), vec3(k)) : pow(min(e.x, min(e.y, e.z)) / e, vec3(-k));
 		sq = clamp(sq, vec3(0.55), vec3(1.0));
+		// never flatter than DRAWN_ASPECT (rock_scan_check.gd checks the same rule on every kind's scans): a slab that
+		// is already thin keeps its thinnest side at least that share of its longest drawn side
+		vec3 d = e * sq;
+		sq = min(max(sq, vec3(0.32 * max(d.x, max(d.y, d.z))) / e), vec3(1.0));
 		VERTEX *= sq;
 		NORMAL = normalize(NORMAL / sq);
 	}
@@ -329,6 +351,8 @@ global uniform vec3 cam_fwd;
 varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
+// issue 1361: the collar is the crystal kind's own host rock (crystal_material sets it from KINDS), not a second copy
+uniform vec3 host_rock = vec3(0.046, 0.049, 0.058);
 uniform float tumble_k = 0.0;   // as ROCK_SHADER: turns at the stored rate unless VS_ROCK_TUMBLE=0 holds it
 uniform vec3 board_c = vec3(0.0);
 uniform vec2 haze_r = vec2(320.0, 2200.0);
@@ -369,7 +393,7 @@ void fragment() {
 	float f = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
 	float depth = mix(0.55, 1.15, vC.b);
 	// host collar: dark slate mineral rock, a little mottled
-	vec3 rock = vec3(0.03, 0.031, 0.036) * (0.75 + 0.5 * vC.b);
+	vec3 rock = host_rock * (0.75 + 0.5 * vC.b);
 	ALBEDO = mix(rock, vec3(0.02, 0.035, 0.05), glass);
 	ROUGHNESS = mix(0.9, 0.06, glass);
 	METALLIC = 0.0;
@@ -393,10 +417,10 @@ void fragment() {
 # Issue 1361: iron is cool gunmetal with nickel ridges, carbon charcoal, each with its own tint range (no shared tan).
 const KINDS := {
 	"stone": {"base": Vector3(0.125, 0.098, 0.074), "fresh": Vector3(0.29, 0.245, 0.2), "k": 0, "shape": 0.0, "tone": 0.2, "tint": Vector3(1.08, 0.96, 0.84)},
-	"iron": {"base": Vector3(0.058, 0.06, 0.064), "fresh": Vector3(0.4, 0.395, 0.385), "k": 1, "shape": -0.35, "tone": 0.16, "tint": Vector3(1.1, 0.96, 0.9)},
-	"carbon": {"base": Vector3(0.032, 0.031, 0.03), "fresh": Vector3(0.085, 0.086, 0.09), "k": 2, "shape": -0.12, "tone": 0.22, "tint": Vector3(0.94, 0.96, 1.02)},
+	"iron": {"base": Vector3(0.058, 0.061, 0.067), "fresh": Vector3(0.4, 0.395, 0.385), "k": 1, "shape": -0.35, "tone": 0.16, "tint": Vector3(0.94, 0.98, 1.06)},
+	"carbon": {"base": Vector3(0.042, 0.041, 0.04), "fresh": Vector3(0.1, 0.1, 0.104), "k": 2, "shape": -0.12, "tone": 0.22, "tint": Vector3(0.94, 0.96, 1.02)},
 	"ice": {"base": Vector3(0.07, 0.074, 0.084), "fresh": Vector3(0.6, 0.7, 0.8), "k": 3, "shape": 0.55, "tone": 0.16, "tint": Vector3(0.92, 1.0, 1.08)},
-	"crystal": {"base": Vector3(0.046, 0.047, 0.054), "fresh": Vector3(0.13, 0.135, 0.15), "k": 4, "shape": 0.0, "tone": 0.15, "tint": Vector3(0.95, 0.98, 1.06)},
+	"crystal": {"base": Vector3(0.046, 0.049, 0.058), "fresh": Vector3(0.13, 0.135, 0.15), "k": 4, "shape": 0.0, "tone": 0.15, "tint": Vector3(0.95, 0.98, 1.06)},
 }
 
 # Issue 1361: which scans each kind draws on, its most typical first (world.gd _pick weights the first ones double).
@@ -411,8 +435,8 @@ const KIND_SCANS := {
 
 
 static func lib() -> Dictionary:
-	if _lib.is_empty() and FileAccess.file_exists(LIB_DIR + "rocks.json"):
-		var j = JSON.parse_string(FileAccess.get_file_as_string(LIB_DIR + "rocks.json"))
+	if _lib.is_empty() and FileAccess.file_exists(lib_dir + "rocks.json"):
+		var j = JSON.parse_string(FileAccess.get_file_as_string(lib_dir + "rocks.json"))
 		if j is Dictionary:
 			_lib = j
 	return _lib
@@ -422,7 +446,7 @@ static func mesh(name: String) -> Mesh:
 	if _meshes.has(name):
 		return _meshes[name]
 	var m: Mesh = null
-	var p := LIB_DIR + name + ".glb"
+	var p := lib_dir + name + ".glb"
 	var n: Node = null
 	if ResourceLoader.exists(p):
 		var ps = load(p)
@@ -484,6 +508,8 @@ static func _find_mesh(n: Node) -> MeshInstance3D:
 # the names of the rocks a kind draws on (its families first)
 static func names_for(kind: String) -> Array:
 	var scans := scan_names()
+	if not scans.is_empty() and OLD:
+		return scans.duplicate()
 	if not scans.is_empty():
 		var out: Array = []
 		for nm in KIND_SCANS.get(kind, scans):
@@ -527,10 +553,11 @@ static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") ==
 
 # One material per kind and look (the far layers share it, with their haze)
 static func material(kind: String, look: Dictionary) -> ShaderMaterial:
-	var K: Dictionary = KINDS.get(kind, KINDS["stone"])
+	var kinds: Dictionary = _v1().KINDS if OLD else KINDS
+	var K: Dictionary = kinds.get(kind, kinds["stone"])
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = ROCK_SHADER
+	sh.code = _v1().ROCK_SHADER if OLD else ROCK_SHADER
 	m.shader = sh
 	m.set_shader_parameter("kind", int(K["k"]))
 	m.set_shader_parameter("base", K["base"])
@@ -556,12 +583,13 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 static func crystal_material(look: Dictionary) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = CRYSTAL_SHADER
+	sh.code = _v1().CRYSTAL_SHADER if OLD else CRYSTAL_SHADER
 	m.shader = sh
 	m.set_shader_parameter("tumble_k", rock_tumble_k)
 	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
 	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
 	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))
+	m.set_shader_parameter("host_rock", (_v1().KINDS if OLD else KINDS)["crystal"]["base"])
 	if look.has("glow"):
 		m.set_shader_parameter("glow", look["glow"])
 	return m

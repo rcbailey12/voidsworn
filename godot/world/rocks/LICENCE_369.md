@@ -120,14 +120,14 @@ Derived files:
 | scan_04_lo.glb | namaqualand_boulder_06; Greg Zaal, Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
 | scan_05.glb | boulder_01; Rico Cilliers / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
 | scan_05_lo.glb | boulder_01; Rico Cilliers / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
-| scan_06.glb | rock_07; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
-| scan_06_lo.glb | rock_07; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
-| scan_07.glb | rock_09; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
-| scan_07_lo.glb | rock_09; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
+| scan_06.glb (retired, issue 1361: file removed) | rock_07; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
+| scan_06_lo.glb (retired, issue 1361: file removed) | rock_07; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
+| scan_07.glb (retired, issue 1361: file removed) | rock_09; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
+| scan_07_lo.glb (retired, issue 1361: file removed) | rock_09; Jenelle van Heerden / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
 
 The R01 terrain was strongly warped in sphere space, combined from independent instrument fields and recoloured into mineral provinces. It is a fictional surface. Original source geography and RGB colour are not used as the result.
 
-Each scan was centred, normalized to unit radius, converted to scan-derived vertex AO/mineral data and given a separate reduced mesh. Original and derived file hashes are in the source receipt, r01/bake.json and scans.json.
+Each scan was centred, normalized to unit radius, converted to scan-derived vertex AO/mineral data and given a separate reduced mesh. Issue 1361 re-baked COLOR_0.b on scan_00 to scan_05 as ridge convexity (godot/world/tools/scan_facet.py) and retired scan_06 and scan_07. Original and derived file hashes are in the source receipt, r01/bake.json and scans.json.
 
 R01 packaging, compression continuation: all three maps remain 8192 by 4096.
 `planet369_pack.py` encodes WebP payloads and `planet369_pack.gd` stores them in
