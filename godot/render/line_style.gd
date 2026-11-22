@@ -62,6 +62,11 @@ const ROLE := {
 	"edge_hold": Color(1.0, 0.78, 0.35, 0.9),
 	"edge_rim": Color(0.8, 0.55, 1.0, 0.8),
 	"edge_pull": Color(0.62, 0.48, 0.95, 0.45),
+	# issue 1446: where the next reinforcements come in (enemy coral, yours mint, as their ship rings), and an inspected
+	# enemy's gun arcs (bone, the threat colour, kept quiet under your own ship's fans)
+	"edge_arrive_enemy": Color(1.0, 0.54, 0.42, 0.9),
+	"edge_arrive_ally": Color(0.32, 0.94, 0.77, 0.9),
+	"arc_enemy": Color(0.941, 0.918, 0.871, 0.42),
 	# storm lightning until its baked bolts land (issue 1360): hot tube, cyan skirt, cool cyan-white corona (HDR values)
 	"bolt_core": Color(2.2, 2.1, 2.4, 1.0),
 	"bolt_skirt": Color(0.005, 0.8, 2.0, 1.0),

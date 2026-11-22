@@ -1077,6 +1077,28 @@ func _rebuild_edges() -> void:
 	_edge_gains(BL.spec())
 
 
+# Issue 1446: the strip at the board edge where the next reinforcements come in, shown from the warning round until
+# they land (battle_api arrival_strip). keys: "q,r" -> true; side "enemy" or "player"; an empty dictionary clears it.
+# Its own mesh in the shared line style, with the slow shimmer of the other zone edges, shown in every board look.
+var arrival_edge: MeshInstance3D
+var arrival_key := ""
+
+
+func set_arrival(keys: Dictionary, side := "enemy") -> void:
+	var k := side + "|" + ",".join(PackedStringArray(keys.keys()))
+	if keys.is_empty():
+		k = ""
+	if k == arrival_key:
+		return
+	arrival_key = k
+	if is_instance_valid(arrival_edge):
+		arrival_edge.queue_free()
+	arrival_edge = null
+	if keys.is_empty():
+		return
+	arrival_edge = _edge_mesh(self, "ArrivalEdge", LS.material(true), keys, LS.ROLE["edge_arrive_enemy" if side == "enemy" else "edge_arrive_ally"])
+
+
 func show_blockers(hexes: Array) -> void:
 	if not is_instance_valid(blocker_highlights): return
 	for child in blocker_highlights.get_children():

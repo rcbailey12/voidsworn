@@ -1274,6 +1274,9 @@ uniform float brk_win = 1.6;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
+// issue 1446 (R246): the sides shield power is routed to (fx_ship.gd _set_route) pulse quickly at the rim
+uniform vec4 route_on = vec4(0.0);
+uniform vec3 route_dirs[4];
 varying vec3 vL;
 varying vec3 vW;
 varying vec3 vN;
@@ -1356,6 +1359,15 @@ void fragment() {
 	}
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
 	float fres = spow(1.0 - abs(dot(normalize(vN), V)), 4.0);
+	if (dot(route_on, route_on) > 0.0) {
+		vec3 un = normalize(vL);
+		float side = 0.0;
+		for (int q = 0; q < 4; q++) {
+			side = max(side, route_on[q] * smoothstep(0.30, 0.80, dot(un, route_dirs[q])));
+		}
+		float beat = 0.6 + 0.4 * sin(scene_t * mix(5.5, 2.0, fx_calm));
+		I += side * (0.08 + 0.55 * fres) * beat;
+	}
 	float pat = 1.0;
 	vec2 hexId = vec2(0.0);
 	float hexEdge = 1.0;

@@ -59,6 +59,9 @@ var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
+# Issue 1446 (R246): the sides the rules route shield power to (struck this round; they catch more and drain the pool
+# faster). While any side is routed and the pool holds, the bubble stays up with a quick rim pulse on that side only.
+var _route_on := Vector4.ZERO
 var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is still playing (a death lets it finish)
 # Issue 1078: which shield failure look plays (2 clean collapse, the game's look since R340; 0 the old per-faction break
 # and 1 energy shear stay only for side-by-side checks) and the shear's quality (true: the cheaper crack network).
@@ -400,7 +403,7 @@ func update(fx, dt: float) -> void:
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
-		_shield_mi.visible = fx.now < _shield_until
+		_shield_mi.visible = fx.now < _shield_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
 func _update_trails(fx, _moved: bool) -> void:
@@ -1492,10 +1495,27 @@ func sync(fx, u: Dictionary) -> void:
 	if _last_sh >= 0.0 and shs > _last_sh + 0.5:
 		_regen(fx)
 	_last_sh = shs
+	if u.has("route"):
+		_set_route(u.get("route"), float(u["shp"]) if u.get("shp") != null else shs)
 	var burn = u.get("burning") == true
 	if burn != _burning:
 		_burning = burn
 		_set_burning(fx, burn)
+
+
+# Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)
+func _set_route(route, pool: float) -> void:
+	var on := Vector4.ZERO
+	if shielded and not squadron and pool >= 1.0 and route is Array:
+		for i in mini((route as Array).size(), 4):
+			if route[i] != null and float(route[i]) > 0.0:
+				on[i] = 1.0
+	if on == _route_on or _shield_mat == null:
+		_route_on = on if _shield_mat != null else Vector4.ZERO
+		return
+	_route_on = on
+	_shield_mat.set_shader_parameter("route_on", on)
+	_shield_mat.set_shader_parameter("route_dirs", PackedVector3Array([hull.quad_dir(0), hull.quad_dir(1), hull.quad_dir(2), hull.quad_dir(3)]))
 
 
 func set_stages(fx, st: Array) -> void:
