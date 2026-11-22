@@ -497,7 +497,11 @@ band: 4096 for length 21 and up (flagships, battleships), 2048 for 6.5 to 16.5 (
 frigates), 1024 for strike craft (1.6); a length between bands takes the lower one. The length is the ship json's
 `length_world`, else the class length (`hardpoints.CLASS_LENGTH`, kept equal to hull_table.gd CLS_LEN by
 contract_tables_selftest.py); `export7.py` picks it with no per-ship flag and logs `[export7] maps N (...)`. `EXPORT_MAPS=N`
-before `7_export.bat` (or `maps=N` to export7.py) overrides it for a test, and the log says so (issue 1680). The export also carries `hp_rcs` and
+before `7_export.bat` (or `maps=N` to export7.py) overrides it for a test, and the log says so (issue 1680). Maps are only
+ever shrunk, never upscaled: the export report keeps the target (`maps_target`) apart from what was written (`maps`, the
+smallest hull or parts atlas, and `maps_measured`), and `check_export.py` reads each written map's real size and fails a
+hull or parts map under the target, so a re-export from an older, smaller bake is never counted as done (Artoo on PR 1724;
+its selftest case `maps_undersized`). Rebake that ship at stage 5 first. The export also carries `hp_rcs` and
 `hp_board` on every destroyer and larger.
 
 The recipe writes the hard points as a required output, and the effects are built to that contract (outside audit pass 1,
