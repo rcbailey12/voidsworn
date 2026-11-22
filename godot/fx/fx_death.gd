@@ -301,12 +301,19 @@ const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid
 	"rim": Color(0.45, 0.62, 0.10), "spark": Color(0.55, 0.65, 0.12), "light": Color(0.70, 0.85, 0.45), "smoke": 0.0, "prism": 0.0}
 
 
+# Ryan, Nov 22 2026 5:39 AM CT, on the 1394D sheets: "I like everything about it except I think it might still be good
+# to have the faction specific explosion when it breaks off. Like the engines and weapons are cooking off." While a
+# cook-off blast is drawn (_core_flash, _blast, _fac_pop) an acid kill reads its faction's own colours; the green glow,
+# the green wreck heat and the missing smoke, haze and vapour stay.
+static var _boom := 0
+
+
 static func melting(src) -> bool:
 	return src is Object and is_instance_valid(src) and src.has_meta("death_melt")
 
 static func dstyle(src) -> Dictionary:
 	if not (src is Object) or not is_instance_valid(src): return {}
-	if src.has_meta("death_melt"): return MELT_STYLE
+	if src.has_meta("death_melt") and _boom == 0: return MELT_STYLE
 	if not ("fac" in src) or not ("faction" in src) or not (src.fac is Dictionary): return {}
 	var key := str(src.faction)
 	if _styles.has(key): return _styles[key]
@@ -328,6 +335,7 @@ static func dcol(src, key: String, today: Color) -> Color:
 
 # The share of a death's smoke this faction keeps (1 today).
 static func dsmoke(src) -> float:
+	if melting(src): return 0.0   # R398: an acid kill has no smoke, even in its faction's cook-off blasts
 	return float(dstyle(src).get("smoke", 1.0))
 
 
@@ -2896,16 +2904,13 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 # draws its softened twin at the same size (0.50 s rise and fall, no full-heat hold). `pale`: the melt look, no hard
 # white (always the softened picture).
 static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
+	_boom += 1
+	_blast_inner(fx, src, p, n, px, tint, frame, pale)
+	_boom -= 1
+
+
+static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
 	if not p.is_finite(): return
-	pale = pale or melting(src)
-	if melting(src):
-		# R398 (1394 PC run): even the softened blast picture read as a green cloud. Acid: a soft light and a few sparks.
-		fx.light(p + n * 0.6, fx.now, 0.40, 3.0, tint, 3)
-		if fx.quality != "low":
-			var km: float = px * STAGING_UNITS_PER_PIXEL / 10.0
-			for j in 3:
-				fx.stk(p + n * 0.1, fx.now, 0.30 + fx.rng.randf() * 0.2, tint, 3.0, 0.04, 0.08, 1, fx.rcone(n, 0.7) * (6.0 + fx.rng.randf() * 6.0) * km, 2.0)
-		return
 	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
 	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke": a strained death's blasts keep one smaller puff
@@ -3074,12 +3079,17 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
-	if melting(s): return   # R398 (1394 PC run): the soft faction pop drew a green cloud the size of the hull
+	_boom += 1
+	_fac_pop_inner(fx, s, p, L)
+	_boom -= 1
+
+
+static func _fac_pop_inner(fx, s, p: Vector3, L: float) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var life := 0.32
 	var kind := 0
 	var i := 2.4
-	if fx.reduce_flashing or melting(s) or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
+	if fx.reduce_flashing or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
 		kind = 18
 		i *= 0.4
 		life = 0.96
@@ -3703,6 +3713,12 @@ const CORE_LIGHT_REACH := {"small": 26.0, "destroyer": 30.0, "cruiser": 35.0, "c
 
 
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
+	_boom += 1
+	_core_flash_inner(fx, p, R, px, tint, node, local_p, src, band_override, frame)
+	_boom -= 1
+
+
+static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
 	# Main core flashes use the approved row. Issue 462: a cruiser or capital death uses its class's row
@@ -3715,11 +3731,6 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
-	# R398: the 1394 PC run (Nov 22) showed the soft core bloom as a big green cloud over the hull, the haze Ryan said no
-	# to. An acid kill draws no core flash picture at all: only a soft light on the hulls round it.
-	if melting(src):
-		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[2]), 4.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 3, CORE_LIGHT_REACH[band])
-		return
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
