@@ -283,12 +283,14 @@ function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return f
 // gain on the same hull pays it back first, so taking a hull refit off and on again never adds hull (twin: campaign.gd changeShip)
 // The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that moves
 // the hull (a repair, a battle) ends it (Artoo on PR 1602).
-function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; const ow=ship.hpOwed;
+// One hull adjustment for every max-hull change, one ship (changeShip) or the fleet (changeFleet: class refits, the Aspect).
+function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); adjustHull(ship,before,derive(ship).maxHp); }
+function adjustHull(ship, before, after){ const ow=ship.hpOwed;
   let owed=(Array.isArray(ow)&&ship.hp===ow[1])?ow[0]:0, hp=ship.hp+(after-before);
   if(after>before&&owed>0){ const pay=Math.min(owed,after-before); hp-=pay; owed-=pay; }
   if(hp<1){ owed+=1-hp; hp=1; } hp=clamp(hp,1,after);
   if(owed>0) ship.hpOwed=[owed,hp]; else delete ship.hpOwed; ship.hp=hp; }
-function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
+function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>adjustHull(s,b[i],derive(s).maxHp)); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
 function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
 function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }

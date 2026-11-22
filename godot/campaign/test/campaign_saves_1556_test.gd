@@ -131,6 +131,11 @@ func _case_hull() -> void:
 	D.act("fleetScreen"); D.act("equip", str(D.RUN["inventory"].find("prow")) + ":" + str(t["uid"]))
 	var ow = t.get("hpOwed")
 	_check(float(t["hp"]) == 1.0 and ow is Array and float(ow[0]) > 0.0 and float(ow[0]) < 500.0, "(2) a gain smaller than the owed hull pays part and carries the rest (hp %s, owed %s)" % [str(t["hp"]), str(ow)])
+	# Artoo on PR 1602 (readback 045bdb7d): a class refit pays the owed hull too
+	var o0 := float(ow[0]); D.RUN["credits"] = 99999.0
+	var cls = D.HULLS[t["tpl"]]["cls"]; D.buyClassTrack(cls)
+	var ow2 = t.get("hpOwed")
+	_check(float(t["hp"]) == 1.0 and ow2 is Array and float(ow2[0]) < o0, "(2) a class refit pays the owed hull first (hp %s, owed %s to %s)" % [str(t["hp"]), str(o0), str(ow2)])
 
 func _case_event() -> void:
 	var path := DIR.path_join("event.json")

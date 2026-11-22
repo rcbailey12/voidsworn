@@ -849,8 +849,10 @@ func buyClassTrack(cls) -> bool:
 # Issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]),
 # and a later gain on the same hull pays that back first, so taking a hull refit off and on again never adds hull.
 # Twin: core.js changeShip.
+# One hull adjustment for every max-hull change, one ship (changeShip) or the fleet (changeFleet: class refits, the Aspect).
 func changeShip(ship: Dictionary, fn: Callable) -> void:
-	var before = derive(ship)["maxHp"]; fn.call(ship); var after = derive(ship)["maxHp"]
+	var before = derive(ship)["maxHp"]; fn.call(ship); adjustHull(ship, before, derive(ship)["maxHp"])
+func adjustHull(ship: Dictionary, before, after) -> void:
 	# The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that
 	# moves the hull (a repair, a battle) ends it (Artoo on PR 1602).
 	var ow = ship.get("hpOwed")
@@ -869,8 +871,7 @@ func changeFleet(fn: Callable) -> void:
 	for s in RUN["fleet"]: b.append(derive(s)["maxHp"])
 	fn.call()
 	for i in range(RUN["fleet"].size()):
-		var s = RUN["fleet"][i]; var a = derive(s)["maxHp"]
-		s["hp"] = clampv(float(s["hp"]) + (a - b[i]), 1, a)
+		var s = RUN["fleet"][i]; adjustHull(s, b[i], derive(s)["maxHp"])
 func fleetCP() -> float:
 	var t = 0.0
 	for s in RUN["fleet"]: t += float(HULLS[s["tpl"]]["cp"])

@@ -13,7 +13,7 @@ show=h=>{ testPage=String(h); testModal=''; };
 modal=h=>{ testModal=String(h); };
 closeModal=()=>{ testModal=''; };
 globalThis.T1556 = {
-  ACT, ADMIRALS, newRun, newShip, cheapHull, genSector, rndSeed, findNode, availableNodes, mapScreen, saveRun, changeShip, derive,
+  ACT, ADMIRALS, HULLS, buyClassTrack, newRun, newShip, cheapHull, genSector, rndSeed, findNode, availableNodes, mapScreen, saveRun, changeShip, derive,
   get run(){ return RUN; }, get saved(){ return SAVED_RUN; }, get event(){ return curEvent; },
   reset(){ META=defaultMeta(); UID=1; RUN=null; B=null; curEvent=null; },
   acts(){ const html=testModal||testPage, out=[]; let m; const re=/<(?:button|g|div|a|span)\\b([^>]*)>/g;
@@ -22,6 +22,7 @@ globalThis.T1556 = {
 };
 `);
 const T = globalThis.T1556;
+const HULLS_CLS = s => T.HULLS[s.tpl].cls;
 let pass = 0, fail = 0;
 const check = (ok, what) => { if (ok) { pass++; console.log('ok    ' + what); } else { fail++; console.log('FAIL  ' + what); } };
 const sig = R => JSON.stringify(R.fleet.map(s => [s.uid, s.tpl, s.hp, s.mk, s.mods])) + ' cr ' + R.credits + ' hold ' + JSON.stringify(R.inventory);
@@ -69,7 +70,10 @@ const ok = (kind) => T.acts().filter(a => a[0] === kind && a[2] === 1);
   check(s.mods.includes('auspex') && s.mods.includes('prow') && s.hp <= 10, '(2) prow off, a scanner on, prow on again: still no free hull (' + s.hp + ')');
   s.mods.splice(s.mods.indexOf('prow'), 1); T.run.inventory.push('prow'); s.hp = 1; s.hpOwed = [500, 1];
   T.ACT.equip(T.run.inventory.indexOf('prow') + ':' + s.uid);
-  check(s.hp === 1 && s.hpOwed && s.hpOwed[0] > 0 && s.hpOwed[0] < 500, '(2) a gain smaller than the owed hull pays part and carries the rest (' + JSON.stringify(s.hpOwed) + ')'); }
+  check(s.hp === 1 && s.hpOwed && s.hpOwed[0] > 0 && s.hpOwed[0] < 500, '(2) a gain smaller than the owed hull pays part and carries the rest (' + JSON.stringify(s.hpOwed) + ')');
+  // Artoo on PR 1602 (readback 045bdb7d): a class refit pays the owed hull too
+  const o0 = s.hpOwed[0]; T.run.credits = 99999; T.buyClassTrack(HULLS_CLS(s));
+  check(s.hp === 1 && s.hpOwed && s.hpOwed[0] < o0, '(2) a class refit pays the owed hull first (' + o0 + ' to ' + JSON.stringify(s.hpOwed) + ')'); }
 
 { const target = mapSave(1559, 'event'); T.ACT.enterNode(target);
   const ev = T.event && T.event.id, n = T.saved.map.cols.flat().find(x => x.id === target);
