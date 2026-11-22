@@ -1,0 +1,13 @@
+chain CT start Sat 11/21/2026 20:31:07.74 
+mirror fetch exit 0
+746d8d7c9a27a155575727e9e4c018b7ba6ebd66 reachable in the mirror
+1373N GV2 start 20:31:08.69 
+1373N GV2 exit 0 at 20:43:25.65 
+1373N GW4 start 20:43:25.65 
+1373N GW4 exit 0 at 21:06:37.25 
+1373N PROBE19B start 21:06:37.25 
+PROBE19 prep 21:06:37.28 
+clone at 746d8d7c9a27a155575727e9e4c018b7ba6ebd66
+kit ithar_GV2 copied from opus1373gv2n
+kit ithar_GW4 copied from opus1373gw4n
+entries ok: 2

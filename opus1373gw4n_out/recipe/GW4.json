@@ -1,0 +1,111 @@
+{
+ "cell": "GW4",
+ "route": "build sheet ithar_GW4 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 78.0,
+ "geometry_seconds": 2.0,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 31,
+  "part_objects": 5,
+  "glow_objects": 20,
+  "interior_objects": 3,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 7.7,
+  "bake_H_albedo_s": 6.3,
+  "bake_H_orm_s": 6.1,
+  "bake_H_emission_s": 5.9,
+  "bake_H_normal_s": 6.5,
+  "zones_H": [
+   "gw_mosaic",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "bake_P_masks_s": 9.6,
+  "bake_P_albedo_s": 5.5,
+  "bake_P_orm_s": 5.7,
+  "bake_P_normal_s": 12.3,
+  "zones_P": [
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "glow_materials": [
+   "ithar_glow_gw_drive",
+   "ithar_glow_gw_drive_core",
+   "ithar_glow_gw_gem_amber",
+   "ithar_glow_gw_gem_green"
+  ],
+  "inside_materials": [
+   "ithar_inside_core",
+   "ithar_inside_crew",
+   "ithar_inside_engroom"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.2698,
+    "area": 2.40384,
+    "texels_per_unit2": 1882777.3
+   },
+   "parts": {
+    "uv_share": 0.7501,
+    "area": 0.37593,
+    "texels_per_unit2": 33475180.9
+   }
+  },
+  "stack_seconds": 74.5
+ },
+ "density": {
+  "paint_flags": [
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "launcher: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "engine: tris_per_unit2 34701.3 is 0.75 of the hull's 46425.6",
+   "launcher: tris_per_unit2 2474.6 is 0.05 of the hull's 46425.6",
+   "launcher: edges_per_unit2 998.5 is 0.19 of the hull's 5152.6"
+  ],
+  "hull": {
+   "area": 2.40384,
+   "triangles": 111600,
+   "tris_per_unit2": 46425.6,
+   "edges_per_unit2": 5152.6,
+   "texels_per_unit2": 1882777.3,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 39.83,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "ithar_GW4",
+  "game_ship": "bomber",
+  "variant": "",
+  "model_length": 1.53056,
+  "scale": 0.6533556528828456,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.20907
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 1,
+  "engines": 1,
+  "bays": 0,
+  "points": 1,
+  "turrets": [],
+  "interior_objects": 3,
+  "slots": [
+   "0 bombs T"
+  ]
+ },
+ "triangles": 192088,
+ "objects": 56,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}
