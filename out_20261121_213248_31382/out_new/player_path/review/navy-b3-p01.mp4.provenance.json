@@ -1,0 +1,60 @@
+{
+  "source_commit": "057db2b44f759336333f3f1e8e6a3599efc542f9",
+  "source_commit_date": "2026-11-22T01:48:02Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-22T04:15:08Z",
+  "seed": 10,
+  "build_sha256": "aeec1e8af3e99ae03a37db63d0dc385e856bf5b9be7de7a4c53f7cbe17cc8528",
+  "manifest_sha256": "685e400fd2c4d5199321c4a9c1ee6db7cebbda822182dc39f980f6e158ff9908",
+  "fps": 30,
+  "battle": 3,
+  "enemy": "hegemony",
+  "objective": "flagship",
+  "picture_name": "navy-b3-p01.mp4",
+  "sources": [
+    {
+      "source_commit": "057db2b44f759336333f3f1e8e6a3599efc542f9",
+      "source_commit_date": "2026-11-22T01:48:02Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-22T04:15:08Z",
+      "seed": 10,
+      "build_sha256": "aeec1e8af3e99ae03a37db63d0dc385e856bf5b9be7de7a4c53f7cbe17cc8528",
+      "manifest_sha256": "685e400fd2c4d5199321c4a9c1ee6db7cebbda822182dc39f980f6e158ff9908",
+      "fps": 30,
+      "battle": 3,
+      "enemy": "hegemony",
+      "objective": "flagship"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "057db2b44f759336333f3f1e8e6a3599efc542f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-22T04:15:08Z",
+      "image_sha256": "0d751597e93e49afad4a4b53616815cc65d59e4b343ab5326aa72ca945694063",
+      "sources": [
+        {
+          "source_commit": "057db2b44f759336333f3f1e8e6a3599efc542f9",
+          "source_commit_date": "2026-11-22T01:48:02Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-22T01:48:02Z"
+    }
+  ],
+  "seconds_in_battle": 0,
+  "duration_s": 48,
+  "stamp_template_sha256": "f8b7a147c67f0bf26b94b86c578fc05c26f7b1ba6847676c6e2cfa86268ba715",
+  "image_sha256": "36dd9c13d777de65c720fe624fd659147615cb0ce9c3648ebbb3aeff5d79b341"
+}

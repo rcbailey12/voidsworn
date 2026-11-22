@@ -1,0 +1,31 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 34 ms
+[sfx] 71 cues, 67 clip sets, loaded in 330 ms
+[load] battle scene ready in 1012 ms
+[main] leaving the battle for the title at 6506 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[world] baked 3aa7452c0fe817b777d7850d2ebaeb0610d6cb58f9cc3a5d35aa4e078c7332d5 4096x2048 in 332 ms (worker; stages ms { "began": 6331, "device": 165, "spirv": 3, "pipeline": 1, "dispatch": 99, "worst_strip": 4, "readback": 45, "save": "deferred (a load is running)", "mips": 14 }; queued at 6330, worker from 6331, handed back at 6662 ms)
+[load] battle scene ready in 69 ms (title backdrop)
+[main] battle to title: leave frame 50.9 ms, first title frame 50.8 ms after the leave
+[main] battle to title parts (ms): battle_out 2.7, title_build 38.0, battle_free 7.9, battle exit_tree 1.5, pre@41.6, draw@50.8, step@50.9, draw@54.1, step@54.2, draw@58.8, step@58.8, draw@59.1, step@59.1, draw@62.8
+[main] battle to title: worst frame in the first second 365.9 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[load] 8 ships built in 1355 ms over 20 frames (title backdrop): longest stretch 129 ms; ship setup 73 ms (worst 37 ms, V16_37: inst 0, look_new_mats 2, look_assign 7, look_worst_assign 1, look_counts 17, look_touch 0, look 9, fit 0, rest 13), effects registration 295 ms (worst 64 ms, hegemony|fighter: analyse 64, damage_root 0, engines 0, shield 0, collider 0), hull geometry 552 ms (worst 129 ms, H9_23), waiting on hull files and worker instances 1 ms; 7 hulls instanced on workers
+[world] baked 4b94af71eebdc369e28b9fb2f345c92415071647523c0fa9929c12a6bbbfb568 4096x2048 in 3324 ms (worker; stages ms { "began": 6663, "device": 208, "spirv": 4, "pipeline": 1, "dispatch": 15, "worst_strip": 2, "readback": 45, "save_began": 6940, "save": 2867, "prune": 2, "mips": 13 }; queued at 6505, worker from 6662, handed back at 9829 ms)
+[world] baked 4d380e16e9b0f0af26034430afc4e4a1dc91b2d4f7074c688fb84ff31a370d1c 4096x2048 in 2670 ms (worker; stages ms { "began": 9830, "device": 166, "spirv": 5, "pipeline": 1, "dispatch": 99, "worst_strip": 3, "readback": 39, "save": "deferred (a load is running)", "mips": 14 }; queued at 7492, worker from 9829, handed back at 10162 ms)
+[world] baked 1606be4c3087264734c0cb76027b733050cc905614d7a1542f21da25d5c83832 1024x512 in 3038 ms (worker; stages ms { "began": 10163, "device": 197, "spirv": 3, "pipeline": 1, "dispatch": 5, "worst_strip": 1, "readback": 49, "save": "deferred (a load is running)", "mips": 1 }; queued at 7496, worker from 10163, handed back at 10534 ms)
+[main] quit (window) at 15883 ms
+[main] frames before the close, oldest first: 6 ms (backdrop world), 6 ms (backdrop world), 166 ms (backdrop world), 34 ms (backdrop world), 2 ms (backdrop world), 2 ms (backdrop world), 1 ms (backdrop world), 164 ms (backdrop world), 5351 ms so far (this frame)
+[main] loading at the close: backdrop world, world bake 73b7293c3393
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[world] baked 73b7293c3393042f85ed2a28ee7b711c4d76be1f55dfccef678ed6013a41d2e9 1024x512 in 8512 ms (worker; stages ms { "began": 10535, "device": 180, "spirv": 8, "pipeline": 2, "dispatch": 9, "worst_strip": 2, "readback": 95, "save": "deferred (a load is running)", "mips": 1 }; queued at 7496, worker from 10535, handed back at 16008 ms)
+[main] quit stages: scenes freed + 2 frames 129 ms, statics and fx drain 3461 ms, engine exit from 19473 ms

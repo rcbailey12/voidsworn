@@ -1,0 +1,174 @@
+{"battle":0,"build":{"commit":"057db2b44f759336333f3f1e8e6a3599efc542f9","commit_date":"2026-11-22T01:48:02Z"},"diagnostic":false,"frame":45,"headless":false,"kind":"run","manifest_sha256":"685e400fd2c4d5199321c4a9c1ee6db7cebbda822182dc39f980f6e158ff9908","mesh_lod_threshold":1.0,"profile_isolated":true,"sector_enemy":"corsair","seed":31,"settings":{"ai":"standard","cine":"key","follow":true,"fullscreen":true,"movement":"cinematic","music":true,"music_volume":0.7,"nebula_wake_on":true,"quality":"max","reduce_flashing":false,"reduce_motion":false,"shake":1.0,"sound":true,"speed":1.0,"taa":false,"tips":true,"ui_scale":1.0,"volume":0.8},"strict":false,"user_data_dir":"C:/Users/rcbai/AppData/Local/Temp/voidsworn-player-path-4b73adb6-899b-4e6f-8908-051fff8895d3/seed-31-attempt-1/profile/Godot/app_userdata/Voidsworn/"}
+{"action":"startRun","battle":0,"choice":"","frame":76,"kind":"campaign_choice","page":"admiral"}
+{"action":"pickAspect","battle":0,"choice":"storm","frame":120,"kind":"campaign_choice","page":"aspect"}
+{"battle":0,"frame":164,"id":"name_flagship","kind":"campaign_card"}
+{"action":"closeModal","battle":0,"choice":"","frame":268,"kind":"campaign_choice","page":"map"}
+{"battle":0,"frame":312,"id":"c_map","kind":"campaign_card"}
+{"battle":0,"frame":427,"id":"c_clock","kind":"campaign_card"}
+{"battle":0,"frame":542,"id":"0-0","kind":"route_stop","offered":[{"enc":"rout","fac":"hegemony","id":"0-0","nemesis":false,"type":"battle"}],"planned":"0-0"}
+{"battle":1,"enemy":"hegemony","frame":700,"kind":"battle_start","node":"0-0","objective":"rout","seed":2894204255,"teaching_battle":1}
+{"battle":1,"frame":729,"kind":"voice","text":"Admiral Roderic Vex: \"Hold the line. Let them come to the broadsides.\""}
+{"battle":1,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"},{"asset":"res://gen/ships/H8_23.scn","class":"Destroyer","code":"H8_23","parted_hull":true,"ship":"Cordon destroyer","side":"enemy"},{"asset":"res://gen/ships/H8_23.scn","class":"Destroyer","code":"H8_23","parted_hull":true,"ship":"Cordon destroyer","side":"enemy"}],"frame":925,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":1,"frame":925,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":1,"units":[["Edge of Winter","player",1,11,135],["Resolve of the Reach","player",1,13,85],["Wrath of Vesper","player",0,10,50],["Cordon destroyer","enemy",18,11,54],["Cordon destroyer","enemy",17,13,54]]}
+{"battle":1,"frame":925,"kind":"danger","round":1}
+{"battle":1,"frame":925,"hex":[5.0,11.0],"kind":"move_preview","round":1,"ship":"Edge of Winter"}
+{"battle":1,"frame":941,"id":"select","kind":"teaching_card","round":1}
+{"battle":1,"frame":1250,"id":"move","kind":"teaching_card","round":1}
+{"battle":1,"frame":1350,"hex":[6.0,13.0],"kind":"move_preview","round":1,"ship":"Resolve of the Reach"}
+{"battle":1,"frame":1564,"kind":"cut_start","text":"lance: Cordon destroyer to Resolve of the Reach"}
+{"battle":1,"frame":1595,"kind":"cut_end","text":"lance: Cordon destroyer to Resolve of the Reach"}
+{"battle":1,"frame":1599,"hex":[6.0,10.0],"kind":"move_preview","round":1,"ship":"Wrath of Vesper"}
+{"battle":1,"frame":1736,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":2,"units":[["Edge of Winter","player",5,11,135],["Resolve of the Reach","player",6,13,85],["Wrath of Vesper","player",6,10,50],["Cordon destroyer","enemy",13,11,54],["Cordon destroyer","enemy",12,13,54]]}
+{"battle":1,"frame":1736,"id":"target","kind":"teaching_card","round":2}
+{"battle":1,"frame":1836,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":1965,"id":"threat","kind":"teaching_card","round":2}
+{"battle":1,"frame":2117,"kind":"cut_start","text":"lance: Cordon destroyer to Wrath of Vesper"}
+{"battle":1,"frame":2148,"kind":"cut_end","text":"lance: Cordon destroyer to Wrath of Vesper"}
+{"battle":1,"frame":2162,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":2338,"kind":"cut_start","text":"lance: Edge of Winter to Cordon destroyer"}
+{"battle":1,"frame":2390,"kind":"cut_end","text":"lance: Edge of Winter to Cordon destroyer"}
+{"battle":1,"frame":2473,"kind":"cut_start","text":"lance: Cordon destroyer to Wrath of Vesper"}
+{"battle":1,"frame":2500,"kind":"cut_end","text":"lance: Cordon destroyer to Wrath of Vesper"}
+{"battle":1,"frame":2504,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":2587,"kind":"cut_start","text":"torp: Resolve of the Reach to Cordon destroyer"}
+{"battle":1,"frame":2700,"kind":"cut_end","text":"torp: Resolve of the Reach to Cordon destroyer"}
+{"battle":1,"frame":2700,"kind":"cut_start","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":2748,"kind":"cut_end","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":2751,"kind":"command","name":"Fire for effect","round":2}
+{"battle":1,"frame":2764,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":1,"frame":2817,"kind":"cut_start","text":"lance: Edge of Winter to Cordon destroyer"}
+{"battle":1,"frame":2872,"kind":"cut_end","text":"lance: Edge of Winter to Cordon destroyer"}
+{"battle":1,"frame":2872,"kind":"cut_start","text":"torp: Resolve of the Reach to Cordon destroyer"}
+{"battle":1,"frame":2980,"kind":"cut_end","text":"torp: Resolve of the Reach to Cordon destroyer"}
+{"battle":1,"frame":3014,"kind":"cut_start","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":3062,"kind":"cut_end","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":3114,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":1,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"}],"frame":3115,"kind":"end_card","result":"win","rounds":2}
+{"battle":1,"frame":3205,"kind":"battle_end"}
+{"battle":1,"frame":3218,"id":"c_reward","kind":"campaign_card"}
+{"action":"takeSalvage","battle":1,"choice":"1:mod","frame":3333,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":1,"choice":"xmwrb8bvs2:laststand","frame":3377,"kind":"campaign_choice","page":"battle"}
+{"battle":1,"frame":3421,"id":"1-0","kind":"route_stop","offered":[{"enc":"hold","fac":"corsair","id":"1-0","nemesis":false,"type":"battle"},{"enc":"","fac":"","id":"1-1","nemesis":false,"type":"shipyard"},{"enc":"rout","fac":"corsair","id":"1-2","nemesis":false,"type":"battle"},{"enc":"","fac":"","id":"1-3","nemesis":false,"type":"event"}],"planned":"1-0"}
+{"battle":2,"enemy":"corsair","frame":3524,"kind":"battle_start","node":"1-0","objective":"hold","seed":886168206,"teaching_battle":2}
+{"battle":2,"frame":3558,"kind":"voice","text":"Admiral Roderic Vex: \"Run out the guns. Present the flank.\""}
+{"battle":2,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"},{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"},{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":3940,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":2,"frame":3940,"kind":"round","obj":{"escore":0,"hex":{"q":10.0,"r":11.0},"score":0,"type":"hold"},"round":1,"units":[["Edge of Winter","player",1,11,135],["Resolve of the Reach","player",1,9,85],["Wrath of Vesper","player",3,9,48],["Hullbreaker gutship","enemy",18,11,50],["Hullbreaker gutship","enemy",16,12,50],["Hullbreaker raider","enemy",18,13,34]]}
+{"battle":2,"frame":3940,"kind":"danger","round":1}
+{"battle":2,"frame":3940,"hex":[5.0,11.0],"kind":"move_preview","round":1,"ship":"Edge of Winter"}
+{"battle":2,"frame":3956,"id":"objective","kind":"teaching_card","round":1}
+{"battle":2,"frame":4335,"hex":[6.0,9.0],"kind":"move_preview","round":1,"ship":"Resolve of the Reach"}
+{"battle":2,"frame":4470,"kind":"target_preview","round":1,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":4489,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":2,"frame":4618,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":2,"frame":4735,"hex":[9.0,9.0],"kind":"move_preview","round":1,"ship":"Wrath of Vesper"}
+{"battle":2,"frame":4965,"kind":"cut_start","text":"torp: Hullbreaker gutship to Edge of Winter"}
+{"battle":2,"frame":4998,"kind":"cut_end","text":"torp: Hullbreaker gutship to Edge of Winter"}
+{"battle":2,"frame":5007,"kind":"round","obj":{"escore":1,"hex":{"q":10.0,"r":11.0},"score":0,"type":"hold"},"round":2,"units":[["Edge of Winter","player",5,11,130],["Resolve of the Reach","player",6,9,85],["Wrath of Vesper","player",9,9,48],["Hullbreaker gutship","enemy",12,11,50],["Hullbreaker gutship","enemy",10,12,50],["Hullbreaker raider","enemy",8,13,34]]}
+{"battle":2,"frame":5007,"id":"reinforce_warn","kind":"teaching_card","round":2}
+{"battle":2,"frame":5107,"hex":[10.0,11.0],"kind":"move_preview","round":2,"ship":"Wrath of Vesper"}
+{"battle":2,"frame":5188,"id":"close","kind":"teaching_card","round":2}
+{"battle":2,"frame":5288,"kind":"command","name":"Fire for effect","round":2}
+{"battle":2,"frame":5302,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":2,"frame":5318,"kind":"cut_start","text":"lance: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":5400,"kind":"cut_end","text":"lance: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":5400,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":2,"frame":5524,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":2,"frame":5582,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":5699,"kind":"cut_start","text":"torp: Hullbreaker gutship to Edge of Winter"}
+{"battle":2,"frame":5742,"kind":"cut_end","text":"torp: Hullbreaker gutship to Edge of Winter"}
+{"battle":2,"frame":5755,"hex":[9.0,11.0],"kind":"move_preview","round":2,"ship":"Edge of Winter"}
+{"battle":2,"frame":5894,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":5914,"kind":"cut_start","text":"volley: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":5985,"kind":"cut_end","text":"volley: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":5985,"kind":"cut_start","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":6033,"kind":"cut_end","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":6043,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":6063,"kind":"cut_start","text":"lance: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":6115,"kind":"cut_end","text":"lance: Edge of Winter to Hullbreaker gutship"}
+{"battle":2,"frame":6117,"hex":[9.0,10.0],"kind":"move_preview","round":2,"ship":"Resolve of the Reach"}
+{"battle":2,"frame":6233,"kind":"target_preview","round":2,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":6314,"kind":"arrival","ship":"Hullbreaker raider","side":"enemy"}
+{"battle":2,"frame":6363,"kind":"round","obj":{"escore":1,"hex":{"q":10.0,"r":11.0},"score":0,"type":"hold"},"round":3,"units":[["Edge of Winter","player",9,11,124],["Resolve of the Reach","player",9,10,85],["Wrath of Vesper","player",10,11,48],["Hullbreaker gutship","enemy",9,12,31],["Hullbreaker raider","enemy",22,10,46]]}
+{"battle":2,"frame":6372,"hex":[10.0,12.0],"kind":"move_preview","round":3,"ship":"Resolve of the Reach"}
+{"battle":2,"frame":6487,"kind":"target_preview","round":3,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":6506,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker gutship"}
+{"battle":2,"frame":6591,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker gutship"}
+{"battle":2,"frame":6591,"kind":"cut_start","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":6639,"kind":"cut_end","text":"kill: Hullbreaker gutship"}
+{"battle":2,"frame":6691,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":2,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":6692,"kind":"end_card","result":"win","rounds":3}
+{"battle":2,"frame":6782,"kind":"battle_end"}
+{"action":"takeSalvage","battle":2,"choice":"1:mod","frame":6795,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":2,"choice":"xmwrb8bvs1:ironhull","frame":6839,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":2,"choice":"xmwrb8bvs2:steady","frame":6883,"kind":"campaign_choice","page":"battle"}
+{"battle":2,"frame":6927,"id":"2-0","kind":"route_stop","offered":[{"enc":"rout","fac":"corsair","id":"2-0","nemesis":false,"type":"battle"},{"enc":"","fac":"","id":"2-1","nemesis":false,"type":"event"}],"planned":"2-0"}
+{"battle":3,"enemy":"corsair","frame":7030,"kind":"battle_start","node":"2-0","objective":"rout","seed":3051025058,"teaching_battle":0}
+{"battle":3,"frame":7064,"kind":"voice","text":"Admiral Roderic Vex: \"Run out the guns. Present the flank.\""}
+{"battle":3,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"},{"asset":"res://gen/ships/C15s_23.scn","class":"Cruiser","code":"C15s_23","parted_hull":true,"ship":"Hullbreaker wrecker","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":7410,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":3,"frame":7410,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":1,"units":[["Edge of Winter","player",14,2,155],["Resolve of the Reach","player",16,1,85],["Wrath of Vesper","player",12,1,50],["Hullbreaker wrecker","enemy",1,11,88],["Hullbreaker raider","enemy",1,9,34],["Hullbreaker raider","enemy",-1,12,34],["Hullbreaker raider","enemy",2,12,34]]}
+{"battle":3,"frame":7410,"kind":"danger","round":1}
+{"battle":3,"frame":7410,"hex":[13.0,3.0],"kind":"move_preview","round":1,"ship":"Edge of Winter"}
+{"battle":3,"frame":7426,"id":"resolve","kind":"teaching_card","round":1}
+{"battle":3,"frame":7769,"kind":"target_preview","round":1,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":7789,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":3,"frame":7924,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":3,"frame":8119,"kind":"target_preview","round":1,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":8358,"kind":"cut_start","text":"torp: Hullbreaker wrecker to Edge of Winter"}
+{"battle":3,"frame":8391,"kind":"cut_end","text":"torp: Hullbreaker wrecker to Edge of Winter"}
+{"battle":3,"frame":8571,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":2,"units":[["Edge of Winter","player",13,3,153],["Resolve of the Reach","player",16,1,85],["Wrath of Vesper","player",12,1,50],["Hullbreaker wrecker","enemy",9,7,88],["Hullbreaker raider","enemy",10,1,34],["Hullbreaker raider","enemy",9,6,34],["Hullbreaker raider","enemy",11,5,34]]}
+{"battle":3,"frame":8571,"id":"close","kind":"teaching_card","round":2}
+{"battle":3,"frame":8671,"kind":"command","name":"Fire for effect","round":2}
+{"battle":3,"frame":8685,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":3,"frame":8701,"kind":"cut_start","text":"lance: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":8781,"kind":"cut_end","text":"lance: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":8781,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":3,"frame":8916,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker raider"}
+{"battle":3,"frame":8980,"kind":"target_preview","round":2,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":9000,"kind":"cut_start","text":"lance: Edge of Winter to Hullbreaker raider"}
+{"battle":3,"frame":9082,"kind":"cut_end","text":"lance: Edge of Winter to Hullbreaker raider"}
+{"battle":3,"frame":9119,"kind":"target_preview","round":2,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":9302,"kind":"target_preview","round":2,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":9457,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":3,"units":[["Edge of Winter","player",13,3,153],["Resolve of the Reach","player",16,1,85],["Wrath of Vesper","player",12,1,50],["Hullbreaker wrecker","enemy",12,5,75],["Hullbreaker raider","enemy",10,1,12],["Hullbreaker raider","enemy",13,4,34]]}
+{"battle":3,"frame":9469,"kind":"target_preview","round":3,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":9526,"kind":"cut_start","text":"lance: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":9578,"kind":"cut_end","text":"lance: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":9723,"kind":"target_preview","round":3,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":9743,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker wrecker"}
+{"battle":3,"frame":9863,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker wrecker"}
+{"battle":3,"frame":9945,"hex":[8.0,3.0],"kind":"move_preview","round":3,"ship":"Wrath of Vesper"}
+{"battle":3,"frame":10172,"kind":"arrival","ship":"Garrison Warden-class frigate","side":"player"}
+{"battle":3,"frame":10225,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":4,"units":[["Edge of Winter","player",13,3,132],["Resolve of the Reach","player",16,1,85],["Wrath of Vesper","player",8,3,50],["Hullbreaker wrecker","enemy",14,2,52],["Hullbreaker raider","enemy",9,6,12],["Hullbreaker raider","enemy",15,2,34],["Garrison Warden-class frigate","player",7,0,50]]}
+{"battle":3,"frame":10229,"kind":"attack_move_preview","ship":"Hullbreaker raider"}
+{"battle":3,"frame":10469,"kind":"attack_move_preview","ship":"Hullbreaker raider"}
+{"battle":3,"frame":10739,"kind":"target_preview","round":4,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":10975,"kind":"target_preview","round":4,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":11069,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":5,"units":[["Edge of Winter","player",13,3,119],["Resolve of the Reach","player",16,1,85],["Wrath of Vesper","player",6,5,50],["Hullbreaker wrecker","enemy",15,3,52],["Hullbreaker raider","enemy",18,1,27],["Garrison Warden-class frigate","player",7,3,50]]}
+{"battle":3,"frame":11071,"hex":[10.0,6.0],"kind":"move_preview","round":5,"ship":"Wrath of Vesper"}
+{"battle":3,"frame":11301,"hex":[9.0,6.0],"kind":"move_preview","round":5,"ship":"Garrison Warden-class frigate"}
+{"battle":3,"frame":11515,"kind":"target_preview","round":5,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":11573,"kind":"next_ship","round":5}
+{"battle":3,"frame":11594,"kind":"target_preview","round":5,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":11614,"kind":"cut_start","text":"torp: Resolve of the Reach to Hullbreaker wrecker"}
+{"battle":3,"frame":11716,"kind":"cut_end","text":"torp: Resolve of the Reach to Hullbreaker wrecker"}
+{"battle":3,"frame":11747,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":6,"units":[["Edge of Winter","player",13,3,118],["Resolve of the Reach","player",16,1,68],["Wrath of Vesper","player",10,6,50],["Hullbreaker wrecker","enemy",15,2,33],["Hullbreaker raider","enemy",14,2,27],["Garrison Warden-class frigate","player",9,6,50]]}
+{"battle":3,"frame":11756,"kind":"target_preview","round":6,"ship":"Hullbreaker raider"}
+{"battle":3,"frame":11828,"kind":"attack_move_preview","ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":12131,"kind":"target_preview","round":6,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":12151,"kind":"cut_start","text":"volley: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":12220,"kind":"cut_end","text":"volley: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":12228,"kind":"next_ship","round":6}
+{"battle":3,"frame":12241,"hex":[13.0,2.0],"kind":"move_preview","round":6,"ship":"Resolve of the Reach"}
+{"battle":3,"frame":12354,"kind":"round","obj":{"escore":0,"score":0,"type":"rout"},"round":7,"units":[["Edge of Winter","player",13,3,118],["Resolve of the Reach","player",13,2,46],["Wrath of Vesper","player",10,6,50],["Hullbreaker wrecker","enemy",14,4,12],["Hullbreaker raider","enemy",14,2,24],["Garrison Warden-class frigate","player",11,6,50]]}
+{"battle":3,"frame":12356,"hex":[13.0,4.0],"kind":"move_preview","round":7,"ship":"Resolve of the Reach"}
+{"battle":3,"frame":12551,"kind":"target_preview","round":7,"ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":12720,"kind":"attack_move_preview","ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":12829,"kind":"next_ship","round":7}
+{"battle":3,"frame":12842,"kind":"attack_move_preview","ship":"Hullbreaker wrecker"}
+{"battle":3,"frame":13003,"kind":"cut_start","text":"volley: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":13085,"kind":"cut_end","text":"volley: Edge of Winter to Hullbreaker wrecker"}
+{"battle":3,"frame":13085,"kind":"cut_start","text":"kill: Hullbreaker wrecker"}
+{"battle":3,"frame":13161,"kind":"cut_end","text":"kill: Hullbreaker wrecker"}
+{"battle":3,"frame":13213,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":3,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Edge of Winter","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Resolve of the Reach","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Wrath of Vesper","side":"player"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Garrison Warden-class frigate","side":"player"}],"frame":13214,"kind":"end_card","result":"win","rounds":7}
+{"battle":3,"frame":13304,"kind":"battle_end"}
+{"battle":3,"drift":[],"frame":13304,"kind":"route_summary","planned":["0-0","1-0","2-0"]}

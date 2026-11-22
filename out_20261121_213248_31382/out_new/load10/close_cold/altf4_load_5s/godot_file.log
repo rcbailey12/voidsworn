@@ -1,0 +1,10 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 34 ms
+[sfx] 71 cues, 67 clip sets, loaded in 314 ms
+[load] battle scene ready in 1007 ms
+[main] quit (window) at 5844 ms
+[main] frames before the close, oldest first: 5 ms (battle start), 6 ms (battle start), 158 ms (battle start), 62 ms (battle start), 3 ms (battle start), 5 ms (battle board_build), 2 ms (battle board), 128 ms (battle world_build), 172 ms so far (this frame)
+[main] loading at the close: battle world_build, world bake 7c58ff509022
+[main] quit stages: scenes freed + 2 frames 73 ms, statics and fx drain 74 ms, engine exit from 5991 ms

@@ -1,0 +1,8 @@
+OPUS1434R_WAIT.bat waiting for OPUS1536A exit in opus1536a_wait.txt Sat 11/21/2026 20:05:56.29 
+HELD 21:11:50: OPUS1434R_WAIT stopped while only waiting for the 1373N strike craft publishes (Board Nov 22 03:11 UTC); restarts as OPUS1434R_WAIT2.bat after
+OPUS1434R_WAIT2.bat waiting for OPUS1536A exit in opus1536a_wait.txt Sat 11/21/2026 21:14:47.65 
+OPUS1434_LOAD17 start 21:32:48.21 
+OPUS1434_LOAD17 exit 1 at 22:15:50.22 
+run folder out_20261121_213248_31382
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sat 11/21/2026 22:15:50.61 

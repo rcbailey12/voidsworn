@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 30 ms
+[sfx] 71 cues, 67 clip sets, loaded in 285 ms
+[load] battle scene ready in 998 ms
+[world] baked b3194a05cc93f124b0146100958dc99cc6761a75473feb1ae0229924d4d26551 4096x2048 in 448 ms (worker; stages ms { "began": 4947, "device": 183, "spirv": 85, "pipeline": 1, "dispatch": 97, "worst_strip": 3, "readback": 37, "save": "deferred (a load is running)", "mips": 13 }; queued at 4946, worker from 4946, handed back at 5394 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.423, target 4.4; visual tuning (R191)
+[world] baked 74b899936f08798a964c0f52e09b9215f159e9e0a23ae37c47c2205fb2a51d00 4096x2048 in 652 ms (worker; stages ms { "began": 5396, "device": 199, "spirv": 6, "pipeline": 2, "dispatch": 18, "worst_strip": 2, "readback": 35, "save": "deferred (a load is running)", "mips": 13 }; queued at 5150, worker from 5395, handed back at 5802 ms)
+[main] quit (window) at 5805 ms
+[main] frames before the close, oldest first: 2 ms (battle board_build), 1 ms (battle board), 189 ms (battle world_build), 204 ms (battle world_build), 13 ms (battle world_build), 229 ms (battle world_build), 209 ms (battle world_build), 198 ms (battle world_build), 3 ms so far (this frame)
+[main] loading at the close: battle world_build, world bake cf6ed33160b6
+[world] loaded cf6ed33160b6675e7307f28b0e4543e9b21790f48742d411e70121b630d90596 1024x512 in 722 ms (worker; stages ms {  }; queued at 5151, worker from 5803, handed back at 5873 ms)
+[main] quit stages: scenes freed + 2 frames 69 ms, statics and fx drain 3869 ms, engine exit from 9743 ms
