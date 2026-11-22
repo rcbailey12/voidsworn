@@ -1,0 +1,14 @@
+[1547] job opus1547c pin d5ada28bcb930d40da4068f214d7e475af70c11e stage "PC, real hulls, pin d5ada28bcb930d40da4068f214d7e475af70c11e"
+PASS BRD-1547-r0_c110.jpg 230623 bytes
+PASS BRD-1547-A_c110.jpg 233647 bytes
+PASS BRD-1547-B_c110.jpg 234002 bytes
+PASS BRD-1547-C_c110.jpg 236814 bytes
+PASS BRD-1547-r0_c170.jpg 230935 bytes
+PASS BRD-1547-A_c170.jpg 231798 bytes
+PASS BRD-1547-B_c170.jpg 231454 bytes
+PASS BRD-1547-C_c170.jpg 233760 bytes
+PASS BRD-1547-B.mp4 1488604 bytes
+PASS BRD-1547-r0.mp4 1405955 bytes
+PASS moments
+PASS fx check
+[1547] RESULT PASS

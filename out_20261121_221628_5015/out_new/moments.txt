@@ -1,0 +1,60 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fc3828e3ee2e4fbf929650b144741d79\godot-profile-d9b1e915074e47f9a3eeeef344c4f7ed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[sfx] 71 cues, 67 clip sets, loaded in 339 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.487, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+PASS the battle scene reached the player's turn
+PASS test battle s1 has a player ship and an enemy ship
+INFO the player's flagship is x04
+[sfx] 71 cues, 67 clip sets, loaded in 99 ms
+-- ram (a one-hex charge, then the hit)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+PASS nothing changed the pace while ram played (0.250)
+PASS the ram plays volley(torp, weapon_id ram)
+PASS the ram's charge moved the ship (its drive was driven)
+PASS the hit lands after the charge (volley frame 81, last drive frame 81)
+PASS the ram's approved sound: boom at 0.8
+PASS the boom and the crumple land on the same frame
+PASS no placeholder pop
+PASS the ram keeps its 500 ms hold (128.3 game ms at pace 0.25, want 125 to 366)
+PASS the ram plays only its boom (["boom"])
+-- board
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+PASS nothing changed the pace while board played (0.250)
+PASS the boarding plays board(unit, target, result)
+PASS the boarding's approved sound: board_grapple, the boarder's variant (voidsworn)
+PASS the grapple and the breach start on the same frame
+PASS no placeholder pop
+PASS the boarding holds for the breach look's hold (402.0 game ms, want 400 to 429)
+PASS the boarding plays only its grapple (["board_grapple"])
+-- command (the player's: names no unit)
+PASS nothing changed the pace while command played (0.250)
+PASS the command pulses the player's flagship (["x04", "barrage"])
+PASS the command adds no sound of its own ([])
+PASS the command keeps its banner hold (131.4 game ms, want 130 to 166)
+CLOSE_ACTION_MOMENTS PASS (0 failures)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:925)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:834)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fc3828e3ee2e4fbf929650b144741d79\godot-profile-d9b1e915074e47f9a3eeeef344c4f7ed

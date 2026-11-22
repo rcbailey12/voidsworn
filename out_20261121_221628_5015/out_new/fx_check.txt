@@ -1,0 +1,36 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-266a50ddc0e141c0aeac388a2bfcc979\godot-profile-ac3f7594fead49168f67519f9aecacf3
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+-- ram
+[attach] hp_w missing on this hull; using the surface ray
+PASS a ram makes one volley call (1)
+PASS the ram volley is a -> torp -> b with weapon_id ram (["volley", "a", "torp", "b", "ram", 1])
+PASS the ram volley drew its impact (1)
+PASS no generic pop when the ram look played
+PASS the ram still takes its damage and recoil off the drawn hulls
+-- board
+[attach] hp_board missing on this hull; using the surface ray
+PASS a boarding makes one board call (1)
+PASS board(a, b, result) (["board", "a", "b", "fight", 3.2])
+PASS the breach played (3.20 s)
+PASS no generic pop when the breach played
+PASS the boarding lines end with the hold at pace 1.00 (1.60 s, hold 1.60 s)
+PASS the boarding lines end with the hold at pace 0.25 (0.40 s, hold 0.40 s)
+PASS look C's inside flashes end with the hold at pace 1.00 (1.77 s, hold 1.90 s)
+PASS look C's inside flashes end with the hold at pace 0.25 (0.45 s, hold 0.47 s)
+PASS look C's pops take a slowed fx clock's speed ([0.1225, 0.1225, 0.1225, 0.1225, 0.1225, 0.1225, 0.1225, 0.1225, 0.1225], want 9 at most 0.122)
+[attach] hp_board missing on this hull; using the surface ray
+PASS an r0 hatch regrown while look B is active keeps its own width ([1.0, 1.0], want [1, 1])
+PASS the generic pop stands in when the fx layer drew no breach
+-- command
+PASS the player's command pulses its flagship ([["command", "a", "vex"]])
+PASS the command banner still shows
+PASS an enemy boss's command pulses the boss ([["command", "b", "doom"]])
+PASS no pulse when the side has no living flagship
+[attach] battle a : skipped 0; gun hp 0 ray 1 centre 0 skip 0; board hp 0 ray 6 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0
+[attach] battle b : skipped 0; board hp 0 ray 2 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0
+CLOSE_ACTION_FX PASS (0 failures)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-266a50ddc0e141c0aeac388a2bfcc979\godot-profile-ac3f7594fead49168f67519f9aecacf3

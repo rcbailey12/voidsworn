@@ -1,0 +1,6 @@
+OPUS1547C_WAIT.bat waiting for OPUS1434_LOAD17 exit in opus1434r_wait.txt Sat 11/21/2026 21:47:27.60 
+OPUS1547_SHOTS3 start 22:16:27.16 
+OPUS1547_SHOTS3 exit 0 at 22:44:32.11 
+run folder out_20261121_221628_5015
+result: done PASS
+all done Sat 11/21/2026 22:44:32.56 
