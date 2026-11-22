@@ -67,6 +67,9 @@ static func pick_arch(fx, s) -> int:
 
 # Called by fx_death._death_inner on a breaking (not hulk, not Chorus) death, after its timeline is set.
 static func on_death(fx, s, cause: String, T: float, cut_at: float) -> void:
+	if _death().melting(s):
+		note(s, "melt")   # R398: an acid melt keeps its own clean look: no faction tell, no archetype, no smoke or vapour
+		return
 	match cause:
 		"flay": _flay(fx, s, T, cut_at)
 		"ram": _ram(fx, s, T)
@@ -242,6 +245,10 @@ static func _corridors(fx, s, ref: WeakRef) -> void:
 			continue
 		var lp: Vector3 = (c["p"] as Vector3) + (c["n"] as Vector3) * h.L * 0.004
 		var last := 0.6 + 1.4 * float(i) / 5.0
+		if fx.reduce_flashing:
+			# Reduced Flashing (Neon on PR 1666): no 5 to 11 Hz stutter; each light holds, then fades once over 1.5 s
+			fx.spr(node.global_transform * lp, fx.now, last + 1.5, col, 0.7, h.L * 0.006, h.L * 0.006, 18)
+			continue
 		var t := 0.0
 		while t < last:
 			var on: float = 0.05 + fx.rng.randf() * 0.12
@@ -260,12 +267,17 @@ static func _beacon(fx, s, ref: WeakRef) -> void:
 	var h = s.hull
 	var top: Dictionary = h.ray(h.c + Vector3.UP * (h.H + h.L * 0.2), Vector3.DOWN)
 	var p: Vector3 = node.global_transform * (top.get("p", h.c) as Vector3)
-	fx.spr(p, fx.now, 0.22, Color(1.0, 0.25, 0.12), 1.4, h.L * 0.008, h.L * 0.012, 18)
+	if fx.reduce_flashing:
+		fx.spr(p, fx.now, 0.9, Color(1.0, 0.25, 0.12), 0.6, h.L * 0.008, h.L * 0.010, 18)   # a slow soft pulse
+	else:
+		fx.spr(p, fx.now, 0.22, Color(1.0, 0.25, 0.12), 1.4, h.L * 0.008, h.L * 0.012, 18)
 	note(s, "beacon")
 
 
 # A strike craft's loss: a 0.35 s smoky corkscrew from where it was hit and two small faction flecks.
 static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
+	if _death().melting(s):
+		return   # R398: no smoke on an acid melt
 	note(s, "corkscrew")
 	var L: float = maxf(s.hull.L, 0.5)
 	var fwd: Vector3 = frame.basis.x.normalized()
@@ -286,6 +298,8 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 
 # Called by fx_death._break_up_inner once the wreck exists. center: where the hull broke (world).
 static func on_break(fx, s, wreck: Dictionary, cause: String, center: Vector3, xf: Transform3D) -> void:
+	if _death().melting(s):
+		return   # R398, as on_death
 	var nodes: Array = wreck.get("nodes", [])
 	var L: float = s.hull.L
 	var T: float = fx.now
@@ -295,7 +309,7 @@ static func on_break(fx, s, wreck: Dictionary, cause: String, center: Vector3, x
 	if s.death_big:
 		match s.faction:
 			"voidsworn": _embers(fx, s, nodes, T)
-			"corsair": _tether(fx, s, nodes, T)
+			"corsair": _tether(fx, s, wreck, nodes, T)
 			"ithar": _shafts(fx, s, center, T)
 			"deathless": _implode(fx, s, center, T)
 			"chorus": _twitch(fx, s, nodes, T)
@@ -308,6 +322,20 @@ static func on_break(fx, s, wreck: Dictionary, cause: String, center: Vector3, x
 			fx.light(center, T, 0.12, 3.5, _col(s, "light", Color(1.0, 0.9, 0.7)), 1)
 		ARCH_POP:
 			_mini_pop(fx, s, center, T)
+
+
+# ARCH_ROLL's end (fx_death._break_up_inner skips the core flash, the faction pop and the smoke body): a small spark
+# burst and a short light, the hull's own spark colour
+static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
+	var L: float = s.hull.L
+	var col: Color = _col(s, "spark", Color(1.0, 0.75, 0.4))
+	for k in 10:
+		fx.stk(p, fx.now, 0.4, col, 3.0, 0.04, maxf(L * 0.004, 0.03), 1, inherited * 0.5 + fx.rdir() * L * 0.6, 1.2)
+	# a short counted flash (the staging rule's core beat, small), refused in calm mode like every other
+	if fx.flash_at(p, fx.now, L * 0.45, 40.0, 0.10):
+		fx.light(p, fx.now, 0.10, 2.5, col, 1)
+		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, 19)
+	note(s, "roll_end")
 
 
 static func spawn_shreds(fx, s, p: Vector3, vel: Vector3, n: int) -> void:
@@ -342,14 +370,14 @@ static func _blackout(s, at: float) -> void:
 
 # Hullbreakers: the two biggest pieces tug on two glowing cables for 0.45 s, the cables snap with a jolt of sparks, scrap
 # canisters scatter, and two uneven cook-offs go off later.
-static func _tether(fx, s, nodes: Array, T: float) -> void:
+static func _tether(fx, s, wreck: Dictionary, nodes: Array, T: float) -> void:
 	note(s, "tether")
 	if nodes.size() >= 2:
 		var ra := weakref(nodes[0])
 		var rb := weakref(nodes[1])
 		var col: Color = _col(s, "rim", Color(1.0, 0.3, 0.08))
 		for j in 9:
-			fx.later(T + j * 0.05, _cables.bind(fx, s, ra, rb, col, j == 8))
+			fx.later(T + j * 0.05, _cables.bind(fx, s, wreck, ra, rb, col, j == 8))
 	spawn_shreds(fx, s, s.to_world(s.hull.c), Vector3.ZERO, 3)
 	for t in [2.4 + fx.rng.randf() * 0.6, 4.0 + fx.rng.randf() * 1.2]:
 		fx.later(T + t, func l_cookoff() -> void:
@@ -362,11 +390,14 @@ static func _tether(fx, s, nodes: Array, T: float) -> void:
 			note(s, "cookoff"))
 
 
-static func _cables(fx, s, ra: WeakRef, rb: WeakRef, col: Color, snap: bool) -> void:
+static func _cables(fx, s, wreck: Dictionary, ra: WeakRef, rb: WeakRef, col: Color, snap: bool) -> void:
 	var a := ra.get_ref() as Node3D
 	var b := rb.get_ref() as Node3D
 	if not is_instance_valid(a) or not is_instance_valid(b):
 		return
+	# Neon on PR 1666: the cables hold the two pieces back (their parting speed damped to 35%), and the snap lets them go
+	_hold(wreck, a, not snap)
+	_hold(wreck, b, not snap)
 	var L: float = s.hull.L
 	for side in [-1.0, 1.0]:
 		var off := Vector3(0, L * 0.02, side * s.hull.W * 0.3)
@@ -383,6 +414,26 @@ static func _cables(fx, s, ra: WeakRef, rb: WeakRef, col: Color, snap: bool) -> 
 			fx.rib(pa, d.normalized(), d.length(), fx.now, 0.07, col, 1.2, L * 0.002 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), 0)
 	if snap:
 		note(s, "tether_snap")
+
+
+# A tethered piece's parting speed: held at 35% of what it had (kept in meta "tether_v"), then given back on the snap.
+# Works on a physics piece (RigidBody3D) and on a kinematic one (its wreck "fires" entry).
+static func _hold(wreck: Dictionary, nd: Node3D, held: bool) -> void:
+	var rb := nd as RigidBody3D
+	var entry: Dictionary = {}
+	for f in wreck.get("fires", []):
+		if f.get("node") == nd and f.has("vel"):
+			entry = f
+			break
+	var v: Vector3 = rb.linear_velocity if rb != null else (entry.get("vel", Vector3.ZERO) as Vector3)
+	if not nd.has_meta("tether_v"):
+		if not held: return
+		nd.set_meta("tether_v", v)
+	var free_v: Vector3 = nd.get_meta("tether_v")
+	var out: Vector3 = free_v * 0.35 if held else free_v
+	if not held: nd.remove_meta("tether_v")
+	if rb != null: rb.linear_velocity = out
+	elif not entry.is_empty(): entry["vel"] = out
 
 
 # Glasswrights: soft prismatic shafts of light out of the split, no fire and no smoke.
@@ -422,7 +473,12 @@ static func _twitch(fx, s, nodes: Array, T: float) -> void:
 		fx.later(T + 1.2 + j * 1.3 + fx.rng.randf() * 0.4, func l_twitch() -> void:
 			var nd := ref.get_ref() as Node3D
 			if not is_instance_valid(nd): return
-			nd.rotate(axis, 0.07)
+			# eased over about 0.25 s (Neon on PR 1666): a slow organic spasm, never a one-frame snap
+			for k in 8:
+				var w := smoothstep(0.0, 1.0, float(k + 1) / 8.0) - smoothstep(0.0, 1.0, float(k) / 8.0)
+				fx.later(fx.now + k * 0.032, func l_twitch_step() -> void:
+					var nd2 := ref.get_ref() as Node3D
+					if is_instance_valid(nd2): nd2.rotate(axis, 0.07 * w))
 			fx.spr(nd.global_position, fx.now, 1.6, s.fac.damage_glow * Color(0.4, 0.5, 0.3), 0.3, s.hull.L * 0.02, s.hull.L * 0.1, 20, Vector3.UP * s.hull.L * 0.04, 0.6))
 
 

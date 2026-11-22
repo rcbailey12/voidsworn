@@ -2384,13 +2384,15 @@ static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
 # capital deck by deck from the top), death_steps holds (bands, delay per band, fade).
 static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMaterial:
 	var code: String = mat.shader.code
-	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);" + (SH.STRAIN_FN if strain else ""))
+	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);\nuniform float death_hold = 0.0;" + (SH.STRAIN_FN if strain else ""))
 	if strain:
 		# Issue 1077 (prototype): the plating along the break lines bulges as the hull strains (death_age is the shader's
 		# clock here, the same instant as the tear overlay's scene_t); fx_hull_p stays the unmoved point for the wounds.
 		code = HULL._inject(code, "vertex", "", "\nVERTEX += inverse(mat3(fx_hull_frame)) * fx_strain_offset(fx_hull_p, normalize(mat3(fx_hull_frame) * NORMAL), death_age);\n")
 	var band := "floor(clamp((dot(fx_hull_p, death_axis) - death_span.x) / death_span.y, 0.0, 0.999) * death_steps.x) * death_steps.y"
-	code = code.replace("clamp(fx_power, 0.0, 1.0)", "(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age))")
+	# issue 1586 (Neon on PR 1666): death_hold hands the lights to fx_power (the Navy blackout) while death_age keeps
+	# running the plating strain
+	code = code.replace("clamp(fx_power, 0.0, 1.0)", "mix(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age), clamp(fx_power, 0.0, 1.0), death_hold)")
 	mat.shader = HULL.shared_shader(code, "death power down " + str(code.hash()))
 	return mat
 
@@ -2552,7 +2554,8 @@ static func _update_dying(fx, s) -> void:
 		if black_at >= 0.0:
 			var lit: bool = fx.now < black_at
 			(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 if lit else 0.0)
-			(mats[i] as ShaderMaterial).set_shader_parameter("death_age", 0.0 if lit else 99.0)
+			(mats[i] as ShaderMaterial).set_shader_parameter("death_hold", 1.0)
+			(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age)
 			continue
 		(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 - smoothstep(delay, delay + 0.18, age) if s.death_big else 0.0)
 		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age if s.death_big else 1.0)
@@ -3417,6 +3420,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	_hide_ship(s)
 	var R: float = h.L * 0.16
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	if int(s.get_meta("death_arch", -1)) == BEATS.ARCH_TORCH and s.has_meta("death_start"):
+		# issue 1586 (Neon on PR 1666): the torch's pieces keep the spiral's forward speed (the push's rate), capped
+		var ta: float = maxf(fx.now - float(s.get_meta("death_start")), 0.0)
+		var rot_t := Basis.from_euler(Vector3(ta * 0.4, ta * 2.4, ta * 0.3))
+		inherited += (s.root.global_basis * (rot_t * Vector3(1, 0, 0) * h.L * 1.8 * ta)).limit_length(h.L * 1.2)
 	# issue 1077 (prototype): the strained hull's wreck stays grouped where it broke
 	var story: bool = fx.death_story and s.death_big and not organic
 	# Ryan, Nov 21 2026 (in game): frigates and destroyers still broke apart wildly and their pieces spun off very far.
@@ -3622,6 +3630,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	if not wreck["nodes"].is_empty():
 		var lip: Node3D = wreck["nodes"][0]
 		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
+	if int(s.get_meta("death_arch", -1)) == BEATS.ARCH_ROLL:
+		# issue 1586 (Neon on PR 1666): the roll dies without the big fireball: a small spark burst off the vent, no smoke
+		BEATS.roll_end(fx, s, flash_site, inherited)
+		fx.resolve_death_core(s, true)
+		if pieces.is_empty():
+			spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0, s.id)
+		return
 	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
 	if str(dstyle(s).get("style", "")) == "shatter": _glitter(fx, s, flash_site, h.L * 0.6)
 	if not dstyle(s).is_empty(): _fac_pop(fx, s, flash_site, h.L)

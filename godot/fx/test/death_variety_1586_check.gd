@@ -49,6 +49,7 @@ func _run() -> void:
 	check(res["hegemony"]["lit_before"] and res["hegemony"]["dark_after"], "hegemony: every light on through the tell, all off on the split frame (%s, %s)" % [res["hegemony"]["lit_before"], res["hegemony"]["dark_after"]])
 	check(_has(res["corsair"]["beats"], "tether") and _has(res["corsair"]["beats"], "tether_snap"), "corsair: the tether holds, then snaps")
 	check(_count(res["corsair"]["beats"], "cookoff") == 2, "corsair: two late cook-offs (%d)" % _count(res["corsair"]["beats"], "cookoff"))
+	check(res["hegemony"]["strain_runs"], "hegemony: the plating strain keeps its clock through the blackout tell (Neon on PR 1666)")
 	check(_has(res["ithar"]["beats"], "web") and _has(res["ithar"]["beats"], "shafts"), "ithar: fracture web in the tell and light shafts at the split")
 	check(_has(res["deathless"]["beats"], "implode"), "deathless: the core snaps inward")
 	check(_count(res["chorus"]["beats"], "twitch") == 1, "chorus: post-break twitches")
@@ -74,6 +75,23 @@ func _run() -> void:
 	var bd := await _kill("hegemony", "Cruiser", 1.0, "board", 4.0)
 	check(bd["hulk"] and _has(bd["beats"], "board") and _count(bd["beats"], "airlock") >= 2, "board: a dark hulk venting through its airlocks (%d)" % _count(bd["beats"], "airlock"))
 	check(not _has(bd["beats"], "blackout"), "board: no breaking blast beats")
+	# acid melt (R398, Neon on PR 1666): no faction beat, archetype, smoke or vapour on top of the melt
+	for fac in ["corsair", "voidsworn", "hegemony", "ithar"]:
+		var ml := await _kill(fac, "Cruiser", 1.0, "melt", 12.0)
+		check(ml["beats"] == ["melt"], "melt %s: only the melt's own look (%s)" % [fac, str(ml["beats"])])
+		check(int(ml["smoke"]) == 0, "melt %s: no smoke or vapour sprites from the beats (%d)" % [fac, int(ml["smoke"])])
+	var ms := await _kill("corsair", "Destroyer", 0.6, "melt", 2.0, false, Vector3.INF, "m1")
+	check(ms["beats"] == ["melt"], "melt small: no archetype (%s)" % str(ms["beats"]))
+	# Reduced Flashing: a burnout's corridor lights hold and fade once, no stutter
+	var dr := await _kill("voidsworn", "Cruiser", 1.0, "dark", 3.0, false, Vector3.INF, "k", false, true)
+	check(_has(dr["beats"], "corridors") and int(dr["corridor_sprites"]) <= 6 + _count(dr["beats"], "beacon"), "dark, Reduced Flashing: one steady light per corridor point (%d glows, %d beacon pulses)" % [int(dr["corridor_sprites"]), _count(dr["beats"], "beacon")])
+	# the roll dies without the big fireball: its own spark end, no smoke body
+	var rl := await _kill("corsair", "Destroyer", 0.6, "blast", 2.0, false, Vector3.INF, "r1", false, false, 2)
+	check(_has(rl["beats"], "arch_roll") and _has(rl["beats"], "roll_end"), "roll: the small spark end (%s)" % str(rl["beats"]))
+	check(int(rl["smoke"]) <= 5, "roll: no smoke body or fireball (%d smoke sprites, the five flank vents only)" % int(rl["smoke"]))
+	# the torch keeps its exhaust trail through the flare
+	var tc := await _kill("hegemony", "Destroyer", 0.6, "blast", 0.5, false, Vector3.INF, "t1", false, false, 0)
+	check(_has(tc["beats"], "arch_torch") and int(tc["trail_pts"]) >= 3, "torch: the drive trail keeps drawing through the flare (%d new points after the kill)" % int(tc["trail_pts"]))
 	# 3. small hulls
 	var seen := {}
 	var fx0 = FX.new()
@@ -130,7 +148,7 @@ class _Probe:
 		id = i
 
 
-func _kill(fac: String, cls: String, size: float, cause: String, secs: float, shot := false, well := Vector3.INF, sid := "k", wing := false) -> Dictionary:
+func _kill(fac: String, cls: String, size: float, cause: String, secs: float, shot := false, well := Vector3.INF, sid := "k", wing := false, calm := false, arch := -1) -> Dictionary:
 	var world := Node3D.new()
 	root.add_child(world)
 	var cam := Camera3D.new()
@@ -150,11 +168,13 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
-	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
+	fx.setup({"quality": "high", "camera": cam, "shake": 0.0, "reduce_flashing": calm})
 	fx.dstate["physics_on"] = true
+	fx.spr_kinds = {}
 	fx.well = well
 	fx.add_ship(sid, holder, {"faction": fac, "cls": cls, "size": size, "squadron": wing})
 	var s = fx.ship(sid)
+	if arch >= 0: s.set_meta("death_arch_force", arch)
 	var t0 := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t0 < 60000 and not wing:
 		fx.step(1.0 / 60.0)
@@ -165,7 +185,8 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	var rib0: int = fx.pools["rib"].emitted
 	fx.death(sid, cause)
 	var T: float = fx.now
-	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false}
+	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
+	var spr0 := _kinds(fx)
 	var split_t := T + (float(s.get_meta("death_timeline").cut) if s.has_meta("death_timeline") else 0.72)
 	for i in int(secs * 60.0):
 		fx.step(1.0 / 60.0)
@@ -178,7 +199,18 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 				var v := float(pw) if pw != null else 1.0
 				if fx.now < at - 0.02 and v < 1.0: res["lit_before"] = false
 				if fx.now > at + 0.02 and v == 0.0: res["dark_after"] = true
+				var da = (m as ShaderMaterial).get_shader_parameter("death_age")
+				if fx.now < at - 0.1 and da != null and float(da) > 0.3: res["strain_runs"] = true
+		if s.has_method("_update_trails") and "_trails" in s:
+			for tr in s._trails:
+				var fresh := 0
+				for hp in tr["hist"]:
+					if float(hp[1]) > T + float(s._trail_extra) + 0.01: fresh += 1
+				res["trail_pts"] = maxi(int(res["trail_pts"]), fresh)
 	res["beats"] = BEATS.beats(s)
+	var spr1 := _kinds(fx)
+	res["smoke"] = int(spr1.get(3, 0)) - int(spr0.get(3, 0)) + int(spr1.get(7, 0)) - int(spr0.get(7, 0))
+	res["corridor_sprites"] = int(spr1.get(18, 0)) - int(spr0.get(18, 0))
 	res["spin"] = s.get_meta("death_spin", 0.0)
 	res["hulk"] = bool(s.get_meta("death_hulk", false))
 	var jets := 0
@@ -190,3 +222,8 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	world.queue_free()
 	await process_frame
 	return res
+
+
+# Sprites emitted so far, by kind (fx.spr_kinds, on for this check).
+func _kinds(fx) -> Dictionary:
+	return (fx.spr_kinds as Dictionary).duplicate()

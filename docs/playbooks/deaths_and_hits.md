@@ -224,6 +224,10 @@ out over about 2 s, an emergency beacon blinks and the hulk drifts with a slow p
 one of four ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
 burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s smoky corkscrew and two
 faction flecks. A big wreck gives 2 or 3 quiet ember or vent pops in the 10 s after it breaks.
+Limits (Neon's audit on PR 1666): an acid melt adds none of these beats (R398: no faction tell, archetype, smoke or vapour);
+the Navy blackout drives the lights only, so the plating strain keeps its clock; the rolling burnout ends in a small spark
+burst, never the core fireball or a smoke body; under Reduced Flashing the corridor lights hold and fade once and the beacon
+pulses slowly; a torch death keeps its drive trail through the flare and its pieces keep the spiral's speed (capped).
 
 ## The hits, upgraded
 

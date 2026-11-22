@@ -718,8 +718,13 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 
 
 # The sprite itself, after the flash decision. Pop and shield crackle book their own pictures.
+var spr_kinds = null   # checks only (issue 1586): a Dictionary here counts every sprite emitted, by kind
+
+
 func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
+	if spr_kinds != null:
+		spr_kinds[kind] = int(spr_kinds.get(kind, 0)) + 1
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
 		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
