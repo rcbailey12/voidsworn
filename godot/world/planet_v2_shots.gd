@@ -5,7 +5,8 @@ extends SceneTree
 #   board_<look>_close: the same planet from 70 units, low over its lit limb.
 #   backdrop_<i>: the eight backdrop planets (world_sky.gd PLANETS) as world.gd draws them, side lit.
 #   moon_<i>: the moon looks as world.gd draws them.
-# Every frame prints its body's lit disc mean (linear); an after run fails if any leaves R420's band 2, 0.03 to 0.25.
+# Every frame prints its body's day-side mean (linear, a geometric sphere mask, dark pixels included); an after run fails
+# if any leaves R420's band 2, 0.03 to 0.25, or the mask catches under 200 samples.
 # Runs on both sides of the change: on a checkout without world_planet.gd install_board it draws the old board path
 # (the campaign map's icon shader), so one script makes the before and the after.
 # godot --path godot --resolution 1280x720 --script res://world/planet_v2_shots.gd -- --out DIR --tag after
@@ -29,6 +30,9 @@ const OLD_MOONS := [
 const SUN_DIR := Vector3(0.4, 0.6, 0.7)
 var out := "user://planet_v2_shots"
 var band_misses: Array = []   # R420 band 2 (RULEBOOK 3.14): each body's lit disc mean, linear, 0.03 to 0.25
+var body_c := Vector3.ZERO    # the body in the frame: centre, radius, toward its sun (for the band 2 mask)
+var body_r := 1.0
+var body_sun := Vector3.UP
 var tag := "now"
 var only := ""
 var started := 0
@@ -53,10 +57,11 @@ func _save(name: String) -> void:
 	await _frames(3)
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
-	var lum := _disc_mean(img)
-	print("planet v2 shots: band2 %s lit disc mean %.3f linear" % [name, lum])
-	if lum < 0.03 or lum > 0.25:
-		band_misses.append("%s %.3f" % [name, lum])
+	var m := _disc_mean(img)
+	var lum: float = m[0]
+	print("planet v2 shots: band2 %s lit disc mean %.3f linear over %d day-side samples" % [name, lum, int(m[1])])
+	if int(m[1]) < 200 or lum < 0.03 or lum > 0.25:
+		band_misses.append("%s %.3f (%d samples)" % [name, lum, int(m[1])])
 	var path := out.path_join("%s_%s.png" % [name, tag])
 	if preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		printerr("planet v2 shots: FAILED to save ", path)
@@ -64,19 +69,34 @@ func _save(name: String) -> void:
 		return
 	print("planet v2 shots: wrote ", path)
 
-# mean linear luminance of the pixels the body lights (above a dark floor), over the frame above the stamp
-func _disc_mean(img: Image) -> float:
+# Band 2 (Artoo, PR 1776): the mask is geometric, never chosen by brightness. Each sample pixel's camera ray is hit
+# against the body's sphere; a hit on the day side (normal toward the sun past 0.15) counts however dark it renders, so
+# black terrain pulls the mean down and air, rings and space never enter. Returns [mean, samples].
+func _disc_mean(img: Image) -> Array:
 	var sum := 0.0
 	var n := 0
-	var h := int(img.get_height() * 0.8)
-	for y in range(0, h, 4):
-		for x in range(0, img.get_width(), 4):
+	var h := int(img.get_height() * 0.8)   # above the picture stamp
+	var scale := Vector2(get_root().get_visible_rect().size) / Vector2(img.get_size())
+	for y in range(0, h, 3):
+		for x in range(0, img.get_width(), 3):
+			var sp := Vector2(x, y) * scale
+			var o := cam.project_ray_origin(sp)
+			var d := cam.project_ray_normal(sp)
+			var oc := o - body_c
+			var bq := oc.dot(d)
+			var disc := bq * bq - (oc.length_squared() - body_r * body_r)
+			if disc < 0.0:
+				continue
+			var t := -bq - sqrt(disc)
+			if t <= 0.0:
+				continue
+			var nrm := (o + d * t - body_c).normalized()
+			if nrm.dot(body_sun) < 0.15:
+				continue
 			var c := img.get_pixel(x, y).srgb_to_linear()
-			var l := 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
-			if l > 0.004:
-				sum += l
-				n += 1
-	return sum / maxf(1.0, float(n))
+			sum += 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			n += 1
+	return [sum / maxf(1.0, float(n)), n]
 
 
 func _clear() -> void:
@@ -165,6 +185,9 @@ func _board(k: int, new_board: bool) -> void:
 	shell.position = mi.position
 	stage.add_child(shell)
 	var sun := mi.position + SUN_DIR.normalized() * 100000.0
+	body_c = mi.position
+	body_r = rad
+	body_sun = SUN_DIR.normalized()
 	var seed_v := 7 + k
 	if new_board:
 		var pl_script: GDScript = load("res://world/world_planet.gd")
@@ -223,6 +246,9 @@ func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin
 	sh.code = PL.SPHERE
 	m.shader = sh
 	var sun := Vector3(0.88, 0.33, 0.34).normalized()
+	body_c = Vector3.ZERO
+	body_r = 1.0
+	body_sun = sun
 	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
 	m.set_shader_parameter("sun", sun)
 	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)

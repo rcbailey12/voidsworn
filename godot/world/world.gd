@@ -595,7 +595,7 @@ func system(with_planet: bool) -> void:
 # unless the sky has more moons than looks.
 const MOON_LOOKS := [
 	{"kind": 4, "a": Vector3(0.56, 0.54, 0.5), "b": Vector3(0.17, 0.16, 0.15), "c": Vector3(0.8, 0.78, 0.74)},
-	{"kind": 4, "a": Vector3(0.58, 0.4, 0.28), "b": Vector3(0.22, 0.13, 0.09), "c": Vector3(0.8, 0.62, 0.46)},
+	{"kind": 4, "a": Vector3(0.64, 0.45, 0.32), "b": Vector3(0.26, 0.16, 0.11), "c": Vector3(0.84, 0.66, 0.5)},
 	{"kind": 4, "a": Vector3(0.46, 0.45, 0.43), "b": Vector3(0.16, 0.155, 0.15), "c": Vector3(0.74, 0.72, 0.69)},
 	{"kind": 5, "a": Vector3(0.84, 0.87, 0.9), "b": Vector3(0.44, 0.3, 0.2), "c": Vector3(0.5, 0.64, 0.8)},
 ]

@@ -46,7 +46,8 @@ const PLANETS := [
 	# issue 1765: the old purple-lavender giant, re-paletted to dusty slate, umber-bronze belts and cream zones (RULEBOOK 10.9)
 	{"kind": 0, "a": Vector3(0.56, 0.54, 0.5), "b": Vector3(0.3, 0.22, 0.15), "c": Vector3(0.88, 0.83, 0.71), "atmo": Vector3(0.72, 0.72, 0.7), "rings": false, "moons": 2},
 	{"kind": 2, "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.025, 0.07, 0.15), "c": Vector3(0.62, 0.55, 0.42), "atmo": Vector3(0.38, 0.62, 1.0), "rings": false, "moons": 1},
-	{"kind": 3, "a": Vector3(0.62, 0.32, 0.17), "b": Vector3(0.24, 0.1, 0.06), "c": Vector3(0.85, 0.6, 0.4), "atmo": Vector3(1.0, 0.55, 0.32), "rings": false, "moons": 2},
+	# issue 1765: lifted into R420's band 2 (it sat at 0.027 on the day side)
+	{"kind": 3, "a": Vector3(0.72, 0.41, 0.23), "b": Vector3(0.32, 0.16, 0.1), "c": Vector3(0.88, 0.66, 0.46), "atmo": Vector3(1.0, 0.55, 0.32), "rings": false, "moons": 2},
 	{"kind": 4, "a": Vector3(0.54, 0.51, 0.47), "b": Vector3(0.15, 0.14, 0.13), "c": Vector3(0.78, 0.75, 0.7), "atmo": Vector3(0.0, 0.0, 0.0), "rings": false, "moons": 0},
 	{"kind": 5, "a": Vector3(0.86, 0.89, 0.92), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.55, 0.75, 1.0), "rings": false, "moons": 1},
 	{"kind": 0, "a": Vector3(0.38, 0.66, 0.62), "b": Vector3(0.12, 0.3, 0.32), "c": Vector3(0.82, 0.95, 0.9), "atmo": Vector3(0.4, 0.95, 0.85), "rings": true, "moons": 2},
