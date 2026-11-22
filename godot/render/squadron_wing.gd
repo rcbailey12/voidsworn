@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # Local flight stays around the wing's anchor. Only ShipView moves the rules unit.
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
@@ -80,8 +81,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	length = size
 	phase = seed_value
 	trail_mat = ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = TRAIL
+	var shader: Shader = SKEEP.of(TRAIL)   # issue 1434: one compiled shader per code
 	trail_mat.shader = shader
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like

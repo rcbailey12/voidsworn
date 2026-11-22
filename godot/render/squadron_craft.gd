@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Small craft built in the game frame: bow +X, up +Y. Parts are merged by
 # material, so a whole detailed craft is one mesh with five surfaces.
 const LOOK := preload("res://fx/faction_look.gd")
@@ -115,8 +116,7 @@ func build(faction: String, kind: String) -> Node3D:
 			m.roughness = 0.2
 		if i < 3:
 			var skin := ShaderMaterial.new()
-			var shader := Shader.new()
-			shader.code = SKIN
+			var shader: Shader = SKEEP.of(SKIN)   # issue 1434: one compiled shader per code
 			skin.shader = shader
 			skin.set_shader_parameter("paint", colors[i])
 			skin.set_shader_parameter("organic", 1.0 if faction == "chorus" else 0.0)

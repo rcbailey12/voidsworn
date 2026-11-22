@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -284,8 +285,7 @@ func build(rules, slice := false) -> void:
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	var osh := Shader.new()
-	osh.code = OUTLINE_SHADER
+	var osh: Shader = SKEEP.of(OUTLINE_SHADER)   # issue 1434: one compiled shader per code
 	om.shader = osh
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -296,7 +296,27 @@ func build(rules, slice := false) -> void:
 	add_child(props)
 	t = _step("grid", t)
 	if slice:
-		await get_tree().process_frame
+		# issue 1434 (LOAD14: terrain 0.9 s in one frame): the rock, hulk and station files load on worker threads first
+		var held := []
+		for p in _terrain_files():
+			if ResourceLoader.load_threaded_request(p) == OK:
+				held.append(p)
+		t = _step("terrain_request", t)
+		var w0 := Time.get_ticks_msec()
+		while Time.get_ticks_msec() - w0 < 15000:
+			await get_tree().process_frame
+			var busy := false
+			for p in held:
+				if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+					busy = true
+					break
+			if not busy:
+				break
+		_terrain_held.clear()
+		for p in held:
+			if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+				_terrain_held.append(ResourceLoader.load_threaded_get(p))   # kept until the next build, so load() finds it cached
+		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
 		t = Time.get_ticks_usec()
 	_terrain()
 	t = _step("terrain", t)
@@ -321,6 +341,45 @@ func build(rules, slice := false) -> void:
 		t = Time.get_ticks_usec()
 	apply_look(false)
 	_step("look", t)
+
+
+var _terrain_held := []
+
+
+# every file _terrain may load for this view: the rock set, the hulks' painted hulls and the station
+func _terrain_files() -> Array:
+	var out := []
+	var man = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json")) if FileAccess.file_exists("res://gen/manifest.json") else null
+	if not (man is Dictionary):
+		return out
+	var T: Dictionary = VW.get("terrain", {})
+	var kinds := {}
+	for k in T:
+		kinds[str(T[k])] = true
+	var set_name := "RST"
+	var biome = WI.get("biome")
+	if biome is Dictionary and HT.ROCK_SET.has(biome.get("rock", "")):
+		set_name = HT.ROCK_SET[biome["rock"]]
+	if man.has("rocks"):
+		for code in man["rocks"]:
+			if man["rocks"][code]["set"] == set_name:
+				out.append(str(man["rocks"][code]["res"]))
+	var ships: Dictionary = man.get("ships", {}) if man.get("ships") is Dictionary else {}
+	if kinds.has("hulk"):
+		for code in ["H8_23", "V15_37", "C14s_23", "D20_23"]:
+			if ships.has(code):
+				out.append(str(ships[code]["res"]))
+	if kinds.has("station"):
+		for p in ["res://gen/ships/station_T2.scn", "res://gen/ships/station_T2_debris.scn"]:
+			if ResourceLoader.exists(p):
+				out.append(p)
+		if ships.has("O1_37"):
+			out.append(str(ships["O1_37"]["res"]))
+	var keep := []
+	for p in out:
+		if ResourceLoader.exists(p) and not keep.has(p):
+			keep.append(p)
+	return keep
 
 
 func _step(name: String, t0: int) -> int:
@@ -348,8 +407,7 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 		mm.set_instance_transform(i, Transform3D(Basis(), hex_world(cells[i].q, cells[i].r, -0.4)))
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
-	var sh := Shader.new()
-	sh.code = code
+	var sh: Shader = SKEEP.of(code)   # issue 1434: one compiled shader per code
 	var m := ShaderMaterial.new()
 	m.shader = sh
 	mi.material_override = m
@@ -1043,8 +1101,7 @@ func _planet() -> void:
 	var look: Array = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
 	var sun := mi.position + sun_dir.normalized() * 100000.0
 	var pm := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = MS.PLANET
+	var sh: Shader = SKEEP.of(MS.PLANET)   # issue 1434: one compiled shader per code
 	pm.shader = sh
 	pm.set_shader_parameter("kind", float(look[0]))
 	pm.set_shader_parameter("a", look[1])
@@ -1062,8 +1119,7 @@ func _planet() -> void:
 	ss.rings = 48
 	shell.mesh = ss
 	var am := ShaderMaterial.new()
-	var ash := Shader.new()
-	ash.code = MS.ATMO
+	var ash: Shader = SKEEP.of(MS.ATMO)   # issue 1434: one compiled shader per code
 	am.shader = ash
 	am.set_shader_parameter("atmo", look[3])
 	am.set_shader_parameter("sun_pos", sun)

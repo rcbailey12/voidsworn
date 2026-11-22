@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Where effects sit on a hull, found from the hull's own triangles (in the ship root's frame: bow +X, up +Y, port +Z).
 #
 # The triangles go into a TriangleMesh (Godot's native BVH), so a ray against the real hull costs microseconds:
@@ -231,10 +232,15 @@ static func note_late(name: String) -> void:
 
 static func shared_shader(code: String, label := "") -> Shader:
 	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
+	if shader == null and SKEEP.has(code):
+		# issue 1434: kept for the session (render/shader_keep.gd), so a later battle or the title does not compile it again
+		shader = SKEEP.get_kept(code)
+		_shader_refs[code] = weakref(shader)
 	if shader == null:
 		shader = Shader.new()
 		shader.code = code
 		_shader_refs[code] = weakref(shader)
+		SKEEP.keep(code, shader)
 		note_late(label if label != "" else "hull shader " + str(code.hash()))
 	return shader
 

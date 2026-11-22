@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # B "living terrain" for the board look trial (world/board_look.gd): each kind of special hex becomes a thing in space
 # rather than a tinted hex (the board draws only a faint edge round it).
 #   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
@@ -745,8 +746,7 @@ func _set_flashes(fs: Array) -> void:
 # Reuse the accepted cloud and scene bloom. Geometry lives inside the gas.
 func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
-	var bsh := Shader.new()
-	bsh.code = BOLT_SHADER
+	var bsh: Shader = SKEEP.of(BOLT_SHADER)   # issue 1434: one compiled shader per code
 	bm.shader = bsh
 	var lit := 0
 	for patch in _patches(ps):
@@ -1029,8 +1029,7 @@ func _debris(ps: Array) -> void:
 	var batch = WR.Batch.new()
 	var low: bool = W.quality == "low"
 	var shard_meshes := _shard_meshes()
-	var wsh := Shader.new()
-	wsh.code = WRECK_SHADER.replace("%NOISE%", WS.NOISE)
+	var wsh: Shader = SKEEP.of(WRECK_SHADER.replace("%NOISE%", WS.NOISE))   # issue 1434: one compiled shader per code
 	var metal := ShaderMaterial.new()
 	metal.shader = wsh
 	var hot := ShaderMaterial.new()
@@ -1147,8 +1146,7 @@ func _debris(ps: Array) -> void:
 		mi.name = "DebrisDust"
 		mi.multimesh = mm
 		var m := ShaderMaterial.new()
-		var sh := Shader.new()
-		sh.code = DUST_SHADER
+		var sh: Shader = SKEEP.of(DUST_SHADER)   # issue 1434: one compiled shader per code
 		m.shader = sh
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -1367,8 +1365,7 @@ func _well(c: Vector3) -> void:
 	pm.size = Vector2(250, 250)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = WELL_SHADER
+	var sh: Shader = SKEEP.of(WELL_SHADER)   # issue 1434: one compiled shader per code
 	m.shader = sh
 	m.set_shader_parameter("well", c)
 	# the pull reaches five hexes (about 87 units); the dead star's own lens and disc fill the middle
@@ -1390,8 +1387,7 @@ func _well(c: Vector3) -> void:
 	dust.name = "WellInfall"
 	dust.multimesh = mm
 	var dm := ShaderMaterial.new()
-	var ds := Shader.new()
-	ds.code = INFALL_SHADER
+	var ds: Shader = SKEEP.of(INFALL_SHADER)   # issue 1434: one compiled shader per code
 	dm.shader = ds
 	dm.set_shader_parameter("well", c)
 	dm.render_priority = -24

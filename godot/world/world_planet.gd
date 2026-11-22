@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # F4 planets: the system's planet (gas giant, ice giant, terran, volcanic, barren or ice world, from the sector's biome),
 # its rings and its moons, far beyond the board.
 #
@@ -29,8 +30,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	if not is_instance_valid(planet) or colour == null or data == null: return
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var ground := ShaderMaterial.new()
-	var ground_shader := Shader.new()
-	ground_shader.code = ROCKY_SURFACE
+	var ground_shader: Shader = SKEEP.of(ROCKY_SURFACE)   # issue 1434: one compiled shader per code
 	ground.shader = ground_shader
 	ground.set_shader_parameter("colour_map", baker.texture(colour))
 	ground.set_shader_parameter("surface_data", baker.texture(data))
@@ -39,8 +39,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	planet.set_meta("planet_code", "R01")
 	if is_instance_valid(air):
 		var atmosphere := ShaderMaterial.new()
-		var atmosphere_shader := Shader.new()
-		atmosphere_shader.code = ATMO
+		var atmosphere_shader: Shader = SKEEP.of(ATMO)   # issue 1434: one compiled shader per code
 		atmosphere.shader = atmosphere_shader
 		atmosphere.set_shader_parameter("atmo", Vector3(0.72, 0.39, 0.19))
 		atmosphere.set_shader_parameter("sun", light_dir)
@@ -54,8 +53,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	cloud_mesh.height *= 1.012
 	cloud.mesh = cloud_mesh
 	var cloud_material := ShaderMaterial.new()
-	var cloud_shader := Shader.new()
-	cloud_shader.code = ROCKY_CLOUDS
+	var cloud_shader: Shader = SKEEP.of(ROCKY_CLOUDS)   # issue 1434: one compiled shader per code
 	cloud_material.shader = cloud_shader
 	cloud_material.set_shader_parameter("surface_data", baker.texture(data))
 	cloud_material.set_shader_parameter("sun", light_dir)

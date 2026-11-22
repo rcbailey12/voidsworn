@@ -311,6 +311,8 @@ func _title() -> void:
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
 		"%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
 		worst / 1000, Time.get_ticks_msec() - w0, before, "never moved" if moved.is_empty() else "moved to %s" % [moved.slice(0, 3)]])
+	if m.showcase != null and is_instance_valid(m.showcase):
+		_say("[load1434] title start to board parts (us) %s" % str(m.showcase.begin_us))
 	m.queue_free()
 	for i in 10:
 		await process_frame
