@@ -304,8 +304,10 @@ func build(rules, slice := false) -> void:
 			if ResourceLoader.load_threaded_request(p) == OK:
 				_terrain_loads.append(p)
 		t = _step("terrain_request", t)
+		# the cover stays up and frames keep drawing while this waits, so the wait is long; only a load that never ends
+		# (60 s) goes on without it, logged, and then _terrain() loads that file itself
 		var w0 := Time.get_ticks_msec()
-		while Time.get_ticks_msec() - w0 < 15000:
+		while Time.get_ticks_msec() - w0 < TERRAIN_WAIT_MS:
 			await get_tree().process_frame
 			if not is_inside_tree():
 				return   # _exit_tree handed the loads on
@@ -316,12 +318,22 @@ func build(rules, slice := false) -> void:
 					break
 			if not busy:
 				break
+		# each request classified once (Artoo on PR 1445): a finished or failed one is collected here, an unfinished one
+		# is handed on with no second status read in between
 		_terrain_held.clear()
+		var running := []
 		for p in _terrain_loads:
-			if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
-				_terrain_held.append(ResourceLoader.load_threaded_get(p))   # kept until the next build, so load() finds it cached
-		_terrain_loads = _terrain_loads.filter(func(p): return ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS)
-		_drop_terrain_loads(false)   # a load past the time limit: handed on, never waited for
+			var st := ResourceLoader.load_threaded_get_status(p)
+			if st == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				running.append(p)
+			else:
+				var res = ResourceLoader.load_threaded_get(p)
+				if res != null:
+					_terrain_held.append(res)   # kept until the next build, so load() finds it cached
+		_terrain_loads.clear()
+		if not running.is_empty():
+			printerr("[board] %d terrain file(s) still loading after %d ms; the terrain loads them itself: %s" % [running.size(), TERRAIN_WAIT_MS, ", ".join(running)])
+			SV.retire_build(running, [])
 		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
 		t = Time.get_ticks_usec()
 	_terrain()
@@ -351,6 +363,7 @@ func build(rules, slice := false) -> void:
 
 var _terrain_held := []
 var _terrain_loads := []   # threaded requests not collected yet
+const TERRAIN_WAIT_MS := 60000
 
 
 # collect every terrain request once; wait false: one still running goes to ShipView.retire_build, collected over the
