@@ -1,0 +1,673 @@
+{
+ "ship": "hegemony_H7A",
+ "code": "hegemony_H7A",
+ "cell": "H7A",
+ "game_ship": "h_picket",
+ "faction": "hegemony",
+ "cls": "Frigate",
+ "band": "S",
+ "expected_breach": 2,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 18572,
+ "turret_triangles": 890,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    -0.12433,
+    0.0,
+    0.05909
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 890,
+   "muzzles": [
+    "hp_w1_flak_T_0",
+    "hp_w1_flak_T_1",
+    "hp_w1_flak_T_2"
+   ],
+   "kind": "turret",
+   "id": "dorsal",
+   "socket": "dorsal",
+   "slot": 1,
+   "weapon": "flak",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 5.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "door_triangles": 0,
+ "doors": [],
+ "surfaces": 11,
+ "destruction": {
+  "version": 1,
+  "seams": [
+   {
+    "p": [
+     -0.27014581299471624,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      -0.27014581299471624,
+      0.17247868181784382
+     ],
+     [
+      -0.26477359512266224,
+      0.06899147272713753
+     ],
+     [
+      -0.2738296195355533,
+      -0.06899147272713753
+     ],
+     [
+      -0.27014581299471624,
+      -0.17247868181784382
+     ]
+    ]
+   },
+   {
+    "p": [
+     0.24098234454642303,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      0.24098234454642303,
+      0.14716039670947967
+     ],
+     [
+      0.24635456241847706,
+      0.05886415868379187
+     ],
+     [
+      0.237298538005586,
+      -0.05886415868379187
+     ],
+     [
+      0.24098234454642303,
+      -0.14716039670947967
+     ]
+    ]
+   }
+  ],
+  "interior_materials": [
+   "hegemony_H7A_inside_skin",
+   "hegemony_H7A_inside_1",
+   "hegemony_H7A_inside_2",
+   "hegemony_H7A_inside_3",
+   "hegemony_H7A_inside_4"
+  ],
+  "machines": [
+   {
+    "name": "bow",
+    "kind": "gun",
+    "lo": [
+     0.449731,
+     -0.026861,
+     -0.047583
+    ],
+    "hi": [
+     0.498081,
+     0.016117,
+     0.047583
+    ]
+   },
+   {
+    "name": "dorsal",
+    "kind": "gun",
+    "lo": [
+     -0.177513,
+     0.033768,
+     -0.053185
+    ],
+    "hi": [
+     -0.071144,
+     0.069455,
+     0.053185
+    ]
+   },
+   {
+    "name": "drive0",
+    "kind": "engine",
+    "lo": [
+     -0.501919,
+     -0.055104,
+     0.019186
+    ],
+    "hi": [
+     -0.399079,
+     0.053876,
+     0.129701
+    ]
+   },
+   {
+    "name": "drive1",
+    "kind": "engine",
+    "lo": [
+     -0.501919,
+     -0.055104,
+     -0.129701
+    ],
+    "hi": [
+     -0.399079,
+     0.053876,
+     -0.019186
+    ]
+   },
+   {
+    "name": "receiver",
+    "kind": "antenna",
+    "lo": [
+     0.135012,
+     0.019813,
+     -0.009785
+    ],
+    "hi": [
+     0.200921,
+     0.072,
+     0.009785
+    ]
+   }
+  ]
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "laser",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_laser_F_0",
+    "hp_w0_laser_F_1"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "flak",
+   "arc": "T",
+   "hard_points": [
+    "hp_w1_flak_T_0",
+    "hp_w1_flak_T_1",
+    "hp_w1_flak_T_2"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 5,
+  "engine": 2,
+  "bay": 0,
+  "breach": 2,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "length_world": 6.5,
+ "sheet": "hegemony_H7A",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {
+  "hp_breach_0": 0.0028,
+  "hp_breach_1": 0.0024,
+  "hp_rcs_0": 0.0177,
+  "hp_rcs_1": 0.0177,
+  "hp_board_0": 0.0,
+  "hp_board_1": 0.0
+ },
+ "hard_points": [
+  {
+   "name": "hp_w0_laser_F_0",
+   "p": [
+    0.49808,
+    -0.01437,
+    -0.00537
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "laser",
+   "radius": 0.003990790419240126,
+   "socket": "bow"
+  },
+  {
+   "name": "hp_w0_laser_F_1",
+   "p": [
+    0.49808,
+    0.01437,
+    -0.00537
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "laser",
+   "radius": 0.003990790419240126,
+   "socket": "bow"
+  },
+  {
+   "name": "hp_w1_flak_T_0",
+   "p": [
+    -0.05246,
+    -0.01612,
+    0.08857
+   ],
+   "fwd": [
+    0.9962,
+    0.0,
+    0.0872
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 1,
+   "weapon": "flak",
+   "radius": 0.0026861089360270085,
+   "socket": "dorsal",
+   "turret": 0
+  },
+  {
+   "name": "hp_w1_flak_T_1",
+   "p": [
+    -0.05246,
+    0.0,
+    0.08857
+   ],
+   "fwd": [
+    0.9962,
+    0.0,
+    0.0872
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 1,
+   "weapon": "flak",
+   "radius": 0.0026861089360270085,
+   "socket": "dorsal",
+   "turret": 0
+  },
+  {
+   "name": "hp_w1_flak_T_2",
+   "p": [
+    -0.05246,
+    0.01612,
+    0.08857
+   ],
+   "fwd": [
+    0.9962,
+    0.0,
+    0.0872
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 1,
+   "weapon": "flak",
+   "radius": 0.0026861089360270085,
+   "socket": "dorsal",
+   "turret": 0
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49885,
+    0.07444,
+    -0.00061
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.04178818044762017,
+   "engine": "drive1"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49885,
+    -0.07444,
+    -0.00061
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.04178818044762017,
+   "engine": "drive0"
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    -0.27015,
+    -0.17524,
+    -0.00767
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    -0.1038,
+    -0.9946,
+    0.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "eng",
+   "side": "S",
+   "clear": 0.1006
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.24098,
+    0.14951,
+    -0.00767
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.2228,
+    0.9749,
+    0.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "prow",
+   "side": "P",
+   "clear": 0.0834
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.19186,
+    0.0,
+    -0.00614
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.49424,
+    -0.07137,
+    -0.00691
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "S",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.49424,
+    0.07137,
+    -0.00691
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    0.00307,
+    -0.17606,
+    -0.00537
+   ],
+   "fwd": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "S",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.00307,
+    0.17606,
+    -0.00537
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "P",
+   "radius": 0.0
+  }
+ ],
+ "manifest": {
+  "name": "Picket, Astra build",
+  "faction": "hegemony",
+  "cls": "Frigate",
+  "band": "S",
+  "game_ship": "h_picket",
+  "length_world": 6.5,
+  "hardpoints": {
+   "gun": 5,
+   "engine": 2,
+   "breach": 2,
+   "core": 1,
+   "rcs": 2,
+   "board": 2
+  },
+  "breaches": 2,
+  "turrets": 1,
+  "files": {
+   "hegemony_H7A.glb": {
+    "bytes": 2158336,
+    "sha256": "43453225d9f4df0ae406e032f8e9fcb37a3f788ab3c86549c2f854123fc73842"
+   },
+   "hegemony_H7A_base.jpg": {
+    "bytes": 1268345,
+    "sha256": "1668713e473569109971c75161e27746e41e833a54ed91dcb320a817250e2dc2"
+   },
+   "hegemony_H7A_glow_emission.jpg": {
+    "bytes": 107546,
+    "sha256": "f2d003205d4d524c197de7478d94f433553d88db52d02bf98bfae59be9417f57"
+   },
+   "hegemony_H7A_normal.png": {
+    "bytes": 5461709,
+    "sha256": "65a31ce8278a5c6c6e19e2131535f56f4f9dcda86d5cee3869fd8db5ff1fa383"
+   },
+   "hegemony_H7A_orm.png": {
+    "bytes": 6085541,
+    "sha256": "6a994302a91f50ee7b00e90e9716360173f72904f78a1af24729fe54be0a0746"
+   },
+   "hegemony_H7A_parts_base.jpg": {
+    "bytes": 870568,
+    "sha256": "41e27eac28923d99d88b09310c4a4fe30f9022154055cdaebcb08f492fdc26e7"
+   },
+   "hegemony_H7A_parts_normal.png": {
+    "bytes": 4804301,
+    "sha256": "b59b75ca126cc8ad19a5bd8cec44650170966353f276203b62ddb35e1970169a"
+   },
+   "hegemony_H7A_parts_orm.png": {
+    "bytes": 4740291,
+    "sha256": "5bf307cbe2e6983112ec951912a2860942c807253542db0643fedd1f9aae6807"
+   }
+  },
+  "pc_path": "godot/assets/ships/hegemony_H7A/"
+ },
+ "files": {
+  "hegemony_H7A.glb": {
+   "bytes": 2158336,
+   "sha256": "43453225d9f4df0ae406e032f8e9fcb37a3f788ab3c86549c2f854123fc73842"
+  },
+  "hegemony_H7A_base.jpg": {
+   "bytes": 1268345,
+   "sha256": "1668713e473569109971c75161e27746e41e833a54ed91dcb320a817250e2dc2"
+  },
+  "hegemony_H7A_glow_emission.jpg": {
+   "bytes": 107546,
+   "sha256": "f2d003205d4d524c197de7478d94f433553d88db52d02bf98bfae59be9417f57"
+  },
+  "hegemony_H7A_normal.png": {
+   "bytes": 5461709,
+   "sha256": "65a31ce8278a5c6c6e19e2131535f56f4f9dcda86d5cee3869fd8db5ff1fa383"
+  },
+  "hegemony_H7A_orm.png": {
+   "bytes": 6085541,
+   "sha256": "6a994302a91f50ee7b00e90e9716360173f72904f78a1af24729fe54be0a0746"
+  },
+  "hegemony_H7A_parts_base.jpg": {
+   "bytes": 870568,
+   "sha256": "41e27eac28923d99d88b09310c4a4fe30f9022154055cdaebcb08f492fdc26e7"
+  },
+  "hegemony_H7A_parts_normal.png": {
+   "bytes": 4804301,
+   "sha256": "b59b75ca126cc8ad19a5bd8cec44650170966353f276203b62ddb35e1970169a"
+  },
+  "hegemony_H7A_parts_orm.png": {
+   "bytes": 4740291,
+   "sha256": "5bf307cbe2e6983112ec951912a2860942c807253542db0643fedd1f9aae6807"
+  }
+ },
+ "seconds": 2.5,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}
