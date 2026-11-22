@@ -42,6 +42,10 @@ const OUT_OF_GATE = new Set([
   'ROS-4', 'ROS-5', 'ROS-6', 'RWD-5', 'RWD-7', 'SQ-1', 'UI-8', 'WPN-2', 'WPN-5',
   // stale
   'ADM-2', 'BF-3', 'DRIFT-5', 'UI-7',
+  // stale (issue 1505): KIT-1 asks for a Chorus shipyard repair ban that R382 (issue 1484) replaced with biomass repairs;
+  // NEM-6 asks for a flagship kill to end a rival in sectors 1 and 2, which R49 and R169 (7) rule out (the wording defect
+  // it found is pinned by NEM-6B below)
+  'KIT-1', 'NEM-6',
 ]);
 function test(id, fn) {
   const code = id.split(/\s+/)[0];
@@ -57,6 +61,8 @@ const cnt = (w) => { const m = {}; for (const pair of w || []) m[pair[0]] = (m[p
 
 // ---------- Oct 27 program: kit coherence ----------
 
+// Issue 1505: stale. The Oct 26 price ladder wanted Chorus to have no shipyard repair (coded nowhere); R382 (docs/playbooks/screens.md,
+// RULEBOOK 11.9) pays for Chorus hull repairs in biomass, so the ban would contradict the game. Nothing reads this row.
 test('KIT-1 chorus repair gate exists in FAC_GATES', () => {
   const FG = runIn('FAC_GATES');
   if (!FG.chorus) return 'FAC_GATES has no chorus entry; the approved Chorus shipyard repair prohibition is coded nowhere';
@@ -413,17 +419,24 @@ test('SQ-1 spore wing is not a bomber reskin', () => {
 
 // ---------- Oct 29 program: modules ----------
 
-test('MOD-2 modules do not duplicate perks or collide with relics', () => {
+// Issue 1505 (issue 385: the game is correct). Today's shapes: a module's effect lives under fx (and it has a shop cost), a relic's
+// effect lives under run, and the two tables are read by separate paths (inventory against MODULES, relics against RELICS). So a key
+// held by both tables (cogitator) is a naming hazard only, and it stays harmless while the two entries cannot be mistaken for each
+// other: different effect field, different name, and no relic effect that repeats a module effect. The old duplicate-perk half was an
+// opinion (modules and perks may share a number), so it is not asserted here.
+test('MOD-2 a module and a relic that share a key cannot be mistaken for each other', () => {
   const bad = [];
-  if (Object.keys(G.MODULES).some(k => G.RELICS[k])) bad.push('key collision: cogitator exists in both MODULES and RELICS');
-  const dup = (m, p) => {
-    const mf = G.MODULES[m].fx, pf = G.PERKS[p].fx;
-    const shared = Object.keys(pf).filter(k => k in mf);
-    if (shared.length && shared.every(k => pf[k] === mf[k]) && Object.keys(pf).every(k => k in mf)) return true;
-    return canon(mf) === canon(pf);
-  };
-  for (const pair of [['auspex', 'gunnery'], ['cogitator', 'killer'], ['prow', 'ironhull'], ['drive', 'helm']]) {
-    if (dup(pair[0], pair[1])) bad.push('MODULES.' + pair[0] + ' duplicates PERKS.' + pair[1]);
+  const shared = Object.keys(G.MODULES).filter(k => G.RELICS[k]);
+  for (const k of shared) {
+    const m = G.MODULES[k], r = G.RELICS[k];
+    if (!m.fx || m.run) bad.push('MODULES.' + k + ' does not keep its effect under fx alone');
+    if (!r.run || r.fx) bad.push('RELICS.' + k + ' does not keep its effect under run alone');
+    if (m.n === r.n) bad.push('MODULES.' + k + ' and RELICS.' + k + ' share the display name ' + m.n);
+    if (r.run && m.fx && Object.keys(r.run).some(f => f in m.fx)) bad.push('RELICS.' + k + ' repeats an effect of MODULES.' + k);
+  }
+  for (const k of Object.keys(G.MODULES)) {
+    const m = G.MODULES[k];
+    if (!m.fx || typeof m.cost !== 'number') bad.push('MODULES.' + k + ' lacks fx or a shop cost');
   }
   return bad.join('; ');
 });
@@ -550,16 +563,22 @@ function nemFixture(fac, sector, extra) {
 
 // ---------- Oct 27 program: campaign rows ----------
 
+// Issue 1505 (issue 385: the game is correct): R1 stores the chosen option key and the gates name the choices that open them
+// (need.flagK on the saboteur option, freeK on the Hegemony verb). The test reads the gate as data.js writes it today.
 test('EVT-1 a defector flag records which option wrote it', () => {
   const bad = needGC(); if (bad) return bad;
   const run = cRun('hegemony', ['h_picket', 'h_vanguard'], 1);
   const def = GC.EVENTS.find(e => e.id === 'defector');
   if (!def) return 'defector event not found in EVENTS';
-  GC.eventFlags(def, def.o.find(o => o.k === 'ransom'), 1);
-  const ransomNeed = GC.needMet({ flag: 'defector' }), ransomVerb = GC.verbFree(GC.FAC_VERBS.hegemony);
-  run.flags = {};
-  GC.eventFlags(def, def.o.find(o => o.k === 'question'), 0);
-  const questionNeed = GC.needMet({ flag: 'defector' }), questionVerb = GC.verbFree(GC.FAC_VERBS.hegemony);
+  const sab = GC.EVENTS.find(e => e.id === 'saboteur');
+  if (!sab) return 'saboteur event not found in EVENTS';
+  const gate = (sab.o.map(o => o.need).find(n => n && n.flag === 'defector')) || null;
+  if (!gate || !Array.isArray(gate.flagK)) return 'the saboteur intel gate carries no flagK: it no longer names the defector choices that open it';
+  const verb = GC.FAC_VERBS.hegemony;
+  if (!verb || verb.free !== 'defector' || !Array.isArray(verb.freeK)) return 'the Hegemony verb carries no freeK: it no longer names the choices that open it';
+  const wrote = (k) => { run.flags = {}; GC.eventFlags(def, def.o.find(o => o.k === k), 0); return [GC.needMet(gate), GC.verbFree(verb)]; };
+  const [ransomNeed, ransomVerb] = wrote('ransom');
+  const [questionNeed, questionVerb] = wrote('question');
   if (!questionNeed || !questionVerb) return 'control case broke: questioning the defector no longer satisfies the flag gates';
   return (ransomNeed || ransomVerb)
     ? 'ransoming the defector (he leaves with 70 credits) still satisfies the saboteur intel gate (' + ransomNeed + ') and the Hegemony free verb (' + ransomVerb + '): the flag records presence, not the option that wrote it'
@@ -728,6 +747,29 @@ test('NEM-6 a no-retreat Nemesis flagship kill registers the kill', () => {
   return (!run.nem.dead || escaped)
     ? 'sector 1, flagship destroyed: dead=' + run.nem.dead + ' and the debrief says he escapes. In sectors 1 and 2 a flagship kill can never register as a death, even for the no-retreat Nemesis'
     : '';
+});
+
+// Issue 1505: the real defect NEM-6 found. A rival who never flees (noFlee: Sunward; revive: Eclipse) whose flagship is killed before
+// sector 3 still withdraws (R49, and R169 (7) keeps it), but his debrief must say so, not that "he escapes". A rival who can flee
+// keeps the escape line. Sector 3 is unchanged: the flagship kill ends him.
+test('NEM-6B a never-flee rival flagship kill before sector 3 is a withdrawal, not an escape line', () => {
+  const bad = needGC(); if (bad) return bad;
+  const parts = [];
+  for (const [fac, sector] of [['voidsworn', 1], ['voidsworn', 2], ['deathless', 1], ['deathless', 2]]) {
+    const run = nemFixture(fac, sector, {});
+    const lines = GC.nemAfterBattle('win', true, {});
+    if (lines.some(l => /escapes/.test(l))) parts.push(fac + ' in sector ' + sector + ' (never flees) still gets the "he escapes" line');
+    if (!lines.some(l => /withdraws/.test(l))) parts.push(fac + ' in sector ' + sector + ' gets no withdrawal line');
+    if (run.nem.dead) parts.push(fac + ' in sector ' + sector + ' died before sector 3 (R49)');
+    if (!(run.nem.scars > 0)) parts.push(fac + ' in sector ' + sector + ' took no scar');
+  }
+  for (const fac of ['corsair', 'ithar', 'chorus', 'hegemony']) {
+    nemFixture(fac, 1, {});
+    if (!GC.nemAfterBattle('win', true, {}).some(l => /escapes/.test(l))) parts.push(fac + ' can flee, so a flagship kill keeps the escape line');
+  }
+  nemFixture('voidsworn', 3, {});
+  if (!GC.nemAfterBattle('win', true, {}).some(l => /is dead/.test(l))) parts.push('sector 3 flagship kill no longer ends the rival');
+  return parts.join('; ');
 });
 
 test('NEM-7 legacy Nemesis migration preserves accumulated state', () => {
