@@ -1670,10 +1670,11 @@ void fragment() {
 		if (part > 0.95) { base = v2_rim_metal * (0.75 + 0.35 * n2); rough = metalk ? 0.38 : 0.2; metal = metalk ? 0.85 : 0.1; ao = 1.0; }
 		if (dress > 0.2 && dress < 0.3) { base = v2_rim_metal * (0.35 + 0.3 * vC.g); metal = wound_v2 == 5 ? 0.5 : 0.75; rough = 0.45; ao = 0.9; }
 		if (part > 0.8 && part < 0.9) {
-			base = dress > 0.4 ? vec3(0.30, 0.10, 0.06) * (0.8 + 0.4 * n2) : vec3(0.62, 0.55, 0.40) * (0.75 + 0.35 * n2);
+			// R420: wet crimson-umber tendon; dry weathered ochre-ivory bone (0.14 to 0.18 linear, no glow)
+			base = dress > 0.4 ? vec3(0.075, 0.03, 0.022) * (0.8 + 0.4 * n2) : vec3(0.17, 0.15, 0.11) * (0.85 + 0.2 * n2);
 			rough = dress > 0.4 ? 0.2 : 0.5; metal = 0.0; ao = 1.0;
 		}
-		if (dress > 0.7 && dress < 0.8) { base = v2_rim_metal * 0.55; rough = 0.05; metal = 0.25; ao = 1.0; }
+		if (dress > 0.7 && dress < 0.8) { base = min(v2_rim_metal * 0.2, vec3(0.18)); rough = 0.05; metal = 0.25; ao = 1.0; }
 		float v2hot = metalk ? hot : 0.0;
 		em = v2_interior_accent * (lam * fall * 0.45 * (0.6 + 0.4 * fl) * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)));
 		em += gc * emb * 0.5 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist)) * v2hot;
@@ -1702,7 +1703,7 @@ void fragment() {
 	AO = ao;
 	AO_LIGHT_AFFECT = 1.0;
 	SPECULAR = 0.3 * ao;
-	EMISSION = clamp(em * 0.5 * fx_gain, vec3(0.0), vec3(0.35));
+	EMISSION = clamp(em * 0.5 * fx_gain, vec3(0.0), vec3(wound_v2 >= 0 ? 0.25 : 0.35));   // R420 with V2 on
 }
 """
 
@@ -2395,9 +2396,10 @@ void fragment() {
 	vec3 lit = v2_interior_lift * r.x * ao;
 	float wr = clamp(fx_wreck, 0.0, 1.0);
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
-	if (wound_v2 == 3) { wreck = mix(lit, vec3(0.42, 0.38, 0.3) * r.x, 0.35); }   // dull pale bone and wet dark tissue
-	if (wound_v2 == 4) { wreck = mix(lit, vec3(0.5, 0.53, 0.58) * r.x, 0.4); }     // frosted glass, never sooted black
+	if (wound_v2 == 3) { wreck = mix(lit, vec3(0.1, 0.09, 0.07) * r.x, 0.35); }    // dull pale bone and wet dark tissue
+	if (wound_v2 == 4) { wreck = mix(lit, vec3(0.09, 0.1, 0.1) * r.x, 0.4); }      // frosted glass, never sooted black
 	lit = mix(lit, wreck, wr);
+	lit = min(lit, vec3(0.11));   // R420: the interior value ceiling (walls at most 0.11 linear); the cavity lights do the drama
 	ALBEDO = mix(baked, lit, open_f);
 	float rough = clamp(v2_rough + r.w, 0.04, 1.0);
 	if (wound_v2 <= 2) { rough = mix(rough, 0.92, wr * v2_wreck_soot); }
@@ -2420,7 +2422,7 @@ void fragment() {
 	vec3 em = v2_interior_accent * r.z * pulse * fade * open_f * 0.35 * clamp(fx_power, 0.0, 1.0);
 	em += v2_interior_accent * near * 0.04 * (1.0 - wr);
 	vec3 bem = base_emission.rgb * base_emission_energy * clamp(fx_power, 0.0, 1.0) * (1.0 - wr);
-	EMISSION = min(em + bem * mix(0.15, 1.0, open_f), vec3(0.6));
+	EMISSION = min(em + bem * mix(0.15, 1.0, open_f), vec3(0.25));   // R420: non-core emission at most 0.25
 }
 """
 

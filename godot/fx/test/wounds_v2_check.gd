@@ -300,6 +300,12 @@ func _run() -> void:
 		check(below, "%s: the mouth dressing stays below the plating and inside the rim" % faction)
 	for faction in ["chorus", "ithar", "deathless"]:
 		check(float(FL.of(faction)["wound"]["soot_weight"]) == 0.0, "%s: no soot" % faction)
+	# R420 (global cohesion law 2): an open wound's inside sits under the interior ceiling, glow capped
+	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
+		var lift: Array = FL.of(faction)["wound"]["interior_lift"]
+		var mean := (float(lift[0]) + float(lift[1]) + float(lift[2])) / 3.0
+		check(float(lift.max()) <= 0.11 and mean >= 0.025 and mean <= 0.10, "%s: wound interior lift within the R420 ceiling (mean %.3f)" % [faction, mean])
+	check(SH.INTERIOR.contains("lit = min(lit, vec3(0.11))") and SH.INTERIOR.contains("vec3(0.25));"), "R420: the interior shader clamps walls to 0.11 and non-core glow to 0.25")
 	var ch: Dictionary = FL.of("chorus")["wound"]
 	var mag := false
 	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:

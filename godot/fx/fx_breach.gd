@@ -2348,7 +2348,7 @@ static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 # R416 5.3: at most two soft lights inside a ship's open V2 mouths (the biggest), a quarter radius in, tinted by the
 # faction's interior accent, reach about 2.2 radii, so the built decks and the rim dressing catch real light.
 const INSIDE_LIGHTS := 2
-const INSIDE_LIGHT_E := 0.5
+const INSIDE_LIGHT_E := 0.7   # R420: interiors sit at 0.03 to 0.10 linear, so the cavity light carries the read
 
 
 static func inside_lights(fx, s, mi: Node3D, ents: Array, accent: Color) -> int:
