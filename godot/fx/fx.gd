@@ -64,6 +64,7 @@ var flash_area_logging := false
 
 # --- settings (API.md 1, 8)
 var quality = "max"
+var _sfx: Node
 # Issue 1077 (on since Ryan's yes on pass 6, Nov 20 2026): a big hull strains along one ragged crack before it splits, and
 # its wreck stays grouped where it broke. rendering/effects/death_story="off" or VS_DEATH_STORY=off turns it off.
 var death_story := false
@@ -228,6 +229,7 @@ func release(wait := true) -> void:
 	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
+		s.end_brownout()
 		if not wait and s._dmg_task >= 0 and not WorkerThreadPool.is_task_completed(s._dmg_task):
 			tids.append(s._dmg_task)
 			keep.append(s._dmg_job)
@@ -349,6 +351,8 @@ func setup(opts := {}) -> void:
 	if compat:
 		quality = "low"
 	camera = opts.get("camera", null)
+	var host := get_parent()
+	_sfx = opts.get("sfx", host.get("sfx") if host != null and "sfx" in host else null)
 	apply_shake = camera != null
 	shake_scale = float(opts.get("shake", 1.0))
 	unit = float(opts.get("unit", 1.0))
@@ -737,6 +741,13 @@ func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float,
 	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
+
+
+func shot_pass_by(at: float, p: Vector3) -> void:
+	if is_instance_valid(_sfx):
+		later(at, func play_pass_by() -> void:
+			if is_instance_valid(_sfx):
+				_sfx.play("shot_pass_by", {"pos": p}))
 
 
 # One head follows the real gauss flight; its deposited light cools for 0.70 s.
@@ -1578,6 +1589,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	ships[id] = s
 	var t_col := Time.get_ticks_usec()
 	DEATH.add_collider(self, s)
+	if s.hull_pivot != null and s.has_meta("collider"):
+		(s.get_meta("collider") as Node3D).reparent(s.hull_pivot)
 	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
@@ -1765,6 +1778,7 @@ func death(id: String, cause := "blast") -> float:
 	var s: SHIP = ships.get(id)
 	if s == null or s.dead or s.gone:
 		return 0.0
+	s.end_brownout()
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
 	var r: float = DEATH.death(self, s, cause)

@@ -26,6 +26,7 @@ const SCALE_K_MAX := 2.5
 
 var id = ""
 var root: Node3D
+var hull_pivot: Node3D
 var meshes: Array = []
 var faction = "voidsworn"
 var fac: Dictionary
@@ -97,9 +98,8 @@ var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
 var _mark_n = 0
 var mark_ms: Array = []    # per rebuild: [entries, worker ms, apply ms] (the gallery and probes report it)
-# hit reaction (R50): a damped angular kick (x roll, y yaw, z pitch, radians) that thrusters arrest, a small drift
-# (ship frame) that thrusters stop, and a shudder; fx owns the root's roll and pitch (G2 never writes rotation.x or z),
-# and adds yaw and drift only while G2 is not moving the ship (G2 writes position and yaw during a path)
+# Hit reaction (R50): roll, yaw, pitch and drift in the hull pivot, under the board heading.
+# Bare FX fixtures without a hull pivot still use their root as the visual hull.
 var _ra := Vector3.ZERO
 var _rv := Vector3.ZERO
 var _pd := Vector3.ZERO
@@ -111,6 +111,13 @@ var _app_yaw := 0.0
 var _reacting := false
 var _rcs_next := 0.0
 var _stutter_until := -1.0
+var _show_rcs := false
+var _power_dip := 0.0
+var _dip_peak := 0.0
+var _dip_start := 0.0
+var _dip_duration := 0.0
+var _dip_overrides: Array = []
+var _dip_materials := {}
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
 
@@ -134,6 +141,9 @@ func _attach(n: Node3D) -> void:
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
+	hull_pivot = root.get_node_or_null("hull_pivot") as Node3D
+	if "fx_clock" in root:
+		root.set("fx_clock", fx)
 	_arr_cache = fx.hull_arrays
 	faction = String(info.get("faction", "voidsworn")).to_lower()
 	fac = fx.faction_info(faction)
@@ -246,6 +256,9 @@ func hide_live_hull() -> void:
 
 func teardown(fx, wait_for_damage := true) -> void:
 	gone = true
+	end_brownout()
+	if is_instance_valid(root) and root.get("fx_clock") == fx:
+		root.set("fx_clock", null)
 	_hide_attachments()
 	fx.discard_ship_cut(self)
 	if wait_for_damage:
@@ -373,10 +386,14 @@ func update(fx, dt: float) -> void:
 	_update_damage_emitters(fx)
 	_list_step(dt)
 	_react_step(fx, dt)
+	_power_step(fx)
 	_hide_placeholder_engines()
 	if _shield_mi != null and _shield_mi.visible:
 		_shield_mi.transform = hull_motion() * _shield_pose
-	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
+	var pos := root.global_position
+	if hull_pivot == null:
+		var parent := root.get_parent_node_3d()
+		pos -= parent.global_basis * _app_pos if parent != null else _app_pos
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
 	_moving = maxf(_moving - dt, 0.0)
@@ -959,6 +976,7 @@ func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
 func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
+	hit_power(fx, true)
 	if _fail_look == 1:
 		_break_shear(fx, quad, hit_lp)
 		return
@@ -1154,8 +1172,8 @@ const REACT_MASS := [0.6, 1.0, 2.2, 5.0, 12.0]
 const REACT_ONSET := [0.03, 0.05, 0.08, 0.12, 0.16]
 const REACT_ARREST := [0.35, 0.5, 0.7, 0.95, 1.2]
 const REACT_RECOVER := [3.6, 3.0, 2.4, 1.9, 1.5]
-const REACT_SHUDDER_HZ := [11.0, 9.0, 7.0, 5.0, 4.0]
-const REACT_SHUDDER_T := [0.16, 0.2, 0.28, 0.38, 0.5]
+const REACT_SHUDDER_HZ := [6.0, 5.5, 5.0, 4.25, 3.5]
+const REACT_SHUDDER_T := 0.22 / 3.0  # 95% of the tremor is gone after 0.22 effect seconds
 var _kick_v := Vector3.ZERO     # angular kick still to be delivered (onset)
 var _kick_p := Vector3.ZERO     # drift kick still to be delivered
 var _brk := Vector3.ZERO        # thrusters' braking rate per axis (rad/s2)
@@ -1166,25 +1184,27 @@ var react_clock := 0.0          # seconds of reaction integrated so far (issue 1
 
 # A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
 # shells and slugs kick, lances and ions barely at all); lp, ldir: hit point and shot direction in the ship frame.
-func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
+func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3, source := "hull") -> void:
 	if dead or gone or impulse <= 0.0:
 		return
 	# Issue 462: where the last hit landed (hull space), so a death can open its tear from the side that was hit.
-	set_meta("last_hit", [lp, ldir, fx.now])
+	if source != "recoil":
+		set_meta("last_hit", [lp, ldir, fx.now])
+	_show_rcs = _show_rcs or source == "hull"
 	var wi := clampi(weight, 0, 4)
 	var m: float = REACT_MASS[wi]
 	var L: float = maxf(hull.L, 1.0)
 	var d := ldir.normalized()
 	var r: Vector3 = (lp - hull.c) / L
 	# the angular kick: torque from where the hit lands, about the ship's own axes (x roll, y yaw, z pitch)
-	# lever arms never vanish: a hull is not a point, and a hit near the middle still rocks it a little
-	var hh: float = maxf(hull.H / L, 0.05) * 0.5
-	r.y = signf(r.y if absf(r.y) > 1e-4 else 1.0) * maxf(absf(r.y), hh * 0.6)
-	r.x = signf(r.x if absf(r.x) > 1e-4 else 1.0) * maxf(absf(r.x), 0.08)
+	# The roll axis sits below mid-hull. Nearby shots on either side of the midline share the same heel.
+	r.y += maxf(hull.H / L, 0.05) * 0.35
 	var tq := r.cross(d)
 	# turning inertia grows faster than mass (a long hull resists spin more than it resists a shove)
 	var dv := Vector3(tq.x * 2.4, tq.y * 0.8, tq.z * 1.2) * impulse * 0.25 / pow(m, 1.25)
 	var dp := d * impulse * L * 0.0095 / m
+	if wi >= 3 or death_tier == "capital":
+		dp *= 0.5
 	_kick_v += dv
 	_kick_p += dp
 	# the thrusters brake whatever the ship will be doing once the kick is in, over REACT_ARREST seconds
@@ -1193,11 +1213,9 @@ func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
 	_brk = Vector3(maxf(_brk.x, absf(v_after.x) / t_ar), maxf(_brk.y, absf(v_after.y) / t_ar), maxf(_brk.z, absf(v_after.z) / t_ar))
 	_brk_p = maxf(_brk_p, (_pv + _kick_p).length() / (t_ar * 1.3))
 	_brk_at = fx.now + REACT_ONSET[wi] + 0.05
-	# the shudder: a damped structural vibration (bigger hulls ring lower and longer, and show it more than they move)
-	_shud = maxf(_shud * exp(-(fx.now - _shud_t) / REACT_SHUDDER_T[wi]), minf(impulse / sqrt(m), 4.0) * 0.0025)
+	# The structure rings lower on heavier hulls.
+	_shud = maxf(_shudder_at(fx.now), minf(impulse / sqrt(m), 4.0) * 0.0035)
 	_shud_t = fx.now
-	if impulse >= 2.5:
-		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
 	_reacting = true
 
 
@@ -1249,56 +1267,54 @@ func _react_integrate(t: float, h: float, wi: int) -> void:
 			else:
 				_pv -= _pv / sp * _brk_p * h
 		else:
-			var wp := wr
-			_pv += (-_pd * wp * wp - _pv * 2.0 * wp) * h
+			# Exact critically damped return keeps the drift smooth across frame rates.
+			var slope := _pv + _pd * wr
+			var decay := exp(-wr * h)
+			_pd = (_pd + slope * h) * decay
+			_pv = (_pv - slope * (wr * h)) * decay
+			_ra += _rv * h
+			return
 	_ra += _rv * h
 	_pd += _pv * h
 
 
+func _shudder_at(t: float) -> float:
+	return _shud * exp(-maxf(t - _shud_t, 0.0) / REACT_SHUDDER_T)
+
+
 func _react_apply(fx, wi: int) -> void:
 	var age: float = fx.now - _shud_t
-	var sh := _shud * exp(-age / float(REACT_SHUDDER_T[wi]))
-	var w_sh: float = TAU * float(REACT_SHUDDER_HZ[wi])
-	var shx := sh * sin(age * w_sh + 1.3)
-	var shz := sh * 0.7 * sin(age * w_sh * 1.27)
-	_rcs(fx)
-	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
-	# Keep the cinematic flight bank under the damage reaction.
-	var flight_bank := float(root.get("glide_bank")) if root.get("glide_bank") != null else 0.0
-	flight_bank += _list   # issue 1235: a crippled ship's list stays under the hit reaction
-	root.rotation.x = flight_bank + _ra.x + shx
-	root.rotation.z = _ra.z + shz
-	# yaw and drift: only while G2 is not driving the root (it sets position and yaw itself during a path)
-	if busy:
-		_app_pos = Vector3.ZERO
-		_app_yaw = 0.0
-	else:
-		var want_pos: Vector3 = Basis(Vector3.UP, root.rotation.y) * _pd
-		root.position += want_pos - _app_pos
-		_app_pos = want_pos
-		root.rotation.y += _ra.y - _app_yaw
-		_app_yaw = _ra.y
-	var idle: bool = _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
+	var sh := _shudder_at(fx.now)
+	var phase: float = age * TAU * REACT_SHUDDER_HZ[wi]
+	var angles := _ra + Vector3(sh * sin(phase + 1.3), 0.0, sh * 0.7 * sin(phase))
+	var idle := _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
 	if idle and _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 3e-4 and _pv.length() < hull.L * 3e-4 and sh < 1e-4:
-		root.rotation.x = flight_bank
-		root.rotation.z = 0.0
-		if not busy:
-			root.position -= _app_pos
-			root.rotation.y -= _app_yaw
-		_app_pos = Vector3.ZERO
-		_app_yaw = 0.0
+		angles = Vector3.ZERO
 		_ra = Vector3.ZERO
 		_rv = Vector3.ZERO
 		_pd = Vector3.ZERO
 		_pv = Vector3.ZERO
 		_shud = 0.0
 		_reacting = false
+		_show_rcs = false
+	if hull_pivot != null:
+		hull_pivot.rotation = angles + Vector3(_list, 0.0, 0.0)
+		hull_pivot.position = _pd
+	else:
+		# Bare hulls use the root. Subtract the applied yaw to keep their drift in the base heading.
+		var base_yaw := root.rotation.y - _app_yaw
+		var want_pos := Basis(Vector3.UP, base_yaw) * _pd
+		root.position += want_pos - _app_pos
+		root.rotation = angles + Vector3(_list, base_yaw, 0.0)
+		_app_pos = want_pos
+		_app_yaw = angles.y
+	if _show_rcs:
+		_rcs(fx)
 
 
-# Attitude thrusters visibly fighting the spin and the drift: short gas puffs at the hull's corners, picked so their
-# thrust opposes the motion, while the ship is still turning or sliding noticeably.
+# Attitude corrections at the hull corners, picked so their thrust opposes the spin and drift.
 func _rcs(fx) -> void:
-	if squadron or fx.now < _rcs_next:
+	if squadron or faction == "chorus" or fx.now < _rcs_next:
 		return
 	var spin := _rv.length()
 	var slide := _pv.length() / maxf(hull.L, 1.0)
@@ -1342,10 +1358,99 @@ func _rcs(fx) -> void:
 		var gd: Vector3 = -t
 		if gd.dot(n) < 0.15:
 			gd = n
-		var gv: Vector3 = dir_world(gd) * (5.0 + fx.rng.randf() * 3.0) * k
+		var axis := dir_world(gd)
 		fx.record_spawn(self, wp)
-		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
-		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
+		match faction:
+			"ithar":
+				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
+			"deathless":
+				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
+			_:
+				var soot: bool = faction == "corsair"
+				var gas := Color(0.53, 0.46, 0.40) if soot else Color(0.85, 0.88, 0.95)
+				var core := Color(0.79, 0.69, 0.59) if soot else Color(0.9, 0.95, 1.0)
+				var gv: Vector3 = axis * (5.0 + fx.rng.randf() * 3.0) * k
+				fx.spr(wp, fx.now, 0.35, gas, 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
+				fx.spr(wp, fx.now, 0.06, core, 1.5, 0.08 * k, 0.15 * k, 18)
+
+
+# Stutter is about the hit outcome. Recoil and fully absorbed impacts can still move the hull.
+func hit_power(fx, stutter: bool, dip := 0.0, duration := 0.45) -> void:
+	if dead or gone:
+		return
+	if stutter:
+		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
+	if dip <= 0.0 or squadron:
+		return
+	if _dip_duration == 0.0:
+		# Untouched surfaces still use their painted materials. Dim private copies until the hit wears off.
+		for m in meshes:
+			if not is_instance_valid(m) or m.mesh == null:
+				continue
+			var mi: MeshInstance3D = m
+			if mi.material_override != null:
+				_dim_paint(mi, -1, mi.material_override)
+			else:
+				for i in mi.mesh.get_surface_count():
+					_dim_paint(mi, i, mi.get_active_material(i))
+	_dip_peak = maxf(_power_dip, dip)
+	_dip_start = fx.now
+	_dip_duration = duration
+	_set_power_dip(_dip_peak)
+
+
+func _dim_paint(mi: MeshInstance3D, surface: int, source: Material) -> void:
+	if not source is BaseMaterial3D or not source.emission_enabled:
+		return
+	if not _dip_materials.has(source):
+		var copy: BaseMaterial3D = source.duplicate()
+		copy.set_meta("fx_hull_source", source)
+		_dip_materials[source] = copy
+	var dim: BaseMaterial3D = _dip_materials[source]
+	var saved := mi.material_override if surface < 0 else mi.get_surface_override_material(surface)
+	_dip_overrides.append([mi, surface, saved, dim])
+	if surface < 0:
+		mi.material_override = dim
+	else:
+		mi.set_surface_override_material(surface, dim)
+
+
+func _power_step(fx) -> void:
+	if dead or _dip_duration <= 0.0:
+		return
+	var age: float = fx.now - _dip_start
+	if age >= _dip_duration:
+		end_brownout()
+		return
+	var recovery := 1.0 - smoothstep(0.0, _dip_duration, age)
+	var flicker := 1.0 if fx.reduce_flashing else 0.82 + 0.18 * cos(age * TAU * 5.0)
+	_set_power_dip(_dip_peak * recovery * flicker)
+
+
+func _set_power_dip(dip: float) -> void:
+	_power_dip = dip
+	for entry: Array in _damage_surfaces.values():
+		HULL.set_power(entry[1], hull_wear, dip)
+	for source: BaseMaterial3D in _dip_materials:
+		(_dip_materials[source] as BaseMaterial3D).emission_energy_multiplier = source.emission_energy_multiplier * (1.0 - dip)
+
+
+func end_brownout() -> void:
+	if _dip_duration <= 0.0:
+		return
+	_dip_duration = 0.0
+	_set_power_dip(0.0)
+	for entry: Array in _dip_overrides:
+		var mi: MeshInstance3D = entry[0]
+		if not is_instance_valid(mi):
+			continue
+		var surface: int = entry[1]
+		if surface < 0 and mi.material_override == entry[3]:
+			mi.material_override = entry[2]
+		elif surface >= 0 and surface < mi.get_surface_override_material_count() and mi.get_surface_override_material(surface) == entry[3]:
+			mi.set_surface_override_material(surface, entry[2])
+	_dip_materials.clear()
+	_dip_overrides.clear()
 
 
 # ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
@@ -1401,7 +1506,7 @@ func _apply_wear() -> void:
 	for key in _damage_surfaces:
 		var entry: Array = _damage_surfaces[key]
 		if entry.size() > 1 and entry[1] is ShaderMaterial:
-			HULL.set_wear(entry[1], hull_wear, patches)
+			HULL.set_wear(entry[1], hull_wear, patches, _power_dip)
 
 
 # Soot patches on the sides that were hit: per hurt section (worst first), up to WEAR_PATCHES_SEC of its drawn marks,
@@ -1454,8 +1559,9 @@ func _list_step(dt: float) -> void:
 	_list += (list_target - _list) * (1.0 - exp(-dt * 3.0 / LIST_T))
 	if absf(list_target - _list) < 1e-4:
 		_list = list_target
-	if not _reacting and is_instance_valid(root):
-		root.rotation.x += _list - prev
+	if not _reacting:
+		var visual := hull_pivot if hull_pivot != null else root
+		visual.rotation.x += _list - prev
 
 
 # ---------------------------------------------------------------- staged damage (API.md 2)

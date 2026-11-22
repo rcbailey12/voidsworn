@@ -17,7 +17,7 @@ const PlayerPath := preload("res://main/player_path.gd")
 # takes it has now and is a floor: adding a cue to a family passes, removing one fails. A new cue id with no family fails.
 const CUE_FAMILIES := {
 	"guns": ["gun_shell", "gun_flak", "gun_sq", "gun_las", "gun_plasma", "gun_tracer", "gun_spine", "gun_needle", "gun_rail", "gun_glob"],
-	"weapon_tails": ["salvo_tail"],
+	"weapon_tails": ["salvo_tail", "shot_pass_by"],
 	"lances": ["lance", "lance_ion", "lance_dark", "lance_choir"],
 	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
 	"charges": ["lance_charge", "torp_charge"],
