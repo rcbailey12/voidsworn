@@ -97,26 +97,27 @@ func _run() -> void:
 	# 4. strike craft
 	var wg := await _kill("hegemony", "Squadron", 0.3, "blast", 1.0, true, Vector3.INF, "wing", true)
 	check(_has(wg["beats"], "corkscrew"), "strike craft: the smoky corkscrew")
-	# 6. the battle's view cause
+	# 6. the battle's view cause: _play_batch reads the marks with view_causes over the whole batch, so these batches are
+	# exactly what playback sees, the grouped volley path included (Artoo on PR 1666, recheck of 852fbd8a)
 	var B = load("res://scenes/battle/battle.gd")
+	var vc: Dictionary = B.view_causes([{"t": "activation", "unit": "a", "side": "player"}, {"t": "ram", "unit": "a", "target": "b"},
+		{"t": "float", "unit": "b"}, {"t": "death", "unit": "b", "cause": "big"}])
+	check(vc.get("b", "") == "ram", "battle: a ram kill plays the ram death (%s)" % str(vc))
+	# a ram both ships survive, then a volley (fire with its grouped hits, played through _play_fire) kills the rammer
+	vc = B.view_causes([{"t": "ram", "unit": "c", "target": "d"}, {"t": "fire", "unit": "e", "target": "c", "weapon": 0},
+		{"t": "hit", "unit": "e", "target": "c"}, {"t": "death", "unit": "c", "cause": "big"}])
+	check(not vc.has("c") and not vc.has("d"), "battle: a volley kill of a ram survivor keeps its own death (%s)" % str(vc))
+	# the same, in the next batch: marks never carry over
+	vc = B.view_causes([{"t": "death", "unit": "c", "cause": "big"}])
+	check(vc.is_empty(), "battle: a later batch starts with no marks")
+	vc = B.view_causes([{"t": "board", "unit": "f", "target": "g", "result": "scuttle"}, {"t": "death", "unit": "g", "cause": "dark"},
+		{"t": "board", "unit": "f", "target": "h", "result": "raid"}, {"t": "death", "unit": "h", "cause": "dark"}])
+	check(vc.get("g", "") == "board" and not vc.has("h"), "battle: a scuttle plays the boarding death, a raid marks nothing (%s)" % str(vc))
 	var bt = B.new()
-	# a lethal ram: the ram event, then the target's death
-	bt.note_view_cause({"t": "ram", "unit": "a", "target": "b"})
-	bt.note_view_cause({"t": "float"})
-	check(bt.view_cause("big", "b") == "ram", "battle: a ram kill plays the ram death")
+	bt._view_cause = {"b": "ram", "g": "board"}
+	check(bt.view_cause("big", "b") == "ram", "battle: view_cause plays the ram look")
 	check(bt.view_cause("big", "b") == "big", "battle: the ram mark is used once")
-	# Artoo on PR 1666: a ram both ships survive, then a torpedo kills the rammer: a torpedo death, not a ram
-	bt.note_view_cause({"t": "ram", "unit": "c", "target": "d"})
-	bt.note_view_cause({"t": "fire", "unit": "e", "target": "c"})
-	check(bt.view_cause("big", "c") == "big", "battle: a later weapon kill of a ram survivor keeps its own death")
-	check(bt.view_cause("big", "d") == "big", "battle: and so does the rammed ship's")
-	# a boarding scuttle, and a boarding raid that does not scuttle
-	bt.note_view_cause({"t": "board", "unit": "f", "target": "g", "result": "scuttle"})
-	check(bt.view_cause("dark", "g") == "board", "battle: a scuttle plays the boarding death")
-	bt.note_view_cause({"t": "board", "unit": "f", "target": "h", "result": "raid"})
-	check(bt.view_cause("dark", "h") == "dark", "battle: a raid marks nothing")
-	bt._view_cause["i"] = ["ram", Time.get_ticks_msec() - 60000]
-	check(bt.view_cause("big", "i") == "big", "battle: an old ram mark is ignored")
+	check(bt.view_cause("flay", "g") == "flay", "battle: a boarding mark only turns a dark kill into the boarding death")
 	check(bt.view_cause("flay", "x") == "flay", "battle: any other kill keeps the rules' cause")
 	bt.free()
 	print("DEATH_VARIETY failures=%d" % failures)

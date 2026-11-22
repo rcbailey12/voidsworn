@@ -99,9 +99,9 @@ var wrecked := {}
 # issue 1586: a kill the rules call "big" after a ram, or "dark" after a boarding scuttle, plays its own death look ("ram",
 # "board"); the view picks it from the event that came before, so the rules and battle.js keep their killCause (R312)
 # Only the deaths of the action that set a mark take its look: any next action clears the marks (Artoo on PR 1666: a ram
-# both ships survived must not turn a later torpedo kill into a ram death), and a mark is ignored after VIEW_CAUSE_MS.
-var _view_cause := {}      # id -> ["ram" | "board", when (ms)]
-const VIEW_CAUSE_MS := 15000
+# both ships survived must not turn a later torpedo kill into a ram death). The marks are read once from the whole batch
+# when it starts (view_causes), so no playback branch (the grouped volley path skips _play_event) can miss an action.
+var _view_cause := {}      # dying unit id -> "ram" | "board", for the batch being played
 const VIEW_CAUSE_ACTIONS := ["fire", "move", "ram", "board", "ability", "blink", "activation", "command", "order", "tick", "round", "wing", "pulled", "burning"]
 var board: Node3D
 var cam: Camera3D
@@ -1268,6 +1268,7 @@ var _deaths_left := 0         # issue 1238: death events still to play in this b
 
 func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
+	_view_cause = view_causes(evs)
 	var enemy := false
 	dying.clear()
 	_deaths_left = 0
@@ -1426,7 +1427,6 @@ func _voice_event(e: Dictionary) -> void:
 
 func _play_event(e: Dictionary, batch_view := {}) -> void:
 	_voice_event(e)
-	note_view_cause(e)
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
@@ -2747,23 +2747,29 @@ func _kill_skip() -> void:
 	_kill_let_go()
 
 
-# issue 1586: a new action ends the last one's marks; a ram marks both ships, a boarding scuttle its target
-func note_view_cause(e: Dictionary) -> void:
-	var kind := str(e.get("t", ""))
-	if kind in VIEW_CAUSE_ACTIONS:
-		_view_cause.clear()
-	if kind == "ram":
-		_view_cause[str(e["target"])] = ["ram", Time.get_ticks_msec()]
-		_view_cause[str(e["unit"])] = ["ram", Time.get_ticks_msec()]
-	elif kind == "board" and str(e.get("result", "")) == "scuttle":
-		_view_cause[str(e["target"])] = ["board", Time.get_ticks_msec()]
+# issue 1586: walks a batch's events in order: a new action ends the last one's marks; a ram marks both ships, a boarding
+# scuttle its target; a death of a marked ship takes the mark. Returns dying unit id -> "ram" | "board".
+static func view_causes(evs: Array) -> Dictionary:
+	var marks := {}
+	var out := {}
+	for e in evs:
+		var kind := str(e.get("t", ""))
+		if kind in VIEW_CAUSE_ACTIONS:
+			marks.clear()
+		if kind == "ram":
+			marks[str(e.get("target", ""))] = "ram"
+			marks[str(e.get("unit", ""))] = "ram"
+		elif kind == "board" and str(e.get("result", "")) == "scuttle":
+			marks[str(e.get("target", ""))] = "board"
+		elif kind == "death" and marks.has(str(e.get("unit", ""))):
+			out[str(e.get("unit", ""))] = marks[str(e.get("unit", ""))]
+	return out
 
 
 # issue 1586: the death look for a kill: "ram" for a ram kill the rules call "big", "board" for a scuttle they call "dark"
 func view_cause(cause: String, id: String) -> String:
-	var row: Array = _view_cause.get(id, [])
+	var v := str(_view_cause.get(id, ""))
 	_view_cause.erase(id)
-	var v: String = str(row[0]) if row.size() >= 2 and Time.get_ticks_msec() - int(row[1]) <= VIEW_CAUSE_MS else ""
 	if v == "ram" and cause == "big":
 		return "ram"
 	if v == "board" and cause == "dark":
