@@ -310,7 +310,7 @@ try {
   // The Board keep list (issue 1180, Nov 20): an owned scratch that would otherwise go stays when listed by exact path.
   const boardKept = scratch(temp, ownerName(309, 'a'), 26);
   markOwned(boardKept, 26);
-  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n\r\n`);
+  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n${path.join(pc, 'opus1396kept')}\r\n\r\n`);
   for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, tokenOnly]) markOwned(dir, 26);
   for (const [dir, hours] of [[oldRetry, 25], [freshRetry, 4]]) {
     const marker = path.join(dir, '.voidsworn-run-failed');
@@ -438,6 +438,16 @@ try {
   write(path.join(relayAttempt, 'out_new', 'result.txt'), 'relay fixture result');
   dateTree(path.join(pc, 'opus1396relay'), 30);
   const relayCheckout = path.join(relayAttempt, 'new');
+  // Artoo on PR 1592: the relay proof never runs where the janitor's own checks refuse: a Board-kept job folder, and a
+  // job whose lease a helper run holds (opus910). Both carry a PASS attempt listing a checkout.
+  const relayGuarded = [path.join(pc, 'opus1396kept'), helperLeased].map(dir => {
+    const at = path.join(dir, 'out_20261122_020202_2');
+    write(path.join(at, 'done.txt'), 'PASS\r\n');
+    write(path.join(at, 'checkouts.txt'), `new ${'b'.repeat(40)}\r\n`);
+    write(path.join(at, 'new', 'godot', 'project.godot'), 'guarded checkout stand-in');
+    dateTree(dir, 30);
+    return dir;
+  });
   const jobCheckoutsKept = [jobWorkRepo];
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
@@ -583,7 +593,10 @@ try {
   assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
   // Issue 1396: the checkout-only path, its record lines and its refusals.
   assert(dry.includes(`job relay: checkouts kept: ${relayAttempt} (results not relayed yet: board/pc-out-opus1396relay:out_20261122_010101_1: branch board/pc-out-opus1396relay (from the job name) is not on origin`), 'the dry run lists the relay proof refusal: ' + dry);
-  assert.match(dry, /job relay check exit 0/);
+  assert(dry.includes(`job relay check exit 0 in ${path.join(pc, 'opus1396relay')}`), 'the head ran for the unguarded job');
+  assert(dry.includes(`job relay checkouts would keep in ${relayGuarded[0]} (kept: on the Board keep list)`), 'a Board-kept job never reaches the relay proof: ' + dry);
+  assert(dry.includes(`job relay checkouts would keep in ${relayGuarded[1]} (a helper run holds this folder's lease)`), 'a held lease never reaches the relay proof');
+  for (const dir of relayGuarded) assert(!dry.includes(`job relay check exit 0 in ${dir}`) && !dry.includes(`job relay: checkouts kept: ${dir}`), `the head never ran for ${dir}`);
   assert.match(decision(dry, jobKeptOut, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
   assert.match(decision(dry, jobKeptRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
   assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
@@ -596,7 +609,7 @@ try {
   assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files/);
   assert.match(decision(dry, path.join(helperShip, 'repo'), 'retained'), /superseded ship or gen files need a checked archive/);
   assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
-  assert.match(dry, /Board keep list: 1 paths/);
+  assert.match(dry, /Board keep list: 2 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder \(process 0 fixture\)/);
@@ -643,7 +656,9 @@ try {
     [playtest, 'out_A/shot.png', 'pt1120c picture'], [playtest, 'out_A/done.txt', 'FAILED']]) {
     assert.equal(read(path.join(dir, file)), text, `checkout-only cleanup kept ${file} in ${dir}`);
   }
-  assert(live.includes(`job relay: checkouts kept: ${relayAttempt} (`) && /job relay check exit 0/.test(live), 'the live run runs the relay proof and keeps an unrelayed checkout: ' + live);
+  assert(live.includes(`job relay: checkouts kept: ${relayAttempt} (`) && live.includes(`job relay check exit 0 in ${path.join(pc, 'opus1396relay')}`), 'the live run runs the relay proof and keeps an unrelayed checkout: ' + live);
+  assert(live.includes(`job relay checkouts kept in ${relayGuarded[0]} (kept: on the Board keep list)`) && live.includes(`job relay checkouts kept in ${relayGuarded[1]} (a helper run holds this folder's lease)`), 'guards hold in the live run too');
+  for (const dir of relayGuarded) assert(fs.existsSync(path.join(dir, 'out_20261122_020202_2', 'new', 'godot', 'project.godot')), `guarded checkout stays in ${dir}`);
   // The missing-lease case (Artoo on PR 1592): the live run created and held a lease in each folder that had none, so a
   // helper_clone start (OpenOrCreate, no sharing) during the removal would have stopped instead of overlapping.
   for (const dir of [jobKeptOut, playtest]) assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')), `live run took no lease in ${dir}`);

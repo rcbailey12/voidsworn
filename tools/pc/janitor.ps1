@@ -392,23 +392,56 @@ function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $
   }
 }
 
-function Invoke-JobRelayCleanup($dryRun) {
+function Test-ListsCheckouts($dir) {
+  # Any attempt <job>\out_* with a checkouts.txt: the only folders the job head's relay proof can act on.
+  try {
+    foreach ($att in $dir.EnumerateDirectories('out_*')) {
+      if (-not ($att.Attributes -band [IO.FileAttributes]::ReparsePoint) -and (Test-Path -LiteralPath (Join-Path $att.FullName 'checkouts.txt') -PathType Leaf)) { return $true }
+    }
+  } catch { }
+  return $false
+}
+function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
   # Issue 1396 (Board, Nov 22): a job's results are relayed after its tail has run, and no session runs dropcheckouts by
-  # hand, so the janitor runs the job head's own proof (opus_job_head.ps1 dropjobs, the same installed version) over
-  # every PASS attempt that still lists checkouts. It removes only what that proof clears (origin's relay branch holds
-  # every out file byte for byte, PR 1600) and logs the rest as kept. A dry run passes --dry-run: nothing removed or
-  # fetched. Its output lines go to this log; a failure only logs.
+  # hand, so the janitor runs the job head's own proof (opus_job_head.ps1 dropjobs <job>, the same installed version)
+  # for each job folder whose PASS attempts still list checkouts. It removes only what that proof clears (origin's relay
+  # branch holds every out file byte for byte, PR 1600) and logs the rest as kept. The same checks as every other janitor
+  # removal come first and hold through the call, a resumed removal included (Artoo on PR 1592): the Board keep list, the
+  # job lease (taken even when missing, never created on a dry run), the issue lock, no running process naming the
+  # folder, and the PC pause. A dry run passes --dry-run: nothing removed or fetched.
+  if (-not (Test-ListsCheckouts $dir)) { return }
   $head = Join-Path (Join-Path $PSScriptRoot 'jobs') 'opus_job_head.ps1'
-  if (-not (Test-Path -LiteralPath $head -PathType Leaf)) { Log "job relay check skipped: no $head"; return }
-  if (Cleanup-Paused) { Log 'job relay check skipped: PC pause is active'; return }
-  $exe = if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { 'powershell.exe' } else { 'pwsh' }
-  $words = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $head, 'dropjobs')
-  if ($dryRun) { $words += '--dry-run' }
-  $ErrorActionPreference = 'Continue'
-  $out = @(& $exe @words 2>&1 | ForEach-Object { "$_" })
-  $code = $LASTEXITCODE
-  foreach ($line in $out) { if ($line.Trim()) { Log "job relay: $line" } }
-  Log "job relay check exit $code"
+  $issueLock = $null; $lease = $null
+  try {
+    if (-not (Test-Path -LiteralPath $head -PathType Leaf)) { throw "no job head at $head" }
+    $listed = Get-BoardKeepReason $dir.FullName
+    if ($listed) { throw $listed }
+    try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $dryRun }
+    catch { throw 'a helper run holds this folder''s lease' }
+    if (-not $dryRun -and -not $lease) { throw 'job folder lease could not be taken' }
+    if ($issue -and $activeLegacy -contains $issue) { throw "issue #$issue has an active older runner" }
+    if ($issue) {
+      try { $issueLock = Open-CleanupLock (Issue-LockPath $issue $temp) $dryRun }
+      catch { throw "issue #$issue lock is held or could not be verified" }
+    }
+    Assert-NoProcessUses $dir
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    $exe = if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { 'powershell.exe' } else { 'pwsh' }
+    $words = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $head, 'dropjobs', $dir.FullName)
+    if ($dryRun) { $words += '--dry-run' }
+    $ErrorActionPreference = 'Continue'
+    $out = @(& $exe @words 2>&1 | ForEach-Object { "$_" })
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    foreach ($line in $out) { if ($line.Trim()) { Log "job relay: $line" } }
+    Log "job relay check exit $code in $($dir.FullName)"
+  } catch {
+    $action = if ($dryRun) { 'would keep' } else { 'kept' }
+    Log "job relay checkouts $action in $($dir.FullName) ($($_.Exception.Message))"
+  } finally {
+    if ($issueLock) { $issueLock.Dispose() }
+    if ($lease) { $lease.Dispose() }
+  }
 }
 
 $trigger = $args[0]
@@ -499,8 +532,6 @@ try {
         $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
     Clear-ScratchFolder $dir $issue 'owned TEMP scratch' 3 $temp $now $dryRun $activeLegacy -TempScratch -Records $records -HasOwner $hasOwner
   }
-  Assert-GpuQuiet
-  Invoke-JobRelayCleanup $dryRun
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories()) {
     # Issue 1396: suffixed job folders (opus1369b, opus1211_run6, opus1373probe2) and playtest folders (pt1120c) too.
     $issue = ''
@@ -509,7 +540,10 @@ try {
     Assert-GpuQuiet
     $script:helperGone = $false
     Clear-ScratchFolder $dir $issue 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
-    if (-not $script:helperGone) { Clear-JobCheckouts $dir $issue $temp $now $dryRun $activeLegacy $mirror }
+    if (-not $script:helperGone) {
+      Invoke-JobRelayCleanup $dir $issue $temp $dryRun $activeLegacy
+      Clear-JobCheckouts $dir $issue $temp $now $dryRun $activeLegacy $mirror
+    }
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }

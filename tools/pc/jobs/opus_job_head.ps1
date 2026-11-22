@@ -750,14 +750,18 @@ switch ($Action) {
   }
   'dropjobs' {
     # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
-    # the janitor calls this hourly and after jobs. Every PASS attempt voidsworn_test\<job>\out_* that still lists a
+    # the janitor calls this hourly and after jobs. Every PASS attempt <job>\out_* that still lists a
     # checkout gets the same proof as dropcheckouts (origin's relay branch holds every out file byte for byte); anything
     # else is logged as kept. --dry-run removes nothing, finishes no earlier removal and fetches nothing.
-    $script:dropDry = $A -eq '--dry-run'
-    if ($A -and -not $script:dropDry) { throw "dropjobs takes only --dry-run, got: $A" }
+    # One job folder per call (A): the janitor takes that folder's lease, issue lock, keep list and process checks
+    # first and holds them through this call (Artoo on PR 1592), so this never sweeps folders it was not handed.
+    $script:dropDry = $B -eq '--dry-run'
+    if ($B -and -not $script:dropDry) { throw "dropjobs takes only --dry-run after the job folder, got: $B" }
     $script:freed = [long]0
-    foreach ($job in @((Get-Item -LiteralPath $vt -Force).EnumerateDirectories())) {
-      if (-not (Test-PlainDir $job) -or $job.Name -notmatch '\A[A-Za-z0-9_-]+\z') { continue }
+    $one = Get-Item -LiteralPath ([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) -Force -ErrorAction SilentlyContinue
+    if (-not $A -or -not (Test-PlainDir $one) -or $one.Name -notmatch '\A[A-Za-z0-9_-]+\z' -or
+        -not (Split-Path -Parent $one.FullName).Equals($vt, [StringComparison]::OrdinalIgnoreCase)) { throw "dropjobs needs a job folder voidsworn_test\<job>, got: $A" }
+    foreach ($job in @($one)) {
       foreach ($att in @($job.EnumerateDirectories('out_*'))) {
         if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
         $list = Join-Path $att.FullName 'checkouts.txt'
