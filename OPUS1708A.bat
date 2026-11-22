@@ -8,7 +8,7 @@ setlocal EnableExtensions
 set "JOB=opus1708a"
 set "LABEL=1708"
 set "TOOLS=godot ffmpeg"
-set "PIN_NEW=015fe4d77f7a86ead25628a27721567ad7ca9449"
+set "PIN_NEW=1610e3a84398e972c5afce19c7e64bfee676f75a"
 
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "HEAD="
