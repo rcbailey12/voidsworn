@@ -598,6 +598,18 @@ tells (R174). Set: Ryan (R82, R216, R353).
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
 
+10.11 **The battle sky is Grounded Cinematic Space: mostly near-black, never wall-to-wall star snow.** About 85% fewer stars
+than the Nov 22 sky (about 250 to 500 pinpoints in a 45-degree battle frame), faint stars gathered along a tilted galactic band,
+a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
+override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
+Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K R01 board planet and all
+five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart, faceted Blender crystal
+clusters, `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
+silent-regression traps are `contrib/opus/plans/world_consistency_v2.md`; each track runs independent-audit (3.13) before its
+GPU captures (3.12). Why: the Nov 22 world audit found A-tier pieces beside D-tier outliers, and about 85,000 sky stars read
+as white static behind ships, hexes and arcs; Ryan approved Option A on all four areas (tracker #1764). Set: Ryan, Nov 22 2026
+(R419).
+
 ## 11. Story, names and the campaign
 
 11.1 **The lore is lore_bible_r8.md; display names follow it and rename_map_final.md; ids never change.** Why: saves, sims and
