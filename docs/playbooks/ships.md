@@ -438,15 +438,27 @@ we don't run into the issues of before with just empty looking husks". What he w
   layered glass and light.
 - Hits, wounds, breaks and deaths use the insides where they exist (RULEBOOK 5.4, RULEBOOK 6.14, R416; `contrib/opus/plans/cohesive_damage_v2.md`).
   To keep the whole chain from ship build through weapons, hit wounds, capability losses and destruction singular and cohesive:
-  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3):** upgrade `tools/blender/build_sheets/kit.py` (`K.room`, `K.deck`,
-  `K.bulkhead`, `K.organ_room`, `K.hoop`, `K.septum`) and `tools/blender/kits/ithar/hull.py` (`insides`) from plain untextured
-  chamfered boxes and flat slabs to modeled machinery, girdered decks, framed arch bulkheads, sculpted organic sacs/bone ribs,
-  and collared crystal waveguides, UV-mapped onto one shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
-  optional `emission`, reusing `tools/recipe/export7.py` shared trim support), verified by a cutaway review view in
-  `tools/blender/build_sheets/layout.py` and `tools/recipe/check_export.py` while keeping `surface_check.py` at 0 outside room
-  pixels; (2) **Active rebake contrast and palette fixes:** raise `INSIDE_TINT` from 0.18 toward 0.55 across `voidsworn`,
-  `hegemony`, `hullbreakers` and `eclipse` (`#1422`, `#1681`, `#1684`) and flip Eclipse `CORE_RGB` to violet (`#1422`, zero
-  green inside); runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
+  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3), built:** `Kit.finish()` runs
+  `tools/blender/build_sheets/interior_kit.py` on every sheet, so a rebake upgrades its insides with no sheet edit: reactor
+  vessels with containment rings, headers and core slits (`core`, `ecore`; the room around a reactor stops glowing all over),
+  turbine drums and manifolds (`engroom`), tube racks in retaining frames (`magazine`), equipment rack rows and risers
+  (`hrack`, `machinery`), gantry rails and roof trusses (`hangar`), ribbed bays with consoles, archive stacks or crates (every
+  other room; Eclipse bays take truss braces, never ribs), I-section girders and edge flanges under every deck, a collar,
+  stanchions and a framed arch on every bulkhead, and for the Chorus vascular ridges and sac lobes on organs, knobbed bone
+  struts between hoops and fibrous ridges on septa (no metal). The Glasswrights' prism nodes and lens collars are built in
+  `tools/blender/kits/ithar/hull.py` `insides()`. A piece furnishing a room stays inside the room's box; any other piece is
+  dropped whole when it comes within 0.006 of the ship's length of the skin; long pieces are cut into short runs so the death
+  cut tears them (R226). Every inside gets box UVs (one trim tile per 0.055 of the ship's length) and the mark `interior_kit = 2`.
+  Paint (stage 5) then gives the rooms the faction's shared trim maps (`tools/blender/kits/shared/interior_trim.py`, the look in
+  each faction stack's `INSIDE_TRIM`: albedo, ORM, normal, emission strips), stage 7 writes one `<CODE>_inside_trim_*` set per
+  ship, and `check_export.py` fails a V2 export with a room surface without UVs, a painted room material without the trim maps,
+  or interior triangles over 45 percent of the ship. Review the result with
+  `python tools/blender/build_sheets/cutaway.py <blend> <out> "<title>"` (centreline section, plan section, close cutaway;
+  stamped with revision and stage), on the stage 4 build or the painted stage 5 blend; the build sheet's own cutaway view shows
+  the modeled pieces too. (2) **Active rebake contrast and palette fixes:** `INSIDE_TINT` is 0.55 across `voidsworn`,
+  `hegemony`, `hullbreakers` and `eclipse`, each with its `INSIDE_LIFT` (the Directorate's trim takes its white-corridor
+  `INSIDE_TRIM_BASE`); the Eclipse inside core takes violet-white from `faction_looks.json` (zero green inside), and `#1422` flips
+  `CORE_RGB` itself for the hull; runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
   triplanar PBR interior shader and breach-mouth 3D dressing without waiting on rebakes; (3) **Exact hardpoint/slot tags:**
   keep weapon hard points (`hp_w<slot>_*`), turning turret nodes (`turret_*`), engine nozzles (`hp_eng_*`) and bay doors
   (`door_*`) accurately tagged by slot and section, because live capability-loss damage reads those exact nodes when weapons,

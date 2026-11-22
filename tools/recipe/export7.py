@@ -368,6 +368,9 @@ TURN_OBJS = [join([prep(o) for o in ms], f'turret_{k}_turn') for k, (pv, ms) in 
 DOOR_OBJS = [[join([prep(o)], f'door_{n}_lobe_{k}_mesh') for k, o in enumerate(obs)] for n, (fid, obs) in enumerate(DOORS)]
 used_materials = {slot.material.name for o in [J] + TURN_OBJS + [d for ds in DOOR_OBJS for d in ds] for slot in o.material_slots if slot.material}
 destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
+# Interior Kit V2 (issue 1743, R416 Layer 3): insides built by the kit carry its mark; check_export.py then holds a painted export
+# to the shared interior trim maps (albedo, ORM, normal) and its interior UVs
+destruction['interior_kit'] = 2 if any(o.get('role') == 'interior' and o.get('interior_kit', 0) >= 2 for o in src) else 0
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
 TURRET_TRIS = 0
 for t in TURN_OBJS:
@@ -572,7 +575,9 @@ files = {}
 role = {}
 def use(mat, slot, tex):
     if tex is None: return
-    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
+    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']
+    if mat['name'] in destruction['interior_materials']: pre = CODE + '_inside_trim'    # issue 1743: one shared trim set per ship
+    nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = (nm, slot)

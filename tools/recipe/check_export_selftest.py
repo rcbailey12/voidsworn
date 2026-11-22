@@ -29,6 +29,9 @@
 #   bell_radius     (each open engine bell, issues 592, 967) that engine's             must FAIL (not the centre of an open bell)
 #                   extras.radius doubled
 #   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
+#   interior_no_uv  (an Interior Kit V2 export, issue 1743) one room surface's UVs      must FAIL (a room surface without interior UVs)
+#                   taken off
+#   interior_no_trim (a painted V2 export) one room material's detail normal taken off must FAIL (the shared trim maps missing)
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
 # has no engines, braking or boarding points and no breach anchors). The 'pass' case still proves the check accepts that export,
 # so a point the game requires and the export lacks fails there, not here.
@@ -171,6 +174,16 @@ def liner_only(g):
     mats = root['extras']['voidsworn_destruct']['interior_materials']
     g['meshes'][root['mesh']]['primitives'] = [p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] not in mats or g['materials'][p['material']]['name'] == code + '_inside_skin']
     root['extras']['voidsworn_destruct']['interior_materials'] = [code + '_inside_skin']
+def _room_mats(g):
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    return root, [m for m in root['extras']['voidsworn_destruct']['interior_materials'] if m != code + '_inside_skin']
+def interior_no_uv(g):  # issue 1743: an Interior Kit V2 room surface without its interior UVs
+    root, mats = _room_mats(g)
+    p = next(p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] in mats and 'TEXCOORD_0' in p['attributes'])
+    del p['attributes']['TEXCOORD_0']
+def interior_no_trim(g):  # issue 1743: a painted V2 room material without the shared trim's detail normal
+    root, mats = _room_mats(g)
+    next(m for m in g['materials'] if m.get('name') in mats and m.get('normalTexture')).pop('normalTexture')
 def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh (turret nodes gone, their muzzles on the ship node)
     W, par = CE.world_matrices(g); root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
     for i, n in enumerate(g['nodes']):
@@ -209,6 +222,12 @@ if not wing:
     CASES += (('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
               ('liner_only', liner_only, 1, 'no authored interior rooms'))
     if BREACH: CASES += (('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+    # issue 1743: an Interior Kit V2 export (voidsworn_destruct.interior_kit 2) must fail without its interior UVs, and, painted,
+    # without its shared trim maps; a legacy export has neither, so the cases are named as skipped
+    _root0 = next(n for n in _g0['nodes'] if n.get('name') == code)
+    V2 = int(_root0.get('extras', {}).get('voidsworn_destruct', {}).get('interior_kit', 0) or 0) >= 2
+    want(['interior_no_uv'], V2, (('interior_no_uv', interior_no_uv, 1, 'have no interior UVs'),))
+    want(['interior_no_trim'], V2 and 'unbaked=1' not in sys.argv[3:], (('interior_no_trim', interior_no_trim, 1, 'lack the shared interior trim maps'),))
 
 def sided_points(g, kind, side):
     return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]

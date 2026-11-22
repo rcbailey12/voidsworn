@@ -341,21 +341,42 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
 # An inside seen from outside reads as the dark inner liner (R99 Q1), never a room colour from outside: the Eclipse liner is a
 # dark violet-black (their dark decks), a faint tint per room so a broken ship's spaces are not all one; the core keeps its light.
 INSIDE_BASE = (.010, .008, .014)
-INSIDE_TINT = .20
+INSIDE_TINT = .55      # issue 1743 (R416): lifted from .20 so a broken ship's rooms read apart
+# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) in this
+# faction's look: dark violet-black decks, violet-white bus rails from faction_looks.json (factions.md, Eclipse: archive
+# vaults, dark decks, the core's light; no green, no rust). INSIDE_LIFT lifts the room colour the maps carry (R416 root cause
+# 2: crushed, unlit insides).
+INSIDE_LIFT = 2.6
+INSIDE_TRIM = None      # made on first use (it reads the faction's light colours)
 
 
-def inside_material(room):
+def inside_trim():
+    global INSIDE_TRIM
+    if INSIDE_TRIM is None:
+        INSIDE_TRIM = dict(style='panels', seed=1746, panel=8, split=0.3, var=0.1, grime=0.15, grille=0.1, conduit_rows=1, metal=0.3,
+                 rough=(0.3, 0.6), relief=5.0, tones=((1.0, 0.9, 1.1), (0.86, 0.8, 0.96)),
+                 strip=dict(rgb=tuple(faction_look()['death']['fire']), every=4, strength=2.0))
+    return INSIDE_TRIM
+
+
+def inside_material(room, trim=False):
+    """trim: the insides carry the Interior Kit V2 UVs, so the room takes the faction's shared trim maps (issue 1743)"""
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
         sb = src.node_tree.nodes['Principled BSDF']; rgb = tuple(sb.inputs['Base Color'].default_value)[:3]
         em = sb.inputs['Emission Strength'].default_value
-        if em > 0:      # the core: its own light stays (the bright bite when the ship breaks), in the corona's green-white
-            col = lin_raw(CORE_RGB)
+        if em > 0:      # the core: its own light stays (the bright bite when the ship breaks), in violet-white
+            # issue 1743 (R416 root cause 7, Ryan Nov 20 "Eclipse is all violet"): the inside core takes the faction's violet-white
+            # from faction_looks.json (deathless death.fire), never CORE_RGB's green; #1422 flips CORE_RGB itself for the hull
+            col = tuple(float(c) for c in faction_look()['death']['fire'])
             b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = em
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
     b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
+    if trim:
+        import interior_trim
+        return interior_trim.upgrade(m, 'eclipse', inside_trim(), INSIDE_LIFT)
     m['ps_inside'] = 1
     return m
 

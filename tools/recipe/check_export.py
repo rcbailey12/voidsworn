@@ -20,6 +20,9 @@
 #   - a hard point is not a child of the ship node (or, for a turret's muzzle, of its turret node), or a map the glb names is not
 #     there.
 #   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
+#   - an Interior Kit V2 export (issue 1743: voidsworn_destruct.interior_kit 2) has a room surface without interior UVs, a painted
+#     room material without the shared trim maps (base colour, ORM, normal, occlusion), or interior triangles over
+#     INTERIOR_SHARE_MAX of the ship.
 #   - turrets (issue 560, RULEBOOK 6.17; docs/ship_pipeline/HARDPOINTS.md "Turrets"): a turret the kit marks (a ship json part
 #     whose part is 'turret', or the asset extras turrets_marked the export recorded from the blend) has no turret_<n> node of its
 #     own (the export merged it into the ship mesh), or one of its muzzles hangs on the ship node instead of under its turret; a
@@ -32,6 +35,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 SHARED = os.path.normpath(os.path.join(HERE, '..', 'blender', 'kits', 'shared')); sys.path.insert(0, SHARED)
 import gamedata, hardpoints as HP_CONTRACT
+INTERIOR_SHARE_MAX = .45   # issue 1743: the modeled interior's ceiling, as a share of the ship's triangles (H10 34, A16 30 at V2)
 BREACH_CLEAR = .030; BREACH_SECTIONS = ('prow', 'mid', 'eng'); WEAPON_EXTRAS = ('kind', 'size', 'arc', 'arc_deg', 'slot', 'weapon', 'radius', 'socket')
 
 from glb_io import read_glb  # noqa: E402 (one copy, shared with stage 7)
@@ -223,6 +227,30 @@ def main():
             if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
                 probs.append('no authored interior rooms: room geometry has no area')
     if set(interiors) != interior_seen: probs.append('authored interior material list does not match its nonempty surfaces')
+    # Interior Kit V2 (issue 1743, R416 Layer 3; RULEBOOK 5.4): an export whose insides the kit built carries interior UVs on every
+    # room surface and, once painted, the faction's shared trim maps (albedo, ORM for occlusion, roughness and metal, a detail
+    # normal) on every room material, within the interior triangle share. A legacy export (no interior_kit mark) is only reported.
+    if not wing and IT:
+        n_in = sum(len(t) for t in IT); n_all = n_in + len(T)
+        share = n_in / max(n_all, 1)
+        kit_v = int(contract.get('interior_kit', 0) or 0)
+        room_prims = [pr for pr, M in prims if 'material' in pr and g['materials'][pr['material']].get('name', '') in interiors
+                      and g['materials'][pr['material']].get('name', '') != code + '_inside_skin']
+        uv = sum(1 for pr in room_prims if 'TEXCOORD_0' in pr['attributes'])
+        trimmed = []
+        for m in sorted({g['materials'][pr['material']]['name'] for pr in room_prims}):
+            mm = next(x for x in g['materials'] if x.get('name') == m); pbr = mm.get('pbrMetallicRoughness', {})
+            if all(k for k in (pbr.get('baseColorTexture'), pbr.get('metallicRoughnessTexture'), mm.get('normalTexture'), mm.get('occlusionTexture'))):
+                trimmed.append(m)
+        n_room_mats = len({g['materials'][pr['material']]['name'] for pr in room_prims})
+        notes.append(f'interior kit v{kit_v}: {n_in} interior triangles, {share * 100:.1f} percent of the ship; interior UVs on {uv} of '
+                     f'{len(room_prims)} room surfaces; trim maps on {len(trimmed)} of {n_room_mats} room materials')
+        if kit_v >= 2:
+            if uv < len(room_prims): probs.append(f'interior kit v2: {len(room_prims) - uv} room surfaces have no interior UVs')
+            if not UNBAKED and len(trimmed) < n_room_mats:
+                probs.append(f'interior kit v2: {n_room_mats - len(trimmed)} room materials lack the shared interior trim maps (albedo, ORM, normal)')
+            if share > INTERIOR_SHARE_MAX:
+                probs.append(f'interior kit v2: interior triangles are {share * 100:.1f} percent of the ship, over the {INTERIOR_SHARE_MAX * 100:.0f} percent budget')
     for seam in seams:
         if len(seam.get('p', [])) != 3: continue
         p = np.array(seam['p'], float); n = np.array(seam.get('n', [0, 0, 0]), float)

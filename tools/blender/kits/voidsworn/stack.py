@@ -448,10 +448,25 @@ def emissive_audit(job_dir, cell):
 # An inside seen from outside reads as the dark inner liner (R99 Q1): sunward.md's liner, dark with a faint warm tint, a faint
 # tint per room so a broken ship's spaces are not all one; the reactor core keeps its ember light.
 INSIDE_BASE = lin(CONCEPT['liner'][1])
-INSIDE_TINT = .18
+INSIDE_TINT = .55      # issue 1743 (R416): lifted from .18 so a broken ship's rooms read apart
+# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) in this
+# faction's look: black iron corridors, ember-lit (factions.md, Sunward: inside iron corridors, ember-lit; never blue light,
+# never rust). INSIDE_LIFT lifts the room colour the maps carry (R416 root cause 2: crushed, unlit insides).
+INSIDE_LIFT = 2.6
+INSIDE_TRIM = None      # made on first use (it reads the faction's light colours)
 
 
-def inside_material(room):
+def inside_trim():
+    global INSIDE_TRIM
+    if INSIDE_TRIM is None:
+        INSIDE_TRIM = dict(style='panels', seed=1743, panel=8, split=0.4, var=0.12, grime=0.25, grille=0.2, conduit_rows=2, metal=0.3,
+                   rough=(0.4, 0.75), relief=6.0, tones=((1.0, 1.0, 1.0), (0.82, 0.82, 0.86), (1.12, 1.08, 1.02)),
+                   strip=dict(rgb=tuple(min(1.0, c) for c in ember_rgb()), every=4, strength=2.0))
+    return INSIDE_TRIM
+
+
+def inside_material(room, trim=False):
+    """trim: the insides carry the Interior Kit V2 UVs, so the room takes the faction's shared trim maps (issue 1743)"""
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
@@ -462,6 +477,9 @@ def inside_material(room):
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
     b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
+    if trim:
+        import interior_trim
+        return interior_trim.upgrade(m, 'voidsworn', inside_trim(), INSIDE_LIFT)
     m['ps_inside'] = 1
     return m
 

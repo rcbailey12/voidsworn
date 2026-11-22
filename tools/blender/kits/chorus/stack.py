@@ -316,7 +316,26 @@ def glow_material(zone, hull=False):
     return material
 
 
-def inside_material(zone):
+# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) as wet flesh:
+# cells, raised dark red veins, pores, a little bile yellow-green light in some veins; no metal, never magenta or maroon
+# (factions.md, the Chorus: inside flesh and bone, wet and lit from within).
+INSIDE_TRIM = dict(style='flesh', seed=1747, cells=170, vein_w=7.0, warp=0.05, relief=5.0, rough=(0.26, 0.5), flesh_tone=(1.0, 0.95, 0.7),
+                   vein_tone=(0.55, 0.12, 0.08), glow=dict(rgb=(0.55, 0.85, 0.08), share=0.2, strength=0.6))
+
+
+def inside_material(zone, trim=False):
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes the Chorus trim maps (issue 1743)"""
+    if trim:
+        import os, sys
+        sh_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'shared')
+        if sh_ not in sys.path: sys.path.insert(0, sh_)
+        import interior_trim
+        sb = bpy.data.materials[zone].node_tree.nodes.get('Principled BSDF')
+        col = tuple(sb.inputs['Base Color'].default_value)[:3]; em = sb.inputs['Emission Strength'].default_value
+        m = interior_trim.trim_material(f'chorus_inside_{zone}', 'chorus', INSIDE_TRIM, tuple(min(.5, v * .54) for v in col),
+                                        emission=(tuple(sb.inputs['Emission Color'].default_value)[:3], em) if em > 0 else None)
+        m['authored_look'] = 1
+        return m
     material = bpy.data.materials[zone].copy()
     material.name = f'chorus_inside_{zone}'
     bsdf = material.node_tree.nodes.get('Principled BSDF')
