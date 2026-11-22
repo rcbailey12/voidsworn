@@ -104,6 +104,8 @@ func _preflight() -> String:
 			WR.mesh(str(nm) + suffix)
 	for nm in crystals:
 		WR.mesh(str(nm))
+		if not old:
+			WR.mesh(str(nm) + "_lo")
 	if not WR.fallbacks.is_empty():
 		return "rock files did not load from %s: %s" % [WR.lib_dir, ", ".join(WR.fallbacks)]
 	report["rock_dir"] = WR.lib_dir

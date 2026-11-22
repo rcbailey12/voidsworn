@@ -17,6 +17,7 @@ const MIN_TRIS := 50000          # a full scan
 const MIN_TRIS_LO := 1500        # its far mesh
 const MIN_ASPECT := 0.3          # shortest over longest side of the box
 const CRYSTAL_TRIS := Vector2i(1500, 4000)
+const CRYSTAL_TRIS_LO := Vector2i(300, 1200)   # crystal_NN_lo, the edge field's far clusters (Ryan, Nov 22)
 
 var failures := 0
 
@@ -116,13 +117,19 @@ func _run() -> void:
 	# crystal clusters
 	var crystals: Array = WR.lib().get("crystals", [])
 	_check(crystals.size() >= 3, "rocks.json lists %d crystal clusters" % crystals.size())
+	var names_lo: Array = []
 	for nm in crystals:
+		names_lo.append(str(nm))
+		names_lo.append(str(nm) + "_lo")
+	for nm in names_lo:
+		var lo_c := str(nm).ends_with("_lo")
 		var g := _glb(DIR + str(nm) + ".glb")
 		if g.is_empty():
 			_check(false, "%s does not read" % nm)
 			continue
 		var tris: int = g.tris
-		_check(tris >= CRYSTAL_TRIS.x and tris <= CRYSTAL_TRIS.y, "%s has %d triangles (want %d to %d)" % [nm, tris, CRYSTAL_TRIS.x, CRYSTAL_TRIS.y])
+		var want := CRYSTAL_TRIS_LO if lo_c else CRYSTAL_TRIS
+		_check(tris >= want.x and tris <= want.y, "%s has %d triangles (want %d to %d)" % [nm, tris, want.x, want.y])
 		var r: PackedFloat32Array = g.colour_r
 		var glass := 0
 		for v in r:

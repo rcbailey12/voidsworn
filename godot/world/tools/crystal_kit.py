@@ -12,7 +12,8 @@ Vertex colour (CRYSTAL_SHADER in world_rocks.gd):
   A  1
 
 Blender 4.5 (the PC's LTS; in a cloud thread the pip bpy 4.5.4 wheel). Run:
-  blender -b -P crystal_kit.py -- OUT_DIR [count]      or      python crystal_kit.py OUT_DIR [count]   (bpy wheel)
+  blender -b -P crystal_kit.py -- OUT_DIR [count] [--lo-only]   or   python crystal_kit.py OUT_DIR [count] [--lo-only]
+Each cluster also writes crystal_NN_lo.glb, a quarter of its triangles, for far clusters; --lo-only writes just those.
 """
 import sys, math, random
 from pathlib import Path
@@ -20,10 +21,13 @@ import bpy, bmesh
 from mathutils import Vector, Matrix, noise
 
 SEEDS = [1361, 2361, 3361, 4361]
+LO_RATIO = 0.25
+LO_ONLY = '--lo-only' in sys.argv   # write only the far meshes, leaving the shipped full clusters untouched
 
 
 def args():
     a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+    a = [x for x in a if x != '--lo-only']
     return Path(a[0]), int(a[1]) if len(a) > 1 else len(SEEDS)
 
 
@@ -123,11 +127,25 @@ def build(seed, out):
     ob.data.update()
     tris = sum(len(p.vertices) - 2 for p in ob.data.polygons)
     path = out / ('crystal_%02d.glb' % SEEDS.index(seed))
+    if not LO_ONLY:
+        export(path)
+        print(path.name, 'triangles', tris, 'prisms', count)
+    # far mesh (Ryan, Nov 22, item 4 on PR 1782): a quarter of the triangles, the same frame and colour channels, for the
+    # free clusters out in the edge field
+    dec = ob.modifiers.new('lo', 'DECIMATE')
+    dec.ratio = LO_RATIO
+    bpy.ops.object.convert(target='MESH')
+    lo = sum(len(p.vertices) - 2 for p in ob.data.polygons)
+    path = out / ('crystal_%02d_lo.glb' % SEEDS.index(seed))
+    export(path)
+    print(path.name, 'triangles', lo)
+    return tris
+
+
+def export(path):
     bpy.ops.export_scene.gltf(filepath=str(path), export_format='GLB', use_selection=False, export_materials='NONE',
                               export_vertex_color='ACTIVE', export_normals=True, export_texcoords=False, export_yup=True,
                               export_apply=True)
-    print(path.name, 'triangles', tris, 'prisms', count)
-    return tris
 
 
 if __name__ == '__main__':

@@ -467,7 +467,8 @@ static func mesh(name: String) -> Mesh:
 		n.free()
 	if m == null:
 		m = fallback_mesh(name)
-		fallbacks.append(name)   # issue 1361: the rock bench fails on any (Artoo on PR 1782)
+		if not fallbacks.has(name):   # one entry per name, so a long session never grows it (Board on PR 1782)
+			fallbacks.append(name)   # issue 1361: the rock bench fails on any (Artoo on PR 1782)
 	_meshes[name] = m
 	return m
 
