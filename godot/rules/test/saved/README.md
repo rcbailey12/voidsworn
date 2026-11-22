@@ -17,7 +17,8 @@ It runs fresh parity and this check using the same Godot batch records. It print
 PASS or FAIL, battle names, the saved comparison time, and the whole parity step
 time. It discovers bundled Node 22 and `godot_path.txt` above any lane checkout;
 an existing `GODOT` override is honored. No campaign check is added to this
-launcher. The ordinary `parity.bat` keeps its campaign hand-off.
+launcher. The ordinary `parity.bat` runs the Godot saved campaign check after the rules (R405);
+`parity_campaign.bat` is the old browser campaign comparison, kept for history only.
 
 On Linux, `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh` runs both gates.
 No new CI command or second Godot run is needed. The existing parity step runs
@@ -116,21 +117,6 @@ Every normal run keeps `changed-battles.txt`, `saved_summary.json`, and the whol
 and appends the report, saved comparison time and whole-step time to
 `GITHUB_STEP_SUMMARY`. A rules PR's tracked `changes.txt` remains directly linkable.
 
-The PC worker may not edit workflows or push, so this job has no measured CI
-run yet. The existing workflow already enforces the gate through `run_parity.sh`.
-For downloadable evidence on failed CI runs, the Board should add this step
-immediately after the existing rules parity step in `.github/workflows/checks.yml`:
-
-```yaml
-- name: Keep changed-battles evidence
-  if: ${{ always() }}
-  uses: actions/upload-artifact@v4
-  with:
-    name: saved-godot-results
-    path: |
-      ${{ runner.temp }}/voidsworn-parity-*/changed-battles.txt
-      ${{ runner.temp }}/voidsworn-parity-*/saved_summary.json
-      ${{ runner.temp }}/voidsworn-parity-*/summary.json
-```
-
+CI keeps these files with the step "Keep changed-battles evidence" in `.github/workflows/checks.yml`
+(artifact `saved-godot-results`), together with `saved_changes_vs_main.txt` from `diff_vs_main.js`.
 This upload is for access to the files; the gate and CI timing do not depend on it.

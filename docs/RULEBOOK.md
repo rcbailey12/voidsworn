@@ -247,8 +247,8 @@ quote per finding, OBSERVED or INFERRED. Findings come ranked, most important fi
 review-01, review-02, review-03.
 
 2.12 **Outside agents work in contrib/<agent>/; Muse may deliver low-code fixes (text, data, tests, tools, docs) as pull
-requests, and a rules or data change is made the same way in the Godot port.** Why: "keep muse cooking" (R81); the twins must
-not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
+requests; a rules or data change is made in Godot only (3.1).** Why: "keep muse cooking" (R81); Godot is the only rules
+source since R405 (the browser twin is retired). Set: Ryan, Nov 2 (R81); Ryan, Nov 22 (R405). Ids: R81, agents-15, muse-06.
 
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
@@ -288,7 +288,8 @@ runs and the Nemesis scenarios byte for byte with the reviewed saved Godot resul
 net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
 `node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
 issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
-because the ship pipeline still reads it. The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
+`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
 nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
 retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
 of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
@@ -990,8 +991,10 @@ A push that changes only .md files and pictures under docs/, contrib/ or the rep
 standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
-12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
-drifted (R155). Set: Board. Id: R155b.
+12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
+the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
+until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).

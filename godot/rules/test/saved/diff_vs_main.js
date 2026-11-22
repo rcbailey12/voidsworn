@@ -11,14 +11,25 @@ const SETS = [
   ['rules file', 'godot/rules/test/saved/results.json', 'files'],
   ['campaign file', 'godot/campaign/test/saved/results.json', 'files'],
 ];
-function atBase(rel) {
-  try { return JSON.parse(execFileSync('git', ['show', `${base}:${rel}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'ignore'] })); }
-  catch { return null; }
+// Codex review of PR 1669: only a campaign manifest genuinely absent at the base (before the retirement) counts as new.
+// A bad ref, a missing rules manifest, a git error or broken JSON stops the report instead of listing everything as added.
+const git = (args, opts = {}) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 << 20, ...opts });
+let commit;
+try { commit = git(['rev-parse', '--verify', '-q', `${base}^{commit}`], { stdio: ['ignore', 'pipe', 'pipe'] }).trim(); }
+catch { console.log(`FAIL: ${base} is not a commit here; nothing compared`); process.exit(1); }
+function atBase(rel, mayBeAbsent) {
+  const ls = git(['ls-tree', '--name-only', commit, '--', rel]).trim();
+  if (!ls) {
+    if (mayBeAbsent) return {};
+    console.log(`FAIL: ${rel} is missing at ${base} (${commit.slice(0, 12)}); nothing compared`); process.exit(1);
+  }
+  try { return JSON.parse(git(['show', `${commit}:${rel}`])); }
+  catch (e) { console.log(`FAIL: cannot read ${rel} at ${base}: ${e.message.split('\n')[0]}`); process.exit(1); }
 }
 const lines = [];
 for (const [label, rel, key] of SETS) {
   const head = JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'))[key] || {};
-  const old = (atBase(rel) || {})[key] || {};
+  const old = atBase(rel, rel.startsWith('godot/campaign/'))[key] || {};
   for (const name of [...new Set([...Object.keys(old), ...Object.keys(head)])].sort()) {
     if (!old[name]) lines.push(`added    ${label} ${name}`);
     else if (!head[name]) lines.push(`removed  ${label} ${name}`);
