@@ -34,7 +34,7 @@ function replaceOnce(source, old, value) {
   return source.slice(0, at) + value + source.slice(at + old.length);
 }
 
-function harness({rules, revision, ramp}) {
+function harness({rules, revision}) {
   const read = name => git('show', `${revision}:${name}`).replace(/\r\n/g, '\n');
   const data = read('data.js');
   const core = replaceOnce(read('core.js'), "const newId = () => 'x'+Date.now().toString(36)+(UID++);",
@@ -81,8 +81,7 @@ function harness({rules, revision, ramp}) {
   // Each worker owns its own compiled copy, with only the default simulation flags.
   // Zero-delay presentation waits resolve immediately; rule promises still run in order.
   const compile = new Function('process', 'setTimeout', 'setInterval', 'clearInterval', 'console',
-    // ramp: fleet budget values to use instead of the frozen battle.js ones (R414: Godot's tables moved after the JS froze).
-    [data, core, source, ramp ? 'Object.assign(RAMP,' + JSON.stringify(ramp) + ');' : '', sim, trial, runtime, 'return trialApi;'].join('\n'));
+    [data, core, source, sim, trial, runtime, 'return trialApi;'].join('\n'));
   return compile({env: {}}, fn => { fn(); return 0; }, () => 0, () => {}, {log() {}, debug() {}, warn: console.warn});
 }
 
