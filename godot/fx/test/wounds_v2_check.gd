@@ -421,6 +421,30 @@ func _review_fixes() -> void:
 	core.emission_energy_multiplier = 4.0
 	var wall := StandardMaterial3D.new()
 	wall.resource_name = "C19_51_inside_3"
+	# the role rides in the hull contract (Godot drops material extras): _authored copies it onto the material
+	var cdoc := GLTFDocument.new()
+	var cst := GLTFState.new()
+	var cbytes := FileAccess.get_file_as_bytes("res://fx/test/fixtures/C19_51_unbaked.glb.gz").decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
+	cdoc.append_from_buffer(cbytes, "res://", cst)
+	var cship := cdoc.generate_scene(cst) as Node3D
+	for nd in [cship] + cship.find_children("*", "Node3D", true, false):
+		var ex = nd.get_meta("extras", {})
+		if ex is Dictionary and ex.has("voidsworn_destruct"):
+			var con: Dictionary = ex["voidsworn_destruct"]
+			con["interior_roles"] = {"C19_51_inside_2": "bone"}
+			ex["voidsworn_destruct"] = con
+			nd.set_meta("extras", ex)
+	var ch = HULL.new()
+	ch._authored(cship)
+	var crole := []
+	for mi in cship.find_children("*", "MeshInstance3D", true, false):
+		var cm: Mesh = (mi as MeshInstance3D).mesh
+		for j in cm.get_surface_count():
+			var cmat := cm.surface_get_material(j)
+			if cmat != null and cmat.resource_name == "C19_51_inside_2":
+				crole = HULL.interior_role(cmat)
+	check(crole == [1, true], "B3: a role in the hull contract's interior_roles reaches the material (%s)" % str(crole))
+	cship.free()
 	check(HULL.interior_role(bone) == [1, true] and HULL.interior_role(core) == [2, false] and HULL.interior_role(wall) == [0, false], "B3: bone from the role table, a lit inside as a core, a plain inside as a wall")
 	var im: ShaderMaterial = HULL.interior_material_v2(core, Transform3D.IDENTITY, {"count": 1, "mouths": [Vector4.ZERO], "axes": [Vector4(0, 1, 0, 1)]}, BREACH.wound_of("deathless"), 20.0)
 	check(int(im.get_shader_parameter("role")) == 2 and not bool(im.get_shader_parameter("trusted")), "B3: the shader gets the surface role")

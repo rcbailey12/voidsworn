@@ -525,7 +525,8 @@ static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dict
 # Fable review B3: an inside surface's role for the interior shader, [role, trusted]: 0 wall (deck, frame, machinery),
 # 1 bone, 2 core, 3 glass, 4 organ or gland. A surface from the Interior Kit V2 (PR 1763) names its role in the glTF
 # material extras (interior_role), and its colour came from the faction role table, so it is trusted and kept; an older
-# surface is read from its name and light, and only its texture's light and dark are kept.
+# surface is read from its name and light, and only its texture's light and dark are kept. Godot does not import glTF
+# material extras, so _authored copies the role from the hull contract's interior_roles {material name: role} as meta.
 const INTERIOR_ROLES := {"bone": 1, "core": 2, "glass": 3, "glass_strut": 3, "organ": 4, "gland": 4}
 
 
@@ -577,7 +578,12 @@ func _authored(root: Node3D) -> void:
 			if not part is MeshInstance3D or part.mesh == null: continue
 			for si in part.mesh.get_surface_count():
 				var mat: Material = part.mesh.surface_get_material(si)
-				if mat != null and mat.resource_name in contract.get("interior_materials", []): mat.set_meta("fx_authored_interior", true)
+				if mat != null and mat.resource_name in contract.get("interior_materials", []):
+					mat.set_meta("fx_authored_interior", true)
+					# Interior Kit V2 (PR 1763): Godot drops glTF material extras, so each inside material's role
+					# (wall, deck, frame, machinery, bone, core, glass, organ, gland) rides in the hull contract
+					var roles = contract.get("interior_roles", {})
+					if roles is Dictionary and roles.has(mat.resource_name): mat.set_meta("interior_role", str(roles[mat.resource_name]))
 		var xf: Transform3D = root.global_transform.affine_inverse() * nd.global_transform
 		for seam in contract.get("seams", []):
 			var p: Array = seam["p"]
