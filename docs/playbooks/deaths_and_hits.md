@@ -237,6 +237,12 @@ Three upgrades run through all of them:
    fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
    (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
    degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
+   Faction hit damage (R402, Ryan Nov 22): wounds, scars and wear read as each faction's own material, for all six
+   factions in one build, on every hull of the faction, player and enemy. Glasswrights take cracks in the same glass,
+   behaving like glass (straight-running fractures that catch light, never bent or warped metal), plus a few missing
+   panes with white light inside; never a black hole. Soot and the wear darkening above stay on metal ships only and
+   are dropped for glass (Glasswrights) and flesh (the Chorus). A painted concept sheet of all six goes to Ryan before
+   the build; the build issue opens after he approves it.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)
