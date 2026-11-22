@@ -6,7 +6,6 @@ const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
-const PP = preload("res://tools/picture_provenance.gd")
 var C
 var ui
 var dir := ""
@@ -34,8 +33,8 @@ func _shot(name: String) -> bool:
 	await RenderingServer.frame_post_draw
 	var img = root.get_texture().get_image()
 	var path = dir.path_join(name + ".png")
-	PP.save_png(img, path, PP.capture_stage())
-	var ok = FileAccess.file_exists(path)
+	var err = preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage())
+	var ok = err == OK and FileAccess.file_exists(path) and FileAccess.file_exists(path + ".provenance.json")
 	print("shot " if ok else "FAILED ", name)
 	return ok
 
