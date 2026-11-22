@@ -104,7 +104,7 @@ jobs:
       - name: No em dashes in changed text files (house rule)
         run: node contrib/opus/tools/check_em_dashes.js
       - name: Run all standing checks
-        run: node contrib/opus/tools/run_all_checks.js
+        run: node contrib/opus/tools/run_all_checks.js --jobs 4   # issue 1489: four rows at once, same table
   godot-parity:
     name: Godot rules parity
     needs: changes
