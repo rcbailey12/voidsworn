@@ -334,6 +334,13 @@ WEAPONS = {
         lore='Lore 3.8: Picket lasers. Battle look: flak (airbursts in the Hegemony style).',
         design=('A small low eight-sided turret on a flush ring, a sensor eye in its face, two short emitter tubes with lens '
                 'tips and cooling collars, elevating high (to 60) for craft. Twin: two emitters.')),
+    'laser': dict(
+        name='Plasma cannon', rules='data.js laser: 2 shots, 7 damage, range 4 (k battery); FAC_WNAMES hegemony laser = Plasma cannon',
+        lore='Lore 3.8: the Navy escorts\' forward plasma cannon. Battle look: plasma, as the lances, smaller.',
+        design=('Issue 1412 (the Picket, hegemony_H7): a low casemate set INTO the blunt bow face, never on the deck edge and never '
+                'the ion trench: a lined recess with a trim frame round its mouth, an armoured mantlet on its back wall, two short '
+                'thick containment barrels side by side (the lance barrel: breech sleeve, coil rings, vented shroud, blue-lit bore) '
+                'that barely clear the face. Fixed forward (slot F).')),
 }
 
 
@@ -441,6 +448,44 @@ def _picket(p, barrels, cal, blen, s, pitch, variant):
         p.add('b%d_lens' % i, 'body', 'hlens', moved(revolve([(xe - cal * 0.45, cal * 0.45), (xe - cal * 0.42, 0.001)], 10, cap0=True), T))
         muzzles.append(P(T @ Vector((xe, 0, 0))))
     return trunnion, muzzles, trunnion.x + 0.08 * s + blen, rr * 1.1, E
+
+
+def casemate(depth, w=0.8, h=0.34, barrels=2, cal=0.085, out=0.07, coils=3):
+    """the bow casemate (data.js laser, slot F; issue 1412, the Picket): a fixed twin plasma cannon recessed in the bow face.
+    Origin at the casemate's back wall on the axis, +X forward out of the bow face, +Z up; depth is the back wall's distance to
+    the bow face; w, h the mouth (local Y and Z). The liners line the hull's recess (mounts), a mantlet stands on the back wall,
+    the barrels run from the mantlet to `out` past the face, a trim frame rings the mouth. The pivot sits at the mouth so the
+    fit check's arc rays leave clear of the face."""
+    p = Part('gun')
+    hw, hh = w / 2, h / 2
+    lt = 0.04
+    p.add('housing_top', 'mount', 'hgrey2', _zblock(0.0, depth, -hw, hw, hh - lt, hh + 0.01))
+    p.add('housing_bottom', 'mount', 'hgrey2', _zblock(0.0, depth, -hw, hw, -hh - 0.01, -hh + lt))
+    for sg in (1, -1):
+        p.add('housing_side%d' % (sg > 0), 'mount', 'hgrey2', _zblock(0.0, depth, sg * (hw - lt) if sg > 0 else -hw - 0.01, hw + 0.01 if sg > 0 else -(hw - lt),
+                                                                      -hh, hh))
+    # the mouth's trim frame, proud of the face, and two armour ribs across the recess roof
+    fr = 0.035
+    p.add('ring_t', 'mount', 'htrim', _zblock(depth - 0.01, depth + 0.025, -hw - fr, hw + fr, hh, hh + fr))
+    p.add('ring_b', 'mount', 'htrim', _zblock(depth - 0.01, depth + 0.025, -hw - fr, hw + fr, -hh - fr, -hh))
+    for sg in (1, -1):
+        p.add('ring_s%d' % (sg > 0), 'mount', 'htrim', _zblock(depth - 0.01, depth + 0.025, sg * hw if sg > 0 else -hw - fr, hw + fr if sg > 0 else -hw, -hh, hh))
+    # the mantlet: a deep machined block on the back wall, a trim face where the barrels leave it, a blue charge strip under them
+    mx = depth * 0.3
+    p.add('mantlet', 'mount', 'hgrey', _zblock(-0.01, mx, -hw + lt, hw - lt, -hh + lt, hh - lt, ch=0.03))
+    p.add('mantletface', 'body', 'htrim', _zblock(mx - 0.005, mx + 0.02, -hw * 0.8, hw * 0.8, -hh * 0.7, hh * 0.7))
+    p.add('mantletglow', 'body', 'hblue', _zblock(mx + 0.02, mx + 0.03, -hw * 0.55, hw * 0.55, -hh * 0.62, -hh * 0.5))
+    gap = min(cal * 3.6, hw * 0.95)
+    muzzles = []
+    blen = depth - mx + out
+    for i in range(barrels):
+        off = (i - (barrels - 1) / 2) * gap
+        T = Matrix.Translation((0, off, 0))
+        mz = _coil_barrel(p, 'b%d_' % i, mx, blen, cal, T, coils=coils)
+        muzzles.append(P(T @ mz))
+    p.fit = dict(pivot=P((depth + 0.05, 0, 0)), trunnion=P((mx, 0, 0)), muzzles=muzzles, reach=out + 0.05, aim=D((1, 0, 0)), up=D((0, 0, 1)),
+                 mount='fixed', radius=max(hw, hh), bore=cal * 0.67)
+    return p
 
 
 # issue 768: the Plasma lance (data.js turbo, 2 shots) is the same lance turret at a smaller size (factions.md: the same parts
