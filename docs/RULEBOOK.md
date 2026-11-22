@@ -124,7 +124,7 @@ job has finished. Why: a merged change left existing profiles with Heat closed (
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
 Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
-stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+stage (sheet built, paint proof, installed in game, cloud direction check for a cloud, software or placeholder render (issue 1567), Ryan accepted); a stale picture is never shown as current, and if the
 picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
 compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
 says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
