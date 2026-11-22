@@ -99,7 +99,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - Attempts relayed before that under another branch name or folder (board/pc-out-1547c and so on) name no place the
   proof finds. `opus_job_head.ps1 relayfind <attempt>|all [dry]` looks through every `board/pc-out-*` branch in the
   shared mirror for the folder that holds all of a passed attempt's result files byte for byte, and writes only that,
-  as a new `relay_branch.txt` in the attempt (never over its own receipt or branch file). It removes nothing: the waiter
+  as a new `relay_found.txt` in the attempt (never over a file it already has; issue 1739: the `relay_branch.txt` the head
+  writes at init no longer stops the search, so a job the Board relayed to `board/pc-out-*` instead clears too, and
+  `relay_found.txt` wins over that init guess). It removes nothing: the waiter
   and the janitor's relay sweep still prove the bytes under the mirror lock before any drop. dry writes and fetches
   nothing (issue 1695). A job that was never relayed is not found and keeps its checkouts.
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
