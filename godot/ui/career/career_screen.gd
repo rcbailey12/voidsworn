@@ -20,6 +20,8 @@ const BLOOD := BONE
 const TABS := [["records", "Records"], ["medals", "Medals"], ["titles", "Titles"], ["history", "History"], ["chronicle", "Chronicle"]]
 const ROMAN := ["0", "I", "II", "III", "IV", "V"]
 const Crest := preload("res://ui/career/crest.gd")
+const ModalFocus := preload("res://ui/theme/modal_focus.gd")   # issue 1559
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: the shared ui cues (watch_sound)
 
 var story = null
 var tab := "records"
@@ -119,8 +121,58 @@ func _panel(bg := IRON, border := IRON3, pad := 12.0) -> PanelContainer:
 	return p
 
 
+var _trap: Node = null
+var _relayout_t := -1.0
+
+
 func open(st) -> void:
 	story = st
+	Kit.watch_sound(self)   # issue 1448: tabs and buttons click like every other screen
+	var close := _build()
+	# issue 1559 items 4, 14, 15: Career is modal for the keyboard. Focus starts on Close, stays inside (the title menu
+	# or the Progression tab behind cannot take Enter), and goes back to what had it when Career closes.
+	_trap = ModalFocus.attach(self, close)
+	get_viewport().size_changed.connect(_on_resize)
+
+
+# issue 1559 item 28: a window resize lays Career out again at the new scale (k was worked out once, on open), on the same
+# tab and scroll, with the keyboard on the same control when it is still there
+func _on_resize() -> void:
+	_relayout_t = 0.12
+
+
+func _process(dt: float) -> void:
+	if _relayout_t < 0.0:
+		return
+	_relayout_t -= dt
+	if _relayout_t > 0.0:
+		return
+	_relayout_t = -1.0
+	relayout()
+
+
+func relayout() -> void:
+	if absf(load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size) - k) < 0.004:
+		return
+	var fo := get_viewport().gui_get_focus_owner()
+	var keep := str(fo.name) if fo != null and is_ancestor_of(fo) and not str(fo.name).begins_with("@") else ""   # the tabs and Close are named
+	var sv := scroll.scroll_vertical if scroll != null else 0
+	for c in get_children():   # the keyboard trap is an internal child and stays
+		remove_child(c)
+		c.queue_free()
+	var close := _build()
+	if _trap != null and is_instance_valid(_trap):
+		_trap.set("first", close)
+	scroll.set_deferred("scroll_vertical", sv)
+	var back: Node = find_child(keep, true, false) if keep != "" else null
+	if back is Control and (back as Control).focus_mode != Control.FOCUS_NONE:
+		(back as Control).grab_focus()
+	else:
+		close.grab_focus()
+
+
+# the whole screen at the current scale; returns the Close button
+func _build() -> Button:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	regular = GS.sheet_body()
 	semi = GS.sheet_medium()
@@ -151,6 +203,7 @@ func open(st) -> void:
 	head.add_child(sp)
 	var close := _key_button("Close", "Esc", _close, false, true)
 	close.name = "Close"
+	Kit.wire_sound(close, "back")
 	close.custom_minimum_size = Vector2(px(288), px(56))
 	close.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	head.add_child(close)
@@ -171,6 +224,7 @@ func open(st) -> void:
 	body.add_theme_constant_override("separation", px(12))
 	sc.add_child(body)
 	render()
+	return close
 
 
 func set_tab(t: String) -> void:
@@ -528,10 +582,13 @@ func _close() -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
+		if ModalFocus.covered(self): return   # a dialog opened over Career has the keys
 		var key := (e as InputEventKey).keycode
 		if key == KEY_ESCAPE:
 			get_viewport().set_input_as_handled()
+			Kit.play("ui_cancel")
 			_close()
 		elif key >= KEY_1 and key <= KEY_5:
 			get_viewport().set_input_as_handled()
+			Kit.play("ui_select")
 			set_tab(TABS[key - KEY_1][0])

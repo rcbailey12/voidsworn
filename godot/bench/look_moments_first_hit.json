@@ -1,0 +1,257 @@
+{
+ "about": "Issue 1235: ships look damaged from the first hit. One torpedo on a fresh Sunward, Glasswright and Chorus cruiser, and every section at stage 4, at the battle camera (170) and the closest camera (26). Run with --moments res://bench/look_moments_first_hit.json on main (before) and opus/issue-1235 (after).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "fh_V16_37_torpedo",
+   "group": "issue 1235 first hit",
+   "label": "V16_37 first torpedo",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "fh_V16_37_stage4",
+   "group": "issue 1235 first hit",
+   "label": "V16_37 stage 4, every section",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     -0.03,
+     1
+    ],
+    [
+     "event",
+     1.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "fh_I15_11_torpedo",
+   "group": "issue 1235 first hit",
+   "label": "I15_11 first torpedo",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "fh_I15_11_stage4",
+   "group": "issue 1235 first hit",
+   "label": "I15_11 stage 4, every section",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     -0.03,
+     1
+    ],
+    [
+     "event",
+     1.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "fh_B21_11_torpedo",
+   "group": "issue 1235 first hit",
+   "label": "B21_11 first torpedo",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "fh_B21_11_stage4",
+   "group": "issue 1235 first hit",
+   "label": "B21_11 stage 4, every section",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     -0.03,
+     1
+    ],
+    [
+     "event",
+     1.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  }
+ ]
+}

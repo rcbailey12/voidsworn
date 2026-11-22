@@ -88,7 +88,7 @@ func _run() -> void:
 				for frame in 300:
 					await _step()
 					if frame % 2 == 0:
-						preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), folder.path_join("frame_%03d.jpg" % (frame / 2)), 0.9)
+						preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), folder.path_join("frame_%03d.jpg" % (frame / 2)), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 				print("DEATH_RECORD class=%s zoom=%s duration=%.3f flashes=%s" % [cls, zoom, fx.now-t, fx.flash_log])
 				fx.clear_wreck("C"); fx.remove_ship("C"); sv.queue_free()
 				for i in 180: await _step()
@@ -114,7 +114,7 @@ func _interiors() -> void:
 		cam.a = -0.9; cam.b = 1.1; cam.r = s.hull.L * 1.5
 		cam.t = s.to_world(s.hull.c); cam.snap()
 		await _step()
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(faction + "_alive.png"))
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(faction + "_alive.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 		while s.has_meta("cut_task"): await _step()
 		for pc in s.get_meta("cut_job", {}).get("out", []):
 			print("INTERIOR faction=%s vertices=%d edges=%d loops=%d fallbacks=%d cap_vertices=%d" % [faction, pc.n, pc.get("boundary_edges", 0), pc.get("cap_loops", 0), pc.get("cap_fallbacks", 0), pc.get("cap", [PackedVector3Array()])[0].size()])
@@ -123,7 +123,7 @@ func _interiors() -> void:
 		for angle in [0, 1]:
 			cam.a = -0.5 if angle == 0 else 2.6; cam.snap()
 			await _step()
-			preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(faction + "_cut%d.png" % angle))
+			preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(faction + "_cut%d.png" % angle), preload("res://tools/picture_provenance.gd").capture_stage())
 		fx.clear_wreck("C"); fx.remove_ship("C"); sv.queue_free()
 		for i in 180: await _step()
 
@@ -157,7 +157,7 @@ func _profile() -> void:
 		if fx.now-t <= 2.1: death_window.append(ms)
 		if ms > 12.0: print("DEATH_HITCH frame=%d age=%.3f ms=%.3f fx=%s" % [i,fx.now-t,ms,fx.prof_take()])
 	# Readback is after measurement. No fixed-fps cap is used in profile mode.
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("fleet_4k.png"))
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("fleet_4k.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	var report := {"ships": 20, "resolution": [3840,2160], "adapter": RenderingServer.get_video_adapter_name(), "renderer": RenderingServer.get_current_rendering_method(), "death_call_ms": death_call_ms, "baseline": _stats(baseline), "capital_first_2s": _stats(death_window), "whole_5s": _stats(samples), "target_ms": 1000.0/60.0}
 	print("DEATH_PROFILE ", JSON.stringify(report))
 	FileAccess.open(out.path_join("frame_times.json"),FileAccess.WRITE).store_string(JSON.stringify(report,"  "))

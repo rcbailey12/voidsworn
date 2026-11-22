@@ -43,6 +43,9 @@ function baseBudget(fac, s, col, kind) {
   let b = ([0, 4.2, 9.5, 14][s] + col * (s === 1 ? 0.9 : s === 2 ? 1 : 1.1)) * RAMP.grow[s];
   if (kind === 'elite') b *= 1.05;
   if (kind === 'boss') b *= RAMP.boss[s];
+  // No AI level is loaded here, so the game reads it as Veteran: its edge (issue 1160) and Sector 3's extra budget (issue 1178).
+  b *= RAMP.vet || 1;
+  if (s === 3 && RAMP.late) b *= RAMP.late.veteran || 1;
   return b;
 }
 

@@ -1,4 +1,32 @@
 # R339. Build and read back a backup before the janitor can remove a checkout with local work.
+function Start-Utf8InputProcess($start) {
+  # Issue 1335: PowerShell 5.1 (.NET Framework) writes redirected stdin in [Console]::InputEncoding and emits its
+  # preamble when the process starts. Under code page 65001 that is a UTF-8 BOM, so git read '<BOM>create ...' and
+  # every salvage on Nov 20 was kept; under a legacy page such as 437, non-ASCII text leaves in that page. Newer .NET
+  # takes StandardInputEncoding. On 5.1 the console input encoding becomes BOM-free UTF-8 around the start and is put
+  # back after. A preamble that would still be written stops the call before anything starts. Send the text itself
+  # with Write-Utf8Input, which writes UTF-8 bytes whatever the console page is (Artoo on PR 1345).
+  $noBom = New-Object Text.UTF8Encoding($false)
+  if ($start.PSObject.Properties['StandardInputEncoding']) { $start.StandardInputEncoding = $noBom; return [Diagnostics.Process]::Start($start) }
+  $saved = $null
+  try { $saved = [Console]::InputEncoding } catch { }
+  $isUtf8 = { param($e) $e -and $e.CodePage -eq 65001 -and -not $e.GetPreamble().Length }
+  try {
+    if (-not (& $isUtf8 $saved)) { try { [Console]::InputEncoding = $noBom } catch { } }
+    $now = $null; try { $now = [Console]::InputEncoding } catch { }
+    if ($now -and $now.GetPreamble().Length) { throw 'stdin encoding still writes a byte order mark; nothing started' }
+    return [Diagnostics.Process]::Start($start)
+  } finally {
+    if ($saved) { try { if (-not $saved.Equals([Console]::InputEncoding)) { [Console]::InputEncoding = $saved } } catch { } }
+  }
+}
+function Write-Utf8Input($process, [string]$text) {
+  # UTF-8 bytes straight to the pipe, so the console code page cannot change the text (issue 1335).
+  $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes($text)
+  $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+  $process.StandardInput.BaseStream.Flush()
+  $process.StandardInput.Close()
+}
 function Salvage-Git([string[]]$words, [string[]]$inputLines) {
   $words = @('-c','core.longpaths=true') + $words
   if (-not $inputLines.Count) {
@@ -14,12 +42,11 @@ function Salvage-Git([string[]]$words, [string[]]$inputLines) {
   $start.RedirectStandardInput = $true
   $start.RedirectStandardOutput = $true
   $start.RedirectStandardError = $true
-  $child = [Diagnostics.Process]::Start($start)
+  $child = Start-Utf8InputProcess $start
   try {
     $output = $child.StandardOutput.ReadToEndAsync()
     $errors = $child.StandardError.ReadToEndAsync()
-    $child.StandardInput.Write(($inputLines -join "`n") + "`n")
-    $child.StandardInput.Close()
+    Write-Utf8Input $child (($inputLines -join "`n") + "`n")
     $child.WaitForExit()
     if ($child.ExitCode -ne 0) { throw "salvage Git failed ($($words -join ' ')): $($errors.GetAwaiter().GetResult().Trim())" }
     $output.GetAwaiter().GetResult().Trim() -split '\r?\n'
@@ -131,5 +158,55 @@ function Save-CheckoutSalvage($repo, $mirror, $state, $dest) {
       Assert-NoLinkedChildren $staging
       Remove-CleanupDirectory $dir
     } catch { Log "salvage scratch kept: $staging ($($_.Exception.Message))" }
+  }
+}
+
+# Issue 1180 run 7 (Artoo and the Board, PR 1260): ship and gen files the shared build looks to have superseded are kept
+# once each in salvage\superseded_store\<sha256>.bin (the same D20_23.glb from three lanes is stored once), read back by
+# size and SHA-256, and listed in a per-checkout manifest. Only the manifest folder is per checkout.
+function Test-StoreEntry($file, $hash, $length) {
+  return ($file -is [IO.FileInfo] -and -not ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+    $file.Length -eq $length -and (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLower() -eq $hash)
+}
+function Save-SupersededArchive($repo, $paths, $dest) {
+  $root = Split-Path -Parent $dest
+  $dir = [IO.Directory]::CreateDirectory($root)
+  Assert-PlainDirectory $dir
+  $store = [IO.Directory]::CreateDirectory((Join-Path $root 'superseded_store'))
+  Assert-PlainDirectory $store
+  $staging = Join-Path $root ".checking-$([guid]::NewGuid().ToString('N'))"
+  $null = [IO.Directory]::CreateDirectory($staging)
+  try {
+    $manifest = @(); $bytes = 0L; $newBytes = 0L; $reused = 0
+    foreach ($path in $paths) {
+      $source = Get-Item -LiteralPath (Join-Path $repo $path) -Force
+      if ($source -isnot [IO.FileInfo] -or ($source.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "archive source changed: $path" }
+      $hash = (Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash.ToLower()
+      $blob = Join-Path $store.FullName "$hash.bin"
+      $existing = Get-Item -LiteralPath $blob -Force -ErrorAction SilentlyContinue
+      if ($existing) {
+        if (-not (Test-StoreEntry $existing $hash $source.Length)) { throw "archive store entry does not match: $hash.bin" }
+        $reused++
+      } else {
+        $part = Join-Path $staging "$hash.part"
+        [IO.File]::Copy($source.FullName, $part, $false)
+        if (-not (Test-StoreEntry (Get-Item -LiteralPath $part -Force) $hash $source.Length)) { throw "archive read-back failed: $path" }
+        [IO.File]::Move($part, $blob)
+        if (-not (Test-StoreEntry (Get-Item -LiteralPath $blob -Force) $hash $source.Length)) { throw "archive read-back failed: $path" }
+        $newBytes += $source.Length
+      }
+      $manifest += "$hash  $($source.Length)  $path"
+      $bytes += $source.Length
+    }
+    Put (Join-Path $staging 'superseded_manifest.txt') (($manifest -join "`n") + "`n")
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    # Directory.Move fails if an archive already exists. Never overwrite one.
+    [IO.Directory]::Move($staging, $dest)
+    Log "superseded archive verified: $dest ($($paths.Count) files, $bytes bytes; $newBytes new bytes in the shared store, $reused already stored)"
+  } finally {
+    if (Test-Path -LiteralPath $staging) {
+      try { Remove-CleanupDirectory (Get-Item -LiteralPath $staging -Force) }
+      catch { Log "archive scratch kept: $staging ($($_.Exception.Message))" }
+    }
   }
 }

@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -48,20 +50,33 @@ function launch(entry, overrides = {}, extra = '') {
   return { appData, localAppData, output };
 }
 
-function checkIsolated(result) {
+function checkIsolated(result, kept = false) {
   const { appData, localAppData, output } = result;
   assert.notEqual(appData, callerAppData);
   assert.notEqual(localAppData, callerLocalAppData);
   assert.equal(localAppData, appData);
-  assert.ok(fs.statSync(appData).isDirectory(), appData);
   assert.ok(output.includes('Godot profile: ' + appData), output);
+  // Issue 1180: the throwaway profile goes when its process ends, unless the job asked to keep it.
+  if (kept) assert.ok(fs.statSync(appData).isDirectory(), appData);
+  else {
+    assert.ok(!fs.existsSync(appData), `profile left behind: ${appData}`);
+    assert.ok(output.includes('Godot profile removed: ' + appData), output);
+  }
 }
 
 try {
   fs.mkdirSync(scratch);
   fs.writeFileSync(path.join(scratch, owner), 'b'.repeat(32));
   fs.copyFileSync(process.execPath, godot);
+  // The fake Godot leaves a cache file and a junction to a folder outside the profile: removal must not follow it.
+  const outside = path.join(home, 'outside shared');
+  fs.mkdirSync(outside);
+  fs.writeFileSync(path.join(outside, 'keep.txt'), 'never removed');
   fs.writeFileSync(script, `
+const fs = require('fs'), path = require('path');
+fs.mkdirSync(path.join(process.env.APPDATA, 'Godot', 'shader_cache'), { recursive: true });
+fs.writeFileSync(path.join(process.env.APPDATA, 'Godot', 'shader_cache', 'x.cache'), 'cache');
+fs.symlinkSync(${JSON.stringify(outside)}, path.join(process.env.APPDATA, 'link-out'), 'junction');
 console.log('APPDATA=' + process.env.APPDATA);
 console.log('LOCALAPPDATA=' + process.env.LOCALAPPDATA);
 `);
@@ -76,12 +91,25 @@ console.log('LOCALAPPDATA=' + process.env.LOCALAPPDATA);
   assert.equal(new Set([batch.appData, direct.appData, watch.appData]).size, 3);
   assert.equal(fs.readFileSync(path.join(scratch, owner), 'utf8'), 'b'.repeat(32));
 
+  assert.equal(fs.readFileSync(path.join(outside, 'keep.txt'), 'utf8'), 'never removed', 'a junction in the profile is never followed');
+
   const standalone = launch('batch', { PC_RUN_SCRATCH: '' });
   checkIsolated(standalone);
   const standaloneScratch = path.dirname(standalone.appData);
   assert.equal(path.dirname(standaloneScratch), home);
   assert.match(path.basename(standaloneScratch), /^voidsworn-run-[a-f0-9]{32}$/);
-  assert.match(fs.readFileSync(path.join(standaloneScratch, owner), 'utf8'), /^[a-f0-9]{32}$/);
+  assert.ok(!fs.existsSync(standaloneScratch), 'the voidsworn-run folder this launch made is removed with its profile');
+
+  const keptLaunch = launch('batch', { PC_RUN_SCRATCH: '', PC_KEEP_GODOT_PROFILE: '1' });
+  checkIsolated(keptLaunch, true);
+  assert.match(fs.readFileSync(path.join(path.dirname(keptLaunch.appData), owner), 'utf8'), /^[a-f0-9]{32}$/);
+
+  // The Board's PC pause removes nothing (Artoo on PR 1280): the profile is kept for a later janitor pass.
+  const pauseFile = path.join(home, 'gpu_go.txt');
+  fs.writeFileSync(pauseFile, 'GPU not cleared: paused by the Board at 12:30\n');
+  const pausedLaunch = launch('batch', { PC_RUN_SCRATCH: '', PC_CLEANUP_PAUSE_FILE: pauseFile });
+  checkIsolated(pausedLaunch, true);
+  assert.ok(pausedLaunch.output.includes('Godot profile kept for the janitor') && pausedLaunch.output.includes('PC pause is active'), pausedLaunch.output);
 
   const inherited = launch('batch', { PC_REAL_PROFILE: '1' });
   assert.equal(inherited.appData, callerAppData);
@@ -91,12 +119,12 @@ console.log('LOCALAPPDATA=' + process.env.LOCALAPPDATA);
   const names = ['windows_release_x86_64.exe', 'windows_release_x86_64_console.exe'];
   fs.mkdirSync(templates, { recursive: true });
   for (const name of names) fs.writeFileSync(path.join(templates, name), name);
-  const exported = launch('batch', { PC_GODOT_EXPORT_TEMPLATES: templates }, '--export-release "Windows Desktop" out.exe');
-  checkIsolated(exported);
+  const exported = launch('batch', { PC_GODOT_EXPORT_TEMPLATES: templates, PC_KEEP_GODOT_PROFILE: '1' }, '--export-release "Windows Desktop" out.exe');
+  checkIsolated(exported, true);
   for (const name of names) {
     assert.equal(fs.readFileSync(path.join(exported.appData, 'Godot', 'export_templates', path.basename(templates), name), 'utf8'), name);
   }
-  console.log('PASS: fresh owned profiles for wrapped Godot starts, explicit opt-in, and staged export templates');
+  console.log('PASS: fresh owned profiles for wrapped Godot starts, removed when the process ends (links never followed, keep on request), explicit opt-in, and staged export templates');
 } finally {
   fs.rmSync(home, { recursive: true, force: true });
 }

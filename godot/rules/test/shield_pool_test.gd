@@ -1,8 +1,6 @@
-# R246 shield pool twin (issue 371): the browser results from contrib/opus/tools/shield_pool_tests.js, replayed on rules.gd.
-#   node contrib/opus/tools/shield_pool_tests.js <fixtures.json>
-#   Godot --headless --path godot --script res://rules/test/shield_pool_test.gd -- <fixtures.json>
-# Checks the coverage of every shielded hull, then plays the same hit and turn sequences on the same ships and compares the pool,
-# the four side catches and the routing after every step, exactly (no tolerance).
+# R246 shield pool (issue 371): replay the saved hits and shield turns.
+# Saved from contrib/opus/tools/shield_pool_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://rules/test/shield_pool_cases.json.
 extends SceneTree
 @warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "unused_variable", "return_value_discarded")
 const API = preload("res://rules/battle_api.gd")
@@ -11,10 +9,10 @@ const JSM = preload("res://rules/jsm.gd")
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() != 1:
-		printerr("Expected the browser fixture JSON path"); quit(2); return
+		printerr("Expected the saved fixture JSON path"); quit(2); return
 	var fx = JSON.parse_string(FileAccess.get_file_as_string(args[0]))
 	if not fx is Dictionary:
-		printerr("Cannot read browser fixtures"); quit(2); return
+		printerr("Cannot read saved fixtures"); quit(2); return
 	var api = API.new(); var err = api.load_rules()
 	if err != "":
 		printerr(err); quit(2); return
@@ -48,5 +46,5 @@ func _init() -> void:
 			steps += 1
 			if JSM.canon(snap) != JSM.canon(want[i]):
 				printerr(q.note, ": step ", i, " ", (q.ops[i - 1] if i > 0 else "start"), ": got ", snap, ", browser ", want[i]); bad += 1; break
-	print("Shield pool twin: ", fx.cov.size(), " coverage rows and ", fx.seqs.size(), " sequences (", steps, " steps) against the browser; failures: ", bad)
+	print("Shield pool twin: ", fx.cov.size(), " coverage rows and ", fx.seqs.size(), " sequences (", steps, " steps) against the saved cases; failures: ", bad)
 	quit(1 if bad > 0 else 0)

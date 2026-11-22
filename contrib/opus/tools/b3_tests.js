@@ -18,7 +18,7 @@ function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fx
 async function animWeapon(){} var EXPL=null; async function animExplode(u){ if(EXPL) await EXPL(u); } function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, get RNG(){ return RNG_S; }, migrateRun, newShip, startBattle, HULLS, factionGate, canOrder,
   fireWeapon, killUnit, startSideTurn, turnStart, dmgMult, hitChance, syncOn, inSync, syncAnchor, prizePlan, salvageYield,
-  setExplode(f){ EXPL=f; }, SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire, torpThreat };
+  setExplode(f){ EXPL=f; }, setRnd(f){ const o=rnd; rnd=f; return o; }, SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire };
 `);
 const base = (o) => Object.assign({ fac: 'voidsworn', admiral: 'vex', credits: 500, cpCap: 30, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] }, fleet: [] }, o || {});
 // a battle with fixed fleets and no terrain; units are then placed by hand so distances are exact
@@ -31,8 +31,11 @@ const pool = u => u.hp + u.sh.reduce((a, b) => a + b, 0);
 const logged = (n0, re) => T.B.log.slice(n0).some(l => re.test(l.m));
 
 // ---- data-only pass ----
+// Issue 1354: Navy and Crusade shop prices carry a shop discount (20% and 5%); h.val keeps the ladder price for prize values.
 check('price ladder (balance v2): Hegemony unchanged, Chorus frigates cheap, Deathless and Ithar dear, Voidsworn carriers +10%', () =>
-  T.HULLS.h_picket.cost === 70 && T.HULLS.h_vanguard.cost === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 415 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.cost === 285 && T.HULLS.warden.cost === 70);
+  T.HULLS.h_picket.val === 70 && T.HULLS.h_vanguard.val === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 415 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.val === 285 && T.HULLS.warden.val === 70);
+check('issue 1354 shop discount: Navy 20% and Crusade 5% off in the shop only', () =>
+  T.HULLS.h_picket.cost === 55 && T.HULLS.h_vanguard.cost === 200 && T.HULLS.reliquary.cost === 270 && T.HULLS.warden.cost === 65 && T.HULLS.b_drone.val == null && T.HULLS.i_wisp.val == null);
 check('Ithar cannot Brace; other factions still can', () => { battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const it = P()[0]; battle('voidsworn', ['penitent'], 'hegemony', ['h_picket']); const vo = P()[0];
   return !T.canOrder(it, 'brace') && T.canOrder(vo, 'brace'); });
 check('Corsair gate: no lance-kind hulls (prize Add refused, tow refused), other factions unaffected', () => {
@@ -85,21 +88,25 @@ check('Deathless legion never raises the flagship, and Funeral Pyre stops it', a
 check('your reassembling Deathless ship stands up when the battle is won', async () => {
   const B = battle('deathless', ['d_harvester', 'd_scythe'], 'hegemony', ['h_picket']); const s = P()[1]; await T.killUnit(s, E()[0]); const was = s.dead; await T.killUnit(E()[0], P()[0]);
   return was && B.over === 'win' && !s.dead && s.hp > 0; });
-// ---- travelling torpedoes ----
-check('torpedoes: launching rolls nothing and leaves a lane; impact comes at the next turn start, not this one', async () => {
-  const B = battle('voidsworn', ['harrow'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 12, 10, 3);
-  const wi = u.weapons.findIndex(w => w.k === 'torp'); const r0 = T.RNG, p0 = pool(t);
-  const ok1 = await T.fireWeapon(u, wi, t); const noRoll = T.RNG === r0, inFlight = B.torps.length === 1 && B.torps[0].aim.q === 12 && p0 === pool(t);
-  await T.turnStart('player'); const early = B.torps.length === 1;
-  B.round++; t.ev = 0; const n0 = B.log.length; await T.turnStart('player'); const landed = B.torps.length === 0 && logged(n0, /reach/);
-  return ok1 && noRoll && inFlight && early && landed; });
-check('torpedoes: a target 3 hexes from the aim hex dodges', async () => {
-  const B = battle('voidsworn', ['harrow'], 'hegemony', ['h_dominion', 'h_picket']); const u = P()[0], [t, o] = E(); put(u, 8, 10, 0); put(t, 12, 10, 3); put(o, 14, 4, 3);
-  await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t); put(t, 12, 13); B.round++; const n0 = B.log.length; await T.turnStart('player');
-  return logged(n0, /run wide/) && B.fstat.voidsworn.torpDodge === 1; });
-check('torpedoes: the threat map steers a targeted ship out of the lane', async () => {
-  const B = battle('hegemony', ['h_dominion'], 'voidsworn', ['harrow']); const t = P()[0], u = E()[0]; put(u, 14, 10, 3); put(t, 10, 10, 0); B.side = 'enemy';
-  await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t); return B.torps.length === 1 && T.torpThreat(t, { q: 10, r: 10 }) > 0 && T.torpThreat(t, { q: 10, r: 13 }) === 0; });
+// ---- torpedoes fire now (R364) ----
+check('torpedoes: the salvo lands in the same shot, with nothing left in flight', async () => {
+  const B = battle('voidsworn', ['harrow'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 12, 10, 3); t.ev = 0;
+  const wi = u.weapons.findIndex(w => w.k === 'torp'); const n0 = B.log.length;
+  const ok1 = await T.fireWeapon(u, wi, t);
+  return ok1 && B.torps === undefined && logged(n0, /reach/) && B.fstat.voidsworn.torpLaunch === 1 && u.weapons[wi].fired === true; });
+check('torpedoes: a missed salvo with Spread Pattern bursts on its target', async () => {
+  const B = battle('voidsworn', ['harrow'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 12, 10, 3); t.ev = 500;
+  u.fx = Object.assign({}, u.fx, { spread: 0.3 }); const hp0 = t.hp + (t.shp || 0), n0 = B.log.length;
+  await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t);
+  return logged(n0, /burst against/) && t.hp + (t.shp || 0) < hp0; });
+check('torpedoes: a salvo shot down in full does not burst with Spread Pattern (Artoo, PR 1392)', async () => {
+  const B = battle('voidsworn', ['harrow'], 'chorus', ['b_brood', 'b_brood']); const u = P()[0], [t, d] = E(); put(u, 8, 10, 0); put(t, 12, 10, 3); put(d, 13, 10, 3); t.ev = 0;
+  const wings = B.units.filter(x => x.isSq && x.side === 'enemy'); if (!wings.length) throw new Error('no enemy wings');
+  const wi = u.weapons.findIndex(w => w.k === 'torp'), n = u.weapons[wi].shots; if (wings.length < n) throw new Error('need ' + n + ' wings, have ' + wings.length);
+  for (const x of wings) { x.dead = false; x.hp = Math.max(1, x.hp); put(x, 12, 9, 3); B.units.find(p => p.id === x.parent).stance = 'screen'; }
+  u.fx = Object.assign({}, u.fx, { spread: 0.3 }); const p0 = pool(t), q0 = pool(d), n0 = B.log.length;
+  const old = T.setRnd(() => 0); try { await T.fireWeapon(u, wi, t); } finally { T.setRnd(old); }
+  return !logged(n0, /burst against/) && logged(n0, /shot down/) && pool(t) === p0 && pool(d) === q0; });
 // ---- B-21 ----
 check('B-21 the point defense bolted onto escorts against carrier fleets is ready to fire and intercepts wings', async () => {
   T.RUN = T.migrateRun(base({ fleet: ['reliquary', 'reliquary', 'penitent'].map(t => T.newShip(t)) })); T.RUN.sector = 2; T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, shape: 'open', map: 'storm', obj: 'rout', seed: 7, dep: 'line' }); T.B.terrain = {};

@@ -1,5 +1,6 @@
-# Progression step 8: replay the live browser's event entry, exit and map fixtures.
-# godot --headless --path godot --script res://campaign/test/free_exit_test.gd -- <fixtures.json>
+# Progression step 8: replay saved event entry, exit and map results.
+# Saved from contrib/opus/tools/free_exit_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://campaign/test/free_exit_cases.json.gz.
 extends SceneTree
 const CampaignScript = preload("res://campaign/campaign.gd")
 const JSM = preload("res://rules/jsm.gd")
@@ -21,15 +22,20 @@ func check_stage(c, fixture: Dictionary, stage: String) -> bool:
 		return false
 	return true
 
+func _fixture_text(path: String) -> String:
+	if path.ends_with(".gz"):
+		return FileAccess.get_file_as_bytes(path).decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP).get_string_from_utf8()
+	return FileAccess.get_file_as_string(path)
+
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() != 1:
-		printerr("Expected the browser fixture JSON path"); quit(1); return
+		printerr("Expected the saved fixture JSON path"); quit(1); return
 	var c = CampaignScript.new()
 	var err = c.load_tables()
 	if err != "":
 		printerr(err); quit(1); return
-	var fixtures = c._dec(JSON.parse_string(FileAccess.get_file_as_string(args[0])))
+	var fixtures = c._dec(JSON.parse_string(_fixture_text(args[0])))
 	if not fixtures is Array or fixtures.is_empty():
 		printerr("Missing or empty free exit fixtures"); quit(1); return
 	c.fixed_clock = true
@@ -51,5 +57,5 @@ func _init() -> void:
 		if c.modal_d != null or c.page["kind"] != "map":
 			printerr("FAIL: exit did not return to the map: ", fixture["name"]); quit(1); return
 		if not check_stage(c, fixture, "map"): quit(1); return
-	print("PASS: ", fixtures.size(), " free exits match the live browser at entry, result and sector map.")
+	print("PASS: ", fixtures.size(), " free exits match the saved baseline at entry, result and sector map.")
 	quit()

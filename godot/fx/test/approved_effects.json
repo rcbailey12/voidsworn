@@ -1,0 +1,27 @@
+{
+  "_about": "Every approved battle effect and the proof that the game plays it by default (issue: battle effects audit, Nov 21 2026). approved_effects_check.gd reads this file. A new effect ruling adds a row here in the same PR as its FINDINGS row. 'unwired' lists rules events whose fx call (fx/API.md section 11) battle.gd does not make yet, each with the job that wires it; the check fails on any other unwired call, and on a listed one that is wired now (delete its row). 'covered' links looks proven by their own registered check. 'waiting' is printed only: approved looks that sit on an open pull request; when that PR merges, move the row to 'defaults' or 'covered' in the same step.",
+  "defaults": [
+    {"ruling": "R354", "what": "one-crack strained death on cruisers and up", "probe": "death_story", "want": true},
+    {"ruling": "R389", "what": "no general scene dim; the Eclipse (peel) death still dims", "probe": "eclipse_only_dim", "want": "general false, eclipse true, peel only true"},
+    {"ruling": "R340", "what": "clean shield collapse on every shielded ship", "probe": "shield_failure", "want": "collapse"},
+    {"ruling": "R358", "what": "the collapse closes in 1.225 s", "probe": "shield_close", "want": 1.225},
+    {"ruling": "R321", "what": "fitted shield skin replaces the egg (egg kept as an option)", "probe": "shield_shape", "want": "fitted"},
+    {"ruling": "R193", "what": "kill slow-motion beat on unless reduce motion", "probe": "kill_slowmo_wired", "want": true},
+    {"ruling": "R367 R375", "what": "every metal faction dies its own way", "probe": "faction_death",
+      "want": {"voidsworn": "drumbeat", "hegemony": "arc", "corsair": "patch", "ithar": "shatter", "deathless": "peel"}},
+    {"ruling": "R375", "what": "Sunward death smoke cut to a tenth", "probe": "death_smoke", "want": {"voidsworn": 0.1}},
+    {"ruling": "R392", "what": "a torpedo stopped by point defence is shot down short of the hull and tumbles away (PD-C; torpedoes played, rockets not)", "probe": "pd_shot_down", "want": "marked true, shot down true, body turns true"}
+  ],
+  "covered": [
+    {"ruling": "R392 R362", "what": "kit-built torpedo bodies VT-A (Sunward) and KR-B (Hullbreaker rockets) with the hull finish", "check": "fx/test/munition_body_check.gd"},
+    {"ruling": "issue 1235", "what": "damaged ships look damaged from the first hit (first-hit scars, stage 4 holes, LOD)", "check": "fx/test/first_hit_scars_check.gd",
+      "merged": "PR 1245, 2533b90e", "proof": "PC run FIRSTHIT PASS; sheets in project files board/1235/sheets"},
+    {"ruling": "issue 1466", "what": "ships push settled wreck plates instead of passing through them", "check": "fx/test/wreck_contact_check.gd",
+      "merged": "PR 1476, 8383de7b", "proof": "wreck_contact_check (headless) and wreck_crossing_shot (gpu sheet)"},
+    {"ruling": "R398", "what": "acid (melt) death, Ryan's pick B: green only where the acid hit, soft pale bloom, no crack, fire, smoke or vapour", "check": "fx/test/melt_death_check.gd"},
+    {"ruling": "R401", "what": "boarding breach look B: wider hatch, pop ring, amber light, amber boarding lines, 1.6 s hold before the next event", "check": "fx/test/close_action_fx_check.gd"},
+    {"ruling": "R412", "what": "Wave 1A hull hit reactions, shield and hull power response, firing recoil and projectile misses", "check": "fx/test/wave_1a_check.gd"}
+  ],
+  "unwired": [],
+  "waiting": []
+}

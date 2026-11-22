@@ -14,6 +14,7 @@ const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
 const TRAIL_LIFE := 2.6
+const TRAIL_COLD_AGE := 3.5   # issue 1581: a moving ship with its drive cold (braking, a slide) ages its trail this much faster
 const IDLE_GLOW := 0.3                    # engine glow of a parked ship, as a share of cruise (r12)
 # The one scale table's class bands (issue 710, R247; docs/playbooks/scale.md): a death reads as a cruiser or a capital
 # by class, and an effect's size follows the drawn hull length through scale_k.
@@ -25,6 +26,7 @@ const SCALE_K_MAX := 2.5
 
 var id = ""
 var root: Node3D
+var hull_pivot: Node3D
 var meshes: Array = []
 var faction = "voidsworn"
 var fac: Dictionary
@@ -43,8 +45,22 @@ var _eng_cur = 1.0
 var _eng_node: MeshInstance3D = null
 var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
+# Issue 1587: with the engine section at stage 3+, one nozzle (sick_nozzle) is built into its own batches so it can gutter
+# on its own: a shorter plume with gaps, and a cough of smoke as the ship starts to move.
+var sick_nozzle := -1
+var _sick_mat: ShaderMaterial
+var _sick_rib_mat: ShaderMaterial
+var _cough_next := 0.0
+var _was_moving := false
+var _jammed := {}            # section -> {"k": turret, "next": the next spark pop} (issue 1587)
+var _power_shown := -1.0
+var _stages_seen := false   # the first stage update is the ship's state as it arrives (a rebuilt view): no blowout
+# one-shot wound events for the checks only ([kind, section or nozzle, time]); off in play (Artoo on PR 1631)
+var wound_log_on := false
+var wound_log: Array = []
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
+var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
 var _last_pos = Vector3.INF
 var _moving = 0.0
@@ -59,6 +75,15 @@ var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
+# Issue 1446 (R246): the sides the rules route shield power to (struck this round; they catch more and drain the pool
+# faster). While any side is routed and the pool holds, the bubble stays up with a quick rim pulse on that side only.
+var _route_on := Vector4.ZERO
+var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is still playing (a death lets it finish)
+# Issue 1078: which shield failure look plays (2 clean collapse, the game's look since R340; 0 the old per-faction break
+# and 1 energy shear stay only for side-by-side checks) and the shear's quality (true: the cheaper crack network).
+# Read once per ship from the settings (see fail_look_setting).
+var _fail_look := 2
+var _fail_low := false
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
@@ -89,9 +114,8 @@ var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
 var _mark_n = 0
 var mark_ms: Array = []    # per rebuild: [entries, worker ms, apply ms] (the gallery and probes report it)
-# hit reaction (R50): a damped angular kick (x roll, y yaw, z pitch, radians) that thrusters arrest, a small drift
-# (ship frame) that thrusters stop, and a shudder; fx owns the root's roll and pitch (G2 never writes rotation.x or z),
-# and adds yaw and drift only while G2 is not moving the ship (G2 writes position and yaw during a path)
+# Hit reaction (R50): roll, yaw, pitch and drift in the hull pivot, under the board heading.
+# Bare FX fixtures without a hull pivot still use their root as the visual hull.
 var _ra := Vector3.ZERO
 var _rv := Vector3.ZERO
 var _pd := Vector3.ZERO
@@ -103,6 +127,11 @@ var _app_yaw := 0.0
 var _reacting := false
 var _rcs_next := 0.0
 var _stutter_until := -1.0
+var _show_rcs := false
+var _power_dip := 0.0
+var _dip_peak := 0.0
+var _dip_start := 0.0
+var _dip_duration := 0.0
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
 
@@ -126,6 +155,9 @@ func _attach(n: Node3D) -> void:
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
+	hull_pivot = root.get_node_or_null("hull_pivot") as Node3D
+	if "fx_clock" in root:
+		root.set("fx_clock", fx)
 	_arr_cache = fx.hull_arrays
 	faction = String(info.get("faction", "voidsworn")).to_lower()
 	fac = fx.faction_info(faction)
@@ -148,7 +180,10 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
 	hull.formation = squadron
+	hull.shared = fx.get("hull_shared")
+	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
+	t_a = fx.pend("add:analyse", t_a)
 	# issue 370: ShipView's movement jets (braking, side, turning) ask the same attach point service
 	if "attach" in root:
 		root.set("attach", hull)
@@ -161,7 +196,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# why marks came and went between runs)
 	for m in meshes:
 		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -172,11 +207,14 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_hide_placeholder_engines()
 	# Detailed wings own one stern trail per moving craft. The hull analyser's
 	# single formation-sized engine would put a giant plume between the craft.
+	t_a = fx.pend("add:damage_root", t_a)
 	if not squadron or root.get("squad_kind") == null or str(root.get("squad_kind")).is_empty():
 		_build_engines(fx)
 		_build_trails(fx)
+	t_a = fx.pend("add:engines", t_a)
 	if shielded:
 		_build_shield(fx)
+	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
 
 
@@ -232,6 +270,9 @@ func hide_live_hull() -> void:
 
 func teardown(fx, wait_for_damage := true) -> void:
 	gone = true
+	end_brownout()
+	if is_instance_valid(root) and root.get("fx_clock") == fx:
+		root.set("fx_clock", null)
 	_hide_attachments()
 	fx.discard_ship_cut(self)
 	if wait_for_damage:
@@ -290,7 +331,15 @@ func _build_engines(fx) -> void:
 	var corsair = extra == "soot" or _eng_sputter
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
-	for nz in hull.nozzles:
+	var b_main = b
+	var rb_main = rb
+	var sb = POOLS.Batch.new()
+	var srb = POOLS.Batch.new()
+	sick_nozzle = posmod(_seed, hull.nozzles.size()) if _eng_sputter and not hull.nozzles.is_empty() else -1
+	for ni in hull.nozzles.size():
+		var nz: Dictionary = hull.nozzles[ni]
+		b = sb if ni == sick_nozzle else b_main
+		rb = srb if ni == sick_nozzle else rb_main
 		var np: Vector3 = nz["p"]
 		var r: float = nz["r"]
 		var nd: Vector3 = nz.get("d", Vector3(-1, 0, 0))
@@ -301,7 +350,7 @@ func _build_engines(fx) -> void:
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		var acc = fac.get("accent")
 		if acc is Color:
-			# a corona round the core in the faction's second colour (faction look data, accent; four factions set one)
+			# a corona round the core in the faction's second colour (faction look data, accent; three factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
@@ -331,8 +380,15 @@ func _build_engines(fx) -> void:
 	holder.name = "fx_engines"
 	_attach(holder)
 	_eng_node = holder
-	b.build(_eng_mat, holder, "fx_eng_cores")
-	rb.build(_eng_rib_mat, holder, "fx_eng_plumes")
+	b_main.build(_eng_mat, holder, "fx_eng_cores")
+	rb_main.build(_eng_rib_mat, holder, "fx_eng_plumes")
+	_sick_mat = null
+	_sick_rib_mat = null
+	if sick_nozzle >= 0:
+		_sick_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+		_sick_rib_mat = fx.mat(SH.RIBBON, 1)
+		sb.build(_sick_mat, holder, "fx_eng_sick_core")
+		srb.build(_sick_rib_mat, holder, "fx_eng_sick_plume")
 
 
 func _build_trails(fx) -> void:
@@ -354,12 +410,19 @@ func update(fx, dt: float) -> void:
 		return
 	if not hull.turrets.is_empty():
 		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+	if not hull.doors.is_empty():
+		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
+	_list_step(dt)
 	_react_step(fx, dt)
+	_power_step(fx)
 	_hide_placeholder_engines()
 	if _shield_mi != null and _shield_mi.visible:
 		_shield_mi.transform = hull_motion() * _shield_pose
-	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
+	var pos := root.global_position
+	if hull_pivot == null:
+		var parent := root.get_parent_node_3d()
+		pos -= parent.global_basis * _app_pos if parent != null else _app_pos
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
 	_moving = maxf(_moving - dt, 0.0)
@@ -383,30 +446,55 @@ func update(fx, dt: float) -> void:
 		_eng_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+		if _sick_mat != null:
+			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
+			_sick_mat.set_shader_parameter("gate", sg)
+			_sick_rib_mat.set_shader_parameter("gate", sg)
+			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * SICK_LEN)
+	var moving_now: bool = _moving > 0.0 and not dead
+	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
+		_cough(fx)
+	_was_moving = moving_now
+	_wound_step(fx)
+	# issue 1581 (Nov 21 audit: rear trails lingered as skid marks while the retros braked): once the battle cuts the
+	# drive cold in a flown move, the ribbon behind it shortens fast instead of hanging for its full life
+	if _moving > 0.0 and engine_level < 0.12 and not dead:
+		_trail_extra += dt * (TRAIL_COLD_AGE - 1.0)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
-		_shield_mi.visible = fx.now < _shield_until
+		_shield_mi.visible = fx.now < _shield_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
 func _update_trails(fx, _moved: bool) -> void:
+	var _tclock: float = fx.now + _trail_extra   # the trails' clock (issue 1581)
 	if _trails.is_empty():
 		return
 	var xfm = xf()
+	# issue 1586 (Neon on PR 1666): a torch death's over-flaring drive keeps its exhaust while the flare runs, from the
+	# nozzles where the spiralling hull really is
+	var flaring: bool = dead and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
+	if flaring:   # the same pose fx_death._small_pose gives the dying hull
+		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
-	for t in _trails:
+	for ti in _trails.size():
+		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
 		var changed := false
+		# Neon on PR 1631: the sick nozzle's ribbon gutters with its plume (one trail per nozzle, in order); the dim samples
+		# still go in, so the ribbon fades through the gap instead of bridging it bright
+		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
-		if not dead and lvl > 0.12:
-			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (fx.now - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
-				hist.push_front([start, fx.now, lvl])
+		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
+		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
+				hist.push_front([start, _tclock, lvl_t])
 				changed = true
-		while not hist.is_empty() and (hist.size() > TRAIL_PTS or fx.now - float(hist.back()[1]) >= TRAIL_LIFE):
+		while not hist.is_empty() and (hist.size() > TRAIL_PTS or _tclock - float(hist.back()[1]) >= TRAIL_LIFE):
 			hist.pop_back()
 			changed = true
 		var mi: MeshInstance3D = t["mi"]
@@ -415,15 +503,16 @@ func _update_trails(fx, _moved: bool) -> void:
 			continue
 		var mat := mi.material_override as ShaderMaterial
 		if changed:
-			t["mesh_time"] = fx.now
+			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
-		mat.set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
+	var _tclock: float = fx.now + _trail_extra
 	var hist: Array = t["hist"]
 	var mi: MeshInstance3D = t["mi"]
 	var n := hist.size()
@@ -440,7 +529,7 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
-			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
+			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
 			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
 			c1.append_array([w0, w1, float(t["seed"]), 0.0])
 	if not _trail_indices.has(n):
@@ -489,6 +578,10 @@ func _build_shield(fx) -> void:
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	_fail_look = fail_look_setting()
+	_fail_low = fail_low_setting()
+	_shield_mat.set_shader_parameter("brk_look", _fail_look)
+	_shield_mat.set_shader_parameter("brk_low", _fail_low)
 	var se = fac.get("shield_edge")
 	if se is Color:
 		_shield_mat.set_shader_parameter("edge_mode", 1)
@@ -523,6 +616,7 @@ func _shield_skin(fx = null) -> ArrayMesh:
 	var visual: Node3D = view.hull if view != null else null
 	var bob := visual.position - view.hull_base if visual != null else Vector3.ZERO
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -540,11 +634,27 @@ func _shield_skin(fx = null) -> ArrayMesh:
 		var bounds: AABB = frame * mi.mesh.get_aabb()
 		box = bounds if frames.is_empty() else box.merge(bounds)
 		frames[mi] = frame
-	var faces := HULL.faces_of(root, meshes, null, frames)
-	if faces.is_empty():
-		return null
-	var key := SHIELD_CACHE.key_for(box, faces)
+	# Issue 1289: the skin's cache key needs every hull triangle (about 55 ms for A16 on the PC); the battle's effects keep
+	# it per mesh set and frames (fx.shield_keys), so a later ship of the same hull skips the triangles when it is cached.
+	var keys = fx.get("shield_keys") if fx != null else null
+	var fkey := ""
+	if keys is Dictionary:
+		var parts := PackedStringArray()
+		for mi in frames:
+			parts.append("%d@%s" % [(mi as MeshInstance3D).mesh.get_instance_id(), str(frames[mi])])
+		fkey = "|".join(parts)
+	var key: String = (keys as Dictionary).get(fkey, "") if fkey != "" else ""
+	var faces := PackedVector3Array()
+	if key == "":
+		faces = HULL.faces_of(root, meshes, null, frames)
+		if faces.is_empty():
+			return null
+		key = SHIELD_CACHE.key_for(box, faces)
+		if fkey != "":
+			keys[fkey] = key
 	var arrays: Array = _shield_skin_arrays.get(key, [])
+	if arrays.is_empty() and faces.is_empty():
+		faces = HULL.faces_of(root, meshes, null, frames)
 	if arrays.is_empty():
 		arrays = SHIELD_CACHE.read_skin(key)
 		if not arrays.is_empty():
@@ -557,7 +667,25 @@ func _shield_skin(fx = null) -> ArrayMesh:
 			if arrays.is_empty():
 				return null
 			save_shield_skin(key, arrays)
-	return _pose_shield_skin(arrays, bob)
+	return _posed_skin(fx, key, arrays, bob)
+
+
+# Issue 1289: posing a fitted skin (copy, offset, upload, hit collider) cost every arriving ship 100 ms or more in its
+# arrival frame, cache hit or not. A pose depends only on the cached skin and its offset from the core, so the battle's
+# effects keep each pose they built (fx.shield_poses, freed with the battle) and a second ship of the same hull shares it.
+# Both are read only after this: the shield draws the mesh with its own material and hit tests read the collider.
+func _posed_skin(fx, key: String, arrays: Array, bob: Vector3) -> ArrayMesh:
+	var off := bob - hull.shield_centre()
+	var pk := "%s|%.3f|%.3f|%.3f" % [key, off.x, off.y, off.z]
+	var poses = fx.get("shield_poses") if fx != null else null
+	if poses is Dictionary and (poses as Dictionary).has(pk):
+		var e: Array = poses[pk]
+		_shield_tm = e[1]
+		return e[0]
+	var skin := _pose_shield_skin(arrays, bob)
+	if poses is Dictionary:
+		poses[pk] = [skin, _shield_tm]
+	return skin
 
 
 static func _remember_shield_skin(key: String, arrays: Array) -> void:
@@ -571,10 +699,10 @@ static func save_shield_skin(key: String, arrays: Array) -> void:
 	SHIELD_CACHE.write_skin(key, arrays)
 
 
-func install_shield_skin(arrays: Array, bob: Vector3) -> void:
+func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> void:
 	if not is_instance_valid(_shield_mi) or gone:
 		return
-	_shield_mi.mesh = _pose_shield_skin(arrays, bob)
+	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
 	_shield_mat.set_shader_parameter("fitted_shape", true)
 	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
 	_shield_mi.transform = _shield_pose
@@ -840,22 +968,75 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
 	if _shield_mat == null:
 		return
+	# issue 1239 (F2.5): the shader has six ripple slots. Take a slot whose ripple has finished first, else the one that
+	# started earliest, so focused fire (a lance books three) never wipes a ripple that is still to play
+	var slot := -1
+	var oldest := INF
+	for i in 6:
+		var w: Vector4 = _hitw[i]
+		var h: Vector4 = _hits[i]
+		if w.y <= 0.0 or h.w + w.y < fx.now:
+			slot = i
+			break
+		if h.w < oldest:
+			oldest = h.w
+			slot = i
+	_hit_i = slot
 	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
 	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
-	_hit_i = (_hit_i + 1) % 6
 	_shield_mat.set_shader_parameter("hits", _hits)
 	_shield_mat.set_shader_parameter("hitw", _hitw)
 	_shield_until = maxf(_shield_until, T + life + 0.05)
 
 
-func shield_break(fx, quad: int) -> void:
+# Issue 1078, R340 (Ryan picked it Nov 19 2026): the shield failure is the clean collapse, for every shielded ship of
+# every faction and both shield shapes: one even flash, then one band closes from the far side into the breach, a knot
+# and a flat ring of sparks. Dev comparison only: rendering/effects/shield_failure (or VS_SHIELD_FAILURE) = "today"
+# (the old per-faction break) or "shear" (one connected crack network); rendering/effects/shield_failure_quality="low"
+# (or VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network. Anything else plays the collapse.
+const FAIL_LOOKS := ["today", "shear", "collapse"]
+
+
+static func fail_look_setting() -> int:
+	var v := OS.get_environment("VS_SHIELD_FAILURE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure", "collapse"))
+	var i := FAIL_LOOKS.find(v)
+	return i if i >= 0 else 2
+
+
+static func fail_low_setting() -> bool:
+	var v := OS.get_environment("VS_SHIELD_FAILURE_Q")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure_quality", "high"))
+	return v == "low"
+
+
+# Issue 1239 (F2.1): where the shield gave way. hit_lp is the breaking hit's point on the shield in the shield's own
+# frame (relative to hull.shield_centre(), as shield_point gives it); the failure aims there. Without one (a break no
+# shot carries: an ion storm, a special, the benches) it aims at the middle of the struck quadrant, as before.
+func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		return hit_lp.normalized()
+	return hull.quad_dir(quad)
+
+
+func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
-	var qd: Vector3 = hull.quad_dir(quad)
+	hit_power(fx, true)
+	if _fail_look == 1:
+		_break_shear(fx, quad, hit_lp)
+		return
+	if _fail_look == 2:
+		_break_collapse(fx, quad, hit_lp)
+		return
+	var qd: Vector3 = _break_aim(quad, hit_lp)
 	var T: float = fx.now
 	_shield_mat.set_shader_parameter("brk_t", T)
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
 	var rad = hull.shield_radii()
 	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
 	var lp: Vector3 = contact["local"]
@@ -898,6 +1079,117 @@ func shield_break(fx, quad: int) -> void:
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
 
 
+# Issue 1078, shear: one crack network runs from the struck side over the whole field (the shader draws it, timed by
+# how far each point is from the struck facing); sparks race along the surface with the front, so the failure reads as
+# one connected tear, not scattered pops. Each faction keeps its colour and character (R163): the Navy throws lattice
+# cells loose as the crack passes, the Hullbreakers' cracks stutter, the Glasswrights' glint.
+const SHEAR_FRONT := 0.55   # seconds for the crack front to cross from the struck facing to the far side (shader too)
+
+
+func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
+	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_win", 1.6)
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_until = maxf(_shield_until, T + 1.45)
+	_brk_until = maxf(_brk_until, T + SHEAR_FRONT + 0.4)
+	var rad = hull.shield_radii()
+	var reach: float = rad.length() * 2.0
+	var contact := shield_point(to_world(hull.shield_centre() + qd * reach))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6)
+	var sc: Color = fac["shield"]
+	var st: int = fac["shield_style"]
+	var k = scale_k()
+	var hot := sc.lerp(Color.WHITE, 0.55)
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 8.0 * k, 8.0, 0.18)
+	fx.light(wp + wn * 2.0, T, 0.7, 6.0, sc, 0)
+	fx.shake(T, 0.16, wp)
+	# the front: points spread from the contact to the far side, each lit when the front reaches it
+	var n := 16 if st != 1 else 12
+	for i in n:
+		var spread := lerpf(0.25, 2.6, float(i) / float(n - 1))
+		var d: Vector3 = (qd + fx.rdir() * spread).normalized()
+		var ti: float = T + (1.0 - d.dot(qd)) * 0.5 * SHEAR_FRONT
+		var pi := shield_point(to_world(hull.shield_centre() + d * reach))
+		var pw: Vector3 = pi["p"]
+		var nw: Vector3 = pi["n"]
+		var run: Vector3 = (pw - wp).slide(nw)
+		run = run.normalized() if run.length() > 1e-3 else fx.rcone(nw, 1.5).slide(nw).normalized()
+		var stut := 1.0 if st != 2 else (0.5 + 0.5 * float(i % 2))
+		for j in 3:
+			fx.stk(pw, ti + j * 0.03, 0.22 + fx.rng.randf() * 0.12, hot, 6.0 * stut, 0.1, 0.12, 1,
+				(run + fx.rdir() * 0.25) * (14 + fx.rng.randf() * 10) * k, 2.2)
+		if st == 1:
+			# Navy: a cell of the lattice comes loose where the crack passes
+			fx.spr(pw, ti, 0.6 + fx.rng.randf() * 0.4, sc, 2.6, 0.45 * k, 0.25 * k, 16, (nw + run * 0.5) * (4 + fx.rng.randf() * 4) * k, 0.8)
+		elif st == 3:
+			# Glasswrights: a prismatic glint rides the crack
+			fx.spr(pw, ti, 0.9 + fx.rng.randf() * 0.5, sc, 2.0, 0.6 * k, 0.2 * k, 16, nw * (1.5 + fx.rng.randf() * 2) * k, 0.4, 1.5)
+
+
+# Issue 1078, collapse: the cleaner failure. The field flashes once, evenly, then one bright band closes over it from the
+# far side into the breach and the field pinches out there in a small knot and a flat ring of sparks. No crackle, no
+# scattered pops; the faction still shows in colour and in the band's pattern.
+# R358 (Ryan, Nov 20 2026, issue 1239 pace sheet): 75% slower than R340's first 0.70 s, so the band stays easy to see
+const COLLAPSE_CLOSE := 1.225   # seconds until the band reaches the breach (shader: brk_close)
+const COLLAPSE_TAIL := 0.25   # issue 1239: the knot's fade after the close (shader: exp(-kt * 5.0))
+
+
+# Issue 1239 (Ryan, Nov 20: "close the shield collapse by like 50, 75 or 100% so it's slightly more visible"; he picked
+# 75% slower, R358): the close time, for dev comparisons only. rendering/effects/shield_collapse_close (or
+# VS_SHIELD_CLOSE), in seconds; the game look is COLLAPSE_CLOSE.
+static func collapse_close_setting() -> float:
+	var v := OS.get_environment("VS_SHIELD_CLOSE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_collapse_close", COLLAPSE_CLOSE))
+	var c := float(v)
+	return clampf(c, 0.3, 2.0) if c > 0.0 else COLLAPSE_CLOSE
+
+
+func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
+	var qd: Vector3 = _break_aim(quad, hit_lp)
+	var T: float = fx.now
+	var close := collapse_close_setting()
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_mat.set_shader_parameter("brk_close", close)
+	_shield_mat.set_shader_parameter("brk_win", maxf(1.6, close + 0.9))
+	_shield_until = maxf(_shield_until, T + maxf(1.45, close + 0.75))
+	_brk_until = maxf(_brk_until, T + close + COLLAPSE_TAIL)
+	var rad = hull.shield_radii()
+	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	if hit_lp.is_finite() and hit_lp.length() > 1e-4:
+		# the knot and its sparks sit where the shot struck, not where the radial ray met the skin (a fitted skin is not
+		# convex, so the two can differ)
+		lp = hit_lp
+		wp = xf() * (hit_lp + hull.shield_centre())
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
+	var sc: Color = fac["shield"]
+	var k = scale_k()
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.3), 6.0 * k, 6.0, 0.15)
+	fx.light(wp + wn * 2.0, T, 0.4, 4.0, sc, 0)
+	fx.shake(T, 0.12, wp)
+	# the knot where the field closes, and its ring of sparks flat along the hull
+	var Tk: float = T + close
+	# the Glasswrights' pale field needs a bigger knot to read against their pale hulls (matches the shader's band)
+	var gk: float = 1.5 if int(fac["shield_style"]) == 3 and not fx.reduce_flashing else 1.0
+	_shield_flash(fx, wp, Tk, sc.lerp(Color.WHITE, 0.5), 5.0 * k * gk, 7.0, 0.14)
+	fx.light(wp + wn * 1.5, Tk, 0.35, 5.0 * gk, sc, 0)
+	var t1: Vector3 = wn.cross(Vector3.UP if absf(wn.y) < 0.9 else Vector3.RIGHT).normalized()
+	var t2: Vector3 = wn.cross(t1)
+	for i in 18:
+		var a: float = TAU * (float(i) + fx.rng.randf() * 0.4) / 18.0
+		var v: Vector3 = (t1 * cos(a) + t2 * sin(a) + wn * 0.15) * (10 + fx.rng.randf() * 6) * k
+		fx.stk(wp, Tk, 0.25 + fx.rng.randf() * 0.1, sc.lerp(Color.WHITE, 0.4), 5.0, 0.08, 0.12, 1, v, 2.5)
+
+
 # Match pop's comfort booking and soft fallback, without its free-standing disc.
 func _shield_flash(fx, p: Vector3, T: float, col: Color, size: float, intensity: float, life: float) -> void:
 	if fx.flash_at(p, T, size, SH.flash_sprite_floor(0, 0.0), life):
@@ -928,36 +1220,39 @@ const REACT_MASS := [0.6, 1.0, 2.2, 5.0, 12.0]
 const REACT_ONSET := [0.03, 0.05, 0.08, 0.12, 0.16]
 const REACT_ARREST := [0.35, 0.5, 0.7, 0.95, 1.2]
 const REACT_RECOVER := [3.6, 3.0, 2.4, 1.9, 1.5]
-const REACT_SHUDDER_HZ := [11.0, 9.0, 7.0, 5.0, 4.0]
-const REACT_SHUDDER_T := [0.16, 0.2, 0.28, 0.38, 0.5]
+const REACT_SHUDDER_HZ := [6.0, 5.5, 5.0, 4.25, 3.5]
+const REACT_SHUDDER_T := 0.22 / 3.0  # 95% of the tremor is gone after 0.22 effect seconds
 var _kick_v := Vector3.ZERO     # angular kick still to be delivered (onset)
 var _kick_p := Vector3.ZERO     # drift kick still to be delivered
 var _brk := Vector3.ZERO        # thrusters' braking rate per axis (rad/s2)
 var _brk_p := 0.0               # ... and for the slide (units/s2)
 var _brk_at := 0.0              # when the thrusters start braking
+var react_clock := 0.0          # seconds of reaction integrated so far (issue 1467: the frame-rate check reads it)
 
 
 # A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
 # shells and slugs kick, lances and ions barely at all); lp, ldir: hit point and shot direction in the ship frame.
-func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
+func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3, source := "hull") -> void:
 	if dead or gone or impulse <= 0.0:
 		return
 	# Issue 462: where the last hit landed (hull space), so a death can open its tear from the side that was hit.
-	set_meta("last_hit", [lp, ldir, fx.now])
+	if source != "recoil":
+		set_meta("last_hit", [lp, ldir, fx.now])
+	_show_rcs = _show_rcs or source == "hull"
 	var wi := clampi(weight, 0, 4)
 	var m: float = REACT_MASS[wi]
 	var L: float = maxf(hull.L, 1.0)
 	var d := ldir.normalized()
 	var r: Vector3 = (lp - hull.c) / L
 	# the angular kick: torque from where the hit lands, about the ship's own axes (x roll, y yaw, z pitch)
-	# lever arms never vanish: a hull is not a point, and a hit near the middle still rocks it a little
-	var hh: float = maxf(hull.H / L, 0.05) * 0.5
-	r.y = signf(r.y if absf(r.y) > 1e-4 else 1.0) * maxf(absf(r.y), hh * 0.6)
-	r.x = signf(r.x if absf(r.x) > 1e-4 else 1.0) * maxf(absf(r.x), 0.08)
+	# The roll axis sits below mid-hull. Nearby shots on either side of the midline share the same heel.
+	r.y += maxf(hull.H / L, 0.05) * 0.35
 	var tq := r.cross(d)
 	# turning inertia grows faster than mass (a long hull resists spin more than it resists a shove)
 	var dv := Vector3(tq.x * 2.4, tq.y * 0.8, tq.z * 1.2) * impulse * 0.25 / pow(m, 1.25)
 	var dp := d * impulse * L * 0.0095 / m
+	if wi >= 3 or death_tier == "capital":
+		dp *= 0.5
 	_kick_v += dv
 	_kick_p += dp
 	# the thrusters brake whatever the ship will be doing once the kick is in, over REACT_ARREST seconds
@@ -966,11 +1261,9 @@ func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
 	_brk = Vector3(maxf(_brk.x, absf(v_after.x) / t_ar), maxf(_brk.y, absf(v_after.y) / t_ar), maxf(_brk.z, absf(v_after.z) / t_ar))
 	_brk_p = maxf(_brk_p, (_pv + _kick_p).length() / (t_ar * 1.3))
 	_brk_at = fx.now + REACT_ONSET[wi] + 0.05
-	# the shudder: a damped structural vibration (bigger hulls ring lower and longer, and show it more than they move)
-	_shud = maxf(_shud * exp(-(fx.now - _shud_t) / REACT_SHUDDER_T[wi]), minf(impulse / sqrt(m), 4.0) * 0.0025)
+	# The structure rings lower on heavier hulls.
+	_shud = maxf(_shudder_at(fx.now), minf(impulse / sqrt(m), 4.0) * 0.0035)
 	_shud_t = fx.now
-	if impulse >= 2.5:
-		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
 	_reacting = true
 
 
@@ -984,7 +1277,17 @@ func _react_step(fx, dt: float) -> void:
 	if not _reacting:
 		return
 	var wi := clampi(weight, 0, 4)
-	var h := minf(dt, 1.0 / 30.0)
+	# Issue 1467: integrate the whole frame in steps of at most 1/30 s, each on its own clock, so a slow frame keeps
+	# the same recoil timeline as a fast one (one step at 30 fps and above; a 15 fps frame takes two).
+	var steps := clampi(ceili(dt * 30.0 - 1e-6), 1, 8)
+	var h := minf(dt, 8.0 / 30.0) / float(steps)
+	for si in steps:
+		_react_integrate(fx.now - h * float(steps - 1 - si), h, wi)
+	_react_apply(fx, wi)
+
+
+func _react_integrate(t: float, h: float, wi: int) -> void:
+	react_clock += h
 	# 1. onset: deliver the kick over REACT_ONSET (about 95% of it inside that time)
 	var f := 1.0 - exp(-h * 3.0 / float(REACT_ONSET[wi]))
 	_rv += _kick_v * f
@@ -992,7 +1295,7 @@ func _react_step(fx, dt: float) -> void:
 	_pv += _kick_p * f
 	_kick_p *= 1.0 - f
 	var wr: float = REACT_RECOVER[wi]
-	if fx.now >= _brk_at:
+	if t >= _brk_at:
 		# 2. arrest: a steady thruster burn against the spin and the slide, per axis
 		var ax := [0, 1, 2]
 		for k in ax:
@@ -1012,52 +1315,54 @@ func _react_step(fx, dt: float) -> void:
 			else:
 				_pv -= _pv / sp * _brk_p * h
 		else:
-			var wp := wr
-			_pv += (-_pd * wp * wp - _pv * 2.0 * wp) * h
+			# Exact critically damped return keeps the drift smooth across frame rates.
+			var slope := _pv + _pd * wr
+			var decay := exp(-wr * h)
+			_pd = (_pd + slope * h) * decay
+			_pv = (_pv - slope * (wr * h)) * decay
+			_ra += _rv * h
+			return
 	_ra += _rv * h
 	_pd += _pv * h
+
+
+func _shudder_at(t: float) -> float:
+	return _shud * exp(-maxf(t - _shud_t, 0.0) / REACT_SHUDDER_T)
+
+
+func _react_apply(fx, wi: int) -> void:
 	var age: float = fx.now - _shud_t
-	var sh := _shud * exp(-age / float(REACT_SHUDDER_T[wi]))
-	var w_sh: float = TAU * float(REACT_SHUDDER_HZ[wi])
-	var shx := sh * sin(age * w_sh + 1.3)
-	var shz := sh * 0.7 * sin(age * w_sh * 1.27)
-	_rcs(fx)
-	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
-	# Keep the cinematic flight bank under the damage reaction.
-	var flight_bank := float(root.get("glide_bank")) if root.get("glide_bank") != null else 0.0
-	root.rotation.x = flight_bank + _ra.x + shx
-	root.rotation.z = _ra.z + shz
-	# yaw and drift: only while G2 is not driving the root (it sets position and yaw itself during a path)
-	if busy:
-		_app_pos = Vector3.ZERO
-		_app_yaw = 0.0
-	else:
-		var want_pos: Vector3 = Basis(Vector3.UP, root.rotation.y) * _pd
-		root.position += want_pos - _app_pos
-		_app_pos = want_pos
-		root.rotation.y += _ra.y - _app_yaw
-		_app_yaw = _ra.y
-	var idle: bool = _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
+	var sh := _shudder_at(fx.now)
+	var phase: float = age * TAU * REACT_SHUDDER_HZ[wi]
+	var angles := _ra + Vector3(sh * sin(phase + 1.3), 0.0, sh * 0.7 * sin(phase))
+	var idle := _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
 	if idle and _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 3e-4 and _pv.length() < hull.L * 3e-4 and sh < 1e-4:
-		root.rotation.x = flight_bank
-		root.rotation.z = 0.0
-		if not busy:
-			root.position -= _app_pos
-			root.rotation.y -= _app_yaw
-		_app_pos = Vector3.ZERO
-		_app_yaw = 0.0
+		angles = Vector3.ZERO
 		_ra = Vector3.ZERO
 		_rv = Vector3.ZERO
 		_pd = Vector3.ZERO
 		_pv = Vector3.ZERO
 		_shud = 0.0
 		_reacting = false
+		_show_rcs = false
+	if hull_pivot != null:
+		hull_pivot.rotation = angles + Vector3(_list, 0.0, 0.0)
+		hull_pivot.position = _pd
+	else:
+		# Bare hulls use the root. Subtract the applied yaw to keep their drift in the base heading.
+		var base_yaw := root.rotation.y - _app_yaw
+		var want_pos := Basis(Vector3.UP, base_yaw) * _pd
+		root.position += want_pos - _app_pos
+		root.rotation = angles + Vector3(_list, base_yaw, 0.0)
+		_app_pos = want_pos
+		_app_yaw = angles.y
+	if _show_rcs:
+		_rcs(fx)
 
 
-# Attitude thrusters visibly fighting the spin and the drift: short gas puffs at the hull's corners, picked so their
-# thrust opposes the motion, while the ship is still turning or sliding noticeably.
+# Attitude corrections at the hull corners, picked so their thrust opposes the spin and drift.
 func _rcs(fx) -> void:
-	if squadron or fx.now < _rcs_next:
+	if squadron or faction == "chorus" or fx.now < _rcs_next:
 		return
 	var spin := _rv.length()
 	var slide := _pv.length() / maxf(hull.L, 1.0)
@@ -1101,10 +1406,189 @@ func _rcs(fx) -> void:
 		var gd: Vector3 = -t
 		if gd.dot(n) < 0.15:
 			gd = n
-		var gv: Vector3 = dir_world(gd) * (5.0 + fx.rng.randf() * 3.0) * k
+		var axis := dir_world(gd)
 		fx.record_spawn(self, wp)
-		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
-		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
+		match faction:
+			"ithar":
+				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
+			"deathless":
+				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
+			_:
+				var soot: bool = faction == "corsair"
+				var gas := Color(0.53, 0.46, 0.40) if soot else Color(0.85, 0.88, 0.95)
+				var core := Color(0.79, 0.69, 0.59) if soot else Color(0.9, 0.95, 1.0)
+				var gv: Vector3 = axis * (5.0 + fx.rng.randf() * 3.0) * k
+				fx.spr(wp, fx.now, 0.35, gas, 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
+				fx.spr(wp, fx.now, 0.06, core, 1.5, 0.08 * k, 0.15 * k, 18)
+
+
+# Stutter is about the hit outcome. Recoil and fully absorbed impacts can still move the hull.
+# The one brownout path (Neon on PR 1699, item c): a felt hit sets a transient dip here, and _wound_step writes it onto
+# the hull's damage surfaces as fx_flick, multiplied with the wound flicker. A fresh hull gets its damage surfaces first
+# (ensure_damage_surfaces, PR 1631), so no painted material is copied or swapped, and fx_power stays the wear's steady
+# value and the death fade's.
+func hit_power(fx, stutter: bool, dip := 0.0, duration := 0.45) -> void:
+	if dead or gone:
+		return
+	if stutter:
+		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
+	if dip <= 0.0 or squadron:
+		return
+	ensure_damage_surfaces(fx)
+	_dip_peak = maxf(_power_dip, dip)
+	_dip_start = fx.now
+	_dip_duration = duration
+	_set_power_dip(_dip_peak)
+	_wlog(["power_dip", -1, fx.now])
+
+
+func _power_step(fx) -> void:
+	if dead or _dip_duration <= 0.0:
+		return
+	var age: float = fx.now - _dip_start
+	if age >= _dip_duration:
+		end_brownout()
+		return
+	var recovery := 1.0 - smoothstep(0.0, _dip_duration, age)
+	var flicker := 1.0 if fx.reduce_flashing else 0.82 + 0.18 * cos(age * TAU * 5.0)
+	_set_power_dip(_dip_peak * recovery * flicker)
+
+
+# The dip reaches the shader through _wound_step (fx_flick) on the same frame: _power_step runs before it in step().
+func _set_power_dip(dip: float) -> void:
+	_power_dip = dip
+
+
+func end_brownout() -> void:
+	if _dip_duration <= 0.0:
+		return
+	_dip_duration = 0.0
+	_set_power_dip(0.0)
+
+
+# ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
+
+# Neon's damage audit F1.2: as hull HP falls the whole ship looks worn, not only its breach anchors. hull_wear (0 above
+# WEAR_FROM of max HP, 1 at WEAR_FULL) drives, through HULL.set_wear, the damage shader's own uniforms (fx_hull.gd DAMAGE_UNIFORMS): fx_weather
+# darkens and mottles the plating, fx_power dims the hull's lights and glowing panels, and fx_scorch lays soot patches
+# where the ship was actually hit (wear_patches). The scorch heat stays 0 on a live ship, so no faction gets orange
+# embers from this (the faction's own wound colour stays on its marks and holes). Below LIST_FROM of max HP the hull
+# lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit: the view only, the rules never see it.
+const WEAR_FROM := 0.8
+const WEAR_FULL := 0.2
+const LIST_FROM := 0.35
+const LIST_MIN := 2.0        # degrees, at LIST_FROM
+const LIST_MAX := 5.0        # degrees, near 0 HP
+const LIST_T := 2.5          # seconds for the list to settle
+var hull_wear := 0.0
+var _wear_shown := -1.0
+var _wear_marks := -1
+var list_target := 0.0       # radians about the bow
+var _list := 0.0
+# the side (+1 starboard, -1 port) of the last HULL hit, set only by add_mark (a shield-only hit never reaches it;
+# Sol review of PR 1570: hit_react's last_hit also takes shield hits); 0 while unknown (a view rebuilt after Continue)
+var _hull_side := 0.0
+var _list_side := 0.0        # held from the moment the list starts until the ship is repaired above LIST_FROM
+
+
+func _set_wear(fx, hpf: float) -> void:
+	if squadron or weight <= 0:
+		return
+	hull_wear = clampf((WEAR_FROM - hpf) / (WEAR_FROM - WEAR_FULL), 0.0, 1.0)
+	if hpf < LIST_FROM and hpf > 0.0:
+		var k := clampf((LIST_FROM - hpf) / LIST_FROM, 0.0, 1.0)
+		# the side is picked once, when the list starts, and held (no flip on every later hit): the last hull hit's
+		# side, or, when no hull hit is known (a view rebuilt after Continue), a fixed side from the ship's id, so the
+		# same ship always leans the same way
+		if _list_side == 0.0:
+			_list_side = _hull_side if _hull_side != 0.0 else (1.0 if posmod(_seed, 2) == 0 else -1.0)
+		list_target = deg_to_rad(lerpf(LIST_MIN, LIST_MAX, k)) * _list_side
+	else:
+		list_target = 0.0
+		_list_side = 0.0
+	# a refresh also whenever wear reaches or leaves zero (Sol review: a small last repair left fx_weather at 0.0075)
+	if absf(hull_wear - _wear_shown) > 0.02 or _wear_marks != _marks.size() or ((hull_wear == 0.0) != (_wear_shown == 0.0)):
+		if hull_wear > 0.0:
+			ensure_damage_surfaces(fx)   # Neon on PR 1631: spread damage can wear a hull before any section breaches
+		_apply_wear()
+
+
+# Issue 1587 (Neon on PR 1631): the hull's lights (fx_flick, the wear) live on its damage surfaces, which only a breach used
+# to build. A fresh or lightly hit hull gets them here once, with no mouths (no holes): the same materials a first breach
+# makes, so the brownout and the wear show before any section is cut.
+func ensure_damage_surfaces(fx) -> void:
+	if not _damage_surfaces.is_empty() or dead or gone or squadron or hull == null or fx == null or fx.compat:
+		return
+	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
+	_power_shown = -1.0
+	_wear_shown = -1.0
+
+
+# Push the wear onto every damage surface this ship has now (a rebuild applies it to new ones in fx_breach).
+func _apply_wear() -> void:
+	_wear_shown = hull_wear
+	_power_shown = -1.0     # issue 1587: new surfaces get the flicker (fx_flick) on the next frame
+	_wear_marks = _marks.size()
+	var patches := wear_patches()
+	for key in _damage_surfaces:
+		var entry: Array = _damage_surfaces[key]
+		if entry.size() > 1 and entry[1] is ShaderMaterial:
+			HULL.set_wear(entry[1], hull_wear, patches)
+
+
+# Soot patches on the sides that were hit: per hurt section (worst first), up to WEAR_PATCHES_SEC of its drawn marks,
+# heavy then newest, one patch per spot (marks closer than a patch merge); at most 8 on the ship (the shader's array).
+const WEAR_PATCHES_SEC := 3
+func wear_patches() -> Array:
+	var out: Array = []
+	if hull_wear <= 0.0 or hull == null:
+		return out
+	var L: float = hull.L
+	var secs := [0, 1, 2]
+	secs.sort_custom(func(a: int, b: int) -> bool: return section_fraction[a] < section_fraction[b])
+	for sec in secs:
+		var f: float = section_fraction[sec]
+		if f >= WEAR_FROM:
+			continue
+		var hurt := clampf((WEAR_FROM - f) / (WEAR_FROM - WEAR_FULL), 0.0, 1.0)
+		var R: float = L * (0.045 + 0.06 * hurt) * (0.6 + 0.4 * hull_wear)
+		var idx: Array = []
+		for j in _marks.size():
+			if _marks[j].sec == sec:
+				idx.append(j)
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			var ha := _heavy_mark(_marks[a])
+			var hb := _heavy_mark(_marks[b])
+			if ha != hb:
+				return ha
+			return a > b)
+		var n := 0
+		for j in idx:
+			if n >= WEAR_PATCHES_SEC or out.size() >= 8:
+				break
+			var c: Vector3 = _marks[j].c
+			var near := false
+			for q in out:
+				if Vector3(q.x, q.y, q.z).distance_to(c) < R * 0.8:
+					near = true
+					break
+			if near:
+				continue
+			out.append(Vector4(c.x, c.y, c.z, R))
+			n += 1
+	return out
+
+
+func _list_step(dt: float) -> void:
+	if absf(list_target - _list) < 1e-5:
+		return
+	var prev := _list
+	_list += (list_target - _list) * (1.0 - exp(-dt * 3.0 / LIST_T))
+	if absf(list_target - _list) < 1e-4:
+		_list = list_target
+	if not _reacting:
+		var visual := hull_pivot if hull_pivot != null else root
+		visual.rotation.x += _list - prev
 
 
 # ---------------------------------------------------------------- staged damage (API.md 2)
@@ -1132,6 +1616,7 @@ func sync(fx, u: Dictionary) -> void:
 		section_fraction[i] = clampf(f, 0.0, 1.0)
 		want[i] = st
 	_regrade_marks(fx)
+	_set_wear(fx, hpf)
 	if squadron:
 		want = [0, 0, 0]
 		_squad_smoke = hpf < 0.5 and not fx.compat
@@ -1149,10 +1634,27 @@ func sync(fx, u: Dictionary) -> void:
 	if _last_sh >= 0.0 and shs > _last_sh + 0.5:
 		_regen(fx)
 	_last_sh = shs
+	if u.has("route"):
+		_set_route(u.get("route"), float(u["shp"]) if u.get("shp") != null else shs)
 	var burn = u.get("burning") == true
 	if burn != _burning:
 		_burning = burn
 		_set_burning(fx, burn)
+
+
+# Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)
+func _set_route(route, pool: float) -> void:
+	var on := Vector4.ZERO
+	if shielded and not squadron and pool >= 1.0 and route is Array:
+		for i in mini((route as Array).size(), 4):
+			if route[i] != null and float(route[i]) > 0.0:
+				on[i] = 1.0
+	if on == _route_on or _shield_mat == null:
+		_route_on = on if _shield_mat != null else Vector4.ZERO
+		return
+	_route_on = on
+	_shield_mat.set_shader_parameter("route_on", on)
+	_shield_mat.set_shader_parameter("route_dirs", PackedVector3Array([hull.quad_dir(0), hull.quad_dir(1), hull.quad_dir(2), hull.quad_dir(3)]))
 
 
 func set_stages(fx, st: Array) -> void:
@@ -1165,12 +1667,19 @@ func _apply_stages(fx, want: Array) -> void:
 	for i in 3:
 		if int(want[i]) != int(stage[i]):
 			var up: bool = int(want[i]) > int(stage[i])
+			var was: int = int(stage[i])
 			if int(stage[i]) == 4 and int(want[i]) < 4:
 				_patch_time[i] = fx.now
 			_scar_stage[i] = maxi(_scar_stage[i], stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
+			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on the ship's first stage
+			# update, which is its state as it arrives: a view rebuilt with the damage already there)
+			if up and _stages_seen and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)):
+				_blowout(fx, i)
+	_stages_seen = true
 
+	_refresh_wounds(fx)
 	_refresh_damage_emitters(fx)
 	var sp: bool = int(stage[0]) >= 3
 	if sp != _eng_sputter:
@@ -1216,8 +1725,85 @@ func _anchor(i: int, kind: String) -> Dictionary:
 						break
 		if h.is_empty():
 			return {}
+		if kind in ["a", "b"]:
+			h = _off_turrets(h, hull.L * BREACH.STAGE4_HOLE_L, i)
+			if h.is_empty():
+				_anchors[key] = {}   # no clear plating: this anchor opens nothing (kept, so it is not searched again)
+				return {}
 		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
 	return _anchors[key]
+
+
+# Issue 1235 (Board review of PR 1245): turret meshes take no baked damage (they turn), so a stage 4 hole opened under a
+# turret's foot would leave the whole turret standing over the hole. A breach anchor inside any turret's footprint (its
+# meshes' box seen from above, at rest, plus the hole's radius) is moved: first to points round the footprints it is in,
+# cast back onto the plating, then to other plating samples of its section; every candidate is checked against EVERY
+# footprint (Artoo, PR 1245: two seats side by side could push it from one into the other). If no clear spot is found
+# the section opens no hole there ({}), never one under a turret.
+func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
+	if _clear_of_turrets(h["p"], R):
+		return h
+	var nn: Vector3 = h["n"]
+	var p0: Vector3 = h["p"]
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		var rad: float = float(f[1]) + R * 1.15
+		if Vector2(p0.x - c.x, p0.z - c.z).length() >= rad:
+			continue
+		var d0 := Vector3(p0.x - c.x, 0.0, p0.z - c.z)
+		var a0 := atan2(d0.z, d0.x) if d0.length() > 1e-3 else 0.0
+		for k in 16:
+			var an := a0 + (k + 1) / 2 * (TAU / 16.0) * (1.0 if k % 2 == 0 else -1.0)
+			for grow in [1.0, 1.5, 2.2]:
+				var q := Vector3(c.x + cos(an) * rad * grow, p0.y, c.z + sin(an) * rad * grow)
+				var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
+				if not hit.is_empty() and _clear_of_turrets(hit["p"], R):
+					return {"p": hit["p"], "n": hit["n"]}
+	if sec >= 0:
+		for t in 48:
+			var c2: Dictionary = hull.random_sample(sec, 0.0)
+			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_of_turrets(c2["p"], R):
+				return {"p": c2["p"], "n": c2["n"]}
+	return {}
+
+
+func _clear_of_turrets(p: Vector3, R: float) -> bool:
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		if Vector2(p.x - c.x, p.z - c.z).length() < float(f[1]) + R * 1.15 - 1e-4:
+			return false
+	return true
+
+
+var _feet: Array = []
+var _feet_done := false
+
+
+# Each turret's footprint at rest in the ship frame: [centre, radius], from its meshes' boxes.
+func turret_feet() -> Array:
+	if _feet_done:
+		return _feet
+	_feet_done = true
+	if hull == null or not ("turrets" in hull) or not is_instance_valid(root):
+		return _feet
+	var inv: Transform3D = root.global_transform.affine_inverse()
+	for t in hull.turrets:
+		var node = t.get("node")
+		if not is_instance_valid(node):
+			continue
+		var box := AABB()
+		var any := false
+		for m in (node as Node).find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var b: AABB = (inv * mi.global_transform) * mi.mesh.get_aabb()
+			box = b if not any else box.merge(b)
+			any = true
+		if any:
+			var cen := box.get_center()
+			_feet.append([cen, 0.5 * Vector2(box.size.x, box.size.z).length()])
+	return _feet
 
 
 func _t0(a: Dictionary, st: int, fx) -> float:
@@ -1272,7 +1858,7 @@ func _plan(fx, i: int, st: int) -> Array:
 		patch.heat = 0.0
 		out.append(patch)
 	if st < 4 or fx.compat: return out
-	var e = BREACH.hole(hull, a.p, a.n, L * 0.032, 1.0, 0.14, sd)
+	var e = BREACH.hole(hull, a.p, a.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.14, sd)
 	e.t0 = _t0(a, st, fx)
 	e.sec = i
 	if faction == "chorus":
@@ -1281,27 +1867,58 @@ func _plan(fx, i: int, st: int) -> Array:
 	if weight >= 2:
 		var bt = _anchor(i, "b")
 		if bt.is_empty(): return out
-		var eb = BREACH.hole(hull, bt.p, bt.n, L * 0.032, 1.0, 0.12, sd + 2.1)
+		var eb = BREACH.hole(hull, bt.p, bt.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.12, sd + 2.1)
 		eb.t0 = _t0(bt, st, fx)
 		eb.sec = i
 		out.append(eb)
 	return out
 
 
+# The weapon marks drawn now: per section at most [2, 2, 3, 4, 4][stage] (all of them on a repaired, scarred section).
+# Issue 1235 (Neon audit F1.3): the cap kept the OLDEST marks, so after two early grazes a later torpedo was stored,
+# rebuilt for, and never drawn. Heavy marks (blast, ion, ram, a weight 3+ weapon) come first, then the newest; the
+# kept marks are returned in their stored order, so the rebuilt geometry does not reshuffle.
+func visible_marks(fx) -> Array:
+	var pick := {}
+	for sec in 3:
+		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[sec]]) * fx.cap_k))
+		if _scar_stage[sec] > stage[sec]:
+			cap = 1 << 20
+		var idx: Array = []
+		for j in _marks.size():
+			if _marks[j].sec == sec:
+				idx.append(j)
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			var ha := _heavy_mark(_marks[a])
+			var hb := _heavy_mark(_marks[b])
+			if ha != hb:
+				return ha
+			return a > b)
+		for k in mini(cap, idx.size()):
+			pick[idx[k]] = true
+	var out: Array = []
+	for j in _marks.size():
+		# a mark with no hull section (one placed by hand, not through add_mark) is never capped
+		if pick.has(j) or int(_marks[j].sec) < 0 or int(_marks[j].sec) > 2:
+			out.append(_marks[j])
+	return out
+
+
+static func _heavy_mark(e) -> bool:
+	return e.style in [BREACH.S_BLAST, BREACH.S_ION, BREACH.S_RAM] or int(e.wt) >= 3
+
+
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true
 		return
 	var ents: Array = []
 	for i in 3:
 		ents.append_array(_ents[i])
-	for e in _marks:
-		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[e.sec]]) * fx.cap_k))
-		var used := 0
-		for x in ents:
-			if x.look != "" and x.sec == e.sec: used += 1
-		if used < cap or _scar_stage[e.sec] > stage[e.sec]: ents.append(e)
+	ents.append_array(visible_marks(fx))
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:
@@ -1386,14 +2003,16 @@ func _cut_refresh(fx) -> void:
 # A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and
 # ldir are the hit point, its normal and the shot's direction in the ship frame. A fresh hit on an old mark of the same
 # style grows and reheats it instead of stacking more geometry (_place_mark has the budget).
-func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3) -> void:
+func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3, hatch_k := 1.0) -> void:
 	if squadron or weight <= 0 or dead or gone:
 		return
 	_mark_n += 1
 	var t_m := Time.get_ticks_usec()
-	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
+	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)], hatch_k)
 	if es.is_empty():
 		return
+	if absf(lp.z) > 1e-3:
+		_hull_side = signf(lp.z)
 	for e in es:
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)
@@ -1415,7 +2034,7 @@ func _place_mark(fx, e) -> void:
 			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
-			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec])
+			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
 			if o.part_i < es2.size():
 				var n2 = es2[o.part_i]
 				n2.t0 = fx.now
@@ -1569,6 +2188,11 @@ func _refresh_damage_emitters(fx) -> void:
 				if stage[i] >= 3 and smoke < caps.y:
 					desired.append({"id": "vent%d" % i, "kind": "vent", "sec": i, "st": stage[i]})
 					smoke += 1
+		# issue 1587: a jammed turret's thin smoke wisp takes a smoke slot (the class caps hold)
+		for i in _jammed:
+			if smoke < caps.y:
+				desired.append({"id": "wisp%d" % i, "kind": "smoke", "sec": i, "st": stage[i], "tur": int(_jammed[i]["k"])})
+				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
 		var match_i := -1
@@ -1591,6 +2215,9 @@ func _refresh_damage_emitters(fx) -> void:
 
 
 func _build_damage_emitter(fx, e: Dictionary) -> void:
+	if e.has("tur"):
+		_build_wisp(fx, e)
+		return
 	var a := _anchor(e.sec, "a")
 	if a.is_empty(): return
 	var p: Vector3 = a.p
@@ -1668,6 +2295,205 @@ func _update_damage_emitters(fx) -> void:
 			dir_world(Vector3.LEFT) * hull.L * 0.20)
 
 
+# ---------------------------------------------------------------- live wounds (issue 1587)
+# Neon's Nov 21-22 hull FX audit (issue 1587, Refs #1239 Top 6): a wounded ship looks like a failing warship, not a dimmed
+# mesh. View only; the rules never see any of it. Everything here is one-shot pool sprites or a uniform write, except the
+# jammed turret's wisp, which takes one of the ship's smoke slots (damage_caps), so steady-state counts do not grow.
+#   - engine section at stage 3+: one nozzle (sick_nozzle) gutters with gaps and a plume SICK_LEN as long, and coughs smoke
+#     as the ship starts to move
+#   - mid or prow section at stage 3+: one turret there freezes off its aim and sags (fx_hull jam_turret), trails a thin
+#     wisp and pops a spark every 2 to 4 s; the hull's lights flicker unevenly (fx_flick, multiplied onto the wear's fx_power)
+#   - a hit that pushes a section into stage 3 or 4: a one-shot blowout jet of vapour and a few tumbling bits
+#   - a felt hull hit (crit, ion, lance, heavy shot): hit_power browns the hull's lights out (fx_flick) for about half a second
+const SICK_LEN := 0.6          # the sick nozzle's plume length against the others (the brief: about 40% shorter)
+const COUGH_GAP := 0.7         # seconds between two coughs of the sick nozzle
+const BLOWOUT_LIFE := 1.2
+
+
+# The sick nozzle's gate (0 to 1) at time t: a steady stutter of dropouts (about a fifth of each cycle near dark) plus a fast
+# gutter. Gentler under reduce flashing: no dropouts, a slow sway.
+func sick_gate(t: float, reduce := false) -> float:
+	var sf := float(posmod(_seed, 997)) * 0.013
+	if reduce:
+		return 0.6 + 0.15 * sin(t * 3.1 + sf)
+	var cyc := fposmod(t * 1.7 + sf, 1.0)
+	if cyc < 0.22:
+		return 0.12
+	var fl := fposmod(sin(t * 29.0 + sf * 7.0) * 43758.5, 1.0)
+	return 0.62 + 0.38 * fl
+
+
+# The sick nozzle coughs as the ship starts to move: smoke (the faction's own kind of smoke) and a few sputter sparks.
+func _cough(fx) -> void:
+	_cough_next = fx.now + COUGH_GAP
+	var nz: Dictionary = hull.nozzles[sick_nozzle]
+	var r: float = nz["r"]
+	var p := to_world(nz["p"])
+	var d := dir_world(nz.get("d", Vector3(-1, 0, 0))).normalized()
+	var eng: Color = fac["engine"]
+	var glow: Color = fac["damage_glow"]
+	if faction != "ithar":
+		var col := Color(0.06, 0.05, 0.045)
+		var kind := 3
+		if faction == "deathless":
+			col = Color(0.055, 0.025, 0.09); kind = 8
+		elif faction == "chorus":
+			col = glow * 0.45; kind = 20
+		for j in 4:
+			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
+				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
+	for j in 5:
+		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
+			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
+	_wlog(["cough", sick_nozzle, fx.now])
+
+
+func _wlog(e: Array) -> void:
+	if wound_log_on:
+		wound_log.append(e)
+
+
+# Jam one turret in each mid or prow section at stage 3+, free it when the section is repaired below 3.
+func _refresh_wounds(fx) -> void:
+	if hull == null:
+		return
+	for sec in [1, 2]:
+		var hurt: bool = not squadron and int(stage[sec]) >= 3
+		if hurt and not _jammed.has(sec):
+			var ks: Array = []
+			for k in hull.turrets.size():
+				if hull.turret_section(k) == sec and not hull.turret_jammed(k):
+					ks.append(k)
+			if ks.is_empty():
+				continue
+			var h := absi(_seed + sec * 7919)
+			var k: int = ks[h % ks.size()]
+			var off := (12.0 + float(h % 13)) * (1.0 if (h >> 4) % 2 == 0 else -1.0)
+			var droop := 4.0 + float((h >> 6) % 4)
+			hull.jam_turret(k, hull.turret_yaw(k, fx.now) + off, droop, fx.now)
+			_jammed[sec] = {"k": k, "next": fx.now + 1.0 + fx.rng.randf() * 2.0}
+		elif not hurt and _jammed.has(sec):
+			hull.unjam_turret(int(_jammed[sec]["k"]), fx.now)
+			_jammed.erase(sec)
+
+
+func jammed_turrets() -> Array:
+	var out: Array = []
+	for sec in _jammed:
+		out.append(int(_jammed[sec]["k"]))
+	return out
+
+
+# A jammed turret's wisp: a thin looping smoke from its base (a damage emitter entry, so it fades and frees like one).
+func _build_wisp(fx, e: Dictionary) -> void:
+	var k: int = e["tur"]
+	var p: Vector3 = (hull.turrets[k]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
+	var glow: Color = fac.damage_glow
+	var kind := 3
+	var color := Color(0.15, 0.14, 0.13)
+	var intensity := 0.26
+	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
+	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
+	var life := 2.2
+	var count := 3
+	var v: Vector3 = Vector3.UP * hull.L * 0.05
+	var b := POOLS.Batch.new()
+	for j in count:
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now - life + float(j) / count * life),
+			Vector4(v.x, v.y, v.z, life), Vector4(color.r, color.g, color.b, intensity),
+			Vector4(hull.L * 0.004, hull.L * 0.022, kind, j * 0.211), Vector4(life, 0, 0, 0.1)))
+	var holder := Node3D.new()
+	holder.name = "fx_damage_" + String(e.id)
+	_dmg_root.add_child(holder)
+	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+	b.build(material, holder, "fx_turret_wisp")
+	e["node"] = holder
+	e["mat"] = material
+	e["particles"] = b.particle_count
+	e["sprite_kind"] = kind
+	e["source"] = p
+
+
+# Every frame: spark pops on jammed turrets and the hull's uneven power (fx_flick: the damage shader multiplies it onto
+# the wear's steady fx_power, so the wear and the death fade keep their own uniform). Written only when it changes.
+func _wound_step(fx) -> void:
+	if gone:
+		return
+	if dead:
+		_write_flick(1.0)
+		return
+	for sec in _jammed:
+		var jm: Dictionary = _jammed[sec]
+		if fx.now < float(jm["next"]):
+			continue
+		jm["next"] = fx.now + 2.0 + fx.rng.randf() * 2.0
+		var k: int = jm["k"]
+		var p := to_world((hull.turrets[k]["xf"] as Transform3D).origin)
+		var sc := Color(0.75, 0.85, 1.0)
+		for j in 4:
+			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, sc, 4.0, 0.05, 0.08, 1,
+				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)
+		if not fx.reduce_flashing:
+			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
+		_wlog(["spark", k, fx.now])
+	_write_flick(power_flicker(fx.now, fx.reduce_flashing) * (1.0 - _power_dip))
+
+
+func _write_flick(f: float) -> void:
+	if f == _power_shown or _damage_surfaces.is_empty():
+		return
+	_power_shown = f
+	for key in _damage_surfaces:
+		var entry: Array = _damage_surfaces[key]
+		if entry.size() > 1 and entry[1] is ShaderMaterial:
+			(entry[1] as ShaderMaterial).set_shader_parameter("fx_flick", f)
+
+
+# The power multiplier (1 steady) at time t: with mid or prow at stage 3+, uneven brownouts in steps of 1/12 s (a small dip
+# most of the time, now and then a deep one). Under reduce flashing, slower and shallower steps. A hit's brownout
+# (hit_power) multiplies onto this in _wound_step.
+func power_flicker(t: float, reduce := false) -> float:
+	var f := 1.0
+	if not squadron and (int(stage[1]) >= 3 or int(stage[2]) >= 3):
+		var rate := 4.0 if reduce else 12.0
+		var n := fposmod(sin(floorf(t * rate) * 12.9898 + float(posmod(_seed, 991))) * 43758.5453, 1.0)
+		if n > 0.9:
+			f = 0.8 if reduce else 0.5
+		elif n > 0.7:
+			f = 0.9 if reduce else 0.78
+		elif n > 0.45:
+			f = 0.95 if reduce else 0.9
+	return f
+
+
+# A section pushed into stage 3 or 4 vents once: a 1.2 s jet of bright vapour along its breach normal, 3 or 4 tumbling
+# interior bits and a soft light. One-shot pool sprites only.
+func _blowout(fx, i: int) -> void:
+	if squadron or hull == null:
+		return
+	var a := _anchor(i, "a")
+	if a.is_empty():
+		return
+	var p := to_world(a.p)
+	var n := dir_world(a.n).normalized()
+	var L: float = hull.L
+	var glow: Color = fac.damage_glow
+	var col := glow.lerp(Color.WHITE, 0.75)
+	var kind := 7
+	if faction == "chorus":
+		col = glow * 0.6; kind = 20
+	var heavy := int(stage[i]) == 4
+	for j in 7:
+		var t: float = fx.now + j * 0.08
+		fx.spr(p + n * L * 0.01, t, BLOWOUT_LIFE - j * 0.08, col, 0.55 if heavy else 0.45, L * 0.008, L * (0.06 if heavy else 0.045),
+			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
+	for j in 3 + posmod(_seed + i, 2):
+		fx.shd(p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
+	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
+	_wlog(["blowout", i, fx.now])
+
+
 # ---------------------------------------------------------------- small events
 
 func pulse(fx, strength: float) -> void:
@@ -1732,8 +2558,10 @@ func _regrade_marks(fx) -> void:
 	var updated: Array = []
 	for e in _marks:
 		var damage: float = 1.0 - section_fraction[e.sec]
-		if absf(e.section_damage - damage) > 0.025:
-			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
+		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
+		# the sync right after a volley does not rebuild the hull a second time for a few percent
+		if absf(BREACH.mark_scale(e.section_damage) - BREACH.mark_scale(damage)) > 0.05:
+			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage, e.hatch_k)
 			if e.part_i < entries.size():
 				var replacement = entries[e.part_i]
 				replacement.t0 = e.t0

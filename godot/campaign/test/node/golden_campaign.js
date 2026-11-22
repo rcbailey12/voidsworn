@@ -31,7 +31,7 @@ function stubStart(cfg){
   const ne=2+RUN.sector+(cfg.kind==='elite'?1:0);
   for(let i=0;i<ne;i++) list.push(pick(ros));
   for(const tpl of list){ const H=HULLS[tpl]; n++; B.units.push({id:'s'+n,side:'enemy',tpl,t:H,name:H.n,fac:cfg.fac,hp:H.hp,maxHp:H.hp,dealt:0,kills:0,dead:false,boss:!!H.boss,weapons:H.w.map(e=>({k:W[e[0]].k})),ab:H.ab||null,shMax:H.sh||0,regen:H.regen||0}); }
-  if(cfg.nemesis){ const e=B.units.find(u=>u.side==='enemy'); if(e) e.nemFlag=true; } // B4: the Nemesis flagship
+  if(cfg.nemesis){ const e=B.units.find(u=>u.side==='enemy'&&!(cfg.kind==='boss'&&u.boss)); if(e) e.nemFlag=true; } // B4: the Nemesis flagship (issue 1480: in a boss fight, beside the boss)
 }
 function stubResolve(o){
   const P=B.units.filter(u=>u.side==='player'), E=B.units.filter(u=>u.side==='enemy'), loss=o==='loss';
@@ -58,9 +58,9 @@ function acts(html){ const out=[], re=/<(?:button|g|div|a|span)\b([^>]*)>/g; let
     out.push([a[1], g?g[1]:'', /(^|\s)disabled(\s|$|=)/.test(at)?0:1]); } return out; }
 function screenActs(){ return acts(__MODAL||__PAGE); }
 // ---------------- the bot ----------------
-const STAY={closeModal:1,buyHull:1,buyMod:1,repair:1,repairAll:1,upgradeMk:1,sellShip:1,sellConfirm:1,yardFleet:1,equip:1,unequip:1,promote:1,fleetScreen:1,pickFaction:1,pickAdmiral:1,optAlt:1,optCmd:1,optHeat:1,progTab:1,buyVariant:1,factionVerb:1,buyTrack:1,buyLegacy:1,buyAdmiral:1};
-const WT={enterNode:10,c3retreat:2,c3retreatYes:1,c3retreatNo:1,prizeSet:3,prizeConfirm:4,prizeStep:1,salvageStep:1,rewardNext:1,takeSalvage:1,takeBoon:1,takeMod:1,takeRelic:1,takePerk:1,
-  eventChoice:1,pickAspect:1,closeModal:1,fleetFromModal:1,buyHull:3,buyMod:3,repair:2,repairAll:3,upgradeMk:3,sellShip:1,sellConfirm:1,yardFleet:1,leaveYard:2,equip:4,unequip:1,promote:4,
+const STAY={lateBuy:1,restoreCore:1,closeModal:1,buyHull:1,buyMod:1,repair:1,repairAll:1,upgradeMk:1,sellShip:1,sellConfirm:1,yardFleet:1,equip:1,unequip:1,promote:1,fleetScreen:1,pickFaction:1,pickAdmiral:1,optAlt:1,optCmd:1,optHeat:1,progTab:1,buyVariant:1,factionVerb:1,buyTrack:1,buyLegacy:1,buyAdmiral:1};
+const WT={lateBuy:2,restoreCore:2,enterNode:10,c3retreat:2,c3retreatYes:1,c3retreatNo:1,prizeSet:3,prizeConfirm:4,rewardNext:1,takeSalvage:1,takeBoon:1,takeMod:1,takeRelic:1,takePerk:1,
+  eventChoice:1,pickAspect:1,closeModal:1,repairStop:1,buyHull:3,buyMod:3,repair:2,repairAll:3,upgradeMk:3,sellShip:1,sellConfirm:1,yardFleet:1,leaveYard:2,equip:4,unequip:1,promote:4,
   backMap:3,backShipyard:3,fleetScreen:1,saveQuit:1,continueRun:20,newRunScreen:2,pickFaction:1,pickAdmiral:2,optAlt:1,optCmd:1,optHeat:1,startRun:3,progTab:1,buyVariant:3,nextFac:0,abandonRun:0,discardBrokenRun:0,factionVerb:2,boonReroll:1,boonDecline:1,buyTrack:2,buyLegacy:3,buyAdmiral:2,eatCore:1,refuseCoreEat:1}; // R1: the Legacy and admiral purchase paths (PROG-2); R78 Q15: the Chorus core-eating choice (issue 42)
 const BATTLE_WT={win:40,partial:4,loss:1};
 const BOT={s:0,streak:0,legacy:false,help:false,reloads:0};
@@ -71,20 +71,12 @@ function choose(list){ const on=list.filter(a=>a[2]); const onTitle=on.some(a=>a
   const ws=on.map(a=>weight(a,onTitle)), tot=ws.reduce((x,y)=>x+y,0);
   if(!tot){ const pref=['closeModal','leaveYard','backMap','backShipyard','prizeConfirm','c3retreatNo','title']; for(const p of pref){ const f=on.find(a=>a[0]===p); if(f) return f; } return on[0]||null; }
   let r=botNext()%tot; for(let i=0;i<on.length;i++){ if(r<ws[i]) return on[i]; r-=ws[i]; } return on[on.length-1]; }
-// ---------------- Godot checkpoint differences (issue 1125) ----------------
-// Use the browser's battle and reward logic, with the two Godot save boundaries below. This keeps the
-// same choices available after a reload; the Godot-only regression uses the actual files and loader.
+// ---------------- Godot pre-battle checkpoint (issue 1125) ----------------
 const browserBattleScreen=battleScreen;
 battleScreen=function(cfg){
   const checkpoint=SAVED_RUN, boosted=!!RUN.storyNext;
   browserBattleScreen(cfg);
   if(boosted) SAVED_RUN=checkpoint; // the live attempt still spends the boost
-};
-const browserPrizeConfirm=ACT.prizeConfirm;
-ACT.prizeConfirm=()=>{
-  browserPrizeConfirm();
-  const saved=SAVED_RUN?.reward, stage=RUN?.reward?.stage;
-  if(saved?.stage==='prize'&&saved.prizes.length===0&&(stage==='salvage'||stage==='pick')) saved.stage=stage;
 };
 // ---------------- page reload (the browser closing and reopening: only the save survives) ----------------
 function doReload(){ const data=JSON.stringify({meta:META,run:SAVED_RUN}); RUN=null; B=null; for(const k of Object.keys(window)) if(k[0]==='_') delete window[k]; curEvent=null; yardNode=null;

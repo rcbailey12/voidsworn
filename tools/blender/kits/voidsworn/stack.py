@@ -379,8 +379,15 @@ ENGINE_GLOW = dict(kind='engine', zones=('glow', 'ember'), disc=('glow',), plug=
                    core_reach=(.70, 1.6), lining_gain=.60, lining_falloff=2.0, hotspot_scale=700.0, hotspot=(.56, .70),
                    hotspot_gain=.30, streaks=14.0, soot=(.52, .70), soot_gain=.45, bright=(.70, 1.10), hue_shift=.20, strength=1.0,
                    base=(.02, .012, .008))
-SPIRE = dict(curve=.9, edge=.80, bright=(.86, 1.0), flicker_scale=90.0, flicker=.30, root=.16, bar_pitch=.0045, bar_gap=(.55, .80),
-             gap_dark=.80)
+# Ryan, Nov 20 2026 on the Warden ("fix ember glow"): the light is the spire's heat core, lit the full height under the iron ribs
+# (parts.radiator glow='slats'), so the root keeps .45 of the tip and the old fore-and-aft bar stripes are only a faint
+# unevenness, never dark gaps across the core.
+# Ryan, Nov 20 2026 13:43 UTC, on the Board card of S8 today beside a brighter mock-up: "A bit brighter". The tip stays at
+# SPIRE_PEAK (under the 0.8 glow threshold, no halo); the rest of the core comes up toward it: the root .70 of the tip (was
+# .45), the fins cool less toward their edges (.50, was .80), less fin-to-fin flicker (.15, was .30) and less striping (.06,
+# was .12). The mean lit level of a spire rises about 1.5 times (.49 to .73 of the peak). Every Sunward spire takes it.
+SPIRE = dict(curve=.9, edge=.50, bright=(.94, 1.0), flicker_scale=90.0, flicker=.15, root=.70, bar_pitch=.0045, bar_gap=(.55, .80),
+             gap_dark=.06)
 
 
 def node_sep(nt, vec, H):

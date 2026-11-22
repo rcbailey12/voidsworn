@@ -1,4 +1,4 @@
-// ======================= CAMPAIGN IN 3D =======================
+// ======================= CAMPAIGN IN 3D ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 const appEl=document.getElementById('app');
 let AI_LEVEL='standard'; // B1 onboarding fix 1 (F25): a fresh profile starts on Standard; main3d.js keeps Veteran for anyone who already played
 // global error reporter: a calm notice instead of silent failure, logged for review
@@ -37,8 +37,6 @@ function setupShowcase(){ const f=PLAYABLE; const pf=f[Math.floor(Math.random()*
 ACT.c3skirmish=()=>{ hideApp(); setupBattle({small:false}); showIntro(); G.ctl.attract=true; };
 ACT.c3title=()=>{ const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); hideEnd(); titleScreen(); };
 
-// field repairs node
-function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp; sh.hp=Math.min(mx,sh.hp+Math.round(mx*.2*repairMult())); } tel('field_repairs',{}); completeNode(); mapScreen(); toast('Field repairs: every ship recovers 20% of its hull.'); }
 
 // campaign battles run in the 3D engine
 // v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
@@ -54,7 +52,8 @@ function teachingBattle(cfg){
   cfg=Object.assign({},cfg,{runBattle:n,teachingGate:true});
   if(RUN.sector!==1||n>2||cfg.kind==='boss') return cfg;
   Object.assign(cfg,{teachingBattle:n,fac:n===1?'hegemony':'corsair'});
-  if(n===1) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
+  // R366 (Ryan, Nov 20, issue 1393): Battle 2 gets Battle 1's open strip; its Corsairs and round 3-4 reinforcements stay
+  if(n===1||n===2) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
   return cfg;
 }
 function saveTeachingHistory(){
@@ -62,11 +61,12 @@ function saveTeachingHistory(){
   if(SAVED_RUN){ SAVED_RUN.teachingBattles=RUN.teachingBattles.slice(); SAVED_RUN.teachingBattleBase=RUN.teachingBattleBase; }
   Persist.save(); // Preserve the existing pre-battle checkpoint, including its position.
 }
+// ship names in running text: 'the' before a bare or 'The' name, none before MDV/HNS prefixes; after 'a fresh', no article (issue 1551, twin of campaign.gd ship_with_article)
 function battleScreen(cfg){
   closeModal(); hideTip(); hideApp(); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');
   disposeAllViews(); clearOverlays();
   { const sn=cfg.node&&findNode(cfg.node); if(sn){ nodeSeeds([sn]); if(sn.seed!=null&&cfg.seed==null){ const sd=cfg.eventRelic?((sn.seed^0x27d4eb2f)>>>0):sn.seed; cfg=Object.assign({},cfg,{seed:sd}); rndSeed((sd^0x5bd1e995)>>>0); } } } // v53: seeded before any pre-battle roll; B1: event fights are seeded too (own salt), so a reload replays the same fight // v53: seeded before any pre-battle roll
-  if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip(cheapHull(RUN.fac)); RUN.fleet.push(sh); setTimeout(()=>toast(`The sector garrison sends the ${sh.name} to reinforce you.`),600); tel('reinforced',{}); }
+  if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip(cheapHull(RUN.fac)); RUN.fleet.push(sh); setTimeout(()=>toast(({chorus:`Your surviving spores coalesce into a fresh ${shipBare(sh.name)}.`,deathless:`An automated reserve berth dispatches ${shipWithArticle(sh.name)} to reinforce you.`,corsair:`A straggling raider from the outer belt joins your pack: ${shipWithArticle(sh.name)}.`,ithar:`A distant picket answers your distress pulse: ${shipWithArticle(sh.name)}.`}[RUN.fac]||`An allied sector patrol sends ${shipWithArticle(sh.name)} to reinforce you.`)),600); tel('reinforced',{}); }
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
   const ro=cfg.kind==='boss'?(nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:bossEncounter()):nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
   const c=Object.assign({map:(nd&&nd.map)||(RUN.map&&RUN.map.region&&regionMap(RUN.map.region,cfg.kind==='boss'?6:(nd?nd.col:3),7))||(cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random'),dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null,noStar:RUN.sector===1},cfg); // R1: no dead star in sector 1 // bosses fight on their faction's home ground
@@ -88,7 +88,7 @@ function finishBattle(result){
   if(!B||B.finished) return; B.finished=true; hideEnd(); // v53: once per battle, and the end card goes first so it can never be tapped twice
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
   if(RUN.teachingGate===true&&B.units.some(u=>u.reinf)) RUN.teachingReinforced=true;
-  const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:Object.assign({},B.boonStats||{})}; const r0=runRenown();
+  const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:{...B.boonStats},treeStats:{...B.treeStats}}; const r0=runRenown();
   const wingK={}; for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; if(p.ship) wingK[p.ship.uid]=(wingK[p.ship.uid]||0)+(u.kills||0); } }
   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
   try{ const pl=B.units.filter(u=>u.side==='player'&&!u.isSq), ev=pl.reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,pl.length); nemLearn(B.usage,ev>=20?1:0); }catch(e){}
@@ -101,7 +101,7 @@ function finishBattle(result){
   RUN.stats.kills+=summary.kills;
   for(const u of B.units){
     if(!u.ship) continue; const ship=u.ship; if(u.side==='player'){ const c=ship.car=ship.car||{dealt:0,kills:0,battles:0}; c.dealt+=Math.round(u.dealt||0); c.kills+=u.kills||0; c.battles++; }
-    if(u.dead&&!u.exited){ summary.lost.push({ship:ship.name,cap:ship.cap.name}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
+    if(u.dead&&!u.exited){ summary.lost.push({ship:ship.name,cap:ship.cap.name,tpl:ship.tpl}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
       if(rnd()<.6){ (RUN.reserve=RUN.reserve||[]).push({cap:ship.cap,from:ship.name}); (summary.escaped=summary.escaped||[]).push(ship.cap.name); } else RUN.fallen.push({name:ship.cap.name,rank:ship.cap.rank,fac:ship.cap.fac,ship:ship.name,sector:RUN.sector}); continue; }
     ship.hp=clamp(Math.round(u.hp),1,derive(ship).maxHp);
     if(result==='retreat'){ ship.hp=Math.max(1,ship.hp-Math.round(u.maxHp*.1)); continue; }
@@ -112,17 +112,17 @@ function finishBattle(result){
     if(fleetCP()+(H.cp||1)>RUN.cpCap){ const v=prizeScrap(u.tpl); RUN.credits+=v; (summary.scrapped=summary.scrapped||[]).push({name:u.name,cred:v}); continue; } // full fleet: the prize is scrapped for credits (R4)
     summary.prizes.push({tpl:u.tpl,name:u.name,hpf:clamp(u.hp/Math.max(1,u.maxHp),.05,1),fac:u.fac,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cp:H.cp||1}); } // B2 (R4): add, strip or ransom is chosen on the reward screens
   // v54 doctrine (decided): a Corsair capture pays a bonus refit and 20 credits on top of the normal rewards, for one prize per battle (flagships are never prizes)
-  if(result==='win'&&RUN.fac==='corsair'&&summary.prizes.length){ const p=summary.prizes[0], y=salvageYield(Object.assign({},p,{cause:'board'})), m=y.mod||randomModule(); RUN.inventory.push(m); RUN.credits+=20; summary.corsairBonus=m; setTimeout(()=>toast(`Prize money: the crews strip a ${modName(m)} and 20 credits from the ${p.name} before anyone signs for her.`),3000); }
+  if(result==='win'&&RUN.fac==='corsair'&&summary.prizes.length){ const p=summary.prizes[0], y=salvageYield(Object.assign({},p,{cause:'board'})), m=y.mod||randomModule(); RUN.inventory.push(m); RUN.credits+=20; summary.corsairBonus=m; setTimeout(()=>toast(`Prize money: the crews strip a ${modName(m)} and 20 credits from ${p.name} before anyone signs for it.`),3000); }
   // v52 salvage: the field remembers what died and how, and the best wrecks are offered as salvage (Starsector / Pirates! style)
   if(result==='win') summary.wrecks=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship&&!u.captured).sort((a,b)=>(b.t.cp||0)-(a.t.cp||0)).slice(0,3).map(u=>({name:u.name,tpl:u.tpl,cls:u.t.cls,fac:u.fac,cp:u.t.cp||1,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cause:u.killCause||'blast',by:u.killedBy||null}));
-  if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')} escaped in a lifepod, wounded, and will take command of your next hull.`),1800);
-  { const msg=[...(summary.nem||[]),summary.nemWarn,summary.nemFeed,summary.nemFound,...(summary.wingPerks||[]).map(w=>`The ${w.ship}'s wings earn ${w.perks.map(p=>WING_PERKS[p].n).join(' and ')}.`)].filter(Boolean); if(msg.length) setTimeout(()=>toast(msg.join(' ')),2400); }
+  if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')}${({chorus:' survived in a detached spore-node and bonds to your next hull.',deathless:' streamed its backup clear before hull loss and awaits a fresh frame.'}[RUN.fac]||' escaped in a life pod and will take command of your next hull.')}`),1800);
+  { const msg=[...(summary.nem||[]),summary.nemWarn,summary.nemFeed,summary.nemFound,...(summary.wingPerks||[]).map(w=>`${shipWithArticle(w.ship,true)}'s wings earn ${w.perks.map(p=>WING_PERKS[p].n).join(' and ')}.`)].filter(Boolean); if(msg.length) setTimeout(()=>toast(msg.join(' ')),2400); }
   tel('battle_end',{perf:(()=>{ try{ return FRAMES.summary(); }catch(e){ return null; } })(),scene:sceneCensus(),boons:B.boonStats||{},ecp:B.cp0&&B.cp0.enemy,pcp:B.cp0&&B.cp0.player,usage:B.usage,obj:B.obj?B.obj.type:'rout',shape:B.shape,adapt:(B.adapt||0)+(B.adaptWings?'w'+B.adaptWings:''),event:B.event?B.event.k:null,partial:!!B.partial,escaped:(summary.escaped||[]).length,result,kind:cfg.kind,fac:cfg.fac,rounds:B.round,kills:summary.kills,lost:summary.lost.length,prizes:summary.prizes.length,
     rams:(B.usage&&B.usage.ram)||0,boardings:(B.usage&&B.usage.board)||0,captures:(B.usage&&B.usage.cap)||0,cmdRound:B.cmd?B.cmd.round:null});
   disposeAllViews(); clearOverlays(); B=null; hideTip(); hideEnd();
-  if(result==='win'&&RUN.fleet.length===0){ const sh=newShip(cheapHull(RUN.fac)); RUN.fleet.push(sh); ensureFlagship(); setTimeout(()=>toast(`The last ships traded themselves for the win. The sector garrison sends the ${sh.name} to carry the flag.`),900); tel('reinforced',{why:'pyrrhic'}); } // B1 (B-9): a win that cost every ship is still a win
+  if(result==='win'&&RUN.fleet.length===0){ const sh=newShip(cheapHull(RUN.fac)); RUN.fleet.push(sh); ensureFlagship(); setTimeout(()=>toast(`The last ships traded themselves for the win. `+({chorus:`Your surviving spores coalesce into a fresh ${shipBare(sh.name)} to carry the brood.`,deathless:`An automated reserve berth dispatches ${shipWithArticle(sh.name)} to hold the uplink.`,corsair:`A straggling raider from the outer belt joins your pack to carry the flag: ${shipWithArticle(sh.name)}.`,ithar:`A distant picket answers your distress pulse to carry the standard: ${shipWithArticle(sh.name)}.`}[RUN.fac]||`An allied sector patrol sends ${shipWithArticle(sh.name)} to carry the flag.`)),900); tel('reinforced',{why:'pyrrhic'}); } // B1 (B-9): a win that cost every ship is still a win
   if(result==='loss' || RUN.fleet.length===0){ endRun(false); return; }
-  if(result==='retreat'){ completeNode(); mapScreen(); toast('The fleet jumps clear.'); return; }
+  if(result==='retreat'){ retreatBack(); mapScreen(); toast('The fleet jumps clear, back to the last stop. The fight is still on the map.'); return; } // issue 1480 (R381)
   rewardFlow(summary);
   const gained=runRenown()-r0; if(summary.scrapped&&summary.scrapped.length) setTimeout(()=>toast(`No command points to crew ${summary.scrapped.map(x=>x.name).join(', ')}: scrapped for ${summary.scrapped.reduce((t,x)=>t+x.cred,0)} credits.`),700);
 }
@@ -132,7 +132,7 @@ ACT.c3retreatYes=()=>{ closeModal(); if(B&&B.campaign&&!B.over&&!B.busy&&!B.fini
 ACT.c3retreatNo=()=>closeModal();
 
 // wounded captains take the next hull bought at a shipyard
-const _newShip=newShip; newShip=function(t,vet){ const sh=_newShip(t,vet); if((!B||B.showcase)&&!vet&&RUN&&RUN.reserve&&RUN.reserve.length){ const r=RUN.reserve.shift(), f=sh.hp/Math.max(1,derive(sh).maxHp); sh.cap=r.cap; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*f)); /* B1 (B-10): a hired veteran keeps his ship; hull is re-derived for the new captain's perks */ setTimeout(()=>toast(`${r.cap.name} recovers and takes command of the ${sh.name}.`),200); } return sh; };
+const _newShip=newShip; newShip=function(t,vet){ const sh=_newShip(t,vet); if((!B||B.showcase)&&!vet&&RUN&&RUN.reserve&&RUN.reserve.length){ const r=RUN.reserve.shift(), f=sh.hp/Math.max(1,derive(sh).maxHp); sh.cap=r.cap; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*f)); /* B1 (B-10): a hired veteran keeps his ship; hull is re-derived for the new captain's perks */ setTimeout(()=>toast(`${r.cap.name} recovers and takes command of ${shipWithArticle(sh.name)}.`),200); } return sh; };
 // settings from the title screen
 function settingsHtml(){ const row=(k,label,val)=>`<div class="row" style="margin:6px 0"><span style="flex:1">${label}</span><button data-act="c3opt" data-arg="${k}">${val}</button></div>`;
   return `<h2>Settings</h2>${row('quality','Graphics',G.quality[0].toUpperCase()+G.quality.slice(1))}${row('fx','Reduce flashing',G.fxReduced?'On':'Off')}${row('shake','Reduce screen shake',G.shakeRed?'On':'Off')}${row('sound','Sound',G.sfxOn?'On':'Off')}<div class="row" style="margin:6px 0"><span style="flex:1">Sound volume</span><input type="range" min="0" max="100" value="${Math.round(SFX.getVol()*100)}" aria-label="Sound volume" oninput="SFX.setVol(this.value/100)" onchange="SFX.setVol(this.value/100,true)" style="width:140px;max-width:45vw"></div>${row('speed','Animation speed',SPEED<1?'Fast':'Normal')}${row('cine','Action camera',G.cine?'On':'Off')}${row('alt','Turn order',SETUP.alt?'Alternating':'Classic')}${row('copy','Copy report for Claude','Copy')}${row('follow','Camera follows activations',G.follow?'On':'Off')}${row('ai','Enemy AI',AI_LEVEL==='veteran'?'Veteran':'Standard')}${row('tips','Battle tips',(META.opts&&META.opts.tipsOff)?'Off':'On')}

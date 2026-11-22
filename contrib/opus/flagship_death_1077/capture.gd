@@ -94,10 +94,11 @@ func _run() -> void:
 		_write("capture.json", info, out)
 	elif mode == "timing":
 		info["timing"] = await _timing()
+		# (the rerun at 1236bbc3 lost this file: the cold branch wrote it instead, over the prepared run's numbers)
+		_write("timing_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 	elif mode == "cold":
 		info["timing"] = await _cold()
 		_write("cold_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
-		_write("timing_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 	bench._clear()
 	bench.queue_free()
 	await process_frame
@@ -236,7 +237,7 @@ func _chapter(key: String) -> void:
 
 func _still(key: String) -> void:
 	var image: Image = bench._grab()
-	if image == null or CAP.save_png(image, folder.path_join(key + ".png")) != OK:
+	if image == null or CAP.save_png(image, folder.path_join(key + ".png"), CAP.capture_stage()) != OK:
 		_fail("Could not stamp the " + key + " still")
 		return
 	# a light copy for the sheet (the png stays on the PC): the battle camera a 1 to 1 centre crop, the close camera halved

@@ -118,7 +118,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
 // (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read
 // the source. What the map does when it runs (it only reads; Muse's check of PR 349, condition 1) is tested by behaviour in
-// godot/campaign/test/map_readonly_test.gd, which CI runs with the Nemesis scenarios (run_nem_scenarios.sh).
+// godot/campaign/test/map_readonly_test.gd, which CI runs with the campaign checks (run_campaign_checks.sh, issue 1654).
 {
   const cui = read('godot/ui/campaign/campaign_ui.gd'), m3 = read('godot/ui/campaign/map3d.gd'), mi = read('godot/ui/campaign/map_intel.gd');
   const cb = read('godot/ui/campaign/choice_button.gd'), gsh2 = read('godot/ui/theme/glass_shell.gd'), view = read('godot/campaign/campaign_view.gd');
@@ -132,7 +132,12 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/font = GS\.body\(\)/.test(cui) && /font_goth = GS\.display\(k\)/.test(cui) && /font_caps = GS\.caps\(k\)/.test(cui), 'campaign fonts come from glass_shell.gd and the tracked faces follow k');
   check(!/modulate\.a = 0\.5/.test(cb) && /tagl\("Locked", BONE3\)/.test(cui), 'a disabled choice dims its words and says LOCKED, not a 50% fade (MN12, ui_style.md 3)');
   check(/draw_style_box\(ring/.test(cb) && /b\.ring = GS\.focus_ring\(k\)/.test(cui), 'campaign choices draw the shared focus ring when focused');
-  check((cui.match(/\bfin\(/g) || []).length >= 14 && !/abtn\([^\n]*, true, false, acts\)/.test(cui), 'every dialog finishes on the one lime slab (fin), none on a second filled button (R148)');
+  const modal = cui.slice(cui.indexOf('func _modal('), cui.indexOf('func _salvage_choices('));
+  const branches = modal.split(/^\t\t(?="|_:)/m);
+  const finishes = ['lineagePick', 'lineageRespec', 'intro', 'abandon', 'sell', 'event_result', 'victory', 'prize', 'retreat'];
+  check(finishes.every(name => branches.some(branch => branch.startsWith(`"${name}"`) && /\bfin\(/.test(branch))) &&
+    branches.every(branch => (branch.match(/\bfin\(/g) || []).length <= 1) && !/abtn\([^\n]*, true, false, acts\)/.test(cui),
+  'dialogs with a finishing action use one shared fin control, and choice dialogs need no extra button (R148)');
   check(/"fleet": body = _fleet/.test(cui) && /Rect2\(sheet_x, height - 80, sheet_w, 56\)/.test(fleet) && /GS\.sheet_jump_boxes/.test(fleet) && /"shipyard": b = fin\("Leave shipyard"/.test(cui), 'FL5 Done and the shipyard finishing action stay fixed bottom right');
   check(/func _well_text\(/.test(cui) && /_well_text\(v\)/.test(cui), 'dialog words are gathered onto wells (every line on a backing, ui_style.md 3)');
 
@@ -208,7 +213,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(!resolvers.test(code(m3)) && !resolvers.test(code(mi)) && !resolvers.test(code(sec)) && /View\.nem\(C\)/.test(cui), 'spelling check: the map, its estimate and the map screen call none of them either');
   const cgd = read('godot/campaign/campaign.gd');
   check(/func nemBeh\(N0 = null\)/.test(cgd) && /func nemNodeIs\(n, N0 = null\)/.test(cgd) && /func nemPanelData\(N0 = null\)/.test(cgd) && /var st = nemBeh\(N\)\.get\("strike"\)/.test(cgd), 'campaign.gd lets a reader pass the commander it already read (nemBeh, nemNodeIs, nemPanelData, nemWarnLine)');
-  check(/map_readonly_test\.gd/.test(read('godot/campaign/test/run_nem_scenarios.sh')) && fs.existsSync(path.join(ROOT, 'godot/campaign/test/map_readonly_test.gd')), 'the behaviour check of the read-only rule (map_readonly_test.gd) runs with the Nemesis scenarios in CI');
+  check(/map_readonly_test\.gd/.test(read('godot/campaign/test/run_campaign_checks.sh')) && fs.existsSync(path.join(ROOT, 'godot/campaign/test/map_readonly_test.gd')), 'the behaviour check of the read-only rule (map_readonly_test.gd) runs with the Nemesis scenarios in CI');
   // report first (Board verdict on finding 12): direct save reads left in the campaign UI, counted, not failed
   const direct = ['godot/ui/campaign/campaign_ui.gd', 'godot/ui/campaign/map3d.gd'].map(f => (read(f).match(/\bR\[|\bC\.RUN\[|C\.RUN\.get\(|\bR\.get\(/g) || []).length);
   console.log(`NOTE direct save reads left in campaign_ui.gd ${direct[0]}, map3d.gd ${direct[1]} (finding 12 report; they move with their screen groups)`);
@@ -253,7 +258,9 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/Brand\.keel_faces\(\)/.test(led) && /GS\.sheet_name\(\).*GS\.sheet_body\(\).*GS\.sheet_medium\(\).*GS\.num\(\)/.test(brand), 'KEEL uses the brand faces (Big Shoulders, Barlow, Azeret Mono)');
   check(/func _action_box\(/.test(led) && /px\(56\)/.test(led) && /maxf\(2\.0, px\(2\)\)/.test(led), 'the one box is the 56 px square ember action, a 2 px outline');
   check(/func _paint_veil\(/.test(led) && /func dark_at\(/.test(led) && /KEEL_VEIL := 0\.94/.test(brand), 'the shelf sits on a smooth veil, and the check reads its strength');
-  check(/HOVER_RING := Color\(1\.0, 0\.541, 0\.227/.test(board) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
+  // issue 1374 (R362): board colours come from the one line style's role table (godot/render/line_style.gd)
+  const lineStyle = read('godot/render/line_style.gd');
+  check(/HOVER_RING: Color = LS\.ROLE\["hover"\]/.test(board) && /"hover": Color\(1\.0, 0\.541, 0\.227/.test(lineStyle) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg + lineStyle), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
   check(!/#c8f53a|#4fc4ff/.test(bg), 'battle.gd writes no lime and no old shield cyan');
   check(/"say": say/.test(bg) && /"nem": bool\(tu\.get\("nemesis", false\)\)/.test(bg), 'the activation card carries one short sentence and the target says when it is the Nemesis');
   check(/\["Top-down view \(T\)", "top"\]/.test(bg) && /\["Controls", "keys"\]/.test(bg) && /"grid":/.test(bg), 'view keys live under Menu and Controls');

@@ -1,32 +1,30 @@
 ## Ashfall Hullbreakers
 
-### Core decision: Rook
-
-Scene purpose: Rook, the core the pack believes makes its holder unstoppable, is inside the Nemesis flagship's prize hold. The choice is the kill or the core, priced honestly: boarding for Rook means fighting the finale at a disadvantage for a permanent gain, and the clean kill destroys Rook with the flagship.
+### Core decision: Rook in the Wreck Field
 
 Node:
 ```
-id:'arc_hb_rook', t:'Rook', fight:false,
+id:"arc_hb_rook", t:"Rook in the Wreck Field", fight:false,
 o:[
- {t:'Hunt the core: board for Rook', r:{dmgFlag:.15, core:1}, tx:'Boarding claws only, no broadsides into the prize hold. The flagship takes the hits that the hold cannot. If the pack wins this, Rook comes home in chains of welded plate.'},
- {t:'Hunt the kill: break it all', r:{xp:25}, tx:'No holding back for cargo. The pack fights clean and total, and Rook breaks with the flagship if it breaks. Kills are trophies too. The biggest ones leave only scrap.'}
+ {"t":"Hold heavy guns off the core and breach for Rook intact","r":{"dmgFlag":0.15,"core":1},"tx":"Your gunners hold fire on the core's containment cage while your flagship eats the return salvo head-on. If your crews drag Rook out of those wrecks in chains, every den in the Ashfall will hear about it."},
+ {"t":"Open every weapon and smash straight through","r":{"xp":25},"tx":"Nobody holds back for clean salvage. Your crews push the reactors red-hot and tear into the enemy line full tilt, ready to crack the wrecks and Rook right along with them if that's what winning takes."}
 ]
 ```
 
 Text lines:
-- Howler: "The prize hold, Warlord. We can hear the core through the hull. It sounds like a heart that has never been afraid."
-- Warlord: "Everything with a heart can be afraid. Claws out."
+- Howler: "Scope lock confirmed, Warlord! R-5 Rook's sitting right in the middle of that wreck pile, pulsing hotter than a cruiser core!"
+- Warlord: "Good! Means we didn't haul all this iron across three sectors for nothing. Arm the breach clamps!"
 
-Debrief: "The pack does not cheer. It counts. Kills first, then trophies, then the missing."
+Debrief: "No cheering on the open band after the guns cool. Just captains tallying kills, hauling intact plates, and checking who didn't make it back."
 
-Learning payoff: "What the pack killed, and what killed the pack, is carried in the open: trophies bolted to hulls, the story told flat in the dens, and the next litter raised on both."
+Learning payoff: "The plates bolted to your hulls tell the whole belt what worked out here, and the next pack that hunts the Hollow Sun will study every weld seam."
 
 ### Admiral spotlights
 
-- Warlord Grax Ironmaw: "Grax takes the flagship in claws-first and laughs over open comms while the grapples tear plate. The pack howls back. It is not joy. It is agreement."
-- Sable the Smiling Knife: "Sable comes in out of the dark, quiet for a Hullbreaker, with a blade-thin smile. 'The rear plate is where strong ships keep their manners.'"
-- Old Mott: "Old Mott has outlived forty captains. The pack steps aside when Mott crosses the bay, the way crews step aside for weather."
-- Vesh the Collector: "Vesh walks the prize after the fight, touching plates, naming where each one will ride. 'Nothing strong is ever wasted. It is only waiting.'"
+- Warlord Grax Ironmaw: "Grax slams the throttle past the redline and laughs over open comms as the breach clamps bite into enemy plate, half the pack howling back on the same channel."
+- Sable the Smiling Knife: "Sable kills all exterior lights until only the red cockpit glow remains. 'Big proud ships always forget to armor their radiator vents.'"
+- Old Mott: "Old Mott spits a chewed rivet pin into a scrap bucket and checks the bay telemetry. 'Forty captains tried taking my command chair. Don't make me count to forty-two today.'"
+- Vesh the Collector: "Vesh zooms the tactical feed onto the opposing flagship's bow trim, muttering measurements to her weld crew. 'Don't you dare slag that dorsal array!'"
 
 ### Flags
 

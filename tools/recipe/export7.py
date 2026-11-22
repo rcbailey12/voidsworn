@@ -58,7 +58,7 @@ def die(msg):
 if not GAME: die('the ship json has no "game_ship" (the ship id in data.js)')
 sys.path.insert(0, HERE)
 import gamedata
-try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the game's data.js
+try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the Godot HULLS table
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
@@ -104,6 +104,37 @@ TURNING = {o.name for _, ms in PIVOTS for o in ms}
 for pv, ms in PIVOTS:
     if not ms: die(f'turret {pv.name} has no turning mesh under it')
 TURRETS_MARKED = [pv.name[:-len('_turret')] if pv.name.endswith('_turret') else pv.name for pv, _ in PIVOTS]
+# issue 1543 (Ryan, Nov 21 2026: a flesh door "in sections with the opening spreading from the middle", closed between launches):
+# a door's lobes leave the blend as their own objects (door_lobe=1, kit.py emit) with the hinge in world space; here each door is
+# a node door_<n> at the mouth's centre (+Y out of the mouth, extras: the bay it opens for) and each lobe a node
+# door_<n>_lobe_<k> at its hinge (-Z toward the centre, +Y out, +X the hinge line: a turn of open_deg about +X opens it), its
+# mesh door_<n>_lobe_<k>_mesh under it. HARDPOINTS.md "Doors".
+DOOR_SRC = {}
+for o in sc.objects:
+    if o.type == 'MESH' and o.get('door_lobe') and not o.hide_render:
+        DOOR_SRC.setdefault(str(o['door']), []).append(o)
+for fid, obs in DOOR_SRC.items():
+    if len({int(o.get('door_bay', -1)) for o in obs}) != 1 or int(obs[0].get('door_bay', -1)) < 0:
+        die(f'door {fid}: its lobes name no single bay (door_bay)')
+    obs.sort(key=lambda o: int(o['door_k']))
+DOORS = sorted(DOOR_SRC.items(), key=lambda kv: int(kv[1][0]['door_bay']))
+
+def door_frame(o):
+    """the door points of a lobe in the blend's world now: the build wrote them in its own frame (door_src: the lobe's vertices
+    then); the stages since moved and scaled the ship, so the affine map from those vertices to the lobe's world vertices now
+    (least squares, every vertex) carries the hinge, centre and axes with it. Dies when the map does not fit (a lobe reshaped)."""
+    import numpy as np
+    src = np.array(list(o['door_src']), dtype=float).reshape(-1, 3)
+    now = np.array([list(o.matrix_world @ v.co) for v in o.data.vertices], dtype=float)
+    if len(src) != len(now): die(f'door lobe {o.name}: {len(now)} vertices now, {len(src)} when built')
+    A = np.hstack([src, np.ones((len(src), 1))])
+    X, *_ = np.linalg.lstsq(A, now, rcond=None)
+    err = float(np.abs(A @ X - now).max()); size = float(np.ptp(now, axis=0).max())
+    if err > 1e-3 * max(size, 1e-6) + 1e-6: die(f'door lobe {o.name}: the build-to-export move does not fit (off by {err:.5f})')
+    pt = lambda p: Vector((np.array(list(p) + [1.0]) @ X).tolist())
+    dv = lambda d: Vector((np.array(list(d) + [0.0]) @ X).tolist()).normalized()
+    return dict(hinge=pt(o['door_hinge']), centre=pt(o['door_centre']), axis=dv(o['door_axis']), out=dv(o['door_out']))
+DOOR_LOBES = {o.name for _, obs in DOORS for o in obs}
 
 # ---------------------------------------------------------------------------------------------------------------- the ship mesh
 src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and not o.get('proxy')
@@ -296,7 +327,9 @@ def prep(o):
         sk.show_viewport = True; sk.show_render = True
         c.data.materials.append(inside_material(None, liner=True))
         sk.material_offset = len(c.data.materials) - 1
-        sk.material_offset_rim = len(c.data.materials) - 1
+        # issue 1291: a hull cut open under an organ's mouth (kit open_hull) keeps its rim, the wall of the hole, in the
+        # hull's own material: it is seen from outside, never an inside liner standing past the plating
+        sk.material_offset_rim = 0 if o.get('open_cut') else len(c.data.materials) - 1
     for md in list(c.modifiers):
         try: bpy.ops.object.modifier_apply(modifier=md.name)
         except Exception as e: die(f'cannot apply {o.name}/{md.name}: {e}')
@@ -321,15 +354,20 @@ def join(objs, name):
     for k in list(j.keys()): del j[k]
     return j
 
-keep = [prep(o) for o in src if o.name not in TURNING]      # the ship mesh: everything but the turning parts of turrets
+keep = [prep(o) for o in src if o.name not in TURNING and o.name not in DOOR_LOBES]   # the ship mesh: not the turrets' turning parts, not the door lobes
 J = join(keep, CODE)
 TURN_OBJS = [join([prep(o) for o in ms], f'turret_{k}_turn') for k, (pv, ms) in enumerate(PIVOTS)]
-used_materials = {slot.material.name for o in [J] + TURN_OBJS for slot in o.material_slots if slot.material}
+DOOR_OBJS = [[join([prep(o)], f'door_{n}_lobe_{k}_mesh') for k, o in enumerate(obs)] for n, (fid, obs) in enumerate(DOORS)]
+used_materials = {slot.material.name for o in [J] + TURN_OBJS + [d for ds in DOOR_OBJS for d in ds] for slot in o.material_slots if slot.material}
 destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
 TURRET_TRIS = 0
 for t in TURN_OBJS:
     t.data.calc_loop_triangles(); TURRET_TRIS += len(t.data.loop_triangles)
+DOOR_TRIS = 0
+for ds in DOOR_OBJS:
+    for t in ds:
+        t.data.calc_loop_triangles(); DOOR_TRIS += len(t.data.loop_triangles)
 
 # ---------------------------------------------------------------------------------------------------------------- materials and maps
 def occlusion_group():
@@ -375,6 +413,8 @@ else:
         role = {'base': bs.inputs['Base Color'].links[0].from_node.image, 'orm': sep.inputs[0].links[0].from_node.image}
         nm = next((n for n in nt.nodes if n.type == 'NORMAL_MAP'), None)
         if nm is not None: role['normal'] = nm.inputs['Color'].links[0].from_node.image
+        em = bs.inputs['Emission Color'].links      # issue 1183: a stack's hull emission atlas goes to the same map size
+        if em and em[0].from_node.type == 'TEX_IMAGE': role['emission'] = em[0].from_node.image
         for r, im in role.items():
             if max(im.size) > MAPS:
                 resize_atlas(im, r)
@@ -456,6 +496,25 @@ for k, (pv, ms) in enumerate(PIVOTS):
     TURRET_NODES.append(dict(name=f'turret_{k}', p=[round(v, 5) for v in W.translation], up=[round(v, 4) for v in ax], fwd=[round(v, 4) for v in fw],
                              triangles=len(t.data.loop_triangles), muzzles=[h['name'] for h in HPS if h.get('turret') == k], **ex))
     if not TURRET_NODES[-1]['muzzles']: die(f'turret {pv.name} has no registered muzzle on its barrels: its flash could not follow the turn')
+DOOR_NODES = []
+DOOR_OPEN_DEG = -100.0      # parts.py door_lobes: each lobe folds down into the bore against its wall, about 100 degrees
+for n, (fid, obs) in enumerate(DOORS):
+    fr = [door_frame(o) for o in obs]
+    c = fr[0]['centre']; out = fr[0]['out']; bay = int(obs[0]['door_bay'])
+    h0 = fr[0]['hinge']; f0 = (h0 - c) - out * (h0 - c).dot(out)
+    D = empty(f'door_{n}', list(c), list(f0.normalized()), list(out), dict(kind='door', id=fid, bay=bay, lobes=len(obs), open_deg=DOOR_OPEN_DEG,
+                                                                         turns_about='each lobe: local +X (its hinge line)'))
+    lobes = []
+    for k, o in enumerate(obs):
+        hp = fr[k]['hinge']; f = (c - hp) - out * (c - hp).dot(out)
+        Lb = empty(f'door_{n}_lobe_{k}', list(hp), list(f.normalized()), list(out), dict(kind='door_lobe', door=n, lobe=k))
+        ax = Lb.matrix_world.to_3x3() @ Vector((1, 0, 0))
+        if ax.dot(fr[k]['axis']) < 0.98: die(f'door {fid} lobe {k}: the hinge line is not the node\'s +X ({ax.dot(fr[k]["axis"]):.3f})')
+        mw = Lb.matrix_world.copy(); Lb.parent = D; Lb.matrix_parent_inverse = D.matrix_world.inverted(); Lb.matrix_world = mw
+        t = DOOR_OBJS[n][k]
+        t.data.transform(Lb.matrix_world.inverted() @ t.matrix_world); t.parent = Lb; t.matrix_parent_inverse = Matrix.Identity(4); t.matrix_basis = Matrix.Identity(4)
+        lobes.append(dict(name=Lb.name, p=[round(v, 5) for v in hp], triangles=len(t.data.loop_triangles)))
+    DOOR_NODES.append(dict(name=f'door_{n}', id=fid, bay=bay, p=[round(v, 5) for v in c], up=[round(v, 4) for v in out], open_deg=DOOR_OPEN_DEG, lobes=lobes))
 for h in HPS:
     o = empty(h['name'], h['p'], h['fwd'], h['up'], h['extras'])
     if h.get('turret') is not None:                    # a turret muzzle hangs under its turret, so it turns with the barrels
@@ -509,6 +568,10 @@ def use(mat, slot, tex):
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = (nm, slot)
+def stack_hull_emission(mat):
+    """issue 1183: a stack that bakes the hull's own glow (EMISSIVE_ATLAS, the Glasswright mosaic) writes <CODE>_emission"""
+    if mat.get('name') == CODE + '_hull' and mat.get('emissiveTexture'):
+        use(mat, 'emission', mat.get('emissiveTexture'))
 for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
     if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + destruction['interior_materials']: continue
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
@@ -526,6 +589,7 @@ for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruc
             die(f'{mat["name"]} must use the same ORM image for occlusion, roughness and metal')
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
+    stack_hull_emission(mat)
     if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
 for i, im in enumerate(g.get('images', [])):
     if i not in role: die(f'the exporter wrote an image no ship material uses: {im.get("uri")}')
@@ -570,7 +634,7 @@ if WING and not UNBAKED:
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
            band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
-           triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
+           triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, door_triangles=DOOR_TRIS, doors=DOOR_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
            slots_without_hard_points=missing, hardpoints=counts, length_world=LENGTH_WORLD, sheet=sc.get('r209_sheet', ''),
            points_from=('the build (r209_points)' if AUTHORED else 'placed by this export'),
@@ -581,7 +645,7 @@ rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, 
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
-print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'turrets', len(TURRET_NODES), f'({TURRET_TRIS} triangles)', 'files', sorted(files), flush=True)
+print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'turrets', len(TURRET_NODES), f'({TURRET_TRIS} triangles)', 'doors', len(DOOR_NODES), f'({DOOR_TRIS} triangles)', 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))
 status('WRITTEN ' + CODE + ('  (unbaked test: no maps)' if UNBAKED else ''))

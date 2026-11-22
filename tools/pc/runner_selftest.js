@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
 // Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
 // findings 6 and 7), all in test mode through the same entry points.
@@ -42,6 +44,7 @@ assert(read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_SPACE_FREE_M
 assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \} catch \{ \}/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Log must not throw on a locked result.txt');
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
 assert(/\$limit = 600\.0/.test(read(path.join(here, 'runner_common.ps1'))), 'checkout preservation must allow ten minutes');
+assert(!read(path.join(here, 'runner_common.ps1')).includes('godot/fx/munition_bodies'), 'Reuse-Caches never counts a munition image as rebuildable: the glbs keep their maps embedded (Artoo on PR 1529)');
 pass('shared runner contract, chain launcher and issue 722 start checks');
 // Issue 914: lookup order and logging belong to Invoke-Gh, including the board audit.
 const shared = read(path.join(here, 'runner_common.ps1'));
@@ -224,7 +227,9 @@ if (probe) {
   if (brief.includes('Resumed by merging') !== expectResume) process.exit(31);
   if (brief.includes('saved work before stopping') !== expectResume) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
-  fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
+  if (process.env.STUB_AGENT_NO_CHANGE !== '1') {
+    fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
+  }
   const agentHold = process.env.STUB_AGENT_HOLD;
   if (agentHold) {
     fs.writeFileSync(agentHold + '.ready', 'agent owns checkout');
@@ -331,8 +336,7 @@ function fixtureTools(name, scenario = '') {
       }
       if (scenario === 'delivery' && file === 'work_issue.bat') {
         // Keep dryrun's mock agent and fake GitHub. Exercise real delivery logic against a bare TEMP remote.
-        body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"')
-          .replace(/(%PS% tidy[^\r\n]*?) "?%DRY%"?(?= >>)/, '$1 0');
+        body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"');
       }
     }
     write(path.join(dir, file), body);
@@ -412,10 +416,11 @@ async function job(arm, label, extra = {}) {
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
-  assert(fs.existsSync(path.join(home, arm === 'codex' ? 'issue-687/status.json' : 'dryrun-687-' + arm + '/latest.txt')), r.text);
-  const runHome = arm === 'codex' ? home : read(path.join(home, 'dryrun-687-' + arm, 'latest.txt')).trim();
+  const latest = path.join(env.WORK_ROOT, 'dryrun-687-' + arm, 'latest.txt');
+  assert(fs.existsSync(arm === 'codex' ? path.join(home, 'issue-687/status.json') : latest), r.text);
+  const runHome = arm === 'codex' ? home : read(latest).trim();
   const out = path.join(runHome, arm === 'codex' ? 'issue-687' : 'out');
-  const repo = path.join(runHome, 'repo');
+  const repo = arm === 'codex' ? path.join(runHome, 'repo') : path.join(env.WORK_ROOT, 'slot_' + arm, 'repo');
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 const fixtureSetupSeconds = (Date.now() - started) / 1000;
@@ -506,10 +511,13 @@ try {
     // Repairing the ledger and releasing its lock cannot erase the separate unknown entry.
     if (fault !== 'busy') write(path.join(r.env.WORK_ROOT, 'openai_spend.txt'), '');
     const probeBefore = read(r.env.PC_TEST_TRACE);
+    const checkoutBefore = read(path.join(r.repo, '.git', 'logs', 'HEAD'));
     const refused = await job('openai', 'account-' + fault, extra);
     assert.equal(refused.code, 3, refused.text + refused.result);
     assert.equal(refused.state.status, 'failed'); assert(refused.result.includes('OpenAI usage unknown'), refused.result);
-    assert(!fs.existsSync(refused.repo), 'next paid start refused before checkout');
+    assert.equal(refused.repo, r.repo);
+    assert(!fs.existsSync(path.join(refused.out, 'base_commit.txt')), 'next paid start refused before checkout');
+    assert.equal(read(path.join(refused.repo, '.git', 'logs', 'HEAD')), checkoutBefore, 'refusal leaves the existing slot alone');
     assert.equal(read(r.env.PC_TEST_TRACE), probeBefore, 'next paid start never calls the probe');
     pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
   });
@@ -613,6 +621,18 @@ async function testCleanAndCacheReuse() {
   assert.equal(read(path.join(cache.repo, 'godot/.godot/imported/cached.bin')), 'cached import');
   assert.equal(read(path.join(cache.repo, 'godot/texture.png.import')), 'import settings');
   pass('cache-only ignored files allow reuse and both cache files survive');
+  // Issue 1379 (Artoo on PR 1529): the munition glbs keep their maps embedded, so an image beside them is work: an ignored
+  // one named like the body's map, and one at the folder root with no body, both keep the checkout and survive.
+  for (const [label, name] of [['munition-map-named', 'godot/fx/munition_bodies/corsair_rockets_corsair_rockets_hull_albedo.jpg'],
+    ['munition-map-root', 'godot/fx/munition_bodies/stray_albedo.png']]) {
+    const kept = await checkoutFixture(source, label, repo => {
+      write(path.join(repo, '.git/info/exclude'), 'godot/fx/munition_bodies/*.jpg\ngodot/fx/munition_bodies/*.png\n');
+      write(path.join(repo, name), 'hand-painted map');
+    }, true);
+    assert.equal(read(path.join(kept.old, name)), 'hand-painted map');
+    assert(kept.text.includes('working tree needs keeping:'), kept.text);
+    pass(label + ': an ignored image in godot/fx/munition_bodies keeps the checkout and its bytes');
+  }
   const pythonCaches = {
     '__pycache__/root.cpython-312.pyc': 'root bytecode',
     'tools/blender/build_sheets/__pycache__/weapon_match.cpython-312.pyc': 'nested bytecode',
@@ -1005,18 +1025,106 @@ async function testDeliveryCleanup() {
     const publicStatus = JSON.parse(read(r.env.PC_TEST_GH_DB)).comments[0].body;
     const labelShown = expected === 'checked_push' ? 'finished' : expected;
     assert(publicStatus.includes('Runner status: ' + labelShown), publicStatus);
-    assert.equal(fs.existsSync(r.repo), scenario !== 'clean', r.result);
+    assert(fs.existsSync(r.repo), 'the slot stays available after every outcome, even with the old cleanup setting');
+    assert(!fs.existsSync(path.join(path.dirname(r.out), 'repo')), 'the run folder holds no clone');
+    assert.match(r.result, /disk: run folder \d+ logical bytes/);
+    assert.match(r.result, /disk: shared checkout \d+ logical bytes/);
     if (scenario === 'ignored-work') {
       assert.equal(read(path.join(r.repo, 'ignored-work.txt')), 'only in the checkout');
-      assert(r.result.includes('ignored files'), r.result);
     }
     if (scenario === 'local-history') {
       assert.equal(read(path.join(r.repo, '.git/refs/remotes/origin/stale-local')).trim(), extra.STUB_LOCAL_TIP);
-      assert(r.result.includes('local-only history'), r.result);
     }
     assert(fs.existsSync(path.join(r.out, 'result.txt')), 'run evidence stays after cleanup');
-    pass('workhorse delivery and cleanup: ' + scenario);
+    pass('workhorse delivers and keeps the shared slot: ' + scenario);
   });
+}
+async function testWorkhorseSlots() {
+  const workRoot = path.join(root, 'workhorse slots');
+  const hold = path.join(root, 'workhorse-agent-hold');
+  const options = { WORK_ROOT: workRoot, STUB_AGENT_NO_CHANGE: '1' };
+  const first = await job('deepseek', 'slot-first', options);
+  assert.equal(first.code, 0, first.text + first.result);
+  assert.match(first.result, /code checkout excludes: docs\/shots, .*rocks_hi/);
+  const gitDirectory = fs.statSync(path.join(first.repo, '.git')).ino;
+  const second = await job('deepseek', 'slot-second', options);
+  assert.equal(second.code, 0, second.text + second.result);
+  assert.equal(second.repo, first.repo);
+  assert.equal(fs.statSync(path.join(second.repo, '.git')).ino, gitDirectory);
+  assert.match(second.result, /earlier checkout reused in place/);
+  assert.notEqual(second.out, first.out);
+  const firstResult = read(path.join(first.out, 'result.txt'));
+  assert.equal(firstResult, first.result);
+
+  write(path.join(first.repo, 'local-work.txt'), 'unpublished work');
+  const running = job('deepseek', 'slot-held', { ...options, STUB_AGENT_HOLD: hold }).catch(error => ({ error }));
+  let other;
+  try {
+    assert(await waitFor(() => fs.existsSync(hold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    const repoHead = read(path.join(first.repo, '.git', 'HEAD'));
+    const refused = await runEntryPoint('""' + path.join(tools, 'work_issue.bat') + '" 688 deepseek dryrun"', {
+      ...defaults, WORK_ROOT: workRoot
+    });
+    assert.equal(refused.code, 14, refused.text);
+    assert.match(refused.text, /workhorse slot busy/);
+    assert(!fs.existsSync(path.join(workRoot, 'dryrun-688-deepseek')));
+    assert.equal(read(path.join(first.repo, '.git', 'HEAD')), repoHead);
+    other = await job('openai', 'slot-other-arm', options);
+    assert.equal(other.code, 0, other.text + other.result);
+    assert.notEqual(other.repo, first.repo);
+  } finally {
+    write(hold + '.release', 'released');
+  }
+  const held = await running;
+  if (held.error) throw held.error;
+  assert.equal(held.code, 0, held.text + held.result);
+  assert.match(held.result, /working tree needs keeping: \?\? local-work\.txt/);
+  const slot = path.dirname(first.repo);
+  const kept = fs.readdirSync(slot).find(name => name.startsWith('repo-kept-'));
+  assert.equal(read(path.join(slot, kept, 'local-work.txt')), 'unpublished work');
+  const nextOpenai = await job('openai', 'slot-other-arm-again', options);
+  assert.equal(nextOpenai.code, 0, nextOpenai.text + nextOpenai.result);
+  assert.match(nextOpenai.result, /earlier checkout reused in place/);
+  assert.notEqual(nextOpenai.out, other.out);
+  pass('DeepSeek and OpenAI use separate reusable slots with per-run logs, a slot lock and preserved local work');
+
+  // Artoo on PR 1250: stop only the PowerShell that took the slot lock. The batch it started keeps working, so the slot
+  // must stay locked until that whole process tree has exited.
+  const orphanHold = path.join(root, 'workhorse-orphan-hold');
+  const slotLock = first.repo + '.checkout.lock';
+  const lockFree = () => { try { fs.closeSync(fs.openSync(slotLock, 'r+')); return true; } catch { return false; } };
+  const orphan = job('deepseek', 'slot-orphan', { ...options, STUB_AGENT_HOLD: orphanHold }).catch(error => ({ error }));
+  try {
+    assert(await waitFor(() => fs.existsSync(orphanHold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    const holders = run('powershell.exe', ['-NoProfile', '-Command',
+      "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -and " +
+      "$_.CommandLine.Contains('work_issue.ps1\" run \"687\" \"deepseek\"') -and $_.CommandLine.Contains($env:ORPHAN_SLOT) } | " +
+      'ForEach-Object { $_.ProcessId }'], { ORPHAN_SLOT: first.repo });
+    const pids = holders.text.trim().split(/\s+/).filter(Boolean);
+    assert.equal(pids.length, 1, 'exactly one slot lock holder: ' + holders.text);
+    const killed = run('taskkill.exe', ['/PID', pids[0], '/F']);
+    assert.equal(killed.code, 0, killed.text);
+    const gone = () => { try { process.kill(Number(pids[0]), 0); return false; } catch (e) { return e.code === 'ESRCH'; } };
+    assert(await waitFor(gone, 10000), 'the slot lock holder did not stop');
+    // The batch is still parked in the mock agent, so its tree is alive. Its inherited output pipes keep the launcher's
+    // promise open, so it is awaited only after the release below.
+    assert(!fs.existsSync(orphanHold + '.release'));
+    assert(!lockFree(), 'slot lock released while the batch still runs');
+    const contender = await runEntryPoint('""' + path.join(tools, 'work_issue.bat') + '" 689 deepseek dryrun"', {
+      ...defaults, WORK_ROOT: workRoot
+    });
+    assert.equal(contender.code, 14, contender.text);
+    assert.match(contender.text, /workhorse slot busy/);
+    assert(!fs.existsSync(path.join(workRoot, 'dryrun-689-deepseek')), 'the contender made no run folder');
+  } finally {
+    write(orphanHold + '.release', 'released');
+  }
+  await orphan;
+  assert(await waitFor(lockFree, 90000), 'slot lock still held after the orphaned batch finished');
+  const afterOrphan = await job('deepseek', 'slot-after-orphan', options);
+  assert.equal(afterOrphan.code, 0, afterOrphan.text + afterOrphan.result);
+  assert.equal(afterOrphan.repo, first.repo);
+  pass('the slot lock outlives its PowerShell while the batch lives, refuses another issue, and frees when the batch ends');
 }
 async function testResumeAndFailures() {
   await parallel(arms, async arm => {
@@ -1329,6 +1437,7 @@ async function testRunnerStartChecks() {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools, deliveryTools]);
   // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
   await testLaneOwnership();
+  await testWorkhorseSlots();
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
@@ -1363,4 +1472,10 @@ finally {
     Object.entries(totals).map(([step, t]) => step + ': ' + t.calls + ' calls, ' + t.seconds.toFixed(2) + ' s').join('\n') + '\n';
   write(path.join(root, 'timings.txt'), timingNote);
   console.log(timingNote.trim());
+  // Issue 1180 (Board, Nov 20): a passing run removes its evidence root (several GB of clones per standing-checks run
+  // filled TEMP). A failure keeps it for reading. rmSync removes junctions as links and never follows them.
+  if (process.exitCode !== 1 && process.env.RUNNER_SELFTEST_KEEP !== '1') {
+    try { fs.rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); console.log('Evidence removed after PASS: ' + root); }
+    catch (e) { console.log('Evidence kept (could not remove: ' + e.message + '): ' + root); }
+  } else console.log('Evidence kept: ' + root);
 } })();

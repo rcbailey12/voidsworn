@@ -35,7 +35,8 @@ const REGION_NEBULA_LANDMARK_SPREAD := 5.0
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
-const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
+const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1448: the map's clicks use the same ui cues as the buttons   # Lime Tactical pieces for the map words (issue #344)
 const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
 const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
@@ -103,7 +104,13 @@ var _drag := false
 var _drag_at := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
-var loading := false
+var loading := false:
+	set(v):
+		loading = v
+		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
+		if not v and _queued_jump: _run_queued_jump.call_deferred()
+var _queued_jump := false   # a Jump pressed during loading; it jumps to the confirmed pick when loading clears (a new pick cancels it)
+var _queued_id := ""        # the stop the queued Jump confirmed; the jump runs only if it is still the pick and still offered
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -113,6 +120,11 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	vpc = SubViewportContainer.new(); vpc.stretch = true; vpc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); vpc.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(vpc)
 	vp = SubViewport.new(); vp.own_world_3d = true; vpc.add_child(vp)
+	# issue 1437: the player's Render scale (main.gd _apply_display) covers this full-screen view too
+	vp.add_to_group("player_3d_viewport")
+	var rs := float(Engine.get_meta("render_scale", 1.0))
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	vp.scaling_3d_scale = rs
 	env = Environment.new()
 	env.background_mode = Environment.BG_COLOR; env.background_color = Color(0.004, 0.006, 0.012)
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES; env.tonemap_exposure = 1.0; env.tonemap_white = 6.0
@@ -202,7 +214,10 @@ func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()
 	if C != null and C.RUN != null: return false
 	cover.queue_free()
+	var had_jump := _queued_jump
+	_queued_jump = false; _queued_id = ""
 	loading = false
+	if had_jump: _reset_jump_label()
 	_sig = ""
 	return true
 
@@ -836,8 +851,21 @@ func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where t
 	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
+# issue 1437 (Astra W1): the host hides its whole UI for a battle, which leaves this Control's own `visible` true, so
+# the map kept flying, drifting, blinking and patrolling behind combat. Its SubViewport already stops drawing then.
+func map_live() -> bool:
+	return is_visible_in_tree() and _C() != null and _C().RUN != null and root3 != null
+
 func _process(delta: float) -> void:
-	if not visible or _C() == null or _C().RUN == null or root3 == null: return
+	var live := map_live()
+	# the arrival camera move is a tween, which runs on its own: hold it while the map is hidden and go on from there
+	if _arrival_tween != null and _arrival_tween.is_valid():
+		if live and not _arrival_tween.is_running(): _arrival_tween.play()
+		elif not live and _arrival_tween.is_running(): _arrival_tween.pause()
+	if live: _live_frame(delta)
+
+
+func _live_frame(delta: float) -> void:   # everything the map animates, only while it shows
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
@@ -1191,6 +1219,8 @@ func _gui_input(e: InputEvent) -> void:
 			var id = _node_at(e.position)
 			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
 				accept_event()
+				if e.double_click: Kit.play("ui_confirm")
+				elif str(ui.get("picked")) != id: Kit.play(Kit.HOVER_CUE)
 				if ui.has_method("pick_route"): ui.pick_route(id)
 				if e.double_click: fly_to(id)
 			elif e.double_click: reset_view()
@@ -1210,7 +1240,7 @@ func _gui_input(e: InputEvent) -> void:
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			var pk = str(ui.picked) if ui.get("picked") != null else ""
-			if not e.echo and pk != "": accept_event(); fly_to(pk)
+			if not e.echo and pk != "": accept_event(); Kit.play("ui_confirm"); fly_to(pk)
 func _input(e: InputEvent) -> void:
 	# Consume the skip before a side-panel button can start another action.
 	if not _flying or not is_visible_in_tree(): return
@@ -1221,6 +1251,11 @@ func _input(e: InputEvent) -> void:
 		_finish_flight()
 
 func fly_to(id: String) -> void:
+	if loading and not _flying and not backdrop:
+		_queued_jump = true; _queued_id = id
+		var lbl = ui.get("_jump_lbl") if ui != null else null
+		if lbl is Label and is_instance_valid(lbl): lbl.text = "JUMPING WHEN READY"
+		return
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
@@ -1232,6 +1267,24 @@ func fly_to(id: String) -> void:
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
+
+# Runs the campaign UI's _jump only when the pick is still the stop the queued Jump confirmed and that stop is still offered,
+# so a pick changed by any path (pick_route, or a map redraw that auto-picks the first route) never flies. _jump then passes
+# all its guards (modal, overlay). A dropped jump puts the Jump label back.
+func _run_queued_jump() -> void:
+	if loading or not _queued_jump: return
+	var want := _queued_id
+	_queued_jump = false; _queued_id = ""
+	var still := ui != null and want != "" and str(ui.get("picked")) == want and _avail().has(want)
+	if still and ui.has_method("_jump"): ui._jump()
+	if not _flying: _reset_jump_label()
+
+# A selection change while a jump is queued cancels it; the caller's rail rebuild puts back JUMP TO <new pick>.
+func cancel_queued_jump() -> void:
+	_queued_jump = false; _queued_id = ""
+
+func _reset_jump_label() -> void:
+	if ui != null and ui.has_method("_show_pick"): ui._show_pick()   # rebuilds the rail: JUMP TO <pick>
 
 # Cosine acceleration, constant-speed cruise, then matching braking. The
 # integral is continuous in speed and acceleration, including both endpoints.

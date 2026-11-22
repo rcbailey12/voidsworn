@@ -1,0 +1,324 @@
+extends SceneTree
+## godot --headless --path godot --script res://rules/sim/balance_sim.gd -- campaign 10
+
+const SimBattle = preload("res://rules/sim/sim_battle.gd")
+const Bot = preload("res://rules/sim/sim_bot.gd")
+const Campaign = preload("res://campaign/campaign.gd")
+const Rewards = preload("res://rules/sim/sim_rewards.gd")
+const JSM = preload("res://rules/jsm.gd")
+const CAMPAIGN_FLEETS := {
+	1: ["penitent", "harrow", "warden", "warden"],
+	2: ["cathedral", "penitent", "harrow", "warden", "warden"],
+	3: ["ascendant", "cathedral", "penitent", "reliquary", "harrow"],
+}
+const CAMPAIGN_NODES := [["battle", 1], ["battle", 4], ["elite", 4], ["boss", 6]]
+const MODES := ["campaign", "campaignrewards", "fmatrix"]
+
+var battle := SimBattle.new()
+var bot := Bot.new(battle)
+var campaign := Campaign.new()
+var rewards := Rewards.new(campaign)
+var pair_seed := ""
+var pair_index := 0
+var build := {}
+var build_enabled := false
+var alternating := true
+var failed := false
+
+
+func _initialize() -> void:
+	var args := OS.get_cmdline_user_args()
+	if args.size() > 3 or (args.size() == 3 and args[2] != "--classic"):
+		_fail("Usage: balance_sim.gd -- [campaign|campaignrewards|fmatrix] [battles per cell] [--classic]")
+		return
+	var mode := args[0] if not args.is_empty() else "campaign"
+	if mode not in MODES:
+		_fail("Unknown mode: " + mode)
+		return
+	var count := 6 if mode == "fmatrix" else 10
+	if args.size() >= 2:
+		if not args[1].is_valid_int() or int(args[1]) <= 0:
+			_fail("Battles per cell must be a positive integer.")
+			return
+		count = int(args[1])
+	alternating = args.size() < 3
+	var error := battle.load_tables("res://rules/data/tables.json")
+	if error.is_empty():
+		error = campaign.load_tables()
+	if not error.is_empty():
+		_fail(error)
+		return
+	var seed := OS.get_environment("SEED")
+	pair_seed = OS.get_environment("PAIRSEED")
+	if (not seed.is_empty() and not seed.is_valid_int()) or (not pair_seed.is_empty() and not pair_seed.is_valid_int()):
+		_fail("SEED and PAIRSEED must be integers.")
+		return
+	JSM.rnd_seed(int(seed) if not seed.is_empty() else randi())
+	var ai := OS.get_environment("AI")
+	if not ai.is_empty():
+		if ai not in ["standard", "veteran"]:
+			_fail("AI must be standard or veteran.")
+			return
+		battle.AI_LEVEL = ai
+	if OS.get_environment("CAP") == "0":
+		battle.RAMP.pwMin = 1.0
+		battle.RAMP.pwMax = 1.0
+	if OS.get_environment("PACE_OLD") == "1":
+		battle.PACE.merge({"move": 1.0, "rot": 0.75, "enemy": 0.65, "tail": 0.65, "swarm": 1.0,
+			"banner": 520, "aiGap": 60, "aiEnd": 120, "volley": 1.0, "bigMin": 1.0}, true)
+	bot.command_enabled = OS.get_environment("BOTCMD") != "0"
+	bot.brace_enabled = OS.get_environment("BOTBRACE") != "0"
+	if not _load_build():
+		return
+	if mode == "fmatrix":
+		_fmatrix(count)
+	else:
+		_campaign(count, mode == "campaignrewards")
+	if not failed:
+		quit()
+
+
+func _fail(message: String) -> void:
+	failed = true
+	printerr("Balance sim: " + message)
+	quit(1)
+
+
+func _next_pair() -> void:
+	if not pair_seed.is_empty():
+		pair_index += 1
+		JSM.rnd_seed(int(pair_seed) + pair_index)
+
+
+func _new_run(admiral: String, faction: String, sector: int, credits: int, cp_cap: int) -> void:
+	campaign.RUN = {"admiral": admiral, "fac": faction, "credits": credits, "cpCap": cp_cap, "sector": sector,
+		"relics": [], "inventory": [], "fleet": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0},
+		"fallen": [], "boons": [], "patrons": []}
+	battle.RUN = campaign.RUN
+
+
+func _load_build() -> bool:
+	var path := OS.get_environment("SIM_BUILD")
+	if path.is_empty():
+		return true
+	var data = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not data is Dictionary:
+		_fail("SIM_BUILD must point to a JSON object: " + path)
+		return false
+	for key in data:
+		match key:
+			"admiral":
+				if data[key] is String and battle.ADMIRALS.has(data[key]):
+					continue
+			"relics", "refits":
+				var table: Dictionary = battle.RELICS if key == "relics" else battle.MODULES
+				if data[key] is Array and data[key].all(func(id): return id is String and table.has(id)):
+					continue
+			"lineage":
+				if data[key] is Dictionary and battle.LINEAGE_TREES.has(data[key].get("id")):
+					continue
+			"mastery":
+				if data[key] is float and data[key] >= 0 and data[key] == floorf(data[key]):
+					continue
+		_fail("Unknown or invalid SIM_BUILD field: " + key)
+		return false
+	build = data
+	build_enabled = true
+	return true
+
+
+func _apply_build() -> bool:
+	var run: Dictionary = campaign.RUN
+	if build.is_empty():
+		return true
+	campaign.changeFleet(func():
+		for field in ["admiral", "mastery"]:
+			if build.has(field):
+				run[field] = build[field]
+		if build.has("lineage"):
+			run.lineage = build.lineage.duplicate(true)
+		for relic in build.get("relics", []):
+			if not run.relics.has(relic):
+				run.relics.append(relic)
+	)
+	for refit in build.get("refits", []):
+		if not rewards.fit_first(refit):
+			_fail("No ship can fit SIM_BUILD refit " + refit + " in this fleet.")
+			return false
+	return true
+
+
+func _campaign_cells() -> Array:
+	if not OS.get_environment("ONLY_BOSS").is_empty():
+		return [[1, "boss", 6], [3, "boss", 6], [1, "elite", 4]]
+	var filters := OS.get_environment("CSEC")
+	var cells := []
+	var sectors := filters.split(",") if not filters.is_empty() else PackedStringArray(["1", "2", "3"])
+	for raw_sector in sectors:
+		var sector := raw_sector.strip_edges()
+		if sector not in ["1", "2", "3"]:
+			_fail("CSEC must list sectors 1, 2, or 3.")
+			return []
+		for node in CAMPAIGN_NODES:
+			cells.append([int(sector), node[0], node[1]])
+	return cells
+
+
+func _campaign(count: int, carry_rewards: bool) -> void:
+	battle.timed = true
+	for cell in _campaign_cells():
+		var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0}
+		var carried := {"boons": 0, "relics": 0, "refits": 0, "marks": 0, "credits": 0.0, "top": {}}
+		battle.reset_timing()
+		for trial in range(count):
+			_next_pair()
+			if not _campaign_trial(cell, carry_rewards, totals, carried):
+				return
+		_print_campaign(cell, count, totals, carried if carry_rewards else {})
+
+
+func _campaign_trial(cell: Array, carry_rewards: bool, totals: Dictionary, carried: Dictionary) -> bool:
+	var sector: int = cell[0]
+	var kind: String = cell[1]
+	var column: int = cell[2]
+	_new_run("vex", "voidsworn", sector, 120 if carry_rewards else 0, 40)
+	var run: Dictionary = campaign.RUN
+	for hull in CAMPAIGN_FLEETS[sector]:
+		run.fleet.append(battle.newShip(hull, true))
+	if carry_rewards:
+		campaign.ensurePatrons()
+		run.flagUid = run.fleet[0].uid
+		rewards.carry_to(sector, column)
+	if not _apply_build():
+		return false
+	# A build fixture can target its own flagship. The plain reference campaign leaves it unset.
+	if build_enabled and not run.has("flagUid"):
+		run.flagUid = run.fleet[0].uid
+	if carry_rewards:
+		_count_carry(carried, run)
+	var faction: String = battle.pick(campaign.SECTOR_POOL[sector - 1])
+	var objective: String = "rout" if kind == "boss" else battle.pick(["rout", "rout", "flagship", "hold"])
+	var deployment: String = "line" if kind == "boss" else battle.pick(["line", "line", "flank", "ambush"])
+	battle.startBattle({"kind": kind, "fac": faction, "col": column, "obj": objective, "dep": deployment})
+	for unit in battle.B.units:
+		if not unit.isSq:
+			totals[unit.side] += 1
+	battle.fight(bot, alternating)
+	var hp := 0.0
+	var max_hp := 0.0
+	for unit in battle.B.units:
+		if not battle.jt(unit.get("ship")):
+			continue
+		if unit.side == "player":
+			hp += 0.0 if unit.dead else maxf(0.0, unit.hp)
+			max_hp += unit.maxHp
+		if unit.dead or unit.side != "player":
+			totals.lost += 1
+	totals.hull += hp / maxf(1.0, max_hp)
+	totals.rounds += battle.B.round
+	totals.wins += int(battle.B.over == "win")
+	totals.timeouts += int(not battle.jt(battle.B.over))
+	return true
+
+
+func _count_carry(carried: Dictionary, run: Dictionary) -> void:
+	carried.boons += run.boons.size()
+	carried.relics += run.relics.size()
+	carried.credits += run.credits
+	for ship in run.fleet:
+		carried.refits += ship.mods.size()
+		carried.marks += ship.mk
+	for boon in run.boons:
+		carried.top[boon.id] = carried.top.get(boon.id, 0) + 1
+
+
+func _print_campaign(cell: Array, count: float, totals: Dictionary, carried: Dictionary) -> void:
+	var clock: Dictionary = battle.clock
+	var tempo: Dictionary = battle.tempo
+	var rounds := maxf(1.0, clock.rounds)
+	var round_line := "sector %d %-6s win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+	var wait_line := "  wait old %ds new %ds  real %ds  per round %.1fs  max round %.1fs  ships %.1f+%.1f"
+	print((round_line + wait_line) % [cell[0], cell[1], JSM.jsround(totals.wins / count * 100),
+		totals.rounds / count, JSM.jsround(totals.hull / count * 100), totals.lost / count, totals.timeouts,
+		JSM.jsround(clock.old / count), JSM.jsround(clock.neu / count), JSM.jsround(clock.real / count),
+		clock.real / rounds, clock.max_round, totals.player / count, totals.enemy / count])
+	var first := "%.1f" % (float(tempo.first_loss) / tempo.first_count) if tempo.first_count > 0 else "none"
+	print("   tempo: enemy activations per player activation %.2f, enemy ships firing per round %.1f, first player ship lost in round %s" %
+		[tempo.enemy / maxf(1.0, tempo.player), tempo.fire / rounds, first])
+	if not carried.is_empty():
+		var keys := JSM.ssort(carried.top.keys(), func(a, b): return carried.top[b] - carried.top[a])
+		var labels := PackedStringArray()
+		for id in keys.slice(0, 5):
+			labels.append("%s %.1f" % [id, carried.top[id] / count])
+		var top := ", ".join(labels) if not labels.is_empty() else "none"
+		print("   carried: protocols %.1f (%s), relics %.1f, refits %.1f, mk sum %.1f, credits left %.0f" %
+			[carried.boons / count, top, carried.relics / count, carried.refits / count, carried.marks / count, carried.credits / count])
+	elif not OS.get_environment("CATS").is_empty():
+		var keys := JSM.ssort(battle.categories.keys(), func(a, b): return battle.categories[b] - battle.categories[a])
+		var labels := PackedStringArray()
+		for key in keys:
+			labels.append("%s %.2f" % [key, battle.categories[key] / rounds])
+		print("   per round: " + ", ".join(labels))
+
+
+func _fmatrix(count: int) -> void:
+	var factions: Array = campaign.RUN_FACTIONS
+	var rows := OS.get_environment("FROWS")
+	var player_factions: Array = Array(rows.split(",")) if not rows.is_empty() else factions
+	var budget_text := OS.get_environment("CPT")
+	if not budget_text.is_empty() and (not budget_text.is_valid_int() or int(budget_text) <= 0):
+		_fail("CPT must be a positive integer.")
+		return
+	var budget := int(budget_text) if not budget_text.is_empty() else 8
+	for faction in player_factions:
+		if faction not in factions:
+			_fail("Unknown FROWS faction: " + faction)
+			return
+	var result := {}
+	battle.matrix = true
+	var no_admiral := not OS.get_environment("NOADM").is_empty()
+	for player in player_factions:
+		var row := {}
+		result[player] = row
+		var admirals: Array = battle.ADMIRALS.keys().filter(func(id): return battle.ADMIRALS[id].get("fac", "voidsworn") == player)
+		for enemy in factions:
+			var wins := 0
+			for trial in range(count):
+				_next_pair()
+				var admiral: String = "none" if no_admiral else battle.pick(admirals)
+				_new_run(admiral, player, 2, 0, 60)
+				var players := _random_fleet(player, budget)
+				var enemies := _random_fleet(enemy, budget)
+				for tpl in players:
+					campaign.RUN.fleet.append(battle.newShip(tpl, false))
+				if players.is_empty() or enemies.is_empty():
+					_fail("CPT produced an empty fleet for %s or %s." % [player, enemy])
+					return
+				campaign.RUN.flagUid = campaign.RUN.fleet[0].uid
+				if not _apply_build():
+					return
+				var shape: String = battle.pick(battle.SHAPES.keys())
+				battle.startBattle({"kind": "battle", "fac": enemy, "col": 3, "dep": "line", "obj": "rout",
+					"shape": shape, "map": "random", "enemies": enemies.map(func(tpl): return {"tpl": tpl})})
+				battle.fight(bot, alternating)
+				battle.collect_matrix()
+				wins += int(battle.B.over == "win")
+			row[enemy] = JSM.jsround(float(wins) / count * 100)
+	print("FM " + JSON.stringify({"out": result, "st": battle.matrix_stats, "hull": battle.hulls,
+		"weap": battle.weapons, "ab": battle.abilities}, "", false))
+	print("FID " + JSON.stringify(battle.faction_report(), "", false))
+
+
+func _random_fleet(faction: String, budget: int) -> Array:
+	var roster: Array = battle.FACTIONS[faction].roster.filter(func(id): return not battle.jt(battle.HULLS[id].get("unique")))
+	var fleet := []
+	var spent := 0.0
+	for attempt in range(40):
+		if spent >= budget:
+			break
+		var id: String = battle.pick(roster)
+		var cp: float = battle.HULLS[id].get("cp", 1)
+		if spent + cp <= budget + 1:
+			fleet.append(id)
+			spent += cp
+	return fleet

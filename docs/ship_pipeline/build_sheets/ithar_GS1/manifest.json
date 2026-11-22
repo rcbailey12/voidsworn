@@ -1,0 +1,174 @@
+{
+  "code": "ithar_GS1",
+  "sheet_version": 1,
+  "design": "tools/blender/build_sheets/ships/ithar_GS1.py",
+  "design_sha256": "6ac656ef50db0b6e6fe7e1b1f2e25cf0c12ddc7aac8e5d02d3c6a832e12fba60",
+  "kit": "tools/blender/kits/ithar/hull.py",
+  "game_ship": "i_wisp",
+  "cls": "Frigate",
+  "length_world": 6.5,
+  "routes_note": "Every visible part is hand-built in the sheet on the shared Glasswright kit (tools/blender/kits/ithar).",
+  "parts": [
+    {
+      "id": "S1",
+      "kind": "gun",
+      "what": "three drawn-glass shard needles at the bow / shard",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "bow_shards"
+      ],
+      "weapon": "shard",
+      "arc": "F",
+      "turret": false
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "route": "hand-built",
+      "count": 1,
+      "source": "picture",
+      "inventory": [
+        "stern_drive"
+      ],
+      "weapon": null,
+      "arc": null
+    }
+  ],
+  "masses": [
+    {
+      "name": "Twisted mosaic core",
+      "route": "hand-built"
+    }
+  ],
+  "break_pieces": [
+    {
+      "name": "bow piece",
+      "stations": "0.000 to 64.615 percent",
+      "bounded_by": [
+        "B1"
+      ],
+      "full_interior": true
+    },
+    {
+      "name": "stern piece",
+      "stations": "64.615 to 100.000 percent",
+      "bounded_by": [
+        "B1"
+      ],
+      "full_interior": true
+    }
+  ],
+  "whole_optics": [
+    {
+      "name": "S1 whole part",
+      "part": "S1",
+      "objects": [
+        "S1_mount_gw_lance",
+        "S1_mount_gw_silver",
+        "S1_mount_gw_tip",
+        "S1_mount_gw_light",
+        "S1_mount_gw_pearl"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    },
+    {
+      "name": "E1 whole part",
+      "part": "E1",
+      "objects": [
+        "E1_grown_stern",
+        "E1_deep_lens",
+        "E1_white_bloom",
+        "E1_cut_face",
+        "E1_silver_flow_00",
+        "E1_silver_flow_01",
+        "E1_silver_flow_02",
+        "E1_silver_flow_03",
+        "E1_silver_flow_04",
+        "E1_silver_flow_05",
+        "E1_silver_flow_06",
+        "E1_silver_flow_07",
+        "E1_silver_flow_08",
+        "E1_silver_flow_09",
+        "E1_silver_flow_10"
+      ],
+      "full_interior": true,
+      "attachment": "separate whole group, grown into its parent skin"
+    }
+  ],
+  "hull_fractures": [
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -0.95,
+      "note": "ragged shatter path aft of the cleft; the shard needles and the stern optic stay whole",
+      "path": [
+        [
+          -0.95,
+          -1.6000000000000003
+        ],
+        [
+          -0.82,
+          -0.8000000000000002
+        ],
+        [
+          -1.0699999999999998,
+          -0.3733333333333333
+        ],
+        [
+          -0.86,
+          0.0
+        ],
+        [
+          -1.0899999999999999,
+          0.3466666666666667
+        ],
+        [
+          -0.83,
+          0.8000000000000002
+        ],
+        [
+          -0.95,
+          1.6000000000000003
+        ]
+      ],
+      "orient": "trans"
+    }
+  ],
+  "insides": "Two shaped glass decks, open annealed frames and three braided light cores, cut at the break line.",
+  "budget": {
+    "outside": {
+      "triangles": 180446,
+      "unjoined_surfaces": 45,
+      "material_surfaces": 9,
+      "materials": [
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 7496,
+      "unjoined_surfaces": 14,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "stage": "sheet built",
+  "paint_stack": "tools/blender/kits/ithar/stack.py"
+}

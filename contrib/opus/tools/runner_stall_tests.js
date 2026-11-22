@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 // Issues 818 and 1192: portable runner checks and real Windows watchdog, process-tree and GPU claim probes.
 const assert = require('assert');
 const fs = require('fs');

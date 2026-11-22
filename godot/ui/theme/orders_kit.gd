@@ -27,7 +27,9 @@ static func clear_static() -> void:
 	_sil.clear()
 
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
-const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select"}
+# "reward" (issue 1448): the confirm that takes a reward, relic, promotion perk or bought hull plays the built reward chime
+# instead of the plain confirm, so the two never sound together.
+const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select", "reward": "ui_reward"}
 const HOVER_CUE := "ui_select"
 const OPEN_CUE := "ui_panel"
 
@@ -241,18 +243,60 @@ static func link(text: String, k: float, cb := Callable(), size := 18.0) -> Butt
 
 # The press and hover cues for any button (kit or not). Hover plays when the pointer arrives; focus plays only when the
 # player moved it with the arrow keys, Tab or a pad (not when a screen puts the first focus somewhere on opening).
-static func wire_sound(b: BaseButton, role := "quiet") -> void:
+# Issue 1448: any Control with a `pressed` signal and a `disabled` flag counts (the campaign's choice wells,
+# ui/campaign/choice_button.gd, are PanelContainers), not only BaseButton.
+static func wire_sound(b: Control, role := "quiet") -> void:
 	if b.has_meta("kit_sound"):
 		b.set_meta("kit_sound", role)
 		return
+	if not b.has_signal("pressed"):
+		return
 	b.set_meta("kit_sound", role)
-	b.pressed.connect(func() -> void: play(str(PRESS_CUE.get(str(b.get_meta("kit_sound", "quiet")), "ui_click"))))
+	b.connect("pressed", func() -> void: play(press_cue(str(b.get_meta("kit_sound", "quiet")))))
 	b.mouse_entered.connect(func() -> void:
-		if not b.disabled:
+		if not bool(b.get("disabled")):
 			play(HOVER_CUE))
 	b.focus_entered.connect(func() -> void:
 		if _moved_by_keys():
 			play(HOVER_CUE))
+
+
+# The cue a role's press plays (also for a key that does what a button does, so keys and clicks sound the same).
+static func press_cue(role: String) -> String:
+	return str(PRESS_CUE.get(role, "ui_click"))
+
+
+# Issue 1448: the one hook that gives a whole screen its sound. Every button (or choice well) that enters the tree under
+# root and was not wired by its maker gets the quiet click and hover cues, so a screen that builds plain Button.new()
+# rows (the campaign map, shipyard, fleet, rewards, debrief, Career) is never silent again. A maker that wants another
+# role calls wire_sound(b, role) itself, before or after adding it; meta "kit_silent" keeps a control out. Safe to call
+# twice on one root.
+static func watch_sound(root: Node) -> void:
+	if root == null or root.has_meta("kit_watch"):
+		return
+	root.set_meta("kit_watch", true)
+	for n in root.find_children("*", "Control", true, false):
+		_auto_wire(n)
+	var hook := func(n: Node) -> void:
+		if is_instance_valid(root) and root.is_ancestor_of(n):
+			_auto_wire(n)
+	var bind := func() -> void:
+		if not root.get_tree().node_added.is_connected(hook):
+			root.get_tree().node_added.connect(hook)
+	var unbind := func() -> void:
+		if root.get_tree() != null and root.get_tree().node_added.is_connected(hook):
+			root.get_tree().node_added.disconnect(hook)
+	root.tree_entered.connect(bind)
+	root.tree_exiting.connect(unbind)
+	if root.is_inside_tree():
+		bind.call()
+
+
+static func _auto_wire(n: Node) -> void:
+	if not (n is Control) or n.has_meta("kit_sound") or n.has_meta("kit_silent"):
+		return
+	if n is BaseButton or (n.has_signal("pressed") and "disabled" in n):
+		wire_sound(n, "quiet")
 
 
 static func _moved_by_keys() -> bool:
@@ -412,6 +456,9 @@ static func drawer(parent: Control, k: float, w: float, slide := true, reduce_mo
 	p.offset_left = -w
 	p.offset_right = 0
 	parent.add_child(p)
+	# issue 1559 item 22: a drawer is modal for the keyboard (Tab and the arrows cannot reach the screen behind it);
+	# focus goes back to what had it when the drawer closes
+	load("res://ui/theme/modal_focus.gd").attach(p)
 	if slide:
 		play(OPEN_CUE)
 	if slide and not reduce_motion:

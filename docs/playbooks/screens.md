@@ -55,8 +55,11 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   (campaign_ui.gd ESC_BACK). The UI scale is never capped; each layout fits 831 design pixels tall. Progression, Lineage and How to play sit in the
   desk's frame (campaign_ui.gd _kit_page: ledger veil, one centred column, a fixed bar with Back) and their card rows are
   kit grids (Kit.card_grid: one width, one height per row, actions at the foot); tab strips use Kit.tab_button. Checked by
-  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group); contact sheets
-  by godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K.
+  godot/ui/test/front_end_test.gd; pictures by godot/ui/test/front_end_shots.gd (--only=F5 keeps one group, --expect=WxH
+  fails a frame of the wrong size: Godot hides --resolution from the script); contact sheets by
+  godot/tools/front_end_sheet.gd; on the PC, tools/pc/jobs/frontend_ui_check.bat runs all three at 1080p and 4K. An open
+  drawer on a page (Run options) holds keyboard and controller focus (campaign_ui.gd _trap_focus) and closing it gives the
+  focus back to the button that opened it (issue 1261).
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 
@@ -90,6 +93,40 @@ What moved behind a hover or a key (all still reachable):
 | nameplates with bars on every ship | hover a ship |
 | the old log | three lines or a one-line ticker above the shelf; L opens the full history |
 | the status line's state words | hover the status line for their definitions |
+
+### Planning a ship's turn (issue 1589, RULEBOOK 9.17a)
+
+The ship's turn is a plan on screen until the player commits it. Code: `battle.gd` `plan` (the ghost's reach state),
+`aims` (each pick: an enemy and the guns aimed at it), `plan_steps` (what the plan was before each step, for Backspace).
+
+- Blue hex: the ghost moves there; Q/E turn it there (the rules' reach states for that hex). On the ship's own hex Q/E
+  turn the ghost in place: `plan` is then `{q, r, f, rot}`, checked with `_turns_ok` (canRotate on a copy, spending what a
+  rotate spends: a skill's free turn, a free pivot, then movement and a turn charge), and the commit calls `api.rotate`
+  once per step, as Q/E always did, so a free turn is spent at the commit and the move counter is not touched. A click on
+  the ghost on the ship's own hex commits it. Enemy with a red ring: every free gun that bears from the ghost aims at it. An enemy no gun reaches, with
+  nothing planned yet, plans a Burn and fire (the ghost stands on its stop).
+- The ghost is the see-through hull with a bright outline (an inverted shell, `GHOST_EDGE`); picked enemies wear the lock
+  ring; the card lists the move, each pick with its expected damage from the ghost, and the free guns left.
+- Moving or turning the ghost keeps the picks whose guns still bear and says which fell away.
+- Commit (Enter, the card's button, or a second click on the planned hex or a picked enemy): one `_cmd` sends `api.move`
+  (or `api.rotate` for a turn in place) and then each pick's `api.fire`, so the batch plays move then fire as one event, and issue 1581's look-ahead turns the
+  guns while the hull brakes. A pick the move made impossible is dropped with a toast.
+- Backspace pops one step; with no plan open it is the rules' undo of a played move (9.17). Esc clears the whole plan. Any
+  rules command clears the plan.
+- While a plan is open the card's status line says what the plan does, ahead of the ship's flags (they move to its tip),
+  and its keys ("Enter plays · Backspace undoes · Esc clears") get their own row under the action button, so no odds
+  height pushes them off the sheet (Artoo on PR 1643): Ryan wants every action clearly understood (Nov 22). Enemies a click would aim at wear the red ring; the target block shows each gun's hit chance from the ghost.
+- While any event plays (a commit, an enemy turn) the whole bottom sheet steps aside: ship, guns, odds, orders and the
+  fleet strip (`hud.set_playing(busy)`, ledger `playing`); the log stays. It pops back when the event ends (issue 1708,
+  Ryan Nov 22: "hide the card during the scene and then pop it back up").
+- The card leaves as soon as any command starts playing (`_cmd` refreshes the UI once the runner is busy) and comes back
+  when the ship is up again (Ryan, Nov 22).
+- The drawn firing cone: a ship whose hex sits on an arc's line is in that arc (rules `inArc`, 60.5 degrees for the
+  prow), so `_fan_edge` draws each side half a hex outside that line, along the far edge of the hexes on it. Ryan read a
+  legal shot at an enemy on the line as out of the cone when the side ran through its middle (Nov 22).
+- Glasswrights keep part of their movement after firing (R396, issue 1560): after the commit the ship stays up with its
+  reach drawn, and the next planned move commits the same way. Capture: the probe's `--glass` strip GLS-1589.
+- Check: `godot/scenes/battle/test/plan_commit_check.gd`.
 
 ### The after-run screen (DB1, issue 805)
 
@@ -146,6 +183,35 @@ read-only drawing, moved-content routes, progression returns and heir gates, and
 1080 and 1440 across all factions, the long flagship name and a 20-ship fleet. The optional --shots DIR arguments capture
 the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
 than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
+
+### Between-fight cards (issue 1177, R335)
+
+The victory card lists the wrecks and lets the player work one directly. If there are captured ships, deal with the batch
+of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
+perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
+
+Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
+service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
+drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
+battle rewards. See [the seeded check and picture list](../shots/after_win_1177/README.md).
+
+### Late market and faction purses (issue 1178, R335)
+
+Sector 3 shipyards add a Late market: two relics (picked from the run's useful, unowned relics without touching the random
+stream; never the Smuggler's ledger, the logbook or the Scrap rig, which cannot earn back 120 that late, LATE_SHOP.skip, issue 1290) and one Command expansion (+1 command point, at most two a run), paid in credits (a Chorus run pays biomass first, issue 1484). Paid repair prices never
+change (Oct 29 ruling). Three factions show their own money on the shipyard, the map purse and the victory card:
+
+- Chorus: hull work (repairs, new hulls, Marks) is paid in biomass, earned flat per win like credits plus 8 per kill, at
+  most 50 a battle (BIO_KILL in core.js). Refits, class refits, protocol rerolls and the late market take biomass when it covers the price, otherwise credits (R382, issue 1484: a Chorus run still collects credits from repair stipends, ransoms, scrap and declined protocols, so both purses spend). Credits alone pay for events. Every price button names the purse that will pay, and decommissioning pays biomass too (issue 1290).
+- Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (25, 45, 70, 85, 100, about 25% of
+  the price and still under the 35% decommission value), at most 100 a battle (issue 1290).
+- Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value. A regrown ship
+  decommissions for 0 until it has fought a battle (issue 1290), and after that for at most what its regrow cost, so regrow,
+  fight once, sell is not free money either (issue 1384).
+
+Check: godot --headless --path godot --script res://campaign/test/late_run_shots.gd builds all four pages; with a display
+and an output folder it saves L1178, B1178, E1178 and C1178.
+res://campaign/test/late_fixes_1290.gd checks the issue 1290 rules and saves D1290 and B1290 (the two decommission dialogs). Numbers and pictures: [the late run README](../shots/late_run_1178/README.md).
 
 ### Career (CR4, issue 869)
 

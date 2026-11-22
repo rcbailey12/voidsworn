@@ -1,0 +1,727 @@
+{
+  "_about": "Situational and event-reactive admiral lines keyed by player faction. Used by godot/story/battle_voice.gd and godot/story/story.gd to tie dialogue to the enemy faction, objective, live combat events, sector condition, and battle margin. All lines <= 22 words, US English, no em or en dashes.",
+  "by_enemy": {
+    "voidsworn": {
+      "voidsworn": [
+        "Vesper transponders gone rogue on our own lane. Hail them once, then clear the path.",
+        "Another Crusade splinter cutting off our fuel run. Keep your shots clean and end it quick."
+      ],
+      "hegemony": [
+        "Meridian warships on a frontier lane. Remember who froze Vesper's fuel quotas and open fire!",
+        "Directorate column ahead, flying neat and arrogant. Show those clerks what iron bulkheads can take!"
+      ],
+      "corsair": [
+        "Hullbreaker raiders prowling the lane! Watch your flanks and don't give them a clean boarding run!",
+        "Ashfall vultures eyeing our hulls. Burn their engines before they can get hooks near us!"
+      ],
+      "chorus": [
+        "Bio-hull contacts on thermal! Keep your distance and watch out for acid clouds drifting off their flanks!",
+        "The Chorus is crawling across this lane. Don't let those things chew through our escorts!"
+      ],
+      "ithar": [
+        "Glasswright mirrors glinting off the dust. Stay out of their long beam lanes and crack their hulls up close!",
+        "The Glasswrights would rather watch Vesper freeze than share one core. Push inside their range!"
+      ],
+      "deathless": [
+        "Eclipse husks ahead, the bastards draining our sky! Break their frames and leave nothing to rebuild!",
+        "Cold alloy and dead voices on the scopes. Keep hammering their wrecks so they don't get back up!"
+      ]
+    },
+    "hegemony": {
+      "voidsworn": [
+        "Vesper militia operating outside their assigned corridor. Disarm their escort line and secure the lane.",
+        "Sunward Crusade hulls confirmed on scopes. Expect aggressive forward burns and poor flanking discipline."
+      ],
+      "hegemony": [
+        "Rogue Meridian transponders detected. Verify command codes, then neutralize the unauthorized detachment.",
+        "Unlisted Directorate hulls blocking a Registry lane. Suspend courtesy protocols and clear the grid."
+      ],
+      "corsair": [
+        "Class-Four Ashfall raiders inbound. Maintain tight point-defense overlap and punish any closing prows.",
+        "Hullbreaker salvage packs ahead. Do not break formation; their crews rely on isolated targets."
+      ],
+      "chorus": [
+        "Quarantined bio-constructs verified across the lane. Apply sustained thermal fire and seal exterior vents.",
+        "Chorus organisms entering weapons range. Engage at stand-off distance to avoid corrosive boarding pods."
+      ],
+      "ithar": [
+        "Unregistered Glasswright vessels blocking the vector. Disrupt their optical alignment before they concentrate beams.",
+        "Starwright remnant craft on scope. Expect high precision at long range and minimal hull redundancy."
+      ],
+      "deathless": [
+        "Priority-One Eclipse hulls confirmed. Track disabled wrecks closely and suppress all automated repair swarms.",
+        "Hostile Eclipse column blocking the approach. Break their primary command node to disrupt backup relays."
+      ]
+    },
+    "corsair": {
+      "voidsworn": [
+        "Crusade iron ahead! Cheap plating, sure, but their fuel cells burn clean and fetch top coin!",
+        "Look at those Sunward tubs marching straight at us! Strip their dorsal guns before they even turn!"
+      ],
+      "hegemony": [
+        "Shiny Meridian cruisers! Don't slag the bridge, pack, Directorate trim pays double at Rattlehold!",
+        "Directorate patrols think neat lines stop a claw! Crack that lead hull and grab the emitters!"
+      ],
+      "corsair": [
+        "Rival Ashfall pack poaching our hunting lane! Rip their bows open and take their haul too!",
+        "Another warlord thinks they own this debris belt. Teach them whose hull-mark runs this sector!"
+      ],
+      "chorus": [
+        "Ugh, Chorus meat-ships. Barely any good metal on them, just acid and teeth. Blast them from range!",
+        "Bio-swarms ahead, and not a single clean bolt to salvage. Burn them quick so we can move on!"
+      ],
+      "ithar": [
+        "Glasswright mirrors! Careful with the rockets, one intact crystal lens buys three whole frigates!",
+        "Fancy optical hulls trying to snipe us from across the board. Rush inside their glare and crack them!"
+      ],
+      "deathless": [
+        "Eclipse hulls! Self-healing alloy and null coils worth a fortune, just keep smashing the wrecks!",
+        "Silver ghosts drifting in our lane! Break them twice if they try to stand back up!"
+      ]
+    },
+    "chorus": {
+      "voidsworn": [
+        "Hot frontier reactors burning loud across the dark. Push straight into their line and crack the alloy.",
+        "Loud iron hulls carrying full fuel bays. Hunger wants their warmth before the void takes it."
+      ],
+      "hegemony": [
+        "Neat rows of polished alloy moving in lockstep. Break one link and swallow the escorts behind it.",
+        "Cold steel hulls transmitting sharp orders. Dissolve their formation and strip the dense cores inside."
+      ],
+      "corsair": [
+        "Patched metal scavengers rushing straight toward our acid. Clumsy prey makes an easy harvest.",
+        "Loud raiders welded from stolen plate. Crack their heavy bows and drink the hot drives underneath."
+      ],
+      "chorus": [
+        "A rival brood feeding in our lane. Consume their spores before they claim these reactors.",
+        "Foreign chitin on our thermal trace. Only one swarm survives this sector; tear them open."
+      ],
+      "ithar": [
+        "Cousins of our dead makers, still shining behind thin crystal. Memory recalls their lenses; Hunger does not care.",
+        "Glasswright mirrors ahead. Old breeding reflex wakes in our nerves; close fast before their beams cut us."
+      ],
+      "deathless": [
+        "Silver husks we were built to crack a thousand years ago. Every spore wakes at their cold signal.",
+        "Eclipse frames on the scopes. Ancient war-code surges through the brood; tear their repair swarms apart!"
+      ]
+    },
+    "ithar": {
+      "voidsworn": [
+        "Impatient frontier crews marching toward ruins they cannot govern. Trim their engines and turn them back.",
+        "Sunward iron blocking the lane. Their armor is thick, yet their optics are nearly blind at long range."
+      ],
+      "hegemony": [
+        "Meridian clerks trying to claim Ardent's graveyard by statute. Show them how fragile neat columns are.",
+        "Directorate hulls crossing an old Lattice lane. Break their sensor sync and dismantle the lead column."
+      ],
+      "corsair": [
+        "Ashfall looters who would shatter three-century glass for thruster scrap. Keep them outside boarding range.",
+        "Crude welded prows charging through the dust. Shear their drives cleanly before they close."
+      ],
+      "chorus": [
+        "Our dead cousins' living weapon, still hunting a millennium later. Burn the brood cleanly before it spreads.",
+        "Chorus bio-hulls drifting across the lane. Never let them touch crystal plating; focus beams at range."
+      ],
+      "ithar": [
+        "A splinter House breaking the Lock covenant. Measure their arcs with care; they know every prism trick we do.",
+        "Kindred mirrors turned against us. Keep your angles tighter than theirs and end this cleanly."
+      ],
+      "deathless": [
+        "Our estranged kin, still trying to steal another star to replace the one they killed. Stop them here.",
+        "Eclipse frames ahead. They burned Ardent to fuel their archives; shatter every hull before the swarms rebuild!"
+      ]
+    },
+    "deathless": {
+      "voidsworn": [
+        "Warm frontier crews fighting to save forty cold worlds while blocking a new sun. Clear them aside.",
+        "Sunward Crusade ships ahead. Brief lives make for reckless charges; hold steady and let them break."
+      ],
+      "hegemony": [
+        "Short-lived Directorate clerks patrolling Starwright ruins. Dismantle their column and continue the approach.",
+        "Directorate transponders claiming jurisdiction over our dead star. Erase their grid and advance."
+      ],
+      "corsair": [
+        "Metal scavengers gnawing on hulls older than their language. Sweep them out of our vector.",
+        "Ashfall raiders mistaking Archive craft for salvage. Show them what self-restoring hulls can endure."
+      ],
+      "chorus": [
+        "The Fleshwrights' old war-beasts still prowling the rim. Keep repair swarms clear of their acid and burn them.",
+        "Chorus tissue detected ahead. Our ancestors fought these organisms before Ardent fell; purge the cluster."
+      ],
+      "ithar": [
+        "Our Glasswright siblings, still guarding ashes instead of building dawn. Break their mirror line and press on.",
+        "Kindred optics locking onto our bows. They chose mourning over Homecoming; shatter their lenses."
+      ],
+      "deathless": [
+        "A drifted Archive branch out of sync with the Homecoming. Overwrite their frames and reclaim the cores.",
+        "Rogue Eclipse hulls blocking our corridor. Expect identical restore cycles; sever their command link first."
+      ]
+    }
+  },
+  "by_objective": {
+    "voidsworn": {
+      "ambush": [
+        "Contacts on both flanks, it's an ambush! Pick one wing, punch straight through it, and don't get boxed!",
+        "They jumped us from two sides! Pivot the escorts fast and roll one claw before the other closes!"
+      ],
+      "defend": [
+        "That station's packed with frontier techs! Form a screen around its hull and don't let them close!",
+        "Keep every hostile ship off that station perimeter! Hold six rounds and the defense grid stays standing!"
+      ],
+      "hunt": [
+        "Their flagship's spooling up a jump drive! Ignore the noise and slag her engines before round six!",
+        "Command hull's trying to run! Push every fast mount forward and pin her before she slips out!"
+      ],
+      "intercept": [
+        "Enemy supply haulers making a break for the far edge! Cut across their lane and drop them fast!",
+        "Don't let those transports reach their jump point! Burn past their escorts and crack their cargo bays!"
+      ],
+      "break": [
+        "We don't need to kill every hull here, just punch through to the far edge! Push hard and jump clear!",
+        "Breakthrough lane's on the far rim! Keep engines hot, shove past their screen, and get our ships across!"
+      ],
+      "hold": [
+        "Put a solid hull right on that relay and kick anyone else off! Three clean rounds and the signal's ours!",
+        "Control that central relay hex! Plant an armored ship beside it and blast anybody who edges close!"
+      ],
+      "flagship": [
+        "Cut the head off and the rest'll scatter! Put every heavy mount straight onto their flagship!",
+        "Ignore the small picket boats! Crack their flagship and watch the whole column break!"
+      ]
+    },
+    "hegemony": {
+      "ambush": [
+        "Hostile pincer confirmed on dual bearings. Collapse one enemy group immediately to prevent crossfire.",
+        "Our column has entered an ambush pocket. Consolidate shields and eliminate the weaker flank first."
+      ],
+      "defend": [
+        "Allied station integrity is primary priority. Establish a closed defensive ring and repel close-range intruders.",
+        "Maintain guard positions around the station hull until round six concludes. Do not chase distant decoys."
+      ],
+      "hunt": [
+        "Target command vessel is spooling escape drives. Allocate full forward thrust and disable it prior to round six.",
+        "The hostile flagship is attempting egress. Bypass non-essential escorts and terminate its jump cycle."
+      ],
+      "intercept": [
+        "Hostile logistics transports are transiting toward the far jump edge. Intercept and neutralize them before exit.",
+        "Priority targets are the cargo vessels. Do not allow their escort screen to delay interception."
+      ],
+      "break": [
+        "Mission parameters specify transit, not attrition. Advance capital units to the far extraction edge immediately.",
+        "Force a corridor through their picket line and clear the designated exit hexes with minimal delay."
+      ],
+      "hold": [
+        "Position an uncontested unit adjacent to the central relay for three consecutive cycles. Deny enemy proximity.",
+        "Secure the relay perimeter and hold it unchallenged. Clear all hostile signatures within one hex."
+      ],
+      "flagship": [
+        "Hostile command cohesion is centralized in one vessel. Concentrate all primary batteries on their flagship.",
+        "Neutralizing the enemy flagship will terminate local resistance. Assign full fleet focus to the lead hull."
+      ]
+    },
+    "corsair": {
+      "ambush": [
+        "They tried to box us in! Smash the closer flank right in the teeth and take both hauls!",
+        "Contacts front and back! Pick the softer flank, rip straight through, and turn their trap inside out!"
+      ],
+      "defend": [
+        "Keep their hands off our stash station! Park heavy claws on the perimeter and chew anyone who drifts close!",
+        "That rig's holding our repair bays! Hold them off for six rounds and strip whatever breaks on its guns!"
+      ],
+      "hunt": [
+        "Their big prize is trying to bolt! Burn thrusters red and tear her engines off before she jumps!",
+        "That fat flagship thinks she can outrun us! Corner her before round six or we lose the best plate!"
+      ],
+      "intercept": [
+        "Fat cargo barges running for the edge! Forget the guards, crack those freighters before they jump out!",
+        "Easy loot trying to slip past us! Cut off those transports and pop their holds wide open!"
+      ],
+      "break": [
+        "No need to chew through all of them! Shove past their front line and jump clear across the far edge!",
+        "Green exit's right past their guns! Ram a hole straight through and haul our hulls out!"
+      ],
+      "hold": [
+        "Park our toughest cruiser on that relay and smack anyone else who tries to claim it!",
+        "Three rounds sitting next to that beacon and the sector codes are ours. Keep their escorts back!"
+      ],
+      "flagship": [
+        "Drop their boss ship and the little ones'll bolt! Dump every rocket straight onto the big hull!",
+        "One big kill ends the whole brawl! Go straight for their flagship's throat!"
+      ]
+    },
+    "chorus": {
+      "ambush": [
+        "Two clusters closing from opposite bearings. Crush the nearer group first before their fire crosses.",
+        "Prey tries to encircle the brood. Rush one side together and feed before the second arrives."
+      ],
+      "defend": [
+        "Cluster tight around the friendly station hull. Dissolve any hostile shell that approaches its perimeter.",
+        "Hold the station ring through six cycles. Feed on every ship foolish enough to press close."
+      ],
+      "hunt": [
+        "Their lead vessel is spooling a jump drive. Surge forward and tear its engines out before cycle six!",
+        "The richest core is fleeing toward deep space. Leave the small shells behind and swallow the leader!"
+      ],
+      "intercept": [
+        "Slow supply hulls creeping toward the far edge. Cut across their path and crack them before they escape!",
+        "Cargo vessels carry dense metal and warm reactors. Intercept them before they reach the jump boundary!"
+      ],
+      "break": [
+        "Do not linger to digest the escorts. Surge across their line and slip through the far exit lane!",
+        "Push the heaviest hulls through the gap and jump clear beyond the green edge."
+      ],
+      "hold": [
+        "Anchor a strong bio-hull beside the central relay. Keep every hostile shell off its border for three cycles.",
+        "Claim the central signal spire. Drive rival vessels away until three clean cycles pass."
+      ],
+      "flagship": [
+        "Destroy their lead mind and the smaller vessels will scatter. Focus every tendril on their flagship!",
+        "One primary core anchors their formation. Crack their flagship and watch the rest flee."
+      ]
+    },
+    "ithar": {
+      "ambush": [
+        "Dual contacts closing from opposing arcs. Collapse the nearer group quickly before they bracket our mirrors.",
+        "An ambush pocket. Pivot smoothly, blind one flanking wing, and refuse to fight on two fronts."
+      ],
+      "defend": [
+        "Shield that station with clean overlapping arcs. Keep hostile hulls off its perimeter until round six clears.",
+        "Do not let their lead ships touch the station's outer ring. Trim them back with long-range fire."
+      ],
+      "hunt": [
+        "Their flagship is charging an escape burn. Focus long lenses on her drives before round six expires.",
+        "Pin that fleeing command vessel quickly; once she clears jump cooldown, this entire chase is wasted."
+      ],
+      "intercept": [
+        "Unarmed transports crossing toward the far rim. Slice through their lane and stop them before they exit.",
+        "Ignore the escort posturing. Line up clean shots on those cargo hulls before they reach the edge."
+      ],
+      "break": [
+        "Our goal is passage, not a prolonged duel. Slip past their screen and cross the far exit hexes.",
+        "Bend around their heavy bows and push enough hulls across the extraction rim to clear the trap."
+      ],
+      "hold": [
+        "Anchor one vessel cleanly beside the central relay and keep hostile hulls off it for three cycles.",
+        "Secure the relay hex with steady spacing. Deny their escorts any foothold near the spire."
+      ],
+      "flagship": [
+        "Break their flagship and the rest of that formation loses its nerve. Focus every prism on the lead vessel.",
+        "One precise strike on their command hull ends this cleanly. Direct all mirrors to their leader."
+      ]
+    },
+    "deathless": {
+      "ambush": [
+        "Hostile wings closing from two vectors. Concentrate fire on the closer group before their arcs intersect.",
+        "A double envelopment. Maintain calm spacing, dismantle one pincer immediately, and rotate."
+      ],
+      "defend": [
+        "Form a steady perimeter around the allied station. Prevent enemy hulls from docking against its ring for six cycles.",
+        "Hold the station line intact until round six ends. Let their impatient ships wear themselves down."
+      ],
+      "hunt": [
+        "Their flagship is preparing an emergency jump. Cut her propulsion before round six closes.",
+        "Do not let the enemy leader escape into deep lanes. Focus every forward beam on her hull now."
+      ],
+      "intercept": [
+        "Hostile supply hulls moving toward the far boundary. Destroy the transports before they exit the grid.",
+        "Their cargo ships are the actual prize here. Bypass the picket boats and break the convoy."
+      ],
+      "break": [
+        "Attrition serves no purpose on this lane. Drive half our hulls cleanly across the far exit rim.",
+        "Clear a narrow corridor through their screen and transit to the green jump hexes."
+      ],
+      "hold": [
+        "Place an armored frame next to the central relay and hold it uncontested for three cycles.",
+        "Occupy the relay perimeter. Keep hostile ships beyond one hex until the link locks in."
+      ],
+      "flagship": [
+        "Sever their command vessel and the escorts will disengage. Focus all corona arrays on their flagship.",
+        "One flagship down ends this engagement cleanly. Ignore the peripheral hulls and concentrate fire."
+      ]
+    }
+  },
+  "outcome": {
+    "voidsworn": {
+      "win_clean": [
+        "Not a single ship lost, and every crew still breathing! That's how Vesper flies!",
+        "Clean sweep, zero empty bunks on the roster. Refuel and push down the lane!"
+      ],
+      "win_bloody": [
+        "We held the lane, though we paid heavy in steel and names. Pull the survivors aboard before we jump.",
+        "Ugly win, half our bulkheads venting smoke. Patch the leaks and write down who didn't make it."
+      ],
+      "win_fast": [
+        "Over before our radiators even hit red! Didn't even give them time to form up!",
+        "Three rounds and the lane's wide open! Keep that momentum rolling into the next jump!"
+      ],
+      "win_last_stand": [
+        "One hull still floating and it's ours! Someone get damage control on every bulkhead right now!",
+        "Down to our last ship, still flying, still firing. Tell Vesper we refused to go down!"
+      ]
+    },
+    "hegemony": {
+      "win_clean": [
+        "Engagement concluded with zero friendly hull losses. Exemplary discipline across the column.",
+        "Flawless execution. Log zero casualties and resume transit on schedule."
+      ],
+      "win_bloody": [
+        "Objective secured at substantial material cost. Initiate emergency hull stabilization and update the loss roll.",
+        "Victory confirmed, though attrition exceeded projection. Consolidate surviving crews and proceed."
+      ],
+      "win_fast": [
+        "Hostile resistance collapsed well ahead of schedule. Minimal ordnance expended; advance immediately.",
+        "Rapid neutralization confirmed. Record the intercept duration for Meridian review."
+      ],
+      "win_last_stand": [
+        "Single surviving vessel holding the field. Objective achieved; request immediate reinforcement at the next berth.",
+        "All escorts lost, command vessel still operational. The lane remains under Directorate control."
+      ]
+    },
+    "corsair": {
+      "win_clean": [
+        "Not a scratch worth crying over, and look at all those drifting wrecks! Best haul all week!",
+        "Zero ships lost and a whole field of free plate! Somebody break out the welding torches!"
+      ],
+      "win_bloody": [
+        "Brutal brawl, lost good crews and half our paint, yet we're the ones stripping the wrecks!",
+        "Took a beating to win that scrap pile. Bolt their intact armor over our holes and keep moving!"
+      ],
+      "win_fast": [
+        "Barely warmed up the guns and they're already drifting! Fastest haul yet!",
+        "Didn't even last three rounds! Either we're getting meaner or their plating's getting softer!"
+      ],
+      "win_last_stand": [
+        "Only one ship left kicking, and we still took the field! Try laughing at us back in Rattlehold now!",
+        "Everyone else is drifting, our hull's held together by prayers and rivets, and we STILL won!"
+      ]
+    },
+    "chorus": {
+      "win_clean": [
+        "No spores lost, and the field lies heavy with split alloy. Feed thoroughly before the next jump.",
+        "Every vessel intact, every hostile hull cooling into harvest. The swarm grows heavier today."
+      ],
+      "win_bloody": [
+        "Deep cuts across the brood, yet enough living tissue remains to consume the wreckage and regrow.",
+        "Costly clash. Pull our torn shells and their shattered metal into the vats together."
+      ],
+      "win_fast": [
+        "Over before their reactors even cooled. Swift, clean digestion; push on while Hunger runs hot.",
+        "They broke almost instantly. Strip the warm metal quickly and follow the next heat trail."
+      ],
+      "win_last_stand": [
+        "One surviving shell drifts over a field of fallen metal. Enough tissue remains to grow a fresh brood.",
+        "Nearly purged, yet one core still pulses. Feed on the dead hulls until the swarm returns."
+      ]
+    },
+    "ithar": {
+      "win_clean": [
+        "Every hull intact, every mirror clear. That is how craft answers brute force.",
+        "Zero losses and clean optical discipline throughout. Recover our wings and continue."
+      ],
+      "win_bloody": [
+        "We hold the lane, though centuries of hull craft lie shattered behind us. Gather the salvage with care.",
+        "A steep price in ancient glass. Stabilize the surviving hulls before we move deeper."
+      ],
+      "win_fast": [
+        "Three cycles and the alignment was never even threatened. Clean work; keep our edge sharp.",
+        "Resolved with minimal waste and crisp focus. Let the drives cool and advance."
+      ],
+      "win_last_stand": [
+        "One vessel left shining over the field. Even a single intact mirror can finish the crossing.",
+        "Our escorts are gone, yet the lane is clear. Hold steady until we reach a safe berth."
+      ]
+    },
+    "deathless": {
+      "win_clean": [
+        "Zero chassis lost and minimal repair draw. Efficient progress toward the Hollow Sun.",
+        "Not a single restoration required. The column remains whole and on timetable."
+      ],
+      "win_bloody": [
+        "Heavy hull attrition, though the Archive retained every stamp. Dispatch the repair swarms and recover.",
+        "Costly engagement. Several frames will need rebuilding, yet the corridor is finally ours."
+      ],
+      "win_fast": [
+        "Brief resistance, cleanly extinguished. Little time lost on the road to noon.",
+        "Cleared inside three cycles. Their hurried maneuvers barely scratched our bows."
+      ],
+      "win_last_stand": [
+        "One chassis still operational over silent space. As long as one core stands, the Archive endures.",
+        "Every escort reduced to slag, yet our hull remains standing. Upload the stamps and press onward."
+      ]
+    }
+  },
+  "events": {
+    "voidsworn": {
+      "capture": [
+        "Breach teams took their bridge! Cut their transponder and weld our colors onto that hull!",
+        "Prize secured! Keep a guard squad on their engineering deck and turn their guns around!"
+      ],
+      "ram_kill": [
+        "Right through their midships! Check our forward welds, that's one less gun shooting back!",
+        "Caved their whole flank in! That's what Vesper iron does at full burn!"
+      ],
+      "enemy_risen": [
+        "Wait, that Eclipse wreck's powering back up! Hit it again before its swarms seal the hull!",
+        "Their dead hull just got back on its thrusters! Put fire on it right now!"
+      ],
+      "enemy_cmd_warn": [
+        "Power spike on their flagship! They're lining up a heavy command play, brace your screens!",
+        "Watch their command hull, big energy surge building! Spread out and get ready to soak it!"
+      ],
+      "enemy_flee": [
+        "One of theirs just bolted out of the lane! Keep pushing, they're cracking!",
+        "Look at that coward spooling up to run! Let 'em jump and hammer whoever stayed!"
+      ],
+      "reinf_enemy": [
+        "Fresh enemy jump signatures on the far rim! Don't panic, swing an escort to meet them!",
+        "They called in backup! Tighten up the line and finish what's in front of us fast!"
+      ],
+      "reinf_ally": [
+        "Friendly transponder jumping in on our side! Good timing, patrol, pick a target and open up!",
+        "Garrison ship just dropped out of jump to back us! Put them on our flank!"
+      ],
+      "flare": [
+        "Solar flare just blew every shield on the board! Bare hull fighting this round, make every shot count!",
+        "Deflectors are fried across both fleets! Hammer their unshielded armor before the flare clears!"
+      ],
+      "deadstar": [
+        "Watch that dead star's gravity well! Ride the outer slingshot, and don't drift onto the rim!",
+        "The Hollow Sun's pulling hard on our thrusters. Use the gravity assist and keep clear of the tear zone!"
+      ]
+    },
+    "hegemony": {
+      "capture": [
+        "Hostile vessel seized intact. Transfer prize crew authorization and integrate it into the grid.",
+        "Boarding detachment reports bridge control. Secure their reactor and redirect their batteries."
+      ],
+      "ram_kill": [
+        "Kinetic impact destroyed the hostile hull. Irregular method, though the result is acceptable.",
+        "Hostile ship crushed on impact. Inspect forward bulkheads and return to firing spacing."
+      ],
+      "enemy_risen": [
+        "Disabled Eclipse hull has resumed power output. Redirect fire immediately to terminate its repair cycle.",
+        "Automated restoration confirmed on an enemy wreck. Suppress it before full shielding returns."
+      ],
+      "enemy_cmd_warn": [
+        "Hostile flagship telemetry indicates an imminent command directive. Prepare defensive countermeasures.",
+        "Command surge detected on the enemy leader. Adjust shield facings prior to next cycle."
+      ],
+      "enemy_flee": [
+        "One hostile vessel has broken formation and exited the grid. Maintain pressure on remaining contacts.",
+        "Enemy withdrawal logged. Do not pursue; consolidate fire on active threats."
+      ],
+      "reinf_enemy": [
+        "Additional enemy tonnage detected entering the perimeter. Recalculate target priority immediately.",
+        "Hostile reinforcements have cleared jump arrival. Hold column integrity and engage."
+      ],
+      "reinf_ally": [
+        "Sector garrison detachment has arrived on our flank. Assign them immediate screening duty.",
+        "Allied patrol vessel integrated into tactical net. Proceed with coordinated fire."
+      ],
+      "flare": [
+        "Stellar flare has collapsed all shield emitters field-wide. Focus armor-piercing fire while defenses are offline.",
+        "Shield grids offline across both fleets for this cycle. Exploit exposed enemy hulls immediately."
+      ],
+      "deadstar": [
+        "Gravitational shear detected along the dead star rim. Exploit the outer slingshot vector and avoid inner drift.",
+        "Local stellar mass is distorting maneuver plots. Keep all units clear of the tidal crush ring."
+      ]
+    },
+    "corsair": {
+      "capture": [
+        "She's ours now! Toss their officers in the brig and turn their shiny guns on their friends!",
+        "Clean capture! That's a whole fresh hull without even paying the shipyard!"
+      ],
+      "ram_kill": [
+        "Split that tin can right down the spine! Who else wants a taste of our bow?",
+        "Smashed clean through their hull! Scrap teams'll be picking bolts out of our prow for weeks!"
+      ],
+      "enemy_risen": [
+        "Hey, that dead silver wreck just lit back up! Smash it harder so it stays junk!",
+        "Damn Eclipse ghosts won't stay broken! Dump another volley into that rising hull!"
+      ],
+      "enemy_cmd_warn": [
+        "Their big boss ship's charging something nasty! Angle your heavy plate and brace!",
+        "Sensors screaming off their flagship! Big move coming next round, don't bunch up!"
+      ],
+      "enemy_flee": [
+        "One of 'em's bolting! Aw, there goes a perfectly good pile of salvage!",
+        "Look at that runner burning for home! Break the rest before they all chicken out!"
+      ],
+      "reinf_enemy": [
+        "More targets just jumped in! Good, I was worried we'd run out of plate to strip!",
+        "Fresh enemy hull dropping in on the far side! More guns, more loot!"
+      ],
+      "reinf_ally": [
+        "Look who finally showed up to help! Don't steal the best wrecks, newcomer, just shoot!",
+        "Friendly raider dropping in on our flank! Grab a target and join the brawl!"
+      ],
+      "flare": [
+        "Solar flare stripped every shield on the field! Bare metal against bare metal, just how we like it!",
+        "No shields left for anybody this round! Open up with everything while their armor's naked!"
+      ],
+      "deadstar": [
+        "That dead star's tugging hard! Ride its rim for extra speed, just don't get sucked into the grinder!",
+        "Careful around the Hollow Sun's well, crews! Great slingshot if you don't let it peel your hull!"
+      ]
+    },
+    "chorus": {
+      "capture": [
+        "Spores have taken their control bridge. Turn that warm metal shell against its own flock.",
+        "Hostile vessel hollowed and claimed. Its guns now fire for the swarm."
+      ],
+      "ram_kill": [
+        "Forward bone-plate sheared straight through their reactor. Splintered alloy scatters for the brood.",
+        "Crushed their shell on impact. Taste the venting heat and push into the gap!"
+      ],
+      "enemy_risen": [
+        "Dead silver metal is knitting itself back together! Swarm it again and choke its repair dust!",
+        "That Eclipse husk stands again. Crack its core deeper this time so it stays cold."
+      ],
+      "enemy_cmd_warn": [
+        "Heavy energy gathering in their lead vessel. Spread the brood before the pulse lands.",
+        "Their command core surges toward release. Brace outer chitin for the coming wave."
+      ],
+      "enemy_flee": [
+        "One wounded prey slips into the dark. Close tighter on the shells left behind.",
+        "Fear breaks their line. Let the runner drift and finish the closer hulls."
+      ],
+      "reinf_enemy": [
+        "More warm metal drops out of jump. Fresh reactors arrive right inside our feeding ground.",
+        "Another hostile hull enters the lane. Shift a flanking cluster to meet the new heat."
+      ],
+      "reinf_ally": [
+        "Another friendly bio-hull breaks cover to join the hunt. Close the ring around their flank.",
+        "Reinforcing vessel senses the kill and slides into the lane. Feed together."
+      ],
+      "flare": [
+        "The star flares and peels every energy screen away. Our hides never needed shields; strike their bare hulls!",
+        "Stellar burst blinds their deflectors! Rush straight in while their thin steel sits exposed!"
+      ],
+      "deadstar": [
+        "The dead star pulls at our fins. Ride its outer curve for speed and stay clear of its tearing rim.",
+        "Gravity eddies swirl off Ardent's corpse. Use the slingshot drift without feeding our hulls to the well."
+      ]
+    },
+    "ithar": {
+      "capture": [
+        "Boarders have secured their command core. Turn that vessel's arcs cleanly against its former line.",
+        "An intact capture. Seal their internal corridors and bring their batteries into our firing net."
+      ],
+      "ram_kill": [
+        "Brute impact shattered their frame. Crude work, yet decisive; inspect our bow prism for fractures.",
+        "Their hull split cleanly on contact. Re-establish optical distance before the debris settles."
+      ],
+      "enemy_risen": [
+        "An Eclipse frame is reassembling from its own slag. Focus beam fire before its swarms finish!",
+        "Their dead vessel rises again. Burn straight through its archive core this time."
+      ],
+      "enemy_cmd_warn": [
+        "Command surge building on their flagship. Shift prism angles and prepare to absorb the stroke.",
+        "Their leader is preparing a major maneuver. Widen spacing before the next cycle turns."
+      ],
+      "enemy_flee": [
+        "One hostile vessel has lost its nerve and jumped clear. Keep steady pressure on the rest.",
+        "Their outer screen is fracturing. Let the fleeing hull go and finish the core."
+      ],
+      "reinf_enemy": [
+        "New hostile jump flash on the far rim. Adjust our mirror line before they establish range.",
+        "Enemy reinforcements entering the field. Keep calm spacing and trim them as they close."
+      ],
+      "reinf_ally": [
+        "An allied patrol has joined our alignment. Share targeting telemetry and tighten the net.",
+        "Friendly hull arriving on our flank. Welcome support; let them cover the outer arc."
+      ],
+      "flare": [
+        "A stellar flare has stripped every shield on the board. Rely on evasion and clean range until it passes.",
+        "Deflectors are down across both fleets. Strike first before their gunners exploit our bare glass!"
+      ],
+      "deadstar": [
+        "Ardent's corpse still pulls hard at everything near it. Use the outer slingshot, and respect the rim.",
+        "Mind the gravity well ahead. Ride its momentum without letting the tidal shear crack our hulls."
+      ]
+    },
+    "deathless": {
+      "capture": [
+        "Hostile command deck secured. Archive their tactical keys and fold the vessel into our column.",
+        "Prize captured intact. Redirect its mounts against its former companions."
+      ],
+      "ram_kill": [
+        "Target hull collapsed under impact. Forward sunshade plates held; resume formation.",
+        "Direct ram extinguished their reactor. Repair swarms will polish the bow after the lane clears."
+      ],
+      "enemy_risen": [
+        "A rival frame just completed emergency restoration. Sever its carrier link before it stabilizes.",
+        "That husk restored cleanly. Focus sustained arcs on it before its shields recharge."
+      ],
+      "enemy_cmd_warn": [
+        "Power spike confirmed on the hostile flagship. Angle sunshade plates ahead of their command burst.",
+        "Enemy commander preparing a concentrated strike. Adjust formation spacing before next round."
+      ],
+      "enemy_flee": [
+        "One short-lived crew chose survival over duty and jumped clear. Focus on the remaining hulls.",
+        "Hostile morale slipping; one ship exited the lane. Press steadily forward."
+      ],
+      "reinf_enemy": [
+        "Fresh enemy signature clearing jump on the far side. Recalculate firing arcs without breaking stride.",
+        "Hostile reinforcements arriving. More delay, nothing more; adjust target sequence."
+      ],
+      "reinf_ally": [
+        "Allied patrol vessel exiting jump on our side. Synchronize targeting clocks and advance.",
+        "A garrison frame joins the column. Assign them to screen our outer flank."
+      ],
+      "flare": [
+        "Solar flare has collapsed every energy screen on the grid. Our armor endures without them; press the attack.",
+        "Shield grids offline across both fleets. Punish their bare hulls before the radiation clears."
+      ],
+      "deadstar": [
+        "Ardent's collapsed gravity well bends every burn here. Ride its outer slingshot and stay off the rim.",
+        "Tidal shear ahead. Even our sunshade plates fracture on that inner ring; keep disciplined orbits."
+      ]
+    }
+  },
+  "by_cond": {
+    "voidsworn": {
+      "ion": "Ion season's chewing up the long-range scopes. Keep escorts tight and double-check every firing track.",
+      "dark": "Dark sector ahead, barely any beacon traffic left. Stay close to the flagship and watch the shadows.",
+      "wreck": "Whole sector's choked with old battle scrap. Good cover if you fly smart, bad news if you rush.",
+      "war": "This sector's already burning. Expect extra patrols jumping in mid-fight, friend and foe alike.",
+      "scarce": "Thin supply lines through here. Watch your repair budget and don't throw hulls away cheap."
+    },
+    "hegemony": {
+      "ion": "Elevated ion interference reported across this sector. Anticipate reduced sensor fidelity and shield flicker.",
+      "dark": "Local relay coverage is offline throughout this sector. Maintain tight column spacing and active scans.",
+      "wreck": "Dense salvage fields occupy most transit lanes here. Account for debris cover when plotting firing corridors.",
+      "war": "Active conflict zone confirmed. Expect third-party or garrison reinforcements to enter engagements without warning.",
+      "scarce": "Sector logistics are severely constrained. Conserve hull integrity and minimize repair expenditure."
+    },
+    "corsair": {
+      "ion": "Ion storms scrambling the scopes! Good weather for sneaking up close before anyone sees our prows!",
+      "dark": "Dead relays and pitch-black lanes! My favorite hunting weather, just don't miss the ambush!",
+      "wreck": "Look at all that drifting scrap across this whole sector! Like walking into an open vault!",
+      "war": "Everybody's already shooting each other in this sector! Expect extra hulls dropping right into our brawls!",
+      "scarce": "Slim pickings at the depots here. Means we'll have to take what we need straight off live ships!"
+    },
+    "chorus": {
+      "ion": "Ion static clouds their delicate scopes while our thermal nerves stay clear. Hunt close through the haze.",
+      "dark": "Cold relays leave these lanes blind and quiet. Drift silent until hot engines light the dark.",
+      "wreck": "Broken hulls litter every transit path here. Hide our spores inside the metal until prey draws close.",
+      "war": "Many fleets bleed across this sector. Extra vessels will jump into the noise; more metal for the brood.",
+      "scarce": "Few depots survive in these dry lanes. Every battle must feed our regrowth directly."
+    },
+    "ithar": {
+      "ion": "Heavy ion drift across the sector. Calibrate every prism for atmospheric static before we engage.",
+      "dark": "Few beacons still burn along these lanes. Keep our inlays dimmed until we choose the firing angle.",
+      "wreck": "Old war debris crowds these orbits. Read the reflections carefully before committing our ships.",
+      "war": "Contested space ahead. Expect reinforcements to drop into ongoing clashes with little warning.",
+      "scarce": "Sparse depots along this crossing. Preserve every hull; replacements will not come easily here."
+    },
+    "deathless": {
+      "ion": "Ion storms sweep this corridor. Our sunshade plates ignore the static; keep targeting clocks synchronized.",
+      "dark": "Unlit sector ahead, quiet as the long centuries. Proceed on inertial plots and hold formation.",
+      "wreck": "Shattered hulks drift across every lane here. Remnants of earlier wars; steer clear and use their shadow.",
+      "war": "Open fighting fills this sector. Anticipate reinforcement jumps during engagements and hold reserve power.",
+      "scarce": "Depleted logistics throughout this region. Avoid needless frame loss while repair berths remain thin."
+    }
+  }
+}

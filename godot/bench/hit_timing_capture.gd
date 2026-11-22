@@ -32,14 +32,24 @@ func _init() -> void:
 	_run.call_deferred()
 
 
+func _norm(p: String) -> String:
+	return p.replace("\\", "/").to_lower().trim_suffix("/")
+
+
 func _run() -> void:
-	# Artoo (PR 1220): the battle writes its options (and the look writes its cfg) to user://. Refuse to start unless the
-	# launcher pointed user:// at a disposable profile (VS_CAPTURE_PROFILE, the folder APPDATA was set to), so a capture
-	# never touches the player's own settings.
-	var prof := OS.get_environment("VS_CAPTURE_PROFILE").replace("\\", "/").to_lower().trim_suffix("/")
-	var udir := ProjectSettings.globalize_path("user://").replace("\\", "/").to_lower()
-	if prof == "" or not udir.begins_with(prof + "/"):
-		printerr("HIT_CAPTURE_REFUSED user:// is %s, not inside VS_CAPTURE_PROFILE (%s): run it from shots1211.bat" % [udir, prof])
+	# Artoo (PR 1220): the battle writes its options (and the look writes its cfg) to user://. Refuse to start unless
+	# user:// is a disposable profile: the launcher's own (VS_CAPTURE_PROFILE), or the one run_timeout gives every Godot
+	# (PR 1249: <temp>/voidsworn-run-<id>/godot-profile-<id>, with its ownership token beside it). Never the player's own:
+	# the launcher names the real APPDATA in VS_REAL_APPDATA, and a capture without it refuses.
+	var udir := _norm(ProjectSettings.globalize_path("user://"))
+	var real := _norm(OS.get_environment("VS_REAL_APPDATA"))
+	var prof := _norm(OS.get_environment("VS_CAPTURE_PROFILE"))
+	var app := _norm(OS.get_environment("APPDATA"))
+	var throwaway := prof != "" and udir.begins_with(prof + "/")
+	if preload("res://tools/throwaway_profile.gd").in_watchdog_profile(ProjectSettings.globalize_path("user://"), OS.get_environment("APPDATA")):
+		throwaway = true
+	if real == "" or udir.begins_with(real + "/") or not throwaway:
+		printerr("HIT_CAPTURE_REFUSED user:// is %s: not a throwaway profile (VS_CAPTURE_PROFILE %s, APPDATA %s, real %s); run it from shots1211.bat" % [udir, prof, app, real])
 		quit(2)
 		return
 	print("HIT_CAPTURE profile ", udir)
@@ -56,6 +66,11 @@ func _run() -> void:
 		var wh := str(args["size"]).split("x")
 		want = Vector2i(int(wh[0]), int(wh[1]))
 		var screen := DisplayServer.screen_get_size(get_root().current_screen)
+		if want.x > screen.x or want.y > screen.y:
+			# the screen cannot show it (run 2: the display was at 2560x1440 for one case): skip, never fake a size
+			print("HIT_CAPTURE_SKIPPED size requested %dx%d, screen %dx%d" % [want.x, want.y, screen.x, screen.y])
+			quit(3)
+			return
 		# a window as big as the screen is clamped by the taskbar (3840x2066 on run 1): use fullscreen for that size
 		if want.x >= screen.x and want.y >= screen.y:
 			get_root().mode = Window.MODE_EXCLUSIVE_FULLSCREEN
@@ -133,7 +148,7 @@ func _run() -> void:
 		if img == null or img.is_empty():
 			continue   # (no picture this frame: a due still waits for the next drawn frame, it is never skipped)
 		if args.has("frames"):
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [tag, h, frame])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [tag, h, frame]), preload("res://tools/picture_provenance.gd").capture_stage()) == OK:
 				frames_ok += 1
 			else:
 				failed += 1
@@ -143,7 +158,7 @@ func _run() -> void:
 			quit(1)
 			return
 		if due:
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))]), preload("res://tools/picture_provenance.gd").capture_stage()) == OK:
 				stills += 1
 			else:
 				failed += 1

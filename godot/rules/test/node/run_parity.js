@@ -6,6 +6,10 @@ const T = path.resolve(__dirname, '..'), P = path.resolve(T, '../..');
 const S = JSON.parse(fs.readFileSync(path.join(T, 'scenarios.json'), 'utf8'));
 const godot = process.env.GODOT || 'godot', windows = process.platform === 'win32';
 let root, failures = 0;
+// Issue 1654 (R405, Ryan Nov 22 2026): the browser rules twin is retired; Godot is the only rules source. By default
+// this runs Godot alone and the saved Godot results in ../saved are the reference. RULES_TWIN=browser runs the old
+// side-by-side comparison against the frozen root JS files, for history only (it fails once Godot moves on).
+const TWIN = process.env.RULES_TWIN === 'browser';
 function say(line) {
   console.log(line);
   fs.appendFileSync(path.join(root, 'parity_log.txt'), line + '\n');
@@ -137,14 +141,14 @@ async function verifyBattles(manifest) {
       // Diagnostics never repair the batch result or overwrite its records.
       const retry = path.join(retryDir, name + '.jsonl'), retryLog = path.join(retryDir, name + '.log');
       const r = await gd(['scenario', name, retry, '-1', w.file], retryLog, isolated(path.join(retryDir, 'user_' + name)), manifest.retrySeconds);
-      const alone = cleanExit(r) && present(a) && await compare('scenario', a, retry, cmp);
+      const alone = cleanExit(r) && (TWIN ? present(a) && await compare('scenario', a, retry, cmp) : present(retry));
       checked(`battle ${name}`, false, `never ran in its batch; ${alone ? 'passes alone' : 'fails alone too'}, exit ${result(r)}`);
       if (!alone) say(read(cmp).trim() || read(retryLog).trim());
       continue;
     }
-    const same = await compare('scenario', a, b, cmp);
-    const ok = same && code[1] === '0' && cleanExit(w.browser[name]) && !/SCRIPT ERROR|NOT PORTED:/.test(section);
-    checked(`battle ${name}`, ok, ok ? read(cmp).split('\n')[0] : `batch exit ${code[1]}, browser exit ${result(w.browser[name])}`);
+    const same = TWIN ? await compare('scenario', a, b, cmp) : true;
+    const ok = same && code[1] === '0' && (!TWIN || cleanExit(w.browser[name])) && !/SCRIPT ERROR|NOT PORTED:/.test(section);
+    checked(`battle ${name}`, ok, ok ? (TWIN ? read(cmp).split('\n')[0] : 'Godot ran it cleanly') : `batch exit ${code[1]}${TWIN ? ', browser exit ' + result(w.browser[name]) : ''}`);
     if (!ok) {
       say(read(cmp).trim());
       const errors = section.split('\n').filter(l => /SCRIPT ERROR|NOT PORTED:/.test(l));
@@ -167,23 +171,36 @@ async function run(names = process.argv.slice(2)) {
 async function runChecks(names, count, seconds, retrySeconds) {
   for (const dir of ['golden', 'out', 'workers']) fs.mkdirSync(path.join(root, dir));
   const env = isolated(path.join(root, 'user')), started = Date.now();
-  say(`Voidsworn rules parity: ${names.length} battles, ${Math.min(count, names.length)} workers`);
+  say(`Voidsworn rules ${TWIN ? 'parity against the frozen browser files' : 'check (Godot only, against the saved results)'}: ${names.length} battles, ${Math.min(count, names.length)} workers`);
   say(`Started (UTC): ${new Date(started).toISOString()}; Node ${process.version}; Godot ${godot}`);
   say(`Records and log: ${root}`);
-  say('[1/5] Exporting the game data tables for Godot...');
-  checked('data export', cleanExit(await js('export_data.js', [path.join(P, 'rules/data/tables.json')], path.join(root, 'export.log'))));
+  if (TWIN) {
+    // History mode never writes the live table (Artoo on PR 1669): Godot is the source now. The frozen browser export goes to
+    // a scratch file; if it no longer matches the live table, the old comparison means nothing and the run stops.
+    say('[1/5] Exporting the frozen browser tables to a scratch file and comparing with the live Godot table...');
+    const live = path.join(P, 'rules/data/tables.json'), scratch = path.join(root, 'browser_tables.json');
+    const before = fs.readFileSync(live);
+    const ex = await js('export_data.js', [scratch], path.join(root, 'export.log'));
+    const same = cleanExit(ex) && present(scratch) && fs.readFileSync(scratch).equals(before);
+    if (!fs.readFileSync(live).equals(before)) throw new Error('history mode changed godot/rules/data/tables.json; stopped');
+    checked('frozen browser tables match the live Godot table', same);
+    if (!same) throw new Error('the Godot table has moved on from the frozen browser files, so RULES_TWIN=browser has nothing to compare; stopped');
+  } else say('[1/5] Tables: godot/rules/data/tables.json is the source (no export from the browser files)');
   say('[2/5] Random numbers: first 10,000 draws from 3 seeds...');
   for (const seed of ['1001', '7', '4242424242']) {
     const a = path.join(root, 'golden', `prng_${seed}.txt`), b = path.join(root, 'out', `prng_${seed}.txt`), log = b + '.compare.txt';
-    const n = await js('golden.js', ['prng', seed, '10000', a], a + '.log');
     const g = await gd(['prng', seed, '10000', b], b + '.log', env);
+    if (!TWIN) { checked(`seed ${seed}`, cleanExit(g) && present(b)); continue; }
+    const n = await js('golden.js', ['prng', seed, '10000', a], a + '.log');
     const same = await compare('same', a, b, log);
     checked(`seed ${seed}`, cleanExit(n) && cleanExit(g) && same);
     if (!same) say(read(log).trim());
   }
   say('[3/5] Math functions on all 316,090 inputs...');
   const math = path.join(root, 'golden/math.txt'), mathLog = path.join(root, 'out/math.txt');
-  const mn = await js('golden.js', ['math', math], math + '.log'), mg = await gd(['math', math], mathLog, env);
+  // Godot only: the reviewed math inputs and expected values come from the saved results (frozen at retirement).
+  if (!TWIN) { const R = require('../saved/records'); fs.writeFileSync(math, R.unpack(R.HOME, R.manifest().files['math.txt'])); }
+  const mn = TWIN ? await js('golden.js', ['math', math], math + '.log') : { code: 0 }, mg = await gd(['math', math], mathLog, env);
   checked('math', cleanExit(mn) && cleanExit(mg), read(mathLog).split('\n').find(l => l.startsWith('math ')) || 'see out/math.txt');
   say('[4/5] Seeded battles, every action compared (state hash, PRNG state)...');
   const manifest = { names, retrySeconds, workers: [] };
@@ -195,6 +212,7 @@ async function runChecks(names, count, seconds, retrySeconds) {
   }
   await waitForAll(manifest.workers.map(async w => {
     const browser = async () => {
+      if (!TWIN) return;
       for (const name of w.names) w.browser[name] = await js('golden.js', ['scenario', name, path.join(root, 'golden', name + '.jsonl')], path.join(root, 'workers', `browser_${name}.log`));
     };
     const env = isolated(path.join(root, 'workers', `user${w.id}`));
@@ -206,7 +224,9 @@ async function runChecks(names, count, seconds, retrySeconds) {
   say('[4b] Threat overlay, rounds 1 to 3...');
   for (const name of ['s4', 's19', 's23']) {
     const a = path.join(root, 'golden', `threat_${name}.json`), b = path.join(root, 'out', `threat_${name}.json`);
-    const n = await js('golden.js', ['threat', name, a], a + '.log'), g = await gd(['threat', name, b], b + '.log', env);
+    const g = await gd(['threat', name, b], b + '.log', env);
+    if (!TWIN) { checked(`threat map ${name}`, cleanExit(g) && present(b)); continue; }
+    const n = await js('golden.js', ['threat', name, a], a + '.log');
     checked(`threat map ${name}`, cleanExit(n) && cleanExit(g) && present(a) && present(b) && fs.readFileSync(a).equals(fs.readFileSync(b)));
   }
   say('[4c] Threads and the hard stop (s4, s23)...');
@@ -215,7 +235,7 @@ async function runChecks(names, count, seconds, retrySeconds) {
   checked('threads', cleanExit(thread));
   say(read(threadLog).split('\n').filter(l => /^(thread test|hard stop|  halted)/.test(l)).join('\n'));
   say('[5/5] Enemy think time (report only; game bar: worst under about 0.5 s)...');
-  for (const name of names.filter(n => S[n].timing)) {
+  for (const name of TWIN ? names.filter(n => S[n].timing) : []) {
     const a = path.join(root, 'golden', name + '.jsonl.timing.json'), b = path.join(root, 'out', name + '.jsonl.timing.json');
     if (!present(a) || !present(b)) { checked(`timing records ${name}`, false, 'missing file'); continue; }
     const log = path.join(root, 'out', 'timing_' + name + '.txt'), r = await js('timing.js', [name, a, b], log);
@@ -231,7 +251,7 @@ async function runChecks(names, count, seconds, retrySeconds) {
   say(`Whole rules parity step: ${elapsed.toFixed(3)} s`);
   fs.writeFileSync(path.join(root, 'summary.json'), JSON.stringify({ battles: names.length, workers: manifest.workers.length, failures, parity_failures: parityFailures, saved_failures: saved.failures, saved_seconds: saved.seconds, started_at: new Date(started).toISOString(), completed_at: new Date().toISOString(), seconds: elapsed }, null, 2));
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nWhole rules parity and saved-results step: ${elapsed.toFixed(3)} s (saved comparison: ${saved.seconds.toFixed(3)} s).\n`);
-  say(failures ? `FAIL: ${failures} check(s) differ.` : "PASS: the Godot port matches the game's rules exactly.");
+  say(failures ? `FAIL: ${failures} check(s) differ.` : TWIN ? "PASS: the Godot port matches the frozen browser rules exactly." : 'PASS: every Godot battle matches the reviewed saved results.');
   return failures ? 1 : 0;
 }
 // Recheck saved batch evidence using the same comparison and missing-file diagnostics.

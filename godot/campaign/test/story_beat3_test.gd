@@ -34,7 +34,7 @@ func shot(name_: String) -> void:
 	await process_frame
 	await process_frame
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), screenshot_dir.path_join(name_ + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), screenshot_dir.path_join(name_ + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 
 func settle() -> void:
 	for i in range(4): await process_frame

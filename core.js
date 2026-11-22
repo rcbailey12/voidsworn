@@ -1,4 +1,4 @@
-// ======================= CORE =======================
+// ======================= CORE ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 // v41: seeded rules randomness (mulberry32). Each battle reseeds from B.seed, so a seed plus the same moves replays a fight;
 // the simulator takes SEED from the environment so whole runs repeat exactly. Cosmetic effects keep Math.random.
 let RNG_S=(Math.random()*4294967296)>>>0;
@@ -97,8 +97,9 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
   if(!Number.isFinite(r.credits)){ rep.push('credits'); r.credits=0; } // B1 (B-5): a save whose credits went NaN from selling a captured flagship
+  if(r.fac==='chorus'&&!Number.isFinite(r.bio)){ r.bio=r.credits; r.credits=0; } // issue 1178: a Chorus run saved before biomass moves its purse to biomass, as a new run starts
   if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
-    if(!['prize','salvage','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
+    if(!['prize','salvage','victory','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
     R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];
     for(const w of R.wrecks){ if(w.yield.mod!=null&&!has(MODULES,w.yield.mod)) w.yield.mod=null; if(!has(HULLS,w.tpl)) w.yield.tow=false; }
     if(R.boonOffer!=null&&(!Array.isArray(R.boonOffer)||R.boonOffer.some(o=>!o||!has(BOONS,o.id)))) R.boonOffer=null;
@@ -229,8 +230,33 @@ function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eaten
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
 function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
-function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
+// issue 1178 (R335, the 1085 sim pick): the Chorus pay for hull work (repairs, new hulls, Marks) in biomass, earned flat per win
+// plus BIO_KILL per kill; refits, class refits, rerolls and the late market take biomass first, then credits (shopKey, issue 1484);
+// events take credits. Every other faction: credits.
+function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
+function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
+function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
+function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
+// issue 1484 (R382): the Chorus pay for refits, class refit tracks, protocol rerolls and the late market in biomass when it covers the
+// price, otherwise in credits (credits still reach a Chorus run from repair stipends, ransoms, scrap and declined protocols). Every
+// other fleet pays these in credits. One purse per purchase, never split.
+function shopKey(c){ return RUN&&RUN.fac==='chorus'&&(RUN.bio||0)>=c?'bio':'credits'; }
+function shopCan(c){ return !!RUN&&(RUN[shopKey(c)]||0)>=c; }
+function shopPay(c){ const k=shopKey(c); RUN[k]=(RUN[k]||0)-c; }
+function shopWord(c){ return RUN&&RUN.fac==='chorus'?(shopKey(c)==='bio'||(RUN.credits||0)<c?' biomass':' credits'):''; }
+const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
+const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salvage']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
+// issue 1290: skip = relics the late market never offers: +25% battle credits, +30% XP and the Scrap rig (15 credits and 8% hull a
+// win, about 40 a battle at the measured 707 fleet hull) cannot earn back 120 in the 2 or 3 fights left after a Sector 3 yard
+// Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 100 a battle (issue 1290: about 25% of
+// a hull's price, up from 15 to 18%; still under the 35% decommission value, so losing a ship never profits)
+const CULLET={Frigate:25,Destroyer:45,Cruiser:70,Carrier:85,Battleship:100,cap:100};
+function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.val)?H.val:H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
+// issue 1290: what decommissioning pays. A ship regrown from an Eclipse core pays nothing until it has fought a battle (regrow is 20%
+// of value, scrap 35%, so regrow-then-sell was free money). Paid in the hull purse: biomass for the Chorus, credits for the rest.
+// issue 1384: after it has fought, a regrown ship pays at most what its regrow cost, so regrow, fight once, sell never profits.
+function sellValue(s){ return s&&s.regrown?0:s&&s.corePaid!=null?Math.min(s.corePaid,prizeScrap(s.tpl)):prizeScrap(s.tpl); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
 function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
 function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;
@@ -260,9 +286,19 @@ function derive(ship){
 const CLASS_TRACK_MAX=3;
 function classTrack(cls){ return (typeof RUN!=='undefined'&&RUN&&RUN.classTrack&&RUN.classTrack[cls])||0; }
 function classTrackCost(cls){ return Math.round((60+50*classTrack(cls))*priceMult()); }
-function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(RUN.credits<c) return false; RUN.credits-=c; changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
-function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
-function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
+function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(!shopCan(c)) return false; shopPay(c); changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
+// issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]), and a later
+// gain on the same hull pays it back first, so taking a hull refit off and on again never adds hull (twin: campaign.gd changeShip)
+// The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that moves
+// the hull (a repair, a battle) ends it (Artoo on PR 1602).
+// One hull adjustment for every max-hull change, one ship (changeShip) or the fleet (changeFleet: class refits, the Aspect).
+function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); adjustHull(ship,before,derive(ship).maxHp); }
+function adjustHull(ship, before, after){ const ow=ship.hpOwed;
+  let owed=(Array.isArray(ow)&&ship.hp===ow[1])?ow[0]:0, hp=ship.hp+(after-before);
+  if(after>before&&owed>0){ const pay=Math.min(owed,after-before); hp-=pay; owed-=pay; }
+  if(hp<1){ owed+=1-hp; hp=1; } hp=clamp(hp,1,after);
+  if(owed>0) ship.hpOwed=[owed,hp]; else delete ship.hpOwed; ship.hp=hp; }
+function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>adjustHull(s,b[i],derive(s).maxHp)); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
 function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
 function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }
@@ -479,6 +515,7 @@ function newRun(admiralId,fac,opt){
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null, eatenCore:null, eatCoreSeen:false};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+  if(fac==='chorus'){ RUN.bio=RUN.credits; RUN.credits=0; } // issue 1178: the Chorus start with their purse as biomass
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);

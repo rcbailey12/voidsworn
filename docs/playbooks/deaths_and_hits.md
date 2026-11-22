@@ -105,15 +105,27 @@ The cruiser's death, longer and heavier:
 - It breaks into three pieces along its authored lines: two halves and one more (a spire line, a module, a shade band: the
   faction's sheet says which).
 - Ten secondaries. Coals cool for about 14 s. The pieces drift apart slowly and stay.
-- Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
-  second, so the flash feels like it took the light with it. Off under reduce flashing.
+- No scene dim for a capital in general: the dim straight after the core flash is Eclipse's own (R367, see "How each
+  faction dies"); the general option was removed (R389, issue 1509). Off under reduce flashing.
 
-Prototype, not installed (issue 1077, off by default until Ryan picks it): `rendering/effects/death_story="strain"` (or
-`VS_DEATH_STORY=strain`) adds strain to every cruiser and capital death before the split above, in the shared death code
+Installed (issue 1077, on by default since Ryan's yes on pass 6, Nov 20 2026; `rendering/effects/death_story="off"` or
+`VS_DEATH_STORY=off` turns it off for comparisons) adds strain to every cruiser and capital death before the split above, in the shared death code
 (fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
-each line bulges and ripples, hairline cracks light, and the hull groans between the chain blasts (sparks, a breath of
-gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
-and a warm light sits in each gap. Chorus ruptures and burnt-out hulks are unchanged. Check: fx/test/death_story_check.gd.
+each line bulges and ripples, hairline cracks light along a ragged line that steps across the plates (never a straight
+cut, Ryan on pass 4B), and the hull groans between the chain blasts (sparks, a small plate, a jolt). Smoke is light: one
+small puff per blast, no smoke body or gas veil at the core and no puff where the pieces part (Ryan on pass 4B: "way too
+much smoke"; pass 5: no haze at the split). A strained death breaks on one crack: a capital splits in two like a cruiser,
+and on an authored hull only the crosswise joint nearest the core breaks, with no lengthwise joints (fx_death.gd
+`fracture_plan`, Ryan on pass 5; a lengthwise joint's plane would cut its now longer parent where no joint was built, S8 and S9). After the split the pieces part by about a fifth of the length and settle, fragments slow,
+and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_interior`), since the grouped wreck keeps them
+in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths and
+approved the pass 6 clip (Nov 20 2026, "Yep perfect"). Check: fx/test/death_story_check.gd (quality low and high).
+
+Many deaths at once (issue 1237, Neon's destruction audit F7): thrown plates fly two seconds as before, then slow and come
+to rest by five and a half, where they stay until the plate ring reuses them; wreck sections keep drifting and turning,
+but on the effect clock after four seconds instead of in Jolt. Death pictures are reused from a pool, the power-down
+budget is one per frame for every dying ship, and only the two strongest event lights light the fog. Done when three
+capitals at once keep p99 inside the 12.5 ms gate on the PC; check: fx/test/multi_death_check.gd (headless counts).
 
 ### Frigate, escort, destroyer
 
@@ -122,7 +134,9 @@ Fast, because they die often and must not clutter the board:
 - 0.0 to 0.72: the hull spins, trailing a curling ribbon of fire, then gas.
 - 0.72: the pop. Frigate: 216 px flash for 0.18 s, 180 px body for about a second. A destroyer sits between frigate and
   cruiser: about 255 px (the same 1.4 step taken half way).
-- Two to four chunks and their streamers fly; one surviving chunk keeps coals for about six seconds.
+- Two to four chunks part with their streamers; one surviving chunk keeps coals for about six seconds. With the strained
+  death on (the default), the chunks part as calmly as a big hull's: slow, turning gently, at rest about half a length
+  apart (Ryan, Nov 21 2026, in game: they "spin off super far"). Check: fx/test/small_wreck_calm_check.gd.
 
 ### Small craft (wings)
 
@@ -135,7 +149,7 @@ A single-frame spark and a puff, under 40 px, no wreck. Twenty of them dying mus
 | Lance (cut) | The tear is the cut: a straight white line along the beam's path. | Two clean halves; the cut faces glow longest. |
 | Torpedo or ram (big) | Chain blasts walk away from the impact. | Shrapnel leaves in a cone away from the impact. |
 | Gauss (flay) | Many small punctures, each a thin gas jet. | More, smaller pieces; no single big half. |
-| Acid or spines (melt) | No tear: the hull sags and glows a sick yellow-green. | Few pieces; a soft bloom, pale core, no hard white. |
+| Acid or spines (melt) | No tear and no strain crack: the plating glows a sick yellow-green only where the acid hit (each hit a ragged patch that spreads until the hull parts), never the whole hull. Any metal faction dies this way when acid kills it; its own faction break is not drawn. | Few pieces; the faction's own cook-off flashes as it breaks off (core flash, faction pop, secondaries, in the faction's colours, never green; Ryan Nov 22: "like the engines and weapons are cooking off"), but never the soft green bloom (it read as a cloud); the torn faces and wound plating stay acid green, never orange; no fire, no smoke, no vapour (R398). |
 | Burn-out (dark) | Lights and engines die; one vent of gas. | No break: a whole cold hulk drifts. No fire at all. |
 | The dead star (tidal) | The hull stretches toward the well. | Pieces stream toward the star in a curve. |
 
@@ -156,13 +170,70 @@ body and the wreck.
   with a rainbow fringe, the only coloured flash in the game. Whole panes and rings shear off and tumble, glinting. No fire
   and no smoke: glittering dust. The light inside the shards fades slowly.
 - **Eclipse.** It peels. Shade plates lift away band by band, a beat apart, during the tell. The trapped core gutters
-  green-white, the scene around it dims for an instant, then one small hard flash and it is out. No fire. The plates drift.
+  violet-white inside a white-gold rim (the approved Eclipse palette, faction_looks.json; an older line here said green-white;
+  the Doom gun's core was the last green and is deep violet since Nov 21, issue 1503), the scene around it dims for an instant, then one small hard flash and it is
+  out. No fire. The plates drift.
   (In sector 3 the Nemesis's plates drift back together: the comeback.)
 - **The Chorus.** It bursts. Sacs rupture in jets of yellow-green; the body tears and trails wet strands; bone shows inside.
   A pale bloom, never a hard white. The pieces twitch for about a second. The glow in the sacs fades last.
+  Timing today (issue 1238): a Chorus hull holds for its class's tell before it ruptures (frigate and destroyer 0.35 s,
+  cruiser 1.38 s, capital and Bio-Titan 2.0 s, the same as the shared rows), bleeding spores faster as it nears the burst,
+  with no metal beats (no vent, chain blasts, fireball or secondaries). The kill slow-motion beat lands 0.1 s after the
+  burst. Check: godot/audio/test/faction_death_check.gd.
 
-Faction deaths need the new hulls' authored break lines, so they are built on the two fleets of the finished battle first.
-Until a faction's hulls are rebuilt it uses the shared cruiser, capital and frigate deaths above.
+Faction deaths (R367, Ryan, Nov 20 2026, "Full faction deaths"; issue 1399): every metal faction gets its own colours and break
+as written above, replacing the shared orange fire; Glasswrights and Eclipse first, then Sunward Crusade, Hegemony and the
+Hullbreakers. A faction's death lives in faction_looks.json ("death": style, fire, fire_mid, prism, smoke, spark, light,
+rim), the same file its ships, engines, shields and damage read, and applies to every hull of that faction, old and new,
+player and enemy, on top of the shared timing and the one-crack strained death above. A faction without a "death" entry
+keeps the shared orange fire (since round 2 every metal faction has one; the Chorus keeps its own organic death). Built (issue 1399, round 1):
+- Glasswrights (shatter): the death's fire pictures keep their baked shape and take white light with a rainbow edge; no
+  smoke is drawn; the fracture plan gives more, smaller fragments (bite 7 or 9, four chips per break); glittering dust
+  drifts from the core; torn faces, plate rims and scorch glow its stored light.
+- Eclipse (peel): the fire takes its violet-white, sparks a pale violet (the white-gold stays on its engines); shade plates lift off the hull band by band from
+  the stern during the tell (two, four or six bands by class); the scene dims for an instant at its core flash; torn faces
+  glow violet; smoke is kept at a sixth.
+- Every styled faction, small hulls (frigates and destroyers): the pop gets its own short flash in the faction's light
+  colour with a white star, and a ring of sparks (fx_death.gd _fac_pop; it books the flash budget itself and turns into a
+  soft lift with reduce flashing or a full budget). Ryan's look 2 pick for round 1, "more punch and more violet".
+  The smoke a styled death keeps loses the baked fire's warm cast (grey soot, not rose).
+Built (issue 1399, round 2), at the same punch level:
+- Sunward Crusade (drumbeat): ember-gold fire, smoke kept at a tenth (the split puff cut, Ryan round 2 clips); during the tell its magazines go off as an even
+  row of ember pops down the broadside facing the camera, nose to stern, at most a quarter second apart (three, five or
+  seven by class); ember rims.
+- Hegemony Navy (arc): blue-white fire, smoke kept at a quarter; as the pieces part, blue-white lightning (the shared
+  lightning ribbon) jumps the gap for a third of a second, each bolt from a point on one piece's torn face to a point on the other's (four,
+  ten or fourteen by class); steel-blue rims.
+- Ashfall Hullbreakers (patch): dirty red fire, smoke kept at about half (soot is theirs); during the tell patch plates tear
+  loose from scattered spots and spin off (two, four or six by class); red rims.
+Built (issue 1586, fx/fx_death_beats.gd; beats from the shared pools, no new nodes or materials): Sunward ember ticks on
+the hot seams for about 5 s after the split; every Navy light on through the tell, then all dark on one frame just before
+the pieces part; Hullbreaker pieces tug on two glowing cables for 0.45 s, the cables snap in sparks, scrap scatters and two
+late cook-offs go off; Glasswright white fracture lines race over the hull in the tell and soft prismatic shafts leave the
+split; Eclipse's core snaps inward (the scene dim stays Eclipse only); Chorus wrecks twitch two or three times.
+Not built yet: whole Glasswright rings shearing off, the Nemesis's plates drifting back together (with #1463), the Sunward
+spire snapping off as one piece and Navy drones going dark (both need authored parts), and a 4 to 6 piece gauss shred (it
+would undo Ryan's one-crack strained death; the flay instead throws extra shreds). Check: godot/fx/test/faction_death_style_check.gd.
+
+What killed it, and small hulls (issue 1586, Check: godot/fx/test/death_variety_1586_check.gd): a gauss or doom kill
+(flay) punches gas jets out along the shot line with spall at the entry and exit and throws extra shreds; a ram kill throws
+metal crush sparks and spins its pieces hard off centre (the battle picks "ram" from the ram event, so the rules keep "big",
+R312); a boarding scuttle leaves a dark hulk venting through its airlocks ("board", picked the same way from "dark"); the
+Hollow Sun's pull flares the sunward edge white-gold and draws spall toward the star; a burnout's corridor lights stutter
+out over about 2 s, an emergency beacon blinks and the hulk drifts with a slow pitch and roll. A Chorus hull keeps its
+rupture and adds only the ram or tidal cue; a scuttled Chorus hull is a dead hulk like any other. The battle hands "ram" and
+"board" to a death only when the killer is one of the two ships of that ram or boarding; an action by another ship that
+the kill itself sets off (Rolling Fire, a Brood Tithe wing) keeps the mark, a new turn or a later action by either ship
+ends it. Frigates and destroyers that break (not a burnout or scuttle hulk, not Chorus, not an acid melt) die one of four
+ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
+burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s smoky corkscrew and two
+faction flecks. A big breaking wreck (not Chorus, not a hulk, not an acid melt) gives 2 or 3 quiet ember or vent pops in
+the 10 s after it breaks. Glasswright hulls never smoke: their vents, flay jets and afterlife wisps are soft light and
+glass glints. The extra shreds are cosmetic shards from the shared pool (no physics bodies), the same at every quality.
+Limits (Neon's audit on PR 1666): an acid melt adds none of these beats (R398: no faction tell, archetype, smoke or vapour);
+the Navy blackout drives the lights only, so the plating strain keeps its clock; the rolling burnout ends in a small spark
+burst, never the core fireball or a smoke body; under Reduced Flashing the corridor lights hold and fade once and the beacon
+pulses slowly; a torch death keeps its drive trail through the flare and its pieces keep the spiral's speed (capped).
 
 ## The hits, upgraded
 
@@ -182,6 +253,21 @@ Three upgrades run through all of them:
 1. **Wounds.** Every hull hit leaves a mark that glows and cools, then stays as a scar. A ship that has been in a fight
    looks like it. (Built: a hot spot that cools over 1.5 s for energy, 2.5 s for shells, 3 s along a lance's line and 4 s
    for a torpedo, over the hull mark of R43; a ship keeps 24 marks, 8 a section, where it kept 12 and 4.)
+   Issue 1235 (Neon's damage audit): a first hit on a healthy section leaves at least 70% of the mark it leaves on a
+   broken one (fx_breach MARK_FLOOR; it was 12%) but a crater short of stage 4 stays under 0.6 of the stage 4 hole
+   (CRATER_MAX_L, so first hit and worst state never read the same size), the section's drawn marks are the heavy ones and then the newest (never
+   the oldest), bomber runs leave a crater, turret meshes take no baked scars, only meshes a wound reaches lose their
+   automatic LOD, the stage 4 hole is 0.048 of the ship's length (was 0.032) and moves off a turret's foot. godot/fx/test/first_hit_scars_check.gd.
+   Issue 1235 run 2: below 80% hull HP the whole ship wears (fx_ship hull_wear, 1 at 20%): the damage shader's
+   fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
+   (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
+   degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
+   Faction hit damage (R402, Ryan Nov 22): wounds, scars and wear read as each faction's own material, for all six
+   factions in one build, on every hull of the faction, player and enemy. Glasswrights take cracks in the same glass,
+   behaving like glass (straight-running fractures that catch light, never bent or warped metal), plus a few missing
+   panes with white light inside; never a black hole. Soot and the wear darkening above stay on metal ships only and
+   are dropped for glass (Glasswrights) and flesh (the Chorus). A painted concept sheet of all six goes to Ryan before
+   the build; the build issue opens after he approves it.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)
@@ -209,6 +295,11 @@ the break nearest the beam lies on the beam's point, square-ish to the beam (wit
 no teeth, and a smaller bite. On a two-piece hull the cut is kept between 0.3 and 0.7 of the length so neither half is a
 sliver; with no recent hit on record it falls 0.12 of the length off the middle (an even split reads as sliced). Small
 hulls and the Chorus keep their own cuts. Lifting either limit is a look call, not a rule.
+On an authored hull the break stays on its joints (RULEBOOK 5.17): the beam picks the authored joint nearest it (with the
+strained death's one crack, that joint instead of the one nearest the core), the tear there follows the seam's own plane and
+path with the lance's fine teeth, and the pieces keep the joints' sizes (issue 1385). Only a big metal hull throws the bite
+and the chips; an authored small hull or Chorus hull carves neither, so its wreck has no hole where they were (issue 1385).
+Check: fx/test/death_authored_check.gd.
 
 Sizes follow the gun as well as the target: a hit's flash is its row's size times the firing hull's band (small 0.85,
 cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Issue 538 pushes the thrown
@@ -247,11 +338,47 @@ said a macro hit); Chorus acid is a torpedo row with the melt
 look (built in issue 461 as its own wet splash with bile drops and an acid fume that hangs, at the bio size; the
 Glasswright prism shard gun is the energy row with a rainbow glint).
 
+Boarding (issue 1547, look B; fx.gd `board` and its `BOARD` table): the breach goes on the target's side facing the attacker (from dead
+ahead or astern, the side the camera sees), with a hatch mark four times the first build's width, a pop ring and burst with pixel
+floors that hold at camera 170, a vent, an amber inside light, and three amber boarding lines in the shared line style (role
+`board`) from the attacker's hatch, fanned along the target's flank, held for the battle's 1.6 s boarding pause (paced with
+battle speed) so the player sees it before the next event. godot/fx/test/close_action_fx_check.gd. Set: Ryan, Nov 22 (R401).
+
+## Weapon firing and hit reactions (R412, Nov 22)
+
+Ryan approved Neon's weapon firing, hit reaction, effects and damage audit on Nov 22 2026 (13:52 UTC). Tracker issue 1689;
+jobs 1690 (Wave 1A), 1691 (1B), 1692 (2A), 1693 (2B); the combat sound targets ride the 1585 pilot. What every effect job keeps:
+
+1. **The board stays flat.** Hit roll, pitch, yaw, drift, shudder and the crippled list move a `hull_pivot` inside the ship,
+   never the ShipView root, so the hex marker and selection ring never tilt.
+2. **Big ships heel, small ships skate.** One broadside rolls the hull one way, away from the blast. Heavy and capital hulls
+   slide about half as far as today and roll instead. The shake is a low tremor (3.5 to 6 Hz, gone in about 0.22 s), not a buzz,
+   and idle bob follows the hit pause.
+3. **Thrusters match the faction.** Cold gas for Sunward and Navy (sootier grey for Hullbreakers), pale-gold glints for
+   Glasswrights, violet shimmer for Eclipse, none on Chorus.
+4. **A shield block is quiet.** It pushes the hull at about a third of today's force, with no thruster spray and no engine
+   stutter. Engines stutter and the hull lights brown out only on real hull damage, shield breaks, crits and ion hits, and
+   only when the hit gets through or breaks the shield: a crit or ion hit fully absorbed by a shield that holds stays quiet
+   too (Ryan, Nov 22 16:48 UTC: "so 100% shield-blocked lances, ions, and crits do not brown out hull lights or stutter
+   engines"; code: `felt = not absorbed or breaking`, fx_weapons.gd).
+5. **Firing has weight.** Heavy guns push the shooter back a little (about a fifth of the target's push) and the turret barrel
+   kicks. A miss streaks past with a fading tail and never just vanishes.
+6. **The target's material decides the impact** (with R402). One substance table (metal, glass, bio, obsidian) feeds every
+   impact path. Glass gets white-gold flash and shard glints, never soot or red embers. Flesh gets bile and mist, never metal
+   plates. Eclipse sparks take its own damage glow, never green. Soot and wear patches are for metal ships only.
+7. **Each weapon reads as itself.** The heavy battery has a shock ring and heat vent, the plasma cannon its own cyan-white
+   pulse, the tendril an organic lash, and prism, star and nlance their own hull marks. salvo_check fails on any skipped volley.
+8. **Status shows on the board.** Acid leaves a light caustic mist while it burns, an ion lock flickers pale-blue arcs on the
+   shield, and a hit on a shield quadrant under 25% strains and crackles. Healthy shields stay hidden at rest.
+
+Order: 1A now; 1B after the held PRs 1646, 1631 and 1666 merge; 2A and 2B after 1A and 1B. Sizes and timings above are starting
+points judged by eye (R187).
+
 ## What Ryan will be shown
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.
 2. A cruiser death: eight frames across its three beats, before above after.
-3. A capital death: the same, with the scene-dim proposal on and off.
+3. A capital death: the same. No dim on and off pair: the dim is Eclipse's own (R389), so a non-Eclipse capital shows none.
 4. Later, per rebuilt faction: its death beside the shared one.
 
 ## Build order (jobs written from docs/playbooks/effects.md's template)

@@ -4,6 +4,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # (never the project's gen/), it runs the real asset builder (render/build_assets.gd --ships-only) as a separate Godot
 # process, exactly as tools/recipe/7_export.bat does after an install:
 #   1. an old hull ZZ592 (the turret test ship's glb) with damage and wreck glbs: the cache names all three;
+#      the saved hull shares its packed ORM with fragments, its meshes have automatic LODs, and repainting an
+#      external map refreshes the cache without changing the GLB, even when the map keeps its size and timestamp.
 #   2. a new hull is installed the way stage 7 does it (the old damage and wreck glbs moved aside, the new glb copied in):
 #      the cache is rebuilt from the new file and names no damage or wreck scene;
 #   3. the install readback (render/test/installed_ship_check.gd) passes, and ShipView, reading that cache, draws the new
@@ -14,8 +16,11 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 
 const SV := preload("res://render/ship_view.gd")
 const BUILD := preload("res://render/build_assets.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
+const GATE := preload("res://bench/scene_gate.gd")
 const OLD := "res://render/test/fixtures/T560_fx/T560_fx.glb"
 const CODE := "ZZ592"
+const MAPS := ["packed orm.png", "albedo.jpg", "emission.webp"]
 
 var fails := 0
 var run := ""
@@ -104,18 +109,171 @@ func check_external_atlas() -> void:
 		"the ship cache builder reads the new atlas from disk")
 
 
+func write_paint(path: String, color: Color, pad_to := 0) -> void:
+	var image := Image.create_empty(16, 16, false, Image.FORMAT_RGB8)
+	image.fill(color)
+	var bytes := PackedByteArray()
+	match path.get_extension():
+		"png": bytes = image.save_png_to_buffer()
+		"jpg": bytes = image.save_jpg_to_buffer()
+		"webp": bytes = image.save_webp_to_buffer()
+	# JPEG decoders ignore padding after the end marker.
+	if not bytes.is_empty() and bytes.size() < pad_to:
+		bytes.resize(pad_to)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	check(file != null and not bytes.is_empty(), "wrote %s" % path.get_file())
+	if file != null:
+		file.store_buffer(bytes)
+		file.close()
+
+
+func textured_hull(path: String) -> void:
+	var original := FileAccess.get_file_as_bytes(OLD)
+	var binary_start := 20 + original.decode_u32(12)
+	var json: Dictionary = JSON.parse_string(original.slice(20, binary_start).get_string_from_utf8())
+	json["images"] = [{"uri": "maps/packed%20orm.png"}, {"uri": "maps/albedo.jpg"}, {"uri": "maps/emission.webp"}]
+	json["extensionsUsed"] = ["EXT_texture_webp"]
+	json["textures"] = [{"source": 0}, {"source": 1}, {"extensions": {"EXT_texture_webp": {"source": 2}}}]
+	for material: Dictionary in json["materials"]:
+		material["occlusionTexture"] = {"index": 0}
+		material["pbrMetallicRoughness"]["metallicRoughnessTexture"] = {"index": 0}
+		material["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 1}
+		material["emissiveTexture"] = {"index": 2}
+	var chunk := JSON.stringify(json).to_utf8_buffer()
+	while chunk.size() % 4 != 0:
+		chunk.append(32)
+	var binary := original.slice(binary_start)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_32(0x46546C67)
+	file.store_32(2)
+	file.store_32(20 + chunk.size() + binary.size())
+	file.store_32(chunk.size())
+	file.store_32(0x4E4F534A)
+	file.store_buffer(chunk)
+	file.store_buffer(binary)
+
+
+func check_cached_hull(source: String, cached: String) -> void:
+	var doc := GLTFDocument.new()
+	var state := GLTFState.new()
+	var packed := ResourceLoader.load(cached, "PackedScene", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
+	check(packed != null and BUILD.append_ship_glb(doc, source, state) == OK, "raw and cached hulls load")
+	if packed == null or state.get_meshes().is_empty():
+		return
+	var raw := doc.generate_scene(state)
+	var built := packed.instantiate()
+	var gate := GATE.new()
+	var full_tris := 0
+	var cached_tris := 0
+	var orm: Texture2D
+	for node: MeshInstance3D in built.find_children("*", "MeshInstance3D", true, false):
+		var original: MeshInstance3D = raw.get_node(built.get_path_to(node))
+		var mesh := ImporterMesh.from_mesh(node.mesh)
+		var has_lod := false
+		for surface in mesh.get_surface_count():
+			var full: int = gate._tris(original.mesh, surface)
+			full_tris += full
+			cached_tris += gate._tris(node.mesh, surface)
+			for lod in mesh.get_surface_lod_count(surface):
+				var indices := mesh.get_surface_lod_indices(surface, lod)
+				check(indices.size() > 0 and indices.size() < full * 3, "%s surface %d LOD %d reduces triangles" % [node.name, surface, lod])
+				has_lod = true
+			var paint := node.get_active_material(surface) as StandardMaterial3D
+			check(paint != null and paint.ao_texture != null, "%s surface %d has packed paint" % [node.name, surface])
+			if paint != null and paint.ao_texture != null:
+				if orm == null:
+					orm = paint.ao_texture
+				check(orm == paint.ao_texture and orm == paint.roughness_texture and orm == paint.metallic_texture
+					and FRAGMENTS.finish_maps(paint)[1] == orm, "hull and fragment share one ORM")
+		check(has_lod, "%s has automatic LODs after saving" % node.name)
+	var image := orm.get_image() if orm != null else null
+	check(image != null and image.get_format() == Image.FORMAT_BPTC_RGBA and image.has_mipmaps(),
+		"one mipmapped BC7 ORM payload for three material slots (one third of three identical payloads)")
+	check(full_tris > 0 and cached_tris == full_tris, "scene gate full-detail fixture triangles hold: %d -> %d" % [full_tris, cached_tris])
+	gate.free()
+	raw.free()
+	built.free()
+
+
+func check_cached_paint(cached: String, expected: Color) -> void:
+	var packed := ResourceLoader.load(cached, "PackedScene", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
+	check(packed != null, "repainted scene loads")
+	if packed == null:
+		return
+	var built := packed.instantiate()
+	var hull := built.find_child("T560_fx", true, false) as MeshInstance3D
+	var paint := hull.get_active_material(0) as StandardMaterial3D
+	var image := paint.albedo_texture.get_image() if paint.albedo_texture != null else null
+	check(image != null and image.decompress() == OK and Vector3(image.get_pixel(0, 0).r,
+		image.get_pixel(0, 0).g, image.get_pixel(0, 0).b).distance_to(Vector3(expected.r, expected.g, expected.b)) < 0.08,
+		"the saved ship scene uses the repainted albedo")
+	built.free()
+
+
+func set_paint_time(path: String) -> void:
+	var absolute := ProjectSettings.globalize_path(path)
+	var result: int
+	if OS.get_name() == "Windows":
+		var command := "[IO.File]::SetLastWriteTimeUtc('%s', [DateTime]::new(2020, 1, 1, 0, 0, 0, [DateTimeKind]::Utc))" % absolute.replace("'", "''")
+		result = OS.execute("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", command])
+	else:
+		result = OS.execute("touch", ["-t", "202001010000", absolute])
+	check(result == 0, "set the fixture map's modification time")
+
+
+func check_same_metadata_repaint(path: String, built_marker: String) -> void:
+	write_paint(path, Color.BLACK, 4096)
+	set_paint_time(path)
+	builder()
+	var previous_bytes := FileAccess.get_file_as_bytes(path)
+	var previous_time := FileAccess.get_modified_time(path)
+	write_paint(path, Color.WHITE, 4096)
+	set_paint_time(path)
+	var repainted_bytes := FileAccess.get_file_as_bytes(path)
+	check(previous_time > 0 and previous_time == FileAccess.get_modified_time(path)
+		and previous_bytes.size() == repainted_bytes.size() and previous_bytes != repainted_bytes,
+		"the repainted albedo has different bytes and the same size and modification time")
+	check(built_marker in builder(), "a same-size, same-time repaint rebuilds gen/ships")
+	var cached := str(entry().get("res", ""))
+	check_cached_paint(cached, Color.WHITE)
+
+
 func _run() -> void:
 	run = "user://install_refresh_check/%d" % int(Time.get_unix_time_from_system())
 	var sh := run.path_join("ships").path_join(CODE)
-	for d in [sh, run.path_join("gen"), run.path_join("replaced")]:
+	for d in [sh.path_join("maps"), run.path_join("gen"), run.path_join("replaced")]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
 	check_external_atlas()
 	# 1. the old hull, with its breach parts and wreck chunks
-	for suf in ["", "_damage", "_wreck"]:
+	for suf in ["_damage", "_wreck"]:
 		copy(OLD, sh.path_join(CODE + suf + ".glb"))
+	var hull := sh.path_join(CODE + ".glb")
+	textured_hull(hull)
+	for map in MAPS:
+		write_paint(sh.path_join("maps").path_join(map), Color.DARK_ORANGE)
 	builder()
 	var e := entry()
 	check(e.has("res") and e.has("damage") and e.has("wreck"), "the old hull is cached with its damage and wreck scenes")
+	if e.has("res"):
+		check_cached_hull(hull, e["res"])
+	var built_marker := "[assets] A4 ship " + CODE
+	check(not built_marker in builder(), "unchanged paint keeps the warm ship cache")
+	for map in MAPS:
+		var path := sh.path_join("maps").path_join(map)
+		var stamp := BUILD.source_stamp(run.path_join("ships"), CODE)
+		if map == MAPS[0]:
+			# Rewrite identical bytes after the file clock ticks to prove mtime alone invalidates the cache.
+			OS.delay_msec(1100)
+			copy(path, path + ".copy")
+			copy(path + ".copy", path)
+		else:
+			write_paint(path, Color.REBECCA_PURPLE)
+		var repaint_log := builder()
+		check(str(entry().get("src", "")) != stamp and built_marker in repaint_log, "changing only %s rebuilds gen/ships" % map)
+	e = entry()
+	if e.has("res"):
+		check_cached_paint(e["res"], Color.REBECCA_PURPLE)
+	check_same_metadata_repaint(sh.path_join("maps").path_join(MAPS[1]), built_marker)
 	# 2. the install: the old hull's damage and wreck moved aside, the new hull copied over the old glb
 	OS.delay_msec(1100)   # file times count in seconds: the new glb must not share the old one's stamp by chance
 	for suf in ["_damage", "_wreck"]:

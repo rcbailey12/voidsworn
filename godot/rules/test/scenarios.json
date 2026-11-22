@@ -3208,7 +3208,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 37108,
+  "seed": 37109,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3453,7 +3453,7 @@
  },
  "t_ecl_arcswarm": {
   "sector": 1,
-  "fac": "hegemony",
+  "fac": "corsair",
   "fac_player": "deathless",
   "obj": "rout",
   "shape": "compact",
@@ -3461,7 +3461,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 37102,
+  "seed": 37103,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -3470,9 +3470,11 @@
    "d_jackal"
   ],
   "enemies": [
-   "h_vanguard",
-   "h_vanguard",
-   "h_vanguard"
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_raider"
   ],
   "rounds": 5,
   "cmdRound": 2,
@@ -3483,7 +3485,7 @@
    ],
    "capstone": null
   },
-  "note": "Eclipse: Umbra Arcs Written Warm (sekhmar:A:0:0) splashes a corona volley hit onto an adjacent enemy"
+  "note": "Eclipse: Umbra Arcs Written Warm (sekhmar:A:0:0) splashes a corona volley hit onto an adjacent enemy; corsair raiders since issue 1560 (the splash needs an enemy next to the target)"
  },
  "t_ecl_noonchoice": {
   "sector": 1,
@@ -3690,7 +3692,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31821,
+  "seed": 31825,
   "admiral": "anuket",
   "fleet": [
    "d_harvester",
@@ -3789,7 +3791,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31821,
+  "seed": 31826,
   "admiral": "anuket",
   "fleet": [
    "d_harvester",
@@ -3950,7 +3952,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31821,
+  "seed": 31822,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -4462,7 +4464,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37126,
+  "seed": 37129,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -4768,7 +4770,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37104,
   "admiral": "voice",
   "fleet": [
    "b_brood"
@@ -5071,7 +5073,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 37114,
+  "seed": 37134,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -5299,7 +5301,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37102,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -5957,7 +5959,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37105,
+  "seed": 37106,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -5988,7 +5990,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37102,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6110,7 +6112,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 37264,
+  "seed": 37304,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -6802,7 +6804,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 15838,
+  "seed": 15840,
   "admiral": "vorn",
   "fleet": [
    "h_dominion",
@@ -6970,7 +6972,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33228,
+  "seed": 33232,
   "admiral": "reyes",
   "fleet": [
    "h_vanguard",
@@ -7100,7 +7102,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33233,
+  "seed": 33242,
   "admiral": "reyes",
   "fleet": [
    "h_vanguard",
@@ -7827,7 +7829,7 @@
   ],
   "cmdRound": 1,
   "note": "Tree fixture: Brin The Lens Rotates (mirelle:A:1:1) gives evasion on a facing change",
-  "seed": 37103,
+  "seed": 37118,
   "lineage": {
    "id": "mirelle",
    "picks": [
@@ -7977,7 +7979,7 @@
   ],
   "cmdRound": 3,
   "note": "Tree fixture: Vex The Last Account (vex:cap:1) fires again on a kill",
-  "seed": 37101,
+  "seed": 37112,
   "lineage": {
    "id": "vex",
    "picks": [],
@@ -8035,7 +8037,7 @@
   ],
   "cmdRound": 2,
   "note": "Tree fixture: Malek Rear Arc Reckoning (malek:A:1:1) pays rear hits +15%",
-  "seed": 1860000000021,
+  "seed": 1860000000147,
   "lineage": {
    "id": "malek",
    "picks": [
@@ -8095,7 +8097,7 @@
   ],
   "cmdRound": 2,
   "note": "Tree fixture: Ashgrove The Account Splits (ashgrove:A:1:0) pays a wing on a different target",
-  "seed": 19,
+  "seed": 26,
   "lineage": {
    "id": "ashgrove",
    "picks": [
@@ -8351,7 +8353,7 @@
   ],
   "cmdRound": 2,
   "rounds": 7,
-  "seed": 37101,
+  "seed": 37103,
   "lineage": {
    "id": "anuket",
    "picks": [
@@ -8417,7 +8419,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38212,
+  "seed": 38227,
   "lineage": {
    "id": "nekhet",
    "picks": [
@@ -8514,7 +8516,7 @@
   ],
   "cmdRound": 1,
   "rounds": 5,
-  "seed": 38211,
+  "seed": 38215,
   "lineage": {
    "id": "matriarch",
    "picks": [
@@ -8897,7 +8899,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 52996,
+  "seed": 52999,
   "note": "Issue 529: Matriarch The Brood Does Not Stop (matriarch:cap:1): an extra swarm that destroys its target strikes another enemy at half damage",
   "lineage": {
    "id": "matriarch",
@@ -9087,5 +9089,144 @@
    "h_picket",
    "h_picket"
   ]
+ },
+ "s1450_undo": {
+  "note": "Issue 1450 (R376): undo before firing. s1 with the undo fixture: each ship moves, takes it back and makes the same move again, turns (in round 1 a free turn) and takes that back; after firing, undo must be refused. The hook names carry canUndo, so both twins must agree on every answer.",
+  "seed": 1001,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "undo": true
+ },
+ "s1450_undo_chorus": {
+  "note": "Issue 1450: the undo fixture on a Chorus fleet (the free first turn each round sets pivotUsed, which undo restores)",
+  "seed": 11053,
+  "sector": 1,
+  "admiral": "voice",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "chorus",
+  "storyMods": {
+   "dmgPct": -0.1
+  },
+  "undo": true
+ },
+ "s1450_undo_classic": {
+  "note": "Issue 1450: the undo fixture in Classic mode with attack-move first: fire during the burn draws dice, so undo is refused after it",
+  "seed": 21021,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "alt": false,
+  "attack_move": true,
+  "undo": true
+ },
+ "s1447_ion_pulse": {
+  "note": "Issue 1447: the Cordon's ion pulse judged by the real shield pools (shp) and also checked from the committed destination, so a Cordon that closes to range 4 pulses before it fires; the log counts only ships that lost shields. Two Cordons against Sunward frigates and a cruiser.",
+  "seed": 14470,
+  "sector": 2,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "warden",
+   "warden",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full"
+ },
+ "s1480": {
+  "note": "Issue 1480 (R384): the revived Eclipse rival joins the Sector 3 boss battle. A generated Hegemony flagship fleet plus his own flagship, the Eclipse faction's biggest hull, which carries his Nemesis flag; the boss stays the boss",
+  "seed": 1480148,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "kind": "boss",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "rounds": 12,
+  "bot": "full",
+  "nemesis": {
+   "name": "Sorrow",
+   "title": "Pale Regent",
+   "fac": "deathless",
+   "weak": [
+    "flank"
+   ],
+   "adapt": [
+    "armor"
+   ],
+   "scars": 2
+  }
  }
 }

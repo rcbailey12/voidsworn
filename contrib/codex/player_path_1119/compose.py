@@ -18,7 +18,7 @@ import picture_provenance as pictures
 FPS = 30
 SECONDS_PER_PART = 48
 CLIP_LIMIT = 8_000_000
-ROUTES = {10: ("navy", "Navy"), 121: ("hullbreakers", "Hullbreakers")}
+ROUTES = {10: ("navy", "Navy"), 31: ("hullbreakers", "Hullbreakers"), 121: ("hb121", "Hullbreakers diagnostic")}
 INK = "#10151e"
 BONE = "#f1e8d9"
 EMBER = "#ffae70"

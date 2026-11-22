@@ -32,6 +32,12 @@ What that means for every sound:
   electrical hum for the Hegemony, rattling junk for the Hullbreakers, glass and tone for the Glasswrights, a low held note
   for Eclipse, wet and breathing for the Chorus).
 - Free tools and free sources only.
+- **Faction deaths (issue 1238).** Every death cue carries the dying ship's faction. A faction variant in
+  godot/audio/cues.json marked `"replace": true` is that faction's whole sound, with no steel under it (a variant without
+  it adds its layers to the base). Chorus deaths use wet and breath clips (puff, torpSac, gunGlob, grappleWet, hitWet);
+  Glasswright deaths use glass and tone (shieldShatter, crackGlass, hitGlass, choirBell, starShimmer); the heavy-hit tail
+  under a Chorus or Glasswright hit does the same. Built from clips already in the game; Ryan's ear decides whether they
+  stay. Check: godot/audio/test/faction_death_check.gd (prints the cue timing trace) and audio_check.gd.
 
 ## 2. Where it stands (Nov 11 evening)
 
@@ -39,6 +45,12 @@ What that means for every sound:
   sound weight (tails, sub-bass, the death bed, ducking, the lance and torpedo charge; issue 771) with its listening page at
   docs/shots/sound_weight/LISTEN.md.
 - Next, in Ryan's order (R193 (4)): the sound redo.
+- Wiring rules (issue 1448, Neon player audit Nov 21; no new sounds): a screen gets its ui cues from one hook,
+  `OrdersKit.watch_sound(root)` in godot/ui/theme/orders_kit.gd (campaign_ui.gd and career_screen.gd call it), never its own
+  per-button code; a confirm that takes a reward, relic, perk or bought hull plays `ui_reward` instead of `ui_confirm`
+  (campaign_ui.gd REWARD_ACTS); `ui_boss` plays when a boss or Nemesis fight is entered (campaign_host.gd); a battle ends on
+  one sound, the music fanfare, with the synth sting only when music cannot play (battle.gd `_end_sound`); the battle music
+  hears hits this round (`shots`) and counts enemies within 3 true hex steps as close. Check: audio_check.gd, the 1448 lines.
 
 ## 2a. The first two jobs (as first planned)
 

@@ -118,10 +118,12 @@ uniform vec4 fx_shapes[64]; // round/square/slot, phases 0, 1, 2
 uniform vec4 fx_tears[64]; // square rotation, phase 3, phase 4, unused
 uniform vec3 fx_burnt_cell = vec3(1.0);
 uniform float fx_power = 1.0;
+uniform float fx_flick = 1.0; // issue 1587: a wounded hull's uneven power, on top of the wear's fx_power
 uniform bool fx_organic = false;
 uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
 uniform float fx_scorch_heat = 0.0;
+uniform vec3 fx_scorch_col = vec3(1.0, 0.30, 0.05);   // R367: the scorch heat in the faction's death colour
 varying vec3 fx_hull_p;
 float fx_scorch_at(vec3 p) {
 	float s = 0.0;
@@ -259,6 +261,28 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	return mat
 
 
+# Issue 1235: a live ship's wear on its damage surface (fx_ship._set_wear): mottled darker plating, dimmer lights and soot
+# patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
+const WEAR_WEATHER := 0.45   # fx_weather at full wear
+const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
+# fx_power is the wear's steady value (and the death fade's); a hit's brownout rides on fx_flick (fx_ship hit_power).
+static func set_power(mat: ShaderMaterial, wear: float) -> void:
+	mat.set_shader_parameter("fx_power", 1.0 - WEAR_POWER * wear)
+
+
+static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
+	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
+	set_power(mat, wear)
+	var n := mini(patches.size(), 8)
+	mat.set_shader_parameter("fx_scorch_count", n)
+	if n > 0:
+		var arr: Array = patches.slice(0, 8)
+		while arr.size() < 8:
+			arr.append(Vector4.ZERO)
+		mat.set_shader_parameter("fx_scorch", arr)
+	mat.set_shader_parameter("fx_scorch_heat", 0.0)
+
+
 static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
 	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
@@ -312,7 +336,7 @@ for (int i = 0; i < 64; i++) {
 }
 """, """
 ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
-EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0);
+EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
@@ -320,7 +344,7 @@ if (fx_scorch_count > 0) {
 	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
-	EMISSION += vec3(1.0, 0.30, 0.05) * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
+	EMISSION += fx_scorch_col * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
 }
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
@@ -452,6 +476,7 @@ static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null, frames
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -528,6 +553,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -541,13 +567,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	var faces = faces_of(root, meshes, bvh_ranges)
-	tri_count = faces.size() / 3
-	tm = TriangleMesh.new()
-	if faces.size() >= 3:
-		tm.create_from_faces(faces)
+	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
+	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
+	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
+	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
+	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
+	var faces: PackedVector3Array
+	if geo is Dictionary:
+		faces = geo["faces"]
+		tm = geo["tm"]
+		for r in geo["ranges"]:
+			var mi := meshes[int(r["mi_index"])] as MeshInstance3D
+			var e: Dictionary = r.duplicate()
+			e.erase("mi_index")
+			e["mi"] = mi
+			var paint := mi.get_active_material(int(r["surface"])) as BaseMaterial3D
+			e["paint"] = paint if paint != null else (r["mesh"] as Mesh).surface_get_material(int(r["surface"])) as BaseMaterial3D
+			bvh_ranges.append(e)
 	else:
-		tm = null
+		faces = faces_of(root, meshes, bvh_ranges)
+		tm = TriangleMesh.new()
+		if faces.size() >= 3:
+			tm.create_from_faces(faces)
+		else:
+			tm = null
+		if geo_key != "":
+			var keep: Array = []
+			for r in bvh_ranges:
+				var e: Dictionary = r.duplicate()
+				e["mi_index"] = meshes.find(r["mi"])
+				e.erase("mi")
+				e.erase("paint")
+				keep.append(e)
+			geo = {"faces": faces, "tm": tm, "ranges": keep}
+			shared[geo_key] = geo
+	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
@@ -557,9 +611,44 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	if code == "" and root.get("code") != null:
 		code = str(root.get("code"))
 	_read_turrets(root)
+	_read_doors(root)
 	_read_points(root)
 	_find_core(faces)
-	_turret_clearance(root, meshes)
+	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+		for k in turrets.size():
+			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+	else:
+		_turret_clearance(root, meshes)
+		if geo is Dictionary:
+			var reach: Array = []
+			for t in turrets:
+				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
+			geo["turrets"] = reach
+
+
+var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
+
+
+# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
+# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
+func _geo_key(root: Node3D, meshes: Array) -> String:
+	var parts := PackedStringArray()
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
+			parts.append("-")
+			continue
+		var frame := Transform3D.IDENTITY
+		var part: Node3D = mi
+		while part != null and part != root:
+			if part.top_level:
+				return ""   # placed in the world, not under the ship: no sharing
+			frame = part.transform * frame
+			part = part.get_parent_node_3d()
+		if part != root:
+			return ""
+		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
+	return "|".join(parts)
 
 
 func section_of(x: float) -> int:
@@ -995,6 +1084,10 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
 	if not pts.is_empty():
+		# issue 1587: a jammed turret (a wounded section, see jam_turret) sits out while another muzzle bears
+		var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
+		if not free_pts.is_empty():
+			pts = free_pts
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
@@ -1060,7 +1153,10 @@ func bay(i: int, toward_local: Vector3) -> Dictionary:
 	var pts: Array = points.get("bay", [])
 	if not pts.is_empty():
 		_took("bay", "hp")
-		return _hp(pts[posmod(i, pts.size())])
+		var pt: Dictionary = pts[posmod(i, pts.size())]
+		var r := _hp(pt)
+		r["bay"] = int(pt["i"])   # issue 1543: which hp_bay_<n>, so launch() opens that mouth's door
+		return r
 	var d := toward_local - core
 	d.y = 0.0
 	var out := (d.normalized() + Vector3.UP).normalized() if d.length() > 1e-4 else Vector3.UP
@@ -1201,6 +1297,7 @@ const TURN_RATE := 150.0     # degrees a second: a traverse's average rate (ease
 const TURN_MIN := 0.3        # seconds: the shortest traverse, so even a small correction eases in and out
 const TURN_MAX := 2.4        # seconds: the longest (the far way round a blocked sector), so TURN_RATE holds; a tuning value
 const TURN_ACC := 900.0      # degrees a second squared: the most a traverse speeds up or slows down (no lurch); a tuning value
+const BARREL_KICK_T := 0.19  # seconds from shot to the barrel returning to battery
 const TURN_HOLD := 0.9       # seconds a turret holds its aim after its last shot before it trains back to rest
 const CLEAR_STEP := 2.0      # degrees between the barrel clearance samples at analyse
 var turrets: Array = []      # {node, name, id, rest (its local transform), xf (root frame at rest), lo, hi, ymin, ymax, full, segs, ...}
@@ -1299,6 +1396,7 @@ func _turret_clearance(root: Node3D, meshes: Array) -> void:
 		return
 	var fixed: Array = []
 	for m in meshes:
+		if not is_instance_valid(m): continue
 		var mi := m as MeshInstance3D
 		if mi != null and _turret_above(mi, root) < 0:
 			fixed.append(mi)
@@ -1420,8 +1518,44 @@ func _want_yaw(k: int, target_local: Vector3) -> float:
 
 # Turn turret k toward a point (root frame), starting at time now on the effect clock. Returns {"yaw", "arrive", "clamped"}:
 # the yaw it will hold, when it gets there and whether the target lay outside its reach (it then holds the nearest edge).
+# Issue 1581 (OpenAI review F3): the turrets a volley of n shots from this slot and weapon would use, without aiming or
+# counting anything (the same pick as guns(): the same points, the same rotation offset). [] for fixed guns.
+func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Array:
+	var d := target_local - core
+	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
+	var pts := _gun_points(slot, weapon, target_local, d)
+	var out: Array = []
+	if pts.is_empty():
+		return out
+	# Neon on PR 1631: the same jammed-turret filter as guns(), so a Burn and fire never trains a jammed turret
+	var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
+	if not free_pts.is_empty():
+		pts = free_pts
+	var key := "%d|%s" % [slot, weapon]
+	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
+	for i in maxi(n, 1):
+		var pt: Dictionary = pts[posmod(off + i, pts.size())]
+		if pt.has("tur") and not out.has(int(pt["tur"])):
+			out.append(int(pt["tur"]))
+	return out
+
+
+# Issue 1581: seconds turret k needs from its pose at `now` to bear on target_local (0 when it already does).
+func turret_need(k: int, target_local: Vector3, now: float) -> float:
+	var t: Dictionary = turrets[k]
+	var want := _want_yaw(k, target_local)
+	var y0 := turret_yaw(k, now)
+	var goal := want + 360.0 * roundf((y0 - want) / 360.0) if bool(t["full"]) else want
+	if absf(goal - y0) <= 0.25:
+		return 0.0
+	return _traverse_time(goal - y0, _turret_speed(k, now))
+
+
 func turret_aim(k: int, target_local: Vector3, now: float) -> Dictionary:
 	var t: Dictionary = turrets[k]
+	if t.has("jam"):
+		# issue 1587: a jammed turret stays where it froze and never tracks
+		return {"yaw": float(t["jam"]["yaw"]), "arrive": now, "clamped": true}
 	var want := _want_yaw(k, target_local)
 	now = maxf(now, float(t.get("busy", -INF)))    # never swing away under shots an earlier volley still has to fire
 	var y0 := turret_yaw(k, now)
@@ -1465,6 +1599,8 @@ func turret_aim(k: int, target_local: Vector3, now: float) -> Dictionary:
 # (the nearest whole turn).
 func turret_release(k: int, last: float) -> void:
 	var t: Dictionary = turrets[k]
+	if t.has("jam"):
+		return
 	t["busy"] = maxf(float(t.get("busy", -INF)), last)
 	var at := last + TURN_HOLD
 	var segs: Array = t["segs"]
@@ -1513,6 +1649,67 @@ func _seg_at(k: int, t: float) -> Dictionary:
 	return {}
 
 
+# Move the authored barrel assembly and its muzzle sockets under the fixed turning ring.
+# sockets false (the light kick of a gun without its own recoil) leaves the muzzle sockets still, so the next shot still
+# leaves from the turned muzzle; the heavy kick moves them with the barrels.
+func turret_fire(k: int, t: float, travel: float, sockets := true) -> void:
+	var tt: Dictionary = turrets[k]
+	if not tt.has("kick_parts"):
+		var muzzle := _first_muzzle(k)
+		var axis: Vector3 = muzzle.get("lf", Vector3.FORWARD)
+		var world_scale := ((tt["xf"] as Transform3D).basis * axis).length()
+		tt["kick_axis"] = -axis / maxf(world_scale, 0.001)
+		tt["kicks"] = []
+		var parts := []
+		var n: Node3D = tt["node"]
+		for child in n.get_children():
+			if child is Node3D and (child.name == String(n.name) + "_turn" or String(child.name).begins_with("hp_w")):
+				parts.append([child, child.position])
+		if not parts.any(func(pt: Array) -> bool: return not String((pt[0] as Node).name).begins_with("hp_w")):
+			# Neon on PR 1699: a turret whose barrel mesh has another name (no "<turret>_turn" child) still kicks: its
+			# visible mesh children with its muzzle sockets, or the turret node itself when it is the mesh (from its rest
+			# position, so the per-frame yaw pose is untouched)
+			var meshes_n := 0
+			for child in n.get_children():
+				if child is MeshInstance3D and (child as MeshInstance3D).visible:
+					parts.append([child, child.position])
+					meshes_n += 1
+			if meshes_n == 0 and n is MeshInstance3D:
+				parts = [[n, (tt["rest"] as Transform3D).origin, true]]   # its sockets ride along as its children
+		tt["kick_parts"] = parts
+	(tt["kicks"] as Array).append(Vector3(t, travel, 1.0 if sockets else 0.0))
+
+
+func _turret_kick(tt: Dictionary, t: float) -> void:
+	var kicks: Array = tt["kicks"]
+	var travel := 0.0
+	var sock_travel := 0.0
+	for i in range(kicks.size() - 1, -1, -1):
+		var pulse: Vector3 = kicks[i]
+		var age := t - pulse.x
+		if age >= BARREL_KICK_T:
+			kicks.remove_at(i)
+		elif age >= 0.0:
+			var stroke := smoothstep(0.0, 0.035, age) * (1.0 - smoothstep(0.035, BARREL_KICK_T, age))
+			travel = maxf(travel, pulse.y * stroke)
+			if pulse.z > 0.0:
+				sock_travel = maxf(sock_travel, pulse.y * stroke)
+	if travel == 0.0 and not bool(tt.get("kicking", false)):
+		return
+	tt["kicking"] = travel > 0.0
+	var offset: Vector3 = (tt["kick_axis"] as Vector3) * travel
+	var sock_offset: Vector3 = (tt["kick_axis"] as Vector3) * sock_travel
+	for part: Array in tt["kick_parts"]:
+		if is_instance_valid(part[0]):
+			var nd := part[0] as Node3D
+			if String(nd.name).begins_with("hp_w"):
+				nd.position = (part[1] as Vector3) + sock_offset
+			elif part.size() > 2:   # the turret node itself: its stroke along its own (turned) axis, from its rest point
+				nd.position = (part[1] as Vector3) + nd.basis * offset
+			else:
+				nd.position = (part[1] as Vector3) + offset
+
+
 # Every frame (fx_ship.update): put each turret's node at its pose for the effect clock and drop finished segments.
 func turret_step(t: float) -> void:
 	turret_clock = t
@@ -1525,5 +1722,160 @@ func turret_step(t: float) -> void:
 		while segs.size() > 1 and float(segs[1]["t0"]) <= t:
 			segs.pop_front()
 		var y := turret_yaw(k, t)
+		var droop := 0.0
+		if tt.has("jam"):
+			# issue 1587: frozen off its aim and sagging on its mount, eased in over a third of a second
+			var jm: Dictionary = tt["jam"]
+			var u := smoothstep(float(jm["t0"]), float(jm["t0"]) + 0.35, t)
+			y = lerpf(float(jm["from"]), float(jm["yaw"]), u)
+			droop = float(jm["droop"]) * u
 		tt["yaw"] = y
-		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(Basis(Vector3.UP, deg_to_rad(y)), Vector3.ZERO)
+		var bs := Basis(Vector3.UP, deg_to_rad(y))
+		if droop != 0.0:
+			bs = bs * Basis(Vector3.RIGHT, deg_to_rad(-droop))
+		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(bs, Vector3.ZERO)
+		if tt.has("kicks"):
+			_turret_kick(tt, t)   # issue 1690 (Wave 1A): the barrel kick, on top of 1587's jam sag
+
+
+# Issue 1587: a wounded section's turret freezes a little off its aim and sags (view only; the rules never see it). jam_turret
+# holds it at yaw (degrees from rest) dipped by droop degrees from time now; unjam_turret frees it to track and return to rest.
+func jam_turret(k: int, yaw: float, droop: float, now: float) -> void:
+	if k < 0 or k >= turrets.size():
+		return
+	var t: Dictionary = turrets[k]
+	var from := turret_yaw(k, now)
+	if not bool(t["full"]):
+		yaw = clampf(yaw, float(t["ymin"]), float(t["ymax"]))
+	t["segs"] = []
+	t["jam"] = {"yaw": yaw, "droop": droop, "t0": now, "from": from}
+
+
+func unjam_turret(k: int, now: float) -> void:
+	if k < 0 or k >= turrets.size() or not turrets[k].has("jam"):
+		return
+	var t: Dictionary = turrets[k]
+	var y := float(t["jam"]["yaw"])
+	t.erase("jam")
+	t["segs"] = [{"t0": now, "t1": now + _traverse_time(-y, 0.0), "y0": y, "y1": 0.0, "v0": 0.0}]
+
+
+func turret_jammed(k: int) -> bool:
+	return k >= 0 and k < turrets.size() and turrets[k].has("jam")
+
+
+# Which section a turret sits in (SEC_ENG, SEC_MID or SEC_PROW), from its pivot.
+func turret_section(k: int) -> int:
+	return section_of((turrets[k]["xf"] as Transform3D).origin.x)
+
+
+# ---------------------------------------------------------------- doors (issue 1543)
+# Ryan (Nov 21 2026): a launch mouth has a flesh door "in sections with the opening spreading from the middle", closed between
+# launches, plain flesh. A door reaches the game as a node door_<n> (docs/ship_pipeline/HARDPOINTS.md "Doors"; extras: the bay
+# it opens for and open_deg) with one node door_<n>_lobe_<k> per lobe at its hinge: local +X the hinge line, -Z toward the
+# door's centre, +Y out of the mouth; a turn of open_deg (negative: the tip folds down into the bore) about +X opens it.
+# launch() opens the door of the bay a squadron leaves from (door_cycle): the lobes ease open before the first craft leaves,
+# hold while the squadron is out, then ease shut. Like a turret's, a door's pose is a pure function of the effect clock (fx.now);
+# fx_ship.update writes it onto the lobe nodes every frame. The rules never see a door (RULEBOOK 7.4).
+const DOOR_RE := "^door_(\\d+)$"
+const DOOR_OPEN := 0.28      # seconds to open (the first craft leaves 0.3 after the launch call: fx_weapons.launch)
+const DOOR_CLOSE := 0.5      # seconds to shut, after the hold
+var doors: Array = []        # {node, name, id, bay, deg, lobes: [{node, rest}], wins: [[t_open, t_shut]], f}
+var _door_of := {}           # door node instance id -> index
+
+
+func _read_doors(root: Node3D) -> void:
+	doors = []
+	_door_of = {}
+	var re := RegEx.new()
+	re.compile(DOOR_RE)
+	var found: Array = []
+	for nd in root.find_children("door_*", "Node3D", true, false):
+		var m := re.search(String(nd.name))
+		if m == null:
+			continue
+		var ex = (nd as Node3D).get_meta("extras", {})
+		if not ex is Dictionary:
+			ex = {}
+		found.append([int(m.get_string(1)), nd, ex])
+	found.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	for row in found:
+		var d3: Node3D = row[1]
+		var ex: Dictionary = row[2]
+		var lobes: Array = []
+		var lre := RegEx.create_from_string("^%s_lobe_(\\d+)$" % String(d3.name))
+		for c in d3.get_children():
+			if c is Node3D and lre.search(String(c.name)) != null:
+				lobes.append({"node": c, "rest": (c as Node3D).transform})
+		_door_of[d3.get_instance_id()] = doors.size()
+		doors.append({"node": d3, "name": String(d3.name), "id": str(ex.get("id", d3.name)), "bay": int(ex.get("bay", row[0])),
+			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
+
+
+# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+func _door_above(n: Node, root: Node) -> int:
+	var p := n.get_parent()
+	while p != null and p != root:
+		if _door_of.has(p.get_instance_id()):
+			return int(_door_of[p.get_instance_id()])
+		p = p.get_parent()
+	return -1
+
+
+# The door that opens for bay i (hp_bay_<i>), or -1.
+func door_for_bay(i: int) -> int:
+	for k in doors.size():
+		if int(doors[k]["bay"]) == i:
+			return k
+	return -1
+
+
+# Open bay i's door from t_open, hold it open until t_hold (the last craft clear), then shut it. A second launch from the same
+# bay while the door is still held open extends that hold, so it never shuts between squadrons. One that comes while the door is
+# closing gets its own window: the door's pose is the most open of its windows, so it reopens from where it is (it keeps
+# closing until the new opening passes it, then opens), never jumping back to fully open (Artoo on PR 1544).
+func door_cycle(i: int, t_open: float, t_hold: float) -> void:
+	var k := door_for_bay(i)
+	if k < 0:
+		return
+	var wins: Array = doors[k]["wins"]
+	for w in wins:
+		if t_open >= float(w[0]) and t_open <= float(w[1]):
+			w[1] = maxf(float(w[1]), t_hold)
+			return
+	wins.append([t_open, t_hold])
+
+
+# How far door k is open at time t: 0 shut, 1 open; eased in and out (smoothstep), never a snap (RULEBOOK 7.1).
+func door_open_at(k: int, t: float) -> float:
+	var f := 0.0
+	for w in doors[k]["wins"]:
+		var a := float(w[0])
+		var b := float(w[1])
+		var g := 0.0
+		if t < a or t > b + DOOR_CLOSE:
+			g = 0.0
+		elif t < a + DOOR_OPEN:
+			g = smoothstep(0.0, 1.0, (t - a) / DOOR_OPEN)
+		elif t <= b:
+			g = 1.0
+		else:
+			g = 1.0 - smoothstep(0.0, 1.0, (t - b) / DOOR_CLOSE)
+		f = maxf(f, g)
+	return f
+
+
+func door_step(t: float) -> void:
+	for k in doors.size():
+		var d: Dictionary = doors[k]
+		var wins: Array = d["wins"]
+		while not wins.is_empty() and float(wins[0][1]) + DOOR_CLOSE < t - 1.0:
+			wins.pop_front()
+		var f := door_open_at(k, t)
+		if f == float(d["f"]) and f == 0.0:
+			continue
+		d["f"] = f
+		var b := Basis(Vector3.RIGHT, deg_to_rad(float(d["deg"]) * f))
+		for lb in d["lobes"]:
+			if is_instance_valid(lb["node"]):
+				(lb["node"] as Node3D).transform = (lb["rest"] as Transform3D) * Transform3D(b, Vector3.ZERO)

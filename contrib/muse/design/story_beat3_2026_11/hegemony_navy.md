@@ -1,33 +1,31 @@
-## Hegemony Navy
+## Meridian Directorate
 
 ### Core decision: The Unlogged Minute
 
-Scene purpose: The one tradition the Registry never logs becomes a real decision with a real price. Switching the links off to speak for one minute costs the formation its sync at the opening volley; staying linked keeps the formation bonus and leaves the crews unnamed.
-
 Node:
 ```
-id:'arc_hg_minute', t:'The Unlogged Minute', fight:false,
+id:"arc_hg_minute", t:"The Unlogged Minute", fight:false,
 o:[
- {t:'Switch the links off. Speak for one minute', r:{xp:25, syncDown:1}, tx:'One minute of silence on the link, the first in the fleet record. The formation bonus will not answer at the first volley. What you say in the minute is not logged, not projected, and not repeatable. Every captain repeats it anyway.'},
- {t:'Stay linked. Fight the projection', r:{credits:40}, tx:'The links stay on. The Registry pays a compliance credit and the formation holds its shape. The flag captain folds the paper list smaller and says nothing at all.'}
+ {"t":"Cut the Registry links for one minute and speak to the crews","r":{"xp":25,"syncDown":1},"tx":"Every officer drops off the Meridian net simultaneously. Without live telemetry, your synchronized fire lags on round one, yet the crews hear their admiral speak without a Registry timestamp for the first time in the campaign."},
+ {"t":"Stay linked and secure the rim by the book","r":{"credits":40},"tx":"Every link stays green, Meridian credits your operational ledger for strict compliance, and the column locks into formation at the Hollow Sun perimeter. Your flag captain folds the paper casualty list back into her jacket without comment."}
 ]
 ```
 
 Text lines:
-- Flag captain: "Admiral. Before the decisive engagement, commanders switch off their links for one minute. It is the only thing the Registry never logs."
-- Admiral: "What do they say in the minute, Captain?"
-- Flag captain: "The names, Admiral. Rank and number. All of them. It takes the whole minute."
+- Flag captain: "Admiral, we are within visual range of the Hollow Sun perimeter. Before a decisive engagement, line commanders customarily drop their Registry links for sixty seconds."
+- Admiral: "To say what, Captain?"
+- Flag captain: "The names of the crews we lost reaching this sector, Admiral. Meridian only archives serial numbers."
 
-Debrief: "The Registry projection for the coming fight has been revised twice in one hour. It does not say why."
+Debrief: "Meridian updated its casualty projection for the Hollow Sun perimeter twice during the fight, without attaching an explanation."
 
-Learning payoff: "Whether you spoke or stayed linked, win or lose, the doctrine file gains an entry with no author. Couriers carry it at courier speed, and it reaches the next fleet late, one sector behind where it was needed, still the best map that fleet has."
+Learning payoff: "Regardless of the outcome, an unsigned addendum enters the Directorate tactical manual via slow courier, arriving one sector late and still saving more crews than the official projection."
 
 ### Admiral spotlights
 
-- First Admiral Ilsa Kassar: "Kassar runs the synchronized volley drill until the fleet fires as one instrument. 'Discipline is a form of mercy. It shortens the dying.'"
-- Commodore Dace Vorn: "Vorn marks interception courses on the plot in red, then deletes the ones that merely work. 'We take the ones that end it.'"
-- Fleet Marshal Corin Reyes: "Reyes launches the strike group and reads the loss projection aloud as the wings form up, so the squadrons hear the number the strike group intends to embarrass."
-- Line Admiral Oskar Maren: "Maren walks the column before battle and checks every deflector reading personally. 'The Registry counted these crews once. I count them every day.'"
+- First Admiral Ilsa Kassar: "Kassar runs two extra timing drills before the approach. 'Clean volleys end battles quickly, and short battles cost fewer hulls.'"
+- Commodore Dace Vorn: "Vorn wipes three conservative firing plots off the holotable until only one razor-thin intercept remains. 'That is the shot that breaks their command deck.'"
+- Fleet Marshal Corin Reyes: "Reyes broadcasts Meridian's predicted squadron loss rate over the flight channel so every pilot knows the exact number they intend to beat."
+- Line Admiral Oskar Maren: "Maren inspects every bow deflector reading himself before strapping in. 'Meridian tracks tonnage. I track who gets off my ship at Meridian Yards.'"
 
 ### Flags
 

@@ -56,11 +56,13 @@ func _run() -> void:
 	check(s.stage[1] == 0, "90 percent midsection is intact despite low overall HP")
 	s.add_mark(fx, "torp", 4, Vector3(0, 2.25, 0), Vector3.UP, Vector3.DOWN)
 	flush(s)
-	check(s._marks[0].R < s.hull.L * 0.02, "light section damage limits heavy weapon puncture radius")
+	# issue 1235 (F1.1): a first torpedo on a light-damage section leaves a readable crater (it used to shrink to 12%),
+	# still short of the crater it leaves on a broken section
+	check(s._marks[0].R >= s.hull.L * 0.02 and s._marks[0].R <= s.hull.L * BREACH.CRATER_MAX_L + 1e-4, "light section damage keeps a readable torpedo crater, clearly under the stage 4 hole")
 	var small_radius: float = s._marks[0].R
 	s.sync(fx, state(15.0))
 	flush(s)
-	check(s.stage[1] == 4 and s._marks[0].R > small_radius * 2.0, "heavy section damage opens the large breach")
+	check(s.stage[1] == 4 and s._marks[0].R > small_radius * 1.2, "heavy section damage opens the large breach")
 	s.sync(fx, state(90.0)); flush(s)
 	check(s.stage[1] == 0 and not s._marks.is_empty(), "repair restores the section and keeps survivor scars")
 	s.sync(fx, state(90.0)); s.add_mark(fx, "torp", 4, Vector3(0, 2.25, 0), Vector3.UP, Vector3.DOWN); flush(s)
@@ -106,14 +108,6 @@ func _run() -> void:
 	check(BAKE.cache_key("test", "shader-v1", {"quality": "high", "seed": 7}, Vector2i(8, 4)) == key, "cache settings order does not cause rebakes")
 	check(BAKE.cache_key("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(16, 8)) != key, "cache invalidates dimensions")
 	check(absf(disk.get_pixel(0, 0).a - image.get_pixel(0, 0).a) < 0.01, "persistent cache retains sky transmittance alpha")
-	WEAP.torp_lane(fx, "friendly", "small_hit", Vector3(38, 0, 20), 1)
-	WEAP.torp_lane(fx, "enemy", "organic", Vector3(-38, 0, 20), 1)
-	for lane in fx.dstate.lanes.values():
-		var strip: MeshInstance3D = lane.root.get_child(0)
-		var a: Array = strip.mesh.surface_get_arrays(0)
-		var uv: PackedVector2Array = a[Mesh.ARRAY_TEX_UV]
-		check(uv[0].x == 0.0 and uv[1].x == 1.0, "lane UV increases from shooter toward target for both teams")
-	check(WEAP.LANE.contains("s + x * 2.5"), "chevron point leads its wings toward positive lane distance")
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 480: fx.step(1.0 / 60.0)
 		await captures(s, wounded, organic, crystal, meshes)
@@ -128,7 +122,7 @@ func _run() -> void:
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 8: await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), OS.get_environment("FB1_SHOTS").path_join("chorus_rupture.png"))
+		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), OS.get_environment("FB1_SHOTS").path_join("chorus_rupture.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	check(organic.has_meta("death_hidden"), "Chorus live skin is replaced at rupture")
 	for i in 60: fx.step(1.0 / 60.0)
 	var remains: Array = fx.dstate.wrecks.filter(func(w): return w.id == "organic")
@@ -162,12 +156,7 @@ func captures(s, wounded, organic, crystal, chunks: Array) -> void:
 		camera.position = target + Vector3(7, 17, 19); camera.look_at(target)
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join(pair[1] + ".png"))
-	camera.position = Vector3(0, 88, 50); camera.look_at(Vector3(0, 0, 0))
-	for i in 8: await process_frame
-	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("lanes_both_teams.png"))
-	for lane in fx.dstate.lanes.keys(): WEAP.torp_lane_clear(fx, lane, false)
+		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join(pair[1] + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	var holder := Node3D.new(); world.add_child(holder); holder.position = Vector3(0, 0, 32)
 	for i in mini(4, chunks.size()):
 		var mi := MeshInstance3D.new(); mi.mesh = chunks[i]; holder.add_child(mi)
@@ -175,5 +164,5 @@ func captures(s, wounded, organic, crystal, chunks: Array) -> void:
 	camera.position = Vector3(0, 45, 70); camera.look_at(holder.position)
 	for i in 10: await process_frame
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("loaded_hull_chunks.png"))
+	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("loaded_hull_chunks.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	camera.position = organic.to_world(Vector3(7, 17, 19)); camera.look_at(organic.to_world(Vector3(0, 1.5, 0)))

@@ -6,7 +6,7 @@ const ACTION_IDS := ["select", "target", "fired", "close"]
 const CARDS := [
 	["c_map", "The sector map", "This is the sector map. Pick a stop on a connected lane and work toward the boss at the end. Stops are fights, events, rest stops, and shipyards. There is at least one elite fight on a route you can choose: harder enemies, better rewards. You cannot visit every stop, so choose."],
 	["c_clock", "The Nemesis clock", "Winning fights and some choices fill the Nemesis clock. A full clock can bring your one meeting for this sector forward. It does not add another meeting."],
-	["c_reward", "Rewards", "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for salvage or Ransom for credits. A protocol reroll costs credits."],
+	["c_reward", "Rewards", "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for parts or Ransom for credits. A protocol reroll costs credits."],
 	["c_shipyard", "Repair and refit", "Spend credits here to repair hull damage, upgrade ships or buy new ones. Use Refits to swap modules between ships or move them to and from the hold."],
 	["c_loss", "The next run", "The run is over, and that is expected. Losing teaches your faction: renown, core progress, and what your admiral learned all carry into the next run. Your ships and credits do not."],
 ]

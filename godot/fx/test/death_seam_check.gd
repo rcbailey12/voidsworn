@@ -1,4 +1,5 @@
 extends SceneTree
+const CRAFT_GLB = preload("res://tools/ci/craft_glb.gd")
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 600 (RULEBOOK 5.17, R226; RULEBOOK 6.5, R186 "blown apart, never sliced"): kill A16 (C19_51) and count two things.
 # Both must be zero:
@@ -20,6 +21,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # their list and a canonical extract of A16's own data.js entry (c_boss); when the check runs on the fixture it hashes the
 # same files and the extract and fails when they differ.
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const FIXTURE_RECORD := "res://fx/test/fixtures/C19_51_unbaked.sheet.txt"
@@ -105,6 +107,12 @@ func _load_ship() -> Node3D:
 
 
 func _run() -> void:
+	var args := OS.get_cmdline_user_args()
+	if not args.is_empty() and CRAFT_GLB.is_craft(args[0]):
+		print("DEATH_SEAM skipped: %s is a strike craft (cls Squadron): no seams, its death is a hidden spark (fx_death.gd _wing_death)" % args[0])
+		print("DEATH_SEAM failures=0")
+		quit(0)
+		return
 	var world := Node3D.new()
 	root.add_child(world)
 	var ship := _load_ship()
@@ -112,25 +120,15 @@ func _run() -> void:
 	if ship == null:
 		quit(1)
 		return
-	# the class length the export wrote (length_world), as the game draws it
-	var length := 26.0
-	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
-		var ex = nd.get_meta("extras", {})
-		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
-	var box := AABB()
-	var first := true
-	for mi in ship.find_children("*", "MeshInstance3D", true, false):
-		var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
-		box = bb if first else box.merge(bb)
-		first = false
-	ship.scale = Vector3.ONE * (length / maxf(box.size.x, 0.0001))
+	# Issue 1309: rooted the way the game roots it (tools/ci/world_root.gd), at world size
+	var holder := ROOT.hold(world, ship)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "low", "camera": null, "shake": 0.0})
-	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
+	fx.add_ship("a16", holder, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	check(s.hull.authored, "A16's seams reach the hull reader")
 	check(not s.hull.machines.is_empty(), "A16's export names its machines (voidsworn_destruct.machines)")
 	# the staggered cut finishes before the death, as in a battle; then the kill and the break

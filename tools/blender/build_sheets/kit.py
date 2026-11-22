@@ -88,6 +88,7 @@ MATS = {
     'tissue': ((0.13, 0.075, 0.035), 0),     # raw transition tissue (sphincters, lips, the wound along the spine)
     'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
     'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
+    'pit': ((0.010, 0.007, 0.004), 0),       # dark open holes (gland vents, sac pores): matte, so no light flares off them
     'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
     'veilroot': ((0.45, 0.68, 0.06), 1.0),  # the Chorus veils' glowing roots and ribs (R341 round 3)
     'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)
@@ -212,7 +213,8 @@ class Kit:
         if not w:
             return 0.0
         a, sd = w
-        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+        fn = getattr(self, 'wob_fn', None)   # issue 1291: a sheet's own swellings and folds grown into the skin, on top
+        return (fn(x, t) if fn else 0.0) + a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
                     + 0.2 * math.cos(0.9 * x - 1.0 * t))
 
     def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
@@ -526,6 +528,42 @@ class Kit:
         self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
         return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
 
+    def open_hull(self, pos, axis, r, reach=1.5, keep_grp=None, depth=0.0):
+        """cut the hull open where an organ's opening goes into the body (Ryan, Nov 21 2026, C14 run H: "There are no actual
+        holes, it's just caps"): faces whose centre lies within r of the opening's axis and within reach of pos along it are
+        removed from the hull and from every other outside mesh there (armour bands, hull detail), so the organ's own bore
+        shows through instead of skin or a plate closing it like a cap. The hull's shell (solidify, rim on) walls the cut.
+        keep_grp: the organ's own group, left whole. depth: how far the organ's bore runs in below pos; inside rooms are cut
+        clear of the bore down to it, so no room shows down an open mouth (the game draws them on an intact hull). Call it
+        after the armour and the inside rooms. Returns the number of faces removed."""
+        import bmesh
+        p0 = Vector(pos); ax = Vector(axis).normalized(); n = 0
+        for ob in [o for o in list(self.coll.objects) + list(self.cin.objects) if o.type == 'MESH' and (keep_grp is None or o.get('grp') != keep_grp)]:
+            inside = bool(ob.get('inside'))
+            if inside and not depth:
+                continue
+            lo = -(depth + 1.0) if inside else -reach
+            # rooms are cleared wider than the cut: a room corner beside the hole would see out through it and read as
+            # outside its plating in the death seam check (C14 run I: 18 such triangles)
+            rr = r * 1.6 if inside else r
+            mw = ob.matrix_world
+            bm = bmesh.new(); bm.from_mesh(ob.data)
+            kill = []
+            for f in bm.faces:
+                # any corner in the opening: a band or a shell sliver half in the bore would show as a shard down the hole
+                for v in f.verts:
+                    d = mw @ v.co - p0
+                    along = d.dot(ax)
+                    if lo < along < reach and (d - ax * along).length < rr:
+                        kill.append(f)
+                        break
+            if kill:
+                bmesh.ops.delete(bm, geom=kill, context='FACES')
+                bm.to_mesh(ob.data); ob.data.update(); n += len(kill)
+                ob['open_cut'] = 1   # export7: the solidify rim round the cut takes the outside material
+            bm.free()
+        return n
+
     def hpt(self, x, th, out=0.0):
         """a point on the rounded hull at station x and section angle th (radians: 0 = port beam, pi/2 = the top, -pi/2 the
         belly), pushed `out` along the outward normal: (point, normal). For laying grown detail on the hull (issue 623)."""
@@ -623,7 +661,12 @@ class Kit:
         part.transform(M)
         groups = {}
         names = []
+        doors = []
         for c in part.comps:
+            if c['role'] == 'door':
+                doors.append(c)
+                names.append(c['name'])
+                continue
             key = (c['role'], c['mat'])
             V, F = groups.setdefault(key, ([], []))
             o = len(V); V.extend(c['verts']); F.extend([tuple(x + o for x in f) for f in c['faces']])
@@ -650,6 +693,19 @@ class Kit:
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
                         ob['gun_fixed'] = 1
+        R3 = M.to_3x3()
+        for c in doors:
+            # issue 1543: a door lobe is its own object (it turns on its hinge in the game), a body part of its organ, with its
+            # hinge point, turning axis (a negative turn opens it), the door's centre and the way out, all in world space;
+            # export7.py hangs it on a door_<n>_lobe_<k> node (HARDPOINTS.md "Doors")
+            k_ = int(''.join(ch for ch in c['name'] if ch.isdigit()) or 0)
+            ob = self._obj('%s_door_%d' % (fid, k_), c['verts'], c['faces'], c['mat'], grp=fid, role='body', smooth=getattr(HP, 'SMOOTH', False))
+            ob['door_lobe'] = 1; ob['door'] = fid; ob['door_k'] = k_
+            ob['door_hinge'] = list(M @ Vector(c['hinge'])); ob['door_axis'] = list((R3 @ Vector(c['axis'])).normalized())
+            ob['door_centre'] = list(M @ Vector(c['centre'])); ob['door_out'] = list((R3 @ Vector((0, 0, 1))).normalized())
+            # the lobe's own vertices where these points were written: the stages after the sheet move and scale the whole ship
+            # into the export frame, so export7 fits that move from these to the lobe's vertices then and carries the hinge with it
+            ob['door_src'] = [float(x) for v in c['verts'] for x in v]
         for ob in [o for o in self.coll.objects if o.get('grp') == fid and o.type == 'MESH']:
             # R226: the part's kind and whether it is a machine, from the faction kit (parts.py MACHINES); the audit reads them
             ob['part_kind'] = part.kind; ob['machine'] = int(part.kind in getattr(HP, 'MACHINES', ()))
@@ -1009,9 +1065,68 @@ class Kit:
     def organ_room(self, name, kind, centre, radii, note='', seed=0, n=(22, 12)):
         """a grown organ or chamber inside the hull (a lumpy ellipsoid, never a box that reaches the skin)"""
         V, F = HP.blob(*radii, centre=centre, nu=n[0], nv=n[1], seed=seed, amp=0.1)
+        # issue 1291: a room that reaches the skin shows through it in game (C13's lime "disc" was the fore gland's spine sac
+        # pushing out of the hull beside the knoll). Shrink the room about its centre until every vertex sits inside the hull's
+        # skin with a margin.
+        k_ = self._room_fit(V, centre)
+        moved_ = 0
+        while k_ < 0.7 and moved_ < 8 and getattr(self, 'hull_sections', None):
+            # a room centred at or past the skin: pull it in toward the section's middle before shrinking it
+            s_ = sec_at(self.hull_sections, centre[0]); zc_ = (s_[3] + s_[4]) / 2
+            nc = (centre[0], centre[1] * 0.85, zc_ + (centre[2] - zc_) * 0.85)
+            V = [tuple(v[i] + nc[i] - centre[i] for i in range(3)) for v in V]
+            centre = nc; moved_ += 1
+            k_ = self._room_fit(V, centre)
+        if moved_:
+            print('[inside] %s: moved in to (%.2f, %.2f, %.2f)' % ((name,) + tuple(centre)))
+        if k_ < 1.0:
+            V = [tuple(centre[i] + (v[i] - centre[i]) * k_ for i in range(3)) for v in V]
+            radii = tuple(r_ * k_ for r_ in radii)
+            print('[inside] %s: shrunk to %d%% to stay inside the hull' % (name, round(k_ * 100)))
         self._obj('in_' + name, V, F, kind, inside=True, smooth=True)
         c = centre; r = radii
         self.inside.append(dict(kind='space', name=name, mat=kind, x=(c[0] - r[0], c[0] + r[0]), y=(c[1] - r[1], c[1] + r[1]), z=(c[2] - r[2], c[2] + r[2]), note=note))
+
+    def _room_fit(self, V, centre, margin=0.05):
+        """the scale (<= 1) about centre that keeps every vertex of V inside the hull's skin by margin: a ray from the hull
+        section's middle out through each vertex finds the outer skin (issue 1291). 1.0 when there is no hull yet."""
+        hob = bpy.data.objects.get(self.code + '_hull')
+        if hob is None or not getattr(self, 'hull_sections', None):
+            return 1.0
+        from mathutils.bvhtree import BVHTree
+        dg = bpy.context.evaluated_depsgraph_get()
+        tree = BVHTree.FromObject(hob, dg)
+        mw = hob.matrix_world; mi = mw.inverted()
+        cen = Vector(centre); k = 1.0
+        for v in V:
+            v = Vector(v)
+            s_ = sec_at(self.hull_sections, v.x)
+            o = Vector((v.x, 0.0, (s_[3] + s_[4]) / 2))
+            d = v - o
+            if d.length < 1e-6:
+                continue
+            # the outer skin: the last wall along the ray (the shell's inner wall hides nothing, the skin does)
+            lo_ = mi @ o; ld = (mi.to_3x3() @ d).normalized(); far = None
+            for _ in range(8):
+                hit = tree.ray_cast(lo_, ld)
+                if hit[0] is None:
+                    break
+                far = hit[0]; lo_ = hit[0] + ld * 1e-4
+            if far is None:
+                continue
+            wall = (mw @ far - o).length - margin
+            if d.length > wall:
+                # the scale about the room's centre that brings this vertex back to the wall (along the room's own ray)
+                dv = v - cen
+                lo, hi = 0.0, 1.0
+                for _ in range(20):
+                    mid = (lo + hi) / 2
+                    if ((cen + dv * mid) - o).length <= wall:
+                        lo = mid
+                    else:
+                        hi = mid
+                k = min(k, lo)
+        return max(0.4, k)
 
     def hoop(self, name, x, inset=0.3, w=0.14, t=0.12, kind='bonefr'):
         """a bone frame hoop inside the rounded hull at station x: a ring following the hull's section, inset from the skin"""

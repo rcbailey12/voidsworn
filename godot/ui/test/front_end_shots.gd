@@ -2,6 +2,7 @@ extends SceneTree
 # Issue 1217: pictures of the front-end screens through the real main scene. With --no-showcase no built ships are
 # needed (the cloud); without it the script waits for the title battle to fade in (the PC).
 # godot --path godot --resolution 1920x1080 --script res://ui/test/front_end_shots.gd -- <out dir> [tag] [--no-showcase]
+#   [--only=F5] [--expect=1920x1080]   (--expect: every frame must be that size before the shrink, or the run fails)
 # In the cloud run it under xvfb-run with --rendering-driver opengl3. Each picture is 1280x720 with its code name on it.
 
 const UiScale := preload("res://ui/ui_scale.gd")
@@ -14,15 +15,10 @@ var _saved_settings = null   # the settings file's bytes at the start; the captu
 var _failed := 0             # pictures that did not save
 
 
-# On Windows the capture runs only inside the throwaway profile frontend_ui_check.bat makes (the player-path pattern,
-# PR 1188): the real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
+# On Windows the capture runs only inside the watchdog's throwaway profile (issue 1369; tools/throwaway_profile.gd): the
+# real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
 func _profile_error() -> String:
-	if OS.get_name() != "Windows": return ""   # the cloud and CI have no player profile
-	var profile := OS.get_environment("VS_SHOTS_PROFILE").replace("\\", "/").simplify_path().trim_suffix("/")
-	var actual := ProjectSettings.globalize_path("user://").replace("\\", "/").simplify_path().trim_suffix("/")
-	if profile == "" or not actual.to_lower().begins_with(profile.to_lower() + "/"):
-		return "user:// (%s) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat" % actual
-	return ""
+	return preload("res://tools/throwaway_profile.gd").refusal("front_end_shots.gd")
 
 
 func _initialize() -> void:
@@ -63,25 +59,34 @@ func _shot(name: String, caption: String) -> void:
 	var img := root.get_viewport().get_texture().get_image()
 	# a 1080p or 4K slot only counts if the frame really is that size before the 720 high shrink (Artoo on PR 1233:
 	# a clamped window once gave two identical "sizes" on the combat capture, PR 1220)
-	var want := _asked_size()
+	var want := _expect
 	if want != Vector2i.ZERO and Vector2i(img.get_width(), img.get_height()) != want:
 		_failed += 1; printerr("[front-end-shots] FAIL ", name, " is ", img.get_width(), "x", img.get_height(), ", not the asked ", want.x, "x", want.y)
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
-	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p)
+	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p, preload("res://tools/picture_provenance.gd").capture_stage())
 	if err != OK: _failed += 1; printerr("[front-end-shots] FAIL could not save ", p, " (", error_string(err), ")")
 	else: print("[front-end-shots] saved ", p)
 	cap.queue_free()
 
 
-# the --resolution the command line asked for, or zero when none was given
-func _asked_size() -> Vector2i:
-	var args := OS.get_cmdline_args()
-	var i := args.find("--resolution")
-	if i < 0 or i + 1 >= args.size(): return Vector2i.ZERO
-	var parts := str(args[i + 1]).split("x")
-	return Vector2i(int(parts[0]), int(parts[1])) if parts.size() == 2 else Vector2i.ZERO
+# Issue 1369 PC run: main starts a fresh profile full screen (settings "fullscreen" defaults to true), so every frame
+# came out at the monitor size, 2560x1440, whatever --resolution asked. With --expect, put the window back to that size,
+# windowed, the way main's own capture jobs do (_capture_window); a size the window cannot take still fails each shot.
+func _hold_window() -> void:
+	if _expect == Vector2i.ZERO or DisplayServer.get_name() == "headless": return
+	for i in 3:   # main's start-up mode change can land a frame or two later; apply it until it holds
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(_expect)
+		await process_frame
+	await _wait(0.3)
+	print("[front-end-shots] window ", DisplayServer.window_get_size(), " viewport ", root.get_viewport().get_visible_rect().size)
+
+
+# the frame size --expect asked for, or zero. It is a user argument because Godot keeps --resolution to itself
+# (OS.get_cmdline_args() never lists it), which left the first version of this check silently passing.
+var _expect := Vector2i.ZERO
 
 
 func _scale(v: float) -> void:
@@ -95,7 +100,11 @@ var _only := ""
 func _run() -> void:
 	for a in OS.get_cmdline_user_args():
 		if str(a).begins_with("--only="): _only = str(a).substr(7)
+		if str(a).begins_with("--expect="):
+			var parts := str(a).substr(9).split("x")
+			if parts.size() == 2: _expect = Vector2i(int(parts[0]), int(parts[1]))
 	await _wait(1.5)
+	await _hold_window()
 	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
 	if not main.args.has("no-showcase"):
 		var t0 := Time.get_ticks_msec()
@@ -136,6 +145,19 @@ func _run() -> void:
 			host.ui.desk_opts_open = true; host.ui._dirty = true
 			await _wait(0.8)
 			await _shot("F3_run_options", "%s, UI scale Normal, Run options drawer" % res)
+			# issue 1261: open Run options from the keyboard (focus its button, Accept), then Tab three times: where is the focus?
+			host.ui.close_run_options(); await _wait(0.6)
+			var rob = host.ui.page_box.find_child("RunOptionsButton", true, false)
+			if rob != null: rob.grab_focus()
+			for act in ["ui_accept", "WAIT", "ui_focus_next", "ui_focus_next", "ui_focus_next"]:
+				if act == "WAIT": await _wait(0.6); continue
+				for down in [true, false]:
+					var e := InputEventAction.new(); e.action = act; e.pressed = down
+					root.push_input(e); await process_frame
+			await _wait(0.3)
+			var fo = root.gui_get_focus_owner()
+			var fo_t = "nothing" if fo == null else (("the " + str(fo.text) + " button") if fo is Button and str(fo.text) != "" else str(fo.name))
+			await _shot("F3_run_options_keys", "%s, Run options after 3 Tabs: keyboard focus on %s" % [res, fo_t])
 			host.ui.close_run_options()
 			await _wait(0.4)
 	main.settings["ui_scale"] = 1.3

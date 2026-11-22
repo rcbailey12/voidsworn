@@ -60,7 +60,7 @@ def dense(key, step=0.15):
     return out
 
 
-HULL = dense(KEY)
+HULL = dense(KEY, step=0.05)   # issue 1291: fine stations, so the folds grown into the skin hold their shape
 MOUND_X = -0.45
 DOMES = (1.3, 0.5, -1.12)
 SACS = ((0.3, 1, 0.38), (-0.6, -1, 0.34))   # (x, side, r): the regrow reserve, one each side, staggered
@@ -77,11 +77,19 @@ def build(K):
     import sys
     if _k._KITS not in sys.path:
         sys.path.append(_k._KITS)
-    from chorus import plates
+    from chorus import plates, body
     HP = _k.HP
     plates.register(_k)   # the armour shell's materials (R341)
 
-    hull = K.hull(HULL, 'flesh', shell=0.14, rounded=True, pexp=PEXP, n=30, smooth=True, wobble=WOBBLE)
+    # issue 1291 (R349, C13 round G accepted Nov 20): lumpy fused swellings and deep folds grown into the skin itself; calm round
+    # the knoll, the tendril knot, the domes, the sacs, the siphons and the vent ring
+    calm = [(2.2, 0.0, 0.5), (2.2, math.pi, 0.5), (2.2, math.pi / 2, 0.5), (2.2, -math.pi / 2, 0.5), (MOUND_X, math.pi / 2, 0.5),
+            (1.75, -0.55, 0.3), (1.75, math.pi + 0.55, 0.3), (-1.5, 0.6, 0.3), (-1.5, math.pi - 0.6, 0.3)]
+    calm += [(x, th, 0.5) for x in DOMES for th in (-0.12, math.pi + 0.12)]
+    calm += [(x, -1.2 if side > 0 else math.pi + 1.2, r * 1.6) for (x, side, r) in SACS]
+    K.wob_fn = body.field(1153, 2.3, -1.75, swell=18, folds=20, wrinkles=100, sweeps=28, depth=0.11, height=(0.1, 0.24),
+                          size=(0.3, 0.6), keep=calm, shell=(2.15, -1.85, plates.WRAP))   # the armadillo shell below: no creases under it
+    hull = K.hull(HULL, 'flesh', shell=0.14, rounded=True, pexp=PEXP, n=110, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the compact knot of flesh', hull, 'dark olive flesh', note='narrow at the prow, widest a little aft of the middle, rounding into the stern')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
     K.mark('hide', 'plate', ['pad', 'pore'])
@@ -133,7 +141,7 @@ def build(K):
     K.mass('Tendril knot', _bpy.data.objects['T1_mount_flesh'], 'flesh mound, tendrils', note='the knot with a crown on the back: the frigate\'s mark from above (R233)')
 
     # ---------------- the domes on the flanks (bile stores) ----------------
-    caps = []   # R341, the Board: the armour caps the domes' tops
+    caps = []   # issue 1291 round G (Ryan: "caps, but flatter"): flat chitin caps over the domes' tops, the crowns open
     for i, x in enumerate(DOMES):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
@@ -172,19 +180,18 @@ def build(K):
                  note='pulse vent with three wide flowing veils that fan, cup and curl, splayed away from the ring\'s centre')
     K.mass('Vent ring', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents round the stern\'s end, their veils streaming aft')
 
-    # R341 (Ryan, Nov 19): the whole body is armoured, so the back folds, pore fields, veins, flank folds and scar patches of v3
-    # are gone: they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
-
-    # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
-    # the draped tendrils lie over the shell (skipped as keep-outs); the knot they grow from stays open
-    plates.dome_caps(K, _k, caps, seed=1342)
-    plates.armour(K, _k, 2.15, -1.85, seed=1342, skip=('T1_body_',), rows=5, scute=0.5, thick=0.06,
-                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the knoll, the tendril knot, '
-                       'sacs, siphons and vents stand clear, the domes capped in smaller scutes, the tendrils lie over it')
+    # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
+    # armadillo bands of grown chitin wrapping the body down to the keel (plates.WRAP), broken round the
+    # knoll, the tendril knot, the domes, the sacs, the siphons and the vents; the draped tendrils lie over the shell (skipped
+    # as keep-outs); flat caps over the domes; the belly is banded too
+    plates.armadillo(K, _k, 2.15, -1.85, seed=1346, band=0.3, lap=1.45, thick=0.05, skip=('T1_body_',),
+                     note='armadillo bands of grown chitin wrapping the body down to the keel, lips aft; broken round the knoll, the knot, domes, sacs, siphons and vents; hide rolled at the edges; the tendrils lie over it')
+    plates.dome_caps(K, _k, caps, seed=1347, flat=True,
+                     note='flat grown chitin caps over the bile domes, two rings of thin plates lying close, the bile window open at each crown (round G)')
 
     # ---------------- colour zones ----------------
-    K.colour('warm brown flesh (paint stage)', 2.35, -1.75, 'whole body')
-    K.colour('brown keratin scutes over warm brown hide (R341)', 1.95, -1.75, 'the armour shell, belly to back')
+    K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 2.35, -1.75, 'whole body')
+    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 2.15, -1.85, 'the armadillo bands, belly edge to belly edge')
     K.colour('raw puckered flesh', 3.0, 2.2, 'the prow knoll')
     K.colour('pale ochre bone', 3.0, 2.8, 'the short hooks round the bore')
     K.colour('bile yellow-green light', 3.0, 2.4, 'the gland deep in the knoll\'s vent')
@@ -233,9 +240,10 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('An armour shell of banded overlapping keratin scutes over the whole body; the hide pads, back folds, pore fields, veins, '
-             'flank folds and scar patches of v3 removed', 'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, '
-             'minus the spine, maw, engines and weapons; the knoll, the tendril knot, domes, sacs, siphons and vents stand in open sockets')
+    K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown '
+             'chitin down to the keel, flat chitin caps over the domes, the belly banded too (Ryan, Nov 20: armour almost everywhere); the R341 scute shell removed',
+             'Ryan, Nov 20 (R349; C13 round G accepted in game, PR 1308): armour across the entire body, grown not tiled, "caps, but flatter"; '
+             'issue 1291 brings C10 to C12 to the same kit calls')
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19)',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette')
     K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore about half the lip\'s width, in a soft puckered lip that flares from a waist, twelve short bone hooks set into the lip (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body; Board on v3: open the bore so it dominates bow-on, no straight collar)',

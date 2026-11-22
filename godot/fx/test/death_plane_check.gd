@@ -110,15 +110,20 @@ func _exit_with_cut() -> void:
 		OS.delay_msec(100)
 		gate.post()
 		gate.post())
-	battle.free()  # FX _exit_tree must join both detached tasks as well as the current cut
+	# Issue 1435: scene exit no longer waits for running cuts on the caller; it retires them (none lost) and quit drains
+	# them (FX.clear_static, from static_caches clear_all), so every task is joined before the rendering server goes.
+	battle.free()
+	_check(FX.retired_count() >= 1, "scene exit retired the running cuts instead of dropping them (%d)" % FX.retired_count())
 	unblock.wait_to_finish()
+	FX.clear_static()
+	_check(FX.retired_count() == 0, "quit drained every retired cut")
 	for tid in tasks:
 		# Godot reports an invalid ID here if the FX session already joined it. Silence that deliberate probe.
 		Engine.print_error_messages = false
 		var result := WorkerThreadPool.wait_for_task_completion(tid)
 		Engine.print_error_messages = true
 		_check(result == ERR_INVALID_PARAMETER, "scene exit left worker task %d unjoined" % tid)
-	_verdict(before, "death-cut workers joined on battle exit")
+	_verdict(before, "death-cut workers retired on battle exit and joined by quit")
 
 func _risen_takes_wreck() -> void:
 	var before := failures
@@ -152,8 +157,13 @@ func _risen_takes_wreck() -> void:
 	_check(fx.dstate.wrecks.is_empty() and not battle.wrecked.has("risen"), "rise removes both wreck records")
 	for piece in pieces:
 		_check(not is_instance_valid(piece), "rise frees the old wreck piece")
-	_check(mesh.mesh == live_mesh and mesh.visible and not sv.dead and mesh.material_overlay == null and mesh.get_surface_override_material(0) == paint,
-		"rise shows the live surface paint without the death overlay")
+	# issue 1587 (Neon on PR 1631): the risen ship comes back at 35% hull, so it may wear its live paint through its own
+	# fresh damage surface (built from that paint, never the death's power-down material)
+	var s2 = fx.ship("risen")
+	var mat0 := mesh.get_surface_override_material(0)
+	var worn: bool = s2 != null and s2 != s and not s2.dead and s2._damage_surfaces.values().any(func(en): return en.size() > 1 and en[1] == mat0)
+	_check(mesh.mesh == live_mesh and mesh.visible and not sv.dead and mesh.material_overlay == null and (mat0 == paint or worn),
+		"rise shows the live surface paint without the death overlay (%s)" % ("its own wear surface" if worn else "the paint"))
 	_check(mesh.transform.is_equal_approx(rest) and sv.hull.basis.is_equal_approx(sv.hull_basis), "rise restores the fitted hull pose")
 	_check(is_equal_approx(fx.ship("risen").section_fraction[1], 0.35), "new FX ship uses the risen health")
 	var flashes: int = fx.flash_log.size()

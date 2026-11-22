@@ -15,13 +15,14 @@
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
-#   work_issue.ps1 tidy    <run folder> <root> <settings> <dry>       run folder size; checks status.json and the repo before cleanup
+#   work_issue.ps1 disk    <run folder> <repo>                 separately reports the run and reusable checkout sizes
 # Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY, KIMI_CODE_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $mode = $args[0]
 if ($mode -eq 'run') {
+  # run <issue> <arm> <dryrun or blank> <slot repo>: hold the slot and issue locks around the whole batch run.
   $issue = $args[1]; $arm = $args[2]; $runMode = $args[3]
   if ($issue -notmatch '^[1-9][0-9]*$' -or $arm -notin @('deepseek','deepseekpro','kimi','kimicode','sonnet','opus','openai')) { exit 14 }
   if ($runMode -ne 'dryrun') { $runMode = '' }
@@ -30,12 +31,54 @@ if ($mode -eq 'run') {
   $start.FileName = $env:COMSPEC
   $start.Arguments = '/d /s /c ""' + $runner + '" ' + $issue + ' ' + $arm + ' "' + $runMode + '" locked"'
   $start.UseShellExecute = $false
+  # Issue 1186: the arm's one reused checkout. Its lock sits beside it, like the Codex lane lock, and is taken before
+  # the issue lock; the batch's process tree inherits both (Artoo on issue 1186 and PR 1250).
+  $slotRepo = $args[4]
+  if (-not $slotRepo -or [IO.Path]::GetFileName([IO.Path]::GetFullPath($slotRepo).TrimEnd('\','/')) -ne 'repo' -or
+      (Split-Path -Leaf (Split-Path -Parent ([IO.Path]::GetFullPath($slotRepo)))) -cne "slot_$arm") {
+    Write-Host 'job refused: workhorse slot path not verified; no agent started'; exit 14
+  }
+  $start.EnvironmentVariables['WORK_LOCKED_REPO'] = $slotRepo
+  $slotLock = $null
   try {
     . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
+    $full = [IO.Path]::GetFullPath($slotRepo)
+    $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($full))
+    try { $slotLock = Open-HeldLock "$full.checkout.lock" }
+    catch [IO.IOException] { Write-Host 'job refused: workhorse slot busy or slot lock unavailable; no agent started'; exit 14 }
     exit (Invoke-LockedRunner $start $issue)
   } catch { Write-Host "job refused: could not hold the issue lock and run work_issue.bat ($($_.Exception.Message))"; exit 14 }
+  finally { if ($slotLock) { $slotLock.Dispose() } }
 }
 
+function Start-Utf8InputProcess($start) {
+  # Issue 1335: PowerShell 5.1 (.NET Framework) writes redirected stdin in [Console]::InputEncoding and emits its
+  # preamble when the process starts. Under code page 65001 that is a UTF-8 BOM, so git read '<BOM>create ...' and
+  # every salvage on Nov 20 was kept; under a legacy page such as 437, non-ASCII text leaves in that page. Newer .NET
+  # takes StandardInputEncoding. On 5.1 the console input encoding becomes BOM-free UTF-8 around the start and is put
+  # back after. A preamble that would still be written stops the call before anything starts. Send the text itself
+  # with Write-Utf8Input, which writes UTF-8 bytes whatever the console page is (Artoo on PR 1345).
+  $noBom = New-Object Text.UTF8Encoding($false)
+  if ($start.PSObject.Properties['StandardInputEncoding']) { $start.StandardInputEncoding = $noBom; return [Diagnostics.Process]::Start($start) }
+  $saved = $null
+  try { $saved = [Console]::InputEncoding } catch { }
+  $isUtf8 = { param($e) $e -and $e.CodePage -eq 65001 -and -not $e.GetPreamble().Length }
+  try {
+    if (-not (& $isUtf8 $saved)) { try { [Console]::InputEncoding = $noBom } catch { } }
+    $now = $null; try { $now = [Console]::InputEncoding } catch { }
+    if ($now -and $now.GetPreamble().Length) { throw 'stdin encoding still writes a byte order mark; nothing started' }
+    return [Diagnostics.Process]::Start($start)
+  } finally {
+    if ($saved) { try { if (-not $saved.Equals([Console]::InputEncoding)) { [Console]::InputEncoding = $saved } } catch { } }
+  }
+}
+function Write-Utf8Input($process, [string]$text) {
+  # UTF-8 bytes straight to the pipe, so the console code page cannot change the text (issue 1335).
+  $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes($text)
+  $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+  $process.StandardInput.BaseStream.Flush()
+  $process.StandardInput.Close()
+}
 # Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
 # GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
 # %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
@@ -141,10 +184,11 @@ function OpenAI-Agent($out, $repo, $exe, $model, $variant, [int]$cap) {
       $start.RedirectStandardInput = $true
       $start.RedirectStandardOutput = $true
       $start.StandardOutputEncoding = $utf8
-      $process = [Diagnostics.Process]::Start($start)
+      # OpenCode reads the prompt as UTF-8; no byte order mark in front of it (issue 1335).
+      $process = Start-Utf8InputProcess $start
       try {
         # OpenCode reads the message from stdin. The watchdog can record its command line on a timeout.
-        try { $process.StandardInput.Write($prompt); $process.StandardInput.Close() } catch [IO.IOException] { }
+        try { Write-Utf8Input $process $prompt } catch [IO.IOException] { }
         if ($resumes) {
           Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value ('rate limited, resumed {0} of {1}' -f $resumes, $waits.Count) -Encoding UTF8
         }
@@ -217,6 +261,7 @@ $openaiPrices = @{
   'openai/gpt-6.2-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-terra' = @{ input = [decimal]1; cached = [decimal]0.05; output = [decimal]5 }
+  'openai/gpt-6.2-astra' = @{ input = [decimal]8; cached = [decimal]0.80; output = [decimal]40 }
 }
 function OpenAI-Budget($settings) {
   $budget = [decimal]94
@@ -448,7 +493,7 @@ Rules:
 Before you finish, check how your change reaches the rest of the game (the reviewer checks all five, so do it first):
 - Callers: search the whole repo for every function, constant and save field you changed or added, and check or fix each use.
 - Saves: a player profile or run save written before your change must still load and behave; say how you checked.
-- Twins: rules that live in both the JS root files (battle.js, data.js and core.js) and the Godot port must change on both sides. The root files are the only copy (the oracle folders were deleted in PR 381). If you change one of them, re-export both tables (godot/rules/data/tables.json and godot/campaign/data/campaign_tables.json) and run contrib/opus/tools/oracle_copy_test.js last; rules parity and campaign parity prove the two sides match.
+- Rules (R405): change Godot and its tables. Reseal edited tables with res://rules/tools/reseal_tables.gd and check the saved Godot results. Keep the browser rules frozen. Follow RULEBOOK 3.1 for the current ship-data exception.
 - UI: every screen that shows what you changed (campaign map, intel, panels, HUD) must read the new value the same way.
 - CI: a new test file must be added to contrib/opus/tools/run_all_checks.js, or GitHub never runs it; say which checks GitHub runs.
 Put one line per item in your report with what you found.
@@ -570,6 +615,12 @@ elseif ($mode -eq 'guard') {
   $n = $args[1]; $tag = $args[2]; $repo = $args[3]; $out = $args[4]
   $maxMb = 8; if ($env:WORK_MAX_FILE_MB) { $maxMb = [double]$env:WORK_MAX_FILE_MB }
   Push-Location $repo
+  # prepare copies report pictures after checkout, even when the brief did not need the old pictures.
+  $evidence = "docs/shots/issue-$n-$tag"
+  if ((Test-Path -LiteralPath $evidence -PathType Container) -and (Git-One config --bool core.sparseCheckout) -eq 'true') {
+    & git add --sparse --ignore-removal -- $evidence
+    if ($LASTEXITCODE -ne 0) { Write-Host 'guard failed: could not stage review evidence'; Pop-Location; exit 1 }
+  }
   $staged = @(Git-Lines -c core.quotepath=off diff --cached --name-status --no-renames)
   if ($gx -ne 0) { Write-Host 'guard failed: git could not list the staged change'; Pop-Location; exit 1 }
   $dlFile = Join-Path $out 'deliver_to.txt'
@@ -595,7 +646,7 @@ elseif ($mode -eq 'guard') {
     $st = $parts[0].Substring(0, 1); $p = $parts[1]
     $why = Refuse-Reason $st $p $repo $maxMb
     if ($why) { $refused += [pscustomobject]@{ S = $st; P = $p; Why = $why }; continue }
-    if ($p -like "docs/shots/issue-$n-$tag/*") { continue }
+    if ($p -like "$evidence/*") { continue }
     if ($scope.Count -and -not (In-Scope $p $scope)) { $warn += "$st $p" }
   }
   $keep = Join-Path $gdir 'refused'
@@ -605,7 +656,7 @@ elseif ($mode -eq 'guard') {
       $src = Join-Path $repo ($r.P -replace '/', '\'); $dst = Join-Path $keep ($r.P -replace '/', '\')
       try { New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null; Copy-Item -LiteralPath $src -Destination $dst -Force -ErrorAction Stop } catch { $bad += "copy failed: $($r.P)" }
     }
-    & git reset -q -- ":(literal)$($r.P)" 2>$null
+    & git restore --staged --ignore-skip-worktree-bits -- ":(literal)$($r.P)" 2>$null
   }
   # The refused files must be out of the commit now (they stay in the working folder and in out\refused).
   $after = @(Git-Lines -c core.quotepath=off diff --cached --name-only --no-renames)
@@ -771,67 +822,17 @@ elseif ($mode -eq 'confirm') {
   [IO.File]::WriteAllText((Join-Path $out 'confirmed_commit.txt'), $remote, [Text.Encoding]::ASCII)
   Pop-Location; exit 0
 }
-elseif ($mode -eq 'tidy') {
-  # Every run: report the run folder's size. Only when Ryan's setting says yes (off by default) and the run ended in a
-  # checked push with no local-only work, remove the run's own repo\ copy and keep out\.
-  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $dry = $args[4]
-  function SizeOf($p) { if (-not (Test-Path -LiteralPath $p)) { return [double]0 }; $s = (Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; if ($s) { return [double]$s } else { return [double]0 } }
-  $repo = Join-Path $run 'repo'; $outd = Join-Path $run 'out'
-  $rs = SizeOf $repo; $os = SizeOf $outd
-  Write-Host ('run folder size: {0:N2} GB (repo copy {1:N2} GB, out {2:N1} MB) in {3}' -f (($rs + $os) / 1GB), ($rs / 1GB), ($os / 1MB), $run)
-  $on = $false
-  if (Test-Path -LiteralPath $setf) { foreach ($l in [IO.File]::ReadAllLines($setf)) { if ($l.Trim() -ieq 'remove_repo_copy_after_push=yes') { $on = $true } } }
-  if (-not (Test-Path -LiteralPath $repo)) { exit 0 }
-  if (-not $on) { Write-Host "repo copy kept: remove_repo_copy_after_push is not yes in $setf"; exit 0 }
-  try {
-    $state = Get-Content -LiteralPath (Join-Path $outd 'status.json') -Raw | ConvertFrom-Json
-    if ($dry -eq '1' -or $state.status -ne 'checked_push' -or $state.commit -notmatch '^[0-9a-f]{40,64}$') {
-      throw 'this run did not end in a checked push'
-    }
-    $repo = [IO.Path]::GetFullPath($repo)
-    $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-    if (-not $repo.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or
-        -not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container) -or
-        -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt') -PathType Leaf)) {
-      throw 'the repo and result could not be verified under the workhorse root'
-    }
-    for ($dir = Get-Item -LiteralPath $repo -Force; $dir; $dir = $dir.Parent) {
-      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout path contains a link' }
-    }
-    if (@(Get-ChildItem -LiteralPath $repo -Recurse -Force -Attributes ReparsePoint | Select-Object -First 1).Count) {
-      throw 'checkout contains a link'
-    }
-    $top = Git-One -C $repo rev-parse --show-toplevel
-    if ($gx -ne 0 -or [IO.Path]::GetFullPath($top) -ne $repo) { throw 'checkout root could not be verified' }
-    $worktrees = @(Git-Lines -C $repo worktree list --porcelain | Where-Object { $_ -like 'worktree *' })
-    if ($gx -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
-    # Check refs on the remote itself. Local tracking refs can be stale, and reflogs can hold work without a branch.
-    $refs = @(Git-Lines -C $repo ls-remote --refs origin)
-    if ($gx -ne 0 -or $refs -cnotcontains "$($state.commit)`trefs/heads/$($state.branch)") {
-      throw 'delivery branch could not be verified at the pushed commit'
-    }
-    $exclude = @($refs | ForEach-Object { if ($_ -match '^([0-9a-f]{40,64})\trefs/') { '^' + $Matches[1] } })
-    $local = @($exclude | & git -C $repo rev-list --all --reflog HEAD --max-count=1 --ignore-missing --stdin 2>$null)
-    if ($LASTEXITCODE -ne 0 -or $local.Count) { throw 'checkout may contain local-only history' }
-    $head = Git-One -C $repo rev-parse HEAD
-    if ($gx -ne 0 -or $head -cne $state.commit) { throw 'checkout HEAD differs from the checked push' }
-    $flags = @(Git-Lines -C $repo ls-files -v)
-    if ($gx -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
-    $status = @(Git-Lines -C $repo status --porcelain=v1 --untracked-files=all --ignored --ignore-submodules=none)
-    if ($gx -ne 0 -or $status.Count) { throw 'checkout may contain tracked edits, untracked files or ignored files' }
-  } catch {
-    Write-Host "repo copy kept: $($_.Exception.Message)"
-    exit 0
+elseif ($mode -eq 'disk') {
+  $run = $args[1]; $repo = $args[2]
+  foreach ($entry in @(@{ label = 'run folder'; path = $run }, @{ label = 'shared checkout'; path = $repo })) {
+    try {
+      $bytes = 0L
+      if (Test-Path -LiteralPath $entry.path) {
+        $bytes = (Get-ChildItem -LiteralPath $entry.path -Recurse -Force -File | Measure-Object -Property Length -Sum).Sum
+      }
+      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), $entry.path)
+    } catch { Write-Host "disk: could not measure $($entry.label) at $($entry.path): $($_.Exception.Message)" }
   }
-  $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
-  if (Test-Path -LiteralPath $pauseFlag) {
-    try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
-    catch { Write-Host 'repo copy kept: could not read the PC pause flag'; exit 0 }
-    if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
-  }
-  Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
-  if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
-  else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }
   exit 0
 }
-else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg|guard|commit|confirm|tidy ...'; exit 2 }
+else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg|guard|commit|confirm|disk ...'; exit 2 }

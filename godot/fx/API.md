@@ -95,12 +95,8 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
 - Issue 461 (the hits, upgraded; docs/playbooks/deaths_and_hits.md): each weapon family has its own hull-hit recipe (`fx_weapons.family_of`: shell, energy, lance, torpedo, bio), sized by `LADDER_PX` times the firing hull's band (`GUN_K`) times the hit hull's band (`TARGET_K`). What a hit throws lives its own life (`SPARK_LIFE`, `DEBRIS_LIFE`, `GAS_LIFE`, `EMBER_LIFE`; flame keeps the 0.70 s cap, `FLAME_CAP`) and leaves the plate along its outward side. `fx.light(p, t, life, peak, col, shape, reach)`: `reach` (world units) carries a light further and with a slower falloff (`REACH_ATTEN`); torpedo hits (36) and death core flashes (26, 35, 52 by class) use it. Tests: set `fx.dstate["hit_logging"] = true` and read `fx.dstate["hit_log"]` (`fx/test/hit_recipe_check.gd`).
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
 
-Travelling torpedoes (B3; ready now, for when the rules change lands):
-- `fx.torp_lane(lane_id, attacker_id, to_point, turns)`: a lane on the board from the attacker's bow to `to_point` (world), chevrons running toward an impact marker that pulses, in the attacker's weapon colour;
-- `fx.torp_launch(lane_id)`: the torpedo vents, runs out along the lane and holds there, engine burning, until the next turn;
-- `var r = fx.torp_strike(lane_id, target_id, hit)`: the two-stage warning (a dim pulse, then a ramp to white, about 0.8 s, K2 pin), then the torpedo closes and strikes (`hit` as in `volley` hits, or `{}` for a miss); returns `{impacts, done}` like `volley`;
-- `fx.torp_lane_clear(lane_id)`: the target got out of the lane; the torpedo runs on past the marker and burns out.
-Today's rules still resolve torpedoes at once: `volley(..., "torp", ...)` plays launch, flight and impact in one go.
+Torpedoes (R364, Nov 20 2026): they fire now. `volley(..., "torp", ...)` plays launch, flight and impact in one go; the B3 lane,
+parked torpedo and next-turn strike (`torp_lane`, `torp_launch`, `torp_strike`, `torp_lane_clear` and the lane shader) are retired.
 
 ## 4. Shields
 
@@ -119,7 +115,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Cruiser class and above, plus any flagship: running-light emission and engine glow die over 0.3 s, narrow fire/gas jets start on the future split, one thermal tear grows, the hull breaks into uneven pieces at 1.38 effect seconds for a cruiser (2.0 for a capital), then one counted core flash follows 0.28 s later. The 0.16 s flash sits at the visible lip of a torn face, with a contained 0.42 s volume only when the flash budget allows it. Local debris, smoke and sparks mark the split. The pieces carry edge fires/gas and ten small secondary explosions in total, staggered from 0.7 to 3.5 s after splitting. The split stays visible. Bright secondary pops use the shared flash limiter; reduce flashing substitutes soft lifts. Slow coals cool over about ten seconds after the flames subside.
 - Smaller ships: 0.72 s of visible hull spin (0.55 s for craft), a curling smoke/fire ribbon, then an immediate 0.22 s counted pop, shrapnel streamers and tumbling wreck pieces. Smoke has a 44 px floor, ribbon fire 28 px and the core 60 px (all at 1080 lines, scaled by `min_px`). Death fire/core sprites keep their brightness at that floor; explicit smoke/gas floors keep opacity. The ribbon follows the spinning visual mesh and stretches backward before the burst. The surviving chunk keeps fire, smoke and slow-cooling coals. Only visual meshes move during the spin; the shared root and battle outcomes do not change.
 - Whole hulks: all `dark`/`hulk` deaths power down, leave a whole copy of the damaged hull at 0.72 s, vent gas from one surface point, and drift cold. No core, fire, secondary explosions, sparks, lights or slow-motion beat. Other explicit causes retain breakup. Returns 1.32 s; the copy survives removal of the original ship root and follows `clear_wreck` and the 24-wreck cap.
-- Wrecks retain the existing Jolt bodies and the 24-wreck cap. Ribbons and streamers use the existing particle pools and debris ring. Unfinished cuts are polled without blocking the main thread; a finished previous cut is reused when available.
+- Wrecks retain the existing Jolt bodies and the 24-wreck cap. Issue 1237: a wreck section leaves Jolt 4 s after its release (fx_death.gd WRECK_PHYS_S) and drifts on with the same velocity and turn on the effect clock; debris plates fly 2 s as before, then slow (damping 1.4) and are at rest by 5.5 s (DEBRIS_REST_S), so Jolt has nothing awake about 8 s after a kill. Plates never test each other; hulls and wreck sections still knock them, and a knocked plate rests again 1.5 s later. One-shot pictures (death flipbooks, staged flashes and smoke, weapon gas and hull hit pictures) come from `fx.picture(key, make, name)` and go back with `fx.free_picture(weakref(node), node.get_meta("pic_gen"))`, never `free_effect`. The frame's power-down budget (POWER_BUDGET) is shared by every dying ship. Check: fx/test/multi_death_check.gd. Ribbons and streamers use the existing particle pools and debris ring. Unfinished cuts are polled without blocking the main thread; a finished previous cut is reused when available.
 - Authored recipe ships: the version 1 `voidsworn_destruct` GLB extra and interior surfaces are defined in `docs/ship_pipeline/RECIPE.md`, stage 7. `fx_hull.gd` reads them in the installed hull's scaled frame. Damage opens the exterior onto the authored decks, frames and machinery; death carries those surfaces into its pieces. Authored joints guide the irregular fracture, retaining the missing bite, chips, ragged rims and faction matter. Their count follows the build's structure. Ships without that extra keep the #167 procedural cavity and capped-face fallback.
 - Main rigid wreck pieces lock linear Y at the altitude where they separated, and their release velocity has zero Y. They can still tumble. This keeps physics contacts from pushing the main wreck below the board where Ryan cannot see it (`death_plane_check.gd`); it is an existing visibility protection, not a restriction on the rotation or every small thrown fragment. Kinematic main pieces also receive zero Y release velocity.
 - fx hides the ship's own meshes at the break-up. G2 can keep or free the root after `t`; fx keeps its own copies of the meshes.
@@ -129,7 +125,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 - `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
 - `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
-- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.)
+- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.) Issue 1547: a party from dead ahead or astern breaks in on the side the camera sees; the look Ryan picked (B: a wider hatch, pop ring, burst, vent and amber inside light, and the amber boarding lines in the shared line style) comes from `BOARD`, and `fx.board_hold_ms()` is how long the battle holds on it before the next event.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
 - `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
@@ -140,19 +136,21 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Hit pause never blocks input: fx slows its own clock for a few frames on heavy weapon hits. Deaths use a separate R73 beat only for cruiser class and above or flagships, independent of their draw scale. It runs at 0.35 speed for 0.48 real seconds, with a short recovery (measured under 0.64 s total at 30/60/144 Hz). Small kills add no pause. `fx.anim_speed()` reports the presentation speed; wreck velocities follow it without touching `Engine.time_scale`, input or rules.
 - `fx.hurry_death()` immediately clears the active beat and suppresses a queued death beat for three effect seconds. The only hook outside `fx/` is four lines in `scenes/battle/battle.gd`: the existing Enter/Space hurry branch calls it, and a death started while already hurrying calls it too. No rule or result logic changes.
 
-### Hit reactions (R50)
+### Hit reactions (R50, R412)
 
 A hit no longer just flashes: the ship reacts with its mass, in three beats (r5, after Ryan's "no cartoon push back"; the ship never springs out and back):
 
-1. **Onset:** the kick builds over a few frames (0.03 s for craft up to 0.16 s for a capital hull, whose mass soaks it up) while a structural shudder runs through the hull (lower and longer in big hulls: 11 Hz for craft down to 4 Hz for capital ships; big hulls show more shudder than motion).
-2. **Arrest:** a moment later the attitude thrusters fire and brake the spin and the slide at a steady rate, a visible burn of gas puffs at the hull's corners picked to oppose the motion, over 0.35 s (craft) to 1.2 s (capital).
-3. **Recovery:** once stopped, the helm brings the ship back level and onto its hex, slowly and without overshoot (critically damped).
+1. **Onset.** The kick builds over 0.03 s for craft up to 0.16 s for capital hulls. The structural tremor runs from 6 Hz for craft down to 3.5 Hz for capitals and fades in about 0.22 s. The roll axis sits below mid-hull so one broadside heels the ship consistently. Heavy and capital hulls take half the linear kick.
+2. **Arrest.** Attitude corrections oppose the spin and slide over 0.35 s for craft up to 1.2 s for capitals. Sunward and Meridian use cold gas, Ashfall uses warm grey jets, Glasswrights use gold glints and Eclipse uses violet shimmers. Chorus uses no mechanical jets.
+3. **Recovery.** The hull eases back onto its hex and returns to its resting angle, including the list of a crippled ship.
 
 **Zoom punch (F3).** `fx.punch(t, amount, pos)`: the camera's field of view narrows by `amount` (0.01 = 1%) over about 0.05 s and eases back over about 0.4 s; smaller far from the camera (amount / (1 + distance / 400)), never more than 6% at once. fx plays it on heavy gauss slugs (0.8%), crits (0.6%), torpedo and ram hits (1.4%) and kills (1% for a light ship up to 3.4% for a capital, more for torpedo kills and flagships). fx writes `camera.fov` only while a punch plays and puts the camera's own value back after; if G2 or the camera rig changes the field of view meanwhile, fx takes the new value as the base. `fx.punch_now()` is the current punch (0 when none).
 
-Torpedoes and rams shove, shells and gauss slugs kick, light guns tap, lances and ions are energy and barely move a ship. Mass by class: a frigate takes a real jolt (a torpedo rolls it about 6.6 degrees at its peak, about 0.6 s after the hit, and slides it 3% of its length; settled in about 3.4 s); a super-dreadnought barely moves (a torpedo: about 1.4 degrees, peaking after 1.3 s; settled in about 5 s). Heavy hits also make the drive stutter. The camera shake (above) scales with the hit and distance and follows `shake_scale`. Measured by `fx/test/fx_react_probe.gd` (it also writes a per-frame trace and, with PROBE_CLIP=1, clips).
+Torpedoes and rams shove, shells and gauss slugs kick, and lances and ions carry little momentum. Shields pass through 12% of an absorbed impact's impulse. Hull damage, shield breaks, crits and ion hits stutter the drive. Heavy hull hits, crits, gauss punches, lances and ion hits briefly dim deck lights. Batteries, gauss and heavy ordnance kick the shooter back on the shot's fire time. A turret's barrel assembly retracts and recovers on that same clock.
 
-**For G2 (shared root):** fx writes the ship root's `rotation.x` and `rotation.z` (roll and pitch; ShipView never writes them) while a reaction plays and sets them back to 0 when it settles. Yaw and the small drift are added to `rotation.y` and `position` only while `root.busy()` is false (ShipView writes position and yaw itself during a path); fx takes its own offset back out when the ship settles, and drops it when a path starts. G2's weighty movement (R50 part 2) can keep its own RCS puffs for turns and burns; fx's puffs only answer hits. If G2 later wants to own the whole root, `fx.ship(id)._ra` (angles) and `_pd` (drift) are the state to read instead.
+ShipView owns board position and heading. FX moves `hull_pivot`, keeping the hex marker and selection ring on the board. The pivot's translation follows the ShipView heading while the hull yaws under it. ShipView takes idle bob time from the effect clock so it follows hit pause.
+
+Missed projectiles pass the target plane and leave a fading trail. Close misses can spark at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
 
 ## 8. Accessibility
 
@@ -375,9 +373,8 @@ Checks: the Forward+ `fx_inside_probe.gd` with `PROBE_BOX=1`; `destruction_steps
 - Homeworld 3's scar-to-breach grading now follows each section's own remaining hull. Low total ship HP no longer promotes healthy sections to damaged geometry. Weapon marks scale with that section's damage, regrade after later hits, and shrink or clear on repair. Repeat gauss hits retain their original entry frame when rebuilding the exit wound.
 - Breach throats are deeper, with opaque recessed backs, internal structure and a continuous lit torn rim. Persistent square chip sprites are replaced by a few soft embers; the plate ejecta use irregular solid shard meshes. Section shard and spark counts are reduced and the shared shard pool holds at most 768 particles on max quality, 384 otherwise.
 - Chorus wounds use wet green membranes, curved tissue strands, pulsing faction glow, ichor and spores. Their deaths rupture the skin 0.35 seconds in and spill real hull fragments and spores, with no metal fire, sparks or core flash. Whole hulks retain the independent cavity and scar meshes after the live ship is removed. Glasswright impact chips use the crystal shard tint and spectral light.
-- The lane shader's chevrons point and travel from shooter to target. Player torpedo lanes and enemy intent lanes share this shader and UV direction.
 - `board.show_blockers(hexes)` outlines the intermediate blockers returned by `api.line_blockers(shooter, target)`. Unreachable-hex tips use `api.entry_reason(id, q, r)`. These calls only explain existing rules. Set-piece hole cells now have solid props; planet, station and Hollow Sun exclusion rims show their exact rule footprints. The planet and station models are retained. Missing station assets and uncovered station edge cells get solid fallback docking hardware.
-- World bakes persist as RGBA PNGs under `user://world_bakes/v2/`. Keys include seed/settings, shader source and dimensions; parameter order does not cause rebakes. The memory cache holds 12 images. Cold starts draw a 512x256 sky and 256x128 planet first, then refine after three seconds in serialized GPU strips. Full-resolution cache hits load directly without the preview delay. GPU work stays on the render thread; no gameplay waits for a full-resolution bake.
+- World bakes persist as RGBA PNGs under `user://world_bakes/v3/`. Keys include seed/settings, shader source and dimensions; parameter order does not cause rebakes. The memory cache holds 24 images. Cold starts draw a 512x256 sky and 256x128 planet first, then refine after three seconds in serialized GPU strips. Full-resolution cache hits load directly without the preview delay. GPU work stays on the render thread; no gameplay waits for a full-resolution bake. Issue 1265: the disk folder is capped at 500 MB (`CACHE_CAP_BYTES`); after each save the least recently used maps go first (last use is kept in `used.json`, refreshed on every disk load), maps the running game holds and the map just saved never go, and `.tmp` files older than a day go; bakes in older version folders (v1, v2) are removed once per run. Checked by `world/test/bake_cache_cap_check.gd`.
 - After creating the ship views, call `world.use_ship_debris(views.values())`. It reads one loaded hull per faction, cuts four sealed chunks per hull on a worker, preserves UVs and source paint/PBR materials, adds scorch weathering, and installs up to four instances per debris hex. Geometry stays inside the old footprint. No GLB paths are required. Empty source lists retain the existing debris; battles without debris skip the cutting work. Worker shutdown is joined when the world leaves the tree.
 - `fx/test/playtest_batch1_check.gd` checks damage grading/repair, organic rupture and retained wounds, loaded stand-in hull cutting, disk cache invalidation/alpha, and both lane directions. `FB1_SHOTS=DIR` captures the four damage examples, lanes, hull chunks and organic rupture on a renderer. These are stand-in hulls, not full-build ship validation.
 - `world/test_blockers.gd` checks the real world/board builders over all 12 shapes, five terrain maps and two seeds. It checks solid geometry at blocking hexes, named entry reasons, and agreement between the blocker query and the sight predicate. Headless rock coverage reads the real submitted batch transforms because the dummy renderer does not retain MultiMesh buffers. No background dressing or exclusion-only outline can satisfy ordinary blocker coverage.
@@ -461,10 +458,9 @@ prism flight, muzzle and impact glints. No shield recipe or shard count changes.
 
 Rockets and torpedoes retain the real closed casings, fins and sampled baked
 exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing
-pulse motion, a short rise off the rail and a fade before impact. Parked lane
-torpedoes keep their running motor. The smoke history still cools separately.
+pulse motion, a short rise off the rail and a fade before impact. The smoke history still cools separately.
 Bay flashes, interceptions and all eight shared-helper regression rows are
-included in the capture adapter. Lane chevrons remain tactical indicators.
+included in the capture adapter.
 
 Attack-run craft and live squadron wings use their real stern history with
 the same textured core and sheath. The luminous centreline ends within 24
@@ -518,7 +514,7 @@ flare is larger than the emitter flare, and both ends cool in green over
 existing public paths.
 
 `faction_looks.json` owns two weapon-only Eclipse colours: `weapon_core` and
-`weapon_sheath`. The Doom and null cannon recipes use the green core; the two
+`weapon_sheath`. The Doom and null cannon recipes use the core colour (deep violet since Nov 21 2026, issue 1503; it was green); the two
 alpha materials take their dark sheath from the same data. Existing ship,
 engine, shield and backdrop colours retain their separate fields.
 
@@ -570,7 +566,7 @@ are Doom, gauss, gauss flak and the gauss exit.
 This section supersedes section 18's smooth arc profiles and kind-5 two-frame,
 26 px limit. Other streak caps and every other beam shader remain unchanged.
 
-Doom keeps the weapon_core green and weapon_sheath violet-black fields. Its
+Doom keeps its own weapon_core (deep violet since Nov 21 2026, issue 1503; it was green) and weapon_sheath violet-black fields. Its
 96-segment channel carries three thin, independently twisting hot filaments.
 Only a filament's central subpixel profile is white. Two advected noise scales
 and the existing flow mask swell and pinch the body, erode its silhouette and
@@ -587,7 +583,7 @@ streak tapers from the muzzle and fades over 0.52 s after impact. A faint ionise
 wake persists to 0.70 s. The head fades at contact, so the lingering trace never
 becomes another slug. Gauss flak uses the same route with its existing 0.02 s
 flight, preserving its burst timing. The existing
-faction weapon field supplies violet-white; Doom alone uses weapon_core green.
+faction weapon field supplies violet-white; Doom alone uses weapon_core deep violet.
 The sharp muzzle flash, displaced-gas ring and hull impact spark burst remain.
 Widths use the game's 1080-line pixel convention, so they scale with resolution;
 the tracer's length follows the shot, with no short screen-space length cap.

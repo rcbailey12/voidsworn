@@ -7,6 +7,7 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
 const BV := preload("res://world/blocker_visuals.gd")
+const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
@@ -47,6 +48,9 @@ var blocker_visuals: Node3D
 var blocker_highlights: Node3D
 var props: Node3D
 var rock_meshes: Array = []
+var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the rules laid down during this battle
+var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
+var built := 0               # how many times build() ran (a late wreck check knows its battle is gone)
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
@@ -65,12 +69,15 @@ void under_hulls(vec2 screen_uv, mat4 inv_projection, mat4 inv_view) {
 const FILL_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + HULL_MASK + """
+""" + HULL_MASK + LS.GLSL + """
 varying vec4 vcol;
 varying vec2 vp;
 varying float style;
 varying float band;
 varying vec2 wpos;
+// Ryan (Nov 20, issue 1359 thread, picked "Only with Z"): the reach hatching covered the whole board and read as random
+// far-off grid lines. hatch_hidden 1 (the normal view) draws none; Z and the other looks keep it board-wide.
+uniform float hatch_hidden = 0.0;
 void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; band = INSTANCE_CUSTOM.g; wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz; }
 void fragment() {
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
@@ -85,11 +92,12 @@ void fragment() {
 		vec2 q = abs(vp);
 		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
 		float hot = style > 1.5 ? 1.0 : 0.0;
-		// Every board look: a narrow soft edge and barely tinted space, no scanning blue plate.
-		float rim = smoothstep(0.93, 0.985, d);
-		float glow = smoothstep(0.82, 0.98, d);
-		a = mix(0.012, 0.032, hot) + glow * 0.06 + rim * mix(0.22, 0.46, hot);
-		c = mix(vec3(0.30, 0.62, 0.85), vec3(0.64, 0.88, 1.0), hot);
+		// Every board look: a narrow lit edge and barely tinted space, no scanning blue plate. Issue 1374: the edge is the
+		// shared line (render/line_style.gd), a core just inside the hex edge and its glow band inward
+		float e = (1.0 - d) * 8.53 - 0.12;
+		float rim = ls_line(e, max(fwidth(e), 0.0001), 1.0);
+		a = mix(0.012, 0.032, hot) + rim * mix(0.24, 0.5, hot);
+		c = mix(LS_MOVE_RIM, LS_MOVE_RIM_HOT, hot);
 	}
 	if (band > 0.5) {
 		// #271 reach hatching, in the threat colour (bone, issue 271 step 2: not red, which is the Nemesis alarm, and not
@@ -112,8 +120,9 @@ void fragment() {
 		// alphas are blended in linear light, so a small number already reads clearly on the dark board (0.03 shows
 		// about as bright as 0.2 would in screen colour)
 		float h = l * (band > 2.5 ? 0.034 : (band > 1.5 ? 0.028 : 0.022));
+		h *= 1.0 - hatch_hidden;
 		float A = h + a * (1.0 - h);
-		c = (vec3(0.941, 0.918, 0.871) * h + c * a * (1.0 - h)) / max(A, 0.0001);
+		c = (LS_THREAT * h + c * a * (1.0 - h)) / max(A, 0.0001);
 		a = A;
 	}
 	ALBEDO = c;
@@ -133,7 +142,7 @@ uniform float near_r = 70.0;
 uniform float far_r = 190.0;
 // the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
 uniform vec4 well = vec4(0.0);
-""" + HULL_MASK + """
+""" + HULL_MASK + LS.GLSL + """
 varying vec4 vcol;
 varying float style;
 varying vec3 wp;
@@ -143,17 +152,18 @@ void vertex() {
 	vcol = COLOR;
 	style = INSTANCE_CUSTOM.r;
 	vuv = UV;
-	// step 2: a line never thinner than about a pixel and a quarter, so the tactical grid stays whole and crisp when zoomed
-	// out (it broke up into dashes); the inner edge (UV.y 1) moves in toward the hex centre, and the line dims to match
+	// step 2: a line never thinner than the shared pixel floor (render/line_style.gd, issue 1374), so the tactical grid
+	// stays whole and crisp when zoomed out (it broke up into dashes); the inner edge (UV.y 1) moves in toward the hex
+	// centre, and the line dims to match (the shared fade law)
 	thin = 1.0;
 	if (UV.y > 0.5) {
 		vec3 wv = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 		float dist = length((VIEW_MATRIX * vec4(wv, 1.0)).xyz);
 		float px = 2.0 * dist / (PROJECTION_MATRIX[1][1] * VIEWPORT_SIZE.y);
-		float w = max(0.35, px * 1.25);
+		float w = ls_core_w(px);
 		vec2 dir = normalize(VERTEX.xz);
-		VERTEX.xz -= dir * (w - 0.35) * 1.1547;
-		thin = 0.35 / w;
+		VERTEX.xz -= dir * (w - LS_CORE_W) * 1.1547;
+		thin = ls_dim(w);
 	}
 	wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	if (well.w > 0.0 && style < 0.5) {
@@ -184,7 +194,7 @@ void fragment() {
 		if (k <= 0.0) { discard; }
 	}
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a * k * mix(1.0, thin, 0.6);
+	ALBEDO = vcol.rgb * vcol.a * k * thin;
 	ALPHA = 1.0; // Draw after opaque hulls, with depth testing, just like the fill.
 }
 """
@@ -200,19 +210,9 @@ void fragment() {
 	ALPHA = 1.0;
 }
 """
-# board look trial: the edge round each patch of terrain (nebula, storm, debris, rock, zones, the well's rim and pull)
-const EDGE_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform float gain = 1.0;
-varying vec4 vcol;
-varying vec3 wp;
-void vertex() { vcol = COLOR; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	float sh = 0.82 + 0.18 * sin(TIME * 1.3 + wp.x * 0.05 + wp.z * 0.04);
-	ALBEDO = vcol.rgb * vcol.a * gain * sh;
-}
-"""
+# board look trial: the edge round each patch of terrain (nebula, storm, debris, rock, zones, the well's rim and pull);
+# issue 1374: the shared line shader (render/line_style.gd), its slow shimmer on (LS.material(true))
+const EDGE_SHADER := LS.SHADER
 
 
 func hex_world(q: float, r: float, y := 0.0) -> Vector3:
@@ -250,6 +250,9 @@ func key(q, r) -> String:
 func build(rules) -> void:
 	api = rules
 	VW = api.view()
+	wrecks.clear()
+	wreck_hulls.clear()
+	built += 1
 	WI = api.world_info() if api.has_method("world_info") else {}
 	for c in get_children():
 		c.queue_free()
@@ -333,7 +336,7 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 		var an := deg_to_rad(60.0 * i + 30.0)
 		pts.append(Vector2(cos(an), sin(an)))
 	if ring:
-		var w := 0.35
+		var w := LS.CORE_W
 		for i in 6:
 			var a: Vector2 = pts[i]
 			var b: Vector2 = pts[(i + 1) % 6]
@@ -358,18 +361,18 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.075), "debris": Color(0.83, 0.75, 0.53, 0.065), "storm": Color(1.0, 0.91, 0.4, 0.065)}
 const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 # F1: a neutral grey grid (was a pale blue that blended with the move hexes); it fades away from the ship that is up
-const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
+const BASE_RING: Color = LS.ROLE["grid"]
 # F1: the hexes a ship can move to are blue, a colour no terrain, zone or marker uses (nebula violet, debris sand, storm
 # yellow, exits green, perimeters red, the relay gold, your ships mint, enemies violet, the hovered hex ember)
-const REACH_FILL := Color(0.10, 0.45, 1.0, 0.36)
-const REACH_HOT := Color(0.30, 0.70, 1.0, 0.55)
-const REACH_RING := Color(0.25, 0.55, 1.0, 0.22)
-const REACH_EDGE := Color(0.45, 0.85, 1.0, 1.0)
+const REACH_FILL: Color = LS.ROLE["move_fill"]
+const REACH_HOT: Color = LS.ROLE["move_hot"]
+const REACH_RING: Color = LS.ROLE["move"]
+const REACH_EDGE: Color = LS.ROLE["move_edge"]
 # the hovered hex's outline: the battle screen's ember (#ff8a3a; issue 271 step 2, lime retired by R191)
-const HOVER_RING := Color(1.0, 0.541, 0.227, 0.9)
+const HOVER_RING: Color = LS.ROLE["hover"]
 # the threat map (R) and the reach hatching: bone, the sheet's TEXT (#f0eade) as a wash on the board. Red is the Nemesis
 # alarm's alone, lavender and purple are on Ryan's AI-tell list (R174), blue is the reach, ember the next action.
-const THREAT := Color(0.941, 0.918, 0.871)
+const THREAT: Color = LS.ROLE["threat"]
 
 
 # objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay
@@ -435,7 +438,12 @@ func set_danger(d: Dictionary) -> void:
 	refresh()
 
 
+var _hover_raw := ""   # the hex under the cursor even off the board's cells (a set-piece hole), for the 1359 rims
+
+
 func set_hover(q: int, r: int) -> void:
+	_hover_raw = key(q, r)
+	_show_hover_edge(_hover_raw)
 	var k := key(q, r) if index.has(key(q, r)) else ""
 	if k != hover_key:
 		hover_key = k
@@ -472,11 +480,11 @@ func on_board(q: int, r: int) -> bool:
 # in look C. Default stays today's board until Ryan picks. None of this changes the rules or which hexes a ship can reach.
 
 # the plain grid's colour per look (alpha is its strength where it shows)
-const LOOK_RING := {"today": BASE_RING, "holo": Color(0.55, 0.85, 1.0, 0.2), "ghost": Color(0.6, 0.82, 1.0, 0.16), "tactical": Color(0.6, 0.8, 0.95, 0.13)}
+const LOOK_RING := {"today": BASE_RING, "holo": LS.ROLE["grid_holo"], "ghost": LS.ROLE["grid_ghost"], "tactical": LS.ROLE["grid_tactical"]}
 # the terrain edge colours (rgb) and strength (a)
-const EDGE_C := {"neb": Color(0.72, 0.52, 1.0, 0.75), "storm": Color(1.0, 0.88, 0.45, 0.7), "debris": Color(0.86, 0.77, 0.56, 0.6),
-	"rock": Color(0.72, 0.76, 0.84, 0.45), "exit": Color(0.49, 1.0, 0.61, 0.85), "texit": Color(0.95, 0.5, 0.45, 0.85),
-	"guard": Color(0.95, 0.5, 0.45, 0.8), "hold": Color(1.0, 0.78, 0.35, 0.9), "rim": Color(0.8, 0.55, 1.0, 0.8), "pull": Color(0.62, 0.48, 0.95, 0.45)}
+const EDGE_C := {"neb": LS.ROLE["edge_neb"], "storm": LS.ROLE["edge_storm"], "debris": LS.ROLE["edge_debris"],
+	"rock": LS.ROLE["edge_rock"], "exit": LS.ROLE["edge_exit"], "texit": LS.ROLE["edge_texit"],
+	"guard": LS.ROLE["edge_guard"], "hold": LS.ROLE["edge_hold"], "rim": LS.ROLE["edge_rim"], "pull": LS.ROLE["edge_pull"]}
 var edges: MeshInstance3D
 var well_c := Vector3.INF      # the gravity well's centre on the board (the dead star), INF when none
 var _look_btn: Button = null
@@ -486,6 +494,26 @@ var _toast_t := 0.0
 var _edge_gain := 0.0
 var gas_edges: MeshInstance3D
 var _gas_edge_gain := 0.0
+# Issue 1267 (Ryan's pick 1, Nov 20): the normal (cine) view keeps its big soft clouds but adds a faint line on the
+# outer edge of nebula (cover) and ion storm (shield drain) patches, so where they stop reads without Z
+var hazard_edges: MeshInstance3D
+var _hazard_edge_gain := 0.0
+const HAZARD_EDGE := ["neb", "storm"]
+# Issue 1359 (Neon backdrop audit H4; Ryan picked B on Nov 20 11:30 CT, "only show up when you hover over it in
+# cinematic mode and then when you have the full grid ... it shows by default"): an amber rim round solid ground (rock,
+# hulk, station and the map's set-piece holes; the colour of the planet and station exclusion rims) and a softer tan
+# one round debris cover. Z draws every patch (solid_edge, cover_edge); the normal view draws only the patch under the
+# cursor (edge_hover, at hover_solid and hover_cover). Z's gas edges leave rock and debris to these two.
+const SOLID_EDGE_C: Color = LS.ROLE["edge_solid"]
+var solid_edges: MeshInstance3D
+var cover_edges: MeshInstance3D
+var _solid_edge_gain := 0.0
+var _cover_edge_gain := 0.0
+var hover_edges: Node3D            # one child mesh per solid or debris patch, named by kind
+var _hover_patch := {}             # "q,r" -> that hex's patch mesh under hover_edges
+var _edge_hover := false
+var _hover_gain := {"solid": 0.0, "cover": 0.0}
+var _hover_shown: MeshInstance3D = null
 
 
 func _well_info() -> void:
@@ -506,10 +534,7 @@ static func _hdist(q0: int, r0: int, q1: int, r1: int) -> int:
 func _terrain_edges() -> void:
 	edges = MeshInstance3D.new()
 	edges.name = "TerrainEdges"
-	var em := ShaderMaterial.new()
-	var esh := Shader.new()
-	esh.code = EDGE_SHADER
-	em.shader = esh
+	var em := LS.material(true)
 	edges.material_override = em
 	edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(edges)
@@ -558,21 +583,103 @@ func _terrain_edges() -> void:
 	var n := 0
 	var ng := 0
 	for g in groups:
-		if g == "neb" or g == "storm" or g == "debris" or g == "rock":
-			ng += _edge_into(sg, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+		if g == "debris" or g == "rock":
+			continue   # issue 1359: solid_edges and cover_edges draw these, in Z and on hover
+		if g == "neb" or g == "storm":
+			ng += _edge_into(sg, groups[g], EDGE_C[g])
 		else:
-			n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+			n += _edge_into(st, groups[g], EDGE_C[g])
 	edges.mesh = st.commit() if n > 0 else null
 	gas_edges.mesh = sg.commit() if ng > 0 else null
+	hazard_edges = MeshInstance3D.new()
+	hazard_edges.name = "HazardEdges"
+	hazard_edges.material_override = em.duplicate()
+	hazard_edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(hazard_edges)
+	var sz := SurfaceTool.new()
+	sz.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var nz := 0
+	for g in HAZARD_EDGE:
+		if groups.has(g):
+			nz += _edge_into(sz, groups[g], EDGE_C[g])
+	hazard_edges.mesh = sz.commit() if nz > 0 else null
+	# Issue 1359: solid ground includes the map's set-piece holes, which are never board cells
+	var solid: Dictionary = (groups.get("rock", {}) as Dictionary).duplicate()
+	if meta is Dictionary:
+		for hole in meta.get("holes", []):
+			if str(hole.get("kind", "")) == "deadstar": continue
+			for cell in hole.get("cells", []): solid[key(int(cell[0]), int(cell[1]))] = true
+	var cover: Dictionary = groups.get("debris", {})
+	solid_edges = _edge_mesh(self, "SolidEdges", em, solid, SOLID_EDGE_C)
+	cover_edges = _edge_mesh(self, "CoverEdges", em, cover, EDGE_C["debris"])
+	hover_edges = Node3D.new()
+	hover_edges.name = "HoverEdges"
+	add_child(hover_edges)
+	_hover_patch = {}
+	_hover_shown = null
+	for kind in ["solid", "cover"]:
+		var keys: Dictionary = solid if kind == "solid" else cover
+		for patch in _patches_of(keys):
+			var mi := _edge_mesh(hover_edges, kind, em, patch, SOLID_EDGE_C if kind == "solid" else EDGE_C["debris"])
+			mi.visible = false
+			for k in patch: _hover_patch[k] = mi
 
 
-# the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
-func _edge_into(st: SurfaceTool, keys: Dictionary, col: Color, w_line: float, w_glow: float, y: float) -> int:
+# connected groups of hex keys (six neighbours)
+func _patches_of(keys: Dictionary) -> Array:
+	var out: Array = []
+	var seen := {}
+	for k0 in keys:
+		if seen.has(k0): continue
+		var patch := {}
+		var todo: Array = [k0]
+		seen[k0] = true
+		while not todo.is_empty():
+			var k: String = str(todo.pop_back())
+			patch[k] = true
+			var qr: PackedStringArray = k.split(",")
+			for d in [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]:
+				var nk := key(int(qr[0]) + int(d[0]), int(qr[1]) + int(d[1]))
+				if keys.has(nk) and not seen.has(nk):
+					seen[nk] = true
+					todo.append(nk)
+		out.append(patch)
+	return out
+
+
+# issue 1359: the normal view shows the rim of the solid or debris patch under the cursor only
+func _show_hover_edge(raw: String) -> void:
+	var mi: MeshInstance3D = _hover_patch.get(raw) if _edge_hover else null
+	if mi == _hover_shown: return
+	if is_instance_valid(_hover_shown): _hover_shown.visible = false
+	_hover_shown = mi
+	if mi != null:
+		(mi.material_override as ShaderMaterial).set_shader_parameter("gain", float(_hover_gain.get(str(mi.get_meta("edge_kind")), 0.0)))
+		mi.visible = fills == null or fills.visible
+
+
+func _edge_mesh(parent: Node, nm: String, em: ShaderMaterial, keys: Dictionary, col: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.name = nm
+	mi.set_meta("edge_kind", nm)
+	mi.material_override = em.duplicate()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mi)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	mi.mesh = st.commit() if _edge_into(st, keys, col) > 0 else null
+	return mi
+
+
+# the outer edges of a set of hexes into a SurfaceTool, drawn with the shared line style (render/line_style.gd, issue
+# 1374): the line sits just inside the outer hex edge and its glow band runs inward; col is the role's colour and strength
+func _edge_into(st: SurfaceTool, keys: Dictionary, col: Color, y := -0.36) -> int:
 	var corners: Array = []
 	for i in 6:
 		var an := deg_to_rad(60.0 * i + 30.0)
 		corners.append(Vector3(cos(an), 0, sin(an)))
 	var n := 0
+	var r0 := HS * 0.97
 	for k in keys:
 		var qr: PackedStringArray = str(k).split(",")
 		var c := hex_world(int(qr[0]), int(qr[1]), y)
@@ -583,17 +690,8 @@ func _edge_into(st: SurfaceTool, keys: Dictionary, col: Color, w_line: float, w_
 			if keys.has(key(nb.x, nb.y)):
 				continue
 			n += 1
-			var r0 := HS * 0.97
-			for band in [[r0, r0 - w_line, col.a, col.a], [r0 - w_line, r0 - w_line - w_glow, col.a * 0.3, 0.0]]:
-				var c0 := Color(col.r, col.g, col.b, band[2])
-				var c1 := Color(col.r, col.g, col.b, band[3])
-				var p0: Vector3 = c + a * float(band[0])
-				var p1: Vector3 = c + b * float(band[0])
-				var p2: Vector3 = c + b * float(band[1])
-				var p3: Vector3 = c + a * float(band[1])
-				for v in [[p0, c0], [p1, c0], [p2, c1], [p0, c0], [p2, c1], [p3, c1]]:
-					st.set_color(v[1])
-					st.add_vertex(v[0])
+			# toward the centre along the corner spokes, scaled so one unit along them is one unit in from the edge
+			LS.strip_into(st, c + a * r0, c + b * r0, -a / 0.8660254, -b / 0.8660254, "edge", col)
 	return n
 
 
@@ -606,6 +704,14 @@ func apply_look(toast := true) -> void:
 	var rm := rings.material_override as ShaderMaterial
 	rm.set_shader_parameter("mode", {"today": 0, "holo": 1, "ghost": 2, "tactical": 3}.get(g, 0))
 	rm.set_shader_parameter("well", Vector4(well_c.x, well_c.y, well_c.z, 9.0) if (sp["funnel"] and well_c != Vector3.INF) else Vector4.ZERO)
+	_edge_gains(sp)
+	refresh()
+	if is_inside_tree():
+		get_tree().call_group("vs_world", "set_look")
+	_look_ui(toast)
+
+
+func _edge_gains(sp: Dictionary) -> void:
 	if edges != null:
 		_edge_gain = float(sp["terrain_edge"])
 		(edges.material_override as ShaderMaterial).set_shader_parameter("gain", _edge_gain)
@@ -614,10 +720,25 @@ func apply_look(toast := true) -> void:
 		_gas_edge_gain = float(sp.get("gas_edge", sp["terrain_edge"]))
 		(gas_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _gas_edge_gain)
 		gas_edges.visible = _gas_edge_gain > 0.0
-	refresh()
-	if is_inside_tree():
-		get_tree().call_group("vs_world", "set_look")
-	_look_ui(toast)
+	if hazard_edges != null:
+		_hazard_edge_gain = float(sp.get("hazard_edge", 0.0))
+		(hazard_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _hazard_edge_gain)
+		hazard_edges.visible = _hazard_edge_gain > 0.0
+	if solid_edges != null:
+		_solid_edge_gain = float(sp.get("solid_edge", sp.get("gas_edge", sp["terrain_edge"])))
+		(solid_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _solid_edge_gain)
+		solid_edges.visible = _solid_edge_gain > 0.0
+	if cover_edges != null:
+		_cover_edge_gain = float(sp.get("cover_edge", sp.get("gas_edge", sp["terrain_edge"])))
+		(cover_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _cover_edge_gain)
+		cover_edges.visible = _cover_edge_gain > 0.0
+	if fills != null and fills.material_override is ShaderMaterial:
+		(fills.material_override as ShaderMaterial).set_shader_parameter("hatch_hidden", 1.0 if bool(sp.get("hatch_hidden", false)) else 0.0)
+	_edge_hover = bool(sp.get("edge_hover", false))
+	_hover_gain = {"solid": float(sp.get("hover_solid", 0.0)), "cover": float(sp.get("hover_cover", 0.0))}
+	if is_instance_valid(_hover_shown): _hover_shown.visible = false
+	_hover_shown = null
+	_show_hover_edge(_hover_raw)
 
 
 func _look_ui(toast: bool) -> void:
@@ -675,6 +796,14 @@ func _process(dt: float) -> void:
 			edges.visible = fills.visible and _edge_gain > 0.0
 		if gas_edges != null:
 			gas_edges.visible = fills.visible and _gas_edge_gain > 0.0
+		if hazard_edges != null:
+			hazard_edges.visible = fills.visible and _hazard_edge_gain > 0.0
+		if solid_edges != null:
+			solid_edges.visible = fills.visible and _solid_edge_gain > 0.0
+		if cover_edges != null:
+			cover_edges.visible = fills.visible and _cover_edge_gain > 0.0
+		if is_instance_valid(_hover_shown):
+			_hover_shown.visible = fills.visible
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 
@@ -737,6 +866,7 @@ func _terrain() -> void:
 			"station":
 				pass
 	_planet()
+	_beacon()
 	# one station structure per cluster of station hexes (the game builds one across the cluster)
 	var seen := {}
 	for k in T:
@@ -849,6 +979,88 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 	props.add_child(mi)
 
 
+# Issue 1536 (Ryan, Nov 22 2026, "Yes"): in a Hold battle the Navy relay beacon O3_11 stands under the hold hex, so the gold hex
+# reads as the relay the fleets fight over. Picture only: the rules place nothing there and ships still end their moves on
+# the hex above it. It sits below the board plane (its top under the grid), so a ship holding the hex floats over it, and its
+# lens is turned toward the player's side of the board and tipped up, so the blue rings read from the battle camera.
+const BEACON_LEN := 12.0      # O3's length_world 7.5 times the board's ship scale (hull_table SHIP_K 1.6)
+const BEACON_TOP := -0.6      # the highest point of the beacon, just under the grid
+const BEACON_TILT := 35.0     # degrees the lens is tipped up from level
+# Ryan's 1536B look (Nov 22, "Lift it onto the hex"): under the grid, the beacon slid to the near edge of its hex from the
+# battle camera. Its middle now sits on the sightline from the camera's opening (home) eye through the hex centre, so the
+# player sees it centred in the gold hex at the opening view while its top stays under the grid (Artoo on PR 1561: a real
+# perspective sightline, not a fixed z shift, so a hold hex off the camera's axis centres too).
+const BEACON_VIEW_B := 0.98   # camera_rig home_b: the home view's angle from straight up
+var beacon_node: Node3D = null
+
+
+func _beacon() -> void:
+	beacon_node = null
+	var o = VW.get("obj")
+	if not (o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary):
+		return
+	var t0 := Time.get_ticks_usec()
+	var n := A4P.beacon(BEACON_LEN)
+	if n == null:
+		return
+	print("[board] relay beacon ready in %.1f ms (threaded prefetch collected, issue 1536)" % ((Time.get_ticks_usec() - t0) / 1000.0))
+	# lens (+x) toward +z (the player's side, where the battle camera starts), then tipped up by BEACON_TILT
+	var basis := Basis(Vector3.RIGHT, -deg_to_rad(BEACON_TILT)) * Basis(Vector3.UP, -PI / 2.0)
+	var box := AABB()
+	var first := true
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		var xf := Transform3D(basis, Vector3.ZERO) * _rel_to(mi as Node3D, n)
+		var bb: AABB = xf * (mi as MeshInstance3D).get_aabb()
+		box = bb if first else box.merge(bb)
+		first = false
+	var drop := BEACON_TOP - box.end.y              # the top just under the grid
+	var depth := -(box.get_center().y + drop)       # how far the beacon's middle sits under the grid
+	var h := hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), 0.0)
+	var eye := home_eye(VW.get("units", []))
+	var mid := h + (h - eye) * (depth / maxf(eye.y, 1.0))   # on the sightline from the eye through h, depth under the grid
+	n.transform = Transform3D(basis, mid - box.get_center())
+	props.add_child(n)
+	beacon_node = n
+
+
+# The battle camera's opening view (scenes/battle/battle.gd _begin uses this): it looks at a point 30% of the way from the
+# player's fleet centre to the enemy's, from home_r away (the fleets' distance * 0.75, 130 to 210).
+func home_view(units: Array) -> Dictionary:
+	var pc := Vector3.ZERO
+	var ec := Vector3.ZERO
+	var np := 0
+	var ne := 0
+	for u in units:
+		if str(u.get("side", "")) == "player":
+			pc += hex_world(u["q"], u["r"])
+			np += 1
+		else:
+			ec += hex_world(u["q"], u["r"])
+			ne += 1
+	pc /= maxf(1.0, np)
+	ec = ec / maxf(1.0, ne) if ne > 0 else pc
+	var target := pc.lerp(ec, 0.3)
+	target.y = 0.0
+	return {"target": target, "r": clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)}
+
+
+# the camera's eye at the opening view (camera_rig _apply at a = -PI/2, b = home_b)
+func home_eye(units: Array) -> Vector3:
+	var hv := home_view(units)
+	return (hv["target"] as Vector3) + Vector3(0.0, cos(BEACON_VIEW_B), sin(BEACON_VIEW_B)) * float(hv["r"])
+
+
+# a node's transform relative to an ancestor (before either is in the tree)
+static func _rel_to(node: Node3D, ancestor: Node) -> Transform3D:
+	var xf := Transform3D.IDENTITY
+	var p: Node = node
+	while p != null and p != ancestor:
+		if p is Node3D:
+			xf = (p as Node3D).transform * xf
+		p = p.get_parent()
+	return xf
+
+
 func _planet() -> void:
 	var meta = VW.get("map")
 	if not (meta is Dictionary) or not meta.has("planet"):
@@ -914,10 +1126,85 @@ func _planet() -> void:
 	props.add_child(shell)
 
 
+# issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks
+# a wreck the map started with: the hex joins the blocked terrain (its edge shows with the grid, Z, as every rock and
+# hulk hex does), with the same scatter of torn rock and plate, and the ship's own pieces settle inside it (fx_death
+# _leash). hull: also lay the map's burnt hulk there, for a death that left no pieces (or a battle without the effects).
+func add_wreck(id: String, q: int, r: int, hull := false) -> void:
+	var k := key(q, r)
+	if not index.has(k):
+		return
+	var T: Dictionary = VW.get("terrain", {}) if VW.get("terrain") is Dictionary else {}
+	VW["terrain"] = T
+	var fresh := not wrecks.has(id)
+	wrecks[id] = k
+	T[k] = "hulk"
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("wreck|%s|%s" % [id, k])
+	var c := hex_world(q, r)
+	if fresh:
+		_rocks(c, rng, 2, 1.5, 3.0)
+	if hull and not wreck_hulls.has(id):
+		wreck_hulls[id] = true
+		_hulk(c, rng)
+	if fresh:
+		_rebuild_edges()
+
+
+func _rebuild_edges() -> void:
+	for n in [edges, gas_edges, hazard_edges, solid_edges, cover_edges, hover_edges]:
+		if is_instance_valid(n):
+			remove_child(n)
+			n.queue_free()
+	_terrain_edges()
+	_edge_gains(BL.spec())
+
+
+# Issue 1446: the strip at the board edge where the next reinforcements come in, shown from the warning round until
+# they land (battle_api arrival_strip). keys: "q,r" -> true; side "enemy" or "player"; an empty dictionary clears it.
+# Its own mesh in the shared line style, with the slow shimmer of the other zone edges, shown in every board look.
+var arrival_edge: MeshInstance3D
+var arrival_key := ""
+
+
+func set_arrival(keys: Dictionary, side := "enemy") -> void:
+	var k := side + "|" + ",".join(PackedStringArray(keys.keys()))
+	if keys.is_empty():
+		k = ""
+	if k == arrival_key:
+		return
+	arrival_key = k
+	if is_instance_valid(arrival_edge):
+		arrival_edge.queue_free()
+	arrival_edge = null
+	if keys.is_empty():
+		return
+	arrival_edge = _edge_mesh(self, "ArrivalEdge", LS.material(true), keys, LS.ROLE["edge_arrive_enemy" if side == "enemy" else "edge_arrive_ally"])
+
+
+# issue 1446: the outline of every hex an inspected enemy can reach next turn (one edge around the area, never a fill,
+# so it still reads as a shape when the enemy can reach most of the board)
+var reach_edge: MeshInstance3D
+var reach_key := ""
+
+
+func set_reach(keys: Dictionary) -> void:
+	var k := ",".join(PackedStringArray(keys.keys())) if not keys.is_empty() else ""
+	if k == reach_key:
+		return
+	reach_key = k
+	if is_instance_valid(reach_edge):
+		reach_edge.queue_free()
+	reach_edge = null
+	if keys.is_empty():
+		return
+	reach_edge = _edge_mesh(self, "ReachEdge", LS.material(true), keys, LS.ROLE["edge_reach_enemy"])
+
+
 func show_blockers(hexes: Array) -> void:
 	if not is_instance_valid(blocker_highlights): return
 	for child in blocker_highlights.get_children():
 		blocker_highlights.remove_child(child)
 		child.queue_free()
 	for h in hexes:
-		BV.outline(blocker_highlights, hex_world(h.q, h.r), Color(1.0, 0.38, 0.08), 0.9)
+		BV.outline(blocker_highlights, hex_world(h.q, h.r), LS.ROLE["blocker"], 0.9)

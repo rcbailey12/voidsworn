@@ -1,0 +1,124 @@
+{
+ "about": "Issue 1316: the Glasswright drive glow (violet, no corona) at full burn beside an Eclipse drive in the same light. Run with look_bench --moments res://bench/look_moments_1316.json --part moments.",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   1152,
+   648
+  ]
+ },
+ "rows": [
+  {
+   "id": "g1316_cd5_engines",
+   "group": "issue 1316 drive glow",
+   "label": "CD5 (I8_37, new build) Glasswright drive at full burn, on its engines",
+   "att": [
+    "ithar",
+    "Ark"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "idle",
+   "engine": 1.6,
+   "focus": "attacker_engines",
+   "windows": [
+    [
+     "event",
+     0.0,
+     16
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "g1316_cd5_ship",
+   "group": "issue 1316 drive glow",
+   "label": "CD5 (I8_37, new build) whole ship at full burn",
+   "att": [
+    "ithar",
+    "Ark"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "idle",
+   "engine": 1.6,
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     16
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "g1316_i11_engines",
+   "group": "issue 1316 drive glow",
+   "label": "I11_37 Destroyer (old A4 hull) Glasswright drive at full burn, on its engines",
+   "att": [
+    "ithar",
+    "Destroyer"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "idle",
+   "engine": 1.6,
+   "focus": "attacker_engines",
+   "windows": [
+    [
+     "event",
+     0.0,
+     16
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "g1316_eclipse_engines",
+   "group": "issue 1316 drive glow",
+   "label": "D20_23 Eclipse Destroyer drive at full burn (compare the violet), on its engines",
+   "att": [
+    "deathless",
+    "Destroyer"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "idle",
+   "engine": 1.6,
+   "focus": "attacker_engines",
+   "windows": [
+    [
+     "event",
+     0.0,
+     16
+    ]
+   ],
+   "key": 0
+  }
+ ]
+}

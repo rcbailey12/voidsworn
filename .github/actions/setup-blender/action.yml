@@ -1,0 +1,35 @@
+# Issue 1487 (audit GH-04): Blender 4.5.14 for the A16 fresh bake. The old step saved a 441 MB copy on every branch that
+# missed (24 copies filled the 10 GB cache, and no branch can read another branch's copy). Now cache_warm.yml saves one
+# copy on main, every branch reads it, and branches never save. On a miss a branch downloads as before. Sets BLENDER.
+# Upgrading Blender: change 4.5 / 4.5.14 below.
+name: Get Blender (Linux)
+description: Restore Blender from main's cache or download it, install its libraries, and set BLENDER.
+runs:
+  using: composite
+  steps:
+    - name: Blender from main's cache
+      id: cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/blender-4.5.14
+        key: blender-4.5.14-linux-x64
+    - name: Download Blender 4.5.14 (cache miss)
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        curl -sSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender4.5/blender-4.5.14-linux-x64.tar.xz
+        mkdir -p ~/blender-4.5.14
+        tar -xJf "$RUNNER_TEMP/blender.tar.xz" -C ~/blender-4.5.14 --strip-components=1
+        rm -f "$RUNNER_TEMP/blender.tar.xz"
+    - name: Save Blender to the cache (main only)
+      if: steps.cache.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/blender-4.5.14
+        key: blender-4.5.14-linux-x64
+    - name: Blender's libraries and BLENDER
+      shell: bash
+      run: |
+        sudo apt-get update -qq && sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libice6 > /dev/null
+        echo "BLENDER=$HOME/blender-4.5.14/blender" >> "$GITHUB_ENV"
+        ~/blender-4.5.14/blender --version | head -1

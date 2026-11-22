@@ -51,4 +51,4 @@ func _shoot(m, ui, at: Vector3, dist: float, path: String, top: float) -> void:
 	m.cam.position = at + dir * dist; m.cam.look_at(at, Vector3.UP)
 	for i in 6: await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path)
+	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path, preload("res://tools/picture_provenance.gd").capture_stage())

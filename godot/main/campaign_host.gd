@@ -11,6 +11,7 @@ const Campaign := preload("res://campaign/campaign.gd")
 const UI_G3 := "res://ui/campaign/campaign_ui.gd"
 const Fallback := preload("res://main/campaign_fallback_ui.gd")
 const Teaching := preload("res://ui/campaign/campaign_tips.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: ui_boss when a boss or Nemesis fight is entered
 
 # the G3 parity bot's weights (campaign/test/parity_campaign.gd), minus the stub battle buttons: real battles decide fights
 const STAY := {"closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
@@ -51,6 +52,7 @@ func start(m: Node, o: Dictionary) -> void:
 		errors.append("campaign tables: " + err)
 	C.battle_mode = "external"
 	C.battle_setup = _setup_battle
+	C.battle_restore = _restore_battle   # issue 1451: Continue into the saved round
 	C.battle_requested.connect(_on_battle)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
@@ -94,6 +96,8 @@ func start(m: Node, o: Dictionary) -> void:
 		ui = Fallback.new()
 	if "hide_on_battle" in ui:
 		ui.hide_on_battle = true
+	if "ai_level" in ui:
+		ui.ai_level = ai_level()   # issue 1336: the map's danger bands follow the setting
 	add_child(ui)
 	ui.bind(C)
 	C.changed.connect(_on_changed)
@@ -111,22 +115,43 @@ static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
 	return Campaign.has_saved_run(path)
 
 
-var _music_page := ""
+var _music_page := ""   # the music key last played (music_key); "" after a battle, so the page plays again
+
+
+# Issue 1482: which music a campaign page asks for. "title", "map:<sector>" (the map and the service stop: a run page
+# keeps its sector's map track, and a new sector is a new key even when the page kind stays "map"), or the page kind
+# itself for pages that keep whatever plays (the battle briefing, the end card, setup pages).
+const MAP_MUSIC_PAGES := ["map", "shipyard"]
+static func music_key(kind: String, run) -> String:
+	if kind == "title":
+		return "title"
+	if kind in MAP_MUSIC_PAGES and run is Dictionary:
+		return "map:%d" % int((run as Dictionary).get("sector", 1))
+	return kind
 
 
 func _on_changed() -> void:
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	# the map's music per sector (the music helper's player)
-	var kind := str(C.page.get("kind", ""))
-	if main.music != null and kind != _music_page:
-		_music_page = kind
-		if kind == "map" and C.RUN != null:
-			main.music.play_map(int(C.RUN.get("sector", 1)))
-		elif kind == "title":
+	var key := music_key(str(C.page.get("kind", "")), C.RUN)
+	if main.music != null and key != _music_page:
+		_music_page = key
+		if key.begins_with("map:"):
+			main.music.play_map(int(key.substr(4)))
+		elif key == "title":
 			main.music.play_title()
 	# back on the title page (the player left the run, or the run ended and they pressed Title): hand back to main's title
 	if not bot and C.page.get("kind", "") == "title" and C.modal_d == null:
 		run_over.emit({"result": "title"})
+
+
+# The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.
+# A missing setting falls back to Standard, the new-player default (R49, issue 1504); a bare host with no main keeps the
+# API default, Veteran.
+func ai_level() -> String:
+	if main != null and "settings" in main:
+		return str(main.settings.get("ai", "standard"))
+	return "veteran"
 
 
 # external battle mode: build the real battle (G1 rules through the API) and give the campaign its B
@@ -135,6 +160,8 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	var e: String = api_now.load_rules()
 	if e != "":
 		errors.append("rules: " + e)
+	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
+	api_now.round_saves = round_saves_on()   # issue 1451: pack the rules state at each round start (round 1 included)
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:
@@ -148,18 +175,69 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	return _bstate(api_now)
 
 
+# Issue 1451: round saves are on for the player's runs; bot runs keep them off (no disk) unless --round-saves asks for them.
+func round_saves_on() -> bool:
+	return not bot or (main != null and main.args.has("round-saves"))
+
+
+# Issue 1451: the battle saved at a round start, rebuilt on a fresh rules API (the campaign's Continue)
+func _restore_battle(sb: Dictionary) -> Dictionary:
+	var a = API.new()
+	var e: String = a.load_rules()
+	if e != "":
+		return {"error": "rules: " + e}
+	var bytes := Marshalls.base64_to_raw(str(sb.get("data", "")))
+	var why: String = a.restore_round(bytes, int(sb.get("size", 0)), str(sb.get("fp", "")))
+	if why != "":
+		return {"error": why}
+	a.round_saves = round_saves_on()
+	api_now = a
+	cfg_now = a.R.B.get("cfg", {})
+	return {"B": a.R.B, "run": a.R.RUN}
+
+
+# Issue 1451: the battle scene's round start has settled (no animation playing, the player to act): write that round's save.
+# True only when it reached the disk (the battle menu offers Save and quit on that alone, Artoo on PR 1486).
+func _save_round() -> bool:
+	if api_now == null or C == null:
+		return false
+	return C.save_battle_round(api_now.take_round_snapshot())
+
+
 func _on_battle() -> void:
 	if in_battle:
 		return
 	in_battle = true
+	if not bot and is_boss_fight(C.pending_battle):
+		Kit.play("ui_boss")
 	_play_battle.call_deferred()
+
+
+# A sector flagship, the finale or a Nemesis battle (issue 1448): the fights that open on the boss chord.
+static func is_boss_fight(cfg) -> bool:
+	if not (cfg is Dictionary):
+		return false
+	var nm = cfg.get("nemesis")
+	return str(cfg.get("kind", "")) == "boss" or (nm is Dictionary and not nm.is_empty())
 
 
 func _play_battle() -> void:
 	var a = api_now
 	if ui != null:
 		ui.visible = false
-	var r: Dictionary = await main.play_api(a, {"bot": bot, "can_retreat": C.can_retreat()})
+	var po := {"bot": bot, "can_retreat": C.can_retreat()}
+	if a.round_saves:
+		po["on_round"] = _save_round
+	var r: Dictionary = await main.play_api(a, po)
+	if str(r.get("result", "")) == "save_quit":
+		# issue 1451 (and Artoo on the issue): Save and quit is not a result. Nothing is settled; the run stays saved at the round
+		if ui != null:
+			ui.visible = true
+		in_battle = false
+		_music_page = ""   # issue 1482
+		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
+		C.leave_battle_saved()
+		return
 	battles += 1
 	for x in r.get("errors", []):
 		errors.append("battle %d: %s" % [battles, str(x)])
@@ -172,6 +250,7 @@ func _play_battle() -> void:
 	if bot:
 		log_b.append(_battle_line(a, res, r))
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
+	_music_page = ""   # issue 1482: the battle played its own music; whatever page follows (even the same one) plays its track
 	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", _bstate(a))
 
 

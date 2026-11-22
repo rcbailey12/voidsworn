@@ -10,6 +10,7 @@ extends RefCounted
 @warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
+const Snap = preload("res://rules/battle_snapshot.gd")
 
 var R                       # the rules (rules.gd); read-only for the game side, use view()
 var phase := "none"         # "player" | "enemy" | "over" | "none" | "halted" (hard stop, see below)
@@ -155,6 +156,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 		for tpl in S.enemies: en.append({"tpl": tpl})
 		cfg["enemies"] = en
 	new_battle(run, cfg)
+	R.UNDO_ON = S.get("undo") == true   # issue 1450: only the undo fixtures; the other scenarios play exactly as before
 
 # The config is the one input the rules take from outside (G3's campaign, G2's scenes, saves). The rules compare these fields with
 # string literals, and GDScript stops the call on a cross-type ==, so a wrong type is reported here and dropped (treated as unset,
@@ -188,6 +190,12 @@ func _clean_cfg(cfg: Dictionary) -> Dictionary:
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
+# The enemy AI level, "standard" or "veteran" (anything else is Veteran). Set it before new_battle: the enemy fleet is rolled
+# there at this level (battle.js genEnemyFleet reads AI_LEVEL), issue 1336.
+func set_ai_level(level: String) -> void:
+	_enter()
+	R.AI_LEVEL = level if level in ["standard", "veteran"] else "veteran"
+	_leave(false)
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_enter(); halted = ""
 	if R != null: R.not_ported = ""   # a new battle starts clean
@@ -197,6 +205,7 @@ func _i_new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	if not (cfg.get("fac") is String and R.FACTIONS.has(cfg["fac"])):
 		R.events.clear(); _queue.clear(); _halt(cfg_errors[-1]); return
 	R.RUN = run; R.events.clear(); _queue.clear()
+	R.UNDO_ON = true; R.UNDO = null   # issue 1450: the game can take a move back (a scenario sets its own, below)
 	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); var war = R.jt(cfg.get("event_war")); _alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
 	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("event_war"); cfg.erase("alt")
 	R.startBattle(cfg)
@@ -218,6 +227,7 @@ func _prep() -> void: # ui3d.js prepBattle
 	B["busy"] = true; R.swarmPhase("player"); R.flush_deferred(); B["busy"] = false
 	phase = "over" if R.jt(B.get("over")) else "player"
 	R.emit({"t": "round", "round": int(B["round"])}); R.emit({"t": "side", "side": "player"})
+	_round_capture()
 
 # ---------------- reading state ----------------
 func unit(id: String) -> Variant:
@@ -242,25 +252,22 @@ func _i_view() -> Dictionary:
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
+			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
 			"regenLock": R.jt(u.get("regenLock")),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
-			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
-			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
+			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": (u.get("stance") if R.jt(u.get("stance")) else "strike") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
+			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
+			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones(), "halt": halted if halted != "" else null}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
 	if R.B.get("obj") == null: return o
 	for h in _hexes:
 		var z = R.objZone(h.q, h.r)
 		if z != null: o[str(h.q) + "," + str(h.r)] = z
-	return o
-func _torps() -> Array: # torpedo salvos in flight: they strike at the start of the firing side's next turn
-	var o := []
-	for s in (R.B["torps"] if R.B.get("torps") != null else []):
-		o.append({"id": s["id"], "side": s["side"], "by": s["by"], "target": s["tid"], "aim": {"q": int(s["aim"]["q"]), "r": int(s["aim"]["r"])}, "from": {"q": int(s["from"]["q"]), "r": int(s["from"]["r"])}, "round": int(s["r"])})
 	return o
 
 # Everything that happened since the last call, in order (API.md lists the event types).
@@ -327,9 +334,30 @@ func move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
 	var r = _i_move(id, state, opts); _leave(true); return r
+# issue 1560: a move is applied only if its end (hex and facing) is still reachable now at no more than its cost, so a stale
+# state (worked out before a turn, or before another ship moved) can never end on a taken hex or spend the wrong movement.
+# It returns the state to commit: today's state for the same path when the search still holds it, else today's cheapest legal
+# path to the same end (Artoo on PR 1564: a stale path to a still-reachable end must not be walked), or null.
+func _same_path(a, b) -> bool:
+	if not (a is Array) or not (b is Array) or a.size() != b.size(): return false
+	for i in a.size():
+		var x = a[i]; var y = b[i]
+		if int(x.get("q", 0)) != int(y.get("q", 0)) or int(x.get("r", 0)) != int(y.get("r", 0)) or int(x.get("f", 0)) != int(y.get("f", 0)) or R.jt(x.get("rot")) != R.jt(y.get("rot")): return false
+	return true
+func _reachable(u, state: Dictionary):
+	if state.get("q") == null or state.get("r") == null or state.get("f") == null or state.get("cost") == null: return null
+	var best = null
+	for s in R.computeReach(u, true).states:
+		if int(s.q) != int(state.q) or int(s.r) != int(state.r) or int(s.f) != int(state.f) or float(s.cost) > float(state.cost) + 1e-9: continue
+		if _same_path(s.get("path"), state.get("path")): return s # today's cost, turns and dive flags, not the cached ones (Artoo, PR 1566)
+		if best == null or float(s.cost) < float(best.cost): best = s
+	return best
 func _i_move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
+	var live_state = _reachable(u, state)
+	if live_state == null: return false
+	state = live_state
 	R.B["busy"] = true
 	var lf = opts.get("late_fire")
 	if lf != null:
@@ -424,6 +452,23 @@ func _i_board(id: String, target_id: String) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	if t == null or not _guard(u): return false
 	R.B["busy"] = true; var ok = R.boardUnit(u, t); _after_act(); return ok
+# Issue 1450 (Ryan, Nov 21 2026): take back the ship's last move or turn, while nothing else has happened since (no shot, ram,
+# boarding, ability, order, Command, dice or other change: rules.gd canUndo). view().units[i].undo says when it is allowed.
+# Each call takes back one move or turn; undoing the first one also lets another ship go first. Emits {t: "undo", unit, q, r, f}.
+# The battle version moves on, so every per-version cache (ui_info, threat_map, the scene's reads) is rebuilt after it.
+func undo(id: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_undo(id); _leave(true); return r
+func _i_undo(id: String) -> bool:
+	var u = unit(id)
+	if phase != "player" or u == null or u["side"] != "player" or R.jt(R.B.get("busy")): return false
+	return R.undoMove(u)
+func set_undo(on: bool) -> void:   # new_battle turns undo on and a test scenario sets its own; the battle scene turns it on for --scenario too
+	_enter(); R.UNDO_ON = on; R.UNDO = null; _leave(true)
+func can_undo(id: String) -> bool:
+	_enter()
+	var u = unit(id); var r = phase == "player" and u != null and u["side"] == "player" and R.canUndo(u); _leave(false); return r
 func rotate(id: String, dir: int) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
@@ -683,6 +728,19 @@ func _threat_map_raw(only_id = null, both := false) -> Variant:
 	R.eval_end()
 	return {"dmg": out, "n": cnt} if both else out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
+# issue 1444: the nova forecast for a centre hex: every live ship within 1 hex, with the raw damage the shell would deal it
+# (rules.gd novaDamage, the same call the hit makes: centre or ring, x1.5 on craft, the player's story damage modifier)
+func nova_preview(id: String, q: int, r: int) -> Array:
+	_enter()
+	var o = _i_nova_preview(id, q, r); _leave(false); return o
+func _i_nova_preview(id: String, q: int, r: int) -> Array:
+	var u = unit(id)
+	var o := []
+	if u == null: return o
+	var c := {"q": q, "r": r}
+	for x in R.alive():
+		if R.hdist(x, c) <= 1: o.append({"id": x["id"], "centre": R.hdist(x, c) == 0, "dmg": R.novaDamage(u, x, c)})
+	return o
 func world_info() -> Dictionary:
 	_enter()
 	var r = _i_world_info(); _leave(false); return r
@@ -699,6 +757,49 @@ func teaching_info() -> Dictionary:
 	var n = cfg.get("runBattle", cfg.get("teachingBattle", max(1, seen.size())))
 	var ev = R.B.get("event")
 	var out = {"battle": n, "arrived": R.jt(run.get("teachingReinforced")), "event": ev.duplicate(true) if ev is Dictionary else null}
+	_leave(false)
+	return out
+
+# Issue 1289: the hulls a battle will bring in after it starts (the rules' reinforcement event, known when the battle
+# starts), so the battle can load and draw them under the loading cover instead of in the frame they arrive. Read only:
+# no dice, no ids taken, so the battle plays exactly as without it. Same fields ShipView.setup reads from a view unit.
+func arrival_previews() -> Array:
+	_enter()
+	var out: Array = []
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var run = R.RUN if R.RUN is Dictionary else {}
+		var fac = B.get("cfg", {}).get("fac") if side == "enemy" else (run["fac"] if R.jt(run.get("fac")) else "voidsworn")
+		var tpl = R.cheapHull(fac)
+		var t: Dictionary = R.HULLS.get(tpl, {})
+		if not t.is_empty():
+			out.append({"id": "arrival_warm_0", "side": side, "tpl": tpl, "fac": t["fac"] if R.jt(t.get("fac")) else fac,
+				"cls": t.get("cls"), "size": t.get("size", 1.0), "facing": 0 if side == "player" else 3, "squadron": false,
+				"flagship": false, "hp": t.get("hp", 1), "maxHp": t.get("hp", 1)})
+	_leave(false)
+	return out
+
+# Issue 1446: where the next reinforcements will come in, while the warning is up (from the warning round until they
+# arrive). The rules pick the arrival hex when the wave lands (edgeHex: the free edge hex on that side's own approach), so
+# this asks the same question now and returns that hex and the clear board hexes within 2 of it: a strip on the edge.
+# Read only: no dice, no state change. {} when no wave is coming; else {side, round (when they land), hexes: [{q, r}]}.
+func arrival_strip() -> Dictionary:
+	_enter()
+	var out := {}
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")) and not R.jt(B.get("over")) \
+			and int(B["round"]) >= int(R.z0(e.get("warnR"))) and int(B["round"]) < int(R.z0(e.get("r"))):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var h = R.edgeHex(side)
+		if h != null:
+			var hexes: Array = []
+			for c in R.boardHexes():
+				if R.hdist(c, h) <= 2 and not R.blocks(R.terr(c.q, c.r)):
+					hexes.append({"q": int(c.q), "r": int(c.r)})
+			out = {"side": side, "round": int(e["r"]), "hexes": hexes}
 	_leave(false)
 	return out
 
@@ -789,7 +890,7 @@ func _ai_activate(u) -> void:
 	R.eval_begin()
 	for s in states:
 		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
-		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.torpThreat(u, v) * 0.9 - R.syncPull(u, v) * 1.5
+		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.syncPull(u, v) * 1.5
 		if sc > bs:
 			bs = sc; best = s
 	R.eval_end()
@@ -937,6 +1038,7 @@ func _c_end() -> void:
 	if R.jt(B.get("over")):
 		_finish(); return
 	phase = "player"; R.emit({"t": "side", "side": "player"})
+	_round_capture()
 
 func _pendingP() -> Array:
 	var o := []
@@ -992,8 +1094,84 @@ func _next_round() -> void: # ui3d.js nextRound
 		_finish(); return
 	phase = "player"
 	R.emit({"t": "side", "side": "player"})
+	_round_capture()
 func _finish() -> void:
 	phase = "over"; _queue.clear(); R.emit({"t": "end", "result": R.B["over"]})
+
+# ---------------- issue 1451: round-start snapshots (R378, RULEBOOK 9.18) ----------------
+# With round_saves on (campaign battles), the whole rules state is packed the moment each round starts (after the round-start
+# ticks, the swarm phase and the round hook, when the player is about to act), including the shared random stream, so a battle
+# restored from it plays on with the same dice. The scene writes it to disk later, once the round's animations have settled
+# (battle.gd round_save_cb); taking the bytes here keeps what is saved independent of when the scene gets to it.
+const SNAP_V := 1            # bump when the snapshot's shape changes: an older snapshot then restarts the fight instead
+var round_saves := false
+var round_snap := PackedByteArray()   # the newest round start, packed (empty when packing failed: the last good one stays on disk)
+var round_snap_size := 0
+var round_snap_round := 0             # read without the lock by the scene: which round round_snap holds (0: none)
+var round_snap_error := ""
+var round_snap_ms := 0.0
+static var _fp_cache := ""
+
+func _round_capture() -> void:
+	if not round_saves or phase != "player" or R.jt(R.B.get("over")): return
+	var t0 := Time.get_ticks_usec()
+	if not R.deferred.is_empty():
+		round_snap = PackedByteArray(); round_snap_error = "round %d started with deaths still pending" % int(R.B["round"]); return
+	var root := {"v": SNAP_V, "run": R.RUN, "B": R.B, "arena": R.ARENA, "cut": R.CUT, "solid": R.SOLID, "tmeta": R.TERRAIN_META, "meta": R.META,
+		"uid": R.UID, "ai": R.AI_LEVEL, "rng": JSM.rng_s, "phase": phase, "queue": _queue, "hexes": _hexes, "alt": _alt,
+		"c": [_c_order, _c_i, _c_g, _c_done]}
+	var p := Snap.pack(root)
+	if p.has("error"):
+		round_snap = PackedByteArray(); round_snap_error = str(p["error"]); push_warning("round save skipped: " + round_snap_error); return
+	round_snap = p["bytes"]; round_snap_size = int(p["size"]); round_snap_error = ""
+	round_snap_round = int(R.B["round"])
+	round_snap_ms = (Time.get_ticks_usec() - t0) / 1000.0
+
+# The newest round-start snapshot: {"round", "bytes", "size", "fp", "ms"}, or {} when there is none.
+func take_round_snapshot() -> Dictionary:
+	_enter()
+	var o := {}
+	if not round_snap.is_empty():
+		o = {"round": round_snap_round, "bytes": round_snap, "size": round_snap_size, "fp": snapshot_fingerprint(), "ms": round_snap_ms}
+	_leave(false)
+	return o
+
+# Which rules a snapshot belongs to: the snapshot version, the tables and, where the build carries them, the rules sources and the
+# build's commit. A snapshot from other rules is not restored (the fight restarts from its pre-battle save instead).
+static func snapshot_fingerprint() -> String:
+	if _fp_cache != "": return _fp_cache
+	var parts := ["snap%d" % SNAP_V]
+	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd", "res://rules/jsm.gd"]:
+		if FileAccess.file_exists(f): parts.append(FileAccess.get_file_as_string(f).md5_text().left(12))
+	if FileAccess.file_exists("res://build_info.json"):
+		var bi = JSON.parse_string(FileAccess.get_file_as_string("res://build_info.json"))
+		if bi is Dictionary: parts.append(str(bi.get("commit", "")))
+	_fp_cache = ":".join(PackedStringArray(parts))
+	return _fp_cache
+
+# Put back a battle from take_round_snapshot() (after load_rules on a fresh API). Returns "" or why it cannot be restored. The
+# restored battle is at the start of its round, the player to act; the scene gets a round and a side event, as at any round start.
+func restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
+	_enter(); halted = ""
+	var e := _i_restore_round(bytes, size, fp)
+	_leave(true)
+	return e
+func _i_restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
+	if R == null: return "rules not loaded"
+	if fp != snapshot_fingerprint(): return "the snapshot is from other rules"
+	var u := Snap.unpack(bytes, size)
+	if u.has("error"): return str(u["error"])
+	var S = u["root"]
+	if not (S is Dictionary and int(S.get("v", 0)) == SNAP_V and S.get("B") is Dictionary and S.get("run") is Dictionary): return "the snapshot has the wrong shape"
+	R.not_ported = ""
+	R.RUN = S["run"]; R.B = S["B"]; R.ARENA = S["arena"]; R.CUT = S["cut"]; R.SOLID = S["solid"]; R.TERRAIN_META = S["tmeta"]; R.META = S["meta"]
+	R.UID = S["uid"]; R.AI_LEVEL = S["ai"]; JSM.rng_s = int(S["rng"])
+	R.deferred = []; R.events.clear(); R._runfx = null; R._ob.clear()
+	phase = str(S["phase"]); _queue = S["queue"]; _hexes = S["hexes"]; _alt = bool(S["alt"])
+	_c_order = S["c"][0]; _c_i = int(S["c"][1]); _c_g = int(S["c"][2]); _c_done = S["c"][3]
+	round_snap = bytes; round_snap_size = size; round_snap_round = int(R.B["round"]); round_snap_error = ""
+	R.emit({"t": "round", "round": int(R.B["round"])}); R.emit({"t": "side", "side": "player"})
+	return ""
 
 # Presentation queries use the same hex line and blocker predicates as combat.
 # They return copies and never consume random numbers or change battle state.

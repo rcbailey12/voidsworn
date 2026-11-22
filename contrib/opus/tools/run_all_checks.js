@@ -12,7 +12,7 @@
 // against ceilings in checks_baseline.json that can only go down.
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 
 // Issue 357: the rules math targets V8 in Node 22; another major gives a false parity failure.
@@ -139,16 +139,16 @@ function buildChecks() {
   // Re-time when a row's cost changes. Gate rows always run.
   const FAST_AUTO = new Set([
     'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
-    'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
-    'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
-    'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
+    'campaign_saves_1556_tests', 'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
+    'chorus_eat_core_tests', 'chorus_biomass_1484_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
+    'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
-    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
-    'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
+    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
-    'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
+    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
     'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
-    'ui_spec_tests', 'weapon_match_tests',
+    'ui_spec_tests', 'weapon_match_tests', 'workflow_config_tests',
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
@@ -174,6 +174,7 @@ function buildChecks() {
   add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
   add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add('tools/ci/big_files.js', ['--self-test'], 'normal', 300, false, true); // #1491 (audit GH-01): self-test row; the warnings print below the table and never fail
   add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
   for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
   add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings', 300, false, true);
@@ -215,7 +216,8 @@ async function execute(c, baseline) {
       childArgs = ['-e', bootstrap, original, target, ...c.args];
     }
     const run = await new Promise(resolve => {
-      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT }, windowsHide: true });
+      // Issue 1194: tmo.bat hands steps to the installed tools_live copy; a check tests this checkout's own watchdog.
+      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT, TMO_OWN_COPY: '1' }, windowsHide: true });
       let output = '', error, timedOut = false;
       const timer = setTimeout(() => {
         timedOut = true;
@@ -244,6 +246,11 @@ async function execute(c, baseline) {
     else if (c.kind === 'findings') verdict = classifyFindings(run, baseline);
     else if (c.kind === 'drift') verdict = classifyDrift(run, baseline);
     else verdict = classifyGeneric(run);
+    // Issue 1530: the auto-discovered job head test can pass its static checks while skipping PowerShell.
+    // GitHub's Ubuntu runner includes pwsh. Require the live suite's final verdict in CI.
+    if (c.name === 'opus_job_head_tests' && process.env.CI && verdict.result === 'PASS' && !/^PASS ps1 fixtures:/m.test(run.output)) {
+      verdict = { result: 'FAIL', detail: 'FAIL: PowerShell job head fixtures did not finish in CI (requires pwsh on Ubuntu)' };
+    }
     row.result = verdict.result;
     row.detail = verdict.detail;
   } catch (e) {
@@ -257,38 +264,59 @@ async function execute(c, baseline) {
   return row;
 }
 
+// Issue 1489 (audit GH-07): --jobs N runs up to N rows at once (GitHub passes --jobs 4). Each row still prints its
+// "Running" line when it starts and its result line, with any failure detail, in one piece when it ends; the final table
+// keeps the list order, so the table and exit code are the same as a serial run. Without --jobs it stays serial (1),
+// so a PC run reads its log live row by row as before (issue 962).
 async function main() {
   const args = process.argv.slice(2);
-  let only;
+  let only, jobs = 1;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--only' && args[i + 1] && !args[i + 1].startsWith('--')) only = args[++i];
-    else if (!['--json', '--fast'].includes(args[i])) { console.error('Usage: node run_all_checks.js [--json] [--fast] [--only <name>]'); process.exit(1); }
+    else if (args[i] === '--jobs' && /^[1-9][0-9]?$/.test(args[i + 1] || '')) jobs = Number(args[++i]);
+    else if (!['--json', '--fast'].includes(args[i])) { console.error('Usage: node run_all_checks.js [--json] [--fast] [--only <name>] [--jobs <1-99>]'); process.exit(1); }
   }
   const baseline = readBaseline();
   const checks = buildChecks();
   if (only && !checks.some(c => c.name === only || c.file === only)) { console.error('Unknown check: ' + only + '\nNames: ' + checks.map(c => c.name).join(', ')); process.exit(1); }
-  const report = [];
-  for (const c of checks.filter(c => !only || c.name === only || c.file === only)) {
+  const selected = checks.filter(c => !only || c.name === only || c.file === only);
+  const report = new Array(selected.length);
+  const runOne = async (c, i) => {
     // A gating row is never downgraded to SKIP: --fast still runs it, and a SKIP that still happens is a FAIL.
     // Issue 946: --fast selects by the fast mark from the timed run, not by the limit.
     if (args.includes('--fast') && !c.fast && !c.gate) {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
-      report.push(row);
+      report[i] = row;
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
       printRow(row);
-      continue;
+      return;
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
     if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
-    report.push(row);
+    report[i] = row;
     printRow(row);
-  }
+  };
+  // With more than one job, the slow rows start first (600 s limit, then rows without the fast mark), so one long row
+  // does not start last and hold the run; the table order does not change.
+  const rank = c => (c.timeout > 300 ? 0 : c.fast ? 2 : 1);
+  const order = selected.map((c, i) => i);
+  if (jobs > 1) order.sort((a, b) => rank(selected[a]) - rank(selected[b]) || a - b);
+  let next = 0;
+  const worker = async () => { while (next < order.length) { const i = order[next++]; await runOne(selected[i], i); } };
+  await Promise.all(Array.from({ length: Math.min(jobs, selected.length || 1) }, worker));
   console.log('\ncheck | result | seconds | detail');
   console.log('--- | --- | --- | ---');
   for (const r of report) console.log(`${r.check} | ${r.result} | ${r.seconds.toFixed(2)} | ${r.detail}`);
   const skipped = report.filter(r => r.result === 'SKIP').map(r => r.check);
   if (skipped.length) console.log('\nSKIP: ' + skipped.join(', '));
+  // Issue 1491 (audit GH-01): big files added outside godot/ and assets/ are a warning, never a failure.
+  if (report.some(r => r.check === 'big_files' && r.result === 'PASS')) {
+    const big = spawnSync(process.execPath, [path.join(ROOT, 'tools/ci/big_files.js')], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
+    const lines = ascii(big.stdout || '').split(/\r?\n/).filter(l => /^(WARN|SKIP) /.test(l));
+    console.log('\nbig files (warning only):' + (lines.length ? '' : ' none over 2 MB outside godot/ and assets/'));
+    for (const l of lines) console.log(l);
+  }
   if (args.includes('--json')) fs.writeFileSync(path.join(ROOT, 'checks_report.json'), JSON.stringify(report, null, 2) + '\n');
   process.exitCode = exitCodeFor(report);
 }

@@ -2,7 +2,7 @@ param(
   [string]$Install,
   [string]$Full,
   [string]$Review,
-  [ValidateSet(10, 121)][int[]]$Seeds = @(121, 10)
+  [ValidateSet(10, 31, 121)][int[]]$Seeds = @(31, 10)
 )
 $ErrorActionPreference = 'Stop'
 $pc = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
@@ -63,9 +63,12 @@ try {
         & $tmo 1800 $game --log-file $gameLog --resolution 1920x1080 --windowed --disable-vsync --fixed-fps 30 --write-movie $avi -- --player-path $trace --player-path-seed $seed 2>&1 | Out-File -LiteralPath $log -Encoding utf8
         $code = $LASTEXITCODE
       } finally { $ErrorActionPreference = 'Stop' }
-      # The sector map builds in a background thread. A slow first load can miss the jump before Battle 1 starts.
+      # The sector map builds in a background thread. A slow first load can miss the jump before Battle 1 starts,
+      # or (issue 1448) hold the map's loading cover past the recorder's wait. Either one gets one retry.
+      # main/test/player_path_map_ready_check.gd reads this pattern and tests it on both trace reasons.
+      $retryPattern = '"battle":0,.*"reason":"(jump to 0-0 did not open|the sector map was still loading after \d+ s)"'
       $startupTimeout = $code -and (Test-Path -LiteralPath $trace) -and
-        (Select-String -LiteralPath $trace -Pattern '"battle":0.*"reason":"jump to 0-0 did not open"' -Quiet)
+        (Select-String -LiteralPath $trace -Pattern $retryPattern -Quiet)
       if ($attempt -eq 2 -or -not $startupTimeout) { break }
       foreach ($file in @($avi, $trace)) {
         if (Test-Path -LiteralPath $file) { Move-Item -LiteralPath $file -Destination $attemptPath }

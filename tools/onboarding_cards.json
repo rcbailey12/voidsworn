@@ -27,7 +27,7 @@
   [
     "reinforce_warn",
     "More ships are coming",
-    "Reinforcements arrive at the map edge. A flash marks where they enter, and a toast names the ship. A new arrival acts in the turn order like any other ship."
+    "Reinforcements arrive at the map edge. A glowing strip on the edge marks where they will enter, and a toast names the ship when they do. A new arrival acts in the turn order like any other ship."
   ],
   [
     "close",
@@ -57,7 +57,7 @@
   [
     "c_reward",
     "Rewards",
-    "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for salvage or Ransom for credits. A protocol reroll costs credits."
+    "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for parts or Ransom for credits. A protocol reroll costs credits."
   ],
   [
     "c_shipyard",
