@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 27 new builds installed, 0 with a build sheet but the old hull in game, 2 with a picked concept only, 6 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 27 new builds installed, 2 with a build sheet but the old hull in game, 0 with a picked concept only, 6 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -27,8 +27,8 @@ of this is the playable exe (that is a separate snapshot).
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Picket | Frigate | `H7_23` | Concept picked, old hull in game |  | [picket_sheet.webp](../../contrib/muse/design/class_family_hegemony_2026_11/picket_sheet.webp) | R369 |  | #1412 | Ryan, Nov 22 16:58 UTC: run 3 dart (PR 1707) picked, 'Agree with picket changes': keep the dart outline, flatten the speedboat keel into a space hull in the build. |
-| Cordon | Destroyer | `H8_23` | Concept picked, old hull in game |  | [cordon_sheet.webp](../../contrib/muse/design/class_family_hegemony_2026_11/cordon_sheet.webp) | R369 |  | #1412 | Ryan, Nov 22 16:58 UTC: run 3 anvil (PR 1707) taken; he named only Vanguard and Picket as needing work. |
+| Picket | Frigate | `H7_23` | Build sheet made, old hull in game |  | [picket_sheet.webp](../../contrib/muse/design/class_family_hegemony_2026_11/picket_sheet.webp) | R369 | hegemony_H7 | #1412 | Ryan, Nov 22 16:58 UTC: run 3 dart (PR 1707) picked, 'Agree with picket changes': keep the dart outline, flatten the speedboat keel into a space hull in the build. |
+| Cordon | Destroyer | `H8_23` | Build sheet made, old hull in game |  | [cordon_sheet.webp](../../contrib/muse/design/class_family_hegemony_2026_11/cordon_sheet.webp) | R369 | hegemony_H8 | #1412 | Ryan, Nov 22 16:58 UTC: run 3 anvil (PR 1707) taken; he named only Vanguard and Picket as needing work. |
 | Vanguard | Cruiser | `H9_23` | Old hull, no pick yet |  | none | R369 |  | #1146 | Run 3 catamaran (PR 1707) sent back, Ryan Nov 22 16:58 UTC: 'just wide open and doesn't really make sense as a cruiser class'. Muse redraws; its 1412 build waits. |
 | Dominion | Battleship | `H10_23` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg) | R256 | hegemony_H10 |  |  |
 | Iron Mandate (flagship) | Super-dreadnought | `H4_11` | New-format build on main | Accepted: Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043) | [IM5.jpg](../../contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg) | R256 | hegemony_IM5 |  |  |
