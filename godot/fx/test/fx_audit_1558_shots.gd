@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1558 items 1 and 2: before/after stills at the battle camera (distance 170), effects only, no ships.
+# Issue 1558 items 1 and 2: before/after stills at the battle camera (distance 170; the jets also at 60 for detail), effects only, no ships.
 #   jets: a Cone B muzzle vent (the gas `aspect` 2 to 4). "before" forces aspect 1, which is what main draws today (the
 #         shader replace that applied aspect matched nothing); "after" is this branch.
 #   veil: a capital core flash and its gas veil. "before" replays main's code (veil spawned with the flash, born moved
@@ -50,8 +50,9 @@ func _run() -> void:
 	world.add_child(cam)
 	cam.current = true
 	for v in ["before", "after"]:
-		await _scene("jets", v, [0.05, 0.12, 0.25])
-		await _scene("veil", v, [0.15, 0.35, 0.6, 1.2])
+		await _scene("jets", v, [0.05, 0.12, 0.25], 170.0, "jets170")   # where the game is played
+		await _scene("jets", v, [0.05, 0.12, 0.25], 60.0, "jets60")     # a close detail view
+		await _scene("veil", v, [0.15, 0.35, 0.6, 1.2], 170.0, "veil")
 	print("SHOTS_DONE")
 	quit(0)
 
@@ -67,9 +68,8 @@ func _fresh() -> void:
 	await fx.warmup(cam)
 
 
-func _scene(scene: String, variant: String, times: Array) -> void:
+func _scene(scene: String, variant: String, times: Array, d: float, label: String) -> void:
 	await _fresh()
-	var d := 170.0 if scene == "veil" else 60.0   # the jets sit at the battle camera's close zoom so the shape reads
 	cam.position = Vector3(0, 0.557, 0.83).normalized() * d
 	cam.look_at(Vector3.ZERO)
 	var t0: float = fx.now + 0.05
@@ -84,7 +84,9 @@ func _scene(scene: String, variant: String, times: Array) -> void:
 			var gas := DEATH.flipbook(fx, Vector3.ZERO, Vector3.UP, L * 0.8, "cool", 3.6, Vector3.ZERO, 0.38, DEATH.atlas_band(L), null)
 			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
 		else:
-			fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, _stand_in(), Vector3.ZERO, true, Vector3.ZERO, Transform3D.IDENTITY))
+			var piece := Node3D.new()
+			world.add_child(piece)
+			fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, _stand_in(), weakref(piece), Vector3.ZERO, true, Vector3.ZERO))
 	var start: float = fx.now
 	for t in times:
 		while fx.now < start + float(t):
@@ -95,7 +97,7 @@ func _scene(scene: String, variant: String, times: Array) -> void:
 			await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
 		var img := vp.get_texture().get_image()
-		var path := out.path_join("%s_%s_t%03d.png" % [scene, variant, int(round(float(t) * 1000.0))])
+		var path := out.path_join("%s_%s_t%03d.png" % [label, variant, int(round(float(t) * 1000.0))])
 		preload("res://tools/picture_provenance.gd").save_png(img, path, "cloud direction check")
 		print("[shots] ", path)
 

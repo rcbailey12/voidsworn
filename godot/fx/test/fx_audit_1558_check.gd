@@ -73,22 +73,43 @@ func _veil() -> void:
 	var fx = _fx()
 	fx.now = 5.0
 	var target := _ship(fx, "veil")
-	var frame := Transform3D.IDENTITY
-	DEATH._core_gas_veil(fx, fx.ships["veil"], Vector3.ZERO, true, Vector3.ZERO, frame)
-	var veil: MeshInstance3D = null
-	for c in fx.find_children("*", "MeshInstance3D", true, false):
-		if String(c.get_meta("fx_picture_kind", "")) == "cool":
-			veil = c
-	_check(veil != null, "2: the core gas veil spawns")
-	if veil != null:
+	var piece := Node3D.new()
+	fx.add_child(piece)
+	fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, fx.ships["veil"], weakref(piece), Vector3(1, 0, 0), true, Vector3.ZERO))
+	_check(_veils(fx).is_empty(), "2: no veil while the core is at full heat")
+	piece.position = Vector3(2, 0, 0)   # the wreck drifts after the flash
+	var born_at := 0.0
+	for i in 40:
+		fx.step(1.0 / 60.0)
+		if born_at == 0.0 and not _veils(fx).is_empty(): born_at = fx.now
+	var vs := _veils(fx)
+	_check(vs.size() == 1, "2: the core gas veil spawns once, after the delay")
+	if vs.size() == 1:
+		var veil: MeshInstance3D = vs[0]
 		var born := float((veil.material_override as ShaderMaterial).get_shader_parameter("born"))
-		_check(is_equal_approx(born, 5.0), "2: the veil is born when it spawns (born %.2f, now 5.00)" % born)
+		_check(born >= 5.0 + DEATH.CORE_VEIL_DELAY - 1e-3 and absf(born - born_at) <= 1.0 / 60.0 + 1e-3, "2: the veil is born when it spawns, not moved ahead (born %.3f)" % born)
+		_check(veil.global_position.distance_to(Vector3(3, 0, 0)) < 0.5, "2: the veil sits on the wreck where it is now, not where it broke (%s)" % str(veil.global_position))
+	# a piece that is gone by then gets no veil
+	var gone := Node3D.new()
+	fx.add_child(gone)
+	fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, fx.ships["veil"], weakref(gone), Vector3.ZERO, true, Vector3.ZERO))
+	gone.free()
+	for i in 40: fx.step(1.0 / 60.0)
+	_check(_veils(fx).size() == vs.size(), "2: a wreck piece freed before the delay gets no veil")
 	var src_text := FileAccess.get_file_as_string("res://fx/fx_death.gd")
 	_check(not src_text.contains("set_shader_parameter(\"born\", fx.now + 0.45)"), "2: no picture is moved ahead of its pool timer")
-	_check(src_text.contains("fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil"), "2: the veil waits for the core's full-heat window")
+	_check(src_text.contains("fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil.bind(fx, s, node_ref, local"), "2: the core's veil is scheduled with the live piece")
 	fx.remove_ship("veil")
 	fx.free()
 	target.free()
+
+
+func _veils(fx) -> Array:
+	var out := []
+	for c in fx.find_children("*", "MeshInstance3D", true, false):
+		if String(c.get_meta("fx_picture_kind", "")) == "cool" and (c as MeshInstance3D).visible:
+			out.append(c)
+	return out
 
 
 func _fog() -> void:
@@ -129,6 +150,31 @@ func _hit_pause() -> void:
 	_check(float(a[2]) < 0.2 and float(b[2]) < 0.2, "4: a hit pause drops the clock to a crawl at 60 and 144 fps")
 	_check(absf(float(a[0]) - 0.05) <= 1.0 / 60.0 + 1e-4 and absf(float(b[0]) - 0.05) <= 1.0 / 60.0 + 1e-4, "4: a 3-frame pause lasts 0.05 s of real time at 60 and 144 fps")
 	_check(absf(float(a[1]) - float(b[1])) < 0.012, "4: the effect time lost matches across frame rates")
+	# a long frame that ends the pause crawls only for what was left of it (Artoo and the OpenAI review on PR 1593:
+	# a 50 ms pause crawled 66.7 ms at 30 fps and 100 ms in a hitch)
+	var c := _lost_over([1.0 / 30.0])
+	var h := _lost_over([0.1, 1.0 / 60.0])
+	var ref := _lost_over([1.0 / 144.0])
+	print("     effect time lost: 144 fps %.4f s, 30 fps %.4f s, a 100 ms hitch %.4f s" % [ref, c, h])
+	_check(absf(c - ref) < 0.004 and absf(h - ref) < 0.004, "4: a 30 fps frame or a 100 ms hitch ends the pause on time (lost %.4f and %.4f against %.4f)" % [c, h, ref])
+
+
+# Effect seconds lost to a 3-frame hit pause over 0.5 s of real time, the frames cycling through `frames`.
+func _lost_over(frames: Array) -> float:
+	var fx = _fx()
+	fx.step(1.0 / 60.0)
+	fx.hit_pause(fx.now, 3)
+	var real := 0.0
+	var start: float = fx.now
+	var i := 0
+	while real < 0.5:
+		var dt := float(frames[i % frames.size()])
+		fx.step(dt)
+		real += dt
+		i += 1
+	var lost: float = real - (fx.now - start)
+	fx.free()
+	return lost
 
 
 func _kit_trail() -> void:
@@ -236,7 +282,7 @@ func _munitions() -> void:
 	var strips := 0
 	for c in tmp.find_children("*", "MeshInstance3D", true, false):
 		if (c as MeshInstance3D).mesh == WEAP.kit_trail_strip(fx): strips += 1
-	_check(strips == 1, "1528: the kit trail strip is drawn in the warm-up in its own vertex format")
+	_check(strips == 1, "1528: the warm-up holds one kit trail strip in its own vertex format (structure only; the PC timing run proves the draw)")
 	t0 = Time.get_ticks_usec()
 	var r: Node3D = WEAP._projectile_body(fx, "torp", 1.0, Color(1, 0.6, 0.3), "voidsworn")
 	var first_ms := (Time.get_ticks_usec() - t0) / 1000.0

@@ -1933,7 +1933,7 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 		pool.flush())
 
 
-const HEAT_RING := 24   # spots kept per hull; a spot lives about 2 s, so this holds a dozen hits a second
+const HEAT_RING := 48   # spots kept per hull: lance and torpedo spots live 3 to 4 s, so this holds a dozen hits a second before the oldest is reused
 
 
 static func _heat_pool(fx, src):

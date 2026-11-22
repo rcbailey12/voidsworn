@@ -473,21 +473,38 @@ func _process(delta: float) -> void:
 var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
 
 
+# Effect seconds over `t` real seconds while the clock eases from speed `a` to `b` (the exact integral of the ease, so the
+# time a hit pause costs is the same at any frame rate)
+static func _eased(a: float, b: float, t: float) -> float:
+	return b * t - (b - a) * (1.0 - exp(-t * SPEED_EASE)) / SPEED_EASE
+
+
 func step(delta: float) -> void:
 	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
-	var spd = 1.0
-	var pausing := now < _pause_until or _pause_left > 1e-6
-	if pausing:
-		spd = _pause_depth
-	_pause_left = maxf(0.0, _pause_left - delta)
+	var base := 1.0
 	if _death_slow_left > 0.0:
 		_death_slow_left = maxf(0.0, _death_slow_left - delta)
-		spd = minf(spd, 0.35) if _death_slow_left > 0.0 else spd
-	# issue 1558 item 4: the clock drops into a hit pause at once (so a 3-frame pause lands); every other change eases
-	# by real time, not per frame
-	_speed = spd if (pausing and spd < _speed) else lerpf(_speed, spd, 1.0 - exp(-maxf(delta, 0.0) * SPEED_EASE))
-	var dt = delta * _speed
+		base = 0.35 if _death_slow_left > 0.0 else 1.0
+	var crawl_spd: float = minf(float(_pause_depth), base)
+	# issue 1558 item 4: the hit pause is real seconds. The clock drops into it at once (so a 3-frame pause lands) and
+	# crawls only for the time left in it: a long frame (30 fps, a hitch) that ends the pause is split at the boundary
+	# and eases back by real time for the rest, so a 50 ms pause crawls 50 ms at any frame rate.
+	var real := maxf(delta, 0.0)
+	var hold: bool = now < _pause_until
+	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
+	_pause_left = maxf(0.0, _pause_left - real)
+	var dt: float
+	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
+		_speed = crawl_spd
+		dt = real * _speed
+	elif crawl > 1e-6:
+		var rest := real - crawl
+		dt = crawl * crawl_spd + _eased(crawl_spd, base, rest)
+		_speed = lerpf(crawl_spd, base, 1.0 - exp(-rest * SPEED_EASE))
+	else:
+		dt = _eased(float(_speed), base, real)
+		_speed = lerpf(_speed, base, 1.0 - exp(-real * SPEED_EASE))
 	now += dt
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
