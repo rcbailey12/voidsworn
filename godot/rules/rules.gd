@@ -57,6 +57,30 @@ func pp(u) -> String: return "p" if u["side"] == "player" else "e"
 # fx/faction_looks.json deathless.weapon (linear 0.72, 0.55, 1.0); every other faction keeps the green.
 const ECL_VIOLET := "#ddc4ff"
 func eclCol(u) -> String: return ECL_VIOLET if u != null and String(u.get("fac", "")) == "deathless" else "#7dff9b"
+# issue 1649 (R404): Fold skip. The next weapon attack on a folded ship misses outright, rolled first so the dice stay in step.
+func foldMiss(t, shots: Array) -> bool:
+	if t == null or not jt(t.get("fold")) or jt(t.get("dead")): return false
+	t["fold"] = false
+	for i in range(shots.size()): shots[i] = false
+	flt(t, "Folded", ECL_VIOLET, -30); logm(String(t["name"]) + " folds out of the way; the attack misses.", pp(t))
+	return true
+# issue 1649 (R404): Blood frenzy regrowth: 30% of hull damage dealt, at most 20% of max hull per turn, its own cap
+const FRENZY_REGROW := 0.3
+const FRENZY_CAP := 0.2
+func frenzyRegrow(u, hull) -> float:
+	if u == null or not jt(u.get("frenzy")) or jt(u.get("dead")) or jt(u.get("pyre")) or jt(u.get("isSq")) or hull <= 0: return 0.0
+	var room = max(0, JSM.jsround(u["maxHp"] * FRENZY_CAP) - z0(u.get("frenzyHealed"))); var h = min(room, min(u["maxHp"] - u["hp"], JSM.jsround(hull * FRENZY_REGROW)))
+	if h <= 0: return 0.0
+	u["hp"] = u["hp"] + h; u["frenzyHealed"] = z0(u.get("frenzyHealed")) + h; fstat("chorus", "frenzy", h)
+	flt(u, "Blood frenzy +" + ns(h), "#d6d24a", -26)
+	return h
+# issue 1649: a foe ship with a ready gun that can reach this hex this round (gun range plus its speed)
+func foldThreat(u, foes) -> bool:
+	for f in foes:
+		if jt(f.get("isSq")): continue
+		for w in f["weapons"]:
+			if weaponReady(w) and w.get("k") != "flak" and hdist(u, f) <= float(z0(w.get("r"))) + float(f["speed"] if jt(f.get("speed")) else 2): return true
+	return false
 # A floating callout over a ship (battle.js fxText): presentation only, never touches rules state
 func flt(u, text: String, color: String, dy = null) -> void:
 	if u != null: emit({"t": "float", "unit": u.get("id"), "text": text, "color": color, "dy": dy})
@@ -1283,6 +1307,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 	u["ripped"] = jt(ship.get("ripped")) if jt(ship) else false   # R78 Q9: a captured hull kept through the Cinder Line yards, links ripped out
 	u["ship"] = ship if jt(ship) else null; u["parent"] = opts["parent"] if jt(opts.get("parent")) else null; u["sqPct"] = z0(opts.get("sqPct"))
 	u["mp"] = 0; u["turnsLeft"] = 0; u["order"] = null; u["braced"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0
+	for k in ["fold", "frenzy", "frenzyHealed"]: u.erase(k)   # issue 1649: set only when used, so battles without Fold skip or Blood frenzy keep their saved states
 	u["pflag"] = jt(ship) and RUN != null and jt(RUN.get("flagUid")) and ship["uid"] == RUN["flagUid"]
 	u["intercepts"] = 0; u["dealt"] = 0; u["kills"] = 0; u["dead"] = false; u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["usedLastStand"] = false; u["elite"] = jt(opts.get("elite"))
 	syncShields(u)
@@ -2633,6 +2658,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 			if jt(shots[si]):
 				if rnd() < TB.WING_SCREEN_TORP: shots[si] = false; res["pd"] = z0(res.get("pd")) + 1
 				treeFx(gh, "oathWings", "the wall takes the salvo"); break   # Ashgrove capstone 2
+	foldMiss(t, shots)   # issue 1649: Fold skip
 	var shooter = real if real != null else gh
 	emit({"t": "fire", "unit": shooter["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", shooter)
 	B["prog"] = z0(B.get("prog")) + 1
@@ -2971,6 +2997,7 @@ func dmgMult(u, w, t, rear) -> float:
 		if wingPerks(par).has("killers"): m += 0.15
 	if t["hp"] < t["maxHp"] / 2.0: m += z0(fx.get("huntPct"))
 	if jt(u.get("focus")): m += 0.3
+	if jt(u.get("frenzy")): m += 0.2   # issue 1649: Blood frenzy
 	var still = fx["stillPct"] if (jt(fx.get("stillPct")) and not jt(u.get("hexMoved")) and (w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery")) else 0.0
 	var sy = syncDmg(u["side"]) if syncOn(u, t) else 0.0
 	m += max(still, sy)
@@ -3484,6 +3511,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			B["tr"]["frameZeroUsed"] = 1; shots[mi2] = rnd() * 100.0 < hc
 			if jt(shots[mi2]): halfShot = mi2
 			treeFx(u, "frameZero", "the frame zero shot is recorded")   # Eclipse shared C1b
+	if not jt(opts.get("intercept")) and t["side"] != u["side"] and foldMiss(t, shots): halfShot = -1   # issue 1649: Fold skip
 	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", u)
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
@@ -3773,6 +3801,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 	if not jt(o.get("torp")) and not jt(o.get("intercept")) and res.hull > 0 and t["side"] != u["side"]:
 		var bite = chorusBiteEst(u, t, res.hull)
 		if jt(bite): chorusRegrow(u, bite, "Bites")
+	if not jt(o.get("intercept")) and res.hull > 0 and t["side"] != u["side"]: frenzyRegrow(u, res.hull)   # issue 1649: Blood frenzy
 	if res.hits > 0 and w.get("k") == "lance" and not jt(o.get("intercept")) and jt(ownerFx(u).get("markLance")) and B != null and not jt(t.get("dead")):
 		if B.get("mark") == null: B["mark"] = {}
 		if B["mark"].get(u["side"]) == null or B["mark"][u["side"]]["r"] != B["round"]:
@@ -6575,9 +6604,9 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "focus":
 		u["focus"] = true; flt(u, "Focus fire", "#f0b35a", -24)
 	if a == "phase":
-		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Phase shift", eclCol(u), -24)
+		u["fold"] = true; u["mp"] = u["mp"] + 1; flt(u, "Fold skip", eclCol(u), -24)   # issue 1649 (R404): the next weapon attack on it this round misses (foldMiss)
 	if a == "frenzy":
-		u["focus"] = true; flt(u, "Blood frenzy", "#ff8fe0", -24)
+		u["frenzy"] = true; flt(u, "Blood frenzy", "#ff8fe0", -24)   # issue 1649 (R404): +20% damage, regrows from hull damage dealt (frenzyRegrow)
 	if a == "overburn":
 		u["mp"] = u["mp"] + 3; u["ramBoost"] = 1.5; flt(u, "Overburn", "#ffb35c", -24)
 	if a == "regrow":
@@ -7106,7 +7135,15 @@ func aiAbilities(u, live: Callable, mode) -> bool:
 				if canFire(u, w, f): any = true; break
 			if any: break
 		if any: useAbility(u)
-	if pre and (u.get("ab") == "evasive" or u.get("ab") == "phase") and canAbility(u):
+	if u.get("ab") == "phase" and canAbility(u):   # issue 1649: Fold skip once committed, or early when hurt
+		var fgo = false
+		if pre:
+			if u["hp"] < u["maxHp"] * 0.5:
+				for f in foes:
+					if hdist(u, f) <= 5: fgo = true; break
+		elif aim: fgo = foldThreat(u, foes)
+		if fgo: useAbility(u)
+	if pre and u.get("ab") == "evasive" and canAbility(u):
 		var any = false
 		for f in foes:
 			if hdist(u, f) <= 5: any = true; break
