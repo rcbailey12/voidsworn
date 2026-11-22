@@ -35,12 +35,18 @@ func _wait_idle(ms: int) -> void:
 		await process_frame
 
 
-func _shot(name: String) -> void:
+# returns true only when the picture and its provenance file are both written (Artoo on PR 1665)
+func _shot(name: String) -> bool:
 	await process_frame
 	var img: Image = root.get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	PP.save_png(img, out_dir.path_join(name + ".png"), PP.capture_stage())
+	var path := out_dir.path_join(name + ".png")
+	var err = PP.save_png(img, path, PP.capture_stage())
+	if err != OK or not FileAccess.file_exists(path) or not FileAccess.file_exists(path + ".provenance.json"):
+		_say("[abil1649] FAIL could not save %s (error %s)" % [name, str(err)])
+		return false
 	_say("[abil1649] saved " + name)
+	return true
 
 
 # wait until a floating callout whose text starts with one of the prefixes is on screen, about 0.35 s in, then save it
@@ -53,8 +59,7 @@ func _watch(prefixes: Array, name: String, ms: int) -> bool:
 			for p in prefixes:
 				if str(lbl.text).begins_with(p) and float(f.get("t", 0.0)) >= 0.35:
 					_say("[abil1649] callout '%s'" % lbl.text)
-					await _shot(name)
-					return true
+					return await _shot(name)
 		if _idle() and b.api.phase == "player" and Time.get_ticks_msec() - t0 > 4000:
 			# the player's turn: let the bot play every ready player ship, so the battle keeps going
 			var ready := false
