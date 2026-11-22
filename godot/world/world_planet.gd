@@ -22,11 +22,12 @@ static func rocky_available() -> bool:
 
 # The board planet's five looks, by board look kind (board.gd PLANET_LOOKS[i][0]): 0 rocky, 1 terran, 3 ice, 4 volcanic,
 # 5 barren. "bake" is this file's recipe kind for the baked looks (-1: drawn from R01). Palettes stay in the grounded range
-# (no indigo to purple, RULEBOOK 10.9). "bump" scales the relief shading; "glint" the sun's sheen on water or ice.
+# (no indigo to purple, RULEBOOK 10.9) and inside R420's band 2 (lit disc mean 0.03 to 0.25 linear, RULEBOOK 3.14; the ice
+# world is held down from snow white to stay inside it). "bump" scales the relief shading; "glint" the sun's sheen on water or ice.
 const BOARD_LOOKS := {
 	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)]},
 	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.03, "glint": 1.0},
-	3: {"bake": 5, "flat": Vector3(0.74, 0.74, 0.74), "a": Vector3(0.86, 0.89, 0.92), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.7},
+	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5},
 	4: {"bake": 3, "flat": Vector3(0.3, 0.19, 0.12), "a": Vector3(0.56, 0.33, 0.19), "b": Vector3(0.075, 0.065, 0.062), "c": Vector3(0.8, 0.58, 0.38), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37)},
 	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)]},
 }

@@ -5,6 +5,7 @@ extends SceneTree
 #   board_<look>_close: the same planet from 70 units, low over its lit limb.
 #   backdrop_<i>: the eight backdrop planets (world_sky.gd PLANETS) as world.gd draws them, side lit.
 #   moon_<i>: the moon looks as world.gd draws them.
+# Every frame prints its body's lit disc mean (linear); an after run fails if any leaves R420's band 2, 0.03 to 0.25.
 # Runs on both sides of the change: on a checkout without world_planet.gd install_board it draws the old board path
 # (the campaign map's icon shader), so one script makes the before and the after.
 # godot --path godot --resolution 1280x720 --script res://world/planet_v2_shots.gd -- --out DIR --tag after
@@ -27,6 +28,7 @@ const OLD_MOONS := [
 ]
 const SUN_DIR := Vector3(0.4, 0.6, 0.7)
 var out := "user://planet_v2_shots"
+var band_misses: Array = []   # R420 band 2 (RULEBOOK 3.14): each body's lit disc mean, linear, 0.03 to 0.25
 var tag := "now"
 var only := ""
 var started := 0
@@ -51,12 +53,31 @@ func _save(name: String) -> void:
 	await _frames(3)
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
+	var lum := _disc_mean(img)
+	print("planet v2 shots: band2 %s lit disc mean %.3f linear" % [name, lum])
+	if lum < 0.03 or lum > 0.25:
+		band_misses.append("%s %.3f" % [name, lum])
 	var path := out.path_join("%s_%s.png" % [name, tag])
 	if preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		printerr("planet v2 shots: FAILED to save ", path)
 		quit(1)
 		return
 	print("planet v2 shots: wrote ", path)
+
+# mean linear luminance of the pixels the body lights (above a dark floor), over the frame above the stamp
+func _disc_mean(img: Image) -> float:
+	var sum := 0.0
+	var n := 0
+	var h := int(img.get_height() * 0.8)
+	for y in range(0, h, 4):
+		for x in range(0, img.get_width(), 4):
+			var c := img.get_pixel(x, y).srgb_to_linear()
+			var l := 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			if l > 0.004:
+				sum += l
+				n += 1
+	return sum / maxf(1.0, float(n))
+
 
 func _clear() -> void:
 	for c in stage.get_children():
@@ -116,7 +137,11 @@ func _run() -> void:
 			M["rings"] = false
 			await _backdrop("moon_%d" % i, M, int(M["kind"]) * 1000 + 3 + i * 101, BAKER.MOON_SIZE, 0.0)
 	print("planet v2 shots: done in %d s" % ((Time.get_ticks_msec() - started) / 1000))
-	quit(0)
+	if band_misses.is_empty():
+		print("planet v2 shots: band 2 PASS")
+	else:
+		print("planet v2 shots: band 2 MISS: ", ", ".join(band_misses))
+	quit(0 if band_misses.is_empty() or tag == "before" else 1)
 
 func _board(k: int, new_board: bool) -> void:
 	_clear()

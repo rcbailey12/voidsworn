@@ -1,5 +1,8 @@
 extends SceneTree
-# Issue 1765 (R419, Planets V2): the board planet is really wired, and the planet palettes keep the rules.
+# Issue 1765 (R419, Planets V2): the board planet is really wired, and the planet palettes keep the rules. This is the
+# planet share of R420's Godot headless anti-drift gates (RULEBOOK 3.14, global_cohesion_standard.md 6.2: the unwired
+# asset gate for all five PLANET_LOOKS and the zero-purple gate on PLANETS and PLANETS_ALT). Band 2 brightness needs a
+# render: world/planet_v2_shots.gd measures it and fails an after run outside 0.03 to 0.25.
 # 1. board.gd draws its planet through world_planet.gd install_board and never through the campaign map's icon shader;
 #    battle.gd waits for it behind the loading cover (silent-regression trap 1 of the World V2 plan: an asset only a
 #    shot script ever loads).
