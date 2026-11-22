@@ -451,7 +451,7 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   $superseded = @($script:cleanupSuperseded)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
-  # The janitor reuses the mirror's commit list within a run (issue 1396: a dry run over every job checkout took hours),
+  # A janitor dry run reuses the mirror's commit list within the run (issue 1396: a dry run over every job checkout took hours),
   # but only while the mirror's refs are exactly as they were when it was read: a fetch or prune in between (the relay
   # sweep's child, another runner) moves or drops refs, and then the list is read again (Artoo on PR 1592).
   $refSnapshot = $null

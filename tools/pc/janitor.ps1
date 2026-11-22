@@ -525,7 +525,8 @@ try {
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
   $script:clock = [Diagnostics.Stopwatch]::StartNew()
-  $script:cacheMirrorCommits = $true
+  # Dry runs only (Artoo on PR 1592): a live removal reads the mirror's history fresh for each checkout, as before.
+  $script:cacheMirrorCommits = $dryRun
   $capSeconds = 2700
   if ($env:PC_JANITOR_CAP_SECONDS -match '\A[0-9]{1,6}\z') { $capSeconds = [int]$env:PC_JANITOR_CAP_SECONDS }
   $resumePath = Join-Path $root 'janitor_resume.txt'
