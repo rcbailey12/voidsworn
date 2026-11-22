@@ -759,7 +759,7 @@
       "scenario_sha256": "d9ddc3b5b7b66e879d9efecd43d56a7217d1303db5ce404a8949a07aa204bb44"
     },
     "t_ecl_arcswarm": {
-      "sha256": "f59d61bea593e06afeae08a14c588ab6cf7544d580348b3a0445961aed44e397",
+      "sha256": "6ac7557580a45e6bb2ab61e6d586d1cd8276fdc9f5dbbbeb59c42805aab58a99",
       "bytes": 1666034,
       "archive": "t_ecl_arcswarm.jsonl.br",
       "records": 61,
