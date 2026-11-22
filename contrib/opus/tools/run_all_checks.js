@@ -245,6 +245,11 @@ async function execute(c, baseline) {
     else if (c.kind === 'findings') verdict = classifyFindings(run, baseline);
     else if (c.kind === 'drift') verdict = classifyDrift(run, baseline);
     else verdict = classifyGeneric(run);
+    // Issue 1530: the auto-discovered job head test can pass its static checks while skipping PowerShell.
+    // GitHub's Ubuntu runner includes pwsh. Require the live suite's final verdict in CI.
+    if (c.name === 'opus_job_head_tests' && process.env.CI && verdict.result === 'PASS' && !/^PASS ps1 fixtures:/m.test(run.output)) {
+      verdict = { result: 'FAIL', detail: 'FAIL: PowerShell job head fixtures did not finish in CI (requires pwsh on Ubuntu)' };
+    }
     row.result = verdict.result;
     row.detail = verdict.detail;
   } catch (e) {
