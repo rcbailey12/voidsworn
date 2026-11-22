@@ -2,7 +2,7 @@ extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 1235 run 2 (Neon's damage audit F1.2, the rest): a ship looks more worn as its hull HP falls, on box stand-ins.
 # 1. hull_wear is 0 above fx_ship.WEAR_FROM of max HP and 1 at WEAR_FULL; it reaches the live damage surfaces through
-#    the damage shader's own uniforms (fx_weather, fx_power) with scorch heat 0 (no orange embers on any faction)
+#    fx_power for every faction, with fx_weather and soot patches for metal only (R402)
 # 2. soot patches sit where the ship was hit (each patch centre is a drawn mark's centre), worst section first, at most 8
 # 3. below LIST_FROM of max HP the hull lists LIST_MIN to LIST_MAX degrees toward the side last hit, settles there, and
 #    comes back level when repaired; nothing of this reaches the rules (fx only)
@@ -82,7 +82,8 @@ func _run() -> void:
 	fx.manual = true
 	fx.setup({"quality": "high", "shake": 0.0})
 	var x := 0.0
-	for faction in ["voidsworn", "ithar", "chorus", "hegemony"]:
+	for faction in ["voidsworn", "ithar", "chorus", "hegemony", "corsair", "deathless"]:
+		var metal: bool = faction in ["voidsworn", "hegemony", "corsair"]
 		var s = _ship("wear_" + faction, faction, Vector3(x, 0, 0))
 		x += 40.0
 		s.sync(fx, _state(100.0, 100, 100, 100))
@@ -98,25 +99,29 @@ func _run() -> void:
 		var ok_u := true
 		for m in mats:
 			var mm: ShaderMaterial = m
-			ok_u = ok_u and absf(float(mm.get_shader_parameter("fx_weather")) - 0.5 * HULL.WEAR_WEATHER) < 1e-4
+			var weather := 0.5 * HULL.WEAR_WEATHER if metal else 0.0
+			ok_u = ok_u and absf(float(mm.get_shader_parameter("fx_weather")) - weather) < 1e-4
 			ok_u = ok_u and absf(float(mm.get_shader_parameter("fx_power")) - (1.0 - 0.5 * HULL.WEAR_POWER)) < 1e-4
 			ok_u = ok_u and float(mm.get_shader_parameter("fx_scorch_heat")) == 0.0
-		check(ok_u, "%s: every damage surface carries the wear (darker plating, dimmer lights) with no ember heat" % faction)
+		check(ok_u, "%s: every damage surface dims lights, with weather on metal and zero scorch heat" % faction)
 		var patches: Array = s.wear_patches()
-		check(patches.size() >= 2 and patches.size() <= 8, "%s: soot patches on the hit sides (%d)" % [faction, patches.size()])
-		var on_marks := true
-		for q in patches:
-			var hit := false
-			for e in s._marks:
-				if Vector3(q.x, q.y, q.z).is_equal_approx(e.c):
-					hit = true
-			on_marks = on_marks and hit
-		check(on_marks, "%s: every soot patch sits on a place the ship was hit" % faction)
-		check(patches.size() > 0 and s._marks.size() > 0 and s.hull.section_of(Vector3(patches[0].x, 0, 0).x) == 1, "%s: the worst section's patch comes first" % faction)
-		var n_count := 0
+		if metal:
+			check(patches.size() >= 2 and patches.size() <= 8, "%s: soot patches on the hit sides (%d)" % [faction, patches.size()])
+			var on_marks := true
+			for q in patches:
+				var hit := false
+				for e in s._marks:
+					if Vector3(q.x, q.y, q.z).is_equal_approx(e.c):
+						hit = true
+				on_marks = on_marks and hit
+			check(on_marks, "%s: every soot patch sits on a place the ship was hit" % faction)
+			check(not patches.is_empty() and s.hull.section_of(patches[0].x) == 1, "%s: the worst section's patch comes first" % faction)
+		else:
+			check(patches.is_empty(), "%s: the hit sides stay free of soot" % faction)
+		var patch_count_matches := true
 		for m in mats:
-			n_count = maxi(n_count, int((m as ShaderMaterial).get_shader_parameter("fx_scorch_count")))
-		check(n_count == patches.size(), "%s: the shader gets every patch (%d)" % [faction, n_count])
+			patch_count_matches = patch_count_matches and int((m as ShaderMaterial).get_shader_parameter("fx_scorch_count")) == patches.size()
+		check(patch_count_matches, "%s: every surface gets the right patch count (%d)" % [faction, patches.size()])
 		check(s.list_target == 0.0, "%s: no list at half HP" % faction)
 		# below 35%: the list
 		s.sync(fx, _state(20.0, 60, 15, 30))
