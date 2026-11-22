@@ -624,7 +624,10 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 			"uniform float intensity = 1.0;\nuniform vec3 weapon_tint = vec3(0.9, 0.6, 0.3);\nuniform float opacity = 1.0;\nuniform float aspect = 1.0;\nuniform float spin = 0.0;\nuniform float vent = 0.0;\nuniform float vent_cone = 1.0;\nuniform float hot = 0.0;\nuniform float looping = 0.0;")
 		code = code.replace("vec2 up = mix(vec2(0.0, 1.0), axis, directional);",
 			"vec2 up = mix(vec2(sin(spin), cos(spin)), axis, directional);")
-		code = code.replace("up * VERTEX.y", "up * VERTEX.y * aspect")
+		# Issue 1558 item 1: DEATH_FLIPBOOK builds the quad from `local` (pic_shape, pic_spin) since Nov 17, so the old
+		# "up * VERTEX.y" target matched nothing and every vent jet, muzzle jet and torpedo plume drew as a round puff.
+		code = code.replace("+ up * local.y)", "+ up * local.y * aspect)")
+		assert(code.contains("up * local.y * aspect"))
 		# Issue 281 run 5: the baked muzzle/impact gas plays all 16 frames in order (bright core at birth, then it cools
 		# and thins) instead of the death flash's skip-the-first-three-frames ramp.
 		code = code.replace("float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);",
@@ -1137,10 +1140,10 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 	else:
 		body.free()
 	var drive := MeshInstance3D.new()
-	var quad := QuadMesh.new(); quad.size = Vector2.ONE
+	var quad := _unit_quad(fx)
 	drive.mesh = quad
 	drive.position.x = -1.14 if lk != "star" else -0.2
-	var mat: ShaderMaterial = fx.mat(DRIVE, 1)
+	var mat: ShaderMaterial = _fresh(fx, "proj_drive_mat", func() -> ShaderMaterial: return fx.mat(DRIVE, 1))
 	mat.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
 	mat.set_shader_parameter("extent", 2.5 if lk == "star" else 1.8)
 	if kit != null:
@@ -1165,8 +1168,10 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 	plume.name = "exhaust"
 	plume.mesh = quad
 	plume.position.x = -2.0
-	var exhaust: ShaderMaterial = DEATH.flipbook_material(fx,"vent","small")
-	exhaust.shader = _weapon_shader(fx)
+	var exhaust: ShaderMaterial = _fresh(fx, "proj_exhaust_mat", func() -> ShaderMaterial:
+		var m: ShaderMaterial = DEATH.flipbook_material(fx, "vent", "small")
+		m.shader = _weapon_shader(fx)
+		return m)
 	exhaust.set_shader_parameter("born",fx.now)
 	exhaust.set_shader_parameter("looping",1.0)
 	exhaust.set_shader_parameter("vent",1.0)
@@ -1188,6 +1193,22 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 	node.visible = false
 	fx.add_child(node)
 	return node
+
+
+# Issue 1558 item 10: every non-kit round made its own QuadMesh, and its drive and exhaust materials through fx.mat
+# (hashing the whole shader text) and flipbook_material each shot. One shared quad, and each round's materials are
+# copies of one cached template (a copy keeps the shader and the atlas maps; the round then sets its own values).
+static func _unit_quad(fx) -> QuadMesh:
+	if not fx.dstate.has("proj_quad"):
+		var q := QuadMesh.new(); q.size = Vector2.ONE
+		fx.dstate["proj_quad"] = q
+	return fx.dstate["proj_quad"]
+
+
+static func _fresh(fx, key: String, make: Callable) -> ShaderMaterial:
+	if not fx.dstate.has(key):
+		fx.dstate[key] = make.call()
+	return (fx.dstate[key] as ShaderMaterial).duplicate() as ShaderMaterial
 
 
 static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
@@ -1300,16 +1321,47 @@ static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
 	mi.name = "fx_kit_trail"
 	mi.top_level = true
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+	var mat: ShaderMaterial = fx.mat(kit_trail_shader_code(), 1, "", "kit trail")
 	var style: int = 1 if String(fac.get("engine_extra", "")) == "soot" else int(fac.get("trail", 0))
 	mat.set_shader_parameter("trail_style", float(style))
+	var r: float = 0.17 * float(p["k"]) * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
+	var eng: Color = p["eng"]
+	mat.set_shader_parameter("life", KIT_TRAIL_LIFE)
+	mat.set_shader_parameter("eng", Vector4(eng.r, eng.g, eng.b, 0.55))
+	mat.set_shader_parameter("widths", Vector3(r * 1.8, r * 4.0, float(p["seed"])))
+	mat.set_shader_parameter("count", 0)
 	mi.material_override = mat
+	mi.mesh = kit_trail_strip(fx)
 	mi.extra_cull_margin = 16384.0
 	mi.visible = false
 	fx.add_child(mi)
 	mi.global_transform = Transform3D.IDENTITY
-	var r: float = 0.17 * float(p["k"]) * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
-	p["trail"] = {"mi": mi, "hist": [], "r": r, "eng": p["eng"], "seed": float(p["seed"]), "mesh_time": fx.now}
+	p["trail"] = {"mi": mi, "hist": [], "r": r, "eng": eng, "seed": float(p["seed"]), "fading": false}
+
+
+static func kit_trail_shader_code() -> String:
+	return SH.kit_trail_code(KIT_TRAIL_PTS)
+
+
+# One strip for every kit trail, built once: point i at VERTEX.x = i, its two sides at UV.y -0.5 and +0.5.
+static func kit_trail_strip(fx) -> ArrayMesh:
+	if fx.dstate.has("kit_trail_strip"):
+		return fx.dstate["kit_trail_strip"]
+	var verts := PackedVector3Array(); var uv := PackedVector2Array(); var idx := PackedInt32Array()
+	for i in KIT_TRAIL_PTS:
+		for sd in [-0.5, 0.5]:
+			verts.append(Vector3(float(i), 0.0, 0.0)); uv.append(Vector2(0.0, sd))
+	for i in KIT_TRAIL_PTS - 1:
+		var q := i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts; arr[Mesh.ARRAY_TEX_UV] = uv; arr[Mesh.ARRAY_INDEX] = idx
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	mesh.custom_aabb = POOLS.BIG
+	fx.dstate["kit_trail_strip"] = mesh
+	return mesh
 
 
 static func _kit_trail_push(fx, p: Dictionary) -> void:
@@ -1325,13 +1377,16 @@ static func _kit_trail_push(fx, p: Dictionary) -> void:
 
 
 static func _kit_trails_update(fx) -> void:
-	var live: Array = []
+	var all: Array = []
 	for p in fx.dstate.get("proj", []):
 		if p.has("trail"):
-			live.append(p["trail"])
+			all.append(p["trail"])
 	var fading: Array = fx.dstate.get("ptrails", [])
+	for t in fading:
+		t["fading"] = true   # issue 1558 item 8: a flag, not `t in fading` (that compared whole dictionaries by content)
+	all.append_array(fading)
 	var keep: Array = []
-	for t in live + fading:
+	for t in all:
 		var hist: Array = t["hist"]
 		while not hist.is_empty() and (hist.size() > KIT_TRAIL_PTS or fx.now - float(hist.back()[1]) >= KIT_TRAIL_LIFE):
 			hist.pop_back()
@@ -1339,48 +1394,34 @@ static func _kit_trails_update(fx) -> void:
 		var mi: MeshInstance3D = t["mi"]
 		if not is_instance_valid(mi):
 			continue
-		if t in fading and hist.size() < 2:
+		var is_fading: bool = t.get("fading", false)
+		if is_fading and hist.size() < 2:
 			mi.queue_free()
 			continue
-		if t in fading:
+		if is_fading:
 			keep.append(t)
 		mi.visible = hist.size() >= 2
 		if not mi.visible:
 			continue
 		if t.get("dirty", false):
 			t["dirty"] = false
-			t["mesh_time"] = fx.now
-			_kit_trail_mesh(fx, t)
-		(mi.material_override as ShaderMaterial).set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / KIT_TRAIL_LIFE)
+			_kit_trail_upload(t)
 	fx.dstate["ptrails"] = keep
 
 
-static func _kit_trail_mesh(fx, t: Dictionary) -> void:
+# The samples go to the material as a small uniform array; the strip mesh never changes (issue 1558 item 8).
+static func _kit_trail_upload(t: Dictionary) -> void:
 	var hist: Array = t["hist"]
-	var n := hist.size()
-	var eng: Color = t["eng"]
-	var r: float = t["r"]
-	var verts := PackedVector3Array(); var nrm := PackedVector3Array(); var uv := PackedVector2Array()
-	var c0 := PackedFloat32Array(); var c1 := PackedFloat32Array(); var idx := PackedInt32Array()
-	for i in n:
-		var d: Vector3 = ((hist[mini(i + 1, n - 1)][0] as Vector3) - (hist[maxi(i - 1, 0)][0] as Vector3)).normalized()
-		for sd in [-0.5, 0.5]:
-			verts.append(hist[i][0]); nrm.append(d)
-			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / KIT_TRAIL_LIFE, 0.0, 1.0), sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.55])
-			c1.append_array([r * 1.8, r * 4.0, float(t["seed"]), 0.0])
-	for i in n - 1:
-		var q := i * 2
-		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
-	var arr := []
-	arr.resize(Mesh.ARRAY_MAX)
-	arr[Mesh.ARRAY_VERTEX] = verts; arr[Mesh.ARRAY_NORMAL] = nrm; arr[Mesh.ARRAY_TEX_UV] = uv
-	arr[Mesh.ARRAY_CUSTOM0] = c0; arr[Mesh.ARRAY_CUSTOM1] = c1; arr[Mesh.ARRAY_INDEX] = idx
-	var fmt := (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fmt)
-	mesh.custom_aabb = POOLS.BIG
-	t["mi"].mesh = mesh
+	var pts := PackedVector4Array()
+	pts.resize(KIT_TRAIL_PTS)
+	var n := mini(hist.size(), KIT_TRAIL_PTS)
+	for i in KIT_TRAIL_PTS:
+		var h: Array = hist[mini(i, n - 1)]
+		var at: Vector3 = h[0]
+		pts[i] = Vector4(at.x, at.y, at.z, float(h[1]))
+	var m := (t["mi"] as MeshInstance3D).material_override as ShaderMaterial
+	m.set_shader_parameter("pts", pts)
+	m.set_shader_parameter("count", n)
 
 
 # ---------------------------------------------------------------- shot down (issue 1379 round 5)
@@ -1637,6 +1678,55 @@ static func _wing_trail_update(fx, wing) -> void:
 			material.set_shader_parameter("newest_birth", born)
 
 
+# Issue 1528: the first torpedo or rocket salvo of a battle stalled 135 to 145 ms on the PC (1379 RUN8). Its first round
+# read the kit body glb from disk, built its hull-finish materials and nozzle copies, and compiled their pipelines and the
+# kit trail's, all in the fight. Load every body the fleets on the board can fire and draw it once in the warm-up grid
+# (lit and nozzle-dark surfaces both), with a kit trail strip in its own vertex format. Returns the bodies warmed.
+static func warm_munitions(fx, parent: Node3D) -> int:
+	var factions := {}
+	for s in fx.ships.values():
+		factions[String(s.faction)] = true
+	var warmed := 0
+	var slot := 0
+	for faction in factions:
+		for lk in ["torp", "rockets"]:
+			var path: String = MUNITIONS_DIR + "%s_%s.glb" % [faction, lk]
+			if not (ResourceLoader.exists(path) or FileAccess.file_exists(path)):
+				continue
+			var key := "munition_%s_%s" % [faction, lk]
+			if not fx.dstate.has(key):
+				fx.dstate[key] = _load_munition(path, faction)
+			var parts: Array = fx.dstate[key]
+			if parts.is_empty():
+				continue
+			warmed += 1
+			for dark in [false, true]:
+				var body := _build_munition(parts)
+				if dark:
+					for row in body.get_meta("nozzles", []):
+						(row[0] as MeshInstance3D).set_surface_override_material(int(row[1]), row[3])
+				body.position = Vector3(-6.0 + slot * 1.5, -3.0, 0.0) * fx.unit
+				body.scale = Vector3.ONE * fx.unit
+				parent.add_child(body)
+				slot += 1
+	# the kit trail: its strip has its own vertex format (position and UV only), so a box does not warm it
+	var trail := MeshInstance3D.new()
+	trail.mesh = kit_trail_strip(fx)
+	var tm: ShaderMaterial = fx.mat(kit_trail_shader_code(), 1, "", "kit trail")
+	var at: Vector3 = parent.global_position if parent.is_inside_tree() else Vector3.ZERO
+	var pts := PackedVector4Array()
+	pts.resize(KIT_TRAIL_PTS)
+	for i in KIT_TRAIL_PTS:
+		pts[i] = Vector4(at.x + float(i) * 0.1 * fx.unit, at.y, at.z, fx.now)
+	tm.set_shader_parameter("pts", pts)
+	tm.set_shader_parameter("count", KIT_TRAIL_PTS)
+	tm.set_shader_parameter("eng", Vector4(0.01, 0.01, 0.01, 0.01))
+	trail.material_override = tm
+	trail.extra_cull_margin = 16384.0
+	parent.add_child(trail)
+	return warmed
+
+
 static func warm_craft_trail(fx, parent: Node3D) -> void:
 	# Warm the real ImmediateMesh format, not a box with different attributes.
 	var wing := WING.new()
@@ -1835,13 +1925,27 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 	var lp: Vector3 = src.xf().affine_inverse() * p
 	fx.later(T + 0.04, func l_hull_heat() -> void:
 		if src.dead or src.gone or not is_instance_valid(src._dmg_root): return
-		var b := POOLS.Batch.new()
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
+		# Issue 1558 item 10: a small ring of heat spots on each hull (fx_pool Pool), written in place, instead of a new
+		# Batch, ArrayMesh and MeshInstance3D for every metal hit. The oldest spot is reused when the ring wraps.
+		var pool = _heat_pool(fx, src)
+		pool.emit(POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
 			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
+		pool.flush())
+
+
+const HEAT_RING := 24   # spots kept per hull; a spot lives about 2 s, so this holds a dozen hits a second
+
+
+static func _heat_pool(fx, src):
+	var pools: Dictionary = fx.dstate.get("heat_pools", {})
+	var pool = pools.get(src.id)
+	if pool == null or not is_instance_valid(pool.mi) or pool.mi.get_parent() != src._dmg_root:
 		# Issue 1237 (Neon F7.2): one shared sprite material for every hull heat spot (the data is in the vertices).
 		if not fx.dstate.has("heat_spot_mat"): fx.dstate["heat_spot_mat"] = fx.mat(SH.SPRITE, 1)
-		var node: MeshInstance3D = b.build(fx.dstate["heat_spot_mat"], src._dmg_root, "fx_hit_heat")
-		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(node))))
+		pool = POOLS.Pool.new(HEAT_RING, fx.dstate["heat_spot_mat"], src._dmg_root, "fx_hit_heat", POOLS.quad_shape())
+		pools[src.id] = pool
+		fx.dstate["heat_pools"] = pools
+	return pool
 
 
 static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, hd: Dictionary, k: float, sustain: float) -> void:
