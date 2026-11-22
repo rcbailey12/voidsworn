@@ -1,4 +1,5 @@
 extends Node3D
+const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
 const SKEEP := preload("res://render/shader_keep.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
@@ -296,26 +297,31 @@ func build(rules, slice := false) -> void:
 	add_child(props)
 	t = _step("grid", t)
 	if slice:
-		# issue 1434 (LOAD14: terrain 0.9 s in one frame): the rock, hulk and station files load on worker threads first
-		var held := []
+		# issue 1434 (LOAD14: terrain 0.9 s in one frame): the rock, hulk and station files load on worker threads first.
+		# Every request is collected once or handed on (_drop_terrain_loads), also when the board leaves the tree mid-wait
+		_drop_terrain_loads(false)
 		for p in _terrain_files():
 			if ResourceLoader.load_threaded_request(p) == OK:
-				held.append(p)
+				_terrain_loads.append(p)
 		t = _step("terrain_request", t)
 		var w0 := Time.get_ticks_msec()
 		while Time.get_ticks_msec() - w0 < 15000:
 			await get_tree().process_frame
+			if not is_inside_tree():
+				return   # _exit_tree handed the loads on
 			var busy := false
-			for p in held:
+			for p in _terrain_loads:
 				if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 					busy = true
 					break
 			if not busy:
 				break
 		_terrain_held.clear()
-		for p in held:
+		for p in _terrain_loads:
 			if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
 				_terrain_held.append(ResourceLoader.load_threaded_get(p))   # kept until the next build, so load() finds it cached
+		_terrain_loads = _terrain_loads.filter(func(p): return ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS)
+		_drop_terrain_loads(false)   # a load past the time limit: handed on, never waited for
 		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
 		t = Time.get_ticks_usec()
 	_terrain()
@@ -344,6 +350,25 @@ func build(rules, slice := false) -> void:
 
 
 var _terrain_held := []
+var _terrain_loads := []   # threaded requests not collected yet
+
+
+# collect every terrain request once; wait false: one still running goes to ShipView.retire_build, collected over the
+# next frames (the same hand-off as the battle's hull loads), so a close or a leave never waits on it
+func _drop_terrain_loads(wait := true) -> void:
+	var running := []
+	for p in _terrain_loads:
+		if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(p)
+		else:
+			running.append(p)
+	_terrain_loads.clear()
+	if not running.is_empty():
+		SV.retire_build(running, [])
+
+
+func _exit_tree() -> void:
+	_drop_terrain_loads(false)
 
 
 # every file _terrain may load for this view: the rock set, the hulks' painted hulls and the station
