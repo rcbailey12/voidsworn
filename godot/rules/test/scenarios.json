@@ -9698,7 +9698,7 @@
    "h_interdictor"
   ],
   "cmdRound": 2,
-  "note": "Tree fixture: Malek Salvo Without End (malek:cap:0) fires a second torpedo at half Issue 1650: the same battle at capstone Mastery III, so the signature fires.",
+  "note": "Tree fixture: Malek Salvo Without End (malek:cap:0) fires a second torpedo at half Issue 1650: the same battle at capstone Mastery III; the bot rarely reaches this signature, so rules_1650_test.gd checks it directly.",
   "seed": 1860000000022,
   "lineage": {
    "id": "malek",
@@ -9861,7 +9861,7 @@
   "rounds": 8,
   "cmdRound": 2,
   "seed": 52999,
-  "note": "Issue 529: Matriarch The Brood Does Not Stop (matriarch:cap:1): an extra swarm that destroys its target strikes another enemy at half damage Issue 1650: the same battle at capstone Mastery III, so the signature fires.",
+  "note": "Issue 529: Matriarch The Brood Does Not Stop (matriarch:cap:1): an extra swarm that destroys its target strikes another enemy at half damage Issue 1650: the same battle at capstone Mastery III; the bot rarely reaches this signature, so rules_1650_test.gd checks it directly.",
   "lineage": {
    "id": "matriarch",
    "picks": [
@@ -10183,7 +10183,7 @@
    "capstone": 1,
    "mastery": 3
   },
-  "note": "Chorus: Razormaw One Prey, Every Mouth (razormaw:cap:1) gives every ship a free turn toward the prey Issue 1650: the same battle at capstone Mastery III, so the signature fires."
+  "note": "Chorus: Razormaw One Prey, Every Mouth (razormaw:cap:1) gives every ship a free turn toward the prey Issue 1650: the same battle at capstone Mastery III; the bot rarely reaches this signature, so rules_1650_test.gd checks it directly."
  },
  "t_heg_onetarget_m3": {
   "sector": 1,

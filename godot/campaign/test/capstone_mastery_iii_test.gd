@@ -70,7 +70,7 @@ func _init() -> void:
 	# below the first step, a capstone run carries mastery 0
 	c.RUN = null; c.META["mastery"][id] = 300.0
 	c.newRun(id, str(c.ADMIRALS[id]["fac"]))
-	check(c.RUN != null and int(c.RUN["lineage"]["mastery"]) == 0, "a capstone run under 320 XP carries no mastery")
+	check(c.RUN != null and int(c.RUN["lineage"].get("mastery", 0)) == 0, "a capstone run under 320 XP carries no mastery")
 
 	print("PASS: 48 Mastery III signatures with handlers, 24 Mastery I rows, and only the chosen capstone's mastery reaches a run." if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)

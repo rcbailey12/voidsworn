@@ -1410,7 +1410,9 @@ func newRun(admiralId, fac, opt = {}) -> void:
 			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
 			f["hp"] = derive(f)["maxHp"]
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
-	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"], "mastery": capstoneMasteryLevel(admiralId) if lb["capstone"] != null else 0}   # issue 1650: capstone mastery steps earned when the run starts
+	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"]}
+	var cmL = capstoneMasteryLevel(admiralId) if lb["capstone"] != null else 0
+	if cmL > 0: RUN["lineage"]["mastery"] = cmL   # issue 1650: capstone mastery steps earned when the run starts (set only when earned, so older saves keep their shape)
 	var dev = null
 	for p in RUN["patrons"]:
 		if favourTier(p) >= 2: dev = p; break
