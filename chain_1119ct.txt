@@ -1,0 +1,6 @@
+chain CT start Sat 11/21/2026 20:31:07.74 
+mirror fetch exit 0
+746d8d7c9a27a155575727e9e4c018b7ba6ebd66 reachable in the mirror
+1373N GV2 start 20:31:08.69 
+1373N GV2 exit 0 at 20:43:25.65 
+1373N GW4 start 20:43:25.65 

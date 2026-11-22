@@ -1,0 +1,105 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim e04ac987-11a7-4a98-9b14-65538b39bc80
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Fra:1 Mem:918.58M (Peak 918.58M) | Time:69:00:39.74 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_seat
+Fra:1 Mem:918.58M (Peak 918.58M) | Time:69:00:39.74 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_stone
+Fra:1 Mem:918.58M (Peak 918.58M) | Time:69:00:39.74 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_turn_gw_gem_amber
+Fra:1 Mem:918.58M (Peak 918.58M) | Time:69:00:39.74 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_H_bake
+Fra:1 Mem:920.47M (Peak 920.69M) | Time:69:00:39.75 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:920.47M (Peak 920.69M) | Time:69:00:39.75 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_H_masks
+Fra:1 Mem:997.96M (Peak 3103.41M) | Time:69:00:47.88 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_seat
+Fra:1 Mem:997.96M (Peak 3103.41M) | Time:69:00:47.88 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_mount_gw_pearl
+Fra:1 Mem:997.97M (Peak 3103.41M) | Time:69:00:47.89 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_waist_pearl
+Fra:1 Mem:997.98M (Peak 3103.41M) | Time:69:00:47.89 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_H_bake
+Fra:1 Mem:999.28M (Peak 3103.41M) | Time:69:00:47.89 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:999.28M (Peak 3103.41M) | Time:69:00:47.89 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_hull_albedo
+Fra:1 Mem:1067.36M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_seat
+Fra:1 Mem:1067.36M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_mount_gw_pearl
+Fra:1 Mem:1067.37M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_H_bake
+Fra:1 Mem:1069.06M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1069.06M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_hull_orm
+Fra:1 Mem:1069.06M (Peak 3181.82M) | Time:69:00:53.93 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_H_masks
+Fra:1 Mem:1144.04M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_seat
+Fra:1 Mem:1144.04M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_core
+Fra:1 Mem:1144.06M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_mount_gw_pearl
+Fra:1 Mem:1144.06M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_H_bake
+Fra:1 Mem:1145.26M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1145.25M (Peak 3251.23M) | Time:69:01:00.13 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_H_masks
+Fra:1 Mem:1211.96M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_seat
+Fra:1 Mem:1211.96M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_core
+Fra:1 Mem:1211.97M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_turn_gw_gem_amber
+Fra:1 Mem:1211.97M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_H_bake
+Fra:1 Mem:1213.50M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1213.50M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_hull_normal
+Fra:1 Mem:1213.50M (Peak 3327.91M) | Time:69:01:06.06 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_H_masks
+Fra:1 Mem:1290.11M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_mosaic_core
+Fra:1 Mem:1290.11M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_0_silver_s
+Fra:1 Mem:1290.43M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_2
+Fra:1 Mem:1291.18M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_3
+Fra:1 Mem:1291.26M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_3_silver_s
+Fra:1 Mem:1291.60M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_stone
+Fra:1 Mem:1292.01M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_core
+Fra:1 Mem:1292.14M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_turn_gw_gem_amber
+Fra:1 Mem:1292.30M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_P_bake
+Fra:1 Mem:1292.56M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_nose_needle
+Fra:1 Mem:1292.59M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_waist_pearl
+Fra:1 Mem:1292.63M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_0
+Fra:1 Mem:1292.70M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_1
+Fra:1 Mem:1292.80M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_2
+Fra:1 Mem:1293.69M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1293.69M (Peak 3395.81M) | Time:69:01:14.42 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_P_masks
+Fra:1 Mem:1364.02M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_mosaic_core
+Fra:1 Mem:1364.02M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_0_silver_s
+Fra:1 Mem:1364.35M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_0_silver_p
+Fra:1 Mem:1364.39M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_1_silver_s
+Fra:1 Mem:1364.48M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_2
+Fra:1 Mem:1365.17M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_3_silver_s
+Fra:1 Mem:1365.27M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_stone
+Fra:1 Mem:1365.51M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_turn_gw_gem_amber
+Fra:1 Mem:1365.90M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_nose_needle
+Fra:1 Mem:1366.07M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_P_bake
+Fra:1 Mem:1366.14M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_waist_pearl
+Fra:1 Mem:1366.16M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_1
+Fra:1 Mem:1366.16M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_2
+Fra:1 Mem:1367.07M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1367.07M (Peak 3475.55M) | Time:69:01:24.16 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_P_masks
+Fra:1 Mem:1428.39M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_mosaic_core
+Fra:1 Mem:1428.39M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_0_silver_s
+Fra:1 Mem:1428.72M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_1_silver_s
+Fra:1 Mem:1429.49M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_3_silver_p
+Fra:1 Mem:1429.51M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | G1_turn_gw_gem_amber
+Fra:1 Mem:1429.54M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_nose_needle
+Fra:1 Mem:1429.94M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_waist_pearl
+Fra:1 Mem:1430.12M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_P_bake
+Fra:1 Mem:1430.42M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_0
+Fra:1 Mem:1430.43M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_2
+Fra:1 Mem:1431.45M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1431.44M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_parts_orm
+Fra:1 Mem:1431.44M (Peak 3548.93M) | Time:69:01:29.98 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_P_masks
+Fra:1 Mem:1497.98M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_mosaic_core
+Fra:1 Mem:1497.98M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_0_silver_p
+Fra:1 Mem:1498.31M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_1
+Fra:1 Mem:1498.52M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_1_silver_s
+Fra:1 Mem:1498.52M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_ribbon_2_silver_p
+Fra:1 Mem:1499.23M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | Ec_stone
+Fra:1 Mem:1499.27M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_nose_needle
+Fra:1 Mem:1499.36M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GV2_streamer_2
+Fra:1 Mem:1499.96M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GV2_P_bake
+Fra:1 Mem:1501.03M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1501.03M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_parts_normal
+Fra:1 Mem:1501.03M (Peak 3613.29M) | Time:69:01:36.28 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GV2_P_masks
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Saved as "GV2.blend"
+[209] GV2 {"cell": "GV2", "route": "build sheet ithar_GV2 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)", "build_seconds": 73.8, "geometry_seconds": 0.6, "res": 4096, "parts_res": 4096, "samples": 64, "paint": {"hull_objects": 17, "part_objects": 2, "glow_objects": 4, "interior_objects": 3, "device": "OPTIX", "samples": 64, "textures": [], "decals": [], "bake_H_masks_s": 7.7, "bake_H_albedo_s": 5.5, "bake_H_orm_s": 5.5, "bake_H_emission_s": 5.4, "bake_H_normal_s": 7.6, "zones_H": ["gw_mosaic", "gw_pearl", "gw_silver"], "bake_P_masks_s": 8.9, "bake_P_albedo_s": 5.5, "bake_P_orm_s": 5.6, "bake_P_normal_s": 11.8, "zones_P": ["gw_pearl"], "glow_materials": ["ithar_glow_gw_drive", "ithar_glow_gw_drive_core", "ithar_glow_gw_gem_amber"], "inside_materials": ["ithar_inside_core", "ithar_inside_crew", "ithar_inside_engroom"], "texel_density": {"hull": {"uv_share": 0.3512, "area": 0.78413, "texels_per_unit2": 7513390.6}, "parts": {"uv_share": 0.6489, "area": 0.00902, "texels_per_unit2": 1206553934.1}}, "stack_seconds": 72.1}, "density": {"paint_flags": ["engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3", "gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3"], "mesh_flags": [], "hull": {"area": 0.78413, "triangles": 28560, "tris_per_unit2": 36422.3, "edges_per_unit2": 6152.0, "texels_per_unit2": 7513390.6, "atlas": "hull", "paint_detail_share": 0.3}, "rule": "R224: a part type more than 25 percent under the hull is flagged", "paint_bar_per_unit": 32.02, "paint_top": 0.3}, "contract": {"sheet": "ithar_GV2", "game_ship": "fighter", "variant": "", "model_length": 1.60062, "scale": 0.6247576614218284, "length_world": 1.6, "t_lines": [-0.04998], "l_line": [], "l_lines": [], "muzzles": 1, "guns": 1, "engines": 1, "bays": 0, "points": 1, "turrets": ["G1_turret"], "interior_objects": 3, "slots": ["0 guns T"]}, "triangles": 43706, "objects": 23, "surfaces": 5, "draw_calls_merged": 5}
+
+Blender quit
+GPU: released shared claim e04ac987-11a7-4a98-9b14-65538b39bc80

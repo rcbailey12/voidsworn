@@ -1,0 +1,17 @@
+Warning: No mesh data to join
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+20:42:39 | INFO: Starting glTF 2.0 export
+20:42:39 | INFO: Extracting primitive: ithar_GV2
+20:42:40 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+20:42:43 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+20:42:44 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+20:42:45 | INFO: Primitives created: 5
+20:42:45 | INFO: Extracting primitive: turret_0_turn
+20:42:45 | INFO: Primitives created: 1
+20:42:45 | INFO: Finished glTF 2.0 export in 6.134377956390381 s
+
+[export7] ithar_GV2 triangles 29332 hard points {"gun": 1, "engine": 1, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 1 (38 triangles) doors 0 (0 triangles) files ['ithar_GV2.glb', 'ithar_GV2_base.jpg', 'ithar_GV2_emission.jpg', 'ithar_GV2_normal.png', 'ithar_GV2_orm.png', 'ithar_GV2_parts_base.jpg', 'ithar_GV2_parts_normal.png', 'ithar_GV2_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\export\ithar_GV2
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GV2\GV2.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ccd95cfadb7f4cb79d034eda9309dc69\runner-step-db898ba94f37404994c5a8dc4e70c4fd

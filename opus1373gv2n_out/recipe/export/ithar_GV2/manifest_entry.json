@@ -1,0 +1,51 @@
+{
+ "name": "The Starling Shard, the Glasswright fighter wing craft (The Glasswrights)",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "fighter",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 1,
+  "engine": 1,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 1,
+ "files": {
+  "ithar_GV2.glb": {
+   "bytes": 1125624,
+   "sha256": "7d7f4291b02e9bbfb57f0fac913233f568035080bf5939ddb90f1eaa4658c4b8"
+  },
+  "ithar_GV2_base.jpg": {
+   "bytes": 1137809,
+   "sha256": "6b6c4682a16386ff5a4316f35a09bfcb23910f9dc30c5a32d50ac64effc63fe7"
+  },
+  "ithar_GV2_emission.jpg": {
+   "bytes": 448994,
+   "sha256": "bebdf86cd6a36a05cd57de3a529abc9bf497d59ac57c34914ca92fed128c8058"
+  },
+  "ithar_GV2_normal.png": {
+   "bytes": 4407887,
+   "sha256": "b5d01fa3ea263e7b4cc9ee8919b67319e989b338d4f1dfd6e0bbd94210bb7a6b"
+  },
+  "ithar_GV2_orm.png": {
+   "bytes": 4366272,
+   "sha256": "9a9b6a2f8ae5fdcbf0192a790d8293df585ed6a2286588e09341151a5a286d03"
+  },
+  "ithar_GV2_parts_base.jpg": {
+   "bytes": 212055,
+   "sha256": "620d939eaa4b20f2d15587238a78dd2e31d797bd081c60f5a541c4ba3f886057"
+  },
+  "ithar_GV2_parts_normal.png": {
+   "bytes": 1919440,
+   "sha256": "e2f53cb20a875062f4c72edeb7c3f545074ce18fb9c1e726cc59ca87b2186ac1"
+  },
+  "ithar_GV2_parts_orm.png": {
+   "bytes": 1915861,
+   "sha256": "023677f19bf831123c37f0497ac3f1da4d206c5825ed3ceb383ae91abd909a9e"
+  }
+ },
+ "pc_path": "godot/assets/ships/ithar_GV2/",
+ "wing_role": "fighter"
+}

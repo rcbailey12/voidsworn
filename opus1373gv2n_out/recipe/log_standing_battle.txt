@@ -1,0 +1,2 @@
+  battle camera GV2: game bow 58.1 midship 63.4 stern 41.7 whole 57.8, studio bow 35.2 midship 68.6 stern 29.3 whole 49.4
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
