@@ -220,6 +220,15 @@ Four candidates, each 2 or 3 stops, using the one chain that exists today as the
 
 Each part is its own pull request, in both rule copies, with balance deltas reported.
 
+Coverage checks on top of the scenarios (Artoo on PR 1635): the per-faction and per-engine parity scenarios exercise the
+shared path, not every row, so each part also ships a cheap exhaustive check.
+
+- **Key coverage:** every one of the 48 capstone keys has exactly one Mastery III row and a handler in both rule copies;
+  every one of the 24 admirals has exactly one rider row, under the admiral who owns it, with a handler; every new relic
+  and refit id has a handler and a text row. A missing, extra or misplaced key fails.
+- **Earn, save, respec, reload:** one fixture earns Mastery III, saves, respecs to the other capstone, reloads, and checks
+  that only the new capstone's Mastery III is active (never both, never neither).
+
 ## 11. Text Neon writes
 
 Tone: the game's own voice (short, concrete, no jokes that break the war). No em dashes. Card limits are what fits today's
