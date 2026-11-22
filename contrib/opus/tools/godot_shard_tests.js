@@ -78,5 +78,16 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
   assert.match(r.out, /FAIL: SHARD/);
 });
 
+// Artoo on PR 1615: a short, doubled or out-of-range plan stops the run before any check, and never reads as PASS.
+[['$d', 'a dropped line'], ['1d', 'a dropped first line'], ['1p', 'a doubled line'], ['1s/^[0-9]*|/9|/', 'shard 9 of ' + wfCount],
+ ['1,$d', 'an empty plan']].forEach(([edit, what]) => {
+  for (let i = 1; i <= wfCount; i++) {
+    const r = plan(i + '/' + wfCount, { GODOT_CHECKS_PLAN_EDIT: edit });
+    assert.equal(r.status, 1, 'a plan with ' + what + ' must fail shard ' + i + ':\n' + r.out);
+    assert.match(r.out, /FAIL: the shard plan is broken/);
+    assert.doesNotMatch(r.out, /^PASS/m);
+  }
+});
+
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, each in exactly one of 1, 2, ' + wfCount + ' and 5 shards; ' + wfCount + ' shards planned at ' + est.join(', ') + ' s');

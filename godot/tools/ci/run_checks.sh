@@ -40,6 +40,19 @@ grep '^headless|' "$LIST" | awk -F'|' -v tf="$TIMES" '
     if ($6 ~ /^step:/) best = 1
     load[best] += $1; line = $0; sub(/^[^|]*\|[^|]*\|[^|]*\|/, "", line); printf "%s|%d|%s\n", $2, best, line }
   END { for (k = 1; k <= n; k++) printf "load|%d|%d\n", k, load[k] > "/dev/stderr" }' 2> "$T/loads.txt" | sort -t'|' -k1,1n | cut -d'|' -f2- > "$T/plan.txt"
+# The plan must hold every headless line of the list exactly once, each with a shard from 1 to n; otherwise stop (Artoo
+# on PR 1615: a planner error could leave a short or empty plan and an empty shard would still say PASS).
+# GODOT_CHECKS_PLAN_EDIT (tests only) is a sed script applied to the plan first, so godot_shard_tests.js can break it.
+if [ -n "${GODOT_CHECKS_PLAN_EDIT:-}" ]; then sed -e "$GODOT_CHECKS_PLAN_EDIT" "$T/plan.txt" > "$T/plan_edit.txt"; mv "$T/plan_edit.txt" "$T/plan.txt"; fi
+grep '^headless|' "$LIST" | sort > "$T/plan_want.txt"
+cut -d'|' -f2- "$T/plan.txt" | sort > "$T/plan_got.txt"
+badshard=$(awk -F'|' -v n="$sn" '$1 !~ /^[0-9]+$/ || $1 < 1 || $1 > n' "$T/plan.txt" | head -3)
+if ! cmp -s "$T/plan_want.txt" "$T/plan_got.txt" || [ -n "$badshard" ] || [ ! -s "$T/plan_want.txt" ]; then
+  echo "  shard: FAIL, the shard plan does not hold every headless line exactly once:"
+  diff "$T/plan_want.txt" "$T/plan_got.txt" | head -8 | sed 's/^/    /'
+  [ -n "$badshard" ] && echo "$badshard" | sed 's/^/    bad shard: /'
+  echo "FAIL: the shard plan is broken; no check was run."; exit 1
+fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
 echo "  shard: $si of $sn, $mine checks, about $est s by the recorded times"
