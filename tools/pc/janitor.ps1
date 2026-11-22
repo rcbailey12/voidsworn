@@ -392,6 +392,25 @@ function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $
   }
 }
 
+function Invoke-JobRelayCleanup($dryRun) {
+  # Issue 1396 (Board, Nov 22): a job's results are relayed after its tail has run, and no session runs dropcheckouts by
+  # hand, so the janitor runs the job head's own proof (opus_job_head.ps1 dropjobs, the same installed version) over
+  # every PASS attempt that still lists checkouts. It removes only what that proof clears (origin's relay branch holds
+  # every out file byte for byte, PR 1600) and logs the rest as kept. A dry run passes --dry-run: nothing removed or
+  # fetched. Its output lines go to this log; a failure only logs.
+  $head = Join-Path (Join-Path $PSScriptRoot 'jobs') 'opus_job_head.ps1'
+  if (-not (Test-Path -LiteralPath $head -PathType Leaf)) { Log "job relay check skipped: no $head"; return }
+  if (Cleanup-Paused) { Log 'job relay check skipped: PC pause is active'; return }
+  $exe = if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { 'powershell.exe' } else { 'pwsh' }
+  $words = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $head, 'dropjobs')
+  if ($dryRun) { $words += '--dry-run' }
+  $ErrorActionPreference = 'Continue'
+  $out = @(& $exe @words 2>&1 | ForEach-Object { "$_" })
+  $code = $LASTEXITCODE
+  foreach ($line in $out) { if ($line.Trim()) { Log "job relay: $line" } }
+  Log "job relay check exit $code"
+}
+
 $trigger = $args[0]
 if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
   Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
@@ -480,6 +499,8 @@ try {
         $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
     Clear-ScratchFolder $dir $issue 'owned TEMP scratch' 3 $temp $now $dryRun $activeLegacy -TempScratch -Records $records -HasOwner $hasOwner
   }
+  Assert-GpuQuiet
+  Invoke-JobRelayCleanup $dryRun
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories()) {
     # Issue 1396: suffixed job folders (opus1369b, opus1211_run6, opus1373probe2) and playtest folders (pt1120c) too.
     $issue = ''

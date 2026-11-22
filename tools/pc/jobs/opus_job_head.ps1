@@ -60,7 +60,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -468,7 +468,7 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
-    if ($try) { Update-Mirror }
+    if ($try) { if ($script:dropDry) { break }; Update-Mirror }
     $r = Test-ReceiptTree $receipt $want
     if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
     $big = @(); $bad = @()
@@ -493,7 +493,7 @@ function Drop-Attempt($attempt) {
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
   $listed = @(); $ckFile = Join-Path $attempt 'checkouts.txt'
   if (Test-Path -LiteralPath $ckFile -PathType Leaf) { $listed = @(foreach ($l in [IO.File]::ReadAllLines($ckFile)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z') { $Matches[1] } }) }
-  foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
+  if (-not $script:dropDry) { foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
@@ -501,6 +501,10 @@ function Drop-Attempt($attempt) {
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
   try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+  if ($script:dropDry) {
+    foreach ($n in $present) { Write-Output "checkout $n would be checked and removed after the relay: $(Join-Path $attempt $n)" }
+    return
+  }
   $src = $null
   $srcFile = Join-Path $attempt 'ships_source.txt'
   if (Test-Path -LiteralPath $srcFile -PathType Leaf) { $src = ([IO.File]::ReadAllText($srcFile)).Trim() }
@@ -743,6 +747,29 @@ switch ($Action) {
       Drop-Attempt $sib.FullName
     }
     Write-Free $script:freed
+  }
+  'dropjobs' {
+    # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
+    # the janitor calls this hourly and after jobs. Every PASS attempt voidsworn_test\<job>\out_* that still lists a
+    # checkout gets the same proof as dropcheckouts (origin's relay branch holds every out file byte for byte); anything
+    # else is logged as kept. --dry-run removes nothing, finishes no earlier removal and fetches nothing.
+    $script:dropDry = $A -eq '--dry-run'
+    if ($A -and -not $script:dropDry) { throw "dropjobs takes only --dry-run, got: $A" }
+    $script:freed = [long]0
+    foreach ($job in @((Get-Item -LiteralPath $vt -Force).EnumerateDirectories())) {
+      if (-not (Test-PlainDir $job) -or $job.Name -notmatch '\A[A-Za-z0-9_-]+\z') { continue }
+      foreach ($att in @($job.EnumerateDirectories('out_*'))) {
+        if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
+        $list = Join-Path $att.FullName 'checkouts.txt'
+        if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { continue }
+        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1]))) { $Matches[1] } })
+        if (-not $left.Count) { continue }
+        $problem = Get-AttemptProblem $att.FullName
+        if ($problem) { Write-Output "checkouts kept: $problem"; continue }
+        Drop-Attempt $att.FullName
+      }
+    }
+    if (-not $script:dropDry) { Write-Free $script:freed }
   }
   'dropcache' {
     try {

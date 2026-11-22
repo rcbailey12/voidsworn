@@ -419,6 +419,23 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   git(['--git-dir', source, 'update-ref', '-d', 'refs/heads/board/pc-out-opus1535c']);
   r = run('dropcheckouts', gone);
   assert(fs.existsSync(path.join(gone, 'new')) && /branch board\/pc-out-opus1535c \(from the job name\) is not on origin/.test(r.out), 'a branch gone from origin keeps the checkout: ' + r.out);
+  // Issue 1396 (Board, Nov 22): the relay lands after the tail, so the janitor runs dropjobs over every PASS attempt that
+  // still lists checkouts. --dry-run removes and fetches nothing; the live run clears only what the relay proof clears.
+  const later = job1535('opus1396later');
+  relay([[path.join(later, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1396later');
+  r = run('dropjobs', '--dry-run');
+  assert.equal(r.status, 0, r.out);
+  assert(fs.existsSync(path.join(later, 'new')) && r.out.includes(`checkout new would be checked and removed after the relay: ${path.join(later, 'new')}`), 'the dry run names the checkout and keeps it: ' + r.out);
+  assert(r.out.includes(`checkouts kept: ${gone} (`), 'the dry run lists a refused attempt as kept: ' + r.out);
+  assert(!/would be checked and removed/.test(r.out.split('\n').filter(l => !l.includes('opus1396later')).join('\n')), 'nothing else is nominated: ' + r.out);
+  assert(!/disk: checkouts freed/.test(r.out), 'a dry run frees nothing');
+  r = run('dropjobs', 'now');
+  assert.notEqual(r.status, 0, 'dropjobs takes only --dry-run');
+  r = run('dropjobs');
+  assert.equal(r.status, 0, r.out);
+  assert(!fs.existsSync(path.join(later, 'new')) && /checkout new removed after the job/.test(r.out) && /disk: checkouts freed/.test(r.out), 'the live run clears the relayed attempt: ' + r.out);
+  assert(fs.existsSync(path.join(gone, 'new')) && fs.existsSync(path.join(attempt, 'new')), 'and nothing the proof refuses: ' + r.out);
+  assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');
 }
 // A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
 // locked past the retries leaves <name>.removing, which the next run finishes. A read-only folder stands in for the lock.

@@ -429,6 +429,15 @@ try {
   dateTree(jobWork, 30);
   const jobLookalike = scratch(pc, 'opus1396.old', 30);
   const jobCheckoutsGone = [jobKeptRepo, playtestRepo];
+  // Board, Nov 22: the janitor runs the job head's relay proof (dropjobs) over PASS attempts that still list checkouts.
+  // With no relay branch for this job the proof refuses, so the checkout stays in both runs and the reason is logged.
+  const relayAttempt = path.join(pc, 'opus1396relay', 'out_20261122_010101_1');
+  write(path.join(relayAttempt, 'done.txt'), 'PASS\r\n');
+  write(path.join(relayAttempt, 'checkouts.txt'), `new ${'a'.repeat(40)}\r\n`);
+  write(path.join(relayAttempt, 'new', 'godot', 'project.godot'), 'pinned checkout stand-in');
+  write(path.join(relayAttempt, 'out_new', 'result.txt'), 'relay fixture result');
+  dateTree(path.join(pc, 'opus1396relay'), 30);
+  const relayCheckout = path.join(relayAttempt, 'new');
   const jobCheckoutsKept = [jobWorkRepo];
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
@@ -470,7 +479,7 @@ try {
   markOwned(invalidOwner, 26, 'invalid token');
   const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob', 'pt112', 'ptx1120']
     .map(name => scratch(pc, name, 26));
-  never.push(jobLookalike, jobRecentRepo);
+  never.push(jobLookalike, jobRecentRepo, relayCheckout);
   never.push(makeCopy('repo', 1, laneB), scratch(temp, 'ordinary-folder', 26), scratch(root, 'issue-910-out-of-scope', 26));
   const lockPath = path.join(temp, 'voidsworn-runner-issue-302.lock');
   const work = path.join(pc, 'work217');
@@ -573,6 +582,8 @@ try {
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
   // Issue 1396: the checkout-only path, its record lines and its refusals.
+  assert(dry.includes(`job relay: checkouts kept: ${relayAttempt} (results not relayed yet: board/pc-out-opus1396relay:out_20261122_010101_1: branch board/pc-out-opus1396relay (from the job name) is not on origin`), 'the dry run lists the relay proof refusal: ' + dry);
+  assert.match(dry, /job relay check exit 0/);
   assert.match(decision(dry, jobKeptOut, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
   assert.match(decision(dry, jobKeptRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
   assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
@@ -632,6 +643,7 @@ try {
     [playtest, 'out_A/shot.png', 'pt1120c picture'], [playtest, 'out_A/done.txt', 'FAILED']]) {
     assert.equal(read(path.join(dir, file)), text, `checkout-only cleanup kept ${file} in ${dir}`);
   }
+  assert(live.includes(`job relay: checkouts kept: ${relayAttempt} (`) && /job relay check exit 0/.test(live), 'the live run runs the relay proof and keeps an unrelayed checkout: ' + live);
   // The missing-lease case (Artoo on PR 1592): the live run created and held a lease in each folder that had none, so a
   // helper_clone start (OpenOrCreate, no sharing) during the removal would have stopped instead of overlapping.
   for (const dir of [jobKeptOut, playtest]) assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')), `live run took no lease in ${dir}`);
