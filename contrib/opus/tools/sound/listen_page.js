@@ -28,11 +28,27 @@ function todayParts(repo, cueName, today) {
   const variant = exact ? exact[1] : (String(cueName).match(/\((\w+) variant[):]/) || [])[1];
   const c = cues[base];
   if (!c) return [];
-  const out = [];
-  const layers = variant && c.variants && c.variants[variant] ? [...(c.variants[variant].layers || []), ...c.layers] : c.layers;
-  for (const l of layers || []) { const f = (index[l.s] || [])[0]; if (f) out.push({ file: path.join(repo, 'godot/audio/clips', f), label: l.s }); }
-  for (const f of (c.synth || []).slice(0, 1)) out.push({ file: path.join(repo, 'godot/audio/synth', f), label: 'synth ' + f });
-  return out.filter(x => fs.existsSync(x.file)).slice(0, 4);
+  // Mirrors sfx.gd _layers(): sampled layers whose clip exists, plus the synth take when nothing sampled played (or a
+  // "syn" layer asks for it); a variant marked "replace" with anything playable is the whole sound, otherwise it adds
+  // to the base (Artoo on PR 1761: the page showed base steel under replace variants).
+  const parts = (cue, synthName) => {
+    const out = []; let sampled = false, syn = false;
+    for (const l of cue.layers || []) {
+      if (l.s) { const f = (index[l.s] || [])[0]; const file = f && path.join(repo, 'godot/audio/clips', f);
+        if (file && fs.existsSync(file)) { out.push({ file, label: l.s }); sampled = true; } }
+      else if (l.syn) syn = true;
+    }
+    if (!sampled || syn) for (const f of (cue.synth || []).slice(0, 1)) {
+      const file = path.join(repo, 'godot/audio/synth', f);
+      if (fs.existsSync(file)) out.push({ file, label: 'synth ' + f + (synthName ? ' (' + synthName + ')' : '') });
+    }
+    return out;
+  };
+  const baseParts = parts(c, '');
+  const vd = variant && c.variants && c.variants[variant];
+  if (!vd) return baseParts.slice(0, 4);
+  const vParts = parts({ layers: vd.layers || [], synth: vd.synth || c.synth || [] }, variant);
+  return (vd.replace && vParts.length ? vParts : [...vParts, ...baseParts]).slice(0, 4);
 }
 
 function main() {
