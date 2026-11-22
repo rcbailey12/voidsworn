@@ -307,9 +307,18 @@ func _build_world() -> void:
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
-		env.background_mode = Environment.BG_SKY
 		env.sky = sky
-		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		if ResourceLoader.exists("res://world/world.gd") and not args.has("noworld"):
+			# issue 1434 (LOAD17 and LOAD19: the title's first frame 720 to 800 ms in the draw, no pipelines): the world
+			# replaces this sky with its own a few frames later (world.gd _make_sky, which turns the sky background on),
+			# so this one is never drawn and its radiance never made; it only hands the world its panorama. The
+			# background reflection follows the world's sky once it is up.
+			env.background_mode = Environment.BG_COLOR
+			env.background_color = Color(0.01, 0.012, 0.02)
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_BG
+		else:
+			env.background_mode = Environment.BG_SKY
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	else:
 		env.background_mode = Environment.BG_COLOR
 		env.background_color = Color(0.01, 0.012, 0.02)

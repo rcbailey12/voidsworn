@@ -10,6 +10,7 @@ static var _keep := {}   # shader code -> Shader
 # watch on and reads made each frame, so a long draw names the new shaders the frame before it made (not GPU: text)
 static var watch := false
 static var made: Array = []
+static var seen := {}   # issue 1434 (LOAD19): every code hash made this launch -> where, for the bench's launch-to-launch check
 
 
 static func of(code: String) -> Shader:
@@ -37,7 +38,9 @@ static func _note(code: String) -> void:
 		at = "%s:%d" % [str(fr["source"]).get_file(), int(fr["line"])]
 		if not at.begins_with("fx_hull.gd"):
 			break
-	made.append("%s %08x" % [at, code.hash() & 0xffffffff])
+	var h := "%08x" % (code.hash() & 0xffffffff)
+	made.append("%s %s" % [at, h])
+	seen[h] = at
 
 
 static func take_made() -> String:
@@ -60,3 +63,4 @@ static func get_kept(code: String) -> Shader:
 static func clear_static() -> void:
 	_keep.clear()
 	made.clear()
+	seen.clear()

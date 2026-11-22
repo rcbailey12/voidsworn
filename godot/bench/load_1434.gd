@@ -7,6 +7,8 @@ extends SceneTree
 #              read every frame from before the backdrop starts until it is freed (must not move)
 #   leave      a second cold title, New run clicked while its backdrop builds
 #   b1, b2, b3 three default sector 1 fights (start_default, seeds 101, 202, 303), the shape of Battles 1 to 3
+#   s25r       the 24-ship battle again in the same process, every shader and pipeline it uses already made (reported
+#              only, issue 1434 LOAD19: if its 5 s hull-prep draw comes back, first-use compiling is not the cause)
 #   b2r        Battle 2 again, its world bakes run again with every shader warm (reported only, see _b2_again)
 # Per battle: the longest main-thread stretch of the ship build (battle.gd load_stats: one ship's setup or its effects
 # registration at most), the worst single ship's setup and registration, and the worst frame from the cover to play,
@@ -37,7 +39,7 @@ var out_dir := ""
 var lines: Array = []
 var pass_all := true
 var finished: Array = []   # each case adds its name as its last step, so a case cut short by a script error fails the run
-var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3", "b2r"])
+var cases := PackedStringArray(["s25", "title", "leave", "b1", "b2", "b3", "b2r", "s25r"])
 # Board, Nov 21 (LOAD10): graded on a warm profile (the player's second launch onward: Godot's shader and pipeline caches
 # and the world bakes already on disk), with the cold first launch reported alongside on the same items. --pass names
 # which this run is; the runner (load1434_runs.ps1) starts the bench twice on one profile, cold then warm.
@@ -560,8 +562,62 @@ func _drain(label: String) -> void:
 			", one still being written" if svc._active == svc.SAVE_JOB else ""], Time.get_ticks_msec() - sw0, sworst / 1000])
 
 
+# issue 1434 (LOAD19: the warm profile still paid 5 s for 83 pipelines): the shader codes this launch made through
+# render/shader_keep.gd, against the ones the last launch on this profile made. A code new on the warm launch changes
+# from launch to launch, so its shader and pipelines never come from the disk caches.
+const CODES_FILE := "user://load1434_codes_seen.txt"
+
+
+func _codes_since_last_launch() -> void:
+	var before := {}
+	if FileAccess.file_exists(CODES_FILE):
+		for line in FileAccess.get_file_as_string(CODES_FILE).split("\n", false):
+			before[line.get_slice(" ", 0)] = true
+	var fresh := PackedStringArray()
+	var out := PackedStringArray()
+	for h in SKEEP.seen:
+		out.append("%s %s" % [h, SKEEP.seen[h]])
+		if not before.is_empty() and not before.has(h):
+			fresh.append("%s %s" % [SKEEP.seen[h], h])
+	var f := FileAccess.open(CODES_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string("\n".join(out) + "\n")
+		f.close()
+	if before.is_empty():
+		_say("[load1434] shader codes: %d made this launch; no earlier launch on this profile to compare (reported only)" % SKEEP.seen.size())
+	else:
+		_say("[load1434] shader codes: %d made this launch, %d not made by the last launch on this profile%s (reported only)" % [
+			SKEEP.seen.size(), fresh.size(), (": " + ", ".join(fresh.slice(0, 20))) if not fresh.is_empty() else ""])
+
+
+# the disk caches this launch starts with (issue 1434 LOAD19: does the warm launch find the pipeline cache)
+func _caches_at_start() -> String:
+	var out := PackedStringArray()
+	for sub in ["vulkan", "shader_cache"]:
+		var n := 0
+		var bytes := 0
+		var stack: Array = [OS.get_user_data_dir().path_join(sub)]
+		while not stack.is_empty():
+			var d: String = stack.pop_back()
+			var da := DirAccess.open(d)
+			if da == null:
+				continue
+			for f in da.get_files():
+				n += 1
+				var fa := FileAccess.open(d.path_join(f), FileAccess.READ)
+				if fa != null:
+					bytes += fa.get_length()
+					fa.close()
+			for sd in da.get_directories():
+				stack.append(d.path_join(sd))
+		out.append("%s %d files %.1f MB" % [sub, n, bytes / 1048576.0])
+	out.append("pipeline cache setting %s" % str(ProjectSettings.get_setting("rendering/rendering_device/pipeline_cache/enable", "unset")))
+	return ", ".join(out)
+
+
 func _run() -> void:
 	_say("[load1434] display %s, window %s, renderer %s" % [DisplayServer.get_name(), str(root.get_visible_rect().size), RenderingServer.get_current_rendering_method()])
+	_say("[load1434] caches at start: " + _caches_at_start())
 	if "s25" in cases: await _battle("s25", {"scenario": "s25"})
 	if "title" in cases: await _title()
 	if "leave" in cases: await _leave()
@@ -571,6 +627,15 @@ func _run() -> void:
 	if "b2r" in cases:
 		await _drain("before b2r")
 		await _b2_again()
+	if "s25r" in cases:
+		var keep := pass_all
+		var keep_cover := cover_ok_all
+		await _battle("s25r", {"scenario": "s25"})
+		cover_ok_all = keep_cover
+		pass_all = keep
+		cover_notes[-1] = "s25r reported only"
+		_say("[load1434] s25r is reported only (the 24-ship battle again, every shader and pipeline already made this launch): its FAIL or PASS above does not count toward RESULT")
+	_codes_since_last_launch()
 	for c in cases:
 		if not c in finished:
 			pass_all = false
