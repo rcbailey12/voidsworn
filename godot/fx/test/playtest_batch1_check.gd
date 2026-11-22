@@ -56,11 +56,13 @@ func _run() -> void:
 	check(s.stage[1] == 0, "90 percent midsection is intact despite low overall HP")
 	s.add_mark(fx, "torp", 4, Vector3(0, 2.25, 0), Vector3.UP, Vector3.DOWN)
 	flush(s)
-	check(s._marks[0].R < s.hull.L * 0.02, "light section damage limits heavy weapon puncture radius")
+	# issue 1235 (F1.1): a first torpedo on a light-damage section leaves a readable crater (it used to shrink to 12%),
+	# still short of the crater it leaves on a broken section
+	check(s._marks[0].R >= s.hull.L * 0.02 and s._marks[0].R <= s.hull.L * BREACH.CRATER_MAX_L + 1e-4, "light section damage keeps a readable torpedo crater, clearly under the stage 4 hole")
 	var small_radius: float = s._marks[0].R
 	s.sync(fx, state(15.0))
 	flush(s)
-	check(s.stage[1] == 4 and s._marks[0].R > small_radius * 2.0, "heavy section damage opens the large breach")
+	check(s.stage[1] == 4 and s._marks[0].R > small_radius * 1.2, "heavy section damage opens the large breach")
 	s.sync(fx, state(90.0)); flush(s)
 	check(s.stage[1] == 0 and not s._marks.is_empty(), "repair restores the section and keeps survivor scars")
 	s.sync(fx, state(90.0)); s.add_mark(fx, "torp", 4, Vector3(0, 2.25, 0), Vector3.UP, Vector3.DOWN); flush(s)

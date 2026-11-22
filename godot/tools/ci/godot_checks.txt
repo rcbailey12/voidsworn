@@ -31,6 +31,7 @@ headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP pay
 headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
 headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
 headless|campaign/test/map_load_cancel_test.gd|-|-|issue 1045: ending a run during map loading clears the cover and permits a retry
+headless|campaign/test/map_jump_queue_test.gd|-|-|issue 1448: a Jump pressed under the map loading cover is remembered, the button says JUMPING WHEN READY, and the jump flies once loading clears
 headless|campaign/test/map_trial_save_test.gd|-|-|issue 1050: new run toggle, map status, battle hand-off, save reload and old saves
 headless|campaign/test/map_readonly_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 344: opening the map, the Dossier and the Map key changes nothing)
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
@@ -67,6 +68,7 @@ headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|e
 headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
+headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
@@ -81,7 +83,7 @@ headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs 
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
 headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory; result stings end on hand-off
-headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
+headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes; issue 1448: campaign map, fleet, shipyard, reward and Career buttons play ui cues, ui_reward and ui_boss, one end sound, music shots and hex-distance close
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
 headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
@@ -103,6 +105,7 @@ headless|fx/test/death_authored_check.gd|-|-|issue 1385 (Neon's death review, PR
 headless|fx/test/faction_death_style_check.gd|-|-|issue 1399 (R367, full faction deaths): box cruisers of all five metal factions and a plain control (no death entry) killed with the strained death; the control keeps today's orange fire and smoke; each faction's death pictures, tear and torn faces take its own colours; ithar shatters (rainbow, no smoke, more fragments, glitter); deathless peels and dims; voidsworn pops a row of magazines; hegemony arcs jump the gap; corsair throws patch plates
 headless|fx/test/small_wreck_calm_check.gd|-|-|Ryan Nov 21: a box frigate and destroyer killed at quality high keep their wreck pieces within 0.7 L, turning slowly and at rest by 10 s (strained death on)
 headless|fx/test/jolt_jobs_check.gd|-|-|issue 1279: hull colliders alone leave the physics space asleep, so 2 s of every worker lane held raises no Jolt job table warning; debris wakes it; a death cut leaves lanes free
+headless|fx/test/wreck_contact_check.gd|-|-|issue 1466: a hull moving through settled plates wakes the physics space and shoves them (an empty board or a far hull still sleeps); a shrinking wreck's released sections leave Jolt as their meshes shrink; plates launch and fly at the kill slow-motion clock as sections do
 headless|fx/test/cold_kill_check.gd|-|-|issue 1232: the side by side cut gives the one-thread pieces, A16 killed 6 frames after it arrives still breaks into pieces, and a stuck cut holds the death no longer than its 5 s cap
 headless|fx/test/exit_release_check.gd|-|-|issue 1435: leaving a battle with a death cut still running returns in under 200 ms, the job is retired and reaped on later frames, a released fx starts no new cut, and quit drains every retired job
 headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
@@ -120,6 +123,7 @@ headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier chec
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
+headless|fx/test/first_hit_scars_check.gd|-|-|issue 1235: first-hit mark size, heavy and newest marks kept under the cap, bomber marks, turrets out of the static damage, LOD kept on undamaged meshes, stage 4 hole size
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|render/test/arrival_warm_check.gd|-|-|issue 1289: the arrival warm kit builds the reinforcement's hull into the effects for the load, then parks it hidden and keeps it loaded
@@ -179,6 +183,7 @@ gpu|fx/test/death_leap_probe.gd|env:DEATH_OUT|-|real-ship death recordings and a
 gpu|fx/test/death_spawn_check.gd|-|-|death pictures sit on the plating and every one is recorded (issue 354): runs without a window but needs the ship files
 gpu|fx/test/death_vent_strip_probe.gd|env:DV_OUT|-|strip of the death vent beat at the battle camera and the closest camera (issue 354): needs the GPU and the ship files
 gpu|fx/test/destruction_fleet_probe.gd|env:PROBE_OUT|-|Forward+ frame cost of 20 staged kills: needs the GPU
+gpu|fx/test/wreck_crossing_shot.gd|-|{out} gpu|issue 1466: a box frigate drives through a dead frigate's settled plates at the c60 camera; frames, a six-frame sheet and how many plates moved: needs a window
 gpu|fx/test/fx_breach_probe.gd|env:PROBE_OUT|-|breach close-ups on a real ship: needs the GPU and the ship files
 gpu|fx/test/fx_cost_probe.gd|-|-|hull rebuild cost on one real ship: runs without a window but needs the ship files
 gpu|fx/test/fx_inside_probe.gd|env:PROBE_OUT|-|inside of holes and wreck pieces: needs the GPU and the ship files
@@ -201,3 +206,4 @@ headless|ui/campaign/test/hull_text_test.gd|-|-|issue 932: a hull figure reads a
 headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels and press sounds, title Settings and Credits Esc, UI scale focus, Settings fits Larger, toast, font credits, campaign Esc back paths and faction music preview
 headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
+headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")

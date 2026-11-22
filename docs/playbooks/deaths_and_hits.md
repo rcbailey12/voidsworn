@@ -228,6 +228,11 @@ Three upgrades run through all of them:
 1. **Wounds.** Every hull hit leaves a mark that glows and cools, then stays as a scar. A ship that has been in a fight
    looks like it. (Built: a hot spot that cools over 1.5 s for energy, 2.5 s for shells, 3 s along a lance's line and 4 s
    for a torpedo, over the hull mark of R43; a ship keeps 24 marks, 8 a section, where it kept 12 and 4.)
+   Issue 1235 (Neon's damage audit): a first hit on a healthy section leaves at least 70% of the mark it leaves on a
+   broken one (fx_breach MARK_FLOOR; it was 12%) but a crater short of stage 4 stays under 0.6 of the stage 4 hole
+   (CRATER_MAX_L, so first hit and worst state never read the same size), the section's drawn marks are the heavy ones and then the newest (never
+   the oldest), bomber runs leave a crater, turret meshes take no baked scars, only meshes a wound reaches lose their
+   automatic LOD, the stage 4 hole is 0.048 of the ship's length (was 0.032) and moves off a turret's foot. godot/fx/test/first_hit_scars_check.gd.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)
