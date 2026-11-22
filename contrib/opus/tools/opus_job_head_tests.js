@@ -484,8 +484,11 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   const runTemp = path.join(tmp, 'runtemp1644');
   fs.mkdirSync(runTemp, { recursive: true });
   const issueLock = path.join(runTemp, 'voidsworn-runner-issue-1396.lock');
-  const held = spawnSync('bash', ['-c', '"$1" -NoProfile -Command "$h = [IO.File]::Open($env:LOCK1644, \'OpenOrCreate\', \'ReadWrite\', \'None\'); Start-Sleep -Seconds 12; $h.Dispose()" & sleep 4; exec "$1" -NoProfile -ExecutionPolicy Bypass -File "$2" dropwait "$3"',
-    'x', shell, path.join(jobs, 'opus_job_head.ps1'), guarded], { env: { ...env, ...quick, PC_RUN_TEMP: runTemp, LOCK1644: issueLock }, encoding: 'utf8', timeout: 90000 });
+  // The holder is its own script (Artoo on PR 1644: bash expanded $h inside a quoted -Command) and says when it holds.
+  const holder = path.join(tmp, 'hold1644.ps1'), ready = path.join(tmp, 'hold1644.ready');
+  write(holder, '$h = [IO.File]::Open($env:LOCK1644, "OpenOrCreate", "ReadWrite", "None")\n[IO.File]::WriteAllText($env:READY1644, "held")\nStart-Sleep -Seconds 12\n$h.Dispose()\n');
+  const held = spawnSync('bash', ['-c', '"$1" -NoProfile -ExecutionPolicy Bypass -File "$4" & n=0; while [ ! -f "$5" ] && [ $n -lt 300 ]; do sleep 0.1; n=$((n+1)); done; [ -f "$5" ] || exit 9; exec "$1" -NoProfile -ExecutionPolicy Bypass -File "$2" dropwait "$3"',
+    'x', shell, path.join(jobs, 'opus_job_head.ps1'), guarded, holder, ready], { env: { ...env, ...quick, PC_RUN_TEMP: runTemp, LOCK1644: issueLock, READY1644: ready }, encoding: 'utf8', timeout: 90000 });
   const heldOut = `${held.stdout}\n${held.stderr}`;
   assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(the issue lock \S+voidsworn-runner-issue-1396\.lock is held\)/.test(heldOut), 'a held issue lock keeps the relayed checkout: ' + heldOut);
   const pauseFile = path.join(tmp, 'pause1644.txt');
