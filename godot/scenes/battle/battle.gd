@@ -3875,6 +3875,8 @@ func _rotate(d: int) -> void:
 	var u := _sel_unit()
 	if not _can_act() or u.is_empty():
 		return
+	if not _usable(u):
+		return
 	# Issue 1589: a turn in place is planned too. The ghost turns on the ship's own hex; nothing reaches the rules until the
 	# commit, which turns the ship with the rules' own rotate (as Q/E always did: a skill's free turn and a free pivot are
 	# spent there, not here), then fires.
@@ -3884,8 +3886,8 @@ func _rotate(d: int) -> void:
 		var rot: int = (int(plan["rot"]) if plan != null else 0) + d
 		if rot > 3: rot -= 6
 		if rot < -3: rot += 6
-		if rot != 0 and not _turns_ok(absi(rot)):
-			hud.toast("No turn left this activation." if absi(rot) == 1 else "It cannot turn that far in place this activation.")
+		if rot != 0 and not _turns_ok(rot):
+			hud.toast("No turn left this activation." if absi(rot) == 1 else "It cannot turn that far in place this activation (it would stop at the middle heading).")
 			return
 		_plan_step()
 		plan = null if rot == 0 else {"q": int(u["q"]), "r": int(u["r"]), "f": posmod(int(u["facing"]) + rot, 6), "cost": 0, "t": absi(rot), "path": [], "rot": rot}
@@ -3910,31 +3912,19 @@ func _rotate(d: int) -> void:
 		hover_pick[hk] = int(hover_pick.get(hk, _alt_index(hk))) + (1 if d > 0 else -1 + reach_alt[hk].size())
 		_overlay()
 		return
-	# turning in place: the rules' own rotate (G1) when present
-	if api.has_method("rotate"):
-		var rid := sel
-		if _cmd(func(): return api.rotate(rid, d)):
-			plog.act("rotate", {"d": d})
-		else:
-			hud.toast("No turn left this activation.")
-		return
-	var want := posmod(int(u["facing"]) + d, 6)
-	var best = null
-	for st in reach_states:
-		if int(st.q) == int(u["q"]) and int(st.r) == int(u["r"]) and int(st.f) == want:
-			if best == null or float(st.cost) < float(best.cost):
-				best = st
-	if best != null:
-		var id := sel
-		_cmd(func(): return api.move(id, best))
-	else:
-		hud.toast("No turn left this activation.")
+	# Issue 1589 (Codex on PR 1643, run 2): Q/E never send anything to the rules. With a Burn and fire planned the rules
+	# pick its stop and facing, so the ghost stays as it is.
+	if atk != null:
+		hud.toast("Burn and fire picks its own stop and facing. Click a blue hex to plan the move yourself, or Backspace.")
 
 
-# Issue 1589: can the ship that is up turn in place n times in a row now? Read on a copy of the rules' own unit with
+# Issue 1589: can the ship that is up turn in place by rot steps now (sign = way)? Read on a copy of the rules' own unit with
 # canRotate, spending what _rotateUnit_raw spends for each turn (a skill's free turn, then a free pivot, then movement and a
-# turn charge). Read only: the copy is thrown away.
-func _turns_ok(n: int) -> bool:
+# turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
+# ship with no movement and no gun on an enemy (battle_api _done_raw), so a middle heading like that cannot be planned
+# through (Codex on PR 1643, run 2). Read only: the copy is thrown away.
+func _turns_ok(rot: int) -> bool:
+	var n := absi(rot)
 	if not _api_join():
 		return false
 	var ru = api.unit(sel)
@@ -3947,6 +3937,7 @@ func _turns_ok(n: int) -> bool:
 			return false
 		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
 			v["treeFreeTurn"] = 0
+			v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
 			continue
 		if R.freePivot(v):
 			v["pivotUsed"] = true
@@ -3955,7 +3946,19 @@ func _turns_ok(n: int) -> bool:
 			if R.jt(v.get("postFire")):
 				v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
 		v["turnsLeft"] = v["turnsLeft"] - 1
+		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
+		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
+			return false
 	return true
+
+
+func _any_shot(v) -> bool:
+	for w in v["weapons"]:
+		if api.R.weaponReady(w):
+			for t in api.R.alive("enemy"):
+				if api.R.canFire(v, w, t):
+					return true
+	return false
 
 
 func _alt_index(hk: String) -> int:

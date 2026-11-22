@@ -229,10 +229,25 @@ func _run() -> void:
 	if far != "":
 		_click_unit(far)
 		_check(b.atk != null and b.target == far, "a click on it plans a Burn and fire")
+		# Q/E with the Burn and fire planned (pointer on the target, then off the board): nothing reaches the rules
+		var fu: Dictionary = b.VU[far]
+		b.api.unit(ship)["treeFreeTurn"] = 1
+		var rf := _rules()
+		b.hover = Vector2i(int(fu["q"]), int(fu["r"]))
+		b._rotate(1)
+		b.hover = Vector2i(99999, 99999)
+		b._rotate(-1)
+		_check(b.atk != null and b.batches.is_empty() and _rules() == rf and float(b._z0(b.api.unit(ship).get("treeFreeTurn"))) == 1.0,
+			"Q/E with a Burn and fire planned change nothing in the rules and keep the free turn")
+		b.api.unit(ship)["treeFreeTurn"] = 0
 		_click_hex(int(best.q), int(best.r))
 		_check(b.atk == null and b.target == "" and b.plan != null, "a click on a blue hex replaces it with the planned move")
+		_click_unit(far)
+		_check(b.batches.is_empty() and _rules() == before, "a click on the old Burn and fire target commits nothing")
+		while b.atk != null:
+			b._on_key(KEY_BACKSPACE)
 		_click_unit(picks[0])
-		_check(b.aims.size() == 1 and b.batches.is_empty() and _rules() == before, "the next enemy click aims from the ghost; nothing is committed")
+		_check(b.aims.size() >= 1 and b.batches.is_empty() and _rules() == before, "the next enemy click aims from the ghost; nothing is committed")
 		b._on_key(KEY_ESCAPE)
 	_click_hex(int(best.q), int(best.r))
 	for e in picks:
