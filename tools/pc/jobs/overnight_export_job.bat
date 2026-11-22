@@ -6,6 +6,9 @@ rem checkout), copies the built ships from build\godot, stamps build_info.json, 
 rem checkout, so the existing candidate, export check, 2-battle smoke and promotion into build\export are unchanged.
 rem G2_PROMOTE_ONLY_IDLE=1 makes g2_export refuse to replace build\export while Voidsworn is running (Ryan playing).
 rem A pass records the commit in voidsworn_test\overnight_export\state.txt. build\godot itself is never changed.
+rem The job can start long after it was queued (Artoo on PR 1733), so the window, gpu_go and idle gates are checked again
+rem before its checkout and again just before promotion (overnight_export.ps1 -Check start / promote). If one no longer
+rem holds, the job ends as skipped (done PASS, a "skipped" note, nothing recorded) and the next night tries again.
 rem Built from opus_job_template.bat (issue 1303). Once queued, a bat is never edited: a change ships under a new name.
 setlocal EnableExtensions
 set "ON_HERE=%~dp0"
@@ -20,8 +23,9 @@ set "TOOLS=godot"
 rem ---- FILL 4 and 5: exact 40-character commits; OLD may be left empty for a one-commit job
 set "PIN_NEW=%ON_PIN%"
 set "PIN_OLD="
-rem Issue 1659: a warm cpu slot (voidsworn_test\slots\slot_cpu) instead of a fresh checkout each night, once that is in.
-set "OJ_SLOTS=1"
+rem Issue 1659: a warm cpu slot (voidsworn_test\slots\slot_cpu) instead of a fresh checkout each night. Off (a fresh
+rem checkout) until the Board's rollout turns slots on for every caller after the SLOTS_PROOF run (Artoo on PR 1733).
+set "OJ_SLOTS=0"
 set "OJ_SLOT_KIND=cpu"
 
 rem The head is the installed main copy in tools_live (fail closed). OPUS_JOB_HEAD may name another copy only for a
@@ -45,6 +49,10 @@ exit /b %ERRORLEVEL%
 
 rem ---- one pinned commit: checkout, ships, import, then the job's own steps. Every Godot start goes through job_wrap.
 :one
+powershell -NoProfile -ExecutionPolicy Bypass -File "%ON_HERE%..\overnight_export.ps1" -Check start > "%OJ_OUT%\gates_start.txt" 2>&1
+set "ON_RC=%ERRORLEVEL%"
+if "%ON_RC%"=="3" (call "%JW%" note "skipped: the overnight gates no longer hold at the start, see gates_start.txt" & exit /b 0)
+if not "%ON_RC%"=="0" (call "%JW%" fail "overnight gate check at the start, see %OJ_OUT%\gates_start.txt" & exit /b 1)
 call "%HEAD%" checkout %1 %2
 call "%HEAD%" ships
 set "O=%OJ_OUT%\out_%1"
@@ -57,11 +65,13 @@ set "ON_RC=%ERRORLEVEL%"
 popd
 if not "%ON_RC%"=="0" (call "%JW%" fail "build_info.json stamp, see %O%\prepare.txt" & exit /b 1)
 set "G2_PROMOTE_ONLY_IDLE=1"
+set "G2_PROMOTE_CHECK=%ON_HERE%..\overnight_export.ps1"
 pushd "%VT%\build"
 call "%ON_HERE%g2_export.bat" "%OJ_REPO%\godot" > "%O%\export_call.txt" 2>&1
 set "ON_RC=%ERRORLEVEL%"
 popd
 if exist "%VT%\shots\g2_export_log.txt" copy /y "%VT%\shots\g2_export_log.txt" "%O%\g2_export_log.txt" > nul
+if "%ON_RC%"=="3" (call "%JW%" note "skipped: the overnight gates no longer held at promotion; build\export unchanged, see g2_export_log.txt" & exit /b 0)
 if not "%ON_RC%"=="0" (call "%JW%" fail "g2_export, see %O%\g2_export_log.txt" & exit /b 1)
 if not exist "%VT%\overnight_export" mkdir "%VT%\overnight_export"
 powershell -NoProfile -Command "$f = Join-Path $env:VT 'overnight_export\state.txt'; $l = @(); if (Test-Path -LiteralPath $f) { $l = @([IO.File]::ReadAllLines($f) | Where-Object { $_ -notlike 'exported *' }) }; [IO.File]::WriteAllLines($f, [string[]]($l + ('exported ' + $env:ON_PIN)))" >> "%OJ_ST%" 2>&1

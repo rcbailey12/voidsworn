@@ -11,6 +11,11 @@
 #      differs from the last commit exported this way.
 # It deletes nothing. Test settings: PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_NOW (an ISO time),
 # PC_TEST_PROCS (process names, comma separated), PC_TEST_FREE_GB.
+# Artoo on PR 1733: the queued job can start long after this ran, so it asks again. -Check start (before its checkout)
+# and -Check promote (g2_export, just before build\export is replaced) rerun the window, gpu_go and idle gates, leaving
+# out the job's own OVERNIGHT_EXPORT_*.bat queue entry (and, at promotion, its own Godot and GPU claim, which the export
+# and smoke steps use). Exit 0: go on; exit 3 with "skipped: <reason>": the job ends as skipped, not failed.
+param([ValidateSet('', 'start', 'promote')][string]$Check = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
@@ -28,38 +33,58 @@ function Run-Git {
   $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 
-# 1. the night window, one try a night
-$now = [DateTime]::UtcNow
-if ($test -and $env:PC_TEST_NOW) { $now = [DateTimeOffset]::Parse($env:PC_TEST_NOW).UtcDateTime }
-$zone = if ($unix) { 'America/Chicago' } else { 'Central Standard Time' }
-$central = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId($now, $zone)
-if ($central.Hour -lt 1 -or $central.Hour -ge 5) { exit 0 }
+function Get-GateStop($mode) {
+  # The first gate that does not hold, as text, or '' when all hold. $mode: '' (the decider), 'start' or 'promote'.
+  $now = [DateTime]::UtcNow
+  if ($test -and $env:PC_TEST_NOW) { $now = [DateTimeOffset]::Parse($env:PC_TEST_NOW).UtcDateTime }
+  $zone = if ($unix) { 'America/Chicago' } else { 'Central Standard Time' }
+  $script:central = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId($now, $zone)
+  # 1. the night window (the decider also tries once a night, below)
+  if ($central.Hour -lt 1 -or $central.Hour -ge 5) { return "outside the 1 to 5 AM Central window ($($central.ToString('HH:mm')))" }
+  # 2. the Board's GPU switch
+  $go = Join-Path $vt 'gpu_go.txt'
+  $goLine = if (Test-Path -LiteralPath $go -PathType Leaf) { [IO.File]::ReadAllLines($go) | Select-Object -First 1 } else { '' }
+  if ("$goLine" -notmatch '\AGPU cleared(\s*:.*)?\z') { return 'gpu_go.txt does not say GPU cleared' }
+  # 3. disk (the export itself checks space before promotion)
+  if ($mode -ne 'promote') {
+    $freeGb = if ($test -and $env:PC_TEST_FREE_GB) { [double]$env:PC_TEST_FREE_GB } else { (New-Object IO.DriveInfo([IO.Path]::GetPathRoot($vt))).AvailableFreeSpace / 1GB }
+    if ($freeGb -lt 75) { return ("C: has {0:N0} GB free, under the 75 GB job floor" -f $freeGb) }
+  }
+  # 4. idle: no other job waiting or running, no GPU claim, no game, Godot or Blender
+  foreach ($q in @('queue', 'queue_b')) {
+    foreach ($sub in @('', 'running')) {
+      $d = Join-Path (Join-Path $vt $q) $sub
+      if (-not (Test-Path -LiteralPath $d -PathType Container)) { continue }
+      $other = @(Get-ChildItem -LiteralPath $d -File -Filter '*.bat' -Force | Where-Object { -not $mode -or $_.Name -notmatch '\AOVERNIGHT_EXPORT_[0-9a-f]{12}\.bat\z' })
+      if ($other.Count) { return "$q$(if ($sub) { '\' + $sub }) has a job" }
+    }
+  }
+  if ($mode -ne 'promote') {
+    foreach ($f in @(Get-ChildItem -LiteralPath $vt -File -Force | Where-Object { $_.Name -match '\A(gpu_slot_[1-9][0-9]*|gpu_solo)\z' })) {
+      $claimed = $true
+      try { $claimed = [bool]([IO.File]::ReadAllText($f.FullName).Trim()) } catch { $claimed = $true }
+      if ($claimed) { return "a GPU claim is live ($($f.Name))" }
+    }
+  }
+  $procs = if ($test) { @("$env:PC_TEST_PROCS".Split(',') | Where-Object { $_ }) } else { @(Get-Process | ForEach-Object { $_.ProcessName }) }
+  $pattern = if ($mode -eq 'promote') { '\A(Voidsworn(\.console)?|blender.*)\z' } else { '\A(Voidsworn(\.console)?|Godot.*|godot.*|blender.*)\z' }
+  $busy = @($procs | Where-Object { $_ -match $pattern })
+  if ($busy.Count) { return "$($busy[0]) is running" }
+  return ''
+}
+
+if ($Check) {
+  $stop = Get-GateStop $Check
+  if ($stop) { Write-Output "skipped: $stop (checked at $Check)"; exit 3 }
+  Write-Output "gates hold at $Check"; exit 0
+}
+$stop = Get-GateStop ''
+if ($stop -like 'outside the 1 to 5 AM*') { exit 0 }
 $night = $central.ToString('yyyyMMdd')
 $state = @{}
 if (Test-Path -LiteralPath $stateFile -PathType Leaf) { foreach ($l in [IO.File]::ReadAllLines($stateFile)) { if ($l -match '\A(exported|tried) (\S+)') { $state[$Matches[1]] = $Matches[2] } } }
 if ($state.tried -eq $night) { exit 0 }
-# 2. the Board's GPU switch
-$go = Join-Path $vt 'gpu_go.txt'
-$goLine = if (Test-Path -LiteralPath $go -PathType Leaf) { [IO.File]::ReadAllLines($go) | Select-Object -First 1 } else { '' }
-if ("$goLine" -notmatch '\AGPU cleared(\s*:.*)?\z') { Say "waiting: gpu_go.txt does not say GPU cleared"; exit 0 }
-# 3. disk
-$freeGb = if ($test -and $env:PC_TEST_FREE_GB) { [double]$env:PC_TEST_FREE_GB } else { (New-Object IO.DriveInfo([IO.Path]::GetPathRoot($vt))).AvailableFreeSpace / 1GB }
-if ($freeGb -lt 75) { Say ("waiting: C: has {0:N0} GB free, under the 75 GB job floor" -f $freeGb); exit 0 }
-# 4. idle
-foreach ($q in @('queue', 'queue_b')) {
-  foreach ($sub in @('', 'running')) {
-    $d = Join-Path (Join-Path $vt $q) $sub
-    if ((Test-Path -LiteralPath $d -PathType Container) -and @(Get-ChildItem -LiteralPath $d -File -Filter '*.bat' -Force).Count) { Say "waiting: $q$(if ($sub) { '\' + $sub }) has a job"; exit 0 }
-  }
-}
-foreach ($f in @(Get-ChildItem -LiteralPath $vt -File -Force | Where-Object { $_.Name -match '\A(gpu_slot_[1-9][0-9]*|gpu_solo)\z' })) {
-  $claimed = $true
-  try { $claimed = [bool]([IO.File]::ReadAllText($f.FullName).Trim()) } catch { $claimed = $true }
-  if ($claimed) { Say "waiting: a GPU claim is live ($($f.Name))"; exit 0 }
-}
-$procs = if ($test) { @("$env:PC_TEST_PROCS".Split(',') | Where-Object { $_ }) } else { @(Get-Process | ForEach-Object { $_.ProcessName }) }
-$busy = @($procs | Where-Object { $_ -match '\A(Voidsworn(\.console)?|Godot.*|godot.*|blender.*)\z' })
-if ($busy.Count) { Say "waiting: $($busy[0]) is running"; exit 0 }
+if ($stop) { Say "waiting: $stop"; exit 0 }
 # 5. main changed game files since the last overnight export
 $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(5)
 while (-not $lock) {

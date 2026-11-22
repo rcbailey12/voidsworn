@@ -82,6 +82,12 @@ rem Issue 1663: the overnight export never replaces the live folder while the ga
 if not "%G2_PROMOTE_ONLY_IDLE%"=="1" goto promote
 tasklist /fo csv /nh 2>nul | findstr /i /c:"\"Voidsworn.exe\"" /c:"\"Voidsworn.console.exe\"" >nul
 if not errorlevel 1 (echo FAIL: Voidsworn is running, so the live export was not replaced; the candidate stays in %CANDIDATE_EXPORT% >> "%LOG%" & exit /b 1)
+rem Issue 1663 (Artoo on PR 1733): the overnight job's gates again, just before the live folder is replaced. Exit 3 means
+rem they no longer hold: the job ends as skipped and the live export stays as it was.
+if not defined G2_PROMOTE_CHECK goto promote
+powershell -NoProfile -ExecutionPolicy Bypass -File "%G2_PROMOTE_CHECK%" -Check promote >> "%LOG%" 2>&1
+if errorlevel 3 (echo SKIPPED: the overnight gates no longer hold, so the live export was not replaced; the candidate stays in %CANDIDATE_EXPORT% >> "%LOG%" & exit /b 3)
+if errorlevel 1 (echo FAIL: the overnight gate check did not run >> "%LOG%" & exit /b 1)
 :promote
 rem Keep the old folder intact. Roll it back if the second same-volume move fails.
 powershell -NoProfile -Command ^

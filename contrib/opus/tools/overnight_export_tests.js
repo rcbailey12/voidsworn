@@ -17,12 +17,17 @@ assert(/powershell [^\n]*-File "tools_live\\%TLV%\\pc\\overnight_export\.ps1" >>
 assert(watcher.indexOf('overnight_export') > watcher.indexOf('if not defined J goto idle'), 'only from the idle branch');
 assert(/call "%HEAD%" init "%JOB%" "%LABEL%" "%TOOLS%"/.test(job) && /call "%HEAD%" tail/.test(job), 'the export job runs through the job head');
 assert(/if not defined ON_PIN \(echo FAILED[^\n]*exit \/b 2\)/.test(job) && /set "PIN_NEW=%ON_PIN%"/.test(job), 'the job pins the commit the decider saw');
-assert(/set "OJ_SLOTS=1"\n/.test(job) && /set "OJ_SLOT_KIND=cpu"\n/.test(job), 'a warm cpu slot once issue 1659 is in');
+assert(/set "OJ_SLOTS=0"\n/.test(job) && /set "OJ_SLOT_KIND=cpu"\n/.test(job), 'a fresh checkout until the slots rollout turns slots on for every caller');
+const one = job.slice(job.indexOf('\n:one\n'));
+assert(/powershell [^\n]*-File "%ON_HERE%\.\.\\overnight_export\.ps1" -Check start/.test(one) && one.indexOf('-Check start') < one.indexOf('call "%HEAD%" checkout'), 'the gates are checked again when the job starts, before its checkout');
+assert(/if "%ON_RC%"=="3" \(call "%JW%" note "skipped[^\n]*& exit \/b 0\)/.test(one), 'a gate that no longer holds ends the job as skipped, not failed');
+assert(/set "G2_PROMOTE_CHECK=%ON_HERE%\.\.\\overnight_export\.ps1"/.test(job) && job.indexOf('if "%ON_RC%"=="3" (call "%JW%" note "skipped: the overnight gates no longer held at promotion') < job.indexOf("'exported '"), 'a skip at promotion records nothing');
 assert(job.indexOf('if defined JW_STOP') < job.indexOf('g2_export.bat" "%OJ_REPO%'), 'no export after a failed checkout or ships copy');
 assert(job.indexOf('set "G2_PROMOTE_ONLY_IDLE=1"') < job.indexOf('g2_export.bat"') && job.indexOf("'exported '") > job.indexOf('if not "%ON_RC%"=="0" (call "%JW%" fail "g2_export'), 'the commit is recorded only after a passed export');
 assert(!/build\\godot\\[^\n]*(?:robocopy|del |rmdir|move )/i.test(job), 'build\\godot itself is never changed');
 const promote = g2.slice(g2.indexOf('G2_PROMOTE_ONLY_IDLE'));
 assert(/tasklist [^\n]*findstr [^\n]*Voidsworn\.exe[^\n]*Voidsworn\.console\.exe/.test(promote) && promote.indexOf('tasklist') < promote.indexOf('[IO.Directory]::Move($live, $backup)'), 'the live export is not replaced while the game runs');
+assert(/-File "%G2_PROMOTE_CHECK%" -Check promote/.test(promote) && promote.indexOf('-Check promote') < promote.indexOf('[IO.Directory]::Move($live, $backup)') && /if errorlevel 3 \([^\n]*exit \/b 3\)/.test(promote), 'the gates are checked again just before promotion');
 assert(/if defined G2_ARG if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"/.test(g2), 'g2_export takes a full project path');
 console.log('PASS overnight export static: watcher hook every 10 minutes when idle, job through the head on the decided pin, no promotion while the game runs');
 
@@ -39,8 +44,8 @@ const write = (file, text) => { fs.mkdirSync(path.dirname(file), { recursive: tr
 const git = (args, cwd = tmp) => { const r = spawnSync('git', args, { cwd, encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
 const night = '2026-11-23T08:00:00Z';   // 2:00 AM Central
 const base = { ...process.env, PC_TEST_HELPER: '1', PC_TEST_HELPER_VT: vt, PC_TEST_SOURCE: source, PC_TEST_NOW: night, PC_TEST_PROCS: 'explorer', PC_TEST_FREE_GB: '200', POWERSHELL_TELEMETRY_OPTOUT: '1' };
-function run(extra = {}) {
-  const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'tools/pc/overnight_export.ps1')], { env: { ...base, ...extra }, encoding: 'utf8', timeout: 60000 });
+function run(extra = {}, ...args) {
+  const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'tools/pc/overnight_export.ps1'), ...args], { env: { ...base, ...extra }, encoding: 'utf8', timeout: 60000 });
   return { status: r.status, out: `${r.stdout}\n${r.stderr}`.replace(/\s+/g, ' ') };
 }
 const queued = () => fs.existsSync(path.join(vt, 'queue')) ? fs.readdirSync(path.join(vt, 'queue')).filter(f => /^OVERNIGHT_EXPORT_[0-9a-f]{12}\.bat$/.test(f)) : [];
@@ -87,5 +92,29 @@ try {
   r = run({ PC_TEST_NOW: '2026-11-24T09:30:00Z' });
   assert.deepEqual(queued(), [`OVERNIGHT_EXPORT_${c3.slice(0, 12)}.bat`], 'a game change queues the new main: ' + r.out);
   assert(fs.readFileSync(state, 'utf8').includes(`exported ${c1}`) && fs.readFileSync(state, 'utf8').includes('tried 20261124'), 'the last export stays recorded until a job passes');
+  // Artoo on PR 1733: the job rechecks when it starts and before promotion, leaving out its own queue entry
+  fs.rmSync(path.join(vt, 'queue'), { recursive: true, force: true });
+  write(path.join(vt, 'queue', 'running', `OVERNIGHT_EXPORT_${c3.slice(0, 12)}.bat`), 'rem\n');
+  r = run({}, '-Check', 'start');
+  assert(r.status === 0 && /gates hold at start/.test(r.out), 'its own queue entry does not count: ' + r.out);
+  r = run({ PC_TEST_NOW: '2026-11-24T12:30:00Z' }, '-Check', 'start');
+  assert(r.status === 3 && /skipped: outside the 1 to 5 AM Central window \(06:30\)/.test(r.out), 'a job that starts after its window is skipped: ' + r.out);
+  write(path.join(vt, 'gpu_go.txt'), 'GPU not cleared: paused\n');
+  r = run({}, '-Check', 'start');
+  assert(r.status === 3 && /gpu_go/.test(r.out), 'the GPU switch turned off after queueing: ' + r.out);
+  write(path.join(vt, 'gpu_go.txt'), 'GPU cleared\n');
+  write(path.join(vt, 'queue', 'B.bat'), 'rem\n');
+  r = run({}, '-Check', 'start');
+  assert(r.status === 3 && /queue has a job/.test(r.out), 'another job arrived: ' + r.out);
+  fs.rmSync(path.join(vt, 'queue', 'B.bat'));
+  write(path.join(vt, 'gpu_slot_1'), 'opus1663night 1234\n');
+  r = run({ PC_TEST_PROCS: 'explorer,Godot_v4.7.2' }, '-Check', 'promote');
+  assert(r.status === 0, "at promotion the job's own Godot and GPU claim do not count: " + r.out);
+  r = run({ PC_TEST_PROCS: 'explorer,Voidsworn' }, '-Check', 'promote');
+  assert(r.status === 3 && /Voidsworn is running/.test(r.out), 'Ryan started the game: ' + r.out);
+  r = run({ PC_TEST_NOW: '2026-11-24T11:10:00Z' }, '-Check', 'promote');
+  assert(r.status === 3 && /outside the 1 to 5 AM/.test(r.out), 'an export that finishes after the window is not promoted: ' + r.out);
+  assert.equal(queued().length, 0, 'a check queues nothing');
+  console.log('PASS overnight export rechecks: at the job start and before promotion, its own entry left out, a late job skipped');
   console.log('PASS overnight export decider: night window, gpu_go, disk floor, queues, GPU claims and the game gate it; one try a night; only game file changes queue the job');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
