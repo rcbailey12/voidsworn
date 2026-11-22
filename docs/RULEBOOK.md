@@ -384,7 +384,7 @@ every process of that launch has exited, links as links, never a job's own profi
 Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
 a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
 janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
-Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access, and the picture
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access (only inside the job's own `voidsworn-run-*` scratch; any other folder keeps Python's private one, Artoo after PR 1537), and the picture
 provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
 private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21; the PC proof board/pc-out-1535 showed that private list alone is the cause, with no elevation involved). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another

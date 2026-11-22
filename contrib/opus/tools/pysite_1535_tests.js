@@ -41,18 +41,27 @@ if (!python) {
     'a = tempfile.mkdtemp(prefix="p-", suffix="-s")',
     'b = tempfile.mkdtemp(dir=os.environ["TMPDIR"])',
     'with tempfile.TemporaryDirectory(prefix="t-") as t: inside = os.path.isdir(t)',
-    'print(json.dumps({"a": a, "b": b, "modeA": stat.S_IMODE(os.stat(a).st_mode), "t": t, "inside": inside, "gone": not os.path.exists(t)}))'
+    // Artoo on issue 1535: an explicit dir= outside the job scratch keeps the standard library's private folder
+    'c = tempfile.mkdtemp(dir=os.environ["OUTSIDE_1535"])',
+    'print(json.dumps({"a": a, "b": b, "modeA": stat.S_IMODE(os.stat(a).st_mode), "modeB": stat.S_IMODE(os.stat(b).st_mode), "modeC": stat.S_IMODE(os.stat(c).st_mode), "t": t, "inside": inside, "gone": not os.path.exists(t)}))'
   ].join('\n');
-  const env = { ...process.env, VOIDSWORN_PYSITE_TEST: '1', PYTHONPATH: site, TMPDIR: tmp, TEMP: tmp, TMP: tmp };
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'outside1535-'));
+  const env = { ...process.env, VOIDSWORN_PYSITE_TEST: '1', PYTHONPATH: site, TMPDIR: tmp, TEMP: tmp, TMP: tmp, OUTSIDE_1535: outside };
   const r = spawnSync('sh', ['-c', `umask 022; exec "$0" -c "$1"`, python, probe], { env, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const got = JSON.parse(r.stdout.trim().split('\n').pop());
   assert(path.basename(got.a).startsWith('p-') && got.a.endsWith('-s') && [tmp, fs.realpathSync(tmp)].includes(path.dirname(got.a)), 'names and folder as the standard library: ' + r.stdout);
   assert.equal(got.modeA, 0o755, 'a plain mkdir (inherits), not the private 0o700 folder');
+  assert.equal(got.modeB, 0o755, 'an explicit dir= inside the job scratch inherits too');
+  assert.equal(got.modeC, 0o700, 'an explicit dir= outside the job scratch keeps the private folder');
+  // a process whose TEMP is not job scratch never installs the override
+  const notJob = spawnSync(python, ['-c', 'import tempfile; print(getattr(tempfile, "_voidsworn_inherited_acl", False))'], { env: { ...env, TMPDIR: outside, TEMP: outside, TMP: outside }, encoding: 'utf8' });
+  assert.equal(notJob.stdout.trim(), 'False', 'outside job scratch the override is off: ' + notJob.stdout + notJob.stderr);
   assert(got.inside && got.gone, 'TemporaryDirectory still makes and removes its folder');
   // without the site folder the standard library still makes 0o700 folders: the difference is the module
   const plain = spawnSync('sh', ['-c', 'umask 022; exec "$0" -c "$1"', python, 'import os, stat, tempfile; a = tempfile.mkdtemp(); print(stat.S_IMODE(os.stat(a).st_mode))'], { env: { ...env, PYTHONPATH: '' }, encoding: 'utf8' });
   assert.equal(plain.stdout.trim(), String(0o700), plain.stdout + plain.stderr);
   fs.rmSync(tmp, { recursive: true, force: true });
+  fs.rmSync(outside, { recursive: true, force: true });
 }
-console.log('PASS pysite 1535: job bats load it, mkdtemp makes inheritable folders, the picture selftest cleans up after a PASS');
+console.log('PASS pysite 1535: job bats load it, mkdtemp makes inheritable folders inside job scratch only, the picture selftest cleans up after a PASS');
