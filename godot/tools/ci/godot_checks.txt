@@ -132,6 +132,7 @@ headless|fx/test/close_action_moments_check.gd|-|-|issues 1524 and 1461: in test
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look
+headless|fx/test/fx_audit_1558_check.gd|-|-|issues 1558 and 1528: weapon gas stretched by aspect, big-death veil born when it shows, slag/debris/spark/craft trail ignore fog, hit pause in real seconds at 60 and 144 fps, kit trails on one shared strip, craft trails rebuilt on the sample step only, one heat ring per hull and one quad for rounds, kit munition bodies warmed before the first salvo
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/first_hit_scars_check.gd|-|-|issue 1235: first-hit mark size, heavy and newest marks kept under the cap, bomber marks, turrets out of the static damage, LOD kept on undamaged meshes, stage 4 hole size
 headless|fx/test/hull_wear_check.gd|-|-|issue 1235 run 2: wear on the live damage shader as HP falls (no ember heat), soot patches on the hit sides, the crippled list below 35% HP and its repair
@@ -204,6 +205,7 @@ gpu|fx/test/fx_marks_probe.gd|env:PROBE_OUT|-|every weapon mark on a real ship, 
 gpu|fx/test/fx_nozzle_probe.gd|env:PROBE_OUT|-|engine plumes on the built kit ships: needs the GPU and the ship files
 gpu|fx/test/fx_probe.gd|env:PROBE_OUT|-|damage ladder and a shield hit on a real ship: needs the ship files
 gpu|fx/test/fx_proj_probe.gd|envpng:PROBE_OUT|-|rocket and torpedo flight between box ships: waits on drawn frames, so it needs a renderer
+gpu|fx/test/fx_audit_1558_shots.gd|env:SHOTS_OUT|-|issue 1558 items 1 and 2: before/after stills of the muzzle jets (gas aspect) and the capital core flash with its gas veil at the battle camera; needs a renderer
 gpu|fx/test/fx_range_probe.gd|env:PROBE_OUT|-|every weapon at the battle camera's range: needs the GPU and the ship files
 gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, stills: needs the GPU and the ship files
 gpu|fx/test/shield_fail_probe.gd|env:PROBE_OUT|--quick|issue 1078: the shield failure looks side by side on a real ship at camera 170 (the full sheets, clips and cost run is tools/pc/jobs/shield_looks_1078.bat): needs the GPU and the ship files

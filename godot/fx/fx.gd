@@ -106,8 +106,10 @@ var apply_shake = true
 # --- clock
 var now = 0.0
 var _speed = 1.0
-var _pause_until = -1.0
+var _pause_until = -1.0   # effect time; checks hold a pause open with it
+var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
 var _pause_depth = 1.0
+const SPEED_EASE := 55.0  # 1 - exp(-k / 60) = 0.6: the old per-frame lerp at 60 fps, now the same at every frame rate
 var _death_slow_left = 0.0  # real seconds, never Engine.time_scale
 var _death_hurry_until = -1.0
 
@@ -471,17 +473,38 @@ func _process(delta: float) -> void:
 var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
 
 
+# Effect seconds over `t` real seconds while the clock eases from speed `a` to `b` (the exact integral of the ease, so the
+# time a hit pause costs is the same at any frame rate)
+static func _eased(a: float, b: float, t: float) -> float:
+	return b * t - (b - a) * (1.0 - exp(-t * SPEED_EASE)) / SPEED_EASE
+
+
 func step(delta: float) -> void:
 	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
-	var spd = 1.0
-	if now < _pause_until:
-		spd = _pause_depth
+	var base := 1.0
 	if _death_slow_left > 0.0:
 		_death_slow_left = maxf(0.0, _death_slow_left - delta)
-		spd = minf(spd, 0.35) if _death_slow_left > 0.0 else spd
-	_speed = lerpf(_speed, spd, 0.6)
-	var dt = delta * _speed
+		base = 0.35 if _death_slow_left > 0.0 else 1.0
+	var crawl_spd: float = minf(float(_pause_depth), base)
+	# issue 1558 item 4: the hit pause is real seconds. The clock drops into it at once (so a 3-frame pause lands) and
+	# crawls only for the time left in it: a long frame (30 fps, a hitch) that ends the pause is split at the boundary
+	# and eases back by real time for the rest, so a 50 ms pause crawls 50 ms at any frame rate.
+	var real := maxf(delta, 0.0)
+	var hold: bool = now < _pause_until
+	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
+	_pause_left = maxf(0.0, _pause_left - real)
+	var dt: float
+	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
+		_speed = crawl_spd
+		dt = real * _speed
+	elif crawl > 1e-6:
+		var rest := real - crawl
+		dt = crawl * crawl_spd + _eased(crawl_spd, base, rest)
+		_speed = lerpf(crawl_spd, base, 1.0 - exp(-rest * SPEED_EASE))
+	else:
+		dt = _eased(float(_speed), base, real)
+		_speed = lerpf(_speed, base, 1.0 - exp(-real * SPEED_EASE))
 	now += dt
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
@@ -1226,6 +1249,7 @@ func hurry_death() -> void:
 	skip_death_slowmo()
 	_death_hurry_until = now + 3.0
 	_pause_until = -1.0
+	_pause_left = 0.0
 	_pauses.clear()
 	_speed = 1.0
 
@@ -1263,7 +1287,7 @@ func _update_feel(delta: float) -> void:
 	for p in _pauses:
 		if float(p[0]) <= now:
 			var dur = float(p[1]) / 60.0
-			_pause_until = maxf(_pause_until, now + dur * 0.08)
+			_pause_left = maxf(_pause_left, dur)
 			_pause_depth = 0.08
 		else:
 			keep.append(p)
@@ -2131,6 +2155,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 					(b as RigidBody3D).angular_velocity = Vector3.ZERO
 					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
+	dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	warmed = true

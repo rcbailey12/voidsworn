@@ -120,7 +120,7 @@ const VENT_ROOT_FRAC := 0.40
 
 const SLAG := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_opaque;
+render_mode unshaded, cull_disabled, depth_draw_opaque, fog_disabled;
 global uniform float fx_gain;
 uniform float heat = 1.0;
 uniform bool organic = false;
@@ -165,7 +165,7 @@ void fragment() {
 
 const DEBRIS_BODY := """
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 instance uniform float spawn_t = -100.0;
@@ -425,6 +425,7 @@ static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vect
 			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
 			var mat := StandardMaterial3D.new()
 			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
 			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			mat.vertex_color_use_as_albedo = true
 			mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
@@ -2861,6 +2862,22 @@ static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, fram
 # all on the blast point (rule 4: it starts on the ship) but drifting at different speeds into one side of the blast,
 # turned and stretched differently, some darker. The asymmetric baked seed (s0, "shards") is preferred; the round seeds
 # are stretched when used. Seeded per ship, so a replay matches. Fire stays inside the cap: lives only shrink.
+const CORE_VEIL_DELAY := 0.45
+
+
+# Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
+static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bool, vel: Vector3) -> void:
+	# born 0.45 s after the flash: read the piece where it is now (it drifts), and skip the veil if it is already gone
+	var node := node_ref.get_ref() as Node3D
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not node.is_inside_tree():
+		return
+	var p: Vector3 = node.to_global(local)
+	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
+	var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(s.hull.L), null)
+	gas.set_meta("spawn_frame", frame)
+	fx.record_spawn(s, p, false, frame)
+
+
 static func _death_rng(s) -> RandomNumberGenerator:
 	if s == null or not (s is Object) or not s.has_method("set_meta"):
 		return RandomNumberGenerator.new()
@@ -2923,10 +2940,9 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	if fx.quality != "low":
 		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
 		if not story:
-			var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
-			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
-			gas.set_meta("spawn_frame", frame)
-			fx.record_spawn(s, p, false, frame)
+			# Issue 1558 item 2: the veil is spawned 0.45 s late (light first, then matter). Moving `born` ahead after the
+			# picture was made drew frame 0 at full alpha over the core flash, then the pool took it back while still visible.
+			fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil.bind(fx, s, node_ref, local, capital, s.get_meta("death_velocity", Vector3.ZERO) * 0.5))
 		var gm: Array = s.get_meta("death_grow", [])
 		var axis_w: Vector3 = (s.xf().basis * (gm[3] as Vector3)).normalized() if gm.size() >= 4 else s.xf().basis.x
 		var away: Vector3 = (s.xf().basis * (gm[0] as Vector3)).normalized() if gm.size() >= 4 else Vector3.FORWARD
