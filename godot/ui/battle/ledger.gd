@@ -258,15 +258,15 @@ func layout() -> void:
 	_top_right(Rect2(vs.x - pad - foe_w, top_y, foe_w, 0))
 	var shelf_y := vs.y - px(SHELF_H)
 	sheet_r = Rect2(0, shelf_y, vs.x, vs.y - shelf_y)   # kept while hidden too: tips and toasts still place above it
-	blockers.append(sheet_r)
 	if playing:
 		# issue 1708: while a move, volley or enemy turn plays, the whole bottom sheet (ship, guns, odds, orders, fleet)
 		# leaves so the scene has the screen; the log stays where it was, and the sheet pops back when the event ends
 		_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 		_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
 		_dirty = false
-		return
+		return   # no blocker either (Neon on PR 1709): clicks and camera drags reach the scene while the sheet is away
 	_veil(sheet_r, Brand.KEEL_VEIL, Vector4(0, px(17), 0, 0))
+	blockers.append(sheet_r)
 	var y := shelf_y + px(28)
 	var gap := px(15 if compact else 22)
 	var room := usable - gap * 3

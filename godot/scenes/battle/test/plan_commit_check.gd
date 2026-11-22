@@ -323,6 +323,7 @@ func _run() -> void:
 		if str(it["t"]).to_upper() == ship_name.to_upper() and float(it["y"]) >= Lp.sheet_r.position.y:
 			sheet_drawn = true
 	_check(bool(Lp.playing) and not sheet_drawn, "the bottom ship sheet is hidden while the event plays (playing %s)" % str(Lp.playing))
+	_check(not Lp.blockers.has(Lp.sheet_r), "the hidden sheet blocks no clicks or camera drags (Neon on PR 1709)")
 	b.hold = false
 	await _wait_idle(90000)
 	var u1: Dictionary = b.VU.get(ship, {})

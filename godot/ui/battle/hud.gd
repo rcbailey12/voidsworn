@@ -764,7 +764,9 @@ func _place_tip() -> void:
 	var low: float = ledger.sheet_r.position.y - h - gap
 	p.y = clampf(p.y, t, maxf(t, low))
 	var avoid: Array = ledger.blockers.duplicate()
-	avoid.remove_at(avoid.find(ledger.sheet_r))
+	var si := avoid.find(ledger.sheet_r)
+	if si >= 0:
+		avoid.remove_at(si)   # issue 1708: no sheet blocker while an event plays
 	for c in [log_panel, tipcard, legend, aichip]:
 		if c != null and is_instance_valid(c) and c.visible and c.modulate.a >= 0.01:
 			avoid.append(c.get_global_rect())
