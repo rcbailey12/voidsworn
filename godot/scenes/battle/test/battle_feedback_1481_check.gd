@@ -58,6 +58,12 @@ func _run() -> void:
 	var grp := [g1, {"t": "section_down", "unit": "x", "section": "mid"}, {"t": "shield_down", "unit": "x", "quad": 0}, g2]
 	_check(BATTLE.section_break_hit(grp, BATTLE.shield_break_hit([g1, g2])) == 0, "a mid-volley generator loss breaks the shield on hit 1 of 2")
 	_check(BATTLE.section_break_hit([g1, g2, {"t": "shield_down", "unit": "x", "quad": 0}], 0) == 0, "an ordinary volley break keeps its pick")
+	# Artoo at 458f09e8: shot 1 takes the prow, shot 2 drains the pool, shot 3 hits bare hull; the end-of-volley break stays on shot 2
+	var p1 := {"t": "hit", "target": "x", "shield": 3, "hull": 2}
+	var p2 := {"t": "hit", "target": "x", "shield": 6, "hull": 0}
+	var p3 := {"t": "hit", "target": "x", "shield": 0, "hull": 8}
+	var pg := [p1, {"t": "section_down", "unit": "x", "section": "prow"}, p2, p3, {"t": "shield_down", "unit": "x", "quad": 0}]
+	_check(BATTLE.section_break_hit(pg, BATTLE.shield_break_hit([p1, p2, p3])) == 1, "a prow loss earlier in the volley leaves an ordinary break on the last hit the shield took")
 	var gsrc := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(gsrc.find('"burning", "section_down"]') >= 0, "the volley groups its section loss with its hits")
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")

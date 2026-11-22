@@ -2342,15 +2342,13 @@ static func volley_note(g: Dictionary, target) -> bool:
 
 static func section_break_hit(grp: Array, k: int) -> int:
 	var seen := 0
-	var after_sec := false
 	for i in grp.size():
 		var g: Dictionary = grp[i]
 		if g["t"] == "hit":
 			seen += 1
-		elif g["t"] == "section_down":
-			after_sec = true
-		elif g["t"] == "shield_down" and after_sec and seen > 0:
-			return seen - 1
+		elif g["t"] == "section_down" and str(g.get("section")) == "mid" and seen > 0 and i + 1 < grp.size() \
+				and grp[i + 1]["t"] == "shield_down" and str(grp[i + 1].get("unit")) == str(g.get("unit")):
+			return seen - 1   # only the break the generator loss itself sent (Artoo at 458f09e8: a prow or engine loss is not one)
 	return k
 
 
