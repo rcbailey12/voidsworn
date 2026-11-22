@@ -2313,8 +2313,8 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 		var at := T + 0.05 + j * 0.11
 		fx.rib(p + n * 0.1 * k, d.normalized(), d.length(), at, 0.4, hot, 1.3, 0.10 * k, 0.03 * k, 6)
 		fx.spr(q + n * 0.1 * k, at + 0.05, 0.25, col, 1.6, 0.5 * k, 0.9 * k, 13)
-	if Tg != null and Tg.has_method("power_dip"):
-		fx.later(T, func() -> void: Tg.power_dip(fx, 0.5))
+	# The crawl's own half-second power_dip is gone (Artoo on PR 1699): the hit's brownout (hit_power, issue 1690) is the
+	# one transient dip for an ion hit, so the two never multiply on the hull's lights.
 
 
 # The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over

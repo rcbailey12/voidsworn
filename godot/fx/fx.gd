@@ -744,10 +744,20 @@ func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float,
 
 
 func shot_pass_by(at: float, p: Vector3) -> void:
-	if is_instance_valid(_sfx):
+	if sound() != null:
 		later(at, func play_pass_by() -> void:
-			if is_instance_valid(_sfx):
-				_sfx.play("shot_pass_by", {"pos": p}))
+			var sx = sound()
+			if sx != null:
+				sx.play("shot_pass_by", {"pos": p}))
+
+
+# The battle's sound node, looked up when a cue plays (Artoo on PR 1699): the battle builds the effects (setup) before
+# its Sfx node, so the node handed to setup is null there; the host's sfx field is read again until one exists.
+func sound():
+	if not is_instance_valid(_sfx):
+		var host := get_parent()
+		_sfx = host.get("sfx") if host != null and "sfx" in host else null
+	return _sfx if is_instance_valid(_sfx) else null
 
 
 # One head follows the real gauss flight; its deposited light cools for 0.70 s.

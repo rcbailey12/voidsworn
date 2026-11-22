@@ -158,6 +158,29 @@ func _power() -> void:
 	_advance(1.0)
 	_check(bright.meshes[0].get_active_material(0) == original and float(damage.get_shader_parameter("fx_power")) == 1.0,
 		"paint and damage shader recover their original brightness")
+	_ion_hull("fresh", false)
+	_ion_hull("wounded", true)
+
+
+# Artoo on PR 1699: an ion HULL hit (the beam's impact and its crawl, as fx_weapons plays them) brownouts once: the hit's
+# own dip (hit_power), never a second crawl dip (power_dip) multiplied on top; on a fresh hull and on a wounded one,
+# whose ordinary wound flicker keeps running.
+func _ion_hull(tag: String, wounded: bool) -> void:
+	var s := _ship("ion_hull_" + tag, "hegemony")
+	if wounded:
+		s.wound_log_on = true
+		fx.sync_ship(s.id, {"hp": 40.0, "maxHp": 100.0, "burning": false, "sh": [0, 0, 0, 0],
+			"sec": {"eng": {"hp": 100, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 100, "max": 100}}})
+		_advance(0.5)
+	var p: Vector3 = s.to_world(s.hull.c + Vector3(0, s.hull.H * 0.5, 0))
+	_impact(s, "ion", 2, 0, 6)
+	WEAP._ion_crawl(fx, s, p, Vector3.UP, fx.now, Color.SKY_BLUE, 1.0)
+	_advance(0.08)
+	_check(s._dip_peak >= 0.60 and s._power_dip > 0.0, "%s hull: an ion hull hit dims its lights once (peak %.2f, now %.2f)" % [tag, s._dip_peak, s._power_dip])
+	_check(s._power_dip_until < fx.now, "%s hull: the ion crawl adds no second dip" % tag)
+	_check(s.power_flicker(fx.now) >= 0.5, "%s hull: only the wound flicker rides on the hit's dip (%.2f)" % [tag, s.power_flicker(fx.now)])
+	_advance(1.2)
+	_check(s._power_dip == 0.0, "%s hull: the dip recovers" % tag)
 
 
 func _recoil() -> void:
@@ -215,6 +238,35 @@ func _miss() -> void:
 	_check(fx.pools["spr"].emitted == sprites + 1 and s._hit_i == 0, "close shield graze sparks without triggering shield damage FX")
 
 
+# Artoo on PR 1699: the battle sets up its effects before it builds its Sfx node, so fx.setup sees no sound; a miss's
+# pass-by cue must still find the battle's Sfx once it exists (fx.sound() reads the host's sfx field at play time).
+class _Host extends Node3D:
+	var sfx = null
+
+
+class _Ear extends Node:   # stands in for the battle's Sfx (the real one spaces repeats of a cue, see _miss)
+	var got: Array = []
+	func play(cue: String, _o := {}) -> void:
+		got.append(cue)
+
+
+func _late_sfx(_sfx) -> void:
+	var host := _Host.new()
+	world.add_child(host)
+	var fx2 := FX.new()
+	fx2.manual = true
+	host.add_child(fx2)
+	fx2.setup({"quality": "low", "shake": 0.0})
+	_check(fx2.sound() == null, "an effects node set up before the battle's Sfx has no sound yet")
+	var ear := _Ear.new()
+	host.add_child(ear)
+	host.sfx = ear
+	fx2.shot_pass_by(fx2.now, Vector3.ZERO)
+	for i in 3:
+		fx2.step(1.0 / 60.0)
+	_check(fx2.sound() == ear and ear.got.has("shot_pass_by"), "the pass-by cue finds the Sfx built after setup (%s)" % str(ear.got))
+
+
 func _run() -> void:
 	world = Node3D.new()
 	root.add_child(world)
@@ -231,6 +283,7 @@ func _run() -> void:
 	_power()
 	_recoil()
 	_miss()
+	_late_sfx(sfx)
 	world.free()
 	print("PASS wave_1a_check" if failures == 0 else "FAIL wave_1a_check: %d" % failures)
 	quit(0 if failures == 0 else 1)
