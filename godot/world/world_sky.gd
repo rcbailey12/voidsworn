@@ -383,11 +383,11 @@ vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 	float cool = smoothstep(0.0, 1.0, -sun_side);
 	vec3 c = vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
 	if (fleet_reflections_v2) {
-		float fr_lobe = pow(max(sun_side, 0.0), 24.0);
+		float fr_lobe = pow(max(sun_side, 0.0), 24.0);   // neutral warm-white (Ryan, Nov 22: the orange lobe browned Eclipse)
 		float fr_bd = (direction.y + 0.18) / 0.22;   // Artoo on PR 1786: square by multiplying (pow of a negative base is undefined)
 		float fr_band = exp(-fr_bd * fr_bd) * (1.0 - smoothstep(-0.6, 0.2, sun_side));   // and smoothstep edges in order
 		float fr_trough = smoothstep(0.55, 0.95, abs(direction.y));
-		c = c * (1.0 - 0.75 * fr_trough) + vec3(0.9, 0.74, 0.52) * fr_lobe + vec3(0.045, 0.07, 0.11) * fr_band;
+		c = c * (1.0 - 0.75 * fr_trough) + vec3(0.86, 0.83, 0.78) * fr_lobe + vec3(0.045, 0.07, 0.11) * fr_band;
 	}
 	return c;
 }

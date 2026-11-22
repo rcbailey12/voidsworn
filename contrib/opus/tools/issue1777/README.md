@@ -13,7 +13,7 @@ live in `godot/render/look.gd` (`ship_look_v2_enabled`, `V2`).
 
 | Item | Before | V2 |
 | --- | --- | --- |
-| Space reflections (#1679) | off | on, plus three more lobes (tight warm sun lobe, cool low bounce band, dark troughs up and down) |
+| Space reflections (#1679) | off | on, plus three more lobes (tight neutral warm-white sun lobe (Ryan, Nov 22), cool low bounce band, dark troughs up and down) |
 | Per-faction ao_light_affect (#1679 READ ao_light) | off | on |
 | Ambient energy | 0.50 | 0.19 |
 | Key shadow normal bias / depth bias | 2.0 / default | 0.3 / 0.06 |
