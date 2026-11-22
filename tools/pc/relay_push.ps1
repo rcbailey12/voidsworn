@@ -75,6 +75,8 @@ foreach ($f in $files) {
   if ($f.Length -gt 10MB) { $skipped += ('{0} {1} MB' -f $rel.Replace('/', '\'), ($f.Length / 1MB).ToString('0.0', [Globalization.CultureInfo]::InvariantCulture)); continue }
   $send += @{ Path = $f.FullName; Key = "$leaf/" + $rel.Replace('\', '/') }
 }
+# batches go in path order, so a relay that stops partway always stops at the same file
+$send = @($send | Sort-Object -CaseSensitive { $_.Key })
 $mb = (($files | Measure-Object -Property Length -Sum).Sum / 1MB)
 Write-Output ("relay: {0} file(s) to {1} branch {2} under {3}/ ({4:N1} MB in all), {5} over 10 MB kept on the PC" -f $send.Count, $web, $branch, $leaf, $mb, $skipped.Count)
 if ($dry) {
