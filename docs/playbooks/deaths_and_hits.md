@@ -105,8 +105,8 @@ The cruiser's death, longer and heavier:
 - It breaks into three pieces along its authored lines: two halves and one more (a spire line, a module, a shade band: the
   faction's sheet says which).
 - Ten secondaries. Coals cool for about 14 s. The pieces drift apart slowly and stay.
-- Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
-  second, so the flash feels like it took the light with it. Off under reduce flashing.
+- No scene dim for a capital in general: the dim straight after the core flash is Eclipse's own (R367, see "How each
+  faction dies"); the general option was removed (R389, issue 1509). Off under reduce flashing.
 
 Installed (issue 1077, on by default since Ryan's yes on pass 6, Nov 20 2026; `rendering/effects/death_story="off"` or
 `VS_DEATH_STORY=off` turns it off for comparisons) adds strain to every cruiser and capital death before the split above, in the shared death code
@@ -317,7 +317,7 @@ battle speed) so the player sees it before the next event. godot/fx/test/close_a
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.
 2. A cruiser death: eight frames across its three beats, before above after.
-3. A capital death: the same, with the scene-dim proposal on and off.
+3. A capital death: the same. No dim on and off pair: the dim is Eclipse's own (R389), so a non-Eclipse capital shows none.
 4. Later, per rebuilt faction: its death beside the shared one.
 
 ## Build order (jobs written from docs/playbooks/effects.md's template)

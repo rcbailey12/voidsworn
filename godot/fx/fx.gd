@@ -145,10 +145,8 @@ var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
 var _fov_base = -1.0        # the camera's own field of view, under the punch
 var _fov_set = -1.0         # what the punch last wrote
-# Issue 462, a Board proposal for Ryan's eye (deaths_and_hits.md, capital row): straight after a capital's core flash the
-# whole scene dims a little for a fifth of a second. Off by default (setup option "scene_dim" or VS_DEATH_DIM=1) and
-# never under reduce flashing.
-var scene_dim := false
+# R367 (issue 1399): straight after an Eclipse core flash the whole scene dims a little for a fifth of a second (never
+# under reduce flashing). Eclipse only: the general capital dim option of issue 462 is gone (R389, issue 1509).
 const DIM_LIFE := 0.20
 const DIM_DEPTH := 0.35
 var _dim_veil: MeshInstance3D = null
@@ -363,7 +361,6 @@ func setup(opts := {}) -> void:
 	# shipped Cone B (see fx_weapons._vent).
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
-	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var story := String(opts.get("death_story", OS.get_environment("VS_DEATH_STORY")))
 	if story.is_empty():
 		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "strain"))
@@ -1341,12 +1338,11 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
-# Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
-# in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
-# whatever environment the scene uses. A second dip during one is ignored.
-# force: a faction whose own death dims the scene (R367, Eclipse), whatever the scene_dim option says.
-func dim_scene(t: float, force := false) -> void:
-	if (not scene_dim and not force) or reduce_flashing or _dim_t0 >= 0.0:
+# R367: the scene dim after an Eclipse core flash (fx_death.gd calls it for the peel death style only, R389). A black
+# veil a hair in front of the camera fades in over a quarter of the dip and out over the rest, so the whole frame (sky,
+# ships, effects) loses a little light whatever environment the scene uses. A second dip during one is ignored.
+func dim_scene(t: float) -> void:
+	if reduce_flashing or _dim_t0 >= 0.0:
 		return
 	if camera == null or not is_instance_valid(camera):
 		return

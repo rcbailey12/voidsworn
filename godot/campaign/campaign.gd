@@ -847,8 +847,8 @@ func _track_up(cls) -> void:
 func buyClassTrack(cls) -> bool:
 	if RUN == null or classTrack(cls) >= float(CLASS_TRACK_MAX): return false
 	var c = classTrackCost(cls)
-	if float(RUN["credits"]) < c: return false
-	RUN["credits"] = float(RUN["credits"]) - c; changeFleet(_track_up.bind(cls)); return true
+	if not shopCan(c): return false
+	shopPay(c); changeFleet(_track_up.bind(cls)); return true
 # Issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]),
 # and a later gain on the same hull pays that back first, so taking a hull refit off and on again never adds hull.
 # Twin: core.js changeShip.
@@ -892,6 +892,15 @@ func hullKey() -> String: return "bio" if RUN != null and RUN.get("fac") == "cho
 func hullFunds() -> float: return float(z0(RUN.get(hullKey()))) if RUN != null else 0.0
 func hullPay(c) -> void: RUN[hullKey()] = hullFunds() - float(c)
 func hullWord() -> String: return "biomass" if hullKey() == "bio" else "credits"
+# issue 1484 (R382): the Chorus pay for refits, class refit tracks, protocol rerolls and the late market in biomass when it covers the
+# price, otherwise in credits. Every other fleet pays these in credits. One purse per purchase. Twin of core.js shopKey/shopCan/shopPay/shopWord.
+func shopKey(c) -> String: return "bio" if RUN != null and RUN.get("fac") == "chorus" and float(z0(RUN.get("bio"))) >= float(c) else "credits"
+func shopCan(c) -> bool: return RUN != null and float(z0(RUN.get(shopKey(c)))) >= float(c)
+func shopPay(c) -> void:
+	var k = shopKey(c); RUN[k] = float(z0(RUN.get(k))) - float(c)
+func shopWord(c) -> String:
+	if RUN == null or RUN.get("fac") != "chorus": return ""
+	return " biomass" if shopKey(c) == "bio" or float(z0(RUN.get("credits"))) < float(c) else " credits"
 func mkCost(s) -> float: return jsround((40.0 * float(HULLS[s["tpl"]]["cp"]) * float(s["mk"]) + 30.0) * priceMult())
 func addXp(ship, n) -> void:
 	var c = ship["cap"]; c["xp"] = float(c["xp"]) + jsround(float(n) * (1.0 + float(z0(runFx().get("xpPct")))))
@@ -2101,16 +2110,16 @@ func lateShopOffers() -> Array:
 	var rc = jsround(float(L["relic"]) * pm); var cc = jsround(float(L["cp"]) * pm); var out = []
 	for r in st["relics"]:
 		if L["skip"].has(r) and not st["bought"].has(r): continue   # issue 1290: an older save's yard stock never sells a skipped relic
-		out.append({"id": "relic:" + str(r), "kind": "relic", "r": r, "cost": rc, "value": 2, "ok": not st["bought"].has(r) and not RUN["relics"].has(r) and float(RUN["credits"]) >= rc, "done": st["bought"].has(r)})
+		out.append({"id": "relic:" + str(r), "kind": "relic", "r": r, "cost": rc, "value": 2, "ok": not st["bought"].has(r) and not RUN["relics"].has(r) and shopCan(rc), "done": st["bought"].has(r)})
 	var lc = float(z0(RUN.get("lateCp")))
-	out.append({"id": "cp", "kind": "cp", "cost": cc, "value": 1, "ok": not jt(st["cp"]) and lc < float(L["cpMax"]) and float(RUN["credits"]) >= cc, "done": jt(st["cp"]), "full": lc >= float(L["cpMax"])})
+	out.append({"id": "cp", "kind": "cp", "cost": cc, "value": 1, "ok": not jt(st["cp"]) and lc < float(L["cpMax"]) and shopCan(cc), "done": jt(st["cp"]), "full": lc >= float(L["cpMax"])})
 	return out
 func ACT_lateBuy(id: String) -> void:
 	var o = null
 	for x in lateShopOffers():
 		if x["id"] == id: o = x
 	if o == null or not o["ok"]: return
-	var st = yard_node["stock"]["late"]; RUN["credits"] = float(RUN["credits"]) - float(o["cost"])
+	var st = yard_node["stock"]["late"]; shopPay(o["cost"])
 	if o["kind"] == "relic":
 		st["bought"].append(o["r"]); changeFleet(func(): RUN["relics"].append(o["r"]))
 		toast(relicName(o["r"]) + " is yours. " + str(RELICS[o["r"]]["d"]))
@@ -2161,9 +2170,9 @@ func shipyardScreen(n) -> void:
 		var ct = HULLS[h]; var ccost = capturedHullPrice(ct); var cfits = cp + float(ct["cp"]) <= float(RUN["cpCap"])
 		A(acts, "buyHull", h, hullFunds() >= ccost and cfits)
 	for i in range(st["mods"].size()):
-		if not _has_num(st["sold"], i): A(acts, "buyMod", i, float(RUN["credits"]) >= jsround(float(MODULES[st["mods"][i]]["cost"]) * pm))
+		if not _has_num(st["sold"], i): A(acts, "buyMod", i, shopCan(jsround(float(MODULES[st["mods"][i]]["cost"]) * pm)))
 	for cls in fleetClasses():
-		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
+		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and shopCan(classTrackCost(cls)))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
 	if n.get("id") != null: RUN["inYard"] = n["id"]
 	else: RUN.erase("inYard")
@@ -2197,8 +2206,8 @@ func ACT_buyMod(a: String) -> void:
 	var i = int(a); var st = yard_node["stock"]
 	if i < 0 or i >= st["mods"].size(): return   # issue 1556: bounds first
 	var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
-	if _has_num(st["sold"], i) or float(RUN["credits"]) < cost: return
-	RUN["credits"] = float(RUN["credits"]) - cost
+	if _has_num(st["sold"], i) or not shopCan(cost): return
+	shopPay(cost)
 	tel("shop", {"k": "mod", "id": m, "cost": cost})
 	st["sold"].append(i); RUN["inventory"].append(m); toast(modName(m) + " is in the hold. Fit it from Refits."); shipyardScreen(yard_node)
 func ACT_repair(uid: String) -> void:
@@ -3596,7 +3605,7 @@ func boonDeclineCred() -> float: return 30.0 + 10.0 * float(or_(RUN.get("sector"
 func boonRerollCost() -> float: return 25.0 + 15.0 * float(z0(RUN.get("boonRerolls") if RUN != null else null))
 # R1 (RWD-6): no reroll (and no charge) when the core has nothing beyond what is already on offer
 func boonRerollOk(p = null, minR = null) -> bool:
-	if not (RUN != null and RUN.get("reward") != null and not jt(RUN["reward"].get("rerolled")) and float(RUN["credits"]) >= boonRerollCost()): return false
+	if not (RUN != null and RUN.get("reward") != null and not jt(RUN["reward"].get("rerolled")) and shopCan(boonRerollCost())): return false
 	if p == null: return true
 	var cur = _offer_ids(or_(RUN["reward"].get("boonOffer"), []))
 	return boonOfferCan(p, minR).any(func(id): return not cur.has(id))
@@ -3610,7 +3619,7 @@ func _all_old(off: Array, old: Array) -> bool:
 	return true
 func boonReroll(p, minR) -> Variant:
 	if not boonRerollOk(p, minR): return null
-	RUN["credits"] = float(RUN["credits"]) - boonRerollCost(); RUN["boonRerolls"] = float(z0(RUN.get("boonRerolls"))) + 1; RUN["reward"]["rerolled"] = true
+	shopPay(boonRerollCost()); RUN["boonRerolls"] = float(z0(RUN.get("boonRerolls"))) + 1; RUN["reward"]["rerolled"] = true
 	var old = _offer_ids(or_(RUN["reward"].get("boonOffer"), []))
 	var off = rollBoonOffer(p, minR)
 	var k = 0
