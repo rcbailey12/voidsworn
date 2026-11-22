@@ -549,6 +549,8 @@ func _toggle(t: String, key: String) -> Control:
 
 
 func _choice(t: String, key: String, opts: Array) -> Control:
+	if not main.settings.has(key):
+		main.settings[key] = opts[0][0]   # a settings file from before this row reads as the list's first value
 	var label_of := func() -> String:
 		for o in opts:
 			if str(o[0]) == str(main.settings[key]):
