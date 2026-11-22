@@ -189,6 +189,24 @@ if mode != 'missing' or 'credits' not in shot.name:
     print('PASS Windows playtest prepare and five capture exit checks, including missing and stale evidence')
 
 
+# The scene the native Godot check runs. Issue 1739: it called save_jpg(image, path) after issue 1567 made quality and stage
+# required, so Godot failed to parse it and sat idle until the timeout, and only on Windows, where the check runs. The
+# stage sweep below now reads this text too, on every host.
+NATIVE_TEST_GD = '''extends Node
+func _ready() -> void:
+    var out := OS.get_cmdline_user_args()[0]
+    var image := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
+    image.fill(Color(0.1, 0.2, 0.3, 0.0))
+    image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
+    var stamp := preload("res://tools/picture_provenance.gd")
+    if stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof") != OK:
+        return
+    if stamp.save_jpg(image, out.path_join("NATIVE_889.jpg"), 0.9, "paint proof") != OK:
+        return
+    get_tree().quit(0)
+'''
+
+
 def native_outputs(folder, godot):
     build = folder / 'archive build'
     project = build / 'godot'
@@ -206,19 +224,7 @@ renderer/rendering_method="gl_compatibility"
 [node name="PictureStampTest" type="Node"]
 script = ExtResource("1")
 ''')
-    (project / 'test.gd').write_text('''extends Node
-func _ready() -> void:
-    var out := OS.get_cmdline_user_args()[0]
-    var image := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
-    image.fill(Color(0.1, 0.2, 0.3, 0.0))
-    image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
-    var stamp := preload("res://tools/picture_provenance.gd")
-    if stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof") != OK:
-        return
-    if stamp.save_jpg(image, out.path_join("NATIVE_889.jpg")) != OK:
-        return
-    get_tree().quit(0)
-''')
+    (project / 'test.gd').write_text(NATIVE_TEST_GD)
     env = dict(os.environ)
     for key in ('PICTURE_SOURCE_REPO', 'PICTURE_STAMP_TOOL', 'PICTURE_PYTHON'):
         env.pop(key, None)
@@ -429,13 +435,20 @@ def stage_unnamed_saves():
     for rel in files:
         if rel == 'godot/tools/picture_provenance.gd' or rel.startswith('docs/archive/'):
             continue
-        text = (ROOT / rel).read_text(encoding='utf-8-sig')
-        aliases = re.findall(r'(?:const|var)\s+([A-Za-z_]\w*)\s*:?=?\s*(?:pre)?load\("res://tools/picture_provenance\.gd"\)', text)
-        receiver = r'(?:(?:pre)?load\("res://tools/picture_provenance\.gd"\)' + ''.join('|' + re.escape(a) + r'\b' for a in aliases) + ')'
-        for m in re.finditer(receiver + r'\s*\.\s*save_(png|jpg)\s*\(', text):
-            if len(_call_args(text, m.end())) < (3 if m.group(1) == 'png' else 4):
-                missing.append(rel + ':' + str(text.count('\n', 0, m.start()) + 1))
+        missing += [rel + ':' + str(n) for n in unnamed_saves_in(ROOT.joinpath(rel).read_text(encoding='utf-8-sig'))]
+    missing += ['NATIVE_TEST_GD:' + str(n) for n in unnamed_saves_in(NATIVE_TEST_GD)]
     return missing
+
+
+def unnamed_saves_in(text):
+    # line numbers of shared writer calls in this GDScript text that do not pass every required argument
+    found = []
+    aliases = re.findall(r'(?:const|var)\s+([A-Za-z_]\w*)\s*:?=?\s*(?:pre)?load\("res://tools/picture_provenance\.gd"\)', text)
+    receiver = r'(?:(?:pre)?load\("res://tools/picture_provenance\.gd"\)' + ''.join('|' + re.escape(a) + r'\b' for a in aliases) + ')'
+    for m in re.finditer(receiver + r'\s*\.\s*save_(png|jpg)\s*\(', text):
+        if len(_call_args(text, m.end())) < (3 if m.group(1) == 'png' else 4):
+            found.append(text.count('\n', 0, m.start()) + 1)
+    return found
 
 
 def checks(folder):
