@@ -2747,22 +2747,37 @@ func _kill_skip() -> void:
 	_kill_let_go()
 
 
-# issue 1586: walks a batch's events in order: a new action ends the last one's marks; a ram marks both ships, a boarding
-# scuttle its target; a death of a marked ship takes the mark. Returns dying unit id -> "ram" | "board".
+# issue 1586: walks a batch's events in order. A ram marks both ships, a boarding scuttle its target, each with the two
+# ships of that action. A death of a marked ship takes the mark only when the death's killer ("by") is one of those two.
+# A new turn (activation, round, tick, command, order) ends every mark; any other action ends the marks of the ships that
+# act in it, so a ram both ships survived cannot colour a later kill by one of them. Actions by other ships (a Rolling
+# Fire shot or a Brood Tithe wing that the kill itself sets off before its death event: Codex review of PR 1666) leave
+# the marks alone. Returns dying unit id -> "ram" | "board".
+const VIEW_CAUSE_TURN := ["activation", "round", "tick", "command", "order"]
 static func view_causes(evs: Array) -> Dictionary:
-	var marks := {}
+	var marks := {}   # unit id -> [look, [the two ships]]
 	var out := {}
 	for e in evs:
 		var kind := str(e.get("t", ""))
-		if kind in VIEW_CAUSE_ACTIONS:
+		var who := str(e.get("unit", ""))
+		if kind in VIEW_CAUSE_TURN:
 			marks.clear()
+		elif kind in VIEW_CAUSE_ACTIONS:
+			for id in marks.keys():
+				if who in (marks[id][1] as Array):
+					marks.erase(id)
+		var pair := [who, str(e.get("target", ""))]
 		if kind == "ram":
-			marks[str(e.get("target", ""))] = "ram"
-			marks[str(e.get("unit", ""))] = "ram"
+			marks[pair[1]] = ["ram", pair]
+			marks[pair[0]] = ["ram_prow", pair]   # the rammer: its crush is at its own prow
 		elif kind == "board" and str(e.get("result", "")) == "scuttle":
-			marks[str(e.get("target", ""))] = "board"
-		elif kind == "death" and marks.has(str(e.get("unit", ""))):
-			out[str(e.get("unit", ""))] = marks[str(e.get("unit", ""))]
+			marks[pair[1]] = ["board", pair]
+		elif kind == "death" and marks.has(who):
+			var m: Array = marks[who]
+			var by := str(e.get("by", "")) if e.get("by") != null else ""
+			if by == "" or by in (m[1] as Array):
+				out[who] = m[0]
+			marks.erase(who)
 	return out
 
 
@@ -2770,7 +2785,10 @@ static func view_causes(evs: Array) -> Dictionary:
 func view_cause(cause: String, id: String) -> String:
 	var v := str(_view_cause.get(id, ""))
 	_view_cause.erase(id)
-	if v == "ram" and cause == "big":
+	if v.begins_with("ram") and cause == "big":
+		if v == "ram_prow" and gfx != null and gfx.has_method("ship"):
+			var fs = gfx.ship(id)
+			if fs != null: fs.set_meta("death_ram_prow", true)   # fx_death_beats._ram puts the crush at the prow
 		return "ram"
 	if v == "board" and cause == "dark":
 		return "board"

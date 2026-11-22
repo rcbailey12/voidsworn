@@ -660,7 +660,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		# the archetypes ignores it
 		if row.has("arch") and fx.ship("T") != null:
 			fx.ship("T").set_meta("death_arch_force", int(row["arch"]))
+		# and may put the Hollow Sun's well near the target ("well": [dx, dy, dz] from the target) for a tidal kill;
+		# a strike craft target is a "Squadron" class (fx treats that class as a wing)
+		if row.has("well"):
+			var wv: Array = row["well"]
+			fx.well = T.global_position + Vector3(float(wv[0]), float(wv[1]), float(wv[2]))
 		fx.death("T", str(row.get("cause", "blast")))
+		if row.has("well"):
+			fx.later(fx.now + 8.0, func l_well_off() -> void: fx.well = Vector3.INF)
 		if death_audio != null:
 			death_audio.watch("T", T.global_position)
 	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull

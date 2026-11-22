@@ -46,13 +46,19 @@ func _run() -> void:
 		res[fac] = await _kill(fac, "Cruiser", 1.0, "blast", 12.0)
 	check(_has(res["voidsworn"]["beats"], "embers"), "voidsworn: ember ticks on the hot seams")
 	check(_has(res["hegemony"]["beats"], "blackout"), "hegemony: blackout")
-	check(res["hegemony"]["lit_before"] and res["hegemony"]["dark_after"], "hegemony: every light on through the tell, all off on the split frame (%s, %s)" % [res["hegemony"]["lit_before"], res["hegemony"]["dark_after"]])
+	check(res["hegemony"]["lit_before"] and res["hegemony"]["dark_after"] and int(res["hegemony"]["power_mats"]) >= 2, "hegemony: every light on through the tell, all %d surfaces off on one frame (%s, %s)" % [int(res["hegemony"]["power_mats"]), res["hegemony"]["lit_before"], res["hegemony"]["dark_after"]])
 	check(_has(res["corsair"]["beats"], "tether") and _has(res["corsair"]["beats"], "tether_snap"), "corsair: the tether holds, then snaps")
 	check(_count(res["corsair"]["beats"], "cookoff") == 2, "corsair: two late cook-offs (%d)" % _count(res["corsair"]["beats"], "cookoff"))
 	check(res["hegemony"]["strain_runs"], "hegemony: the plating strain keeps its clock through the blackout tell (Neon on PR 1666)")
 	check(_has(res["ithar"]["beats"], "web") and _has(res["ithar"]["beats"], "shafts"), "ithar: fracture web in the tell and light shafts at the split")
+	# Codex on PR 1666: the ribbons themselves, not only the markers: the white web lines before the split, the prism
+	# shafts just after it
+	check(int(res["ithar"]["web_ribs"]) >= 5, "ithar: %d white fracture lines drawn before the split" % int(res["ithar"]["web_ribs"]))
+	check(int(res["ithar"]["shaft_ribs"]) >= 4, "ithar: %d prism shafts drawn at the split" % int(res["ithar"]["shaft_ribs"]))
+	check(int(res["voidsworn"]["web_ribs"]) == 0 and int(res["voidsworn"]["shaft_ribs"]) == 0, "voidsworn: no Glasswright web or shafts")
 	check(_has(res["deathless"]["beats"], "implode"), "deathless: the core snaps inward")
-	check(_count(res["chorus"]["beats"], "twitch") == 1, "chorus: post-break twitches")
+	check(_count(res["chorus"]["beats"], "twitch") >= 1 and _count(res["chorus"]["beats"], "twitch_step") >= 16, "chorus: two or three eased twitches really turn the pieces (%d steps)" % _count(res["chorus"]["beats"], "twitch_step"))
+	check(int(res["ithar"]["smoke"]) == 0, "ithar: no smoke or vapour from the beats (clean collapse; %d)" % int(res["ithar"]["smoke"]))
 	for fac in res:
 		check(bool(res[fac]["dimmed"]) == (fac == "deathless"), "%s: scene dim only for Eclipse (%s)" % [fac, res[fac]["dimmed"]])
 		if fac != "chorus":
@@ -75,6 +81,19 @@ func _run() -> void:
 	var bd := await _kill("hegemony", "Cruiser", 1.0, "board", 4.0)
 	check(bd["hulk"] and _has(bd["beats"], "board") and _count(bd["beats"], "airlock") >= 2, "board: a dark hulk venting through its airlocks (%d)" % _count(bd["beats"], "airlock"))
 	check(not _has(bd["beats"], "blackout"), "board: no breaking blast beats")
+	# Chorus (Codex on PR 1666): a ram or the star's pull adds its cue to the rupture; a scuttle leaves a dead hulk
+	var cr := await _kill("chorus", "Cruiser", 1.0, "ram", 4.0, true)
+	check(_has(cr["beats"], "ram"), "chorus ram: the crush cue on the rupture (%s)" % str(cr["beats"]))
+	var ct := await _kill("chorus", "Cruiser", 1.0, "tidal", 3.0, false, Vector3(200, 0, 0))
+	check(_has(ct["beats"], "tidal"), "chorus tidal: the sunward flare on the rupture (%s)" % str(ct["beats"]))
+	var cb := await _kill("chorus", "Cruiser", 1.0, "board", 4.0)
+	check(cb["hulk"] and _has(cb["beats"], "board"), "chorus board: a dead hulk venting, no rupture (%s)" % str(cb["beats"]))
+	# the rammer's own recoil death puts the crush at its prow
+	var rp := await _kill("hegemony", "Cruiser", 1.0, "ram", 2.0, true, Vector3.INF, "k", false, false, -1, true)
+	check(_has(rp["beats"], "ram_prow"), "ram recoil: the rammer's crush is at its prow (%s)" % str(rp["beats"]))
+	# Glasswright flay: no vapour from the jets
+	var gf := await _kill("ithar", "Cruiser", 1.0, "flay", 4.0, true)
+	check(_has(gf["beats"], "flay") and int(gf["smoke"]) == 0, "ithar flay: glass glints, no vapour (%d smoke)" % int(gf["smoke"]))
 	# acid melt (R398, Neon on PR 1666): no faction beat, archetype, smoke or vapour on top of the melt
 	for fac in ["corsair", "voidsworn", "hegemony", "ithar"]:
 		var ml := await _kill(fac, "Cruiser", 1.0, "melt", 12.0)
@@ -123,16 +142,32 @@ func _run() -> void:
 	check(vc.get("b", "") == "ram", "battle: a ram kill plays the ram death (%s)" % str(vc))
 	# a ram both ships survive, then a volley (fire with its grouped hits, played through _play_fire) kills the rammer
 	vc = B.view_causes([{"t": "ram", "unit": "c", "target": "d"}, {"t": "fire", "unit": "e", "target": "c", "weapon": 0},
-		{"t": "hit", "unit": "e", "target": "c"}, {"t": "death", "unit": "c", "cause": "big"}])
+		{"t": "hit", "unit": "e", "target": "c"}, {"t": "death", "unit": "c", "cause": "big", "by": "e"}])
 	check(not vc.has("c") and not vc.has("d"), "battle: a volley kill of a ram survivor keeps its own death (%s)" % str(vc))
 	# the same, in the next batch: marks never carry over
 	vc = B.view_causes([{"t": "death", "unit": "c", "cause": "big"}])
 	check(vc.is_empty(), "battle: a later batch starts with no marks")
+	# Codex on PR 1666: the kill itself can set off another ship's action before its death event (Rolling Fire, a Brood
+	# Tithe wing); those keep the mark, a kill by a ram ship's own next shot does not
+	vc = B.view_causes([{"t": "ram", "unit": "a", "target": "b"}, {"t": "fire", "unit": "x", "target": "y", "weapon": 0},
+		{"t": "hit", "unit": "x", "target": "y"}, {"t": "death", "unit": "b", "cause": "big", "by": "a"},
+		{"t": "death", "unit": "a", "cause": "big", "by": "b"}])
+	check(vc.get("b", "") == "ram" and vc.get("a", "") == "ram_prow", "battle: a Rolling Fire shot set off by a ram kill keeps both ram deaths (%s)" % str(vc))
+	vc = B.view_causes([{"t": "board", "unit": "f", "target": "g", "result": "scuttle"}, {"t": "wing", "unit": "w1", "parent": "c"},
+		{"t": "wreck", "unit": "g"}, {"t": "death", "unit": "g", "cause": "dark", "by": "f"}])
+	check(vc.get("g", "") == "board", "battle: a Brood Tithe wing set off by a scuttle keeps the boarding death (%s)" % str(vc))
+	vc = B.view_causes([{"t": "ram", "unit": "c", "target": "d"}, {"t": "fire", "unit": "d", "target": "c", "weapon": 0},
+		{"t": "death", "unit": "c", "cause": "big", "by": "d"}])
+	check(vc.is_empty(), "battle: a rammed ship's own later shot that kills the rammer is a weapon death (%s)" % str(vc))
+	vc = B.view_causes([{"t": "ram", "unit": "c", "target": "d"}, {"t": "activation", "unit": "e", "side": "enemy"},
+		{"t": "death", "unit": "c", "cause": "big", "by": "c"}])
+	check(vc.is_empty(), "battle: a new activation ends the ram marks (%s)" % str(vc))
 	vc = B.view_causes([{"t": "board", "unit": "f", "target": "g", "result": "scuttle"}, {"t": "death", "unit": "g", "cause": "dark"},
 		{"t": "board", "unit": "f", "target": "h", "result": "raid"}, {"t": "death", "unit": "h", "cause": "dark"}])
 	check(vc.get("g", "") == "board" and not vc.has("h"), "battle: a scuttle plays the boarding death, a raid marks nothing (%s)" % str(vc))
 	var bt = B.new()
-	bt._view_cause = {"b": "ram", "g": "board"}
+	bt._view_cause = {"b": "ram", "g": "board", "a": "ram_prow"}
+	check(bt.view_cause("big", "a") == "ram", "battle: the rammer's mark plays the ram look too")
 	check(bt.view_cause("big", "b") == "ram", "battle: view_cause plays the ram look")
 	check(bt.view_cause("big", "b") == "big", "battle: the ram mark is used once")
 	check(bt.view_cause("flay", "g") == "flay", "battle: a boarding mark only turns a dark kill into the boarding death")
@@ -148,7 +183,7 @@ class _Probe:
 		id = i
 
 
-func _kill(fac: String, cls: String, size: float, cause: String, secs: float, shot := false, well := Vector3.INF, sid := "k", wing := false, calm := false, arch := -1) -> Dictionary:
+func _kill(fac: String, cls: String, size: float, cause: String, secs: float, shot := false, well := Vector3.INF, sid := "k", wing := false, calm := false, arch := -1, prow := false) -> Dictionary:
 	var world := Node3D.new()
 	root.add_child(world)
 	var cam := Camera3D.new()
@@ -165,16 +200,24 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	mi.mesh = box
 	mi.set_surface_override_material(0, StandardMaterial3D.new())
 	holder.add_child(mi)
+	var mi2 := MeshInstance3D.new()   # a second surface, so the blackout check sees two go dark together
+	mi2.mesh = box
+	mi2.position = Vector3(0, box.size.y * 0.9, 0)
+	mi2.scale = Vector3(0.5, 0.5, 0.5)
+	mi2.set_surface_override_material(0, StandardMaterial3D.new())
+	holder.add_child(mi2)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "high", "camera": cam, "shake": 0.0, "reduce_flashing": calm})
 	fx.dstate["physics_on"] = true
 	fx.spr_kinds = {}
+	fx.rib_log = []
 	fx.well = well
 	fx.add_ship(sid, holder, {"faction": fac, "cls": cls, "size": size, "squadron": wing})
 	var s = fx.ship(sid)
 	if arch >= 0: s.set_meta("death_arch_force", arch)
+	if prow: s.set_meta("death_ram_prow", true)
 	var t0 := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t0 < 60000 and not wing:
 		fx.step(1.0 / 60.0)
@@ -185,7 +228,7 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	var rib0: int = fx.pools["rib"].emitted
 	fx.death(sid, cause)
 	var T: float = fx.now
-	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
+	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "power_mats": 0, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
 	var spr0 := _kinds(fx)
 	var split_t := T + (float(s.get_meta("death_timeline").cut) if s.has_meta("death_timeline") else 0.72)
 	for i in int(secs * 60.0):
@@ -194,11 +237,17 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 		if fx.get("_dim_t0") != null and float(fx.get("_dim_t0")) >= 0.0: res["dimmed"] = true
 		if s.has_meta("death_blackout_at"):
 			var at: float = s.get_meta("death_blackout_at")
-			for m in s.get_meta("death_power", []):
+			var mats_now: Array = s.get_meta("death_power", [])
+			res["power_mats"] = maxi(int(res["power_mats"]), mats_now.size())
+			var all_dark := mats_now.size() > 0
+			for m in mats_now:
+				var pv = (m as ShaderMaterial).get_shader_parameter("fx_power")
+				if pv == null or float(pv) != 0.0: all_dark = false
+			if fx.now > at + 0.02 and all_dark: res["dark_after"] = true
+			for m in mats_now:
 				var pw = (m as ShaderMaterial).get_shader_parameter("fx_power")
 				var v := float(pw) if pw != null else 1.0
 				if fx.now < at - 0.02 and v < 1.0: res["lit_before"] = false
-				if fx.now > at + 0.02 and v == 0.0: res["dark_after"] = true
 				var da = (m as ShaderMaterial).get_shader_parameter("death_age")
 				if fx.now < at - 0.1 and da != null and float(da) > 0.3: res["strain_runs"] = true
 		if s.has_method("_update_trails") and "_trails" in s:
@@ -208,6 +257,14 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 					if float(hp[1]) > T + float(s._trail_extra) + 0.01: fresh += 1
 				res["trail_pts"] = maxi(int(res["trail_pts"]), fresh)
 	res["beats"] = BEATS.beats(s)
+	var web_c := Color(0.95, 0.97, 1.0)
+	var shaft_c := [Color(1.0, 0.75, 0.8), Color(0.75, 1.0, 0.85), Color(0.75, 0.82, 1.0), Color(1.0, 0.95, 0.75)]
+	res["web_ribs"] = 0
+	res["shaft_ribs"] = 0
+	for r in fx.rib_log:
+		var rt: float = float(r[0])
+		if (r[1] as Color).is_equal_approx(web_c) and rt < split_t: res["web_ribs"] += 1
+		if shaft_c.any(func(c): return (r[1] as Color).is_equal_approx(c)) and rt >= split_t - 0.05: res["shaft_ribs"] += 1
 	var spr1 := _kinds(fx)
 	res["smoke"] = int(spr1.get(3, 0)) - int(spr0.get(3, 0)) + int(spr1.get(7, 0)) - int(spr0.get(7, 0))
 	res["corridor_sprites"] = int(spr1.get(18, 0)) - int(spr0.get(18, 0))

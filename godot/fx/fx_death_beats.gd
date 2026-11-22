@@ -1,7 +1,7 @@
 extends RefCounted
 # Issue 1586 (Neon's Nov 21-22 death and hull FX audit): more death variety without per-ship bakes. A death is now
 # faction tell x kill cause x hull tier archetype x what stays after. fx_death.gd keeps the break itself; this file adds the
-# one-shot beats on top, all from the shared pools (fx.spr, fx.stk, fx.rib, fx.shd, fx.light) and spawn_debris, so no
+# one-shot beats on top, all from the shared pools (fx.spr, fx.stk, fx.rib, fx.shd, fx.light), so no
 # death adds a node, a material or a per-frame mesh. View only: the rules never see any of it.
 #
 #   kill cause (on the death frame, fx_death._death_inner and _hulk):
@@ -91,6 +91,15 @@ static func on_death(fx, s, cause: String, T: float, cut_at: float) -> void:
 		_blackout(s, T + maxf(cut_at - 0.05, 0.0))   # all dark a few frames before the pieces part
 
 
+# A Chorus rupture keeps its own approved look; a ram or the star's pull adds its cue on top (Codex review of PR 1666).
+static func cause_cues(fx, s, cause: String, T: float, cut_at: float) -> void:
+	if _death().melting(s):
+		return
+	match cause:
+		"ram": _ram(fx, s, T)
+		"tidal": _tidal(fx, s, T, cut_at)
+
+
 # Called by fx_death._hulk once the cold hulk exists (cause dark, hulk or board).
 static func on_hulk(fx, s, node: Node3D, cause: String) -> void:
 	var ref := weakref(node)
@@ -138,7 +147,7 @@ static func _jet(fx, s, lp: Vector3, dw: Vector3, glow: Color, entry: bool) -> v
 	var L: float = s.hull.L
 	var vap := glow.lerp(Color.WHITE, 0.6)
 	for j in 5:
-		fx.spr(p, fx.now + j * 0.03, 0.55, vap, 0.5, L * 0.006, L * 0.045, 7, fx.rcone(dw, 0.12) * L * (0.9 - j * 0.1), 2.2)
+		_wisp(fx, s, p, fx.now + j * 0.03, 0.55, vap, 0.5, L * 0.006, L * 0.045, fx.rcone(dw, 0.12) * L * (0.9 - j * 0.1), 2.2)
 	var spark: Color = _col(s, "spark", Color(1.0, 0.7, 0.4))
 	var away: Vector3 = -dw if entry else dw
 	for j in 8:
@@ -146,10 +155,27 @@ static func _jet(fx, s, lp: Vector3, dw: Vector3, glow: Color, entry: bool) -> v
 			fx.rcone(away, 0.5) * L * fx.rng.randf_range(0.5, 1.0), 1.2)
 
 
+# A vapour wisp (the smoke pool's kind 7), or on a Glasswright hull, which never smokes (clean collapse, Codex review of
+# PR 1666), a soft light glow and a few glass glints along the same line.
+static func _wisp(fx, s, p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, vel: Vector3, drag: float) -> void:
+	if s.faction != "ithar":
+		fx.spr(p, t, life, col, i, s0, s1, 7, vel, drag)
+		return
+	fx.spr(p, t, life * 0.6, Color(0.92, 0.96, 1.0), i * 0.8, s0, s1 * 0.5, 18, vel * 0.5, drag)
+	for k in 2:
+		fx.stk(p, t + k * 0.03, life * 0.5, Color(0.95, 0.98, 1.0), 2.0, 0.03, maxf(s1 * 0.05, 0.02), 1, vel + fx.rdir() * s1, drag)
+
+
 # a ram kill: the crush at the struck point throws metal sparks along the plating, and the pieces will spin off centre
 static func _ram(fx, s, T: float) -> void:
 	note(s, "ram")
 	var sh := _shot(fx, s)
+	if bool(s.get_meta("death_ram_prow", false)):
+		# the rammer dies of its own recoil: the crush is at its prow, never at some earlier hit (Codex review of PR 1666)
+		var h = s.hull
+		var pr: Dictionary = h.ray(h.c + Vector3(h.L, 0, 0), Vector3(-1, 0, 0))
+		sh = [pr.get("p", h.c + Vector3(h.L * 0.5, 0, 0)), Vector3(-1, 0, 0)]
+		note(s, "ram_prow")
 	var p: Vector3 = s.to_world(sh[0])
 	var dw: Vector3 = s.dir_world(sh[1])
 	var L: float = s.hull.L
@@ -193,7 +219,7 @@ static func _roll_vent(fx, s) -> void:
 	var p: Vector3 = xf * (s.hull.c + Vector3(0, 0, s.hull.W * 0.5))
 	var n: Vector3 = (xf.basis * Vector3(0, 0, 1)).normalized()
 	var glow: Color = s.fac.damage_glow
-	fx.spr(p, fx.now, 0.45, glow.lerp(Color.WHITE, 0.7), 0.6, s.hull.L * 0.02, s.hull.L * 0.12, 7, n * s.hull.L * 0.9, 2.0)
+	_wisp(fx, s, p, fx.now, 0.45, glow.lerp(Color.WHITE, 0.7), 0.6, s.hull.L * 0.02, s.hull.L * 0.12, n * s.hull.L * 0.9, 2.0)
 
 
 # The Glasswrights' white fracture web races across the panels through the tell (no fire, no smoke).
@@ -228,7 +254,7 @@ static func _airlock(fx, s, ref: WeakRef, j: int) -> void:
 	var p: Vector3 = node.global_transform * (hit["p"] as Vector3)
 	var n: Vector3 = (node.global_transform.basis * (hit["n"] as Vector3)).normalized()
 	for k in 4:
-		fx.spr(p, fx.now + k * 0.05, 1.1, Color(0.82, 0.86, 0.9), 0.45, h.L * 0.006, h.L * 0.05, 7, n * h.L * 0.35, 1.8)
+		_wisp(fx, s, p, fx.now + k * 0.05, 1.1, Color(0.82, 0.86, 0.9), 0.45, h.L * 0.006, h.L * 0.05, n * h.L * 0.35, 1.8)
 	note(s, "airlock")
 
 
@@ -287,7 +313,8 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 		var u := float(j) / 5.0
 		var a := u * TAU * 1.5
 		var q: Vector3 = p + fwd * L * 0.6 * u - up * L * 0.5 * u * u + (side * cos(a) + up * sin(a)) * L * 0.12
-		fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
+		if s.faction != "ithar":   # a Glasswright craft never smokes: the flecks alone
+			fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
 	var tint: Color = s.fac.damage_glow
 	for j in 2:
 		fx.shd(p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
@@ -338,8 +365,13 @@ static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
 	note(s, "roll_end")
 
 
+# Extra cosmetic shreds from the shared shard pool (fx.shd): no physics body, no new node, the same at every quality
+# (Codex review of PR 1666: physical debris could allocate bodies on the break frame and showed nothing on Low).
 static func spawn_shreds(fx, s, p: Vector3, vel: Vector3, n: int) -> void:
-	_death().spawn_debris(fx, p, vel + s.get_meta("death_velocity", Vector3.ZERO), n, s.hull.L * 0.02, 0.0, s.id)
+	var L: float = s.hull.L
+	var base: Vector3 = vel + s.get_meta("death_velocity", Vector3.ZERO)
+	for j in n:
+		fx.shd(p, fx.now, 2.4, base + fx.rdir() * L * fx.rng.randf_range(0.25, 0.6), L * fx.rng.randf_range(0.015, 0.03), 0.5, 3.0, 0.25, 0.5)
 	note(s, "shreds_%d" % n)
 
 
@@ -478,7 +510,9 @@ static func _twitch(fx, s, nodes: Array, T: float) -> void:
 				var w := smoothstep(0.0, 1.0, float(k + 1) / 8.0) - smoothstep(0.0, 1.0, float(k) / 8.0)
 				fx.later(fx.now + k * 0.032, func l_twitch_step() -> void:
 					var nd2 := ref.get_ref() as Node3D
-					if is_instance_valid(nd2): nd2.rotate(axis, 0.07 * w))
+					if is_instance_valid(nd2):
+						nd2.rotate(axis, 0.07 * w)
+						note(s, "twitch_step"))
 			fx.spr(nd.global_position, fx.now, 1.6, s.fac.damage_glow * Color(0.4, 0.5, 0.3), 0.3, s.hull.L * 0.02, s.hull.L * 0.1, 20, Vector3.UP * s.hull.L * 0.04, 0.6))
 
 
@@ -502,7 +536,7 @@ static func _afterlife(fx, s, nodes: Array, T: float) -> void:
 				for k in 3:
 					fx.stk(p, fx.now + k * 0.04, 0.35, glow, 2.0, 0.02, maxf(L * 0.002, 0.02), 1, fx.rdir() * L * 0.06, 1.5)
 			else:
-				fx.spr(p, fx.now, 0.9, glow.lerp(Color.WHITE, 0.6), 0.22, L * 0.004, L * 0.025, 7, Vector3.UP * L * 0.04, 1.0)
+				_wisp(fx, s, p, fx.now, 0.9, glow.lerp(Color.WHITE, 0.6), 0.22, L * 0.004, L * 0.025, Vector3.UP * L * 0.04, 1.0)
 			note(s, "after"))
 	note(s, "after_%d" % n)
 

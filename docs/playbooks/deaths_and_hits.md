@@ -220,10 +220,16 @@ What killed it, and small hulls (issue 1586, Check: godot/fx/test/death_variety_
 metal crush sparks and spins its pieces hard off centre (the battle picks "ram" from the ram event, so the rules keep "big",
 R312); a boarding scuttle leaves a dark hulk venting through its airlocks ("board", picked the same way from "dark"); the
 Hollow Sun's pull flares the sunward edge white-gold and draws spall toward the star; a burnout's corridor lights stutter
-out over about 2 s, an emergency beacon blinks and the hulk drifts with a slow pitch and roll. Frigates and destroyers die
-one of four ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
+out over about 2 s, an emergency beacon blinks and the hulk drifts with a slow pitch and roll. A Chorus hull keeps its
+rupture and adds only the ram or tidal cue; a scuttled Chorus hull is a dead hulk like any other. The battle hands "ram" and
+"board" to a death only when the killer is one of the two ships of that ram or boarding; an action by another ship that
+the kill itself sets off (Rolling Fire, a Brood Tithe wing) keeps the mark, a new turn or a later action by either ship
+ends it. Frigates and destroyers that break (not a burnout or scuttle hulk, not Chorus, not an acid melt) die one of four
+ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
 burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s smoky corkscrew and two
-faction flecks. A big wreck gives 2 or 3 quiet ember or vent pops in the 10 s after it breaks.
+faction flecks. A big breaking wreck (not Chorus, not a hulk, not an acid melt) gives 2 or 3 quiet ember or vent pops in
+the 10 s after it breaks. Glasswright hulls never smoke: their vents, flay jets and afterlife wisps are soft light and
+glass glints. The extra shreds are cosmetic shards from the shared pool (no physics bodies), the same at every quality.
 Limits (Neon's audit on PR 1666): an acid melt adds none of these beats (R398: no faction tell, archetype, smoke or vapour);
 the Navy blackout drives the lights only, so the plating strain keeps its clock; the rolling burnout ends in a small spark
 burst, never the core fireball or a smoke body; under Reduced Flashing the corridor lights hold and fade once and the beacon

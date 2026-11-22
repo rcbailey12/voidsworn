@@ -2261,8 +2261,9 @@ static func _death_inner(fx, s, cause: String) -> float:
 		# The tell starts inside the ship: the drive flares about a third brighter for two frames, then goes black.
 		s._eng_cur = maxf(s._eng_cur, 1.0) * 1.33
 		s.set_meta("death_flare_until", T + 2.0 / 60.0)
-	if s.faction == "chorus":
-		# The skin ruptures under pressure and spills real hull fragments and spores.
+	if s.faction == "chorus" and cause != "board":
+		# The skin ruptures under pressure and spills real hull fragments and spores. (issue 1586: a boarding scuttle
+		# leaves a dead hulk instead, as for every faction: Codex review of PR 1666)
 		s.set_meta("death_organic", true)
 		s.set_meta("death_hulk", false)
 		s.set_meta("death_spore_next", T)
@@ -2272,6 +2273,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		if not s.death_big:
 			s.set_meta("death_split", T + 0.35)
 			fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
+			BEATS.cause_cues(fx, s, cause, T, 0.35)   # issue 1586: a ram or the star's pull still shows on the rupture
 			return 0.95
 		# Issue 1238 (F5.1): a Chorus cruiser, capital or Bio-Titan swells and bleeds spores for its class's length before
 		# the skin gives, so it no longer pops like a drone; its timeline also gives it the kill slow-motion beat (fx.death).
@@ -2279,6 +2281,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		s.set_meta("death_timeline", otl)
 		s.set_meta("death_split", T + otl.cut)
 		fx.later(T + otl.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + otl.cut + 2.5))
+		BEATS.cause_cues(fx, s, cause, T, otl.cut)
 		return otl.end
 	# Explicit burn-outs retain their cold hulk. Ordinary kills always break up.
 	# issue 1586: a scuttled hull (boarding, the battle's view cause "board") also stays a dark hulk, never a reactor blast

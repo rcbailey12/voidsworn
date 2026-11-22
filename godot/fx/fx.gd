@@ -719,6 +719,7 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 
 # The sprite itself, after the flash decision. Pop and shield crackle book their own pictures.
 var spr_kinds = null   # checks only (issue 1586): a Dictionary here counts every sprite emitted, by kind
+var rib_log = null     # checks only (issue 1586): an Array here logs every ribbon emitted as [start time, colour]
 
 
 func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
@@ -763,6 +764,8 @@ func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s
 
 
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
+	if rib_log != null:
+		rib_log.append([t, col])
 	var pool: POOLS.Pool = pools["arc"] if kind == 10 else pools["rib"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
 		Vector4(col.r, col.g, col.b, i), Vector4(w0 * unit, w1 * unit, rng.randf(), 0.0), Vector4(t, life, 0.0, 0.0)))
