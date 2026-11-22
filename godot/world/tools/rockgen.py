@@ -7,7 +7,8 @@ Shapes follow real small bodies rather than lumpy potatoes:
   binary    contact binaries (Itokawa, Arrokoth, comet 67P): two lobes joined by a neck
   slab      flat broken plates
   shard     ice shards: long prisms with sharp cuts
-plus crystal clusters (hexagonal prisms with pointed tips) for crystal fields.
+plus crystal clusters (hexagonal prisms with pointed tips) for crystal fields. Issue 1361: the shipped crystal_00..03 come
+from crystal_kit.py (Blender); a rerun of this script must not overwrite them or the rocks.json crystals list.
 
 Each body is a radial surface on a fine icosphere (10,242 points): an ellipsoid (or two lobes), large-scale warping,
 fracture planes (smooth-min cuts), ridges, a power-law crater population with bowls and raised rims, boulders, and fine

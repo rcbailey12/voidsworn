@@ -14,13 +14,13 @@
           "file": "scan_00.glb",
           "triangles": 97964,
           "vertices": 53437,
-          "sha256": "dcf5bb6a44678dc4a3441158683d8cb9d097aa6d3816d83d93d66eb63ce119c8"
+          "sha256": "5bc300e8901d6e0e6ccb296236d7c9d3856c0e2a63cdcf400cdf5a91be4266e9"
         },
         {
           "file": "scan_00_lo.glb",
           "triangles": 2081,
           "vertices": 898,
-          "sha256": "40300e9aed9c4cc9e2dfe64cff15d3636c73de2a19adb352690c4791461ddde1"
+          "sha256": "268a9e0d7cc13aea4a1bf4a0d940199f3975360b34597694d4602cf1ad323353"
         }
       ]
     },
@@ -38,13 +38,13 @@
           "file": "scan_01.glb",
           "triangles": 64826,
           "vertices": 33166,
-          "sha256": "60bd3d7ae96d5c20c281d8233491faff730c81d2ab0f7e5ced1b11ead5f5a3e6"
+          "sha256": "00c4e8beff63301a5668924423af55aeea19dbaf0dbe6b2f8aae2997d9bdaf63"
         },
         {
           "file": "scan_01_lo.glb",
           "triangles": 2818,
           "vertices": 1301,
-          "sha256": "0f95569c35e6370336e61d526c936291802f969578c02115805230e9cd879264"
+          "sha256": "1af16b7e1c09b9c4de0cb893b9d8ae0c8d582d8a250c2cac6db77b4e21e7694b"
         }
       ]
     },
@@ -62,13 +62,13 @@
           "file": "scan_02.glb",
           "triangles": 59066,
           "vertices": 30165,
-          "sha256": "4d362ba9caa1b9a1c381dc2daae5bc04bbd817fdf733694bd3941c5b97b057a9"
+          "sha256": "f21f2a6a98e9c8cf77f14228099c41a7a1256032a64b1ab32ef085ad89bbd8d5"
         },
         {
           "file": "scan_02_lo.glb",
           "triangles": 2876,
           "vertices": 1318,
-          "sha256": "037350d37fb1e875289ce65e1b2fbe44436c164b7f72179e6f8e368a4bc2a7d8"
+          "sha256": "607045b1eb4376d35c1256aa4b8103a3f8e377750a5e2d91790da7a0615e9604"
         }
       ]
     },
@@ -86,13 +86,13 @@
           "file": "scan_03.glb",
           "triangles": 89618,
           "vertices": 46185,
-          "sha256": "cbc9564d922400d7bb3f396a26d89d172371f4ae3a6dffdba873acd5e6ef3d99"
+          "sha256": "b0288c5082708ba1398eb8b9f575427b4a78b73f934e6f3a704a021c79da84f8"
         },
         {
           "file": "scan_03_lo.glb",
           "triangles": 2436,
           "vertices": 1088,
-          "sha256": "add0a87c78c3670282f568ed4c1c8ccedcb68c3b4eddcfd5bdb42aa3b9437880"
+          "sha256": "426c69ab4ef2c799625eb384a85c40397d3b46d72bf7d2d65bd06843987f9d28"
         }
       ]
     },
@@ -110,13 +110,13 @@
           "file": "scan_04.glb",
           "triangles": 109114,
           "vertices": 56521,
-          "sha256": "af8a0ec0c28ccbacaf255bf1e2d515f80b91eb1b8aaa91ebe37d07eb6bb5757a"
+          "sha256": "c8e55dd7a555025410d0543918e1d376126b6ae82abf9d391d74799371264da4"
         },
         {
           "file": "scan_04_lo.glb",
           "triangles": 2994,
           "vertices": 1345,
-          "sha256": "c919f4d14feb36898b0f45da9b9a87eee1b84f4465cb069ed4a306aae6462a8f"
+          "sha256": "7abd51f8bf6cee8c028ea5f327fa1f152d9c42313b949e50d797cbe60d97a58d"
         }
       ]
     },
@@ -134,65 +134,30 @@
           "file": "scan_05.glb",
           "triangles": 66122,
           "vertices": 67042,
-          "sha256": "265ed3127bec12c43d41ed3554dead970e2391a7cc018f2ac4c927230fd79cc7"
+          "sha256": "b4bc87457df79bd081fc58f1703ea23dfda456e1a34fe0a25e9304e92eec0860"
         },
         {
           "file": "scan_05_lo.glb",
           "triangles": 2962,
           "vertices": 1264,
-          "sha256": "345b0f50426d7b92ab8cfb0f42b202578177e446595e78a17e41594f7a61e98d"
-        }
-      ]
-    },
-    {
-      "name": "scan_06",
-      "source": "rock_07",
-      "family": "scan",
-      "ext": [
-        0.9690645337104797,
-        0.8246833682060242,
-        1.8377875089645386
-      ],
-      "files": [
-        {
-          "file": "scan_06.glb",
-          "triangles": 14844,
-          "vertices": 7914,
-          "sha256": "0fa332fd2fac166b6a13791aeeb63a7e5e40d8d9e1d917d7a1cd7fc1191403c4"
-        },
-        {
-          "file": "scan_06_lo.glb",
-          "triangles": 2254,
-          "vertices": 1068,
-          "sha256": "1adb418d9f1c0afe0de179ddd8c732021c0343319ee1a1a4d723c32f887a3828"
-        }
-      ]
-    },
-    {
-      "name": "scan_07",
-      "source": "rock_09",
-      "family": "scan",
-      "ext": [
-        0.9745185971260071,
-        0.43280524015426636,
-        1.904331088066101
-      ],
-      "files": [
-        {
-          "file": "scan_07.glb",
-          "triangles": 12416,
-          "vertices": 6628,
-          "sha256": "9bf20c8187b1d364b8fe30642c928706d334dcaf7cd9bb1b9d182d269d70b2ee"
-        },
-        {
-          "file": "scan_07_lo.glb",
-          "triangles": 1668,
-          "vertices": 754,
-          "sha256": "cb2c8f95c822e9df2e162a22f588a0bd8ad50923853974ce9c6cc020ad51b957"
+          "sha256": "a8d4481d339b9ef40e6151c5e1b2923f86569c9bd8d823e98c4d0aff48594a26"
         }
       ]
     }
   ],
   "source_receipt": "SOURCES_369.json",
-  "script": "tools/pc/jobs/planet369_remix.py"
+  "script": "tools/pc/jobs/planet369_remix.py",
+  "retired": [
+    {
+      "name": "scan_06",
+      "source": "rock_07",
+      "why": "issue 1361 (R419): 6x to 9x fewer triangles than scan_00..05; scan_07 a flat boomerang. Files removed."
+    },
+    {
+      "name": "scan_07",
+      "source": "rock_09",
+      "why": "issue 1361 (R419): 6x to 9x fewer triangles than scan_00..05; scan_07 a flat boomerang. Files removed."
+    }
+  ],
+  "facet": "COLOR_0.b re-baked as ranked ridge convexity by godot/world/tools/scan_facet.py (issue 1361)"
 }
