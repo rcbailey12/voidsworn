@@ -57,7 +57,8 @@ assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*c
 assert(/shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied\.txt" "%LB_SHIPS%"/.test(ships) && ships.indexOf('shiprecord') > ships.indexOf('shipcheck "%OJ_REPO%"'), 'the ships step records what it copied, after the cache check (issue 1497)');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 // Issue 1396 (Board, Nov 22): the tail starts the relay waiter hidden, after the result, only with the drop step on.
-assert(/if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*Start-Process -WindowStyle Hidden [^\n]*dropwait [^\n]*\$env:OJ_PS, \$env:OJ_OUT/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'the tail starts the relay waiter after its own drop step');
+assert(/if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\nset "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*\$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden [^\n]*dropwait' -f \$env:OJ_PS\)"/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'the tail starts the relay waiter after its own drop step, the attempt in its environment, not on its command line');
+assert(/if defined OJ_WAIT if errorlevel 1 \([^\n]*could not be started[^\n]*\) else \([^\n]*hidden waiter clears them/.test(tail) && !/-RedirectStandard/.test(tail), 'a failed launch is logged as one, and the start is never redirected (review of PR 1644)');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
 // ---------------------------------------------------------------- static contract: the template
@@ -87,7 +88,7 @@ const drop = psCode.slice(psCode.indexOf("'dropcheckouts' {"), psCode.indexOf("'
 const dropFn = psCode.slice(psCode.indexOf('function Drop-Attempt'), psCode.indexOf('function Get-AttemptState'));
 assert(/HEAD is no longer the pin[\s\S]*Get-KeptWork \$repo[\s\S]*Test-Paused[\s\S]*Save-Leftovers \$repo[\s\S]*Remove-Owned \$repo/.test(dropFn), 'a checkout goes only after its pin, its working files and the pause are checked, and its work is saved');
 assert(/function Remove-Owned\(\$path, \[switch\]\$InPlace, \[string\]\$Commit = ''\) \{\n(\s*#[^\n]*\n)*\s*if \(Test-Paused\)[^\n]*\n/.test(walk), 'every removal checks the pause first');
-assert(/Get-AttemptProblem \$attempt[\s\S]*Drop-Attempt \$attempt[\s\S]*Drop-Attempt \$sib\.FullName/.test(drop), 'the step covers this attempt and the earlier ones of the same job');
+assert(/Get-AttemptProblem \$attempt[\s\S]*Drop-Attempt \$attempt/.test(drop) && !/\$sib/.test(drop), 'the step covers this attempt only; earlier ones go through their waiter or the janitor (review of PR 1644)');
 assert(/\$state -ne 'PASS'[\s\S]*Assert-Relayed \$attempt[\s\S]*HEAD is no longer the pin[\s\S]*Assert-Rebuildable \$repo[\s\S]*Get-KeptWork/.test(dropFn), 'only a passed and relayed attempt, then pin, branches and stash, then the files (Artoo on PR 1498)');
 assert(/\$code\[0\] -ne ' '[^\n]*staged: /.test(psCode), 'a staged change is listed as staged, which Save-Leftovers refuses');
 assert(/Assert-Relayed \(Join-Path \$jobDir 'out'\)[\s\S]*Get-KeptWork \$repo \$null/.test(psCode.slice(psCode.indexOf("'droprepo' {"))), 'the publish removes the clone only after the relay');
@@ -352,7 +353,7 @@ const other = relay([[path.join(attempt, 'out_new'), 'opus9999/out_9/out_new']])
 r = run('dropcheckouts', attempt, other, 'out_1');
 assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-t\d+:out_1: out_new\/\S+ is not on the relay/.test(r.out), 'identical bytes under another folder keep the checkouts: ' + r.out);
 assert.notEqual(run('dropcheckouts', attempt, 'main', 'out_1').out.match(/relay receipt not accepted/), null, 'a receipt must name a board/pc-out branch');
-assert(!fs.existsSync(path.join(passedBefore, 'new')), 'an earlier passed and relayed attempt is cleared: ' + r.out);
+assert(fs.existsSync(path.join(passedBefore, 'new')), 'an earlier passed and relayed attempt is left to its own waiter or the janitor (review of PR 1644): ' + r.out);
 assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(unfinished, 'new')), 'failed and unfinished attempts are never touched here: ' + r.out);
 // A relay that left out a file over 10 MB (board/pc-out da39c826, opus1415d_GL1_out/skipped_over_10MB.txt; Artoo on
 // PR 1498): kept with the reason named, unless the relay's own list names that exact file and size. The file stays here.
@@ -479,7 +480,7 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(on the Board keep list/.test(r.out), 'a keep-listed checkout survives its relay: ' + r.out);
   fs.rmSync(path.join(vt, 'janitor_keep.txt'));
   r = waitRun({ ...quick, PC_TEST_COMMAND_LINES: `godot.exe --path "${path.join(guarded, 'new')}"` }, 'dropwait', guarded);
-  assert(fs.existsSync(path.join(guarded, 'new')) && /a running process names this attempt/.test(r.out), 'a checkout in use survives its relay: ' + r.out);
+  assert(fs.existsSync(path.join(guarded, 'new')) && /a running process names this job folder/.test(r.out), 'a checkout in use survives its relay: ' + r.out);
   // Artoo on PR 1644 at 1c264710: the issue lock as well. While a runner for issue 1396 holds it, the relayed checkout stays.
   const runTemp = path.join(tmp, 'runtemp1644');
   fs.mkdirSync(runTemp, { recursive: true });
@@ -490,7 +491,7 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   const held = spawnSync('bash', ['-c', '"$1" -NoProfile -ExecutionPolicy Bypass -File "$4" & n=0; while [ ! -f "$5" ] && [ $n -lt 300 ]; do sleep 0.1; n=$((n+1)); done; [ -f "$5" ] || exit 9; exec "$1" -NoProfile -ExecutionPolicy Bypass -File "$2" dropwait "$3"',
     'x', shell, path.join(jobs, 'opus_job_head.ps1'), guarded, holder, ready], { env: { ...env, ...quick, PC_RUN_TEMP: runTemp, LOCK1644: issueLock, READY1644: ready }, encoding: 'utf8', timeout: 90000 });
   const heldOut = `${held.stdout}\n${held.stderr}`;
-  assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(the issue lock \S+voidsworn-runner-issue-1396\.lock is held\)/.test(heldOut), 'a held issue lock keeps the relayed checkout: ' + heldOut);
+  assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(the issue lock \S+voidsworn-runner-issue-1396\.lock is held or not a plain file\)/.test(heldOut), 'a held issue lock keeps the relayed checkout: ' + heldOut);
   const pauseFile = path.join(tmp, 'pause1644.txt');
   write(pauseFile, 'GPU not cleared: paused by the Board for a fixture\r\n');
   const resumed = spawnSync('bash', ['-c', '(sleep 2; rm -f "$1") & exec "$2" -NoProfile -ExecutionPolicy Bypass -File "$3" dropwait "$4"',
@@ -498,6 +499,59 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   const resumedOut = `${resumed.stdout}\n${resumed.stderr}`;
   assert.equal(resumed.status, 0, resumedOut);
   assert(/checkouts kept for now: \S+ \(the Board PC pause is active\)/.test(resumedOut) && !fs.existsSync(path.join(guarded, 'new')) && /checkout new removed after the job/.test(resumedOut), 'a pause holds the drop, and the same relay clears it once the pause ends: ' + resumedOut);
+  // Review of PR 1644 (issue 1647): the waiter's remaining edges.
+  const q = { OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '2', PC_TEST_COMMAND_LINES: 'fixture.exe unrelated' };
+  // a failed or unfinished attempt is not waited for at all
+  const unfinishedWait = path.join(vt, 'opus1647u', 'out_1');
+  assert.equal(run('checkout', unfinishedWait, 'new', two).status, 0);
+  write(path.join(unfinishedWait, 'out_new', 'result.txt'), 'unfinished\n');
+  r = waitRun(q, 'dropwait', unfinishedWait);
+  assert(/is not a passed attempt; nothing to wait for/.test(r.out) && !/waiting for/.test(r.out), 'no wait for an attempt that did not pass: ' + r.out);
+  // the attempt can come from the environment the tail sets
+  r = waitRun({ ...q, OJ_DROPWAIT_ATTEMPT: unfinishedWait }, 'dropwait');
+  assert(/is not a passed attempt/.test(r.out), 'OJ_DROPWAIT_ATTEMPT names the attempt: ' + r.out);
+  // dry with the relay on origin and in the mirror: the proof runs, nothing is removed, no lease or log is made
+  const dryRelayed = job1535('opus1647d');
+  relay([[path.join(dryRelayed, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1647d');
+  git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', '+refs/heads/board/pc-out-opus1647d:refs/heads/board/pc-out-opus1647d']);
+  r = waitRun({ ...q, OJ_DROPWAIT_LOG: '1' }, 'dropwait', dryRelayed, 'dry');
+  assert(fs.existsSync(path.join(dryRelayed, 'new')) && r.out.includes(`checkout new would be checked and removed after the relay: ${path.join(dryRelayed, 'new')}`), 'dry runs the proof on a relayed attempt and removes nothing: ' + r.out);
+  assert(!fs.existsSync(path.join(path.dirname(dryRelayed), '.voidsworn-run-active')) && !fs.existsSync(path.join(path.dirname(dryRelayed), 'dropwait_out_1.txt')), 'dry takes no lease and writes no log');
+  // a relayed sibling of the same job is left to its own waiter; a command line naming only the job folder holds the drop
+  const sibA = job1535('opus1647s', 'out_1'), sibB = job1535('opus1647s', 'out_2');
+  relay([[path.join(sibA, 'out_new'), 'out_1/out_new'], [path.join(sibB, 'out_new'), 'out_2/out_new']], 'board/pc-out-opus1647s');
+  r = waitRun({ ...q, PC_TEST_COMMAND_LINES: `godot.exe --path "${path.dirname(sibB)}"` }, 'dropwait', sibB);
+  assert(fs.existsSync(path.join(sibB, 'new')) && /a running process names this job folder/.test(r.out), 'a process naming only the job folder holds the drop: ' + r.out);
+  r = waitRun({ ...q, OJ_DROPWAIT_LOG: '1' }, 'dropwait', sibB);
+  assert(!fs.existsSync(path.join(sibB, 'new')) && fs.existsSync(path.join(sibA, 'new')), 'the waiter clears its own attempt only, never a relayed sibling: ' + r.out);
+  assert(fs.statSync(path.join(path.dirname(sibB), 'dropwait_out_2.txt')).isFile(), 'a live waiter with OJ_DROPWAIT_LOG=1 writes its log beside the attempt');
+  // a result root that is a link to other bytes is refused, even when those bytes are on the relay
+  const linked = job1535('opus1647j');
+  const elsewhereRoot = path.join(tmp, 'elsewhere1647', 'out_new');
+  write(path.join(elsewhereRoot, 'result.txt'), 'opus1647j result\n');
+  fs.rmSync(path.join(linked, 'out_new'), { recursive: true });
+  fs.symlinkSync(elsewhereRoot, path.join(linked, 'out_new'), 'dir');
+  relay([[elsewhereRoot, 'out_1/out_new']], 'board/pc-out-opus1647j');
+  r = waitRun(q, 'dropwait', linked);
+  assert(fs.existsSync(path.join(linked, 'new')) && /a result folder is not a plain folder/.test(r.out), 'a linked result root proves nothing: ' + r.out);
+  // an unfinished earlier removal (a recorded tomb) goes only after the same fresh proof under the mirror lock: with the
+  // relay moved to other bytes it stays; back on the right bytes it is finished
+  const tombed = job1535('opus1647t');
+  fs.renameSync(path.join(tombed, 'new'), path.join(tombed, 'new.removing'));
+  write(path.join(tombed, 'removing.txt'), `new.removing ${two}\r\n`);
+  const tombWrong = path.join(tmp, 'tomb1647wrong', 'out_new');
+  write(path.join(tombWrong, 'result.txt'), 'other bytes\n');
+  relay([[tombWrong, 'out_1/out_new']], 'board/pc-out-opus1647t');
+  r = waitRun(q, 'dropwait', tombed);
+  assert(fs.existsSync(path.join(tombed, 'new.removing')) && /results not relayed yet/.test(r.out) && !/finished an earlier removal/.test(r.out), 'a tomb stays while the relay holds other bytes: ' + r.out);
+  // a record that does not name the listed pin is left alone
+  write(path.join(tombed, 'removing.txt'), `new.removing ${one1}\r\n`);
+  relay([[path.join(tombed, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1647t');
+  r = waitRun(q, 'dropwait', tombed);
+  assert(fs.existsSync(path.join(tombed, 'new.removing')) && /does not name the listed pin, left alone/.test(r.out), 'a tomb record must name the listed pin: ' + r.out);
+  write(path.join(tombed, 'removing.txt'), `new.removing ${two}\r\n`);
+  r = waitRun(q, 'dropwait', tombed);
+  assert(!fs.existsSync(path.join(tombed, 'new.removing')) && /finished an earlier removal/.test(r.out), 'with the right bytes on the relay the tomb is finished: ' + r.out);
   assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');
   // Review of PR 1592: the sweep keeps a checkout whose reflog holds a commit no mirror ref reaches (a detached checkout
   // that went back to its pin), and one with a second worktree; and it finishes a recorded <name>.removing left alone.
