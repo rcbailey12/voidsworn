@@ -10,10 +10,10 @@
       "scenario_sha256": "84e9474d8921832d84ee490b3c4cfb7f22ebed7c8cb167615ee622bf4b7568c4"
     },
     "s2": {
-      "sha256": "1cacb5c7fa00b98cde034b847677a4a388e8afcd5804abaa4f82603407936316",
-      "bytes": 3338146,
+      "sha256": "fd7d1d061a853e92ec1c6a9b053ca4469ddfdbf3e95b2c6efbae6cf2b18b8f99",
+      "bytes": 3843061,
       "archive": "s2.jsonl.br",
-      "records": 141,
+      "records": 159,
       "scenario_sha256": "a0b963248d7463b842c3c276b687e17f8232d1b2a7f91e76780ffe873f7b8fef"
     },
     "s3": {
@@ -164,8 +164,8 @@
       "scenario_sha256": "5d22e9b83b63bcff25beb386bafb894d01fd4245dd78dcf1fd7fc6b9c471d6ac"
     },
     "s24": {
-      "sha256": "66a1d9c9207802c738dbaf037926457139661327489c72e5ba20056db0461013",
-      "bytes": 51057206,
+      "sha256": "aa69e5964fe17c0edf51cb20a31b69d1949fad69f4c4d443577bebfc9852c55a",
+      "bytes": 51056016,
       "archive": "s24.jsonl.br",
       "records": 595,
       "scenario_sha256": "cc5b0cf00920ec92fcbfdb0d3ac5ee4e25a94648edab82ad1ffff51b3fd14336"
