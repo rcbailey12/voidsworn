@@ -1829,12 +1829,22 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	if float(bl["ring_px"]) > 0.0:
 		# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
 		ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
-	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.6, 0.3), 1, float(bl["reach"]))
+	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
+	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3) if board_look != "r0" else Color(1, 0.6, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
 	board_inside_s = 0.0
 	if int(bl["lines"]) > 0 and from_hatch != Vector3.INF:
-		_board_lines(from_hatch, wp, int(bl["lines"]), hold)
+		# Muse council: the lines land at points spread along the flank round the breach (grapples securing the two
+		# ships), not on one dot, so they never read as a beam; the attacker's hatch flashes where they leave
+		var ends: Array = []
+		var nl: int = int(bl["lines"])
+		for i in nl:
+			var dx: float = (float(i) - float(nl - 1) * 0.5) * s.hull.L * 0.12
+			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
+			ends.append(s.to_world(hi["p"]) if not hi.is_empty() else wp)
+		_board_lines(from_hatch, ends, hold, pace)
+		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), Color(1, 0.75, 0.3), 2.0, 0.3 * k, 0.8 * k, 2)
 	for j in int(bl["inside"]):
 		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
 		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
@@ -1848,43 +1858,51 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 
 
 # Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the
-# boarding target ring's amber, core only). n lines from the attacker's hatch to the breach, a shallow arc each, drawn
-# out over 0.25 s, held, then faded by the end of the hold.
-func _board_lines(a: Vector3, b: Vector3, n: int, hold: float) -> void:
+# boarding target ring's amber, core only). One line per landing point, from the attacker's hatch to that point on the
+# target's flank, a shallow arc each. Muse council (contrib/muse/reviews/boarding_1547.md section 4): they draw in one
+# after another (0.2 s apart at speed 1), stay at full strength for the whole hold, pulse once mid-hold (the crew
+# crossing) and fade only in the hold's last tenth, so none outlives the battle's wait at any pace.
+func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
 	var LSt = load("res://render/line_style.gd")
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var d := b - a
-	var side := d.cross(Vector3.UP).normalized()
-	if side == Vector3.ZERO:
-		side = Vector3.RIGHT
-	var seg := 10
+	board_lines_s = 0.0
+	var n := ends.size()
 	for i in n:
-		var off: float = (float(i) - float(n - 1) * 0.5) * 0.9
-		var lift: float = d.length() * (0.10 + 0.05 * i)
+		var b: Vector3 = ends[i]
+		var d := b - a
+		var side := d.cross(Vector3.UP).normalized()
+		if side == Vector3.ZERO:
+			side = Vector3.RIGHT
+		var lift: float = d.length() * (0.10 + 0.04 * i)
 		var pts: Array = []
-		for j in seg + 1:
-			var t := float(j) / seg
-			pts.append(a.lerp(b, t) + side * off * sin(t * PI) + Vector3.UP * lift * sin(t * PI))
-		for j in seg:
+		for j in 11:
+			var t := float(j) / 10.0
+			pts.append(a.lerp(b, t) + Vector3.UP * lift * sin(t * PI))
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for j in 10:
 			LSt.strip_into(st, pts[j], pts[j + 1], side, side, "board", Color(-1, -1, -1, -1), true)
 			LSt.strip_into(st, pts[j], pts[j + 1], -side, -side, "board", Color(-1, -1, -1, -1), true)
-	var mi := MeshInstance3D.new()
-	mi.mesh = st.commit()
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var m: ShaderMaterial = LSt.material(false)
-	m.set_shader_parameter("gain", 0.0)
-	mi.material_override = m
-	add_child(mi)
-	# the draw-out, hold and fade fit inside the battle's hold at any pace, so no line outlives it into the next event
-	var t_in := minf(0.25, hold * 0.2)
-	var t_out := minf(0.35, hold * 0.25)
-	var tw := mi.create_tween()
-	tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
-	tw.tween_interval(maxf(0.0, hold - t_in - t_out))
-	tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
-	board_lines_s = maxf(hold, t_in + t_out)
-	tw.tween_callback(mi.queue_free)
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var m: ShaderMaterial = LSt.material(false)
+		m.set_shader_parameter("gain", 0.0)
+		mi.material_override = m
+		add_child(mi)
+		var t0: float = minf(0.2 * pace * i, hold * 0.3)
+		var t_in: float = minf(0.2, hold * 0.15)
+		var t_out: float = minf(0.15, hold * 0.1)
+		var rest: float = maxf(0.0, hold - t0 - t_in - t_out)
+		var tw := mi.create_tween()
+		tw.tween_interval(t0)
+		tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
+		tw.tween_interval(rest * 0.4)
+		tw.tween_property(m, "shader_parameter/gain", 1.8, rest * 0.1)
+		tw.tween_property(m, "shader_parameter/gain", 1.0, rest * 0.1)
+		tw.tween_interval(rest * 0.4)
+		tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
+		tw.tween_callback(mi.queue_free)
+		board_lines_s = maxf(board_lines_s, t0 + t_in + rest + t_out)
 
 
 func command(id: String, _cmd := "") -> void:
