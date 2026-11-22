@@ -1,4 +1,4 @@
-// ======================= CORE =======================
+// ======================= CORE ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 // v41: seeded rules randomness (mulberry32). Each battle reseeds from B.seed, so a seed plus the same moves replays a fight;
 // the simulator takes SEED from the environment so whole runs repeat exactly. Cosmetic effects keep Math.random.
 let RNG_S=(Math.random()*4294967296)>>>0;

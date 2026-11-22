@@ -1,4 +1,4 @@
-// ======================= UI: run (map, fleet, shipyard, events, rewards) =======================
+// ======================= UI: run (map, fleet, shipyard, events, rewards) ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 // Ship names in prose (issue 1551): one article rule for both runtimes, twin of campaign.gd ship_with_article/ship_bare.
 // Bare names get "the" ("The" at a sentence start), a leading "The" is not doubled, MDV and HNS names stand alone.
 function shipWithArticle(n,start){ n=String(n); if(/^(MDV|HNS) /.test(n)) return n; return (start?'The ':'the ')+n.replace(/^the /i,''); }

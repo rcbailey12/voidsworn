@@ -1,4 +1,4 @@
-// ======================= DATA =======================
+// ======================= DATA ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
   flak:{n:'Flak battery',k:'flak',shots:3,dmg:3,r:2,opt:2,acc:80,fall:10,vsSq:3,vsCap:.6},
