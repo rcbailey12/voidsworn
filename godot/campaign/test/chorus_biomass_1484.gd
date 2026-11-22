@@ -1,6 +1,6 @@
 # Issue 1484 (R382, RULEBOOK 11.9): Chorus biomass pays for refits, class refit tracks, protocol rerolls and the Sector 3 late
-# market, as credits do for every other fleet. The Godot twin of contrib/opus/tools/chorus_biomass_1484_tests.js: a Chorus run
-# with biomass and no credits buys each one, with credits and no biomass it buys none, and a Crusade run still pays in credits.
+# market. The Godot twin of contrib/opus/tools/chorus_biomass_1484_tests.js: a Chorus run pays biomass when it covers the price,
+# otherwise credits, one purse per purchase; a Crusade run pays credits.
 # Headless:
 #   godot --headless --path godot --script res://campaign/test/chorus_biomass_1484.gd
 extends SceneTree
@@ -69,8 +69,12 @@ func _run() -> void:
 	check(float(R["credits"]) == 0.0, "Chorus credits are untouched")
 
 	R = _start("matriarch", "chorus", 0.0, 5000.0); g = _buy_all()
-	for k in KINDS: check(g.has(k) and not g[k]["ok"], "Chorus with credits only cannot buy the " + k)
-	check(float(R["credits"]) == 5000.0 and float(R["bio"]) == 0.0, "Chorus credits stay whole")
+	for k in KINDS: check(g.has(k) and g[k]["ok"], "Chorus with credits only still buys the " + k)
+	check(float(R["credits"]) == 5000.0 - _sum(g) and float(R["bio"]) == 0.0, "Chorus credits pay when biomass is short (" + str(R["credits"]) + ")")
+
+	R = _start("matriarch", "chorus", 20.0, 20.0); g = _buy_all()
+	for k in KINDS: check(g.has(k) and not g[k]["ok"], "Chorus with neither purse covering the price cannot buy the " + k)
+	check(float(R["credits"]) == 20.0 and float(R["bio"]) == 20.0, "a short Chorus purse is never split")
 
 	R = _start("vex", "voidsworn", 0.0, 5000.0); g = _buy_all()
 	for k in KINDS: check(g.has(k) and g[k]["ok"], "Crusade with credits buys the " + k)

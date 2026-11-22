@@ -1,7 +1,6 @@
 // Issue 1484 (R382, RULEBOOK 11.9): Chorus biomass pays for refits, class refit tracks, protocol rerolls and the Sector 3 late
-// market, as credits do for every other fleet. A Chorus run with biomass and no credits buys each one; with credits and no
-// biomass it buys none; a Crusade run still pays in credits. Godot twin: godot/campaign/test/chorus_biomass_1484.gd. Run from
-// the repo root.
+// market. A Chorus run pays biomass when it covers the price, otherwise credits, one purse per purchase; a Crusade run pays
+// credits. Godot twin: godot/campaign/test/chorus_biomass_1484.gd. Run from the repo root.
 global.window = {}; global.performance = { now: () => Date.now() };
 const STORE = {}; global.localStorage = { getItem: k => (k in STORE ? STORE[k] : null), setItem: (k, v) => { STORE[k] = String(v); }, removeItem: k => { delete STORE[k]; } };
 const IDS = {};
@@ -50,8 +49,12 @@ check('Chorus biomass pays the whole bill (' + R.bio + ')', () => R.bio === 5000
 check('Chorus credits are untouched', () => R.credits === 0);
 
 R = start('matriarch', 'chorus', 0, 5000); g = buyAll();
-for (const k of kinds) check(`Chorus with credits only cannot buy the ${k}`, () => !!g[k] && !g[k].ok);
-check('Chorus credits stay whole', () => R.credits === 5000 && R.bio === 0);
+for (const k of kinds) check(`Chorus with credits only still buys the ${k}`, () => !!g[k] && g[k].ok);
+check('Chorus credits pay when biomass is short (' + R.credits + ')', () => R.credits === 5000 - sum(g) && R.bio === 0);
+
+R = start('matriarch', 'chorus', 20, 20); g = buyAll();
+for (const k of kinds) check(`Chorus with neither purse covering the price cannot buy the ${k}`, () => !!g[k] && !g[k].ok);
+check('a short Chorus purse is never split', () => R.credits === 20 && R.bio === 20);
 
 R = start('vex', 'voidsworn', 0, 5000); g = buyAll();
 for (const k of kinds) check(`Crusade with credits buys the ${k}`, () => !!g[k] && g[k].ok);
