@@ -237,7 +237,7 @@ func _chapter(key: String) -> void:
 
 func _still(key: String) -> void:
 	var image: Image = bench._grab()
-	if image == null or CAP.save_png(image, folder.path_join(key + ".png")) != OK:
+	if image == null or CAP.save_png(image, folder.path_join(key + ".png"), CAP.capture_stage()) != OK:
 		_fail("Could not stamp the " + key + " still")
 		return
 	# a light copy for the sheet (the png stays on the PC): the battle camera a 1 to 1 centre crop, the close camera halved

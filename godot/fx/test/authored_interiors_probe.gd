@@ -134,4 +134,4 @@ func _steps(count: int) -> void:
 func _shots(tag: String, stage: String) -> void:
 	for radius in [170, 60]:
 		await _camera(radius)
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("%s_%s_camera%d.png" % [tag, stage, radius]))
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("%s_%s_camera%d.png" % [tag, stage, radius]), preload("res://tools/picture_provenance.gd").capture_stage())

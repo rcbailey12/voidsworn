@@ -59,7 +59,7 @@ func _run() -> void:
 		for i in 60: await process_frame
 		await RenderingServer.frame_post_draw
 		var frame := viewport.get_texture().get_image()
-		if preload("res://tools/picture_provenance.gd").save_png(frame,args[0].path_join(view.name+".png")) != OK: quit(1); return
+		if preload("res://tools/picture_provenance.gd").save_png(frame,args[0].path_join(view.name+".png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK: quit(1); return
 		var pixels := {}
 		for piece in debris.find_children("T2_debris_*", "MeshInstance3D", true, false):
 			var point := camera.unproject_position(piece.global_position)
