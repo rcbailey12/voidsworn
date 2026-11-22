@@ -266,7 +266,7 @@ func _trace(fam: Array, idx: int, sz: String) -> void:
 			var y0 := clampi(int(sp.y) - chh / 2, 0, H - chh)
 			img.blit_rect(fr, Rect2i(x0, y0, cw, chh), Vector2i(ti * cw, vi * chh))
 	_home()
-	preload("res://tools/picture_provenance.gd").save_jpg(img, "%s/trace_%02d_%s_%s.jpg" % [out, idx, fam[0], sz], 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, "%s/trace_%02d_%s_%s.jpg" % [out, idx, fam[0], sz], 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[trace] wrote trace_%02d_%s_%s.jpg" % [idx, fam[0], sz])
 
 
@@ -352,5 +352,5 @@ func _sheet(cols: Array, path: String) -> void:
 		var c := b.get_region(Rect2i((W - fw) / 2, (H - fh) / 2, fw, fh))
 		c.resize(fw * 2, fh * 2, Image.INTERPOLATE_NEAREST)
 		img.blit_rect(c, Rect2i(0, 0, fw * 2, fh * 2), Vector2i(i * cw + (cw - fw * 2) / 2, ch))
-	preload("res://tools/picture_provenance.gd").save_jpg(img, path, 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, path, 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[range] wrote %s" % path)

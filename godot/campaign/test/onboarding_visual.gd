@@ -23,7 +23,7 @@ func _frames() -> void:
 func _shot(name: String) -> void:
 	await _frames()
 	var img := root.get_texture().get_image()
-	if preload("res://tools/picture_provenance.gd").save_png(img, folder.path_join(name + ".png")) != OK: checks += 1
+	if preload("res://tools/picture_provenance.gd").save_png(img, folder.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK: checks += 1
 
 func _run() -> void:
 	create_timer(30.0).timeout.connect(func(): quit(1))

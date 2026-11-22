@@ -12,6 +12,7 @@ const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
+const ModalFocus = preload("res://ui/theme/modal_focus.gd")   # issue 1559
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (wrap-safe labels, sound)
@@ -272,6 +273,19 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		var lb = GS.lit_boxes(k, accent)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
+	# issue 1559 item 7: in a dialog its number key shows after the label, as on the choices and the finishing action (a
+	# boon's 4 and 5 ran Reroll and Decline with no cap shown, and Decline cannot be taken back)
+	var kk = _key_for(list, act, arg)
+	if kk != "":
+		var cap = keycap(kk); cap.mouse_filter = Control.MOUSE_FILTER_IGNORE; cap.name = "keycap"
+		cap.anchor_left = 1.0; cap.anchor_right = 1.0; cap.anchor_top = 0.5; cap.anchor_bottom = 0.5
+		cap.offset_left = -px(10); cap.offset_right = -px(10); cap.offset_top = 0; cap.offset_bottom = 0
+		cap.grow_horizontal = Control.GROW_DIRECTION_BEGIN; cap.grow_vertical = Control.GROW_DIRECTION_BOTH
+		b.add_child(cap)
+		var tw = b.get_theme_font("font").get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, b.get_theme_font_size("font_size")).x
+		var cw = font_num_b.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, px(17)).x + px(20)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.custom_minimum_size.x = maxf(b.custom_minimum_size.x, ceil(tw) + cw + px(44))
 	var aa = found[1]
 	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
@@ -433,11 +447,13 @@ func _focus_first() -> void:
 		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
-	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
+	# issue 1559 item 6: the last render's nodes are still children until the frame ends (queue_free), so count and
+	# search only the live ones; a dialog that just closed must not keep the map from taking the keys
+	if _live_count(modal_box) == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
 		if _overlay == "": map3d.grab_focus()
 		else: get_viewport().gui_release_focus()   # a slide-over: Esc or Close shuts it, Tab walks its buttons
 		return
-	var host = modal_box if modal_box.get_child_count() > 0 else page_box
+	var host = modal_box if _live_count(modal_box) > 0 else page_box
 	# issue 1261: the Run options drawer holds keyboard and controller focus while it is open (the control that was
 	# focused before a re-render keeps it), and closing it gives focus back to Run options
 	if host == page_box and C.page.get("kind") == "admiral":
@@ -489,13 +505,20 @@ func _trap_focus(root_n: Node, keep: Node) -> void:
 		if ch is Control and ch.focus_mode != Control.FOCUS_NONE: ch.focus_mode = Control.FOCUS_NONE
 		_trap_focus(ch, keep)
 func _end_primary(n: Node) -> Button:
+	if n.is_queued_for_deletion(): return null   # issue 1559 item 6
 	if n is Button and n.get_meta("end_primary", false): return n
 	for ch in n.get_children():
 		var found = _end_primary(ch)
 		if found != null: return found
 	return null
+func _live_count(n: Node) -> int:
+	var c := 0
+	for ch in n.get_children():
+		if not ch.is_queued_for_deletion(): c += 1
+	return c
 func _first_button(n: Node) -> Control:
 	for ch in n.get_children():
+		if ch.is_queued_for_deletion(): continue   # issue 1559 item 6: the last render's buttons are on their way out
 		if (ch is Button or ch.get_script() == ChoiceScript) and not ch.disabled and ch.visible: return ch
 		var r = _first_button(ch)
 		if r != null: return r
@@ -950,8 +973,15 @@ func _podium() -> Control:
 	host.add_child(stage)
 	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
-	podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
-	podium.setup(C, f, accent, _reduce_motion())
+	# issue 1559 item 27: a pick re-renders the page; the same flagship keeps its live podium (no reload hitch, and the
+	# turning ship carries on from where it was instead of snapping back to its start angle)
+	var pkey = str(f.get("uid", "")) + "|" + str(f["tpl"]) + "|" + accent.to_html() + "|" + str(_reduce_motion())
+	if podium != null and is_instance_valid(podium) and not podium.is_queued_for_deletion() and str(podium.get_meta("podium_key", "")) == pkey:
+		if podium.get_parent() != null: podium.get_parent().remove_child(podium)
+		stage.add_child(podium); podium.offset_bottom = -px(120)
+	else:
+		podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
+		podium.setup(C, f, accent, _reduce_motion()); podium.set_meta("podium_key", pkey)
 	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
 	plate.add_child(Kit.section("Your flagship", k))
@@ -1352,6 +1382,10 @@ func route_num(id: String) -> int:   # the number a next jump wears in the list 
 	return 0
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
+	# issue 1559 item 24: the fleet is already flying to its pick; a new pick would relight a route it is not taking
+	if map3d != null and bool(map3d.get("_flying")): return
+	# item 25: with the Dossier or the Map key open, a route on the rail still works: it shuts the slide-over first
+	if _overlay != "": _close_overlay()
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
 	# A new pick is only a selection: it cancels a Jump queued under the loading cover, so the player confirms again (issue 1448).
 	if map3d != null and map3d.has_method("cancel_queued_jump"): map3d.cancel_queued_jump()
@@ -1371,7 +1405,8 @@ func _rebuild_rail() -> void:
 		for r in _rows:
 			if r["id"] == restore: r["btn"].grab_focus()
 func _jump() -> void:
-	if picked == "" or C.modal_d != null or _overlay != "" or _find(_acts, "enterNode", picked).is_empty(): return
+	if picked == "" or C.modal_d != null or _find(_acts, "enterNode", picked).is_empty(): return
+	if _overlay != "": _close_overlay()   # issue 1559 item 25: Jump on the rail works with a slide-over open
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
 	else: C.act("enterNode", picked)
 # The Nemesis block: [control, its height at 1080]
@@ -2531,6 +2566,7 @@ func esc_back() -> bool:
 	return false
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if ModalFocus.covered(self): return   # issue 1559 item 5: Career (or another overlay) over the page has the keys
 	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
@@ -2551,10 +2587,11 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d != null:
 		var acts = C.modal_d["acts"]
 		if e.keycode == KEY_ESCAPE:
-			for a in acts:
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo"):
+			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
+				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
+		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)
 		if n >= 0 and n < 9:
 			var on = acts.filter(func(a): return a[2] == 1)
 			if n < on.size():

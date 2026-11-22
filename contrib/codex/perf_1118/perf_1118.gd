@@ -600,5 +600,5 @@ func _review(variant: String) -> void:
 		await _post()
 		var image := get_viewport().get_texture().get_image()
 		var name := "PERF1070_%s_%s_c%d.png" % [fixture, variant, radius]
-		if image == null or image.is_empty() or STAMP.save_png(image, out.path_join(name)) != OK:
+		if image == null or image.is_empty() or STAMP.save_png(image, out.path_join(name), STAMP.capture_stage()) != OK:
 			failures += 1

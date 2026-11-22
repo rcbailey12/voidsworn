@@ -22,7 +22,7 @@ from urllib.parse import quote, unquote, urlsplit
 if __name__ != '__main__' or sys.argv[1:2] != ['context']:
     from PIL import Image, ImageDraw, ImageSequence
 
-STAGES = ('sheet built', 'paint proof', 'installed in game')
+STAGES = ('sheet built', 'paint proof', 'installed in game', 'cloud direction check')   # issue 1567: cloud or software renders
 EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.gif'}
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -94,6 +94,6 @@ func run() -> void:
 		var tile := Vector2i(5 + (panel % 4) * 319, 5 + (panel / 4) * 227)
 		sheet.blit_rect(pixels, Rect2i(Vector2i.ZERO, TILE), tile)
 		panel += 1
-	var result := PICTURE.save_jpg(sheet, args[0], 0.96)
+	var result := PICTURE.save_jpg(sheet, args[0], 0.96, PICTURE.capture_stage())
 	print("%s: SQ3B %s, eight matched battle-camera frames" % ["PASS" if result == OK else "FAIL", args[1]])
 	GUARD.finish(0 if result == OK else 1)

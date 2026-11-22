@@ -64,7 +64,7 @@ func _shot(name: String, top: Node = null) -> void:
 	await _frames(6)
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	var m := _measure(top if top != null else root)
 	var line := "TEXT_FLOOR %s smallest=%d at %s overlaps=%d %s" % [name, int(m["min"]), str(m["min_at"]), m["over"].size(), " | ".join(m["over"].slice(0, 4))]
 	print(line)
