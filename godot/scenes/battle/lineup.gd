@@ -128,7 +128,7 @@ func _ready() -> void:
 		for i in 8:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), out.path_join("lineup_%s.png" % view))
+		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), out.path_join("lineup_%s.png" % view), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[lineup] ", out.path_join("lineup_%s.png" % view))
 	for c in get_children():
 		c.queue_free()

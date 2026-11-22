@@ -91,7 +91,7 @@ func capture(code: String) -> void:
 	await frames(12); await RenderingServer.frame_post_draw
 	if preload("res://render/placeholder_guard.gd").stop_if_any(): failures += 1; return
 	for art in page().portraits.values(): check(art["installed"], "capture has installed hull " + art["code"])
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("FL5_" + code + ".png")) == OK, "capture " + code)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("FL5_" + code + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "capture " + code)
 	print("shot FL5_" + code)
 
 func capture_states() -> void:

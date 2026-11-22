@@ -173,7 +173,7 @@ func _lights(n):
 func _shot(name):
 	await RenderingServer.frame_post_draw
 	var img = root.get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_jpg(img, out.path_join(name+".jpg"), 0.94)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, out.path_join(name+".jpg"), 0.94, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("FX100 SHOT ", name, " ", img.get_size())
 
 func _freeze(n):

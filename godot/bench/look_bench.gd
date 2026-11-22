@@ -489,7 +489,7 @@ func _fleet_part() -> void:
 				_warn("empty frame for fleet %s %s" % [sky[0], fc[1]])
 				continue
 			var name := "%02d_%s.png" % [n, fc[1]]
-			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name))
+			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 			report["stills"].append({"part": "fleet", "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name], "code": fc[1],
 				"what": fc[0], "length": float(sv.L), "step": steps})
 			n += 1
@@ -717,7 +717,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name))
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
