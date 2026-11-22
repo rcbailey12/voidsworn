@@ -14,6 +14,7 @@ const Host := preload("res://main/campaign_host.gd")
 const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
+const WORLD_BAKE := preload("res://world/world_bake.gd")   # issue 1434: bakes handed back, for the close frame log
 
 signal battle_done(result: Dictionary)
 
@@ -38,20 +39,42 @@ var quit_route := ""   # what started the quit ("menu" or "window"), for logs an
 # with what was loading, so a close that waited on one long frame names it. A few numbers a frame, kept for 8 frames.
 var _frame_t := 0
 var _frames: Array = []
+# issue 1434 (LOAD17 cold title_load_5s: one 5.35 s frame, cause not split): the renderer's draw time since the last
+# _process (frame_pre_draw to frame_post_draw), and the world bakes handed back meanwhile, kept with each frame
+var _draw_pre := 0
+var _draw_acc := 0
+
+
+func _on_frame_pre_draw() -> void:
+	_draw_pre = Time.get_ticks_usec()
+
+
+func _on_frame_post_draw() -> void:
+	if _draw_pre > 0:
+		_draw_acc += Time.get_ticks_usec() - _draw_pre
+	_draw_pre = 0
+
+
+func _frame_parts() -> String:
+	var parts := "draw %d ms" % (_draw_acc / 1000)
+	_draw_acc = 0
+	var back: String = WORLD_BAKE.take_handed_back()
+	return parts + (", bake handed back " + back if back != "" else "")
 
 
 func _process(_dt: float) -> void:
 	var now := Time.get_ticks_usec()
 	if _frame_t > 0:
-		var what := "-"
+		var parts := _frame_parts()
+		var what := ""
 		if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
-			what = "battle " + str(battle.get("load_phase"))
+			what += "battle " + str(battle.get("load_phase"))
 		elif showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
-			what = "backdrop " + str(showcase.get("load_phase"))
+			what += "backdrop " + str(showcase.get("load_phase"))
 			var w = showcase.get("world")
 			if w != null and is_instance_valid(w) and str(w.get("load_step")) != "":
 				what += ", world " + str(w.get("load_step"))
-		_frames.append("%d ms (%s)" % [(now - _frame_t) / 1000, what])
+		_frames.append("%d ms (%s; %s)" % [(now - _frame_t) / 1000, what if what != "" else "-", parts])
 		if _frames.size() > 8:
 			_frames.pop_front()
 	_frame_t = now
@@ -65,7 +88,7 @@ func quit_clean(code := 0, route := "menu") -> void:
 	var t0 := Time.get_ticks_msec()
 	print("[main] quit (%s) at %d ms" % [route, t0])
 	if _frame_t > 0:
-		_frames.append("%d ms so far (this frame)" % ((Time.get_ticks_usec() - _frame_t) / 1000))
+		_frames.append("%d ms so far (this frame; %s)" % [(Time.get_ticks_usec() - _frame_t) / 1000, _frame_parts()])
 	print("[main] frames before the close, oldest first: %s" % ", ".join(_frames))
 	# issue 1518 (Artoo on PR 1445): what was loading when the close came, so a close timed "during a load" is proven
 	var loading := PackedStringArray()
@@ -145,6 +168,8 @@ var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.
 func _ready() -> void:
 	name = "Main"
 	get_tree().set_auto_accept_quit(false)   # issue 1435: the window close runs quit_clean (see _notification)
+	RenderingServer.frame_pre_draw.connect(_on_frame_pre_draw)   # issue 1434: the close's frame log splits the draw
+	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 	_args()
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")

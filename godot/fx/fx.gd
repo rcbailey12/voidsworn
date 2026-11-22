@@ -607,6 +607,21 @@ func prof_take() -> Dictionary:
 	return p
 
 
+# issue 1434 (LOAD17: 83 pipelines in one hull-prep draw): what hull prep put into the scene since the bench last read
+# it, by kind (shield built, shield skin, cut finished, death pieces), so a long draw names the installs before it
+var installs := {}
+
+
+func count_install(kind: String) -> void:
+	installs[kind] = int(installs.get(kind, 0)) + 1
+
+
+func installs_take() -> Dictionary:
+	var d := installs
+	installs = {}
+	return d
+
+
 # Persistent damage is continuous emission and never calls flash(). Report its
 # real allocation alongside prof_take(), including faction equivalents of fire.
 func damage_counts() -> Dictionary:
@@ -1451,6 +1466,7 @@ func _finish_shield_skins() -> void:
 			SHIP.save_shield_skin(key, arrays)
 			for entry in job["ships"]:
 				entry[0].install_shield_skin(arrays, entry[1], self, key)
+				count_install("shield skin")
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1464,6 +1480,7 @@ func _build_death_pieces() -> void:
 		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
 			return
 		_piece_builds.pop_front()
+		count_install("death pieces")
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1484,6 +1501,7 @@ func prepare_battle_hulls() -> void:
 			var t_s := Time.get_ticks_usec()
 			prep_step = "shield " + str(ship_s.id)
 			ship_s.build_shield_later(self)
+			count_install("shield built")
 			pend("prep:shield", t_s)
 			if Time.get_ticks_usec() >= deadline:
 				await get_tree().process_frame
@@ -1525,6 +1543,7 @@ func prepare_battle_hulls() -> void:
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
 				active.remove_at(i)
+				count_install("cut finished")
 		_finish_shield_skins()
 		await get_tree().process_frame
 	prep_step = "shield skins and pieces"

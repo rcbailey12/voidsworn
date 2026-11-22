@@ -122,6 +122,16 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 	while not job.done: await get_tree().process_frame
 	return job.image
 
+# issue 1434 (LOAD17): the bakes handed back to the main thread since main.gd last read it (12-character keys)
+static var handed_back := ""
+
+
+static func take_handed_back() -> String:
+	var s := handed_back
+	handed_back = ""
+	return s
+
+
 func _loading() -> bool:
 	return not get_tree().get_nodes_in_group("battle_loading").is_empty()
 
@@ -159,6 +169,7 @@ func _process(_dt: float) -> void:
 			_unsaved.append([_active, result.image, str(job.get("folder", _folder()))])
 		if result.image != null:
 			remember(_active, result.image)
+			handed_back = (handed_back + " " if handed_back != "" else "") + _active.left(12)
 			# Artoo on PR 1445: queued, worker start and completion apart (absolute ms), so a frozen frame can be put
 			# against the wait in the queue, the worker's own stages, or the hand-back here
 			print("[world] %s %s %dx%d in %d ms (worker%s; queued at %d, worker from %d, handed back at %d ms)" % [result.source, _active, job.size.x, job.size.y, Time.get_ticks_msec() - job.started,

@@ -27,6 +27,7 @@ const BattleScene = preload("res://scenes/battle/battle.tscn")
 const MainScript = preload("res://main/main.gd")
 const BAKER = preload("res://world/world_bake.gd")
 const HULL = preload("res://fx/fx_hull.gd")
+const SKEEP = preload("res://render/shader_keep.gd")
 
 
 func _stage_name(w: int) -> String:
@@ -100,7 +101,12 @@ func _fx_work(node) -> String:
 		if int(p[k]) >= 1000:
 			out.append("%s %d ms" % [str(k), int(p[k]) / 1000])
 	var said := ", ".join(out) if not out.is_empty() else "-"
-	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "")
+	# issue 1434 (LOAD17): what hull prep installed since the last row
+	var ins := PackedStringArray()
+	if fx.has_method("installs_take"):
+		var d: Dictionary = fx.installs_take()
+		for k in d: ins.append("%s %d" % [str(k), int(d[k])])
+	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed: " + ", ".join(ins) if not ins.is_empty() else "")
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
@@ -112,6 +118,7 @@ static func _shift_process(fs: Array) -> void:
 
 func _init() -> void:
 	HULL.late_stacks = true
+	SKEEP.watch = true
 	RenderingServer.frame_pre_draw.connect(_on_pre_draw)
 	RenderingServer.frame_post_draw.connect(_on_post_draw)
 	var a := OS.get_cmdline_user_args()
@@ -141,12 +148,32 @@ func _pipes() -> int:
 	return n
 
 
+# issue 1434 (Astra on LOAD17, issue 1573: is the 83-pipeline draw blocking pipeline creation?): the count by source since
+# the last call, "draw 80, surface 3" ("-" when none). Godot counts a pipeline built at draw time under "draw"; "surface"
+# and "mesh" ones are made ahead of the draw, "specialization" ones in the background
+const PIPE_SOURCES := ["CANVAS", "MESH", "SURFACE", "DRAW", "SPECIALIZATION"]
+var _pipe_last := {}
+
+
+func _pipes_by() -> String:
+	var out := PackedStringArray()
+	for src in PIPE_SOURCES:
+		var m: String = "PIPELINE_COMPILATIONS_" + src
+		if not ClassDB.class_has_integer_constant("Performance", m):
+			continue
+		var n := int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
+		var d: int = n - int(_pipe_last.get(src, n))
+		_pipe_last[src] = n
+		if d > 0: out.append("%s %d" % [src.to_lower(), d])
+	return ", ".join(out) if not out.is_empty() else "-"
+
+
 # one line per recorded frame: where its wall-clock time went
 func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
 		out.append("%d ms %s (began at %d ms): draw %.0f ms, before the draw %.0f ms (process step %.0f ms), render cpu %.0f ms, gpu %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]))
+			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (" (by source: %s)" % f[11]) + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]) + (", new shaders %s" % f[12]))
 	return out
 
 
@@ -177,6 +204,8 @@ func _battle(tag: String, args: Dictionary) -> void:
 	var vp_rid := root.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
+	_pipes_by()
+	SKEEP.take_made()
 	var gaps := 0
 	var stalls := 0
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
@@ -197,7 +226,7 @@ func _battle(tag: String, args: Dictionary) -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(b)])
+			_take_draw(), _fx_work(b), _pipes_by(), SKEEP.take_made()])
 		pipes0 = pipes
 		last = now
 	_shift_process(frames)
@@ -263,6 +292,8 @@ func _title() -> void:
 	var vp_rid := root.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vp_rid, true)
 	var pipes0 := _pipes()
+	_pipes_by()
+	SKEEP.take_made()
 	_take_draw()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
@@ -289,7 +320,7 @@ func _title() -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(sc1)])
+			_take_draw(), _fx_work(sc1), _pipes_by(), SKEEP.take_made()])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
