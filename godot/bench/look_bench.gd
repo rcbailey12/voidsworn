@@ -384,8 +384,14 @@ func _settle() -> void:
 			while not WorkerThreadPool.is_task_completed(int(sh._dmg_task)):
 				OS.delay_usec(300)
 		if sh.has_meta("cut_task"):
+			# issue 1236 WRECK2: name a cut that keeps the clock waiting (the WRECK1 run sat 25 minutes with no log)
+			var t0 := Time.get_ticks_msec()
+			var told := 5000
 			while not WorkerThreadPool.is_task_completed(int(sh.get_meta("cut_task"))):
 				OS.delay_usec(300)
+				if Time.get_ticks_msec() - t0 > told:
+					_log("settle: %s's death cut still running after %d s" % [str(id), told / 1000])
+					told *= 2
 
 
 func _clear() -> void:
@@ -669,7 +675,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		# world units; the game's is the hex radius 10 times 0.8)
 		if row.has("hex") and fx.has_method("anchor_wreck"):
 			fx.anchor_wreck("T", T.global_position, float(row["hex"]))
+		_log("%s: death call at %.2f (step %d)" % [id, fx.now, steps])
 		fx.death("T", str(row.get("cause", "blast")))
+		_log("%s: death call returned (step %d)" % [id, steps])
 		if row.has("well"):
 			fx.later(fx.now + 8.0, func l_well_off() -> void: fx.well = Vector3.INF)
 		if death_audio != null:
@@ -739,6 +747,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 				continue
 		await _step()
 		guard += 1
+		if guard % 60 == 0:   # issue 1236 WRECK2: a heartbeat a second of effect time
+			var wn := 0
+			for wk in fx.dstate.get("wrecks", []): wn += (wk["nodes"] as Array).size()
+			_log("%s: %.2f s after the event, %d wreck pieces" % [id, fx.now - t_ev, wn])
 	if wi < wins.size():
 		_warn("%s at %d: only %d of %d cells (a window never opened)" % [id, int(r), ci, total])
 	if not keep:
