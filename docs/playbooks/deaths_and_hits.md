@@ -307,7 +307,7 @@ Glasswright prism shard gun is the energy row with a rainbow glint).
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.
 2. A cruiser death: eight frames across its three beats, before above after.
-3. A capital death: the same, with the scene-dim proposal on and off.
+3. A capital death: the same. No dim on and off pair: the dim is Eclipse's own (R389), so a non-Eclipse capital shows none.
 4. Later, per rebuilt faction: its death beside the shared one.
 
 ## Build order (jobs written from docs/playbooks/effects.md's template)

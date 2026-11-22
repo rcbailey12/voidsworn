@@ -121,6 +121,7 @@ func _run() -> void:
 	var verts_worst := 0
 	var pieces := 0
 	var with_pre := 0
+	var used_pre := 0
 	var worst_gap := 0.0
 	for w in fx.dstate.get("wrecks", []):
 		for nd in w["nodes"]:
@@ -142,6 +143,9 @@ func _run() -> void:
 				var p0 := Time.get_ticks_usec()
 				DEATH._measure_reach(nd)
 				pre_worst = maxf(pre_worst, _ms(p0))
+				# the cached path is the one taken: the leash is the worker's number exactly, not a fresh face read
+				if nd.has_meta("leash_rad") and float(nd.get_meta("leash_rad")) == float(pre):
+					used_pre += 1
 				worst_gap = maxf(worst_gap, absf(float(pre) - faces) / maxf(faces, 1e-4))
 			for ch in nd.get_children():
 				if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
@@ -151,6 +155,7 @@ func _run() -> void:
 		pieces, reach_worst, reach_total, verts_worst, with_pre, pre_worst, worst_gap * 100.0])
 	check(pieces >= 2, "the kill left its wreck pieces (%d)" % pieces)
 	check(with_pre == pieces, "every main piece has its worker-measured reach (%d of %d)" % [with_pre, pieces])
+	check(used_pre == with_pre and with_pre > 0, "the wreck's leash takes the worker's reach as it is, with no face read (%d of %d pieces)" % [used_pre, with_pre])
 	check(worst_gap <= 0.001, "the worker reach matches the face read (worst gap %.4f%%)" % (worst_gap * 100.0))
 	# _tell's material copies, on a fresh copy of the ship's meshes
 	var ship2 := _load_ship(world)

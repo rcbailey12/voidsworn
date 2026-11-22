@@ -1389,16 +1389,19 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
-		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
+		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
+		# the worker's results, keyed here before the job is shared: the worker only overwrites these values and never adds
+		# a key while the main thread may read the dictionary (a cold kill reads it before "out" is set; issue 1395 review)
+		"cut_usec": 0, "hulls_usec": 0}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid: int = fx.submit_death_cut(func() -> void:
 		var tc := Time.get_ticks_usec()
 		var pieces := _cut(job)
-		job["cut_usec"] = Time.get_ticks_usec() - tc
+		var cut_usec := Time.get_ticks_usec() - tc
 		var th := Time.get_ticks_usec()
 		_piece_hulls(pieces)
-		job["hulls_usec"] = Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
+		var hulls_usec := Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
 		if bool(job.get("sites", false)):
 			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
 			for i in mini(n_main, pieces.size()):
@@ -1411,6 +1414,8 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 			for pc in pieces:
 				geo.append(_piece_geometry(pc))
 			job["geo"] = geo
+		job["cut_usec"] = cut_usec   # handed over with the result, on keys that already exist
+		job["hulls_usec"] = hulls_usec
 		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
 	if not under_cover:
