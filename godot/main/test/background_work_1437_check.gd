@@ -43,6 +43,14 @@ class TestMain extends MAIN:
 var failures := 0
 
 
+# wait for the newest backdrop timer main armed, then one frame for its callback
+func _timer_fired(tm) -> void:
+	var t: SceneTreeTimer = tm._showcase_timer
+	if t != null and t.time_left > 0.0:
+		await t.timeout
+	await process_frame
+
+
 func _check(ok: bool, message: String) -> void:
 	print(("PASS " if ok else "FAIL ") + message)
 	if not ok:
@@ -147,24 +155,23 @@ func _run() -> void:
 			back.free()
 		var have_q: bool = rows.has("quality") and rows.has("taa")
 		if have_q:
-			await create_timer(0.7).timeout   # the title's own first backdrop timer (0.5 s) has fired
+			await _timer_fired(tm)   # the title's own first backdrop timer
 			tm.starts = 0
 			rows["quality"].pressed.emit()   # Max to High
-			await create_timer(0.5).timeout
+			await _timer_fired(tm)
 			var one: int = tm.starts
 			rows["taa"].pressed.emit()
-			await create_timer(0.5).timeout
+			await _timer_fired(tm)
 			var two: int = tm.starts
-			rows["quality"].pressed.emit()   # High to Low, quickly
-			await create_timer(0.1).timeout
+			rows["quality"].pressed.emit()   # High to Low
 			rows["taa"].pressed.emit()
-			rows["quality"].pressed.emit()   # wait: back to Max ...
+			rows["quality"].pressed.emit()   # quickly: back to Max ...
 			rows["quality"].pressed.emit()   # ... and on to High
 			rows["quality"].pressed.emit()   # ... then Low before any timer fires
-			await create_timer(0.6).timeout
+			await _timer_fired(tm)   # the newest pending rebuild (from High) has fired, so every earlier one has too
 			var low_starts: int = tm.starts - two
 			rows["quality"].pressed.emit()   # Low to Max
-			await create_timer(0.5).timeout
+			await _timer_fired(tm)
 			_check(one == 1 and two == 2, "6: a new Graphics or TAA setting rebuilds the battle behind the menu (%d, %d)" % [one, two])
 			_check(low_starts == 0 and str(tm.settings["quality"]) == "max" and tm.starts == two + 1, "6: a quick switch to Low cancels every pending rebuild; Max again builds one (%d during Low, %d after)" % [low_starts, tm.starts - two])
 		else:
