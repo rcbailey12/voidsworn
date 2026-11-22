@@ -11,6 +11,9 @@ import subprocess
 import sys
 import tempfile
 from unittest.mock import patch
+# Issue 1739: a headless Godot opening a fresh temp project imports it first; on the PC beside other lanes that took over
+# 30 s, so every real Godot call here may take up to 5 minutes (the runner still caps the whole check).
+GODOT_TIMEOUT = 300
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[3]
@@ -223,7 +226,7 @@ func _ready() -> void:
         out = folder / name
         out.mkdir()
         result = subprocess.run([*command, '--', str(out)], cwd=build, env=settings,
-                                capture_output=True, text=True, timeout=30)
+                                capture_output=True, text=True, timeout=GODOT_TIMEOUT)
         log = result.stdout + result.stderr
         assert result.returncode == expected and 'SCRIPT ERROR' not in log, log
         if expected:
@@ -280,7 +283,7 @@ func _ready() -> void:
     if os.name == 'nt' and template.is_file():
         exe = build / 'export' / 'StampFixture.exe'
         for args in (['--import'], ['--export-release', 'Windows Desktop', str(exe)]):
-            result = subprocess.run([*editor, *args], env=env, capture_output=True, text=True, timeout=60)
+            result = subprocess.run([*editor, *args], env=env, capture_output=True, text=True, timeout=GODOT_TIMEOUT)
             assert result.returncode == 0, result.stdout + result.stderr
         # Give the packed game a valid checkout override to prove it uses its baked-in commit.
         exported = [str(exe.with_suffix('.console.exe')), '--headless']
@@ -292,7 +295,7 @@ func _ready() -> void:
             if kind == 'unknown':
                 info.write_text(json.dumps(dict(BUILD_INFO, commit='unknown')))
             result = subprocess.run([*editor, '--export-pack', 'Windows Desktop', str(pack)],
-                                    env=env, capture_output=True, text=True, timeout=60)
+                                    env=env, capture_output=True, text=True, timeout=GODOT_TIMEOUT)
             assert result.returncode == 0, result.stdout + result.stderr
             invoke(exported, 'packed commit ' + kind, checkout_env, expected=1)
             pack.rename(exe.with_name(kind + '-commit.pck'))

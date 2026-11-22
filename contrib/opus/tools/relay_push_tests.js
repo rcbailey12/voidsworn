@@ -32,7 +32,7 @@ try {
   assert.equal(r.status, 0, r.out);
   const ls = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657']).split('\n').sort();
   assert.deepEqual(ls, ['out_20261122_140000_1/done.txt', 'out_20261122_140000_1/out_new/deep/clip.mp4', 'out_20261122_140000_1/out_new/shot.png',
-    'out_20261122_140000_1/skipped_over_10MB.txt', 'out_20261122_140000_1/status.txt'], 'tree: ' + ls.join(', '));
+    'out_20261122_140000_1/skipped_over_10MB.txt', 'out_20261122_140000_1/status.txt'], 'tree: ' + ls.join(', ') + '\nrelay_push said: ' + r.out + '\nbranch log: ' + git(['--git-dir', relaySource, 'log', '--format=%H %s', '-3', 'refs/heads/pc-out-opus1657']) + '\nshell: ' + shell);
   const skipped = git(['--git-dir', relaySource, 'show', 'refs/heads/pc-out-opus1657:out_20261122_140000_1/skipped_over_10MB.txt']);
   assert(/^out_new[\\/]big\.bin 11\.0 MB$/.test(skipped.trim()) && skipped.includes('out_new\\big.bin'), 'skip list in the proof form: ' + skipped);
   assert.equal(git(['--git-dir', relaySource, 'show', 'refs/heads/pc-out-opus1657:out_20261122_140000_1/out_new/shot.png']), 'png bytes');
