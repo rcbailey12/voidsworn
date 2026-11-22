@@ -406,6 +406,30 @@ try {
   const helperWorktreeRepo = makeCopy('repo', 2, helperWorktree);
   git(['-C', helperWorktreeRepo, 'worktree', 'add', '-q', '--detach', path.join(root, 'opus909-external')]);
   dateTree(helperWorktree, 30);
+  // Issue 1396: suffixed job folders (opus1211_run6, opus1434o) and playtest folders (pt1120c) are job folders too. A folder
+  // the whole-folder rule keeps (results not relayed) still loses its rebuildable checkouts after 6 hours idle (Artoo on
+  // #1396: LOAD15's opus1434o; its unrelayed masters stay). Out files, pictures and logs are never touched.
+  const suffixRelayed = helperFolder('opus1211_run6', { 'out/result.txt': 'opus1211_run6 result relayed' });
+  relay(path.join(suffixRelayed, 'out', 'result.txt'));
+  makeCopy('repo', 2, suffixRelayed);
+  dateTree(suffixRelayed, 30);
+  const jobKeptOut = helperFolder('opus1434o', { 'out/result.txt': 'opus1434o review clip relayed', 'out/master_A.avi': 'opus1434o unrelayed master', 'run.log': 'opus1434o log' });
+  relay(path.join(jobKeptOut, 'out', 'result.txt'));
+  const jobKeptRepo = makeCopy('repo', 2, jobKeptOut);
+  dateTree(jobKeptOut, 30);
+  const playtest = helperFolder('pt1120c', { 'out_A/shot.png': 'pt1120c picture', 'out_A/done.txt': 'FAILED' });
+  const playtestRepo = makeCopy('repo_A', 2, path.join(playtest, 'out_A'));
+  dateTree(playtest, 30);
+  const jobRecent = helperFolder('opus1373probe2', { 'out/shot.png': 'opus1373probe2 picture' });
+  const jobRecentRepo = makeCopy('repo', 2, jobRecent);
+  dateTree(jobRecent, 4);
+  const jobWork = helperFolder('opus1238b', { 'out/shot.png': 'opus1238b picture' });
+  const jobWorkRepo = makeCopy('repo', 2, jobWork);
+  write(path.join(jobWorkRepo, 'godot', 'bench', 'probe.gd'), 'opus1238b unsaved probe');
+  dateTree(jobWork, 30);
+  const jobLookalike = scratch(pc, 'opus1396.old', 30);
+  const jobCheckoutsGone = [jobKeptRepo, playtestRepo];
+  const jobCheckoutsKept = [jobWorkRepo];
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
   const legacyIssue = scratch(temp, `voidsworn-run-320-${'b2'.repeat(16)}`, 30);
@@ -444,8 +468,9 @@ try {
   dateTree(liveHelper, 5);
   const invalidOwner = scratch(temp, ownerName(307, 'f'), 26);
   markOwned(invalidOwner, 26, 'invalid token');
-  const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob']
+  const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob', 'pt112', 'ptx1120']
     .map(name => scratch(pc, name, 26));
+  never.push(jobLookalike, jobRecentRepo);
   never.push(makeCopy('repo', 1, laneB), scratch(temp, 'ordinary-folder', 26), scratch(root, 'issue-910-out-of-scope', 26));
   const lockPath = path.join(temp, 'voidsworn-runner-issue-302.lock');
   const work = path.join(pc, 'work217');
@@ -488,8 +513,8 @@ try {
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
-    legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, ...recover];
-  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+    legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, suffixRelayed, ...jobCheckoutsGone, ...recover];
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -513,7 +538,7 @@ try {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
   for (const dir of remove) decision(dry, dir, 'would remove');
-  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/]opus\d+[^\\/]*$/.test(dir) ? 'would keep' : 'kept');
+  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/](?:opus\d+|pt\d{4})[^\\/]*$/.test(dir) ? 'would keep' : (jobCheckoutsKept.includes(dir) ? 'retained' : 'kept'));
   for (const dir of lookalikes) {
     assert.match(decision(dry, dir, 'would keep'), /name match without owner record/);
   }
@@ -547,6 +572,18 @@ try {
   assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
+  // Issue 1396: the checkout-only path, its record lines and its refusals.
+  assert.match(decision(dry, jobKeptOut, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, jobKeptRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
+  assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
+  const headOf = dir => git(['-C', dir, 'rev-parse', 'HEAD']);
+  for (const dir of jobCheckoutsGone) assert(dry.includes(`job checkout record: ${dir} HEAD ${headOf(dir)}, `), `HEAD and status logged for ${dir}`);
+  assert.match(dry, new RegExp(`job checkouts would keep in ${jobRecent.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} \\(job folder touched in the last 6 hours\\)`));
+  assert.match(decision(dry, jobWorkRepo, 'retained'), /working tree needs keeping: \?\? godot\/bench\/probe\.gd/);
+  assert(dry.includes(`job checkout status: ${jobWorkRepo}: ?? godot/bench/probe.gd`), 'the unsaved file is listed');
+  assert.match(dry, /job checkouts would keep in .*opus910 \(a helper run holds this folder's lease\)/);
+  assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files/);
+  assert.match(decision(dry, path.join(helperShip, 'repo'), 'retained'), /superseded ship or gen files need a checked archive/);
   assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
   assert.match(dry, /Board keep list: 1 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
@@ -589,6 +626,10 @@ try {
     assert(!fs.existsSync(dir), `janitor left ${dir}`);
   }
   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
+  for (const [dir, file, text] of [[jobKeptOut, 'out/master_A.avi', 'opus1434o unrelayed master'], [jobKeptOut, 'run.log', 'opus1434o log'],
+    [playtest, 'out_A/shot.png', 'pt1120c picture'], [playtest, 'out_A/done.txt', 'FAILED']]) {
+    assert.equal(read(path.join(dir, file)), text, `checkout-only cleanup kept ${file} in ${dir}`);
+  }
   assert.equal(read(path.join(linkTarget, 'B16_23.glb')), 'shared ship the link points at', 'a removed link never touches its target');
   if (legacyUnreadable) {
     decision(live, legacyUnreadable, 'removed all but 1 folders another account owns');

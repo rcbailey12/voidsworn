@@ -308,6 +308,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
+    if ($helper) { $script:helperGone = $true }
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
     Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
@@ -315,6 +316,73 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
   finally {
     if ($issueLock) { $issueLock.Dispose() }
     if ($helperLease) { $helperLease.Dispose() }
+  }
+}
+
+# Issue 1396 (Ryan's typed OK in the Board thread, Nov 20; Artoo on #1396, Nov 22): job folder names. opus<N> with any
+# suffix (opus1369b, opus1211_run6, opus1373probe2, opus1434o) and playtest folders pt<MMDD><letters> (pt1120c).
+$helperJobName = '\Aopus(?<issue>[1-9][0-9]*)(?:[A-Za-z_-][A-Za-z0-9_-]*)?\z'
+$playtestJobName = '\Apt[0-9]{4}[a-z]*\z'
+$checkoutIdleHours = 6
+function Find-JobCheckouts($dir) {
+  # Every standalone Git checkout inside a job folder, at any depth (job_head attempts keep theirs inside out_*). Links
+  # are never followed, and the search stops at a checkout, so a repository nested inside one is not a candidate.
+  $found = @()
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push($dir)
+  while ($pending.Count) {
+    $next = $pending.Pop()
+    try { $subs = @($next.EnumerateDirectories()) } catch { continue }
+    foreach ($sub in $subs) {
+      if ($sub.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
+      $git = Get-Item -LiteralPath (Join-Path $sub.FullName '.git') -Force -ErrorAction SilentlyContinue
+      if ($git -is [IO.DirectoryInfo] -and -not ($git.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $found += $sub; continue }
+      $pending.Push($sub)
+    }
+  }
+  return $found
+}
+function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $mirror) {
+  # A job folder the whole-folder rule keeps (results not all relayed, pictures or logs beside them) can still hold big
+  # repo checkouts. Only those go, and only when Git shows nothing in them beyond rebuildable install outputs (the import
+  # cache, .import and .uid sidecars, ship and gen copies matching the shared build) with every local commit in the
+  # mirror. out folders' results, pictures, glbs, logs and every file outside a checkout stay. The whole job folder must
+  # be untouched for 6 hours, its lease and issue lock free and no running process naming it. HEAD and the Git status
+  # of each checkout are logged before it is removed.
+  $issueLock = $null; $lease = $null
+  try {
+    $checkouts = @(Find-JobCheckouts $dir)
+    if (-not $checkouts.Count) { return }
+    $listed = Get-BoardKeepReason $dir.FullName
+    if ($listed) { throw $listed }
+    try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
+    catch { throw 'a helper run holds this folder''s lease' }
+    if ($issue -and $activeLegacy -contains $issue) { throw "issue #$issue has an active older runner" }
+    if ($issue) {
+      try { $issueLock = Open-CleanupLock (Issue-LockPath $issue $temp) $dryRun }
+      catch { throw "issue #$issue lock is held or could not be verified" }
+    }
+    Assert-NoProcessUses $dir
+    $stats = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
+    if ($stats.Latest -gt $now.AddHours(-$checkoutIdleHours)) { throw "job folder touched in the last $checkoutIdleHours hours" }
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    foreach ($checkout in $checkouts) {
+      Assert-GpuQuiet
+      $head = @(Read-CleanupGit @('-C',$checkout.FullName,'rev-parse','HEAD'))
+      $headText = if ($gitExit -eq 0 -and $head.Count) { $head[0] } else { 'unreadable' }
+      $status = @(Read-CleanupGit @('-C',$checkout.FullName,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
+      $statusText = if ($gitExit -eq 0) { "$($status.Count) status lines" } else { 'status unreadable' }
+      Log "job checkout record: $($checkout.FullName) HEAD $headText, $statusText"
+      foreach ($line in ($status | Where-Object { $_ -notmatch '^!! "?godot/\.godot/' } | Select-Object -First 20)) { Log "job checkout status: $($checkout.FullName): $line" }
+      # The strict rule: no salvage root, so local work, superseded ship files or anything not rebuildable keeps it.
+      Clear-KeptCheckout $checkout $mirror $dryRun $now '' ''
+    }
+  } catch {
+    $action = if ($dryRun) { 'would keep' } else { 'kept' }
+    Log "job checkouts $action in $($dir.FullName) ($($_.Exception.Message))"
+  } finally {
+    if ($issueLock) { $issueLock.Dispose() }
+    if ($lease) { $lease.Dispose() }
   }
 }
 
@@ -406,10 +474,15 @@ try {
         $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
     Clear-ScratchFolder $dir $issue 'owned TEMP scratch' 3 $temp $now $dryRun $activeLegacy -TempScratch -Records $records -HasOwner $hasOwner
   }
-  foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
-    if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
+  foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories()) {
+    # Issue 1396: suffixed job folders (opus1369b, opus1211_run6, opus1373probe2) and playtest folders (pt1120c) too.
+    $issue = ''
+    if ($dir.Name -match $helperJobName) { $issue = $Matches['issue'] }
+    elseif ($dir.Name -notmatch $playtestJobName) { continue }
     Assert-GpuQuiet
-    Clear-ScratchFolder $dir $Matches[1] 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
+    $script:helperGone = $false
+    Clear-ScratchFolder $dir $issue 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
+    if (-not $script:helperGone) { Clear-JobCheckouts $dir $issue $temp $now $dryRun $activeLegacy $mirror }
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }
