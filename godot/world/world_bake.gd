@@ -125,6 +125,11 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 func _loading() -> bool:
 	return not get_tree().get_nodes_in_group("battle_loading").is_empty()
 
+var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker
+
+func _enter_tree() -> void:
+	_exiting = false
+
 func _process(_dt: float) -> void:
 	if _thread != null:
 		if _thread.is_alive(): return
@@ -140,6 +145,11 @@ func _process(_dt: float) -> void:
 		if result.image == null and not job.has("path") and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
 			job.raster_done = true
 			var img: Image = await _canvas(job.code, job.params, job.size)
+			# issue 1482: the raster awaited frames; if the service left the tree meanwhile, _exit_tree already joined
+			# and cleared every job, so no new worker may start (it would never be joined)
+			if _exiting or not is_inside_tree():
+				job.done = true
+				return
 			_thread = Thread.new()
 			_thread.start(_finish_image.bind(_active, img, _keep_keys()))
 			return
@@ -181,6 +191,7 @@ func _process(_dt: float) -> void:
 
 func _exit_tree() -> void:
 	# Deleting a world does not cancel its shared job. Only shutdown joins it.
+	_exiting = true
 	if _thread != null: _thread.wait_to_finish()
 	for job in _jobs.values(): job.done = true
 	_jobs.clear()

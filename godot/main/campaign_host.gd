@@ -11,6 +11,7 @@ const Campaign := preload("res://campaign/campaign.gd")
 const UI_G3 := "res://ui/campaign/campaign_ui.gd"
 const Fallback := preload("res://main/campaign_fallback_ui.gd")
 const Teaching := preload("res://ui/campaign/campaign_tips.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: ui_boss when a boss or Nemesis fight is entered
 
 # the G3 parity bot's weights (campaign/test/parity_campaign.gd), minus the stub battle buttons: real battles decide fights
 const STAY := {"closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
@@ -114,18 +115,30 @@ static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
 	return Campaign.has_saved_run(path)
 
 
-var _music_page := ""
+var _music_page := ""   # the music key last played (music_key); "" after a battle, so the page plays again
+
+
+# Issue 1482: which music a campaign page asks for. "title", "map:<sector>" (the map and the service stop: a run page
+# keeps its sector's map track, and a new sector is a new key even when the page kind stays "map"), or the page kind
+# itself for pages that keep whatever plays (the battle briefing, the end card, setup pages).
+const MAP_MUSIC_PAGES := ["map", "shipyard"]
+static func music_key(kind: String, run) -> String:
+	if kind == "title":
+		return "title"
+	if kind in MAP_MUSIC_PAGES and run is Dictionary:
+		return "map:%d" % int((run as Dictionary).get("sector", 1))
+	return kind
 
 
 func _on_changed() -> void:
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	# the map's music per sector (the music helper's player)
-	var kind := str(C.page.get("kind", ""))
-	if main.music != null and kind != _music_page:
-		_music_page = kind
-		if kind == "map" and C.RUN != null:
-			main.music.play_map(int(C.RUN.get("sector", 1)))
-		elif kind == "title":
+	var key := music_key(str(C.page.get("kind", "")), C.RUN)
+	if main.music != null and key != _music_page:
+		_music_page = key
+		if key.begins_with("map:"):
+			main.music.play_map(int(key.substr(4)))
+		elif key == "title":
 			main.music.play_title()
 	# back on the title page (the player left the run, or the run ended and they pressed Title): hand back to main's title
 	if not bot and C.page.get("kind", "") == "title" and C.modal_d == null:
@@ -195,7 +208,17 @@ func _on_battle() -> void:
 	if in_battle:
 		return
 	in_battle = true
+	if not bot and is_boss_fight(C.pending_battle):
+		Kit.play("ui_boss")
 	_play_battle.call_deferred()
+
+
+# A sector flagship, the finale or a Nemesis battle (issue 1448): the fights that open on the boss chord.
+static func is_boss_fight(cfg) -> bool:
+	if not (cfg is Dictionary):
+		return false
+	var nm = cfg.get("nemesis")
+	return str(cfg.get("kind", "")) == "boss" or (nm is Dictionary and not nm.is_empty())
 
 
 func _play_battle() -> void:
@@ -211,6 +234,7 @@ func _play_battle() -> void:
 		if ui != null:
 			ui.visible = true
 		in_battle = false
+		_music_page = ""   # issue 1482
 		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
 		C.leave_battle_saved()
 		return
@@ -226,6 +250,7 @@ func _play_battle() -> void:
 	if bot:
 		log_b.append(_battle_line(a, res, r))
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
+	_music_page = ""   # issue 1482: the battle played its own music; whatever page follows (even the same one) plays its track
 	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", _bstate(a))
 
 

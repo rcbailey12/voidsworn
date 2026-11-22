@@ -287,6 +287,7 @@ Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mos
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
@@ -756,8 +757,10 @@ quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 
 7.9 **Firing ends a non-Glasswright ship's movement for that activation: no move, turn in place or ram after it fires.**
 Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
-movement or a free turn after firing (Fleet Elsewhere, The Wall Moves, Cut and Turn) still work through that same budget. Why:
-Ryan, "Agree no" (issue 1560 item 14). Set: Ryan, Nov 22 (R396). Code: canRotate and ramInfo in both rules twins.
+movement after firing (Fleet Elsewhere, The Wall Moves) add to that same budget. A free turn granted by an admiral tree skill
+(Cut and Turn, Fleet Elsewhere, Trophy Standard) still turns a ship after firing; that skill is the exception it grants (Set:
+Ryan, Nov 22, R397). Why:
+Ryan, "Agree no" (issue 1560 item 14) and "Yes agree on skills". Set: Ryan, Nov 22 (R396, R397). Code: canRotate and ramInfo in both rules twins.
 
 8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
 rising whooshes or stock explosions; weight in the low and low-mid with a soft top. Why: "The sounds that I've heard from the

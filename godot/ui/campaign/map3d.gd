@@ -35,7 +35,8 @@ const REGION_NEBULA_LANDMARK_SPREAD := 5.0
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
-const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
+const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1448: the map's clicks use the same ui cues as the buttons   # Lime Tactical pieces for the map words (issue #344)
 const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
 const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
@@ -1200,6 +1201,8 @@ func _gui_input(e: InputEvent) -> void:
 			var id = _node_at(e.position)
 			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
 				accept_event()
+				if e.double_click: Kit.play("ui_confirm")
+				elif str(ui.get("picked")) != id: Kit.play(Kit.HOVER_CUE)
 				if ui.has_method("pick_route"): ui.pick_route(id)
 				if e.double_click: fly_to(id)
 			elif e.double_click: reset_view()
@@ -1219,7 +1222,7 @@ func _gui_input(e: InputEvent) -> void:
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			var pk = str(ui.picked) if ui.get("picked") != null else ""
-			if not e.echo and pk != "": accept_event(); fly_to(pk)
+			if not e.echo and pk != "": accept_event(); Kit.play("ui_confirm"); fly_to(pk)
 func _input(e: InputEvent) -> void:
 	# Consume the skip before a side-panel button can start another action.
 	if not _flying or not is_visible_in_tree(): return

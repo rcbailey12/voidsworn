@@ -156,7 +156,8 @@ def own_part(kind='gun'):
 
 def material_setup(code, length=26.0):
     """inside zones plus the shared Glasswright paint stack for every outside surface. The review mosaic keeps the bake's
-    cell count per ship length (stack.CELLS_PER_LENGTH), so the review shows the cells the game will show."""
+    cell count per ship length (stack.cells_per_length(): craft of length 1.6 or less take the craft count, issue 1373), so the
+    review shows the cells the game will show."""
     import kit
     stack = gw_kit('stack')
     for name, (rgb, em, rough, _trans, metal) in ZONES.items():
@@ -168,6 +169,8 @@ def material_setup(code, length=26.0):
         bs.inputs['Transmission Weight'].default_value = 0.0   # R337: nothing see-through, inside or out
     made = stack.setup(kit)
     k = 26.0 / length
+    if 0 < length <= 1.6 + 1e-6:   # strike craft: the bake's bigger craft cells (stack.cells_per_length)
+        k *= stack.CRAFT_CELLS_PER_LENGTH / stack.CELLS_PER_LENGTH
     for node in made['gw_mosaic'].node_tree.nodes:
         if node.type == 'TEX_VORONOI':
             node.inputs['Scale'].default_value *= k
