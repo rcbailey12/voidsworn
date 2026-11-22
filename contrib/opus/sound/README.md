@@ -26,9 +26,10 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
   with a set duration, 900 a minute of music, stems at the song's own cost (unpublished). The `character-cost` response
   header is logged in `manifest.jsonl` on every call and counted. The key's credit cap at elevenlabs.io is the real
   ceiling; `--max-credits` is a second stop read from the account balance. A paid call is never retried after a 5xx or
-  a lost answer. Every accepted paid answer is written to `receipts.jsonl` before its file is saved (Artoo on PR 1590):
-  if the body is cut off or the save fails, the run stops and a rerun prints RECONCILE for that take instead of paying
-  again; after checking the account history, delete that receipt line to allow one new try. Offline check: `node elevenlabs_gen_selftest.js`.
+  a lost answer. Every paid call writes a pending line to `receipts.jsonl` first (no call is sent if that write
+  fails), then accepted, then the file, the manifest row and done (Artoo on PR 1590). A take that is not on disk with its
+  manifest row is paid for again only if it has no receipt or the vendor refused it (not_charged); otherwise a rerun prints
+  RECONCILE. After checking the account history, delete that take's receipt lines to allow one new try. Offline check: `node elevenlabs_gen_selftest.js`.
 - `generation_mode` ("loop", "ambience", "track") was asked for in issue 1585 but is not in the ElevenLabs API reference
   for POST /v1/music read on Nov 22 2026, so the generator sends it only when an item sets it, and the pilot does not.
 - Death sounds are atomic beat layers for godot/audio/death_audio.gd (powerdown, bed, vent, crack, boom at the split,

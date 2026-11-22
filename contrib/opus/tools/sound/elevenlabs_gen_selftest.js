@@ -100,10 +100,33 @@ srv.listen(0, '127.0.0.1', async () => {
   sfxN = count('/v1/sound-generation');
   r = await run(['--base', base, '--only', 'a'], mock);
   rc = fs.readFileSync(path.join(out, 'receipts.jsonl'), 'utf8');
-  ck(count('/v1/sound-generation') === sfxN + 1 && /accepted but could not save/.test(r.out) && /"state":"accepted_save_failed"/.test(rc), 'save failure stops and is receipted');
+  ck(count('/v1/sound-generation') === sfxN + 1 && /accepted but could not record or save/.test(r.out) && /"state":"accepted_save_failed"/.test(rc), 'save failure stops and is receipted');
   sfxN = count('/v1/sound-generation');
   r = await run(['--base', base, '--only', 'a'], mock);
   ck(count('/v1/sound-generation') === sfxN + 1 && /RECONCILE a_t1\.mp3/.test(r.out), 'save failure is not paid again on rerun');
+
+  // Artoo's second PR 1590 finding: a receipt write failing at the paid-call boundary must never allow a second payment.
+  fs.rmSync(out, { recursive: true });
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], Object.assign({ ELEVENLABS_FAULT: 'pending' }, mock));
+  ck(count('/v1/sound-generation') === sfxN && /receipts file not writable; nothing was sent/.test(r.out), 'pending write fails: nothing sent');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(count('/v1/sound-generation') === sfxN + 2 && /ELEVENLABS GEN PASS/.test(r.out), 'after a failed pending write, a rerun makes both takes');
+
+  fs.rmSync(out, { recursive: true });
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], Object.assign({ ELEVENLABS_FAULT: 'accepted,accepted_save_failed' }, mock));
+  rc = fs.readFileSync(path.join(out, 'receipts.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
+  ck(count('/v1/sound-generation') === sfxN + 1 && /STOP: an answer was lost/.test(r.out) && rc[rc.length - 1].state === 'pending', 'accepted write fails after the paid call: run stops, pending left');
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(/RECONCILE a_t1\.mp3: .*\(pending\)/.test(r.out) && count('/v1/sound-generation') === sfxN + 1 && /made a_t2\.mp3/.test(r.out), 'a leftover pending forces RECONCILE, only the other take is paid');
+
+  fs.rmSync(out, { recursive: true });
+  r = await run(['--base', base, '--only', 'a'], Object.assign({ ELEVENLABS_FAULT: 'done' }, mock));
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(count('/v1/sound-generation') === sfxN + 1 && !/RECONCILE a_t1/.test(r.out) && /ELEVENLABS GEN PASS/.test(r.out), 'a saved take with its manifest row is done even if the done line failed');
 
   ck(calls.filter(c => c.route !== '/v1/redirect').every(c => c.key === MOCK_KEY), 'the real key never reached the server');
   ck(!/real_key_must_not_leave/.test(r.out), 'real key not printed');

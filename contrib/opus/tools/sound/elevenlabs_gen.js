@@ -160,9 +160,15 @@ function save(out, name, buf) {
 }
 
 // A step is done only when its file exists and its manifest row matches the file's size.
-// Receipts (Artoo on PR 1590): every accepted paid response is written to receipts.jsonl BEFORE its audio is saved. A
-// step with a receipt but no finished output is never paid for again by a rerun: it is reported for reconciliation
-// (check the account history, then delete its receipt line to allow one new attempt).
+// Receipts (Artoo on PR 1590, two findings): before any paid call a "pending" line is written to receipts.jsonl, and the
+// call is not sent if that write fails. After the vendor accepts, an "accepted" line is written, then the audio is saved,
+// then the manifest row, then a "done" line. A step counts as made only when its file and manifest row match. A step
+// that is not made is cleared for a new paid call only when it has no receipt, or its last receipt is "not_charged" (the
+// vendor refused with a 4xx, nothing charged). Any other last state (pending, accepted, accepted_no_body,
+// accepted_save_failed, or done with the file or manifest row since lost) means a call may have been paid for without a
+// finished output on disk: a rerun prints RECONCILE and never pays for it again.
+// To allow one new try after checking the account history, delete that step's lines from receipts.jsonl.
+const CLEAR = new Set(['not_charged']);
 function readReceipts(file) {
   const m = new Map();
   if (!fs.existsSync(file)) return m;
@@ -171,6 +177,11 @@ function readReceipts(file) {
     try { const r = JSON.parse(line); m.set(r.file, r); } catch (e) { /* torn line */ }
   }
   return m;
+}
+// Offline fault cases: ELEVENLABS_FAULT=<state>[,<state>] (mock mode only) makes the receipt writes of those states throw.
+function receipt(file, rec) {
+  if (process.env.ELEVENLABS_MOCK === '1' && String(process.env.ELEVENLABS_FAULT || '').split(',').includes(rec.state)) throw new Error('fault: ' + rec.state + ' write');
+  fs.appendFileSync(file, JSON.stringify(Object.assign(rec, { at: new Date().toISOString() })) + '\n');
 }
 
 function done(out, rows, s) {
@@ -188,9 +199,10 @@ async function main() {
   let rows = readManifest(manifest);
   const receiptsFile = path.join(a.out, 'receipts.jsonl');
   const receipts = readReceipts(receiptsFile);
-  const blocked = steps.filter(s => !done(a.out, rows, s) && receipts.has(s.file));
-  for (const s of blocked) console.log(`RECONCILE ${s.file}: a paid call was accepted (${receipts.get(s.file).state}) but no output was finished; not paying again`);
-  const todo = steps.filter(s => !done(a.out, rows, s) && !receipts.has(s.file));
+  const open = s => receipts.has(s.file) && !CLEAR.has(receipts.get(s.file).state);
+  const blocked = steps.filter(s => !done(a.out, rows, s) && open(s));
+  for (const s of blocked) console.log(`RECONCILE ${s.file}: a paid call may have run (${receipts.get(s.file).state}) but no output was finished; not paying again`);
+  const todo = steps.filter(s => !done(a.out, rows, s) && !open(s));
   const est = todo.reduce((n, s) => n + s.credits, 0);
   console.log(`list ${path.basename(a.list)}: ${steps.length} steps, ${todo.length} still to make, estimate ${est} credits ` +
     `(stems priced at their song's cost; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
@@ -207,17 +219,26 @@ async function main() {
     const spent = now ? now.used - before.used : estSpent;
     if (spent + s.credits > a.max) { stopped = `the next step would pass ${a.max} credits (${spent} used so far)`; break; }
     const it = s.it;
+    let sent = false;
+    // A failed pending write stops the run before anything is sent (nothing paid).
+    const pend = st => {
+      try { receipt(receiptsFile, { file: st.file, state: 'pending', estimate: st.credits }); }
+      catch (e) { const err = new Error('could not write the pending receipt, nothing sent: ' + e.message); err.halt = true; throw err; }
+      sent = true;
+    };
     const started = new Date().toISOString();
     try {
       let res, params;
       if (s.step === 'sfx') {
         params = { text: it.prompt, duration_seconds: it.seconds, loop: !!it.loop, prompt_influence: it.influence ?? 0.5,
           model_id: it.model || list.sfx_model || 'eleven_text_to_sound_v3' };
+        pend(s);
         res = await post(a.base, key, '/v1/sound-generation?output_format=mp3_44100_192', params);
       } else if (s.step === 'song') {
         params = { prompt: it.prompt, music_length_ms: Math.round(it.seconds * 1000), force_instrumental: it.instrumental !== false,
           model_id: it.model || list.music_model || 'music_v2' };
         if (it.generation_mode) params.generation_mode = it.generation_mode;
+        pend(s);
         res = await post(a.base, key, '/v1/music?output_format=' + (it.format || 'auto'), params);
       } else {
         const songFile = path.join(a.out, s.song);
@@ -225,15 +246,17 @@ async function main() {
         params = { from: s.song };
         const form = new FormData();
         form.append('file', new Blob([fs.readFileSync(songFile)], { type: 'audio/mpeg' }), s.song);
+        pend(s);
         res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
       estSpent += res.charged ?? s.credits;
-      fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted', charged: res.charged, estimate: s.credits,
-        request_id: res.req, at: new Date().toISOString() }) + '\n');
-      try { save(a.out, s.file, res.buf); } catch (e) {
-        fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted_save_failed', charged: res.charged,
-          request_id: res.req, at: new Date().toISOString() }) + '\n');
-        const err = new Error('accepted but could not save ' + s.file + ': ' + e.message);
+      // If any write below fails, the pending line stays last and the step is held for RECONCILE.
+      try {
+        receipt(receiptsFile, { file: s.file, state: 'accepted', charged: res.charged, estimate: s.credits, request_id: res.req });
+        save(a.out, s.file, res.buf);
+      } catch (e) {
+        try { receipt(receiptsFile, { file: s.file, state: 'accepted_save_failed', charged: res.charged, request_id: res.req }); } catch (e2) { /* pending stays */ }
+        const err = new Error('accepted but could not record or save ' + s.file + ': ' + e.message);
         err.ambiguous = true;
         throw err;
       }
@@ -242,18 +265,28 @@ async function main() {
         params, bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, cost_headers: res.cost, charged: res.charged,
         estimate: s.credits, started,
         source: 'ElevenLabs API, Creator plan (commercial)' };
-      fs.appendFileSync(manifest, JSON.stringify(rec) + '\n');
-      rows.set(s.file, rec);
+      try {
+        fs.appendFileSync(manifest, JSON.stringify(rec) + '\n');
+        rows.set(s.file, rec);
+        receipt(receiptsFile, { file: s.file, state: 'done', charged: res.charged, request_id: res.req });
+      } catch (e) {
+        const err = new Error('saved ' + s.file + ' but could not record it: ' + e.message);
+        err.ambiguous = true;
+        throw err;
+      }
       console.log(`made ${s.file}`);
     } catch (e) {
       failed++;
       if (e.accepted) {
         estSpent += e.accepted.charged ?? s.credits;
-        fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted_no_body', charged: e.accepted.charged,
-          request_id: e.accepted.req, at: new Date().toISOString() }) + '\n');
+        try { receipt(receiptsFile, { file: s.file, state: 'accepted_no_body', charged: e.accepted.charged, request_id: e.accepted.req }); } catch (e2) { /* pending stays */ }
+      } else if (sent && e.status && e.status < 500) {
+        // The vendor refused (4xx): nothing was made or charged, so a rerun may try again. If this write fails, pending stays.
+        try { receipt(receiptsFile, { file: s.file, state: 'not_charged', status: e.status }); } catch (e2) { /* pending stays */ }
       }
       console.log(`FAILED ${s.file}: ${redact(e.message)}`);
       if (e.status === 401 || e.status === 402 || e.status === 403) { stopped = 'key or plan problem'; break; }
+      if (e.halt) { stopped = 'receipts file not writable; nothing was sent for this step'; break; }
       if (e.ambiguous) { stopped = 'an answer was lost or the server failed; check the balance before rerunning'; break; }
     }
   }
