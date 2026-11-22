@@ -588,7 +588,7 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   fs.renameSync(path.join(tombAt, 'new'), path.join(tombAt, 'new.removing'));
   fs.writeFileSync(path.join(tombAt, 'removing.txt'), `new.removing ${two}\r\n`);
   r = run('dropjobs', path.dirname(tombAt), 'dry');
-  assert(fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`earlier removal would be finished if removing.txt recorded it: ${path.join(tombAt, 'new.removing')}`), 'a dry sweep names a left tomb and keeps it: ' + r.out);
+  assert(fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`earlier removal would be finished after the relay proof if removing.txt recorded it: ${path.join(tombAt, 'new.removing')}`), 'a dry sweep names a left tomb and keeps it: ' + r.out);
   r = run('dropjobs', path.dirname(tombAt));
   assert(!fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`finished an earlier removal`), 'the live sweep finishes a recorded tomb with no checkout left beside it: ' + r.out);
   assert(fs.existsSync(path.join(tombAt, 'out_new', 'result.txt')), 'results stay');
