@@ -252,16 +252,24 @@ function Test-RelayedResults($dir, $mirror) {
   }
   $checkouts += $script:outCheckouts
   if (-not $outFiles.Count) { throw 'no out folder to prove the results were relayed' }
-  $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName }))
+  # A file over GitHub's 100 MB limit can never be a blob on a relay branch, so it counts as not relayed without being read
+  # (DRY3 on the PC spent about 250 s per opus1434 folder hashing 2 GB videos that keep the folder anyway).
+  $missing = 0; $all = $outFiles.Count
+  foreach ($file in @($outFiles | Where-Object { $_.Length -gt 100MB })) {
+    $missing++
+    Log "helper file not on a relay branch: $($file.FullName) ($($file.Length) bytes; over GitHub's 100 MB file limit, not read)"
+  }
+  $outFiles = @($outFiles | Where-Object { $_.Length -le 100MB })
+  $hashes = @()
+  if ($outFiles.Count) { $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName })) }
   if ($hashes.Count -ne $outFiles.Count) { throw 'result hashes could not be read' }
-  $missing = 0
   for ($i = 0; $i -lt $outFiles.Count; $i++) {
     if (-not $receipts.Contains($hashes[$i])) {
       $missing++
       Log "helper file not on a relay branch: $($outFiles[$i].FullName) ($($outFiles[$i].Length) bytes)"
     }
   }
-  if ($missing) { throw "results not all relayed: $missing of $($outFiles.Count) out files are not on a relay branch" }
+  if ($missing) { throw "results not all relayed: $missing of $all out files are not on a relay branch" }
   foreach ($file in ($other | Select-Object -First 20)) { Log "helper file outside out and outside a checkout: $($file.FullName) ($($file.Length) bytes)" }
   if ($other.Count) { throw "$($other.Count) files outside out are not in a rebuildable checkout" }
   foreach ($checkout in $checkouts) {

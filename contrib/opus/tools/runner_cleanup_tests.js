@@ -377,6 +377,10 @@ try {
   dateTree(helperRelayed, 30);
   const helperUnrelayed = helperFolder('opus903', { 'out/result.txt': 'opus903 result relayed', 'out/shot.png': 'opus903 picture too big to relay' });
   relay(path.join(helperUnrelayed, 'out', 'result.txt'));
+  // DRY3 on the PC spent about 250 s per opus1434 folder hashing 2 GB videos: a file over GitHub's 100 MB limit is never
+  // on a relay branch, so it counts as not relayed without being read (a sparse file here).
+  const helperHuge = path.join(helperUnrelayed, 'out', 'capture.avi');
+  fs.writeFileSync(helperHuge, ''); fs.truncateSync(helperHuge, 101 * 1024 * 1024);
   dateTree(helperUnrelayed, 30);
   const helperLoose = helperFolder('opus906', { 'out/result.txt': 'opus906 loose blob only' });
   git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', path.join(helperLoose, 'out', 'result.txt')]);
@@ -601,7 +605,8 @@ try {
   assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
-  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 2 of 3 out files are not on a relay branch/);
+  assert(dry.includes(`helper file not on a relay branch: ${helperHuge} (105906176 bytes; over GitHub's 100 MB file limit, not read)`), 'a huge file is not hashed: ' + dry);
   assert(dry.includes(`helper file not on a relay branch: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
   assert.match(decision(dry, helperWorktree, 'would keep'), /is not rebuildable: checkout may be shared with another worktree: /);
   assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files that differ from the shared build/);
