@@ -3532,6 +3532,12 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_key(k: int) -> void:
+	if hud.menu != null and is_instance_valid(hud.menu):
+		# issue 1559 item 1: the menu is modal. Its own buttons take Enter, Space and the arrows; only Esc reaches the
+		# battle (it closes the menu). No order key (B, X, G, C, Q, E, 1 to 6, Backspace) acts behind it.
+		if k == KEY_ESCAPE:
+			hud.hide_menu()
+		return
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		# issue 529: a tree prompt is open; 1 to 3 answer it, nothing else acts until it is answered
 		var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}

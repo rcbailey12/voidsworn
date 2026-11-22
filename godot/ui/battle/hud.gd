@@ -9,6 +9,7 @@ const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
 const Ledger := preload("res://ui/battle/ledger.gd")
+const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 
 # the orders sheet palette (glass_shell.gd, R176; Glacier R210)
 const S_EMBER := GS.MAP_EMBER
@@ -177,6 +178,7 @@ func _rebuild() -> void:
 	remove_child(root)
 	root.queue_free()
 	menu = null
+	menu_block = null
 	endcard = null
 	tipcard = null
 	bars = []
@@ -1209,6 +1211,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 # the in-battle menu (Esc with nothing to cancel, or Menu on the sheet): items are [text, action, arg]. body, when given,
 # is a paragraph under the title (the Keys page).
 var menu: PanelContainer
+var menu_block: Control = null   # issue 1559 item 1: the clear sheet under the menu that keeps clicks off the board
 
 
 func show_menu(title: String, items: Array, row := -1, body := "") -> void:
@@ -1220,8 +1223,12 @@ func show_menu(title: String, items: Array, row := -1, body := "") -> void:
 			refocus = maxi(0, fo.get_index() - 1)   # row 0 is the title label
 	hide_menu()
 	_last["show_menu"] = [title, items, body]
+	# issue 1559 item 1: the menu is modal. A clear sheet under it eats every click (the board, the sheet, the log), the
+	# keyboard stays inside it (ui/theme/modal_focus.gd), and battle.gd lets only Esc through to the battle.
+	menu_block = ModalFocus.blocker(root)
 	var mw := _modal(30, 22)
 	menu = mw[0]
+	ModalFocus.attach(menu)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(2))
 	v.custom_minimum_size = Vector2(s(360), 0)
@@ -1317,6 +1324,9 @@ func hide_menu() -> void:
 	if menu != null:
 		menu.queue_free()
 		menu = null
+	if menu_block != null and is_instance_valid(menu_block):
+		menu_block.queue_free()
+	menu_block = null
 
 
 func hide_end() -> void:
@@ -1399,7 +1409,8 @@ func over_ui(p: Vector2) -> bool:
 	for c in [log_panel, tipcard, endcard, menu, legend]:
 		if c != null and is_instance_valid(c) and c.is_visible_in_tree() and c.modulate.a > 0.5 and c.get_global_rect().has_point(p):
 			return true
-	return false
+	# issue 1559 item 1: with the menu open, the whole screen is the menu's
+	return menu != null and is_instance_valid(menu)
 
 
 # ---------------------------------------------------------------- the turn strip (the enemy's turn)
