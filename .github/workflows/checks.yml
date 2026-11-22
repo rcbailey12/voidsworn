@@ -39,7 +39,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: checks-${{ github.ref }}
+  group: checks-${{ github.ref }}-${{ github.event_name }}   # issue 1507: a by-hand run no longer cancels the push run
   cancel-in-progress: true
 jobs:
   # Issue 1487 (audit GH-03): a push that changes only writing and pictures (tools/ci/docs_only.js says exactly which files
