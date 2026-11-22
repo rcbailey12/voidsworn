@@ -52,8 +52,9 @@ func _shot(name: String) -> void:
 	if shots == "":
 		return
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("I1559_" + name + ".png"), "cloud direction check")
-	print("shot I1559_" + name)
+	# the shared writer refuses a stage it does not know (the "cloud direction check" stage arrives with #1606): say so
+	var err: int = preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("I1559_" + name + ".png"), "cloud direction check")
+	_check(err == OK, "shot I1559_" + name + " saved with its stamp (error %d)" % err)
 
 
 func _click(p: Vector2) -> void:
