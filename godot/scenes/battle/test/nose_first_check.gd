@@ -9,7 +9,10 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #     within 35 degrees of its course (no skating on thrusters), except a straight back-off (retro jets, slow) and the
 #     one-hex sidestep that ends a dogleg (the allowed one-hex slide);
 #   - no heading jump (no frame turns more than 3.5 degrees), no roll;
-#   - a one-hex slide is flown on thrusters, slower than a one-hex burn by the slide pace (battle.gd SLIDE_PACE).
+#   - a one-hex slide is flown on thrusters, slower than a one-hex burn by the slide pace (battle.gd _slide_pace);
+#   - issue 1581 (no skid): on a run flown on the main engine, while the hull moves at more than a quarter of its peak
+#     speed its nose is within 5 degrees of its course (turn, then burn, then turn), and a move flown on thrusters never
+#     lights the main drive (the battle is told it is cold the whole way).
 # Prints, per class and route, the move time and the time to reach speed.
 #   godot --headless --path godot --script res://scenes/battle/test/nose_first_check.gd
 const MOVE_HEX := [560.0, 860.0]
@@ -48,7 +51,7 @@ func _init() -> void:
 			var r := _fly(c, sk, name)
 			rows[name] = r
 			_check(str(c[0]), name, r)
-			line += " | %s %.2f s (speed %.2f)" % [name, r["dur"], r["to_speed"]]
+			line += " | %s %.2f s (speed %.2f, skid %.1f)" % [name, r["dur"], r["to_speed"], float(r.get("skid", 0.0))]
 		print(line)
 		if float(rows["side1"]["dur"]) < float(rows["ahead1"]["dur"]) * 1.3:
 			fails.append("%s: a one-hex slide (%.2f s) is not plainly slower than a one-hex burn (%.2f s)" % [c[0], rows["side1"]["dur"], rows["ahead1"]["dur"]])
@@ -106,12 +109,10 @@ func _fly(c: Array, sk: float, name: String) -> Dictionary:
 			hexes.append(B.board.hex_world(st["q"], st["r"]))
 	var steps: Array = B._glide_steps(sv, path, sk)
 	var jets_only: bool = not steps.is_empty() and bool((steps[-1] as Dictionary).get("thrusters", false))
-	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk)
-	var gopts := {"mass": sk, "cap": 7.0}
-	if not steps.is_empty() and bool((steps[-1] as Dictionary).get("nose_first", false)):
-		gopts["point"] = B.NF_POINT
-		gopts["trail"] = B.NF_TRAIL
-	sv.play_glide(steps, per * B.MOVE_CRUISE * (B.SLIDE_PACE if jets_only else 1.0) / 1000.0, gopts)
+	var per: float = lerpf(MOVE_HEX[0], MOVE_HEX[1], sk) * float(B._escort_k(sk, B.MOVE_ESCORT_PACE))
+	var gopts := {"mass": sk, "cap": 7.0, "thrusters": jets_only,
+		"nose_first": not steps.is_empty() and bool((steps[-1] as Dictionary).get("nose_first", false))}
+	sv.play_glide(steps, per * B.MOVE_CRUISE * (B._slide_pace(sk) if jets_only else 1.0) / 1000.0, gopts)
 	var dt := 1.0 / 60.0
 	var t := 0.0
 	var tel: Array = []
@@ -126,7 +127,7 @@ func _fly(c: Array, sk: float, name: String) -> Dictionary:
 		var pos: Vector3 = sv.position
 		var mv := Vector2(pos.x - prev_pos.x, pos.z - prev_pos.z)
 		var to_end: float = Vector2(pos.x - (hexes[-1] as Vector3).x, pos.z - (hexes[-1] as Vector3).z).length() if not hexes.is_empty() else 0.0
-		tel.append({"t": t, "to_end": to_end, "v": mv.length() / dt, "dir": mv, "yaw": float(sv.cur_yaw), "yr": rad_to_deg(absf(float(sv.cur_yaw) - prev_yaw)) / dt, "roll": sv.rotation.x})
+		tel.append({"t": t, "to_end": to_end, "v": mv.length() / dt, "dir": mv, "yaw": float(sv.cur_yaw), "yr": rad_to_deg(absf(float(sv.cur_yaw) - prev_yaw)) / dt, "roll": sv.rotation.x, "thrust": float(sv.thrust), "cold": bool(sv.drive_cold)})
 		for k in hexes.size():
 			near[k] = minf(float(near[k]), Vector2(pos.x - (hexes[k] as Vector3).x, pos.z - (hexes[k] as Vector3).z).length())
 		prev_yaw = float(sv.cur_yaw)
@@ -169,6 +170,24 @@ func _check(cls: String, name: String, r: Dictionary) -> void:
 			var nose := Vector2(cos(float(x.yaw)), -sin(float(x.yaw)))
 			worst = maxf(worst, rad_to_deg(nose.angle_to(d.normalized())) if d.length() > 1e-6 else 0.0)
 	worst = absf(worst)
+	# issue 1581: no skid on an engine-flown run (the dogleg's last hex and a straight back-off are slides, by design)
+	var skid := 0.0
+	if not bool(r["jets_only"]) and int(r["n_hex"]) >= 1 and name != "back2":
+		for x in r["tel"]:
+			var tail_ok2: bool = name == "dogleg" and float(x.to_end) < B.board.HW * 1.05
+			if tail_ok2 or float(x.v) <= 0.25 * float(r["vpk"]):
+				continue
+			var d2: Vector2 = x.dir
+			var nose2 := Vector2(cos(float(x.yaw)), -sin(float(x.yaw)))
+			skid = maxf(skid, absf(rad_to_deg(nose2.angle_to(d2.normalized()))) if d2.length() > 1e-6 else 0.0)
+	r["skid"] = skid
+	if skid > 5.0:
+		fails.append("%s: the hull skids %.1f degrees off its nose under way (issue 1581: under 5)" % [tag, skid])
+	if bool(r["jets_only"]):
+		for x in r["tel"]:
+			if float(x.thrust) > 0.02:
+				fails.append("%s: a move on thrusters lights the main drive (%.2f)" % [tag, float(x.thrust)])
+				break
 	if worst > 35.0:
 		fails.append("%s: under way the nose is %.0f degrees off the course (skating on thrusters)" % [tag, worst])
 	if name in ["side1", "back2"] and not bool(r["jets_only"]):
