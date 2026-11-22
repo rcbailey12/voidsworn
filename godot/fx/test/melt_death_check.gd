@@ -62,7 +62,7 @@ func _run() -> void:
 		check(int(b["haze"]) > 0, "%s control: a blast death's smoke is seen by this probe (%d)" % [tag, b["haze"]])
 		check(b["style"] != "melt" and b["overlay"] != "melt", "%s control: a blast death keeps its own look" % tag)
 	var navy := await _kill("hegemony", "Cruiser", "melt")
-	check(bool(navy["arcs"]), "a Navy cruiser killed by acid still throws its blue-white arcs across the break as it parts")
+	check(int(navy["arcs"]) >= 2, "a Navy cruiser killed by acid still throws its blue-white arcs across the break as it parts (%d bolts drawn)" % navy["arcs"])
 	var late := await _kill("hegemony", "Cruiser", "melt", 20.0)
 	check(late["spot_err"] < 0.01, "an acid burn tick kill 20 s after the volley still glows on the acid hit, not the later hit (off by %.3f)" % late["spot_err"])
 	var spots := await _acid_volley()
@@ -154,7 +154,7 @@ func _kill(faction: String, cls: String, cause: String, acid_age := 0.0) -> Dict
 				var ff = mi.material_override.get_shader_parameter("fac_fire")
 				if ff is Color and (ff as Color).a > 0.5 and Vector3(ff.r, ff.g, ff.b).distance_to(Vector3(0.80, 0.95, 0.55)) < 0.05: res["green_flash"] += 1
 			if kind == "flash" and float(mi.material_override.get_shader_parameter("soft_flash")) < 0.5: res["hard"] += 1
-	res["arcs"] = s.has_meta("death_arcs")
+	res["arcs"] = (s.get_meta("death_arcs", []) as Array).size()  # bolts actually drawn, not just the empty list _arcs sets up
 	for c in spy.cols:
 		if (c as Vector3).distance_to(ACID_SPARK) < 0.03: res["green_spark"] += 1
 	world.queue_free()
