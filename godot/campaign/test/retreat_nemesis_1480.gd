@@ -128,6 +128,23 @@ func _run() -> void:
 					var cfg = c.B.get("cfg") if c.B is Dictionary else null
 					_check(cfg is Dictionary and cfg.get("kind") == "boss" and cfg.get("nemesis") is Dictionary and cfg["nemesis"].get("fac") == "deathless", name + ": entering it starts the boss battle with his Nemesis settings (%s)" % str(cfg.get("kind") if cfg is Dictionary else cfg))
 					c.battle_mode = ""
+			"eclipse_wait":
+				# the revive put met back a sector: no late fight, strike or full clock may take the meeting before the boss
+				c.RUN["sector"] = 3; c.B = null
+				var Nw = c.ensureNemesis(); Nw["fac"] = "deathless"; Nw["revived"] = true; Nw["dead"] = false; Nw["met"] = 2; c.RUN["nemStrike"] = false; c.RUN["nemClock"] = 0
+				var cw4 = c.RUN["map"]["cols"].size() - 3
+				var late = null; var early = null; var bossw = null
+				for col in c.RUN["map"]["cols"]:
+					for x in col:
+						if late == null and int(x["col"]) >= cw4 and (x["type"] == "battle" or x["type"] == "elite"): late = x
+						if early == null and int(x["col"]) < cw4 and x["type"] == "battle": early = x
+						if x["type"] == "boss": bossw = x
+				_check(late != null and c.nemNodeIs(late) == bool(ex["lateFight"]), name + ": a late fight is not his")
+				c.RUN["nemStrike"] = true
+				_check(early != null and c.nemNodeIs(early) == bool(ex["strikeFight"]), name + ": an old strike does not make an early fight his")
+				c.RUN["nemStrike"] = false; c.nemClockAdd(c.NEM_CLOCK)
+				_check(c.jt(c.RUN.get("nemStrike")) == bool(ex["clockStrike"]), name + ": a full clock does not set a strike")
+				_check(c.nemNodeIs(bossw) == bool(ex["boss"]), name + ": the boss battle is his")
 	# item 2: the medal waits for the kill that ends him
 	for dead in [false, true]:
 		var k := Career.new()

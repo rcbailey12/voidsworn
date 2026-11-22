@@ -2562,7 +2562,7 @@ func nemSay(t, N) -> String:
 # without resolving anyone. Every caller passes the active commander, so the words are what they were.
 func nemWarnLine(N) -> String:
 	var st = nemBeh(N).get("strike")
-	if jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh(N).get("clock"), 1)) < float(NEM_CLOCK): return ""
+	if nemBossOnly(N) or jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh(N).get("clock"), 1)) < float(NEM_CLOCK): return ""
 	if st == "raid":
 		var canTow = RUN["fleet"].size() >= 3   # NEM-5: the warning names the tow when the fleet is big enough, since the fight can cripple a ship before the strike lands
 		return nemSay("Your next win fills his clock: he will raid", N) + " " + (numstr(jsround(float(RUN["credits"]) * 0.25)) + " credits" if float(RUN["credits"]) >= 30 else ("your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)" if canTow else "and find nothing to take")) + "."
@@ -2607,7 +2607,7 @@ func nemClockAdd(n) -> String:
 	if not jt(N) or jt(N.get("dead")): return ""
 	var step = float(n) * float(or_(nemBeh().get("clock"), 1)) if float(n) > 0 else float(n)
 	RUN["nemClock"] = clampv(jsround((nemClockGet() + step) * 2) / 2.0, 0, NEM_CLOCK)
-	if float(RUN["nemClock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(RUN.get("nemStrike")):
+	if float(RUN["nemClock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(RUN.get("nemStrike")) and not nemBossOnly(N):
 		RUN["nemStrike"] = true; var extra = nemStrike()
 		return nemSay(nemFull() + " has found your trail. Your next fight will be against his fleet." + ((" " + extra) if extra != "" else ""), N)   # #122: through nemSay (a she or an it read "his")
 	return ""
@@ -2644,16 +2644,20 @@ func nemStrike() -> String:
 func nemNodeIs(n, N0 = null) -> bool:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null: return false
-	if n["type"] == "boss": return jt(N.get("revived")) and float(RUN["sector"]) >= 3   # issue 1480 (R384): the revived Eclipse rival's last fight is the Sector 3 boss battle
+	if nemBossOnly(N): return n["type"] == "boss"   # issue 1480 (R384): the revived Eclipse rival's last fight is the Sector 3 boss battle, and no stop before it
+	if n["type"] == "boss": return false
 	var c4 = float(RUN["map"]["cols"].size() - 3)
 	if n["type"] != "battle" and n["type"] != "elite": return float(n["col"]) == c4
 	return jt(RUN.get("nemStrike")) or float(n["col"]) >= c4
+# issue 1480 (R384): the revived rival waits for the boss battle
+func nemBossOnly(N) -> bool: return jt(N) and jt(N.get("revived")) and float(RUN["sector"]) >= 3
 # Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
 func nemNodeTag(n, N0 = null) -> String: return "Nemesis meeting" if nemNodeIs(n, N0) else ""
 func nemMeetingLine(N0 = null) -> String:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N): return ""
 	if jt(N.get("dead")): return nemFull(N) + " is dead. No hunter will meet you this sector."
+	if nemBossOnly(N) and float(N["met"]) < float(RUN["sector"]): return nemSay(nemFull(N) + " came back. He waits for you in the Sector 3 boss battle.", N)
 	if float(N["met"]) >= float(RUN["sector"]): return nemSay("You have met " + nemFull(N) + " this sector. That meeting is done; the next sector brings the next hunter.", N)
 	return nemSay("You will meet " + nemFull(N) + " this sector. One meeting every sector is certain, and it comes at the latest before the rest stop. The clock is only an accelerant: every fight you win moves it at his pace, and a full clock brings the meeting sooner, never later.", N)
 func nemBattleCfg() -> Dictionary:

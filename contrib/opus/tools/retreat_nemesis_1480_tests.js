@@ -17,7 +17,7 @@ let pass = 0, fail = 0;
 function check(name, fn) { try { const r = fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
 eval(src + `
 function log(){} function tel(){} function toast(){} function saveRun(){} function modal(){} function closeModal(){} function show(){}
-global.T = { get RUN(){ return RUN; }, newRun, rndSeed, retreatBack: typeof retreatBack === 'function' ? retreatBack : null, nemNodeIs, nemNodeTag, ensureNemesis, nemAfterBattle, availableNodes, findNode };
+global.T = { get RUN(){ return RUN; }, newRun, rndSeed, retreatBack: typeof retreatBack === 'function' ? retreatBack : null, nemNodeIs, nemNodeTag, ensureNemesis, nemClockAdd, get NEM_CLOCK(){ return NEM_CLOCK; }, nemAfterBattle, availableNodes, findNode };
 `);
 function fresh() { T.rndSeed(FX.seed); T.newRun(FX.admiral, FX.fac, {}); const all = [].concat(...T.RUN.map.cols); all.forEach((n, i) => { n.seed = 1000 + i; }); return all; }
 // the first node of column c reached by an edge from the first node of column c-1 (the path a player would have walked)
@@ -50,6 +50,18 @@ for (const cs of FX.cases) {
     T.RUN.sector = 3; const N = T.ensureNemesis(); N.fac = 'deathless'; N.revived = cs.revived; N.dead = false; N.met = cs.revived ? 2 : 3;
     const boss = [].concat(...T.RUN.map.cols).find(x => x.type === 'boss');
     check(cs.name, () => T.nemNodeIs(boss) === cs.expect.boss && T.nemNodeTag(boss) === cs.expect.tag);
+  } else if (cs.kind === 'eclipse_wait') {
+    // the revive put met back a sector: no late fight, strike or full clock may take the meeting before the boss
+    T.RUN.sector = 3; const N = T.ensureNemesis(); N.fac = 'deathless'; N.revived = true; N.dead = false; N.met = 2; T.RUN.nemStrike = false; T.RUN.nemClock = 0;
+    const all = [].concat(...T.RUN.map.cols), c4 = T.RUN.map.cols.length - 3;
+    const late = all.find(x => x.col >= c4 && (x.type === 'battle' || x.type === 'elite')), early = all.find(x => x.col < c4 && x.type === 'battle');
+    const boss = all.find(x => x.type === 'boss');
+    check(cs.name + ': a late fight is not his', () => !!late && T.nemNodeIs(late) === cs.expect.lateFight);
+    T.RUN.nemStrike = true;
+    check(cs.name + ': an old strike does not make an early fight his', () => !!early && T.nemNodeIs(early) === cs.expect.strikeFight);
+    T.RUN.nemStrike = false; T.nemClockAdd(T.NEM_CLOCK);
+    check(cs.name + ': a full clock does not set a strike', () => !!T.RUN.nemStrike === cs.expect.clockStrike);
+    check(cs.name + ': the boss battle is his', () => T.nemNodeIs(boss) === cs.expect.boss);
   }
 }
 console.log(pass + ' ok, ' + fail + ' failed'); if (fail) process.exitCode = 1;
