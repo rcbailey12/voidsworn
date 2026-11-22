@@ -35,6 +35,7 @@ var body_r := 1.0
 var body_sun := Vector3.UP
 var tag := "now"
 var only := ""
+var timing := 0   # --timing N: after each board look's camera 170 still, N frames of GPU render time (run the GPU solo)
 var started := 0
 var cam: Camera3D
 var stage: Node3D
@@ -99,6 +100,25 @@ func _disc_mean(img: Image) -> Array:
 	return [sum / maxf(1.0, float(n)), n]
 
 
+# GPU render time of the whole frame over N frames at the current view (Board's solo frame-time row, R293)
+func _time_frames(name: String) -> void:
+	var vp := root.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(vp, true)
+	await _frames(30)
+	var t: Array = []
+	for i in timing:
+		await RenderingServer.frame_post_draw
+		t.append(RenderingServer.viewport_get_measured_render_time_gpu(vp))
+	t.sort()
+	var mean := 0.0
+	for v in t: mean += float(v)
+	mean /= maxf(1.0, float(t.size()))
+	print("[timing] %s gpu ms mean %.3f p50 %.3f p99 %.3f max %.3f over %d frames; video memory %.0f MB, static memory peak %.0f MB" % [
+		name, mean, float(t[t.size() / 2]), float(t[mini(t.size() - 1, int(t.size() * 0.99))]), float(t[t.size() - 1]), t.size(),
+		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, OS.get_static_memory_peak_usage() / 1048576.0])
+	RenderingServer.viewport_set_measure_render_time(vp, false)
+
+
 func _clear() -> void:
 	for c in stage.get_children():
 		stage.remove_child(c)
@@ -112,6 +132,7 @@ func _run() -> void:
 		if argv[i] == "--out" and i + 1 < argv.size(): out = argv[i + 1]
 		if argv[i] == "--tag" and i + 1 < argv.size(): tag = argv[i + 1]
 		if argv[i] == "--only" and i + 1 < argv.size(): only = argv[i + 1]
+		if argv[i] == "--timing" and i + 1 < argv.size(): timing = int(argv[i + 1])
 	DirAccess.make_dir_recursive_absolute(out)
 	var we := WorldEnvironment.new()
 	var env := Environment.new()
@@ -225,6 +246,8 @@ func _board(k: int, new_board: bool) -> void:
 	cam.position = t + Vector3(0, cos(0.98), sin(0.98)) * 170.0
 	cam.look_at(t, Vector3.UP)
 	await _save("board_%d_c170" % k)
+	if timing > 0:
+		await _time_frames("board_%d_c170" % k)
 	# close: low over the lit limb
 	var limb := Vector3(SUN_DIR.x, 0, SUN_DIR.z).normalized() * rad * 0.55
 	cam.position = limb + Vector3(-0.35, 0.55, 0.85).normalized() * 70.0

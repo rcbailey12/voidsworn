@@ -24,13 +24,27 @@ var _queue: Array = []
 var _active := ""
 var _thread: Thread
 
+# Issue 1765: a battle opened as the main scene builds its world and board inside its own _ready, while the root is
+# still adding children; add_child is refused there ("Parent node is busy") and every bake request then failed on a
+# service that never joined the tree. The service now joins with a deferred add, and its calls wait on the tree it
+# was made for until it is in.
+static var _pending: Node = null
+static var _pending_tree: SceneTree = null
+
 static func service(tree: SceneTree) -> Node:
 	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending) and not _pending.is_inside_tree():
+		node = _pending
 	if node == null:
 		node = load("res://world/world_bake.gd").new()
 		node.name = "WorldBakes"
-		tree.root.add_child(node)
+		_pending = node
+		_pending_tree = tree
+		tree.root.add_child.call_deferred(node)
 	return node
+
+func _tree() -> SceneTree:
+	return get_tree() if is_inside_tree() else _pending_tree
 
 static func cache_key(key: String, code: String, params: Dictionary, size: Vector2i) -> String:
 	var ordered := {}
@@ -64,7 +78,7 @@ static func clear_static() -> void:
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
 func authored(path: String, size: Vector2i, float_mips := false) -> Image:
-	var owner := service(get_tree())
+	var owner := service(_tree())
 	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
@@ -72,13 +86,13 @@ func authored(path: String, size: Vector2i, float_mips := false) -> Image:
 			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
 		owner._queue.append(key)
 	var job: Dictionary = owner._jobs[key]
-	while not job.done: await get_tree().process_frame
+	while not job.done: await _tree().process_frame
 	return job.image
 
 # half_mips (issue 1765): the image is turned to half floats before its mips are made, for a 16-bit height packed in R
 # and G (the board planet's relief), so averaging the high and low bytes never rounds the high byte into false ridges.
 func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false) -> Image:
-	var owner := service(get_tree())
+	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
@@ -87,7 +101,7 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 		owner._queue.append(key)
 	var job: Dictionary = owner._jobs[key]
-	while not job.done: await get_tree().process_frame
+	while not job.done: await _tree().process_frame
 	return job.image
 
 var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker

@@ -1103,6 +1103,7 @@ func _planet() -> void:
 	props.add_child(shell)
 	planet_pending = true
 	planet_t0 = Time.get_ticks_msec()
+	mi.set_meta("planet_look", int(look[0]))
 	await PL.install_board(mi, shell, int(look[0]), seed_v, sun)
 	planet_pending = false
 
@@ -1117,6 +1118,12 @@ func wait_planet() -> void:
 	if planet_pending and is_instance_valid(planet_node):
 		planet_node.set_meta("planet_frozen", true)
 		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")
+	if is_instance_valid(planet_node):
+		# the PC load proof reads this line (issue 1765)
+		print("[planet] board planet ready in %d ms after board build: %s, look %s%s; video memory %.0f MB, static memory peak %.0f MB" % [
+			Time.get_ticks_msec() - planet_t0, str(planet_node.get_meta("planet_code", "stand-in")),
+			str(planet_node.get_meta("planet_look", "?")), ", FROZEN (missed the cover)" if planet_node.get_meta("planet_frozen", false) else "",
+			Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, OS.get_static_memory_peak_usage() / 1048576.0])
 
 
 # issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks

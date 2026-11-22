@@ -60,6 +60,10 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("cloud_col", L.get("cloud_col", Vector3.ONE))
 	planet.material_override = stand_in
 	if not planet.is_inside_tree(): return
+	# The board builds inside the battle's _ready, while the root is still adding children: the shared bake service
+	# could not join the tree then (its add_child is refused) and every map request failed. Start on the next frame.
+	await planet.get_tree().process_frame
+	if not is_instance_valid(planet) or not planet.is_inside_tree(): return
 	if int(L["bake"]) < 0:
 		var tints: Array = L["tints"]
 		# the battle camera looks down on the planet's cap: tip the data's equator up toward it, so the cap never shows
