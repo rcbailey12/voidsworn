@@ -2092,7 +2092,7 @@ void fragment() {
 		g = max(g, 1.0 - smoothstep(0.35, 1.0, d));
 	}
 	float pulse = 0.88 + 0.12 * sin(scene_t * 4.5 + hp.x * 0.7);
-	ALBEDO = clamp(mix(deep, hot, g * g) * g * u * pulse * 2.6 * fx_gain, 0.0, 8.0);
+	ALBEDO = clamp(mix(deep, hot, g * g) * g * u * pulse * 1.5 * fx_gain, 0.0, 8.0);
 }
 """
 

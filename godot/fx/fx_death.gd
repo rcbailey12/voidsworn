@@ -2860,6 +2860,14 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
 	if not p.is_finite(): return
 	pale = pale or melting(src)
+	if melting(src):
+		# R398 (1394 PC run): even the softened blast picture read as a green cloud. Acid: a soft light and a few sparks.
+		fx.light(p + n * 0.6, fx.now, 0.40, 3.0, tint, 3)
+		if fx.quality != "low":
+			var km: float = px * STAGING_UNITS_PER_PIXEL / 10.0
+			for j in 3:
+				fx.stk(p + n * 0.1, fx.now, 0.30 + fx.rng.randf() * 0.2, tint, 3.0, 0.04, 0.08, 1, fx.rcone(n, 0.7) * (6.0 + fx.rng.randf() * 6.0) * km, 2.0)
+		return
 	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
 	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke": a strained death's blasts keep one smaller puff
@@ -2995,7 +3003,7 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	if spots.is_empty():
 		var hit := _small_hit(fx, s)
 		if not hit.is_empty(): spots.append(hit["p"])
-	var rad: float = s.hull.L * (0.13 if s.death_big else 0.28)
+	var rad: float = s.hull.L * (0.10 if s.death_big else 0.24)
 	var arr := PackedVector4Array()
 	for i in 6:
 		var v: Vector3 = spots[spots.size() - 1 - i] if i < spots.size() else Vector3.ZERO
@@ -3014,6 +3022,7 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
+	if melting(s): return   # R398 (1394 PC run): the soft faction pop drew a green cloud the size of the hull
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var life := 0.32
 	var kind := 0
@@ -3357,6 +3366,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var phys = bool(fx.dstate.get("physics_on", false))
 	wreck["frags"] = []
 	wreck["scorch_mats"] = []
+	if melting(s):
+		# R398 (1394 PC run): the main pieces' torn faces and scorched plating were built before the kill in the
+		# faction's fire colours and showed orange embers where the acid hit. An acid wreck keeps the acid's green there.
+		for i in n_main:
+			var mp: Dictionary = pieces[i]
+			if mp.has("cap_mat"): _style_heat(mp["cap_mat"], MELT_STYLE, "heat_")
+			for hm in mp.get("hull_mats", []): (hm as ShaderMaterial).set_shader_parameter("fx_scorch_col", MELT_STYLE["rim"])
 	for i in n_main:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():
@@ -3646,7 +3662,11 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
-	if melting(src): allowed = false   # R398: a soft pale bloom, never the hard white core
+	# R398: the 1394 PC run (Nov 22) showed the soft core bloom as a big green cloud over the hull, the haze Ryan said no
+	# to. An acid kill draws no core flash picture at all: only a soft light on the hulls round it.
+	if melting(src):
+		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[2]), 4.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 3, CORE_LIGHT_REACH[band])
+		return
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])

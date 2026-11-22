@@ -7,7 +7,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   - die in the acid's look whatever its faction (death style "melt", no Eclipse peel, no strain crack, no tear overlay);
 #   - glow only where the acid hit: every mesh carries the MELT_GLOW overlay, its first spot is the acid hit, and its
 #     radius is a small part of the hull (not the whole hull);
-#   - draw no smoke, haze or vapour (no "cool", "vent" or "impact" picture) and no hard white flash (every flash soft).
+#   - draw no smoke, haze or vapour (no "cool", "vent" or "impact" picture) and no flash picture at all: the 1394 PC run
+#     (Nov 22) showed the soft core bloom as a green cloud bigger than the hull, so an acid kill only lights the hulls.
 # The same hull killed by a plain blast is the control: it must draw smoke and a hard flash, so the probe can see them.
 const FX := preload("res://fx/fx.gd")
 const SH := preload("res://fx/fx_shaders.gd")
@@ -40,6 +41,7 @@ func _run() -> void:
 		check(m["spot_err"] < 0.01, "%s: the glow sits on the acid hit (off by %.3f)" % [tag, m["spot_err"]])
 		check(m["radius_L"] > 0.0 and m["radius_L"] <= 0.3, "%s: only the hit area glows (radius %.2f of the length)" % [tag, m["radius_L"]])
 		check(int(m["haze"]) == 0, "%s: no smoke, haze or vapour (%d pictures; blast drew %d)" % [tag, m["haze"], b["haze"]])
+		check(int(m["flash"]) == 0, "%s: no flash cloud at all, soft or hard (%d; blast drew %d)" % [tag, m["flash"], b["flash"]])
 		check(int(m["hard"]) == 0, "%s: no hard white flash (%d; blast drew %d)" % [tag, m["hard"], b["hard"]])
 		check(int(b["haze"]) > 0, "%s control: a blast death's smoke is seen by this probe (%d)" % [tag, b["haze"]])
 		check(b["style"] != "melt" and b["overlay"] != "melt", "%s control: a blast death keeps its own look" % tag)
@@ -87,7 +89,7 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 	for n in _pics(world): before[n.get_instance_id()] = float((n as MeshInstance3D).material_override.get_shader_parameter("born")) if (n as MeshInstance3D).material_override is ShaderMaterial else 0.0
 	fx.death("k", cause)
 	var res := {"style": str(DEATH.dstyle(s).get("style", "")), "strain": s.has_meta("death_strain"), "overlay": "none", "overlay_all": true,
-		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0}
+		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0}
 	var first := true
 	for mm in s.meshes:
 		var ov = (mm as MeshInstance3D).material_overlay
@@ -117,6 +119,7 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 			seen[key] = true
 			var kind := str(mi.get_meta("fx_picture_kind", ""))
 			if kind in HAZE: res["haze"] += 1
+			if kind == "flash": res["flash"] += 1
 			if kind == "flash" and float(mi.material_override.get_shader_parameter("soft_flash")) < 0.5: res["hard"] += 1
 	world.queue_free()
 	await process_frame
