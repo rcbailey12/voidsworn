@@ -18,6 +18,9 @@ const GLACIER := GS.GLACIER
 const DMG := GS.HULL_LOW
 const SHELF_H := 248.0
 const FLEET_H := 49.0
+const FLEET_SLOT_W := 84.0
+const FLEET_PAGING_W := 59.0
+const COMPACT_MARGIN := 20.0
 const MARGIN := 40.0
 
 var k := 1.0
@@ -232,9 +235,13 @@ func layout() -> void:
 	marks.clear()
 	hits.clear()
 	blockers.clear()
-	var vs := size if size.x > 10 and size.y > 10 else Vector2(1920, 1080) * k
+	# A startup or headless control can be too small even for the compact shelf.
+	var vs := size
+	var min_width := 2 * px(COMPACT_MARGIN) + px(FLEET_SLOT_W) + px(FLEET_PAGING_W)
+	if vs.x < min_width or vs.y < px(SHELF_H):
+		vs = Vector2(1920, 1080) * k
 	var compact := vs.x < px(1510)
-	var pad := px(20 if compact else MARGIN)
+	var pad := px(COMPACT_MARGIN if compact else MARGIN)
 	var top_y := px(32 if not compact else 16)
 	var usable := vs.x - 2 * pad
 	var turn_w := minf(px(435), usable * 0.43)
@@ -364,8 +371,8 @@ func _top_right(r: Rect2) -> void:
 	var hw := 0.0
 	if int(info.get("heat", -1)) >= 0:
 		hw = _right(xr, y, str(clampi(int(info.heat), 0, 9)), f_num, 18, TEXT)
-		hw += px(8) + _right(xr - hw - px(8), y, "Heat", f_body, 18, TEXT3, "join")
-		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Heat: the run's difficulty level, up to 9.")))
+		hw += px(8) + _right(xr - hw - px(8), y, "Threat", f_body, 18, TEXT3, "join")
+		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Threat: the run's difficulty level, up to 9.")))
 		hw += px(20)
 	var faction := str(info.get("foe_name", ""))
 	if faction != "":
@@ -469,7 +476,7 @@ static func keyword_tip(line: String) -> String:
 	var keywords := {
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
-		"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
+		"focusing its fire": "Focus fire: the enemy fleet favors this ship when it picks targets.",
 		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
 	for kw in keywords:
 		if line.contains(kw):
@@ -722,11 +729,12 @@ func _fleet(x: float, y: float, w: float) -> void:
 		fleet_fit = {"shown": 0, "total": 0}
 		return
 	_line(Vector2(x, y), Vector2(x + w, y), GS.SHEET_HAIR)
-	var minimum := px(84)
+	var minimum := px(FLEET_SLOT_W)
 	var gap := px(8)
+	var paging := px(FLEET_PAGING_W)
 	var capacity := maxi(1, int((w + gap) / (minimum + gap)))
 	if count > capacity:
-		capacity = maxi(1, int((w - px(59) + gap) / (minimum + gap)))
+		capacity = maxi(1, int((w - paging + gap) / (minimum + gap)))
 	var n := mini(count, capacity)
 	var selected := ""
 	for i in count:
@@ -739,7 +747,7 @@ func _fleet(x: float, y: float, w: float) -> void:
 	var last_page := int(ceilf(float(count) / n)) - 1
 	fleet_page = clampi(fleet_page, 0, last_page)
 	var paged := last_page > 0
-	var cell := minf(px(383), floorf((w - (px(59) if paged else 0.0) + gap) / n) - gap)
+	var cell := minf(px(383), floorf((w - (paging if paged else 0.0) + gap) / n) - gap)
 	var shown := mini(n, count - fleet_page * n)
 	for i in shown:
 		var r: Dictionary = rows[fleet_page * n + i]

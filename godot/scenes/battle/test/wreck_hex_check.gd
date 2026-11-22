@@ -196,7 +196,7 @@ func _shot(battle: Playback, want: Dictionary) -> void:
 		if img.get_height() > 720:
 			img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
 		var path := shot.get_basename() + str(row[0]) + ".png"
-		preload("res://tools/picture_provenance.gd").save_png(img, path)
+		preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage())
 		print("WRECK_HEX shot ", path)
 	LOOK.tactical = false
 

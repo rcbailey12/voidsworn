@@ -45,7 +45,7 @@ Prior win (beat 1 nod): *[The wardens chalk your name above the others before th
 
 ---
 
-## 2. Hegemony Navy
+## 2. Meridian Directorate
 
 ### Beat 1B (sector I): The Census Frigate
 
@@ -69,11 +69,11 @@ Skim: A hospital ship is stranded on the shoals. The Registry says proceed. Over
 
 ### Beat 3B (sector III): The Survey Buoys
 
-The anchorage buoys at the Hollow Sun still broadcast the original survey: drift, gravity, capacity nine fleets. {rival} has switched every buoy to a new message, about you. It repeats every eleven seconds. Your communications officer has stopped translating it; the crews have not stopped listening. {rival_line} [If you broke them out: {rival} has read your reprimand, and sent you a copy, annotated.] [If you did not: {rival}'s buoys read the casualty list between the gravity soundings.] Authorisation arrives eleven days late. [If you broke them out: the rescued ship's escort holds station off your bow and has not asked for orders.] [If you left them: the list has new names on it. Your flag captain added them, in the correct format.] [If you filed the exception: the list is shorter.] The guns are synchronised. The column forms on your flagship. Your flag captain waits. There is one tradition the Registry never logs: before a decisive engagement a commander switches off the link for one minute and speaks to the line, unrecorded.
+The perimeter buoys at the Hollow Sun still broadcast the original survey: drift, gravity, capacity nine fleets. {rival} has switched every buoy to a new message, about you. It repeats every eleven seconds. Your communications officer has stopped translating it; the crews have not stopped listening. {rival_line} [If you broke them out: {rival} has read your reprimand, and sent you a copy, annotated.] [If you did not: {rival}'s buoys read the casualty list between the gravity soundings.] Authorisation arrives eleven days late. [If you broke them out: the rescued ship's escort holds station off your bow and has not asked for orders.] [If you left them: the list has new names on it. Your flag captain added them, in the correct format.] [If you filed the exception: the list is shorter.] The guns are synchronised. The column forms on your flagship. Your flag captain waits. There is one tradition the Registry never logs: before a decisive engagement a commander switches off the link for one minute and speaks to the line, unrecorded.
 
 - Options and endings as A.
 
-Skim: {rival} holds the anchorage, the buoys broadcasting a message about you. One unrecorded minute before the fight. Read the names, order the crews to be correct, or give the lieutenant the minute.
+Skim: {rival} holds the perimeter, the buoys broadcasting a message about you. One unrecorded minute before the fight. Read the names, order the crews to be correct, or give the lieutenant the minute.
 
 Prior win (beat 1 nod): *[Order 41 has a previous holder. Their report is attached as a model of the correct format. It is yours.]*
 
@@ -151,27 +151,27 @@ Prior win (beat 1 nod): *[We remember warm. We remember full. We want it again.]
 
 ### Beat 1B (sector I): The Last Grinder
 
-The Hollow Sun was Ardent once, and your family ground the lenses that harvested it. The Lens-keepers have sent you for the last great lens, with its mounting, its alignment notes, and a list of things you are not to touch. On the first night you find a glass-ship adrift, its grinder alive, very old, the last who remembers how the great lens was aligned. {rival} has been asking her questions. {rival_deed} She offers you the alignment now, all of it, though giving it all at once will burn out the light she has stored in her skin. Or she can rest, and you can manage without. Your cataloguer would very much like the alignment.
+The Hollow Sun was Ardent once, and your family ground the lenses that harvested it. The Lens-keepers have sent you for the last great lens, with its mounting, its alignment notes, and a list of things you are not to touch. On the first night you find a glass-ship adrift, its grinder alive, very old, the last who remembers how the great lens was aligned. {rival} has been asking her questions. {rival_deed} She offers you the alignment now, all of it, though giving it all at once will burn out the light she has stored in her skin. Or she can rest, and you can manage without. Your cataloger would very much like the alignment.
 
-- **Take the alignment** (as A, take the stored light: clock back one, `it_song`). *She gives it in one long glow and goes dark before the last figure. Your cataloguer writes every number.*
-- **Let her rest** (as A: 15 experience each, `it_mercy`). *She rests. Your cataloguer sits with her, sulking, until morning.*
+- **Take the alignment** (as A, take the stored light: clock back one, `it_song`). *She gives it in one long glow and goes dark before the last figure. Your cataloger writes every number.*
+- **Let her rest** (as A: 15 experience each, `it_mercy`). *She rests. Your cataloger sits with her, sulking, until morning.*
 
 Skim: The last grinder of the great lens offers its alignment all at once, and it will burn her out. Take it, or let her rest.
 
 ### Beat 2B (sector II): The Broken Gallery
 
-In sector II the voyage passes the Gallery, a ring of mirrors the old families built to hold their light after Ardent died. {rival} is breaking them. Each mirror releases its stored light in one blinding flash, and the flashes blind your sensors. {rival_line} Your captains are barely a century old and some are weeping; the cataloguer is logging every mirror, in tears, by number. Your oldest Mirror polished these as a child. She says one mourning tone struck through every hull would settle the light. It would cost time, and {he} would see you coming. [If you took the alignment: you know which mirror {rival} breaks next.] [If you let her rest: she told your captains the path {rival} did not watch.]
+In sector II the voyage passes the Gallery, a ring of mirrors the old families built to hold their light after Ardent died. {rival} is breaking them. Each mirror releases its stored light in one blinding flash, and the flashes blind your sensors. {rival_line} Your captains are barely a century old and some are weeping; the cataloger is logging every mirror, in tears, by number. Your oldest Mirror polished these as a child. She says one mourning tone struck through every hull would settle the light. It would cost time, and {he} would see you coming. [If you took the alignment: you know which mirror {rival} breaks next.] [If you let her rest: she told your captains the path {rival} did not watch.]
 
-- **Strike the mourning tone** (as A). *The mirrors dim to a glow. The cataloguer records the numbers of the survivors.*
+- **Strike the mourning tone** (as A). *The mirrors dim to a glow. The cataloger records the numbers of the survivors.*
 - **Go dark through the flashes** (as A: 5% damage, a weakness revealed). *You fly blind. When you can see again, {his} seams are close enough to touch.*
 - Blue, needs the alignment: **Use the alignment** (as A; it is spent). *You know the order {he} breaks them in. You are waiting at the next mirror.*
-- Blue, needs her warning: **Take her path** (as A). *The path is exactly where she said. The cataloguer footnotes her.*
+- Blue, needs her warning: **Take her path** (as A). *The path is exactly where she said. The cataloger footnotes her.*
 
 Skim: {rival} is breaking the Gallery's mirrors, and the flashes blind you. Strike the mourning tone, or go dark and close in.
 
 ### Beat 3B (sector III): The Mounting
 
-The great lens hangs in its mounting at the rim of the Hollow Sun, and the mounting is a lock: every family that ground it, in order. {rival} is breaking the mounting's seals one family at a time, and each name goes dark as {he} does. {rival_line} [If you caught {him} at the Gallery: {he} works faster now, and does not look up.] [If you did not: {he} pauses at your family's seal, and breaks it twice.] Your vanes catch the last of the glow. [If the alignment is still yours: it would free the lens without a fight at the mounting.] [If you let the grinder rest: she flashes the first seal's code across three sectors.] [If you lost ships: the {first_lost} is not with you; you will have to explain that to the Lens-keepers, in writing.] Every ship in this fleet is a light that will not be lit again. The cataloguer asks, very politely, which you mean to save if you cannot save both: the lens, or the fleet.
+The great lens hangs in its mounting at the rim of the Hollow Sun, and the mounting is a lock: every family that ground it, in order. {rival} is breaking the mounting's seals one family at a time, and each name goes dark as {he} does. {rival_line} [If you caught {him} at the Gallery: {he} works faster now, and does not look up.] [If you did not: {he} pauses at your family's seal, and breaks it twice.] Your vanes catch the last of the glow. [If the alignment is still yours: it would free the lens without a fight at the mounting.] [If you let the grinder rest: she flashes the first seal's code across three sectors.] [If you lost ships: the {first_lost} is not with you; you will have to explain that to the Lens-keepers, in writing.] Every ship in this fleet is a light that will not be lit again. The cataloger asks, very politely, which you mean to save if you cannot save both: the lens, or the fleet.
 
 - Options and endings as A.
 
@@ -219,9 +219,9 @@ Prior win (beat 1 nod): *[The Archive notes a previous Homecoming under your com
 - Crusade 1A: A warm shard of Seren lies on the forge deck where {rival} left it. Carry it sunward, or sell it to the foundries.
 - Crusade 2A: A frozen bastion's dawn horn sounds the routes. {rival} waits past it. Recover the code and lose time, or strike now.
 - Crusade 3A: The siphon relay at the Hollow Sun, the chalk names, and {rival} before it. Burn it with the shard, or with a reactor.
-- Hegemony 1A: M-14's fourteen crew are dead and {rival} has the post. Recover the black box off the record, or follow the Order.
-- Hegemony 2A: Eleven haulers on the shoals. The Registry says proceed. Overrule it and break them out, or follow the projection.
-- Hegemony 3A: The anchorage, and one unrecorded minute. Read the names, order the crews to be correct, or give the lieutenant the minute.
+- Directorate 1A: M-14's fourteen crew are dead and {rival} has the post. Recover the black box off the record, or follow the Order.
+- Directorate 2A: Eleven haulers on the shoals. The Registry says proceed. Overrule it and break them out, or follow the projection.
+- Directorate 3A: The perimeter, and one unrecorded minute. Read the names, order the crews to be correct, or give the lieutenant the minute.
 - Hullbreakers 1A: {rival} hit your forward camp. Send a rigged answer, or feast and howl.
 - Hullbreakers 2A: Rook's wake-log is at Rattlehold and {rival} is listening outside. Take it, or pay full price.
 - Hullbreakers 3A: Rook among the wrecks, {rival} chained around it. First pick for every claw, shoot through, or Mott's speech.

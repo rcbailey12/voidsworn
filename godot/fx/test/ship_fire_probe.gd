@@ -171,5 +171,5 @@ func _raw_frame() -> void:
 	if img == null or img.is_empty():
 		return
 	img.convert(Image.FORMAT_RGB8)
-	preload("res://tools/picture_provenance.gd").save_jpg(img, rec_dir.path_join("frame_%05d.jpg" % frame_i), 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, rec_dir.path_join("frame_%05d.jpg" % frame_i), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	frame_i += 1

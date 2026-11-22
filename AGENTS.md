@@ -4,7 +4,7 @@
 `godot/`, played on Ryan's Windows PC only; the browser rules are a live reference copy: every rules change goes into both until Ryan approves their retirement (RULEBOOK 3.1, R312).
 The owner is Ryan. He is not a coder: he judges work by pictures. Faction ids never change; their display names do
 (contrib/opus/compute/rename_map_final.md): `voidsworn` = Sunward Crusade, `corsair` = Ashfall Hullbreakers, `ithar` = the
-Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy.
+Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Meridian Directorate.
 
 **Read first.**
 1. `docs/RULEBOOK.md`: every rule in force, each with its reason. **It wins** over this file and every older doc (its section 0.3

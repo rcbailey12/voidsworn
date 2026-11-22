@@ -34,11 +34,15 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS. Then the checkout step (`opus_job_head.ps1 dropcheckouts <attempt>`) runs
   for this attempt and the same job's earlier ones. An attempt's pinned checkouts (rebuildable from their pins, up to
-  22 GB each) go only when its `done.txt` says PASS and its `relay_receipt.txt` (`<board/pc-out branch> <tree folder>`)
-  names a relay branch whose tree holds every file of its `out_*` folders at `<tree folder>/out_<name>/<path>` with the
-  same bytes (the mirror is fetched when it does not). The Board relays an attempt in that layout (the attempt folder
-  itself, as board/pc-out-1211r6 does) and then runs `dropcheckouts <attempt> <branch> <tree folder>`, which writes the
-  receipt; a later tail of the same job repeats the check. A file over 10 MB the relay left out counts only when it is
+  22 GB each) go only when its `done.txt` says PASS and a relay branch on origin holds every file of its `out_*` folders
+  at `<tree folder>/out_<name>/<path>` with the same bytes. The head proves the relay itself (issue 1535, Nov 22): no
+  session writes a receipt by hand. Where to look is, in order, an older `relay_receipt.txt` (`<board/pc-out branch> <tree
+  folder>`), the attempt's `relay_branch.txt` that init writes before any result exists (`board/pc-out-<job> <attempt
+  folder name>`, also printed in status.txt), or else `board/pc-out-<job>` with the attempt folder name; `git ls-remote`
+  must show origin holding that branch at the commit checked in the shared mirror (the mirror is fetched once when it
+  does not). The Board relays an attempt in that layout (the attempt folder itself at the tree's root, on
+  `board/pc-out-<job>`, adding to the branch for later attempts) and then runs `dropcheckouts <attempt>`; a later tail of
+  the same job repeats the check. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
   size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
   everything, and the log names the first files that differ or are missing. A proven checkout is first recorded in its folder's

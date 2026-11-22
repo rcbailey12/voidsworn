@@ -46,6 +46,8 @@ headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victor
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
 headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or Scrap rig in the late market, a regrown Eclipse ship sells for 0 until it fights, Chorus decommission pays biomass
 headless|campaign/test/relic_trade_1449.gd|-|-|issue 1449: relic trades pick which salvage to give up (shared fixture with the browser twin), and the Full specs drawer on shipyard and prize cards shows armor, guns and ability text
+headless|campaign/test/shipyard_repair_text_test.gd|-|-|issue 1551: the shipyard repair line reads credits and a fresh lieutenant for a normal faction, biomass and a fresh spawn-mind for the Chorus
+headless|scenes/battle/test/volley_voice_check.gd|-|-|issue 1551: a volley's fire and grouped hits reach battle voice exactly once, and a grouped enemy volley leaving the player flagship below 40% says the flag_hurt line
 headless|campaign/test/late_fixes_1384.gd|-|-|issue 1384: selling the flagship hands it on, a regrown Eclipse ship never sells above its regrow cost, ascendant and captured hulls carry the Crusade shop discount, an eaten core is remapped in beat 3 and boonStep
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
@@ -78,6 +80,8 @@ headless|scenes/battle/test/bot_round_boundary_check.gd|-|-|issue 1499 (Artoo, i
 headless|scenes/battle/test/hit_timing_check.gd|-|-|issue 1211: a [miss, miss, hit] volley lands its sound, HP drop and number on the hitting shot on the effect clock; a second-of-three hit breaks the shield there; the enemy target is ringed and named
 headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapping volleys on the fitted and the egg shield, reduced flashing off and on; the clean collapse starts once, on the draining hit
 headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg
+headless|scenes/battle/test/exit_timers_1482_check.gd|-|-|issue 1482: leaving a battle with the Command timer, a kill hold, an impact and the end card focus beat running logs no freed or null-tree errors; an end card closed inside its beat logs nothing
+headless|main/test/campaign_music_1482_check.gd|-|-|issue 1482: campaign music follows the sector (post-boss rewards resumed get the new sector map track) and comes back on a service stop after a Nemesis fight
 headless|scenes/battle/test/save_quit_handoff_check.gd|-|-|issue 1451 (Artoo, PR 1486): on the real battle scene, Save and quit is offered only for a round on disk, ends through _finish, settles nothing, and a cold Continue resumes that round; a failed write names the last checkpoint instead
 headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
@@ -125,6 +129,7 @@ headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocke
 headless|fx/test/fx_audit_1558_check.gd|-|-|issues 1558 and 1528: weapon gas stretched by aspect, big-death veil born when it shows, slag/debris/spark/craft trail ignore fog, hit pause in real seconds at 60 and 144 fps, kit trails on one shared strip, craft trails rebuilt on the sample step only, one heat ring per hull and one quad for rounds, kit munition bodies warmed before the first salvo
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/first_hit_scars_check.gd|-|-|issue 1235: first-hit mark size, heavy and newest marks kept under the cap, bomber marks, turrets out of the static damage, LOD kept on undamaged meshes, stage 4 hole size
+headless|fx/test/hull_wear_check.gd|-|-|issue 1235 run 2: wear on the live damage shader as HP falls (no ember heat), soot patches on the hit sides, the crippled list below 35% HP and its repair
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|render/test/arrival_warm_check.gd|-|-|issue 1289: the arrival warm kit builds the reinforcement's hull into the effects for the load, then parks it hidden and keeps it loaded

@@ -23,7 +23,7 @@ of this is the playable exe (that is a separate snapshot).
 | Hearth | Carrier | `V18_51` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
 | Daybreak (flagship) | Dreadnought | `V1b_r_23` | New-format build on main | Accepted: Ryan, Nov 20 (R360, brighter ember before and after, PR 1331) | [beauty_vs_blockout.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S8/beauty_vs_blockout.jpg) | R254 | voidsworn_S8 |  |  |
 
-## Hegemony Navy (`hegemony`)
+## Meridian Directorate (`hegemony`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|

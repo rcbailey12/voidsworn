@@ -64,11 +64,11 @@ func _shot(name: String) -> void:
 	await _frames(4)
 	await RenderingServer.frame_post_draw
 	var img = root.get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	if sc != null:
 		var host = sc.get_parent()
 		var r = Rect2i(Vector2i(host.global_position), Vector2i(host.size)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
-		if r.size.x > 0 and r.size.y > 0: preload("res://tools/picture_provenance.gd").save_png(img.get_region(r), dir.path_join(name + "_panel.png"))
+		if r.size.x > 0 and r.size.y > 0: preload("res://tools/picture_provenance.gd").save_png(img.get_region(r), dir.path_join(name + "_panel.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("shot ", name)
 
 func _covered(n: Node) -> bool:

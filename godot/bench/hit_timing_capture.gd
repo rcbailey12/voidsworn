@@ -148,7 +148,7 @@ func _run() -> void:
 		if img == null or img.is_empty():
 			continue   # (no picture this frame: a due still waits for the next drawn frame, it is never skipped)
 		if args.has("frames"):
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [tag, h, frame])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [tag, h, frame]), preload("res://tools/picture_provenance.gd").capture_stage()) == OK:
 				frames_ok += 1
 			else:
 				failed += 1
@@ -158,7 +158,7 @@ func _run() -> void:
 			quit(1)
 			return
 		if due:
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))]), preload("res://tools/picture_provenance.gd").capture_stage()) == OK:
 				stills += 1
 			else:
 				failed += 1

@@ -146,7 +146,7 @@ func _capture(shots: String, name: String, size: Vector2i) -> void:
 	var crop := size * 3 / 4
 	image = image.get_region(Rect2i((size - crop) / 2, crop))
 	image.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
-	_ok(preload("res://tools/picture_provenance.gd").save_jpg(image, shots.path_join(name)) == OK, "captured " + name)
+	_ok(preload("res://tools/picture_provenance.gd").save_jpg(image, shots.path_join(name), 0.9, preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "captured " + name)
 
 
 func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
@@ -201,7 +201,7 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 					ui.show()
 	_ok(ui._boon_fleet_line("not_in_BOON_NEED", 0) == "", "unknown need makes no claim")
 	_set_fleet(c, [["warden", "Oath"], ["harrow", "Spark"]])
-	_ok(ui._boon_fleet_line("i_still", 0) == "Affects 2 ships with broadside guns or batteries that have not moved: Oath, Spark", "Anchored Volley names its hold-position condition")
+	_ok(ui._boon_fleet_line("i_still", 0) == "Affects 2 ships with flank guns or batteries that have not moved: Oath, Spark", "Anchored Volley names its hold-position condition")
 	c.RUN["aspect"] = "hive"
 	var flagship: String = c.flagshipOf()["name"]
 	_ok(ui._boon_fleet_line("h_wings", 0).ends_with(": " + flagship) and not ui._boon_fleet_line("h_hatch", 0).begins_with("Affects"),

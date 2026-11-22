@@ -46,5 +46,5 @@ func _run() -> void:
 		for k in 8: await process_frame
 		await RenderingServer.frame_post_draw
 		var p := out.path_join("%s_%s.png" % [tag, view[0]])
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), p); print("[probe] ", p)
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), p, preload("res://tools/picture_provenance.gd").capture_stage()); print("[probe] ", p)
 	quit(0)

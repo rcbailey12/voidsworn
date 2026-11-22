@@ -91,7 +91,7 @@ func _run() -> void:
 				await process_frame
 				await RenderingServer.frame_post_draw
 				var image := vp.get_texture().get_image()
-				preload("res://tools/picture_provenance.gd").save_png(image, folder.path_join("%03d.png" % frame))
+				preload("res://tools/picture_provenance.gd").save_png(image, folder.path_join("%03d.png" % frame), preload("res://tools/picture_provenance.gd").capture_stage())
 				if frame == 3:
 					var materials := []
 					for node in fx.get_children():

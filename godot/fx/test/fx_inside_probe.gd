@@ -241,7 +241,7 @@ func _shot(from: Vector3, at: Vector3, name: String) -> void:
 	cam.look_at_from_position(from, at, Vector3.UP if absf((at - from).normalized().y) < 0.95 else Vector3.RIGHT)
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/%s.jpg" % [out, name], 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/%s.jpg" % [out, name], 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[inside] wrote ", name)
 
 
@@ -257,7 +257,7 @@ func _battle(at: Vector3, name: String) -> void:
 	fx.camera = rig
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/%s.jpg" % [out, name], 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/%s.jpg" % [out, name], 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[inside] wrote ", name)
 	cam.current = true
 	fx.camera = cam

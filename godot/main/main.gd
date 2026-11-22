@@ -313,7 +313,7 @@ func _career_shot(path: String) -> void:
 	load("res://story/story.gd").open_standalone(title)
 	await get_tree().create_timer(2.5).timeout
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path)
+	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[career] shot saved ", path)
 	quit_clean(0)
 
@@ -377,7 +377,7 @@ func _start_showcase() -> void:
 			title._settings()
 			await get_tree().create_timer(0.5).timeout
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]))
+		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[title] shot saved ", args["title-shot"])
 		quit_clean(0)
 

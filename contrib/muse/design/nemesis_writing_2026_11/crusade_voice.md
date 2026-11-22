@@ -4,55 +4,91 @@ Chair-merged from the writer legs (blind Rey, DeepSeek, Qwen) with Flash and Gro
 
 ```js
 voidsworn: {
-  zealous: {
-    meet: ['The oath brought us here. Your hull will burn before the dawn watch ends.', 'Who carries the dawn? We do. And you are what we burn to keep it.'],
-    win: ['The debt is paid in fire. Your name goes on the hull in chalk.', 'Dawn breaks over the broken line. The debt was collected.'],
-    flee: [],
-    fall: ['The flagship burns and the oath holds. Chalk the name.', 'The oath does not end with the hull. Chalk my name and keep burning.'],
-    again: 'Last time you won with {beat}. The charge comes the same way, only harder.',
-    remember: 'Last time you won with {beat}. The name is chalked. The debt is not forgotten.'
+  "zealous": {
+    "meet": [
+      "Forty worlds are freezing behind us, and you're standing in our jump lane! Open fire!",
+      "We swore back in Vesper orbit we'd burn straight through anyone blocking the sun! Come on!"
+    ],
+    "win": [
+      "Lane's clear! Chalk the victory on the bulkhead and check our fuel!",
+      "Tried to stop a Crusade line and paid for it! Keep moving sunward!"
+    ],
+    "flee": [],
+    "fall": [
+      "Flagship's going up... don't stop for us, keep pushing toward the siphon!",
+      "Bulkheads are gone! Chalk my name under the others and finish the job!"
+    ],
+    "again": "You beat us with {beat} last time, alright, so we're hitting twice as hard today!",
+    "remember": "My gunners still have your {beat} chalked beside the loading rails. Nobody forgot."
   },
-  proud: {
-    meet: ['This flagship leads the dawn watch. Answer the oath or break against it.', 'You face the front of the line. We come no other way.'],
-    win: ['The front held. It always holds. Your fleet broke against the oath.', 'You saw the dawn line. You could not break it.'],
-    flee: [],
-    fall: ['The front falls. Chalk the name and let the line close over the gap.', 'A proud hull breaks. The brand stays. The Crusade does not stop for one name.'],
-    again: 'Last time you won with {beat}. The front is braced for it now.',
-    remember: 'Last time you won with {beat}. The front has not forgotten.'
+  "proud": {
+    "meet": [
+      "This flagship has led the dawn watch through three sectors! Answer our challenge or break!",
+      "I fly right up front where every captain can see my radiators. Come test our iron!"
+    ],
+    "win": [
+      "Our front line held every shot you had and broke your fleet clean in half!",
+      "Looked straight down our flank guns and blinked first! Keep pushing!"
+    ],
+    "flee": [],
+    "fall": [
+      "Front hull's buckling... close the gap over us and don't let them pass!",
+      "Damn fine shooting... the Crusade doesn't stop for one broken flagship!"
+    ],
+    "again": "Thought {beat} would fold my front line twice? We braced every bulkhead for it!",
+    "remember": "I still carry the dents your {beat} put on my bow, and I mean to return them."
   },
-  cruel: {
-    meet: ['The crippled ships go first. The cold takes the rest.', 'Your weakest hulls are marked. The brand goes where the frost is thinnest.'],
-    win: ['The broken ones went down first. The rest followed into the cold.', 'A slow burn. Each hull chalked, each name spoken. The debt collects.'],
-    flee: [],
-    fall: ['The brand goes cold. The broken ones get their dawn after all.', 'A bad end. The Roll of Vesper takes the name. The cold keeps the rest.'],
-    again: 'Last time you won with {beat}. The crippled ones are watched now.',
-    remember: 'Last time you won with {beat}. The chalk still marks the finish.'
+  "cruel": {
+    "meet": [
+      "Look at those leaking escorts on your flank. We're burning the weak ones down first!",
+      "Tag their most damaged hull and pour every flank gun into it until it cracks!"
+    ],
+    "win": [
+      "Took your crippled hulls off the plot first and watched the rest fold!",
+      "Every scorched hull goes on the roll. Keep the burners hot!"
+    ],
+    "flee": [],
+    "fall": [
+      "Reactor's failing... guess your wounded ones had more fight left than I figured...",
+      "Bad way to go out... tell Vesper the cold won't be kinder to them either..."
+    ],
+    "again": "You kept your damaged hulls alive with {beat} before. We're cutting straight through that trick now!",
+    "remember": "Still remember how you used {beat} to save those crippled escorts."
   },
-  methodical: {
-    meet: ['Screens up, names chalked. The dawn watch sets the pace.', 'The line advances under oath. Every gun is laid, every screen is set.'],
-    win: ['The line held. The guns were laid by hand and the oath was kept.', 'Steady fire, steady screens. The debt was collected in order.'],
-    flee: [],
-    fall: ['The hull goes dark. Add my name to the chalk and keep the watch.', 'The line breaks at one point. The rest holds. Chalk the name and close the gap.'],
-    again: 'Last time you won with {beat}. The line has drilled against it.',
-    remember: 'Last time you won with {beat}. The chalk mark is still on the hull.'
+  "methodical": {
+    "meet": [
+      "Screens at full, guns laid by hand, intervals locked. Advance on my mark.",
+      "Every firing lane is measured and every crew knows their station. Engage."
+    ],
+    "win": [
+      "Clean volleys, steady screens, minimal hull losses. That's how you cross three sectors.",
+      "Formation held from start to finish. Patch the burns and plot the next jump."
+    ],
+    "flee": [],
+    "fall": [
+      "Command hull's failing. Transfer the flag to the senior cruiser and keep the line closed.",
+      "One gap in the line, not the whole Crusade. Hold steady and finish the fight."
+    ],
+    "again": "We drilled against your {beat} tactics every watch since our last fight.",
+    "remember": "My tactical plot still carries the firing angles from your {beat}."
   },
-  adapt: {
-    shields: 'Screen drills are re-sworn. Your lances will spend themselves.',
-    pd: 'Spark flak is up. Your torpedoes burn short.',
-    armor: 'Riveted plate is fitted. Your ram meets iron and frost.',
-    evasion: 'The Oath of speed is sworn. Your batteries will find cold space.',
-    aim: 'Hand-laid sights are set. Your evasive burn is read by eye, not machine.',
-    special: 'Fervour is up. Guns deal 8% more damage.'
+  "adapt": {
+    "shields": "Reinforced screen drills active. Your focused beams won't crack us easily now.",
+    "pd": "Spark flak crews doubled across the line. Expect your torpedoes to detonate early.",
+    "armor": "Riveted extra black-iron plate onto our bows. Try ramming that.",
+    "evasion": "Running lighter thruster trims across the line so your flank volleys miss wide.",
+    "aim": "Hand-laid optical sights zeroed in on your burn profile. Quit dodging, we've got you.",
+    "special": "Crews running hot on battle rations and grit: +8% damage across all guns."
   },
-  lessons: {
-    flank: 'Thin stern plating gives way under rear fire. Hit the rear while the charge is committed.',
-    ion: 'Brittle shield emitters fail under focused ion fire. Strip the shields before the line settles.',
-    torp: 'Poor point defense leaves torpedoes a clear path. Launch after the escorts commit to the line.',
-    board: 'Green boarding crews lose to prepared defenders. Board only after the escorts are split.',
-    brawl: 'Long-gun doctrine struggles at close range. Close in and force the brawl.',
-    anchor: 'A proud flagship holds the line together. Get the flagship under 60% hull and the escorts break and run.',
-    slow: 'Worn engines limit repositioning. Cut the retreat path and keep pressure.',
-    strike: 'The Crusade strike is a challenge: the enemy flagship singles out yours, and the pair deal 20% more damage to each other. Screen your flagship; if your flagship falls, the challenge moves to your strongest ship.'
+  "lessons": {
+    "flank": "Crusade cruisers commit hard to forward charges and leave thin rear armor exposed. Swing behind them.",
+    "ion": "Their front screens are strong, yet brittle emitters collapse fast under sustained ion fire.",
+    "torp": "Sparse point defense leaves clear torpedo lanes once their escorts commit to the flank.",
+    "board": "Green breach defense crews struggle if you isolate a cruiser away from its escorts.",
+    "brawl": "Their hand-laid guns lose tracking speed inside two hexes. Close in and force a knife-fight.",
+    "anchor": "Their escorts fight around the flagship's example. Drive it below 60% hull to break their nerve.",
+    "slow": "Heavy iron hulls burn sluggishly on worn drives. Cut off their pivots and pound their sterns.",
+    "strike": "This commander never flees and challenges your flagship to single combat (+20% damage both ways). Screen your flagship or turn the duel back on them."
   }
 }
 ```

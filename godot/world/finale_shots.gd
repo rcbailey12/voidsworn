@@ -112,7 +112,7 @@ func _run() -> void:
 	caption.text = "FINALE DAWN | 1/6 | camera 170"
 	await _settle()
 	var normal := await _image()
-	preload("res://tools/picture_provenance.gd").save_png(normal, out.path_join("normal_deadstar_camera170.png"))
+	preload("res://tools/picture_provenance.gd").save_png(normal, out.path_join("normal_deadstar_camera170.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	b.world.finale = true
 	b.world._build_dawn(b.env)
 	await _settle()
@@ -127,7 +127,7 @@ func _run() -> void:
 		await _settle()
 		var img := await _image()
 		var name := "finale_dawn_%d_of_6_camera170.png" % [i + 1]
-		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 		report["stages"].append({"round": i + 1, "light_energy": b.world._finale_sun.light_energy, "file": name})
 		print("finale shots: ", name)
 	# Companion overviews show the whole sweep. The six primary pictures above remain at the played camera.
@@ -140,7 +140,7 @@ func _run() -> void:
 		await _settle()
 		var img := await _image()
 		var name := "finale_dawn_%d_of_6_overview520.png" % [i + 1]
-		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 		report["stages"][i]["overview"] = name
 	b.cam.r = 170.0
 	b.cam.t = focus

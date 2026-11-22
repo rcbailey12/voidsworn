@@ -99,7 +99,7 @@ func _case(tier, session):
 				for i in 80: await process_frame
 				await RenderingServer.frame_post_draw
 				var name = "storm_%s_c%d_%s.jpg" % [tier,radius,"bolt" if charged else "calm"]
-				preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join(name), 0.96)
+				preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join(name), 0.96, preload("res://tools/picture_provenance.gd").capture_stage())
 		rows.append(metadata)
 	else:
 		var variants = ["full", "cards_off", "storm_cards_off", "nebula_cards_off", "fog_off", "fog_64", "lights_off"] if mode == "diagnose" and tier == "max" else (["full","cards_off","storm_cards_off","nebula_cards_off","lights_off"] if mode == "diagnose" else ["full"])
