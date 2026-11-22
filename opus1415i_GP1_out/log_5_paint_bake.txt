@@ -1,0 +1,13 @@
+PASS surface check: 0 pixels of inside room colours and 0 of surfaces with no stack material seen from outside (six views at 640)
+PASS detail check: normal relief 5.55 deg (floor 0.47), albedo contrast 0.156 (floor 0.020), roughness spread 0.103 (floor 0.010), 321268 texels
+Stage 5 R224 density (reported, not a pass bar): paint flags 3 mesh flags 1
+   gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3
+   engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3
+   part: paint_detail_share 0.0 is 0.00 of the hull's 0.3
+   engine: edges_per_unit2 6566.1 is 0.24 of the hull's 27762.2
+Stage 5: skipped C15s close-ups for sheet ship ithar_GP1. 
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\r

@@ -1,0 +1,10 @@
+chain CU waiting for 1373N PROBE19 exit in chain_1119ct.txt Sat 11/21/2026 20:54:35.91 
+mirror fetch exit 0
+752bfcba5f1715b52d11a7d9557b505cb78c9d21 reachable in the mirror
+1415I GS1 start 21:08:38.85 
+1415I GS1 exit 0 at 21:32:29.08 
+1415I GL1 start 21:32:29.08 
+1415I GL1 exit 0 at 21:46:49.63 
+1415I GP1 start 21:46:49.63 
+1415I GP1 exit 0 at 22:23:07.98 
+1415I GA1 start 22:23:07.99 

@@ -1,0 +1,53 @@
+{
+ "name": "Glasswright prism GP1",
+ "faction": "ithar",
+ "cls": "Cruiser",
+ "band": "M",
+ "game_ship": "i_song",
+ "length_world": 14.5,
+ "hardpoints": {
+  "gun": 3,
+  "engine": 2,
+  "breach": 3,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 3,
+ "turrets": 1,
+ "files": {
+  "I15_11.glb": {
+   "bytes": 16864876,
+   "sha256": "cdb9a54726119a5d7b06afaed44078764e0c26f60bc25eaa482356c00406c173"
+  },
+  "I15_11_base.jpg": {
+   "bytes": 1633763,
+   "sha256": "9b00dda3ef5ed0f4e9da444124acd9b55cb567b8985e99c9d6aebf154a1bf407"
+  },
+  "I15_11_emission.jpg": {
+   "bytes": 824987,
+   "sha256": "979b25580a28d315fdbfe1c6995998a5871c4afab74f7d75ebd7ef5733b73eba"
+  },
+  "I15_11_normal.png": {
+   "bytes": 6082370,
+   "sha256": "b8240c8e17f48ee123a23da72546633d2ebfcefa2dfbd05ecf02af1f64f9b134"
+  },
+  "I15_11_orm.png": {
+   "bytes": 6133331,
+   "sha256": "ad6a7f81a8e09e9533fcf56b211fd0e97d50da6059bbaf1418dac4fac377c330"
+  },
+  "I15_11_parts_base.jpg": {
+   "bytes": 912124,
+   "sha256": "65407bc48655b03d71f68511f56dca63bc2a6e55914029401b49962abe0a2b16"
+  },
+  "I15_11_parts_normal.png": {
+   "bytes": 5574939,
+   "sha256": "84ca016195b641b85dd25c82ce1485cec8b08e049af799ae5a764b529000670c"
+  },
+  "I15_11_parts_orm.png": {
+   "bytes": 4634895,
+   "sha256": "215332717aa3ee0a8c8f986c7ddc360bae5ec3ac57e27a2dfbb7236eaf50bbb2"
+  }
+ },
+ "pc_path": "godot/assets/ships/I15_11/"
+}

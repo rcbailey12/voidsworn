@@ -1,0 +1,22 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+22:18:59 | INFO: Starting glTF 2.0 export
+22:19:00 | INFO: Extracting primitive: GP1_lod0
+22:19:01 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:19:01 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+22:19:01 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:19:01 | INFO: Primitives created: 15
+22:19:01 | INFO: Extracting primitive: GP1_lod1
+22:19:02 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+22:19:02 | INFO: Primitives created: 10
+22:19:02 | INFO: Extracting primitive: GP1_lod2
+22:19:02 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+22:19:02 | INFO: Primitives created: 10
+22:19:02 | INFO: Extracting primitive: GP1_lod3
+22:19:02 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+22:19:02 | INFO: Primitives created: 10
+22:19:03 | INFO: Finished glTF 2.0 export in 3.08164644241333 s
+
+[209] export C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\glb\GP1.glb {"lod0": {"triangles": 403794, "objects": 174, "materials": 15}, "lod1": {"triangles": 382554, "objects": 128, "materials": 10}, "lod2": {"triangles": 191288, "objects": 128, "materials": 10}, "lod3": {"triangles": 83464, "objects": 128, "materials": 10}}
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GP1\GP1.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e4107649437644e48d7a4e3e52ea87b3\runner-step-73903690aacd4612b0e374f56ed63d74
