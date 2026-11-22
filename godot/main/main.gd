@@ -338,7 +338,7 @@ func show_title() -> void:
 	title.main = self
 	add_child(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
-	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
+	if _showcase_wanted():
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
@@ -396,7 +396,7 @@ static func next_showcase_fac() -> String:
 
 
 func _start_showcase() -> void:
-	if quitting or title == null or not is_instance_valid(title) or showcase != null:
+	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
@@ -425,14 +425,27 @@ func _start_showcase() -> void:
 
 # Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
 # setting (Low has none), so what shows is what the setting gives
+var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
+
+
 func restart_showcase() -> void:
+	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
 		showcase.queue_free()
 	showcase = null
 	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
 		title.cover_showcase()
-	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
-		get_tree().create_timer(0.3).timeout.connect(_start_showcase)
+	if _showcase_wanted():
+		var gen := _showcase_gen
+		get_tree().create_timer(0.3).timeout.connect(func() -> void:
+			# a quicker press (say on to Low) since this was asked for wins: only the newest request, still wanted, builds
+			if gen == _showcase_gen and _showcase_wanted():
+				_start_showcase())
+
+
+# the title's battle backdrop: not in bot or headless runs, never on Low (Low has none), not with --no-showcase
+func _showcase_wanted() -> bool:
+	return not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase")
 
 
 func _clear() -> void:
