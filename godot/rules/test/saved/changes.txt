@@ -1,94 +1,98 @@
-Saved manifest before: 1375a54f6f01b1a11eb64b519e9edb12db9e15f7004e4af8306c15f316f0803d
-Saved manifest after: c89541392e4431393427be745cfcc28ecbf9d587a854a4bcb0e07ec45066da7a
+Saved manifest before: c89541392e4431393427be745cfcc28ecbf9d587a854a4bcb0e07ec45066da7a
+Saved manifest after: 0bbfadbe6e4a5e2f8e5b2f62a1eefe9010854360b2caa7cf9a80239def947aa4
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
 FAIL battle t_lensaloft
-  turn 53, round 3, after round; unit none (battle state)
-  state.b.log[27]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
+  turn 53, round 3, after round; unit x09 (player bomber)
+  state.units[6].activated: false -> true
   later changed records: 1; total records: 55 -> 55
-FAIL battle t_longfocus
-  turn 37, round 2, after command player; unit none (battle state)
-  state.b.log[29]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 1; total records: 39 -> 39
 FAIL battle t_burnflaw
   turn 32, round 2, after command player; unit none (battle state)
-  state.b.log[24]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
+  state.b.log[24]: {"c":"s","m":"The enemy fleet breaks and flees."} -> <missing>
   later changed records: 1; total records: 34 -> 34
 FAIL battle t_longlight
-  turn 37, round 3, after end win; unit none (battle state)
-  state.b.log[18]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 38 -> 38
+  turn 37, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 38 -> 39
 FAIL battle t_twoimages
-  turn 68, round 5, after end win; unit none (battle state)
-  state.b.log[33]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 69 -> 69
+  turn 68, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 69 -> 70
 FAIL battle t_refraction
-  turn 54, round 4, after end win; unit none (battle state)
-  state.b.log[20]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 55 -> 55
+  turn 54, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 7; total records: 55 -> 62
 FAIL battle t_mirrorturns
-  turn 49, round 4, after end win; unit none (battle state)
-  state.b.log[21]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 50 -> 50
+  turn 49, round 4, after end activation; unit x03 (player i_wisp)
+  state.units[0].activated: false -> true
+  later changed records: 16; total records: 50 -> 66
 FAIL battle t_falsehulls
-  turn 61, round 4, after end win; unit none (battle state)
-  state.b.log[32]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 62 -> 62
+  turn 61, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 10; total records: 62 -> 72
 FAIL battle t_rechargelit
-  turn 23, round 2, after end win; unit none (battle state)
-  state.b.log[14]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 24 -> 24
+  turn 23, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 24 -> 25
 FAIL battle t_hardlight
-  turn 69, round 5, after end win; unit none (battle state)
-  state.b.log[35]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 70 -> 70
+  turn 69, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 70 -> 71
 FAIL battle t_wardglass
-  turn 53, round 4, after end win; unit none (battle state)
-  state.b.log[29]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 54 -> 54
+  turn 53, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 17; total records: 54 -> 71
 FAIL battle t_deployread
-  turn 20, round 2, after end win; unit none (battle state)
-  state.b.log[10]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 21 -> 21
+  turn 20, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 21 -> 22
 FAIL battle t_flagshiplens
-  turn 35, round 3, after end win; unit none (battle state)
-  state.b.log[20]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 36 -> 36
+  turn 35, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 36 -> 37
 FAIL battle t_firstlight
-  turn 54, round 4, after end win; unit none (battle state)
-  state.b.log[26]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 55 -> 55
+  turn 54, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 11; total records: 55 -> 66
+FAIL battle t7a_onelens
+  turn 36, round 2, after fire x05; unit x05 (player i_song)
+  state.units[1].postFire: false -> true
+  later changed records: 5; total records: 38 -> 42
 FAIL battle t7a_lighttogether
-  turn 29, round 2, after command player; unit none (battle state)
-  state.b.log[20]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
+  turn 29, round 2, after command player; unit x06 (player i_song)
+  state.units[2].treeAimPlus: <missing> -> 0
   later changed records: 1; total records: 31 -> 31
+FAIL battle t7a_sunlens
+  turn 35, round 2, after fire x04; unit x04 (player i_song)
+  state.units[0].postFire: false -> true
+  later changed records: 5; total records: 37 -> 41
 FAIL battle t7a_mirroraside
-  turn 65, round 5, after end win; unit none (battle state)
-  state.b.log[31]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 66 -> 66
+  turn 65, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 66 -> 67
 FAIL battle t7a_splitthree
-  turn 52, round 4, after end win; unit none (battle state)
-  state.b.log[26]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 53 -> 53
+  turn 52, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 11; total records: 53 -> 64
 FAIL battle t7a_fleetelsewhere
-  turn 62, round 4, after end win; unit none (battle state)
-  state.b.log[32]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 63 -> 63
+  turn 62, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 9; total records: 63 -> 72
 FAIL battle t7a_weakside
-  turn 35, round 3, after end win; unit none (battle state)
-  state.b.log[17]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 36 -> 36
+  turn 35, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 36 -> 37
 FAIL battle t7a_prismsface
-  turn 36, round 3, after end win; unit none (battle state)
-  state.b.log[17]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 37 -> 37
+  turn 36, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 37 -> 38
 FAIL battle t7a_lensrotates
-  turn 37, round 3, after end win; unit none (battle state)
-  state.b.log[17]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 38 -> 38
+  turn 37, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 38 -> 39
 FAIL battle t7a_facetlit
-  turn 23, round 2, after end win; unit none (battle state)
-  state.b.log[13]: <missing> -> {"c":"s","m":"The enemy fleet breaks and flees."}
-  later changed records: 0; total records: 24 -> 24
-FAIL: saved Godot results; 288 battles checked, 22 changed, 0 other files changed, 22 failures; 12.224 s
+  turn 23, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 24 -> 25
+FAIL: saved Godot results; 288 battles checked, 23 changed, 0 other files changed, 23 failures; 11.772 s

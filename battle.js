@@ -652,6 +652,7 @@ function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; i
   u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled','#7dff9b',-30); }catch(e){} } return true; }
 function legionTurn(side){ if(!B||B.over) return []; const out=[]; let stuck=false; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled){ if(legionRise(u)) out.push(u); else stuck=true; } if(stuck) checkEnd(); /* issue 1479: a wreck with no room stays dark, so the fight it kept open can end now */ return out; }
 // issue 1479: capitals reassembling (Eclipse legion) that rise next round; the end checks count them as present
+function riserCP(side){ return B.units.filter(u=>u.dead&&u.side===side&&u.riseAt!=null&&!u.fled&&!u.isSq).reduce((a,u)=>a+(u.t.cp||1),0); }
 function risers(side){ return B.units.filter(u=>u.dead&&u.side===side&&u.riseAt!=null&&!u.fled&&!u.isSq).length; }
 // plain-words lines for the ship panel
 function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModifierLines(u);
@@ -1395,7 +1396,7 @@ function checkEndRules(){
   // a broken fleet flees instead of being hunted down hex by hex
   if(!B.cp0||(o&&(o.type==='intercept'||o.type==='hunt'))) return;
   const bossDown=B.cfg&&B.cfg.kind==='boss'&&!B.units.some(u=>u.boss&&u.side==='enemy'&&!u.dead);
-  if(bossDown||(sideCP('enemy')<=B.cp0.enemy*.35&&!B.nemNoRout)){ // R42: a Voidsworn or Deathless Nemesis fights to the last hull
+  if(bossDown||(sideCP('enemy')+riserCP('enemy')<=B.cp0.enemy*.35&&!B.nemNoRout)){ // issue 1479: a wreck rising next round still counts toward the rout line // R42: a Voidsworn or Deathless Nemesis fights to the last hull
     B.over='win'; B.routed=true; log(bossDown?'The flagship is gone. Its escorts break and flee.':'The enemy fleet breaks and flees.','s'); }
 }
 

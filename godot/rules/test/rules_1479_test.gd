@@ -47,6 +47,8 @@ func _init() -> void:
 		["3: the last enemy Eclipse ship reassembling is not a win yet", c_rise_enemy],
 		["3: a wreck with no room to rise lets the fight end", c_rise_stuck],
 		["3: a ship rising next round counts toward a breakthrough", c_rise_break],
+		["3: a big wreck rising next round holds the enemy above the rout line", c_rise_rout],
+		["3: a small wreck rising does not stop a fleet that has broken (guard)", c_rise_rout_small],
 	]
 	var ok := 0; var bad := 0
 	for c in cases:
@@ -106,3 +108,16 @@ func c_rise_break() -> Array:
 	a["exited"] = true; a["dead"] = true; a["fled"] = true
 	b["hp"] = 0; R.killUnit(b, E[0])
 	return [not R.jt(B.get("over")) and b.get("riseAt") != null, "over " + str(B.get("over")) + ", riseAt " + str(b.get("riseAt"))]
+# Artoo on PR 1621: with the real starting strength and the rout rule on, a pending rise counts toward the rout line too
+func _cp0() -> void:
+	B["cp0"] = {"player": R.sideCP("player"), "enemy": R.sideCP("enemy")}
+func c_rise_rout() -> Array:
+	fresh(["penitent"], "deathless", ["d_jackal"]); var t = E[0]; _legion("enemy"); _cp0()
+	t["hp"] = 0; R.killUnit(t, P[0])
+	return [not R.jt(B.get("over")) and t.get("riseAt") != null, "over " + str(B.get("over")) + ", cp0 " + str(B["cp0"])]
+func c_rise_rout_small() -> Array:
+	fresh(["penitent"], "deathless", ["d_scythe", "d_jackal", "d_jackal"]); _legion("enemy"); _cp0()
+	E[1]["reanimated"] = true; E[2]["reanimated"] = true   # these two stay down
+	E[1]["hp"] = 0; R.killUnit(E[1], P[0]); E[2]["hp"] = 0; R.killUnit(E[2], P[0])
+	var t = E[0]; t["hp"] = 0; R.killUnit(t, P[0])
+	return [str(B.get("over")) == "win" and t.get("riseAt") != null, "over " + str(B.get("over")) + ", riseAt " + str(t.get("riseAt")) + ", cp0 " + str(B["cp0"])]

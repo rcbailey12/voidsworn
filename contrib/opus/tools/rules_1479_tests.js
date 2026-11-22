@@ -85,6 +85,16 @@ const CASES = [
     B.obj = { type: 'break', need: 2 }; a.exited = true; a.dead = true; a.fled = true;
     b.hp = 0; await E('killUnit')(b, En[0]);
     return [!B.over && b.riseAt != null, 'over ' + B.over + ', riseAt ' + b.riseAt]; }],
+  ['3: a big wreck rising next round holds the enemy above the rout line', async () => {
+    const { B, P, E: En } = fresh(['penitent'], 'deathless', ['d_jackal']); const t = En[0]; legion(B, 'enemy'); B.cp0 = { player: E('sideCP')('player'), enemy: E('sideCP')('enemy') };
+    t.hp = 0; await E('killUnit')(t, P[0]);
+    return [!B.over && t.riseAt != null, 'over ' + B.over + ', cp0 ' + JSON.stringify(B.cp0)]; }],
+  ['3: a small wreck rising does not stop a fleet that has broken (guard)', async () => {
+    const { B, P, E: En } = fresh(['penitent'], 'deathless', ['d_scythe', 'd_jackal', 'd_jackal']); legion(B, 'enemy'); B.cp0 = { player: E('sideCP')('player'), enemy: E('sideCP')('enemy') };
+    En[1].reanimated = true; En[2].reanimated = true; // these two stay down
+    En[1].hp = 0; await E('killUnit')(En[1], P[0]); En[2].hp = 0; await E('killUnit')(En[2], P[0]);
+    const t = En[0]; t.hp = 0; await E('killUnit')(t, P[0]);
+    return [B.over === 'win' && t.riseAt != null, 'over ' + B.over + ', riseAt ' + t.riseAt + ', cp0 ' + JSON.stringify(B.cp0)]; }],
 ];
 
 (async () => {

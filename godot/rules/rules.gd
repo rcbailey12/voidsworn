@@ -4268,6 +4268,11 @@ func risers(side) -> int:
 	for u in B["units"]:
 		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and not jt(u.get("fled")) and not jt(u.get("isSq")): n += 1
 	return n
+func riserCP(side) -> float:
+	var s := 0.0
+	for u in B["units"]:
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and not jt(u.get("fled")) and not jt(u.get("isSq")): s += float(u["t"]["cp"]) if jt(u["t"].get("cp")) else 1.0
+	return s
 func _has_reserve(side) -> bool:
 	for u in B["units"]:
 		if u["side"] == side and not jt(u.get("dead")) and jt(u.get("treeOff")): return true
@@ -4333,7 +4338,7 @@ func checkEndRules() -> void:
 		bossDown = true
 		for u in B["units"]:
 			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
-	if bossDown or (sideCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
+	if bossDown or (sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
 		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
