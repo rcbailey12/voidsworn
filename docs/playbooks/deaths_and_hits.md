@@ -332,7 +332,10 @@ jobs 1690 (Wave 1A), 1691 (1B), 1692 (2A), 1693 (2B); the combat sound targets r
 3. **Thrusters match the faction.** Cold gas for Sunward and Navy (sootier grey for Hullbreakers), pale-gold glints for
    Glasswrights, violet shimmer for Eclipse, none on Chorus.
 4. **A shield block is quiet.** It pushes the hull at about a third of today's force, with no thruster spray and no engine
-   stutter. Engines stutter and the hull lights brown out only on real hull damage, shield breaks, crits and ion hits.
+   stutter. Engines stutter and the hull lights brown out only on real hull damage, shield breaks, crits and ion hits, and
+   only when the hit gets through or breaks the shield: a crit or ion hit fully absorbed by a shield that holds stays quiet
+   too (Ryan, Nov 22 16:48 UTC: "so 100% shield-blocked lances, ions, and crits do not brown out hull lights or stutter
+   engines"; code: `felt = not absorbed or breaking`, fx_weapons.gd).
 5. **Firing has weight.** Heavy guns push the shooter back a little (about a fifth of the target's push) and the turret barrel
    kicks. A miss streaks past with a fading tail and never just vanishes.
 6. **The target's material decides the impact** (with R402). One substance table (metal, glass, bio, obsidian) feeds every
