@@ -1521,6 +1521,10 @@ func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Ar
 	var out: Array = []
 	if pts.is_empty():
 		return out
+	# Neon on PR 1631: the same jammed-turret filter as guns(), so a Burn and fire never trains a jammed turret
+	var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
+	if not free_pts.is_empty():
+		pts = free_pts
 	var key := "%d|%s" % [slot, weapon]
 	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 	for i in maxi(n, 1):

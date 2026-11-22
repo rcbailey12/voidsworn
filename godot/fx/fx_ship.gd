@@ -457,16 +457,20 @@ func _update_trails(fx, _moved: bool) -> void:
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
-	for t in _trails:
+	for ti in _trails.size():
+		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
 		var changed := false
+		# Neon on PR 1631: the sick nozzle's ribbon gutters with its plume (one trail per nozzle, in order); the dim samples
+		# still go in, so the ribbon fades through the gap instead of bridging it bright
+		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
 		if not dead and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
-				hist.push_front([start, _tclock, lvl])
+				hist.push_front([start, _tclock, lvl_t])
 				changed = true
 		while not hist.is_empty() and (hist.size() > TRAIL_PTS or _tclock - float(hist.back()[1]) >= TRAIL_LIFE):
 			hist.pop_back()
@@ -1429,7 +1433,20 @@ func _set_wear(fx, hpf: float) -> void:
 		_list_side = 0.0
 	# a refresh also whenever wear reaches or leaves zero (Sol review: a small last repair left fx_weather at 0.0075)
 	if absf(hull_wear - _wear_shown) > 0.02 or _wear_marks != _marks.size() or ((hull_wear == 0.0) != (_wear_shown == 0.0)):
+		if hull_wear > 0.0:
+			ensure_damage_surfaces(fx)   # Neon on PR 1631: spread damage can wear a hull before any section breaches
 		_apply_wear()
+
+
+# Issue 1587 (Neon on PR 1631): the hull's lights (fx_flick, the wear) live on its damage surfaces, which only a breach used
+# to build. A fresh or lightly hit hull gets them here once, with no mouths (no holes): the same materials a first breach
+# makes, so the brownout and the wear show before any section is cut.
+func ensure_damage_surfaces(fx) -> void:
+	if not _damage_surfaces.is_empty() or dead or gone or squadron or hull == null or fx == null or fx.compat:
+		return
+	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
+	_power_shown = -1.0
+	_wear_shown = -1.0
 
 
 # Push the wear onto every damage surface this ship has now (a rebuild applies it to new ones in fx_breach).
@@ -2362,6 +2379,7 @@ func power_flicker(t: float, reduce := false) -> float:
 func power_dip(fx, dur := 0.5) -> void:
 	if dead or gone:
 		return
+	ensure_damage_surfaces(fx)   # Neon on PR 1631: an ion hit on a fresh hull browns it out too
 	_power_dip_until = maxf(_power_dip_until, fx.now + dur)
 	_wlog(["power_dip", -1, fx.now])
 

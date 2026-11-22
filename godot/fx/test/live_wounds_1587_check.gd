@@ -132,6 +132,16 @@ func _run() -> void:
 			"%s: a healthy ship has no sick nozzle, no jammed turret and steady power" % faction)
 		check(s.hull.turret_section(0) == HULL.SEC_PROW and s.hull.turret_section(1) == HULL.SEC_MID,
 			"%s: the stand-in has a prow turret and a mid turret" % faction)
+		# Neon on PR 1631: an ion hit on a fresh hull (no breach yet, so no damage surfaces) still browns it out
+		check(s._damage_surfaces.is_empty(), "%s: a fresh hull has no damage surfaces yet" % faction)
+		s.power_dip(fx, 0.5)
+		fx.step(0.05)
+		var dip_lo := 1.0
+		for key in s._damage_surfaces:
+			var fl = (s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_flick")
+			if fl != null: dip_lo = minf(dip_lo, float(fl))
+		check(not s._damage_surfaces.is_empty() and dip_lo < 0.5, "%s: an ion dip on a fresh hull dims its lights (%d surfaces, fx_flick %.2f)" % [faction, s._damage_surfaces.size(), dip_lo])
+		settle(1.0)
 		var nodes0: int = _emitters(s)
 
 		# 1. the sick engine
@@ -166,6 +176,18 @@ func _run() -> void:
 		s.root.position += Vector3(1, 0, 0)
 		fx.step(0.02)
 		check(_log(s, "cough") == c0 + 1, "%s: a stop and start inside the cough gap does not cough again" % faction)
+		# Neon on PR 1631: the sick nozzle's trail gutters with its plume (dim samples in the gaps), the others stay steady
+		for j in 40:
+			s.root.position += Vector3(0.5, 0, 0)
+			fx.step(0.05)
+		var sick_lv: Array = []
+		var well_lv: Array = []
+		for ti in s._trails.size():
+			var hh: Array = s._trails[ti]["hist"]
+			for hp in hh.slice(0, 12):   # the newest samples, after the drive has spooled up
+				(sick_lv if ti == s.sick_nozzle else well_lv).append(float(hp[2]))
+		check(not sick_lv.is_empty() and sick_lv.min() < 0.5 * sick_lv.max() and (well_lv.is_empty() or well_lv.min() > 0.5 * well_lv.max()),
+			"%s: the sick nozzle's trail breaks up with its plume (%.2f to %.2f; the others %s)" % [faction, sick_lv.min() if not sick_lv.is_empty() else -1.0, sick_lv.max() if not sick_lv.is_empty() else -1.0, "steady" if well_lv.is_empty() or well_lv.min() > 0.5 * well_lv.max() else "uneven"])
 		# Artoo on PR 1631 (after movement 1581 merged): a wounded ship braking with its drive cold still gutters and
 		# its trails still age fast; both paths run in the same update
 		var te0: float = s._trail_extra
@@ -196,6 +218,18 @@ func _run() -> void:
 		check(fwd.y < -0.05, "%s: the jammed turret sags on its mount (%.3f)" % [faction, fwd.y])
 		check(not s.hull.turret_jammed(0), "%s: the prow turret still tracks" % faction)
 		check(_wisps(s) == 1, "%s: the jammed turret trails one wisp" % faction)
+		# the stand-in has no gun points: two on the same slot, one per turret, so gun_turrets must choose
+		var tgt := Vector3.ZERO
+		for cand in [Vector3(0, 2.5, 40), Vector3(0, 2.5, -40), Vector3(40, 2.5, 0), Vector3(-40, 2.5, 0), Vector3(0, 40, 0)]:
+			if s.hull.turret_reaches(0, cand) and s.hull.turret_reaches(1, cand):
+				tgt = cand
+				break
+		var gp_was = s.hull.points.get("gun")
+		s.hull.points["gun"] = [{"slot": 0, "weapon": "x", "tur": 0}, {"slot": 0, "weapon": "x", "tur": 1}]
+		var trained: Array = s.hull.gun_turrets(0, "x", tgt, 2)
+		if gp_was == null: s.hull.points.erase("gun")
+		else: s.hull.points["gun"] = gp_was
+		check(tgt != Vector3.ZERO and trained == [0], "%s: a Burn and fire never trains the jammed turret (%s)" % [faction, str(trained)])
 		var caps: Vector2i = s.damage_caps(fx.cap_k)
 		var cnt: Dictionary = s.damage_counts()
 		check(cnt.fire <= caps.x and cnt.smoke + cnt.vent <= caps.y, "%s: the wisp stays inside the class caps" % faction)
