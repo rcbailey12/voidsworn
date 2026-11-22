@@ -1,0 +1,9 @@
+OPUS1589C_WAIT.bat waiting for OPUS1633_PROBE2 exit in opus1633b_wait.txt Sun 11/22/2026  8:24:38.97 
+swapped out while only waiting 08:25:23: replaced by OPUS1589C_WAIT2.bat (moved to the front, after OPUS1536D exit; Board Nov 22 14:30 UTC)
+OPUS1589C_WAIT2.bat waiting for OPUS1536D exit in opus1536d_wait.txt Sun 11/22/2026  8:25:23.43 
+OPUS1589C_WAIT2.bat trigger seen, waiting for C: 75 GB free Sun 11/22/2026  8:33:23.96 
+OPUS1589C start  9:05:27.61 
+OPUS1589C exit 0 at  9:25:35.97 
+run folder out_20261122_090528_31704
+result: done PASS
+all done Sun 11/22/2026  9:25:36.52 
