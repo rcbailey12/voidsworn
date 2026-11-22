@@ -507,7 +507,12 @@ Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
 and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
 at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
-files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+files, `build\export` refreshes by itself (issue 1663): the root watcher runs `tools/pc/overnight_export.ps1` every 10
+minutes when idle, and it queues one `overnight_export_job.bat` only between 1 and 5 AM Central, with gpu_go.txt clear, 75 GB
+free on C:, no job, GPU claim or Voidsworn, Godot or Blender process running, and main's `godot/` tree changed since the
+last overnight export; one try a night. The job exports main through the existing g2_export check, smoke and promotion and
+never changes `build\godot`; g2_export refuses to replace `build\export` while Voidsworn is running, so the game Ryan
+launches is never swapped under him. R319 still holds for playtest captures (`g2_pt_*`): those wait for Ryan to ask. Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
 a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
 when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
