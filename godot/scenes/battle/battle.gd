@@ -67,6 +67,12 @@ const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
 const MOVE_SK_MAX := 1.4     # the size scale runs past battleship at half slope (dreadnought 1.25, bosses up to 1.4), by eye
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
+# Issue 1581 (Nov 21 outside motion audit: frigates "snappy and weightless beside capitals"): an escort flies a little
+# firmer. Its hex time grows by up to 14 percent (a frigate's peak burn about 36 to 31 units a second) and its turn
+# weight by up to 30 percent (about 123 to 95 degrees a second), easing to nothing at battleship size, so nothing from a
+# battleship up changes. Cinematic flown moves only.
+const MOVE_ESCORT_PACE := 1.14
+const MOVE_ESCORT_TURN := 1.3
 const NO_READY_GUN_IN_RANGE := "No ready gun can reach it."
 const TIPS := [
 	["select", "Moving and facing", "Click a blue hex to plan a move. Turn with Q and E before you confirm. Staying in place gives enemies +10 to hit; moving 3 or more hexes normally gives them -5. Most ships can Brace instead of firing: this cuts hull damage and removes the +10, but ends the ship's turn. Glasswright ships cannot Brace."],
@@ -559,6 +565,9 @@ func _begin(a) -> void:
 	hud.loading(true)
 	# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
 	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
+	var obj0 = api.view().get("obj")
+	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
+		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 		if "passive" in gfx:
@@ -698,23 +707,10 @@ func _begin(a) -> void:
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
-	var pc := Vector3.ZERO
-	var ec := Vector3.ZERO
-	var np := 0
-	var ne2 := 0
-	for u in V["units"]:
-		if u["side"] == "player":
-			pc += board.hex_world(u["q"], u["r"])
-			np += 1
-		else:
-			ec += board.hex_world(u["q"], u["r"])
-			ne2 += 1
-	pc /= maxf(1.0, np)
-	ec = ec / maxf(1.0, ne2) if ne2 > 0 else pc
-	cam.home = pc.lerp(ec, 0.3)
-	cam.home.y = 0.0
+	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
+	cam.home = hv["target"]
 	cam.reset_view()
-	cam.home_r = clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)
+	cam.home_r = hv["r"]
 	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
@@ -870,6 +866,7 @@ func _pipe_count() -> int:
 
 var warming := false
 const ArrivalWarm := preload("res://render/arrival_warm.gd")
+const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold relay beacon prefetch
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
@@ -968,6 +965,7 @@ func _make_view_node(u: Dictionary) -> ShipView:
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
+	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 	return sv
 
@@ -1669,6 +1667,17 @@ func _play_batch(bt: Dictionary) -> void:
 			i = j
 			continue
 		var te := game_t
+		if e["t"] == "move":
+			# issue 1581: a Burn and fire (the move, then its volley) hands the volley's target to the move, so the guns
+			# turn while the hull brakes
+			for j2 in range(i + 1, evs.size()):
+				var e2: Dictionary = evs[j2]
+				if e2["t"] in ["move", "activation", "undo", "round"]:
+					break
+				if e2["t"] == "fire" and str(e2.get("unit", "")) == str(e["unit"]):
+					move_aim[str(e["unit"])] = {"target": str(e2["target"]), "slot": int(e2["weapon"]) if e2.get("weapon") != null else -1,
+						"wid": str(e2.get("weapon_id", "")), "n": maxi((e2.get("shots", []) as Array).size(), 1)}
+					break
 		await _play_event(e, bt["view"])
 		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
@@ -1799,7 +1808,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(220.0)
 		"risen":
 			_reassemble(e, batch_view)
-			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
+			_float(e["unit"], "Risen", Color("#ddc4ff"), -30)   # only Eclipse ships rise (legionCan); Eclipse violet, never green (issue 1641)
 			await wait(600.0)
 		"stance":
 			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
@@ -1950,12 +1959,22 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			# issue 1524 (fx/API.md 11): the approved boarding breach (pried hatch, venting gas, light from inside, then a
 			# dark gash); the generic pop stays only when the fx layer found no boarding point to draw it at
 			var boarded := 0.0
+			# issue 1581 item 4: the boarding ship trims its height toward the target's hull before the breach, and
+			# eases back after it (a look only; the rules' hexes are unchanged)
+			var bsv = views.get(e["unit"])
+			var btv = views.get(e["target"])
+			if bsv != null and btv != null and not bsv.dead and not reduce_motion:
+				bsv.elev_target = clampf(float(btv.hull_lift) - float(bsv.hull_lift), -4.0, 4.0)
+				if absf(float(bsv.elev_target)) > 0.2:
+					await wait(450.0)
 			if gfx != null and gfx.has_method("board"):
 				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res, speed))
 			if boarded <= 0.0:
 				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			# issue 1547: hold on the breach long enough to read it before the next event (the enemy turn)
 			await wait(float(gfx.board_hold_ms()) if boarded > 0.0 and gfx.has_method("board_hold_ms") else 600.0)
+			if bsv != null and is_instance_valid(bsv):
+				bsv.elev_target = 0.0
 		"command_warning":
 			var C = _command(str(e["id"]))
 			_log("%s is preparing %s. It strikes next round." % [_name(e["unit"]), str(C.get("n", e["id"]))], "e")
@@ -2126,6 +2145,8 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	# F2 (R64, Ryan Nov 1): about twice as slow, every ship at its own true pace on both sides; only Enter or Space (or the
 	# Speed: fast setting) hurries a move. The old B2 timing stays behind --movement segments for before and after shots.
 	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk) * fk * (MOVE_SQUAD if bool(u.get("squadron", false)) else 1.0)
+	if cin:
+		per *= _escort_k(sk, MOVE_ESCORT_PACE)
 	var gsteps: Array = _glide_steps(sv, path, sk) if cin else []
 	var mv_s := s
 	if cin:
@@ -2146,11 +2167,12 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		# and spins add to it), capped
 		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
 		var jets_only: bool = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
-		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed}
-		if not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("nose_first", false)):
-			gopts["point"] = NF_POINT
-			gopts["trail"] = NF_TRAIL
-		sv.play_glide(gsteps, per * MOVE_CRUISE * (SLIDE_PACE if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, gopts)
+		# issue 1581: the glide is told which moves are flown on thrusters (the drive stays cold) and which nose first (it
+		# rests at each corner to turn); NF_POINT and NF_TRAIL, which overlapped the turns with the burn, are gone
+		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed, "thrusters": jets_only,
+			"nose_first": not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("nose_first", false))}
+		sv.calm = reduce_motion
+		sv.play_glide(gsteps, per * MOVE_CRUISE * (_slide_pace(sk) if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, gopts)
 		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
@@ -2162,13 +2184,39 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	if size > 0.3:
 		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
+	# issue 1581 item 5: Burn and fire. The guns that will fire when the hull settles start turning toward the target
+	# while it brakes, so the opening volley leaves on the beat the hull stops (the fire still follows the move: RULEBOOK
+	# 7.9, nothing moves after it fires)
+	# OpenAI review F1/F3: the volley's own mounts and aim point, started at the last brake or earlier when the slowest of
+	# those turrets needs more time than is left in the move, so they bear when the hull settles
+	var pa: Dictionary = move_aim.get(str(id), {})
+	move_aim.erase(str(id))
+	var aimed: bool = pa.is_empty() or not cin or gfx == null or not gfx.has_method("pre_aim") or not sv.glide
+	var xf_end := Transform3D.IDENTITY
+	var aim_need := 0.0
+	var aim_at := 1.0
+	if not aimed:
+		var fin: Array = sv._gl_pose(1.0)
+		var par: Node3D = sv.get_parent_node_3d()
+		xf_end = Transform3D(Basis(Vector3.UP, float(fin[1])), fin[0] as Vector3)
+		if par != null:
+			xf_end = par.global_transform * xf_end
+		aim_need = float(gfx.pre_aim(str(id), str(pa["target"]), xf_end, int(pa["slot"]), str(pa["wid"]), int(pa["n"]), false))
+		aim_at = _pre_aim_at(sv)
 	while is_instance_valid(sv) and sv.burning() and not sv.dead:   # issue 1559 item 8: Fight again frees the old ships mid-move
+		# seconds left in the move as it plays now (a hurried move runs faster)
+		var left := (1.0 - float(sv.gl_p)) * float(sv.path_dur) * float(sv.speed_k)
+		if not aimed and (float(sv.gl_p) >= aim_at or left <= aim_need + 0.25):
+			aimed = true
+			gfx.pre_aim(str(id), str(pa["target"]), xf_end, int(pa["slot"]), str(pa["wid"]), int(pa["n"]))
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
 			# The main drive follows the forward push (issue 505: a burn to gain speed, a hot low glow while coasting;
 			# G4 fx engine level: idle, 2 full burn)
-			gfx.set_engine(str(id), _drive_level(float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+			# issue 1581: a cold drive (a slide, a back-off, braking) is fed below fx_ship's trail threshold, so no bright
+			# core or exhaust ribbon is laid while the thrusters do the work
+			gfx.set_engine(str(id), (ENGINE_COLD if bool(sv.drive_cold) else _drive_level(float(sv.thrust))) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
 		if args.has("speed-trace"):   # the hull's speed (hexes a second), spin (degrees a second), drive and jets
 			print("[speed] %s %.3f %.2f %.0f %.2f retro %.2f side %.2f aft %.2f turn %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust), sv.jet_retro, sv.jet_side, sv.jet_aft, sv.jet_turn])
 		if move_frames != "":
@@ -2189,6 +2237,31 @@ func _play_move(id, path: Array, charge: bool) -> void:
 # Weights share the move's time (the B2 pace is unchanged): a turn step weighs PACE.rot, a heavier hull spending a little
 # more of its time on a turn; a run weighs its steps plus a little for its thrust-up and thrust-down.
 const ENGINE_IDLE := 0.35     # the main drive at rest or coasting: a pilot glow, the full plume only when it pushes
+const ENGINE_COLD := 0.06     # issue 1581: the drive in a flown move while it is off (under fx_ship's 0.12 trail threshold)
+
+
+# issue 1581: an escort's pace factor k at size 0, easing to 1 at battleship size (the size scale sk)
+func _escort_k(sk: float, k: float) -> float:
+	return lerpf(k, 1.0, clampf(sk, 0.0, 1.0))
+
+
+# issue 1581: a move flown on thrusters is this many times slower than a burn: 1.6 for an escort (a frigate's two-hex
+# back-off about 25 to 19 units a second) to issue 521's 1.45 from battleship up
+func _slide_pace(sk: float) -> float:
+	return lerpf(SLIDE_PACE_ESCORT, SLIDE_PACE, clampf(sk, 0.0, 1.0))
+
+
+# issue 1581: where in a flown move the guns of a Burn and fire start to turn: once the hull is braking for its last
+# stop (from the speed profile: the last time it runs over half its cruise), or at 70 percent of the move when unclear
+func _pre_aim_at(sv) -> float:
+	var ds: PackedFloat32Array = sv.gl_ds
+	if ds.size() < 3 or float(sv.gl_T) <= 0.0:
+		return 0.7
+	var hexd := float(sv.gl_hexd)
+	for i in range(ds.size() - 2, -1, -1):
+		if (ds[i + 1] - ds[i]) / float(sv.gl_dtg) > 0.5 * hexd:
+			return clampf((float(sv.gl_tm0) + float(i) * float(sv.gl_dtg)) / float(sv.gl_T), 0.3, 0.95)
+	return 0.7
 
 
 # the battle's drive level for a flown move. fx_ship.gd reads a level within 0.05 of 1.0 as "moving, no level given"
@@ -2260,7 +2333,7 @@ func _glide_steps(sv, path: Array, sk: float) -> Array:
 		else:
 			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
 			var p: Vector3 = board.hex_world(st["q"], st["r"])
-			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
+			p.y = _clearance(ov, sk, int(st["q"]), int(st["r"])) if ov != 0.0 else 0.0
 			out.append({"kind": "move", "p": p, "w": 1.0, "slide": _jt(st.get("slip")) or _jt(st.get("rev"))})
 		la = a
 	var n_hex := 0
@@ -2276,20 +2349,36 @@ func _glide_steps(sv, path: Array, sk: float) -> Array:
 
 
 func _turn_w(a0: float, a1: float, sk: float) -> float:
-	return lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(a0, a1)) / (PI / 3.0), 0.5)
+	return lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * _escort_k(sk, MOVE_ESCORT_TURN) * maxf(absf(angle_difference(a0, a1)) / (PI / 3.0), 0.5)
+
+
+# Issue 1581 item 4: the height a flown move passes over a rock (over > 0) or under an enemy hull (over < 0), scaled by
+# both hulls: a frigate swoops low over a rock, a dreadnought heaves just clear of it with its bigger keel, and a dive
+# goes deeper under a bigger ship. Was a flat 9 up and 7.5 down for every hull. Presentation only (the rules' "over").
+func _clearance(ov: float, sk: float, q: int, r: int) -> float:
+	var own := clampf(sk / 1.25, 0.0, 1.0)
+	if ov > 0.0:
+		return lerpf(7.5, 10.5, own)
+	var other := 0.5
+	for uu in V.get("units", []):
+		if int(uu.get("q", -99)) == q and int(uu.get("r", -99)) == r and not bool(uu.get("dead", false)):
+			other = clampf((float(uu.get("size", 0.5)) - 0.3) / 0.9, 0.0, 1.0)
+	return -(lerpf(5.5, 8.0, own) + lerpf(0.0, 3.0, other))
 
 
 # Issue 521 tuning values (judged by eye on the issue 521 strips; movement_spec.md section 1):
 const LEG_TOL := 0.55        # hex centres within this share of a hex of a straight line fly as one leg (a zigzag of two
                              # hex directions is one straight diagonal run, not a heading change every hex)
-const LEG_PULL := 0.6        # inside a leg the hull is drawn this share of the way onto the straight line, so it still
-                             # passes inside every hex of the ruled route (a hex centre is at most 0.2 hex off its line)
+const LEG_PULL := 0.85       # inside a leg the hull is drawn this share of the way onto the straight line, so it still
+                             # passes inside every hex of the ruled route (issue 1581: was 0.6; the hull came within
+                             # 0.3 hex of each centre and wove 0.2 hex about its line, a 23 degree skid off a held nose;
+                             # now 0.43 from a centre, 0.08 off the line, and play_glide's _gl_crab follows the rest)
 const ASTERN := 2.1          # radians: a run this far behind both the heading and the final facing is backed on retro jets
-const NF_POINT := 0.75       # a nose-first move sets off when the nose is within 43 degrees of its course (the burn
-                             # starts while the nose is still coming round, so the turn and the run overlap)
-const NF_TRAIL := 0.7        # and starts its turn to the final facing earlier while it brakes (section 1's 0.45)
 const SLIDE_PACE := 1.45     # a move flown only on thrusters (a one-hex slide, a straight back-off) takes this many times
-                             # the burn's time per hex: visibly slower and gentler than the main engine
+                             # the burn's time per hex: visibly slower and gentler than the main engine (battleship up)
+const SLIDE_PACE_ESCORT := 1.6   # issue 1581: an escort's thruster moves, slower still (see _slide_pace)
+# (issue 1581: NF_POINT 0.75 and NF_TRAIL 0.7 overlapped a nose-first move's turns with its burn by up to 43 degrees and
+# skidded the hull sideways, Nov 21 audit; play_glide now flies turn, burn, turn: GL_LEAD, GL_REST, GL_DWELL_NF)
 
 
 # A move of two hexes or more as the ship would fly it: the route's hex centres are split into straight legs; the nose
@@ -2551,6 +2640,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var fires: Array = r.get("fires", [])
 		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
 		var fire0 := float(fires.min()) if not fires.is_empty() else -1.0
+		if fire0 >= 0.0:
+			shot_at[str(a_id)] = float(gfx.now) + fire0   # issue 1581: the first muzzle of this volley, on the effect clock
 		if fam in ["lance", "ion"]:
 			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
 				sfx.lance(false, fac, from, -1.0, _at_fx, fires)
@@ -2898,6 +2989,8 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 # at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
 # ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
 const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
+var move_aim := {}            # issue 1581: unit id -> its next volley's target, slot, weapon id and shots (Burn and fire)
+var shot_at := {}             # issue 1581: unit id -> effect-clock time of its last volley's first muzzle (captures read it)
 var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
@@ -5232,6 +5325,9 @@ func _toggle_opt(k: String) -> void:
 			option_changed.emit("reduce_flashing", reduce_flashing)
 		"motion":
 			reduce_motion = not reduce_motion
+			for vv in views.values():   # issue 1581: no idle drift, bob or trim nod with Reduce motion
+				if is_instance_valid(vv):
+					vv.calm = reduce_motion
 			option_changed.emit("reduce_motion", reduce_motion)
 		"uiscale":
 			var i := 0

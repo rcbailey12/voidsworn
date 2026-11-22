@@ -87,9 +87,11 @@ check('121-4 (#282) a full clock crosses the sector advance; the strike arms on 
   const line = T.nemClockAdd(1);                                       // the next sector's first clock add
   return fullNoStrike && carried && R.nemStrike && T.nemNodeIs(early) && line !== '' && /found your trail/.test(line); });
 // 121-5: meeting side effects, per commander
-check('121-5 a win, a loss and a retreat reset the run clock and strike; only the commander met changes', () => {
+check('121-5 a win and a loss reset the run clock and strike; only the commander met changes; a retreat changes none of it (R381)', () => {
   let ok = true;
-  for (const res of ['win', 'loss', 'retreat']) {
+  { const R = forced(['hegemony', 'corsair', 'ithar']); T.nemAfterBattle('win', false, {}); R.sector = 2; const B = T.nemActive(); R.nemClock = 4; R.nemStrike = true;
+    T.nemAfterBattle('retreat', false, {}); if (B.met === 2 || R.nemStrike !== true || R.nemClock !== 4) ok = false; }
+  for (const res of ['win', 'loss']) {
     const R = forced(['hegemony', 'corsair', 'ithar']); T.nemAfterBattle('win', false, {}); const A = R.nems.hegemony, A0 = canon(A);
     R.sector = 2; const B = T.nemActive(); R.nemClock = 4; R.nemStrike = true; const b0 = B.beaten, r0 = B.revealed.length;
     T.nemAfterBattle(res, false, {});

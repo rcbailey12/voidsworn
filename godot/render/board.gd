@@ -1000,6 +1000,7 @@ func _terrain() -> void:
 			"station":
 				pass
 	_planet()
+	_beacon()
 	# one station structure per cluster of station hexes (the game builds one across the cluster)
 	var seen := {}
 	for k in T:
@@ -1110,6 +1111,88 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 	mi.material_override = m
 	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
 	props.add_child(mi)
+
+
+# Issue 1536 (Ryan, Nov 22 2026, "Yes"): in a Hold battle the Navy relay beacon O3_11 stands under the hold hex, so the gold hex
+# reads as the relay the fleets fight over. Picture only: the rules place nothing there and ships still end their moves on
+# the hex above it. It sits below the board plane (its top under the grid), so a ship holding the hex floats over it, and its
+# lens is turned toward the player's side of the board and tipped up, so the blue rings read from the battle camera.
+const BEACON_LEN := 12.0      # O3's length_world 7.5 times the board's ship scale (hull_table SHIP_K 1.6)
+const BEACON_TOP := -0.6      # the highest point of the beacon, just under the grid
+const BEACON_TILT := 35.0     # degrees the lens is tipped up from level
+# Ryan's 1536B look (Nov 22, "Lift it onto the hex"): under the grid, the beacon slid to the near edge of its hex from the
+# battle camera. Its middle now sits on the sightline from the camera's opening (home) eye through the hex centre, so the
+# player sees it centred in the gold hex at the opening view while its top stays under the grid (Artoo on PR 1561: a real
+# perspective sightline, not a fixed z shift, so a hold hex off the camera's axis centres too).
+const BEACON_VIEW_B := 0.98   # camera_rig home_b: the home view's angle from straight up
+var beacon_node: Node3D = null
+
+
+func _beacon() -> void:
+	beacon_node = null
+	var o = VW.get("obj")
+	if not (o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary):
+		return
+	var t0 := Time.get_ticks_usec()
+	var n := A4P.beacon(BEACON_LEN)
+	if n == null:
+		return
+	print("[board] relay beacon ready in %.1f ms (threaded prefetch collected, issue 1536)" % ((Time.get_ticks_usec() - t0) / 1000.0))
+	# lens (+x) toward +z (the player's side, where the battle camera starts), then tipped up by BEACON_TILT
+	var basis := Basis(Vector3.RIGHT, -deg_to_rad(BEACON_TILT)) * Basis(Vector3.UP, -PI / 2.0)
+	var box := AABB()
+	var first := true
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		var xf := Transform3D(basis, Vector3.ZERO) * _rel_to(mi as Node3D, n)
+		var bb: AABB = xf * (mi as MeshInstance3D).get_aabb()
+		box = bb if first else box.merge(bb)
+		first = false
+	var drop := BEACON_TOP - box.end.y              # the top just under the grid
+	var depth := -(box.get_center().y + drop)       # how far the beacon's middle sits under the grid
+	var h := hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), 0.0)
+	var eye := home_eye(VW.get("units", []))
+	var mid := h + (h - eye) * (depth / maxf(eye.y, 1.0))   # on the sightline from the eye through h, depth under the grid
+	n.transform = Transform3D(basis, mid - box.get_center())
+	props.add_child(n)
+	beacon_node = n
+
+
+# The battle camera's opening view (scenes/battle/battle.gd _begin uses this): it looks at a point 30% of the way from the
+# player's fleet centre to the enemy's, from home_r away (the fleets' distance * 0.75, 130 to 210).
+func home_view(units: Array) -> Dictionary:
+	var pc := Vector3.ZERO
+	var ec := Vector3.ZERO
+	var np := 0
+	var ne := 0
+	for u in units:
+		if str(u.get("side", "")) == "player":
+			pc += hex_world(u["q"], u["r"])
+			np += 1
+		else:
+			ec += hex_world(u["q"], u["r"])
+			ne += 1
+	pc /= maxf(1.0, np)
+	ec = ec / maxf(1.0, ne) if ne > 0 else pc
+	var target := pc.lerp(ec, 0.3)
+	target.y = 0.0
+	return {"target": target, "r": clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)}
+
+
+# the camera's eye at the opening view (camera_rig _apply at a = -PI/2, b = home_b)
+func home_eye(units: Array) -> Vector3:
+	var hv := home_view(units)
+	return (hv["target"] as Vector3) + Vector3(0.0, cos(BEACON_VIEW_B), sin(BEACON_VIEW_B)) * float(hv["r"])
+
+
+# a node's transform relative to an ancestor (before either is in the tree)
+static func _rel_to(node: Node3D, ancestor: Node) -> Transform3D:
+	var xf := Transform3D.IDENTITY
+	var p: Node = node
+	while p != null and p != ancestor:
+		if p is Node3D:
+			xf = (p as Node3D).transform * xf
+		p = p.get_parent()
+	return xf
 
 
 func _planet() -> void:

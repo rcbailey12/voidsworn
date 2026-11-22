@@ -118,7 +118,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
 // (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read
 // the source. What the map does when it runs (it only reads; Muse's check of PR 349, condition 1) is tested by behaviour in
-// godot/campaign/test/map_readonly_test.gd, which CI runs with the Nemesis scenarios (run_nem_scenarios.sh).
+// godot/campaign/test/map_readonly_test.gd, which CI runs with the campaign checks (run_campaign_checks.sh, issue 1654).
 {
   const cui = read('godot/ui/campaign/campaign_ui.gd'), m3 = read('godot/ui/campaign/map3d.gd'), mi = read('godot/ui/campaign/map_intel.gd');
   const cb = read('godot/ui/campaign/choice_button.gd'), gsh2 = read('godot/ui/theme/glass_shell.gd'), view = read('godot/campaign/campaign_view.gd');
@@ -213,7 +213,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(!resolvers.test(code(m3)) && !resolvers.test(code(mi)) && !resolvers.test(code(sec)) && /View\.nem\(C\)/.test(cui), 'spelling check: the map, its estimate and the map screen call none of them either');
   const cgd = read('godot/campaign/campaign.gd');
   check(/func nemBeh\(N0 = null\)/.test(cgd) && /func nemNodeIs\(n, N0 = null\)/.test(cgd) && /func nemPanelData\(N0 = null\)/.test(cgd) && /var st = nemBeh\(N\)\.get\("strike"\)/.test(cgd), 'campaign.gd lets a reader pass the commander it already read (nemBeh, nemNodeIs, nemPanelData, nemWarnLine)');
-  check(/map_readonly_test\.gd/.test(read('godot/campaign/test/run_nem_scenarios.sh')) && fs.existsSync(path.join(ROOT, 'godot/campaign/test/map_readonly_test.gd')), 'the behaviour check of the read-only rule (map_readonly_test.gd) runs with the Nemesis scenarios in CI');
+  check(/map_readonly_test\.gd/.test(read('godot/campaign/test/run_campaign_checks.sh')) && fs.existsSync(path.join(ROOT, 'godot/campaign/test/map_readonly_test.gd')), 'the behaviour check of the read-only rule (map_readonly_test.gd) runs with the Nemesis scenarios in CI');
   // report first (Board verdict on finding 12): direct save reads left in the campaign UI, counted, not failed
   const direct = ['godot/ui/campaign/campaign_ui.gd', 'godot/ui/campaign/map3d.gd'].map(f => (read(f).match(/\bR\[|\bC\.RUN\[|C\.RUN\.get\(|\bR\.get\(/g) || []).length);
   console.log(`NOTE direct save reads left in campaign_ui.gd ${direct[0]}, map3d.gd ${direct[1]} (finding 12 report; they move with their screen groups)`);

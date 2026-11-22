@@ -55,6 +55,7 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
+const MELT_SPOTS := 6   # R398: the acid hits a ship remembers for its melt death (fx_shaders MELT_GLOW holds six)
 const CRIT_BEAT := 0.12
 # Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
 # shield failure's flash, so the two read as two beats instead of one orange smear
@@ -1964,6 +1965,13 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
 		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		fx.later(T, func l_hit_react() -> void: Tg.hit_react(fx, imp, lhp, ldr))
+		if bio and not bool(tg.get("shield", false)):
+			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			fx.later(T, func l_acid_spot() -> void:
+				var sp: Array = Tg.get_meta("acid_spots", [])
+				sp.append([lhp, fx.now])
+				while sp.size() > MELT_SPOTS: sp.pop_front()
+				Tg.set_meta("acid_spots", sp))
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return
@@ -2230,6 +2238,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
 		_embers(fx, last, n, T + dur, k, 5, "lance", col * 0.28)
+		_ion_crawl(fx, Tg, p, n, T, col, k)
 	# the tail when the beam lifts: the contact glow fades over a third of a second
 	fx.spr(last + n * 0.2 * k, T + dur, 0.33, col, 2.6, 1.6 * k, 1.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.4)
 	_gas_cloud(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75), 3, 2.2, "lance", 0.28, 7, (n + run * 0.7).normalized())
@@ -2238,6 +2247,33 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	# Doom lights only the struck plating. The existing mark cools into a scar.
 	fx.light(p+n*0.6*k if lk == "doom" else p+n*2.0*k,T,dur+0.15,6.5,col,1,4.5*k if lk == "doom" else 0.0)
 	fx.shake(T,0.1,p)
+
+
+# Issue 1587: an ion hull hit crawls. 2 or 3 short (0.4 s) lightning threads jump from the contact across nearby plating
+# (each lands on the hull where a ray finds it), and the struck ship's lights brown out for half a second (power_dip).
+static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: float) -> void:
+	var hot: Color = col.lerp(Color.WHITE, 0.35)
+	var reach: float = clampf(Tg.hull.L * 0.12, 1.2, 5.0) if Tg != null else 2.0
+	var inv: Transform3D = Tg.xf().affine_inverse() if Tg != null else Transform3D.IDENTITY
+	for j in 2 + (1 if fx.rng.randf() < 0.5 else 0):
+		var tang: Vector3 = fx.rdir()
+		tang = (tang - n * tang.dot(n)).normalized()
+		if tang.length() < 0.1:
+			tang = n.cross(Vector3.UP).normalized()
+		var q: Vector3 = p + tang * reach * fx.rng.randf_range(0.5, 1.0)
+		if Tg != null:
+			var ln: Vector3 = (inv.basis * n).normalized()
+			var hit: Dictionary = Tg.hull.ray(inv * q + ln * Tg.hull.W, -ln)
+			if not hit.is_empty() and Tg.to_world(hit["p"]).distance_to(q) < reach:
+				q = Tg.to_world(hit["p"])
+		var d: Vector3 = q - p
+		if d.length() < 0.05:
+			continue
+		var at := T + 0.05 + j * 0.11
+		fx.rib(p + n * 0.1 * k, d.normalized(), d.length(), at, 0.4, hot, 1.3, 0.10 * k, 0.03 * k, 6)
+		fx.spr(q + n * 0.1 * k, at + 0.05, 0.25, col, 1.6, 0.5 * k, 0.9 * k, 13)
+	if Tg != null and Tg.has_method("power_dip"):
+		fx.later(T, func() -> void: Tg.power_dip(fx, 0.5))
 
 
 # The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over

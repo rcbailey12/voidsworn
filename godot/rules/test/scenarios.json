@@ -9195,5 +9195,38 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full"
+ },
+ "s1480": {
+  "note": "Issue 1480 (R384): the revived Eclipse rival joins the Sector 3 boss battle. A generated Hegemony flagship fleet plus his own flagship, the Eclipse faction's biggest hull, which carries his Nemesis flag; the boss stays the boss",
+  "seed": 1480148,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "kind": "boss",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "rounds": 12,
+  "bot": "full",
+  "nemesis": {
+   "name": "Sorrow",
+   "title": "Pale Regent",
+   "fac": "deathless",
+   "weak": [
+    "flank"
+   ],
+   "adapt": [
+    "armor"
+   ],
+   "scars": 2
+  }
  }
 }

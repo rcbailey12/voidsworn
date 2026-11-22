@@ -104,6 +104,12 @@ Set: Ryan. Ids: agents-11, loop-05.
 1.7 **Picks, looks and money are Ryan's.** Payments, top-ups and sign-ups stay his. Why: his game and his accounts. Set: Ryan
 (AGENTS.md seat table; R126b).
 
+1.8 **Ryan's non-urgent picks go in two numbered Pick Sheets a day, Morning and Evening; he answers in the form `1=B, 2=Yes`.**
+Product and visual calls that can wait are batched there, each with its pick and one current labelled picture. Outside the
+sheets the Board interrupts him only for an emergency: PC disk under 75 GB, a key to paste, or a stuck job to kill. Why:
+"Move Ryan's non-urgent product/visual calls into two numbered Pick Sheets per day (Morning and Evening, format `1=B, 2=Yes`).
+Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck kill)." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R408).
+
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
@@ -119,7 +125,7 @@ the Board's diff review while Muse is idle, with the check still asked for. Set:
 Board (R162). Ids: agents-13, claude-04, R132c, R162b.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
-both rule twins, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
+the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
@@ -241,8 +247,8 @@ quote per finding, OBSERVED or INFERRED. Findings come ranked, most important fi
 review-01, review-02, review-03.
 
 2.12 **Outside agents work in contrib/<agent>/; Muse may deliver low-code fixes (text, data, tests, tools, docs) as pull
-requests, and a rules or data change is made the same way in the Godot port.** Why: "keep muse cooking" (R81); the twins must
-not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
+requests; a rules or data change is made in Godot only (3.1).** Why: "keep muse cooking" (R81); Godot is the only rules
+source since R405 (the browser twin is retired). Set: Ryan, Nov 2 (R81); Ryan, Nov 22 (R405). Ids: R81, agents-15, muse-06.
 
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
@@ -265,19 +271,31 @@ request names who else picks the change up; the Board returns a one-off fix unle
 Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
 apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
 
+2.18 **No paid OpenAI API review of a pull request that a free seat already covers.** Artoo (ChatGPT) or the Claude code review
+seat reviews it; `[openai]` audit jobs on the API key are filed only for work no subscription seat can do. Why: "Stop filing
+paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Claude `/code-review` already covers the PR. Save
+cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
+Set: Ryan, Nov 22 (R406).
+
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
-campaign files) are a live reference copy: every rules change goes into both until Ryan approves their retirement.** The browser
-game and pages ship nothing. Parity runs in full on every push, never skipped and never cut (no skip rule), made faster by
-running battles in parallel workers (issue 978), and a Godot-only safety net runs beside it (issue 979, then saved Godot
-results with a changed-battles review on rules PRs, piloted for whether its review cost is worth it). Ten rules PRs is a
-progress checkpoint, not approval to retire parity. The browser rules stay until the replacement data home, a Godot balance
-simulator, the ported tests and the PC tools work and are verified; retirement is then a separate recommendation to Ryan.
-Why: "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24); "Let's go with Path D ... Don't implement
-the skip rule or reduce coverage ... Keep the browser rules until the replacement data, balance simulator, relevant tests and
-tools are working and verified, and bring me a separate retirement recommendation then." (R312). The old "frozen" wording was
-wrong: every new rule since went into both copies (round 2 review, Nov 17). Set: Ryan. Ids: R32, R33a, agents-02, R312.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
+rules (data.js, core.js, battle.js and the campaign files at the repo root) are retired: frozen history that no rules change
+touches and the game never reads. A rules or campaign change edits the Godot files and the table files
+(`godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`; reseal their checksums with
+`godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
+runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
+net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
+issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
+because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
+`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
+retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
+of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
+under which every rules change went into both copies; at retirement both copies matched on all 289 battles and 30 campaign
+runs (issue 1654). "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a,
+agents-02, R312, R405.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
@@ -368,13 +386,13 @@ run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), i
 process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
 older, are removed as links and never followed, and the log names each link's target; a folder another account owns
 (Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
-names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` helper folder (with any suffix, such as `opus<N>out*`, `opus1369b` or `opus1211_run6`, and playtest folders `pt<MMDD><letters>`, issue 1396) after a day untouched
 only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
 all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
 own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
 other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
-lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). When such a folder is kept, its Git checkouts (at any depth, links never followed) can still go on their own after the whole folder is 6 hours untouched, under the same lease, issue lock and process checks, when Git shows nothing in them beyond rebuildable install outputs and every local commit is in the mirror; their HEAD and status are logged first, and the out folders, pictures, logs and every file outside a checkout stay (issue 1396, Ryan's typed OK in the Board thread, Nov 20). Each janitor run also runs the job head's relay proof (`opus_job_head.ps1 dropjobs`) over every passed job attempt that still lists checkouts, so a relay that lands after the job's tail still frees them; it runs per job folder only after the same keep list, lease, issue lock, process and pause checks, removes only what that proof clears and logs the rest (Board, Nov 22; Artoo on PR 1592). A ship job's clone `<job>\repo` (its `out\result.txt` starts with ship_job's `start` line) is never removed by the janitor, whole folder or checkout-only: `publish_ship.bat` installs with it and removes it after a published PASS, and an abandoned one goes to the Board as a one-off (review of PR 1592). A checkout whose HEAD or local-branch reflog holds a commit no mirror ref reaches, or that has a second worktree, is kept (review of PR 1592). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
 no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
@@ -494,6 +512,13 @@ Only the final "safe to restart" line in pc_pause.txt means a restart is safe; a
 unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
 so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
 Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
+
+3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
+and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
+at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
+files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
+when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
 ## 4. Ships and concepts
 
@@ -646,6 +671,20 @@ gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never slic
 of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
 issue 600). Ids: ships-2c.
 
+5.18 **The ship detail standard: textures by size, AO and LODs on import, one authored look, full hard points.** For every
+ship from now on: (1) stage 7 exports maps by the ship's length band, flagships and battleships (length 21 and up) at 4096
+(stage 5 already bakes 4096), cruisers, carriers, destroyers and frigates (6.5 to 16.5) at 2048, strike craft (1.6) at 1024
+(issue 1680); (2) every hull gets a calibrated `ao_light_affect` (never Godot's default 0.0; per faction in look.gd READ, 0.35
+to 0.55, Glasswrights 0.2) and automatic Godot mesh LODs on import (issues 1678, 1679); (3) each faction's paint stack moves
+to `authored_look = 1`, calibrated to the one battle light rig, the next time that faction is baked or repainted, and its
+look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it; (4) every new destroyer and larger carries
+`hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
+Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
+39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
+far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
+stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
@@ -741,7 +780,7 @@ the default with a brisk option.** Why: "I don't want to sacrifice the feel of t
 (R50, R64); option Board (R50d). Ids: R50b, R50d, R64a, movespec-06.
 
 7.4 **Movement playback never changes rules results.** A LOOK change keeps the route, end hex and facing; a RULE change (route
-or facing) needs Ryan's own ruling and touches both rule twins. Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
+or facing) needs Ryan's own ruling and touches the Godot rules (R405). Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
 
 7.5 **No roll into turns.** Why: nothing in space leans a ship; the audit reversed the earlier bank (movement_audit_code.md).
 Set: Board, Nov 11. Id: movespec-04 (the 4 degree bank, retired).
@@ -940,7 +979,8 @@ Set: Ryan (R381, issue 1480).
 
 11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
 Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
-issue 1484).
+issue 1484). How: biomass pays when it covers the price, otherwise credits, one purse per purchase; a Chorus run still earns
+credits (repair stipends, ransoms, scrap, declined protocols), so biomass only would strand them (Board reading, Nov 22, PR 1627).
 
 11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
 kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
@@ -965,8 +1005,10 @@ A push that changes only .md files and pictures under docs/, contrib/ or the rep
 standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
-12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
-drifted (R155). Set: Board. Id: R155b.
+12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
+the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
+until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).

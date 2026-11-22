@@ -557,7 +557,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var id := str(row["id"])
 	_clear()
 	_make_fx()
-	# Issue 462: a row may set effect switches (for example the capital death's scene dim, or reduce flashing). Set by
+	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
 	var opts = row.get("fx", {})
 	if opts is Dictionary:
@@ -669,6 +669,11 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+	elif what == "sync":
+		# issue 1587: the event is a hull state change ("sync_ev", a unit view as the game's sync sends), for a section
+		# crossing into stage 3 or 4 (the one-shot blowout); a commit without this key shows the ship unchanged
+		if row.get("sync_ev") is Dictionary:
+			fx.sync_ship("T", row["sync_ev"])
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})

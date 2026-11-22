@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAARQAAAAxCAYAAAAbZlZIAAAAAXNSR0IArs4c6QAAALtJREFUeJzt1MEJwCAAwED1J7j/unaJgFDuJsgrc599B0BgvQ4A/sNQgIyhABlDATKGAmQMBcgYCpAxFCBjKEDGUICMoQAZQwEyhgJkDAXIGAqQMRQgYyhAxlCAjKEAGUMBMoYCZAwFyBgKkDEUIGMoQMZQgIyhABlDATKGAmQMBcgYCpAxFCBjKEDGUICMoQAZQwEyhgJkDAXIGAqQMRQgYyhAxlCAjKEAGUMBMoYCZAwFyBgKkDEUIPMB0cMBf+6Y8aAAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T08:20:48Z",
+	"image_sha256": "cd474e410644abbc4c3dd753cf1a018a1dc5e093187d257829acabe80d70f626",
+	"inputs": [],
+	"picture_name": "CHO-2_chorus_refits_tracks.png",
+	"schema": 1,
+	"source_commit": "a4d47d3c695693dac9930532ed8bb003d5e02a9b",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "a4d47d3c695693dac9930532ed8bb003d5e02a9b",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "cloud direction check"
+		}
+	],
+	"stage": "cloud direction check",
+	"stamp_box": [
+		0,
+		671,
+		276,
+		720
+	],
+	"stamp_template_sha256": "be3c5d684567a136a57cfcf35a8bfc23eb0bd4c8213e9ad3de4ef0472f12c5c9",
+	"strip_sha256": [
+		"be3c5d684567a136a57cfcf35a8bfc23eb0bd4c8213e9ad3de4ef0472f12c5c9"
+	],
+	"strip_size": [
+		276,
+		49
+	]
+}
