@@ -1,5 +1,7 @@
+# Saved from contrib/opus/tools/inheritance_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://campaign/test/inheritance_cases.json.
 extends SceneTree
-# Browser endRun fixtures exercise both the receipt and the profile it describes.
+# Saved endRun cases exercise both the receipt and the profile it describes.
 const Campaign = preload("res://campaign/campaign.gd")
 const DebriefUI = preload("res://ui/campaign/campaign_ui.gd")
 const JSM = preload("res://rules/jsm.gd")
@@ -34,5 +36,5 @@ func _init() -> void:
 		c.act("nameHeir", c.shadowAdmirals(f["fac"], f["flown"])[0])
 		check(c.page["data"]["run"]["carry"] == carry, f["name"] + ": heir choice preserves receipt")
 		c.act("progTab", "legacy"); check(c.page["kind"] == "legacy", "debrief opens doctrine")
-	print("PASS: inheritance receipts match browser payouts and resulting profiles on all end paths." if failures == 0 else "FAIL: %d checks" % failures)
+	print("PASS: inheritance receipts match the saved payouts and resulting profiles on all end paths." if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)

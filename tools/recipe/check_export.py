@@ -1,6 +1,6 @@
 # Ship recipe, stage 7: check a written ship folder (plain Python with numpy; no Blender). It reads the glb back the way the game
 # will, and FAILS the export (exit code 1) when:
-#   - a weapon slot of the ship's data.js weapon list has no hard point (hp_w<slot>_<weapon>_<arc>_<n>), or a weapon hard point
+#   - a weapon slot of the ship's Godot weapon list has no hard point (hp_w<slot>_<weapon>_<arc>_<n>), or a weapon hard point
 #     names a slot, weapon or arc the rules do not have;
 #   - a hard point lies farther from the ship's mesh than TOL (tol, default 0.012, times the ship's length: the x extent of its
 #     mesh box); hp_core must lie inside the hull's box. An engine point farther than TOL passes only as the centre of an
@@ -15,8 +15,8 @@
 #     sitting on that side), each is at least BREACH_CLEAR (0.03, ship frame) from every part surface (the glb's surfaces other
 #     than <code>_hull and root primitives whose own material marks hull_surface), and +Y is the outward normal (pointing out
 #     of its own side: its z component along that side at least 0.5). Sharing a light map never exempts an unmarked part;
-#   - the smallest required set of any class is not met: a weapon point per data.js weapon slot, hp_core, hp_eng, hp_rcs and
-#     hp_board (two each, one port and one starboard), and hp_bay when data.js gives the ship a hangar;
+#   - the smallest required set of any class is not met: a weapon point per Godot weapon slot, hp_core, hp_eng, hp_rcs and
+#     hp_board (two each, one port and one starboard), and hp_bay when Godot gives the ship a hangar;
 #   - a hard point is not a child of the ship node (or, for a turret's muzzle, of its turret node), or a map the glb names is not
 #     there.
 #   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
@@ -273,7 +273,7 @@ def main():
         if m:
             slot, wk, arc = int(m.group(1)), m.group(2), m.group(3); count['gun'] = count.get('gun', 0) + 1
             if slot >= len(weapons) or weapons[slot] != (wk, arc):
-                probs.append(f'{nm}: data.js has ' + (f'{weapons[slot][0]} {weapons[slot][1]}' if slot < len(weapons) else 'no weapon') + f' in slot {slot}')
+                probs.append(f'{nm}: Godot has ' + (f'{weapons[slot][0]} {weapons[slot][1]}' if slot < len(weapons) else 'no weapon') + f' in slot {slot}')
             else: by_slot.setdefault(slot, []).append(nm)
             if fwd[0] < -.05: probs.append(f'{nm} rests aimed backward (x {fwd[0]:+.2f})')
             if arc == 'P' and (p[2] > 0 or fwd[2] > .05): probs.append(f'{nm}: a port mount must sit and aim to port (z below 0)')
@@ -378,7 +378,7 @@ def main():
         if entry.get('breaches') != count.get('breach', 0):
             probs.append(f'manifest_entry.json breaches {entry.get("breaches")} do not match the written {count.get("breach", 0)}')
         if entry.get('cls') != cls:
-            probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (data.js)')
+            probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (Godot)')
         if wing:
             wanted_role = None if unb else ship['game_ship']
             if entry.get('wing_role') != wanted_role or entry.get('faction') != HP_CONTRACT.faction_key(fac):

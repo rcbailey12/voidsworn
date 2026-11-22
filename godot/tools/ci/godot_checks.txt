@@ -24,11 +24,11 @@ headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 32
 headless|campaign/test/truth_pass_test.gd|-|-|issues 1144 and 1147: starters, capstones, Nemesis, selection, repair prices, join messages and battle tooltips
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
-headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
+headless|campaign/test/core_sync_test.gd|-|res://campaign/test/core_sync_cases.json|core sync announcements match the saved cases; the optional shots argument is omitted
 headless|campaign/test/event_distribution_test.gd|-|-|issue 1149: all faction event cards, choices, saved keys and the quiet fallback
-headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
+headless|campaign/test/free_exit_test.gd|-|res://campaign/test/free_exit_cases.json.gz|free exits match the saved cases at entry, result and map
 headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
-headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
+headless|campaign/test/inheritance_test.gd|-|res://campaign/test/inheritance_cases.json|inheritance receipts match the saved payouts and profiles
 headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
 headless|campaign/test/map_load_cancel_test.gd|-|-|issue 1045: ending a run during map loading clears the cover and permits a retry
 headless|campaign/test/map_jump_queue_test.gd|-|-|issue 1448: a Jump pressed under the map loading cover is remembered, the button says JUMPING WHEN READY, and the jump flies once loading clears
@@ -39,8 +39,8 @@ headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godo
 headless|campaign/test/nem_scenarios.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step
 headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save naming a Nemesis trait or weakness the tables lack opens the Dossier, battle log, after-battle text and summary without an error; browser twin contrib/opus/tools/nem_unknown_key_tests.js
 headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
-headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
-headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
+headless|campaign/test/nemesis_clash_test.gd|-|res://campaign/test/nemesis_clash_cases.json.gz|12482 Nemesis clash cases match the saved results
+headless|campaign/test/nemesis_teach_test.gd|-|res://campaign/test/nemesis_teach_cases.json|Nemesis teaching debrief and map line match the saved cases
 headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires a user folder inside the checkout
 headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victory and promotion cards on 30 seeds and check repair choices
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
@@ -63,7 +63,7 @@ gpu|campaign/test/save_menu_shot.gd|-|{out}/SAVE-1.png|issue 1451 picture SAVE-1
 headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
 headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
 headless|campaign/test/sector_routes_test.gd|-|-|issue 1176: 3,000 sectors, two-exit rate, distinct stop types, reachability, rest stops and boss
-headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
+headless|campaign/test/shadow_xp_test.gd|-|res://campaign/test/shadow_xp_cases.json|shadow XP, heirs and saves match the saved overflow cases
 headless|campaign/test/story_buff_resume_test.gd|-|-|issue 1338: a resumed Sector III fight never gets a spent story buff back; a pre-storyGuard save is repaired once
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
@@ -71,9 +71,9 @@ headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the
 headless|rules/test/undo_test.gd|-|-|issue 1450: undo a move before firing: the whole state and dice come back, a free or pivot turn comes back, battles with every move undone and redone end identical, and undo is refused after a shot, fire on the move, ram, boarding, ability, order, Command, the ship ending, the enemy phase or any other change
 headless|rules/test/arrival_preview_test.gd|-|-|issue 1289: the rules name the reinforcement hull at battle start without changing the battle, and the ship that arrives is that hull
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
-headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
-headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
-headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
+headless|rules/test/effect_caps_test.gd|-|res://rules/test/effect_caps_cases.json|effect cap sums and derives match the saved cases
+headless|rules/test/map_trial_test.gd|-|-|issues 1050 and 1160: compare every map-trial encounter with saved results and the approved fleet pin
+headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.json|R246 shield pool (issue 371): replay saved results for every shielded hull and for scripted hits and turns
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
