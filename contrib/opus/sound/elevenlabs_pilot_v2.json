@@ -1,7 +1,7 @@
 {
  "batch": "elevenlabs_pilot_v2",
  "gate": 2,
- "made_for": "issue 1752 Gate 2 clean-slate sci-fi calibration pack (Ryan, Nov 22 2026; supersedes Gate 1 pilot1585). Fable and Artoo review fixes applied; Astra (issue 1754) pending",
+ "made_for": "issue 1752 Gate 2 clean-slate sci-fi calibration pack (Ryan, Nov 22 2026; supersedes Gate 1 pilot1585). Fable, Artoo and Astra (issue 1754) review fixes applied",
  "note": "One clip per shot for every weapon family in godot/rules/data/tables.json (FAC_WNAMES checked), impacts for metal, glass, bio and obsidian targets plus energy hits and an ordinary shield block, shield collapses, R416 breach and capability-loss cues behind VS_WOUNDS_V2 (#1741), faction death beats plus the base break, mechanical acoustic UI cues, bridge ambience, and 3 music prototypes (showcase arc, stem-ready loop, reward theme). Space and sci-fi only, close and dry with a firm clean attack and no harsh words, no wind-up or impact inside a fire clip, no domestic foley words. Each item's today field names the baseline cue for the listening page. Stems stay off in Gate 2.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
@@ -146,9 +146,20 @@
    "prompt": "Single shot from a military sci-fi starship plasma cannon, close and dry: an immediate tight capacitor-bank discharge thump with a short hot ionized energy crack and a clean regulated low-mid punch, fast clean cutoff. Precise and controlled, firm attack with a smooth top, no reverb."
   },
   {
+   "id": "wep_directorate_turbo",
+   "kind": "sfx",
+   "cue": "gun_plasma (Directorate turbo, shown as Plasma battery: ONE shot; Astra review 1754)",
+   "today": "gun_plasma",
+   "group": "weapon_directorate",
+   "seconds": 0.8,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Single shot from a military sci-fi starship plasma battery, close and dry: an immediate rounded capacitor-bank discharge with a dense ionized energy pulse and a firm regulated low-mid thump, clean fast cutoff. Fuller than a light plasma cannon, lighter than a heavy plasma battery, smooth top, no reverb."
+  },
+  {
    "id": "wep_directorate_hturbo",
    "kind": "sfx",
-   "cue": "gun_plasma heavy (Directorate turbo and hturbo, shown as Plasma battery: ONE shot; sfx.gd staggers the 2 or 3)",
+   "cue": "gun_plasma heavy (Directorate hturbo, shown as Heavy plasma battery: ONE shot; sfx.gd staggers the 3)",
    "today": "gun_plasma",
    "group": "weapon_directorate",
    "seconds": 0.9,
@@ -280,6 +291,17 @@
    "influence": 0.65,
    "takes": 2,
    "prompt": "Single shot from a crystalline alien starship prism weapon, close and dry: an immediate bright clear crystal-tone strike, like a huge quartz block struck once, with a firm low-mid thump under it and a short pure ringing overtone that fades fast. Luminous and precise, solid and weighty, no metal, no reverb."
+  },
+  {
+   "id": "wep_ithar_needle",
+   "kind": "sfx",
+   "cue": "gun_needle variant (Glasswright turret, shown as Needle beam: ONE shot; Astra review 1754)",
+   "today": "gun_needle",
+   "group": "weapon_ithar",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Single shot from a crystalline alien starship needle beam turret, close and dry: an immediate thin clear sustained crystal tone, like a long quartz column resonating, over a quiet low hum, ending in a clean square cutoff. Narrower and longer than a prism shard strike, solid and precise, no metal, no reverb."
   },
   {
    "id": "wep_ithar_pulsar",
@@ -479,13 +501,24 @@
   {
    "id": "imp_energy_sear",
    "kind": "sfx",
-   "cue": "hit_las and hit_plasma (energy bolt on metal)",
+   "cue": "hit_plasma (plasma bolt on metal)",
    "today": "hit_plasma",
    "group": "impact",
    "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
    "prompt": "Hot energy bolt striking thick starship armor plating, close and dry: an immediate dense searing impact thump with a short flash-burn of metal and a brief fading heat crackle. Solid and hot, weighty with a smooth top, no explosion, no reverb."
+  },
+  {
+   "id": "imp_las",
+   "kind": "sfx",
+   "cue": "hit_las (laser and lance contact on metal; Astra review 1754)",
+   "today": "hit_las",
+   "group": "impact",
+   "seconds": 0.5,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Focused energy beam striking thick starship armor plating, close and dry: an immediate narrow bright searing contact with a short tight burn into the metal and a fast clean decay. Smaller and sharper than a plasma bolt hit, smooth top, no explosion, no reverb."
   },
   {
    "id": "imp_acid_on_metal",
@@ -663,6 +696,18 @@
    "influence": 0.65,
    "takes": 2,
    "prompt": "Large armored starship breaking apart, close and dry: an immediate enormous deep structural break, a heavy low-end blast with thick steel plating rupturing and large wreckage tumbling away, decaying into a long low rumble. The heaviest event in a space battle, deep and wide with a smooth top, no reverb."
+  },
+  {
+   "id": "death_sunward_magazine",
+   "kind": "sfx",
+   "cue": "new death cue: Sunward magazine flash, one per accepted flash (fx_death schedules them; Astra review 1754)",
+   "today": "boom_m",
+   "group": "death_beat",
+   "seconds": 0.8,
+   "model": "eleven_text_to_sound_v2",
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Ammunition magazine detonating deep inside an armored starship hull, close and dry: one immediate deep heavy internal blast with a hard hull-frame shock and a brief fiery crackle, short decay. Contained inside thick armor, heavy and solid, no reverb."
   },
   {
    "id": "ui_boss_arrival",
