@@ -282,10 +282,17 @@ function workerGit(root, cwd, words) {
   return 'Fenced seat shell writes are limited to staging, committing and pushing your own files. Use Claude file tools for edits.';
 }
 
-function shellSecret(word) {
+const keyFileOnly = /^[^\\/:]+\.(?:pem|p12|pfx|key)$/i;
+function shellSecret(word, cwd) {
   // A bare "secret" or "secrets" is an ordinary word in commit messages and searches; only a path is a credential.
   if (/^\.?secrets?$/i.test(word)) return false;
-  return secretPath(word);
+  if (!secretPath(word)) return false;
+  // A bare word that matches only by a key file extension is often code, such as board.key( in battle.gd (Fable's
+  // audit of PR 1706): it counts only when it names a path (with a slash, backslash or colon) or a file that exists.
+  if (keyFileOnly.test(word) && !secretName.test(word.replace(/\.(?:pem|p12|pfx|key)$/i, ''))) {
+    try { return fs.existsSync(path.resolve(cwd || '.', word)); } catch { return true; }
+  }
+  return true;
 }
 
 function ghApiPolicy(command) {
@@ -306,7 +313,7 @@ function shellPolicy(event, root, input) {
   const command = input.command;
   if (typeof command !== 'string') return 'The shell hook needs a command.';
   // Check literal credential names even in compound commands and PowerShell arguments.
-  if (command.split(/[\s"'=|&;<>()[\]{},]+/).some(shellSecret) ||
+  if (command.split(/[\s"'=|&;<>()[\]{},]+/).some(word => shellSecret(word, event.cwd)) ||
       /(?:^|[\s;|&])(?:printenv\b|env\s*(?:$|[;|&])|gh\s+auth\s+token\b|git\s+credential\b|(?:Get-ChildItem|gci|dir|ls)\s+Env:|Get-Item\s+Env:)|(?:\$env:|\$\{?)[\w]*(?:TOKEN|PASSWORD|SECRET|API_KEY)\b/i.test(command)) {
     return 'Use the masked key installer for credentials. Claude cannot read protected files or print credentials.';
   }

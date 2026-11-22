@@ -25,6 +25,10 @@ else ever reaches main.
 - **Pushes (every seat).** Only a push that lands on main is checked; every other push, with any flags or several
   refspecs, goes through. A push to main must be a fast-forward, in a Bash call of its own, whose commits each change
   only `contrib/opus/LOOP.md` or `contrib/opus/FINDINGS.md`. Force, delete, `--all` and `--mirror` are refused.
+  The hook reads the literal words `git push`, so a git alias or a script that pushes gets past it: it is a guard
+  against mistakes, not a lock. GitHub's branch protection on main is the real lock (Fable's audit of PR 1706).
+- **Key file names in shell commands.** A bare word ending in `.key`, `.pem`, `.p12` or `.pfx` counts as a credential only
+  when it is a path (slash, backslash or colon) or names a file that exists, so code such as `board.key(` can be searched.
 - **GitHub API writes (every seat).** `push_files`, `create_or_update_file` and similar MCP calls, and `gh api` writes to
   contents or refs, are refused only when they target main or name no branch.
 - **After a Claude file edit.** The edited text is checked for em dashes. A warning on the tool result names the fix.
