@@ -39,6 +39,8 @@ git(work, 'add', 'b.txt'); git(work, 'commit', '-q', '-m', 'B');
 const sideCommit = git(work, 'rev-parse', 'HEAD');
 git(work, 'push', '-q', mirror, 'side');
 git(tmp, 'clone', '-q', '--branch', 'side', mirror, co);
+const clean = path.join(tmp, 'clean');
+git(tmp, 'clone', '-q', '--branch', 'main', mirror, clean);
 
 const script = path.join(tmp, 'probe.ps1');
 fs.writeFileSync(script, [
@@ -56,9 +58,18 @@ fs.writeFileSync(script, [
   'Check after-prune',
   '$script:cacheMirrorCommits = $false; $script:mirrorCommitCache = $null',
   'Check uncached',
+  // Artoo on PR 1592 at 905a8504: a live removal holds the mirror writers' lock from its proof through the delete. While a
+  // fetch holds that lock the checkout stays; once it is free the same checkout goes.
+  'function Log($line) { Write-Output "log: $line" }',
+  '$held = [IO.File]::Open("$mirror.lock", \'OpenOrCreate\', \'ReadWrite\', \'None\')',
+  'Clear-KeptCheckout (Get-Item -LiteralPath $env:M1396_CLEAN -Force) $mirror $false ([DateTime]::UtcNow) \'\' \'\'',
+  'Write-Output "locked-exists $(Test-Path -LiteralPath $env:M1396_CLEAN)"',
+  '$held.Dispose()',
+  'Clear-KeptCheckout (Get-Item -LiteralPath $env:M1396_CLEAN -Force) $mirror $false ([DateTime]::UtcNow) \'\' \'\'',
+  'Write-Output "free-exists $(Test-Path -LiteralPath $env:M1396_CLEAN)"',
 ].join('\r\n'));
 const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], {
-  encoding: 'utf8', env: { ...process.env, M1396_CO: co, M1396_MIRROR: mirror, PC_RUNNER_TEST: '' }, timeout: 120000,
+  encoding: 'utf8', env: { ...process.env, M1396_CO: co, M1396_MIRROR: mirror, M1396_CLEAN: clean, PC_MIRROR_LOCK_WAIT_SECONDS: '1', PC_RUNNER_TEST: '' }, timeout: 120000,
 });
 const out = (r.stdout || '') + (r.stderr || '');
 assert.equal(r.status, 0, out);
@@ -66,5 +77,9 @@ assert.match(out, /^first ok$/m, out);
 assert.match(out, /^same-refs ok$/m, out);
 assert.match(out, new RegExp(`^after-prune refused: local history not in fetched mirror: ${sideCommit}`, 'm'), 'a pruned ref ends the reuse: ' + out);
 assert.match(out, new RegExp(`^uncached refused: local history not in fetched mirror: ${sideCommit}`, 'm'), 'the uncached path agrees: ' + out);
+assert.match(out, /^log: kept checkout retained: .*clean \(\d+ bytes; shared repo copy stayed locked for 1 s/m, 'a held mirror lock keeps the checkout: ' + out);
+assert.match(out, /^locked-exists True$/m, out);
+assert.match(out, /^log: kept checkout removed \(rebuildable\): .*clean /m, 'a free lock lets the proven checkout go: ' + out);
+assert.match(out, /^free-exists False$/m, out);
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS mirror_cache_1396_tests: the reused mirror commit list ends when a ref is pruned, so a commit only the pruned ref held keeps its checkout');
+console.log('PASS mirror_cache_1396_tests: the reused mirror commit list ends when a ref is pruned, so a commit only the pruned ref held keeps its checkout, and a live removal waits for the mirror writers\' lock');

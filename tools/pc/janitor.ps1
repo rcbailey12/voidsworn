@@ -276,7 +276,7 @@ function Assert-HelperScratchInactive($dir) {
   if ($lease) { $lease.Dispose() }
 }
 function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner, [switch]$legacy, [switch]$helper, $mirror) {
-  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false
+  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false; $mirrorLock = $null
   try {
     if ($helper) {
       # Taken first and held through the decision and the deletion, so helper_clone cannot start a run here meanwhile
@@ -315,7 +315,12 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
-    if ($helper) { Test-RelayedResults $dir $mirror }
+    if ($helper) {
+      # A live run holds the mirror writers' lock from the relay and history proof through the removal, so no lane's
+      # fetch or prune changes the refs that proof read (Artoo on PR 1592, 905a8504).
+      if (-not $dryRun) { $mirrorLock = Open-MirrorWriterLock $mirror }
+      Test-RelayedResults $dir $mirror
+    }
     if ($legacy) {
       Assert-HelperScratchInactive $dir
     } elseif ($tempScratch) {
@@ -361,6 +366,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
   }
   finally {
+    if ($mirrorLock) { $mirrorLock.Dispose() }
     if ($issueLock) { $issueLock.Dispose() }
     if ($helperLease) { $helperLease.Dispose() }
   }

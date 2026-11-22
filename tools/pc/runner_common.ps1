@@ -692,6 +692,22 @@ function Open-CleanupLock($path, $existingOnly = $false) {
   if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
+function Open-MirrorWriterLock($mirror) {
+  # Issue 1396 (Artoo on PR 1592): every writer of the shared mirror (lane fetch and clone, the job head, helper_clone,
+  # ship_job, look_bench) holds <mirror>.lock alone. A live removal holds it from its last mirror proof through the
+  # delete, so no fetch or prune can drop the ref that proved the removal in between. Waits up to 10 minutes
+  # (PC_MIRROR_LOCK_WAIT_SECONDS), then keeps the candidate.
+  $wait = 600; if ("$env:PC_MIRROR_LOCK_WAIT_SECONDS" -match '\A[0-9]{1,5}\z') { $wait = [int]$env:PC_MIRROR_LOCK_WAIT_SECONDS }
+  if (-not (Test-Path -LiteralPath (Split-Path -Parent $mirror) -PathType Container)) { throw "no folder for the shared repo copy lock: $mirror" }
+  $deadline = [DateTime]::UtcNow.AddSeconds($wait)
+  while ($true) {
+    try { return [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] {
+      if ([DateTime]::UtcNow -ge $deadline) { throw "shared repo copy stayed locked for $wait s (a mirror fetch is running)" }
+      Start-Sleep -Milliseconds 500
+    }
+  }
+}
 function Assert-NoGitLocalState($candidate) {
   $gitDir = Join-Path $candidate '.git'
   foreach ($state in @('index.lock','HEAD.lock','packed-refs.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules')) {
@@ -745,7 +761,7 @@ function Get-BoardKeepReason($path) {
 }
 function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvageName, $keepReason = '') {
   $candidate = $copy.FullName
-  $size = 'size unavailable'
+  $size = 'size unavailable'; $mirrorLock = $null
   try {
     $stats = Measure-CleanupDirectory $copy -Checkout
     $size = "$($stats.Bytes) bytes"
@@ -754,6 +770,8 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
     if ($keepReason) { throw $keepReason }
     if ($salvageRoot -and $stats.WorktreeLatest -gt $now.AddHours(-3)) { throw 'touched in the last 3 hours' }
     Assert-NoGitLocalState $candidate
+    # A live removal holds the mirror writers' lock from this history proof through the delete (Open-MirrorWriterLock).
+    if (-not $dryRun) { $mirrorLock = Open-MirrorWriterLock $mirror }
     # Removal may accept ship and gen files the shared build has superseded; reuse never does.
     $state = Get-RepoCleanupState $candidate $mirror '' ([bool]$salvageRoot) $true
     Assert-NoLiveWorktree $candidate
@@ -785,6 +803,7 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
     Remove-CleanupDirectory $copy
     Log "kept checkout removed ($reason): $candidate ($size)"
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
+  finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
 }
 function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTime]::UtcNow, $salvageRoot = '') {
   Assert-PlainDirectory (Get-Item -LiteralPath $board -Force)

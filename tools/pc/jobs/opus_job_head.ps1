@@ -358,7 +358,23 @@ function Get-BlobSha($path) {
     return (($sha.Hash | ForEach-Object { $_.ToString('x2') }) -join '')
   } finally { $f.Dispose(); $sha.Dispose() }
 }
+function Lock-Mirror {
+  # The mirror writers' lock (the same <mirror>.lock every fetch takes). A removal holds it from its relay and history
+  # proof through the delete, so no fetch or prune between them can drop a ref the proof relied on (Artoo on PR 1592).
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+  }
+  return $lock
+}
 function Update-Mirror {
+  # Under a removal's held lock (Lock-Mirror), fetch in it rather than wait on our own handle.
+  if ($script:mirrorLock) {
+    if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
+    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+    return
+  }
   $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
   while (-not $lock) {
     try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
@@ -500,6 +516,14 @@ function Drop-Attempt($attempt) {
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
   if (-not $present.Count) { Write-Output "no listed checkout left in $attempt"; return }
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
+  if (-not $script:dropDry) {
+    try { $script:mirrorLock = Lock-Mirror } catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+  }
+  try { Drop-Proven $attempt $list $outs } finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+}
+function Drop-Proven($attempt, $list, $outs) {
+  # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
+  $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
   try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   if ($script:dropDry) {
@@ -814,6 +838,7 @@ switch ($Action) {
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
       if ($head -ne $B) { throw "HEAD is $head, not the published commit $B" }
+      $script:mirrorLock = Lock-Mirror
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
@@ -830,6 +855,7 @@ switch ($Action) {
       Write-Output ("ship clone removed after the publish ({0:N1} GB): {1}" -f ($gone / 1GB), $repo)
       Write-Free $gone
     } catch { Write-Output "ship clone kept: $($_.Exception.Message)" }
+    finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
   }
   'survey' {
     # Read only. What the job rules would do with every attempt and ship clone already on the PC (for a Board one-off).

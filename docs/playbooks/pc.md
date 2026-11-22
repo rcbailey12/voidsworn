@@ -66,6 +66,10 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `OJ_KEEP_CHECKOUTS=1` skips the step at the tail. Known and accepted: clearing read-only on git packs also clears it on
   the mirror's hard-linked copies, the logged GB counts hard-linked bytes the mirror still holds, and an error
   mid-removal leaves a half-removed checkout behind.
+- Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
+  folders and kept checkouts) holds the mirror writers' lock `repo-mirror.git.lock` from its last proof through the
+  delete, so no lane's fetch or prune can drop a ref the proof read in between (issue 1396, Artoo on PR 1592). A lane
+  fetch waits meanwhile; the janitor waits up to 10 minutes for the lock, then keeps the folder. Dry runs never take it.
 - Ship jobs (`ship_job.bat`): after a PASS the clone's Godot import cache `repo\godot\.godot` goes before the done line
   (`opus_job_head.ps1 dropcache`); the clone stays because the publish installs with its tools. `publish_ship.bat`
   removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every file in the job's

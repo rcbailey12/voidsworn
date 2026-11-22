@@ -685,7 +685,9 @@ try {
   assert.match(capDry, /time cap: stopped the lane folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
   assert(!/kept checkout (?:would remove|retained|removed)/.test(capDry), 'a capped run reaches no lane checkout: ' + capDry);
   assert(!fs.existsSync(resumeFile), 'a dry run never writes janitor_resume.txt');
-  const allJobs = jobTimes(dry);
+  // A fresh baseline with the same inventory as the resumed runs (Artoo on PR 1592: opus12110 is made after the first dry run).
+  const allJobs = jobTimes(runJanitor('--dry-run'));
+  assert(allJobs.includes(ordinalTwin), 'the baseline holds the new folder: ' + allJobs);
   assert(allJobs.includes(path.join(pc, 'opus1396relay')) && allJobs.length > 5, 'every job folder has a folder time line in test mode: ' + allJobs);
   write(resumeFile, 'root opus1396relay\r\n');
   const resumed = jobTimes(runJanitor('--dry-run'));
