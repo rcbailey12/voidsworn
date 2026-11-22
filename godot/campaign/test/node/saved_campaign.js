@@ -46,14 +46,17 @@ function problem(name, bytes) {
   }
   if (!lines.length || !lines[0]) return 'no Nemesis scenario lines';
   for (let j = 0; j < lines.length; j++) {
-    // "<scenario words> <JSON value>": some split after a word must leave a JSON value
-    const w = lines[j].split(' ');
-    const ok = w.length > 1 && w.slice(1).some((_, k) => { try { JSON.parse(w.slice(k + 1).join(' ')); return true; } catch { return false; } });
-    if (!ok) return `Nemesis line ${j + 1} is not "<scenario> <JSON>"`;
+    if (nemLabel(lines[j]) === null) return `Nemesis line ${j + 1} is not "<scenario> <JSON>"`;
   }
   return null;
 }
-const nemTags = b => b.toString('utf8').replace(/\n$/, '').split('\n').map(l => l.split(' ')[0]);
+// The scenario label of a Nemesis line: every word before its JSON value (e.g. "g corsair"), the shortest such prefix.
+const nemLabel = l => {
+  const w = l.split(' ');
+  for (let k = 1; k < w.length; k++) { try { JSON.parse(w.slice(k).join(' ')); return w.slice(0, k).join(' '); } catch { /* next */ } }
+  return null;
+};
+const nemTags = b => b.toString('utf8').replace(/\n$/, '').split('\n').map(nemLabel);
 if (process.env.SAVED_CAMPAIGN_SELFTEST) {
   // node saved_campaign.js with SAVED_CAMPAIGN_SELFTEST=1: every saved archive passes; a truncated or reordered run fails.
   const m = JSON.parse(fs.readFileSync(path.join(HOME, 'results.json'), 'utf8'));

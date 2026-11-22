@@ -39,5 +39,18 @@ if (a.some(x => x.includes('nem_scenarios.gd'))) fs.writeFileSync(a[at + 1], zli
   assert.notEqual(r.status, 0, 'update accepted a one-line Nemesis file: ' + r.stdout);
   assert(/nem\.txt: the scenario lines differ from the saved list/.test(r.stdout), r.stdout);
   assert.deepEqual(snap(), before, 'a refused Nemesis update changes no saved file');
-  console.log('PASS saved_campaign update: the shape self-test passes, and a truncated run or a one-line Nemesis file fails update with every saved file unchanged');
+  // Artoo on ec1ba036: the same line count with one faction row copied over another ("g corsair" over "g hegemony") is refused
+  const nemText = require('zlib').brotliDecompressSync(fs.readFileSync(path.join(SAVED, 'nem.txt.br'))).toString().split('\n');
+  const gi = nemText.findIndex(l => l.startsWith('g ')), gj = nemText.findIndex((l, j) => j > gi && l.startsWith('g ') && l.split(' ')[1] !== nemText[gi].split(' ')[1]);
+  assert(gi >= 0 && gj > gi, 'two g faction rows in the saved Nemesis file');
+  const swapped = path.join(tmp, 'nem_swapped.txt');
+  fs.writeFileSync(swapped, nemText.map((l, j) => j === gj ? nemText[gi] : l).join('\n'));
+  const nemSwap = path.join(tmp, 'godot_swap');
+  fs.writeFileSync(nemSwap, fs.readFileSync(nemFirst, 'utf8').replace(/fs\.writeFileSync\(a\[at \+ 1\], zlib[^\n]*/, `fs.writeFileSync(a[at + 1], fs.readFileSync(${JSON.stringify(swapped)}));`));
+  fs.chmodSync(nemSwap, 0o755);
+  r = spawnSync(process.execPath, [TOOL, 'update', '1', '1'], { env: { ...process.env, GODOT: nemSwap, RUNNER_TEMP: tmp }, encoding: 'utf8' });
+  assert.notEqual(r.status, 0, 'update accepted a faction row copied over another: ' + r.stdout);
+  assert(new RegExp(`differ from the saved list at line ${gj + 1} \\(saved g `).test(r.stdout), r.stdout);
+  assert.deepEqual(snap(), before, 'a refused swap changes no saved file');
+  console.log('PASS saved_campaign update: the shape self-test passes, and a truncated run, a one-line Nemesis file or a swapped faction row fails update with every saved file unchanged');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
