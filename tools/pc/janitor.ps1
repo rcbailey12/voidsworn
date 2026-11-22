@@ -159,12 +159,19 @@ function Assert-NoProcessUses($dir) {
 # manifest_merge.py mkdtemp (8 characters). Agent-chosen names never match; they go to Ryan as a one-off list.
 $legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
 function Get-RelayReceipts($mirror) {
-  # Objects reachable from the relay branches (board/pc-out-*): a committed receipt, not a loose blob (Artoo, PR 1266).
+  # Objects reachable from the relay branches (board/pc-out-* here, pc-out-* in the relay repo's mirror): a committed receipt, not a loose blob (Artoo, PR 1266).
   # Read again whenever the relay refs differ from the last read (review of PR 1592: the relay sweep's child or another
   # runner can fetch and prune the mirror between two folders).
   $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/board/pc-out-*'))
   if ($gitExit -ne 0) { throw 'relay branches could not be read' }
-  $key = $refs -join "`n"
+  # Issue 1657: the private relay repo's own mirror (relay-mirror.git beside the shared one), branches pc-out-*.
+  $relayMirror = Join-Path (Split-Path -Parent $mirror) 'relay-mirror.git'
+  $relayRefs = @()
+  if (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD')) {
+    $relayRefs = @(Read-CleanupGit @('--git-dir',$relayMirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/pc-out-*'))
+    if ($gitExit -ne 0) { throw 'relay repo branches could not be read' }
+  }
+  $key = ($refs + @('relay') + $relayRefs) -join "`n"
   if ($script:relayReceipts -and $script:relayReceiptsKey -ceq $key) { return $script:relayReceipts }
   $set = New-Object 'Collections.Generic.HashSet[string]'
   if ($refs.Count) {
@@ -172,6 +179,12 @@ function Get-RelayReceipts($mirror) {
       $null = $set.Add(($line -split ' ', 2)[0])
     }
     if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  }
+  if ($relayRefs.Count) {
+    foreach ($line in @(Read-CleanupGit @('--git-dir',$relayMirror,'rev-list','--objects','--glob=refs/heads/pc-out-*'))) {
+      $null = $set.Add(($line -split ' ', 2)[0])
+    }
+    if ($gitExit -ne 0) { throw 'relay repo branches could not be read' }
   }
   $script:relayReceipts = $set; $script:relayReceiptsKey = $key
   return $set

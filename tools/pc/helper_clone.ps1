@@ -160,11 +160,16 @@ function Assert-Relayed {
   if (@(Run-Git --git-dir $mirror for-each-ref '--format=%(objectname)' 'refs/heads/board/pc-out-*').Count) {
     foreach ($line in @(Run-Git --git-dir $mirror rev-list --objects '--glob=refs/heads/board/pc-out-*')) { $null = $receipts.Add(($line -split ' ', 2)[0]) }
   }
+  # Issue 1657: blobs on the private relay repo (its own mirror, branches pc-out-*) count the same way.
+  $relayMirror = Join-Path (Split-Path -Parent $mirror) 'relay-mirror.git'
+  if ((Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD')) -and @(Run-Git --git-dir $relayMirror for-each-ref '--format=%(objectname)' 'refs/heads/pc-out-*').Count) {
+    foreach ($line in @(Run-Git --git-dir $relayMirror rev-list --objects '--glob=refs/heads/pc-out-*')) { $null = $receipts.Add(($line -split ' ', 2)[0]) }
+  }
   $missing = @()
   foreach ($f in $files) { if (-not $receipts.Contains((Run-Git --git-dir $mirror hash-object --no-filters -- $f.FullName))) { $missing += $f.FullName } }
   if ($missing.Count) {
     foreach ($m in ($missing | Select-Object -First 20)) { Write-Output "not on a relay branch yet: $m" }
-    throw "$($missing.Count) of $($files.Count) out files are not on a board/pc-out relay branch; nothing removed"
+    throw "$($missing.Count) of $($files.Count) out files are not on a relay branch (board/pc-out or the relay repo); nothing removed"
   }
   Write-Output "results relayed: all $($files.Count) out files are on a board/pc-out branch"
 }

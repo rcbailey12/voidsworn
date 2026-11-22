@@ -10,6 +10,7 @@ extends RefCounted
 # with const A4P := preload("res://assets/ships/a4_props.gd"). A4 files are true chirality (+Z starboard): no mirrored scale.
 
 const LARGE_STATION_SIZE := 46.0
+const BEACON_CODE := "O3_11"
 
 static var _man = null   # not GPU: the parsed ship manifest (JSON)
 
@@ -22,14 +23,44 @@ static func _manifest() -> Dictionary:
 	return _man
 
 
-static func _scene(code: String) -> Node3D:
+# the scene file the manifest names for `code`, or "" when the manifest has no row or the file is gone (a stale row in an
+# older build: PR 1561 review, so a missing file never logs load errors on every board build)
+static func _res(code: String) -> String:
 	var m := _manifest()
 	if not (m.has("ships") and (m["ships"] as Dictionary).has(code)):
+		return ""
+	var p := str(m["ships"][code].get("res", ""))
+	if p == "" or not ResourceLoader.exists(p):
+		return ""
+	return p
+
+
+static func _scene(code: String) -> Node3D:
+	var p := _res(code)
+	if p == "":
 		return null
-	var ps = load(str(m["ships"][code]["res"]))
+	var ps = _collect(p) if _pending.has(p) else load(p)
 	if not (ps is PackedScene):
 		return null
 	return (ps as PackedScene).instantiate() as Node3D
+
+
+# PR 1561 review: the relay beacon file is large, so a Hold battle starts reading it on a worker thread as the battle
+# begins (scenes/battle/battle.gd _begin), and the board build only collects it. Paths whose threaded load was requested:
+static var _pending := {}   # not GPU: paths only (path -> true), the loaded scene stays in the ResourceLoader
+
+
+static func prefetch_beacon() -> void:
+	var p := _res(BEACON_CODE)
+	if p == "" or _pending.has(p) or ResourceLoader.has_cached(p):
+		return
+	if ResourceLoader.load_threaded_request(p) == OK:
+		_pending[p] = true
+
+
+static func _collect(p: String) -> Resource:
+	_pending.erase(p)
+	return ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
 
 
 # the painted station across a cluster of station hexes
@@ -70,6 +101,44 @@ static func station(size: float, debris_clearance := 0.0) -> Node3D:
 	var root := Node3D.new()
 	root.name = "station"
 	n.scale = Vector3.ONE * size  # A4 ships are about 1.0 long (+X), so the scale is the size
+	root.add_child(n)
+	return root
+
+
+# Issue 1536 (Ryan, Nov 22 2026: "Yes" to showing the Relay in Hold battles): the Navy relay beacon O3_11 for the hold hex, in
+# the Navy finish (render/look.gd, as the station), scaled so its length along x is `length`, centred on its own box. Null when
+# the build has no O3_11 (the board then keeps its gold hex alone).
+static func beacon(length: float) -> Node3D:
+	var n := _scene(BEACON_CODE)
+	if n == null:
+		return null
+	var look = load("res://render/look.gd")
+	var painted := {}
+	var box := AABB()
+	var first := true
+	for child in n.find_children("*", "MeshInstance3D", true, false):
+		var mi := child as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var source: Material = mi.get_active_material(i)
+			if source != null and not painted.has(source):
+				painted[source] = look.hull(source, "hegemony", true)
+			if source != null:
+				mi.set_surface_override_material(i, painted[source])
+		var xf := Transform3D.IDENTITY
+		var p: Node = mi
+		while p != null and p != n:
+			xf = (p as Node3D).transform * xf if p is Node3D else xf
+			p = p.get_parent()
+		var bb := xf * mi.get_aabb()
+		box = bb if first else box.merge(bb)
+		first = false
+	var root := Node3D.new()
+	root.name = "relay_beacon"
+	var k := length / maxf(box.size.x, 1e-3)
+	n.scale = Vector3.ONE * k
+	n.position = -box.get_center() * k
 	root.add_child(n)
 	return root
 

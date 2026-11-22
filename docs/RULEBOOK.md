@@ -375,7 +375,7 @@ through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease
 switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
 and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
 Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
-exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a relay branch (the relay repo's pc-out branch, or an older board/pc-out one), then
 removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
 FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. A helper proof job's head (opus_job_head.bat, issue 1303) removes, at its tail and only after a PASS, the pinned checkouts its own checkout step listed in that attempt folder whose HEAD is still the pin and whose files hold no work beyond the import cache, ship copies still matching their source, byte copies of tracked files and the .import/.uid sidecars of those (rebuildable from the mirror; about 16 GB each); a failed job keeps them, and its out folders, logs and ship records always stay. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
@@ -387,7 +387,7 @@ process names it (the whole folder name, so `opus121` never matches `opus1211`).
 older, are removed as links and never followed, and the log names each link's target; a folder another account owns
 (Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
 names go to Ryan as a one-off list. The janitor removes an `opus<N>` helper folder (with any suffix, such as `opus<N>out*`, `opus1369b` or `opus1211_run6`, and playtest folders `pt<MMDD><letters>`, issue 1396) after a day untouched
-only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
+only when no running process names it, every file in its out folders is a blob committed on a relay branch (the relay repo's pc-out-* or an older board/pc-out-*)
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
 all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
 own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
@@ -413,6 +413,22 @@ Board's pause right before each removal and keep the folder for a later pass. Wh
 refilled C: by about 120 GB a day between nightly runs (issue 1180 dry run 2).
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).
+
+3.3a **PC results go to the private relay repo, never the main repo.** Videos, sheets, renders and logs from PC jobs go to
+`rcbailey12/voidsworn-relay` on branch `pc-out-<job>`, the attempt folder at `<attempt folder name>/` in its tree, through
+`tools\pc\relay_push.bat <job> <attempt folder>` (out_* folders and the top text files; files over 10 MB stay on the PC,
+listed in `skipped_over_10MB.txt`), in pushes of at most 512 MB each (GitHub refuses a push over 2 GiB); a relay stopped
+between pushes proves nothing until it is run again. The PR comment carries the links it prints. A job's cleanup proves the relay the same way
+as before, now from `relay/pc-out-<job>` (relay_branch.txt) or an older board/pc-out branch. No new board/pc-out branch is
+pushed to the main repo. Stale board/pc-out-* and board/pin-* branches go only through `tools\pc\PRUNE_RELAY_BRANCHES_DRY.bat`
+(lists, deletes nothing) and then `PRUNE_RELAY_BRANCHES_LIVE.bat` after Ryan's own yes on that list; a branch still named by
+a queued job, in `voidsworn_test\prune\keep.txt`, under 3 days old, used by an open PR or still needed to prove a PC job's
+relay is kept, and the live run checks every one of those again just before each delete, so a keep line or queued job
+added after the dry run still keeps an unmoved branch. Why: the main repo was 22.66 GB with 701 branches, 316 board/pc-out and 133 board/pin (Nov 22); Ryan picked
+"Private GitHub relay repo" (Nov 22 2026, 12:14 UTC, decision card in thread "Upgrade studio ops and PC harness"), and approved
+the plan: "Route binary PC outputs ... to a disposable private relay repo (`rcbailey12/voidsworn-relay`, wiped monthly) ...
+Ship a safe double-click Windows `.bat` script (dry-run default first) ... to prune the 447 stale `board/pc-out-*` and
+`board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R410).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
@@ -671,6 +687,20 @@ gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never slic
 of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
 issue 600). Ids: ships-2c.
 
+5.18 **The ship detail standard: textures by size, AO and LODs on import, one authored look, full hard points.** For every
+ship from now on: (1) stage 7 exports maps by the ship's length band, flagships and battleships (length 21 and up) at 4096
+(stage 5 already bakes 4096), cruisers, carriers, destroyers and frigates (6.5 to 16.5) at 2048, strike craft (1.6) at 1024
+(issue 1680); (2) every hull gets a calibrated `ao_light_affect` (never Godot's default 0.0; per faction in look.gd READ, 0.35
+to 0.55, Glasswrights 0.2) and automatic Godot mesh LODs on import (issues 1678, 1679); (3) each faction's paint stack moves
+to `authored_look = 1`, calibrated to the one battle light rig, the next time that faction is baked or repainted, and its
+look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it; (4) every new destroyer and larger carries
+`hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
+Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
+39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
+far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
+stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
@@ -882,6 +912,19 @@ work (issue 1454). Set: Ryan (R380).
 9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
 an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
 (Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
+
+9.17a **A player ship's turn is planned on its ghost, then committed, and plays out as one event.** Clicking a blue hex moves
+the ghost there, Q and E turn it, and clicking an enemy aims every free gun that bears from the ghost (a second enemy takes
+the guns still free). Nothing reaches the rules until the commit (Enter, or a second click on the hex or a target); then the
+move and every planned volley go as one command and play as one event, with the guns turning onto the first target while
+the hull brakes (issue 1581). Backspace takes back the plan's last step; with no plan open it still undoes a move already
+made (9.17). A turn in place commits through the rules' own rotate (so a skill's free turn or a free pivot is spent
+there, at the commit), a move through the rules' move. A shot the move made impossible is dropped with a message, never silently. Each ship plays out right after its
+commit (not the whole fleet at the end of the turn); the old instant move-and-shoot is gone; enemy activations play the same
+way. UI only: no rule changes, and firing still ends movement for every ship except Glasswrights (R396). Why: Ryan, Nov 22
+2026: "you see the firing options at your destination and make your firing decisions ... then it actually moves and
+happens", "Which lines up with undo"; picks 1a, 2a, 3b, 4b, 5a ("Maybe we test 1b down the line but not now"). Set: Ryan
+(issue 1589). Detail: docs/playbooks/screens.md, "Planning a ship's turn".
 
 9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
 menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to

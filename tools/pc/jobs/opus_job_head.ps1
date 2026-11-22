@@ -21,12 +21,17 @@
 #                                              under godot\gen and godot\assets\ships that has the same bytes in the source, so the tail can prove a copy unchanged even
 #                                              after a later publish moves the shared build on (issue 1497)
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
+#   dropwait [<attempt folder>] [dry]          the tail starts it in a hidden window (issue 1396), the attempt in
+#                                              OJ_DROPWAIT_ATTEMPT: for a passed attempt, asks origin for its relay branch
+#                                              every 5 minutes for up to 12 hours, then under the job lease, the issue lock
+#                                              and the janitor's checks runs dropcheckouts' proof and drop for this attempt
+#                                              only; dry looks once and takes, writes, fetches and removes nothing
 #   dropcheckouts <attempt folder> [<relay branch> <tree folder>]
 #                                              the tail, and the Board right after it relays the results (with the branch
 #                                              and the tree folder that holds the attempt, written to the attempt's
 #                                              relay_receipt.txt): removes the
-#                                              pinned checkouts of this attempt and of the same job's earlier attempts
-#                                              (voidsworn_test\<job>\out_* beside it), each only when its done.txt says
+#                                              pinned checkouts of this attempt only (earlier attempts go through their
+#                                              own relay waiter or the janitor; review of PR 1644), only when its done.txt says
 #                                              PASS and a board/pc-out branch on origin (issue 1535: relay_receipt.txt,
 #                                              else the attempt's relay_branch.txt, else board/pc-out-<job>) whose tree holds
 #                                              every file of its out_* folders at <tree folder>/out_<name>/<path> with the
@@ -57,10 +62,15 @@
 #                                              <job>\out\checkout_leftovers_repo (installed files under
 #                                              godot\assets\ships\<code> that match the job's collected export count as
 #                                              rebuildable). The job's out\, the publish folder and build\godot stay.
+#   relayfind <attempt folder>|all [dry]       issue 1695: for a passed attempt that still lists checkouts and whose own
+#                                              relay place does not prove, with no relay_receipt.txt or relay_branch.txt,
+#                                              finds the board/pc-out-* folder in the shared mirror that holds all its
+#                                              result files byte for byte and writes it as a new relay_branch.txt. Writes
+#                                              nothing else, removes nothing; dry writes and fetches nothing
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -71,6 +81,45 @@ $vt = [IO.Path]::GetFullPath($vt).TrimEnd('\', '/')
 $mirror = Join-Path $vt 'repo-mirror.git'
 $source = 'https://github.com/rcbailey12/voidsworn'
 if ($test) { $source = $env:PC_TEST_SOURCE }
+# Issue 1657 (Ryan, Nov 22 2026): PC results go to the private relay repo, not the main repo. Its own bare mirror (a
+# mirror fetch of one remote prunes every ref the other lacks, so the two cannot share one). A receipt names it as
+# relay/pc-out-<job>: branch pc-out-<job> of voidsworn-relay. Older board/pc-out-* receipts on the main repo still count.
+$relayMirror = Join-Path $vt 'relay-mirror.git'
+$relaySource = 'https://github.com/rcbailey12/voidsworn-relay'
+if ($test) { $relaySource = $env:PC_TEST_RELAY_SOURCE }
+$relayPattern = '(?:board|relay)/pc-out-[A-Za-z0-9._-]+'
+function Get-RelayRepo($ref) {
+  # Which repo and mirror hold a receipt's branch: @{ Mirror; Source; Ref (the branch name in that repo) }.
+  if ($ref -like 'relay/*') { return @{ Mirror = $relayMirror; Source = $relaySource; Ref = $ref.Substring(6); Lock = $relayMirror + '.lock' } }
+  return @{ Mirror = $mirror; Source = $source; Ref = $ref; Lock = $mirror + '.lock' }
+}
+function Lock-RelayMirror {
+  # The relay mirror's writers' lock, held with Lock-Mirror from a removal's proof through its delete (Artoo on PR 1592).
+  # A caller with its own end (the relay waiter, PR 1644) waits no longer than that.
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  if ($script:waitUntil -and $script:waitUntil -lt $deadline) { $deadline = $script:waitUntil }
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($relayMirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'relay repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+  }
+  return $lock
+}
+function Update-RelayMirror {
+  # The relay repo's own mirror: made on first use, fetched under its own lock. Never touches the shared repo mirror.
+  if (-not $relaySource) { return }
+  # A removal already holds the lock ($script:relayLock): make and fetch the mirror under it (the first relay proof of a
+  # PC happens inside a removal, so the mirror must be made there too). Otherwise take the lock for this fetch only.
+  $lock = $null
+  if (-not $script:relayLock) { $lock = Lock-RelayMirror }
+  try {
+    if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD'))) {
+      Run-Git init -q --bare $relayMirror | Out-Null
+      Run-Git --git-dir $relayMirror remote add --mirror=fetch origin $relaySource | Out-Null
+    }
+    if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
+    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+  } finally { if ($lock) { $lock.Dispose() } }
+}
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
 function Run-Git {
   # PowerShell 5.1 turns native stderr into errors under 'Stop'; read it as text instead.
@@ -290,7 +339,7 @@ function Set-RemovingRecord($record, $done) {
   $keep = @([IO.File]::ReadAllLines($record) | Where-Object { $_.Trim() -and ($_ -split ' ')[0] -cne $done })
   if ($keep.Count) { [IO.File]::WriteAllLines($record, [string[]]$keep) } else { [IO.File]::Delete($record) }
 }
-function Complete-Removing($folder, [string[]]$names) {
+function Complete-Removing($folder, [string[]]$names, $pins = $null) {
   # Finish only removals this file recorded itself (Artoo on PR 1498: a .removing suffix alone is no proof): a
   # removing.txt line "<name>.removing <commit>" in $folder whose <name> is one of $names (the attempt's listed
   # checkouts, or repo for a ship job), for a plain folder of exactly that name with no link above it, whose .git\HEAD,
@@ -302,6 +351,8 @@ function Complete-Removing($folder, [string[]]$names) {
     if (-not $line.Trim()) { continue }
     if ($line -notmatch '\A([A-Za-z0-9_-]{1,40})\.removing ([0-9a-f]{40})\z' -or $names -cnotcontains $Matches[1]) { Write-Output "removing.txt line not accepted, left alone: $line"; continue }
     $name = $Matches[1]; $commit = $Matches[2]
+    # The record must name the listed pin (review of PR 1644), when the caller knows the pins.
+    if ($pins -and $pins[$name] -ne $commit) { Write-Output "removing.txt line does not name the listed pin, left alone: $line"; continue }
     $tomb = Join-Path $folder "$name.removing"
     try {
       $t = Get-Item -LiteralPath $tomb -Force -ErrorAction SilentlyContinue
@@ -311,6 +362,8 @@ function Complete-Removing($folder, [string[]]$names) {
       $headFile = Join-Path (Join-Path $tomb '.git') 'HEAD'
       if ((Test-Path -LiteralPath $headFile -PathType Leaf) -and ([IO.File]::ReadAllText($headFile)).Trim() -ne $commit) { throw "its HEAD is not the recorded commit $commit" }
       if (Test-Paused) { throw 'the Board PC pause is active' }
+      # The waiter's own checks once more, right before the tomb goes, as for a fresh checkout (Artoo on PR 1644).
+      if ($script:beforeRemove) { & $script:beforeRemove }
       $gone = Remove-LinkSafeTree $tomb
       Set-RemovingRecord $record "$name.removing"
       $bytes += $gone
@@ -361,10 +414,12 @@ function Get-BlobSha($path) {
 function Lock-Mirror {
   # The mirror writers' lock (the same <mirror>.lock every fetch takes). A removal holds it from its relay and history
   # proof through the delete, so no fetch or prune between them can drop a ref the proof relied on (Artoo on PR 1592).
+  # A caller with its own end (the relay waiter) waits no longer than that (review of PR 1644).
   $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  if ($script:waitUntil -and $script:waitUntil -lt $deadline) { $deadline = $script:waitUntil }
   while (-not $lock) {
     try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
-    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked past the wait limit' }; Start-Sleep -Milliseconds 500 }
   }
   return $lock
 }
@@ -393,7 +448,7 @@ function Read-RelayReceipt($folder, $name = 'relay_receipt.txt') {
   $file = Join-Path $folder $name
   if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
   $line = [string](Get-Content -LiteralPath $file -TotalCount 1)
-  if ($line -notmatch '\A(board/pc-out-[A-Za-z0-9._-]+) ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z' -or $line.Contains('..')) { return $null }
+  if ($line -notmatch ('\A(' + $relayPattern + ') ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z') -or $line.Contains('..')) { return $null }
   return @{ Ref = $Matches[1]; Path = $Matches[2]; From = $name }
 }
 function Get-RelayPlace($base, $job, $tree) {
@@ -406,11 +461,18 @@ function Get-RelayPlace($base, $job, $tree) {
   $r = Read-RelayReceipt $base 'relay_branch.txt'
   if ($r) { return $r }
   if ("board/pc-out-$job $tree" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+\z' -or "$job$tree".Contains('..')) { return $null }
+  # Issue 1657: the relay repo first when its mirror holds pc-out-<job>, else the main repo's board/pc-out-<job>.
+  if (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD')) {
+    $ErrorActionPreference = 'Continue'
+    $null = & $gitExe --git-dir $relayMirror rev-parse --verify -q "refs/heads/pc-out-$job^{commit}" 2>$null
+    $found = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
+    if ($found) { return @{ Ref = "relay/pc-out-$job"; Path = $tree; From = 'the job name' } }
+  }
   return @{ Ref = "board/pc-out-$job"; Path = $tree; From = 'the job name' }
 }
 function Write-RelayReceipt($folder, $ref, $path) {
   if (-not $ref) { return }
-  if ("$ref $path" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $path.Contains('..')) { throw "relay receipt not accepted: $ref $path" }
+  if ("$ref $path" -notmatch ('\A' + $relayPattern + ' [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z') -or $path.Contains('..')) { throw "relay receipt not accepted: $ref $path" }
   [IO.File]::WriteAllText((Join-Path $folder 'relay_receipt.txt'), "$ref $path`r`n")
   Write-Output "relay receipt written: $ref $path"
 }
@@ -418,21 +480,23 @@ function Test-ReceiptTree($receipt, $want) {
   # The wanted paths (relative to the receipt's folder) the receipt's branch tree does not hold with exactly that blob,
   # each as @{ Key; Absent } (Absent: no such path in the tree at all), plus the relay's own skipped_over_10MB.txt lines
   # in that folder. $null when the branch is not in the mirror.
+  $repo = Get-RelayRepo $receipt.Ref
+  if (-not $repo.Source -or -not (Test-Path -LiteralPath (Join-Path $repo.Mirror 'HEAD'))) { return $null }
   $ErrorActionPreference = 'Continue'
-  $sha = (& $gitExe --git-dir $mirror rev-parse --verify -q "refs/heads/$($receipt.Ref)^{commit}" 2>$null) | Select-Object -Last 1
+  $sha = (& $gitExe --git-dir $repo.Mirror rev-parse --verify -q "refs/heads/$($repo.Ref)^{commit}" 2>$null) | Select-Object -Last 1
   if ($LASTEXITCODE -ne 0 -or -not $sha) { return $null }
   $ErrorActionPreference = 'Stop'
   # Origin itself must hold the branch at this commit (git ls-remote), so a branch deleted or moved on GitHub since the
   # last fetch proves nothing; a different commit refetches once (issue 1535). A failed ls-remote throws: kept.
-  $remote = @(Run-Git ls-remote $source "refs/heads/$($receipt.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
+  $remote = @(Run-Git ls-remote $repo.Source "refs/heads/$($repo.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
   if (-not $remote -or "$remote".Substring(0, 40) -ne $sha) { return $null }
   $have = @{}
-  foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
+  foreach ($l in (Run-Git --git-dir $repo.Mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
     if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
   }
   $skipped = @()
   if ($have.ContainsKey($receipt.Path + '/skipped_over_10MB.txt')) {
-    $skipped = @(Run-Git --git-dir $mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
+    $skipped = @(Run-Git --git-dir $repo.Mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
   }
   $miss = @(foreach ($k in $want.Keys) {
     $at = $receipt.Path + '/' + $k
@@ -456,21 +520,20 @@ function Test-RelaySkipped($skipped, $key, $file) {
   }
   return $false
 }
-function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
-  # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
-  # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
-  # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
-  # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
-  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
-  # other difference: kept, and the reason names the first files.
-  $receipt = Get-RelayPlace $base $job $tree
-  if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
+function Get-ResultWant($base, [string[]]$dirs, $skip) {
+  # Every result file under $dirs (each a plain folder: $base itself or one inside it), keyed by its path under $base
+  # with /, as Want (git blob id) and Files (full path). $skip names leftovers folders; relay_receipt.txt is not a result.
   $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
   $want = @{}; $files = @{}
   foreach ($d in $dirs) {
+    # Each result root must be a plain folder: $base itself (a ship job's out) or one inside it, never a link to another
+    # folder's bytes (review of PR 1644).
+    $root = Get-Item -LiteralPath $d -Force -ErrorAction SilentlyContinue
+    $rootFull = if ($root) { [IO.Path]::GetFullPath($root.FullName).TrimEnd('\', '/') } else { '' }
+    if (-not (Test-PlainDir $root) -or -not ($rootFull.Equals($baseFull, [StringComparison]::OrdinalIgnoreCase) -or $rootFull.StartsWith($baseFull + $sep, [StringComparison]::OrdinalIgnoreCase))) { throw "a result folder is not a plain folder in $base`: $d" }
     $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
-    $pending.Push((Get-Item -LiteralPath $d -Force))
+    $pending.Push($root)
     while ($pending.Count) {
       foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
         if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
@@ -481,10 +544,36 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
       }
     }
   }
+  return @{ Want = $want; Files = $files }
+}
+function Test-PlaceProof($place, $got) {
+  # '' when $place (@{ Ref; Path }) proves every result in $got (Get-ResultWant) the way Assert-Relayed does, without a
+  # fetch; else the first reasons it does not (issue 1695).
+  try { $r = Test-ReceiptTree $place $got.Want } catch { return "origin could not be asked: $($_.Exception.Message)" }
+  if ($null -eq $r) { return "branch $($place.Ref) is not on origin at the shared mirror's commit" }
+  $bad = @(foreach ($m in $r.Missing) {
+    if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $got.Files[$m.Key])) { continue }
+    if ($m.Absent) { "$($m.Key) is not on the relay" } else { "$($m.Key) differs on the relay" }
+  })
+  if (-not $bad.Count) { return '' }
+  $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
+  return ((($bad | Select-Object -First 3) -join '; ') + $more)
+}
+function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
+  # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
+  # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
+  # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
+  # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
+  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
+  # other difference: kept, and the reason names the first files.
+  $receipt = Get-RelayPlace $base $job $tree
+  if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
+  $got = Get-ResultWant $base $dirs $skip
+  $want = $got.Want; $files = $got.Files
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
-    if ($try) { if ($script:dropDry) { break }; Update-Mirror }
+    if ($try) { if ($script:dropDry) { break }; if ($receipt.Ref -like 'relay/*') { Update-RelayMirror } else { Update-Mirror } }
     $r = Test-ReceiptTree $receipt $want
     if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
     $big = @(); $bad = @()
@@ -504,32 +593,36 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
 }
 function Drop-Attempt($attempt) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
-  # bytes removed to $script:freed. Every refusal is logged, never thrown.
+  # bytes removed to $script:freed. Every refusal is logged, never thrown. A live run takes the mirror writers' lock
+  # first and holds it through the relay proof, any earlier unfinished removal (review of PR 1644: a tomb is finished
+  # only after the same fresh proof) and every removal.
   $state = Get-AttemptState $attempt
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
-  $listed = @(); $ckFile = Join-Path $attempt 'checkouts.txt'
-  if (Test-Path -LiteralPath $ckFile -PathType Leaf) { $listed = @(foreach ($l in [IO.File]::ReadAllLines($ckFile)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z') { $Matches[1] } }) }
-  if (-not $script:dropDry) { foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } } }
-  else { foreach ($n in $listed) { if (Test-Path -LiteralPath (Join-Path $attempt "$n.removing")) { Write-Output "earlier removal would be finished if removing.txt recorded it: $(Join-Path $attempt "$n.removing")" } } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
-  $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
-  if (-not $present.Count) { Write-Output "no listed checkout left in $attempt"; return }
+  $pins = @{}
+  foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) ([0-9a-f]{40})\z') { $pins[$Matches[1]] = $Matches[2] } }
+  if ($script:dropDry) { foreach ($n in $pins.Keys) { if (Test-Path -LiteralPath (Join-Path $attempt "$n.removing")) { Write-Output "earlier removal would be finished after the relay proof if removing.txt recorded it: $(Join-Path $attempt "$n.removing")" } } }
+  if (-not @(Get-ListedLeft $attempt).Count) { Write-Output "no listed checkout left in $attempt"; return }
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
   if (-not $script:dropDry) {
-    try { $script:mirrorLock = Lock-Mirror } catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+    try { $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror }
+    catch { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null }; Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   }
-  try { Drop-Proven $attempt $list $outs } finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+  try { Drop-Proven $attempt $list $outs $pins } finally {
+    if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
+    if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
 }
-function Drop-Proven($attempt, $list, $outs) {
+function Drop-Proven($attempt, $list, $outs, $pins) {
   # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
-  $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
+  $present = @(foreach ($n in $pins.Keys) { if (Test-Path -LiteralPath (Join-Path $attempt $n)) { $n } })
   try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   if ($script:dropDry) {
     foreach ($n in $present) { Write-Output "checkout $n would be checked and removed after the relay: $(Join-Path $attempt $n)" }
     return
   }
+  foreach ($o in @(Complete-Removing $attempt @($pins.Keys) $pins)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
   $src = $null
   $srcFile = Join-Path $attempt 'ships_source.txt'
   if (Test-Path -LiteralPath $srcFile -PathType Leaf) { $src = ([IO.File]::ReadAllText($srcFile)).Trim() }
@@ -550,6 +643,8 @@ function Drop-Proven($attempt, $list, $outs) {
       $rec = Read-ShipRecord ($repo + '_ships_copied.txt')
       $work = @(Get-KeptWork $repo $src $rec $null $null)
       if (Test-Paused) { throw 'the Board PC pause is active' }
+      # The waiter's own checks once more, right before anything is saved or renamed (review of PR 1644).
+      if ($script:beforeRemove) { & $script:beforeRemove }
       if ($work.Count) {
         $dest = Join-Path (Join-Path $attempt "out_$name") 'checkout_leftovers'
         try { Write-Output (Save-Leftovers $repo $work $dest) }
@@ -560,6 +655,68 @@ function Drop-Proven($attempt, $list, $outs) {
       Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($gone / 1GB), $repo)
     } catch { Write-Output "checkout $name kept: $repo ($($_.Exception.Message))" }
   }
+}
+function Get-ListedLeft($attempt) {
+  # Listed checkouts of an attempt still on disk, or left as a recorded <name>.removing (review of PR 1592).
+  $list = Join-Path $attempt 'checkouts.txt'
+  if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { return @() }
+  return @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $attempt $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $attempt "$($Matches[1]).removing")))) { $Matches[1] } })
+}
+function Open-PlainLock($path) {
+  # An exclusive lock on a plain file: an existing link, folder or anything else is refused, never followed (review of
+  # PR 1644, as the janitor's Open-CleanupLock).
+  $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) { throw "lock is not a plain file: $path" }
+  return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
+}
+function Get-WaitGuard($attempt) {
+  # The janitor's checks before it removes anything from a job folder (Artoo and review of PR 1644): the Board keep list,
+  # read fresh each time, no running process naming the job folder (the janitor's own whole-folder match; the waiter
+  # names its attempt only in its environment, so it never matches itself), and no Board PC pause. '' when clear, else
+  # why: the waiter keeps everything and tries again at its next look. The caller holds the job lease and the issue lock.
+  $jobDir = Split-Path -Parent $attempt
+  $keepFile = Join-Path $vt 'janitor_keep.txt'
+  $keepItem = Get-Item -LiteralPath $keepFile -Force -ErrorAction SilentlyContinue
+  if ($keepItem) {
+    if ($keepItem -isnot [IO.FileInfo] -or ($keepItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return "the Board keep list is not a plain file: $keepFile" }
+    foreach ($line in [IO.File]::ReadAllLines($keepFile)) {
+      $p = $line.Trim().TrimStart([char]0xFEFF)
+      if (-not $p -or $p.StartsWith('#')) { continue }
+      $keep = [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
+      foreach ($mine in @($jobDir, $attempt)) {
+        if ($keep.Equals($mine, [StringComparison]::OrdinalIgnoreCase) -or $keep.StartsWith($mine + $sep, [StringComparison]::OrdinalIgnoreCase) -or
+            $mine.StartsWith($keep + $sep, [StringComparison]::OrdinalIgnoreCase)) { return "on the Board keep list ($keep)" }
+      }
+    }
+  }
+  $lines = $null
+  if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) { $lines = @($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Line = $_ } }) }
+  else {
+    try { $lines = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.CommandLine -and $_.ProcessId -ne $PID } | ForEach-Object { [pscustomobject]@{ Id = $_.ProcessId; Line = $_.CommandLine } }) }
+    catch { return 'running processes could not be checked' }
+  }
+  $needle = [regex]::Escape($jobDir) + '(?=$|[\\/"''\s])'
+  foreach ($proc in $lines) { if ($proc.Line -match $needle) { return "a running process names this job folder (process $($proc.Id))" } }
+  if (Test-Paused) { return 'the Board PC pause is active' }
+  return ''
+}
+function Invoke-LsRemote($ref, $seconds) {
+  # git ls-remote with a time limit and no prompts (review of PR 1644): the tip's 40 hex, '' when the branch is not on
+  # origin; throws when Git fails or runs past the limit (then killed).
+  $psi = New-Object Diagnostics.ProcessStartInfo
+  $psi.FileName = $gitExe; $psi.UseShellExecute = $false; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.CreateNoWindow = $true
+  # A relay/pc-out-<job> place is branch pc-out-<job> of the relay repo (issue 1657); board/pc-out-* is the main repo.
+  $repo = Get-RelayRepo $ref
+  if (-not $repo.Source) { throw "no relay repo address for $ref" }
+  $psi.Arguments = "ls-remote `"$($repo.Source)`" `"refs/heads/$($repo.Ref)`""
+  $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'; $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+  $p = [Diagnostics.Process]::Start($psi)
+  $out = $p.StandardOutput.ReadToEndAsync(); $null = $p.StandardError.ReadToEndAsync()
+  if (-not $p.WaitForExit([int]([Math]::Max(1, $seconds) * 1000))) { try { $p.Kill() } catch { }; throw "git ls-remote ran past $seconds s" }
+  if ($p.ExitCode -ne 0) { throw "git ls-remote failed (exit $($p.ExitCode))" }
+  $line = @($out.Result -split "`n" | Where-Object { $_ -match '\A[0-9a-f]{40}\t' }) | Select-Object -First 1
+  if ($line) { return "$line".Substring(0, 40) }
+  return ''
 }
 function Get-AttemptState($attempt) {
   # PASS or FAILED from job_wrap's done.txt; '' when the attempt never finished (killed, timed out or still running)
@@ -774,15 +931,97 @@ switch ($Action) {
     if ($problem) { Write-Output "checkouts kept: $problem"; break }
     $script:freed = [long]0
     if ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
+    # This attempt only (review of PR 1644): earlier attempts of the job are cleared by their own relay waiter or the
+    # janitor's relay sweep, which hold the job lease, the issue lock and the keep-list and process checks; an unguarded
+    # sibling sweep here could race them.
     Drop-Attempt $attempt
-    $jobDir = Split-Path -Parent $attempt
-    foreach ($sib in @((Get-Item -LiteralPath $jobDir -Force).EnumerateDirectories('out_*'))) {
-      if ($sib.FullName.Equals($attempt, [StringComparison]::OrdinalIgnoreCase)) { continue }
-      if (Get-AttemptProblem $sib.FullName) { continue }
-      if (-not (Test-Path -LiteralPath (Join-Path $sib.FullName 'checkouts.txt') -PathType Leaf)) { continue }
-      Drop-Attempt $sib.FullName
-    }
     Write-Free $script:freed
+  }
+  'dropwait' {
+    # Issue 1396 (Board, Nov 22): the PC relays an attempt only after its tail, so the tail's dropcheckouts finds no branch,
+    # and with a new job name every night no later attempt of the same job clears it (20 checkouts of about 8 GB each in
+    # one night). The tail starts this in a hidden window, with the attempt in OJ_DROPWAIT_ATTEMPT (not on its command
+    # line, so the janitor's and its own process checks never see it as a user of the job folder). For a passed attempt
+    # only, it asks origin (git ls-remote, prompts off, 120 s limit) for the attempt's relay branch every
+    # OJ_DROPWAIT_POLL_SECONDS (300). When the branch is there it takes the job lease and the issue lock, runs the
+    # janitor's checks (Get-WaitGuard), and runs dropcheckouts' own proof and drop for this attempt only (Drop-Attempt:
+    # mirror lock, fresh relay proof, then any earlier unfinished removal, then each checkout, with the checks once more
+    # before each rename). Any refusal is tried again: at once when the branch moves, else after a wait that doubles from
+    # one poll to an hour. Nothing new starts after OJ_DROPWAIT_SECONDS (43200, 12 hours) and the mirror wait ends there
+    # too; only a removal already under way finishes. The janitor's relay sweep covers anything later. dry: one look,
+    # the dry proof, no lock, log, fetch or removal.
+    $given = if ($A) { $A } else { "$env:OJ_DROPWAIT_ATTEMPT" }
+    if (-not $given) { throw 'dropwait needs the attempt folder (argument or OJ_DROPWAIT_ATTEMPT)' }
+    $attempt = [IO.Path]::GetFullPath($given).TrimEnd('\', '/')
+    $problem = Get-AttemptProblem $attempt
+    if ($problem) { Write-Output "checkouts kept: $problem"; break }
+    $script:dropDry = $B -eq 'dry'
+    if ($B -and -not $script:dropDry) { throw "dropwait takes only dry after the attempt folder, got: $B" }
+    $script:freed = [long]0
+    $env:GIT_TERMINAL_PROMPT = '0'; $env:GCM_INTERACTIVE = 'never'
+    $jobDir = Split-Path -Parent $attempt
+    $leaf = Split-Path -Leaf $attempt
+    if ($env:OJ_DROPWAIT_LOG -eq '1' -and -not $script:dropDry) {
+      # The log sits beside the attempt, named from it; an existing link or folder there is never written through.
+      $log = Join-Path $jobDir "dropwait_$leaf.txt"
+      $logItem = Get-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
+      if (-not $logItem -or (($logItem -is [IO.FileInfo]) -and -not ($logItem.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
+        try { $null = Start-Transcript -LiteralPath $log -Append } catch { }
+      }
+    }
+    if ((Get-AttemptState $attempt) -ne 'PASS') { Write-Output "checkouts kept: $attempt is not a passed attempt; nothing to wait for"; break }
+    $place = Get-RelayPlace $attempt (Split-Path -Leaf $jobDir) $leaf
+    if (-not $place) { Write-Output "checkouts kept: no relay branch named for $attempt"; break }
+    $issueLockPath = ''
+    if ((Split-Path -Leaf $jobDir) -match '\Aopus([1-9][0-9]*)') {
+      $runTemp = if ($env:PC_RUN_TEMP) { $env:PC_RUN_TEMP } else { [IO.Path]::GetTempPath() }
+      $issueLockPath = Join-Path $runTemp "voidsworn-runner-issue-$($Matches[1]).lock"
+    }
+    $poll = 300; if ("$env:OJ_DROPWAIT_POLL_SECONDS" -match '\A[1-9][0-9]{0,4}\z') { $poll = [int]$env:OJ_DROPWAIT_POLL_SECONDS }
+    $limit = 43200; if ("$env:OJ_DROPWAIT_SECONDS" -match '\A[0-9]{1,6}\z') { $limit = [int]$env:OJ_DROPWAIT_SECONDS }
+    $script:waitUntil = [DateTime]::UtcNow.AddSeconds($limit)
+    Write-Output "waiting for $($place.Ref) on origin (from $($place.From)) to clear $attempt; every $poll s for up to $limit s"
+    $seen = ''; $nextTry = [DateTime]::MinValue; $backoff = $poll
+    $script:beforeRemove = {
+      $w = Get-WaitGuard $attempt
+      if ($w) { throw "held back: $w" }
+    }
+    while ($true) {
+      if (-not @(Get-ListedLeft $attempt).Count) { Write-Output "no listed checkout left in $attempt"; break }
+      $left = ($script:waitUntil - [DateTime]::UtcNow).TotalSeconds
+      if ($left -le 0) { Write-Output "checkouts kept: $attempt still lists checkouts after $limit s; the janitor's relay sweep handles it later"; break }
+      $tip = ''
+      try { $tip = Invoke-LsRemote $place.Ref ([Math]::Min(120, [Math]::Ceiling($left))) }
+      catch { Write-Output "relay check failed, tried again later: $($_.Exception.Message)" }
+      if ($tip -and ($tip -ne $seen -or [DateTime]::UtcNow -ge $nextTry)) {
+        if ($tip -ne $seen) { Write-Output "relay branch $($place.Ref) is on origin at $tip"; $backoff = $poll }
+        $seen = $tip
+        $lease = $null; $issueLock = $null; $why = ''
+        if (-not $script:dropDry) {
+          try { $lease = Open-PlainLock (Join-Path $jobDir '.voidsworn-run-active') } catch { $why = "the job folder's lease is held or not a plain file" }
+          if (-not $why -and $issueLockPath) {
+            try { $issueLock = Open-PlainLock $issueLockPath } catch { $why = "the issue lock $issueLockPath is held or not a plain file" }
+          }
+        }
+        # Checked after the locks are held, so nothing new can claim the folder between the check and the drop.
+        if (-not $why) { $why = Get-WaitGuard $attempt }
+        try {
+          if ($why) { Write-Output "checkouts kept for now: $attempt ($why); tried again at the next look" }
+          else { Drop-Attempt $attempt }
+        } finally { if ($issueLock) { $issueLock.Dispose() }; if ($lease) { $lease.Dispose() } }
+        if ($why) { $nextTry = [DateTime]::MinValue }
+        elseif (@(Get-ListedLeft $attempt).Count -and -not $script:dropDry) {
+          $nextTry = [DateTime]::UtcNow.AddSeconds($backoff)
+          Write-Output "checkouts kept: tried again on this relay in $backoff s, or at once if the branch moves"
+          $backoff = [Math]::Min(3600, $backoff * 2)
+        }
+      }
+      if ($script:dropDry) { if (-not $tip) { Write-Output "checkouts kept: $($place.Ref) is not on origin yet (dry: one look)" }; break }
+      $left = ($script:waitUntil - [DateTime]::UtcNow).TotalSeconds
+      if ($left -le 0) { continue }
+      Start-Sleep -Seconds ([Math]::Max(1, [Math]::Min($poll, [Math]::Ceiling($left))))
+    }
+    if (-not $script:dropDry) { Write-Free $script:freed }
   }
   'dropjobs' {
     # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
@@ -802,8 +1041,7 @@ switch ($Action) {
         if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
         $list = Join-Path $att.FullName 'checkouts.txt'
         if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { continue }
-        # A listed checkout, or its recorded <name>.removing left by a removal a lock stopped (review of PR 1592), is left.
-        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $att.FullName "$($Matches[1]).removing")))) { $Matches[1] } })
+        $left = @(Get-ListedLeft $att.FullName)
         if (-not $left.Count) { continue }
         $problem = Get-AttemptProblem $att.FullName
         if ($problem) { Write-Output "checkouts kept: $problem"; continue }
@@ -811,6 +1049,84 @@ switch ($Action) {
       }
     }
     if (-not $script:dropDry) { Write-Free $script:freed }
+  }
+  'relayfind' {
+    # Issue 1695 (Board, Nov 22): attempts relayed before PR 1644 under another branch name or folder (board/pc-out-1547c
+    # and so on) name no place the proof finds, so their checkouts never clear. For each passed attempt that still lists
+    # a checkout and whose own place (Get-RelayPlace) does not prove, with no relay_receipt.txt or relay_branch.txt of its
+    # own, this looks through every board/pc-out-* branch in the shared mirror for the folder holding one of its result
+    # files, then runs the same byte check as the drop (Test-PlaceProof: every result file at that folder with the same
+    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_branch.txt
+    # (a new file, never over an existing one). It is only a place to look: the waiter and the janitor's relay sweep prove
+    # the bytes again under the mirror lock before any removal. Writes nothing else and removes nothing. <attempt> or all
+    # (every voidsworn_test\<job>\out_*); dry writes nothing and fetches nothing; live fetches the mirror once first.
+    $live = $B -ne 'dry'
+    if ($B -and $live) { throw "relayfind takes only dry after the attempt folder or all, got: $B" }
+    if (-not $A) { throw 'relayfind needs an attempt folder voidsworn_test\<job>\out_* or all' }
+    $sweep = $A -eq 'all'
+    $atts = if ($sweep) {
+      @(foreach ($j in @((Get-Item -LiteralPath $vt -Force).EnumerateDirectories())) { if (Test-PlainDir $j) { foreach ($x in @($j.EnumerateDirectories('out_*'))) { $x.FullName } } })
+    } else { @([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) }
+    $script:dropDry = $true
+    if ($live) { Update-Mirror }
+    $todo = @()
+    foreach ($att in $atts) {
+      $problem = Get-AttemptProblem $att
+      if ($problem) { Write-Output "relay place not looked for: $problem"; continue }
+      if ((Get-AttemptState $att) -ne 'PASS') { if (-not $sweep) { Write-Output "relay place not looked for: $att is not a passed attempt" }; continue }
+      if (-not (Test-Path -LiteralPath (Join-Path $att 'checkouts.txt') -PathType Leaf) -or -not @(Get-ListedLeft $att).Count) {
+        if (-not $sweep) { Write-Output "relay place not looked for: no listed checkout left in $att" }; continue
+      }
+      $job = Split-Path -Leaf (Split-Path -Parent $att); $leaf = Split-Path -Leaf $att
+      $outs = @((Get-Item -LiteralPath $att -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
+      try { $got = Get-ResultWant $att $outs @('checkout_leftovers') } catch { Write-Output "relay place not looked for: $att ($($_.Exception.Message))"; continue }
+      if (-not $got.Want.Count) { Write-Output "relay place not looked for: no result files under $att"; continue }
+      $place = Get-RelayPlace $att $job $leaf
+      $why = if ($place) { Test-PlaceProof $place $got } else { 'no place named' }
+      if (-not $why) { Write-Output "relay place already proven: $att ($($place.Ref) $($place.Path), from $($place.From))"; continue }
+      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_branch.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
+      if ($own.Count) { Write-Output "relay place left alone: $att has its own $($own[0]), which does not prove ($why)"; continue }
+      # One result file of 10 MB or less to search for (a larger one may be left off the relay).
+      $anchor = @($got.Want.Keys | Sort-Object | Where-Object { (Get-Item -LiteralPath $got.Files[$_] -Force).Length -le 10000000 } | Select-Object -First 1)
+      if (-not $anchor.Count) { Write-Output "relay place not looked for: every result file under $att is over 10 MB"; continue }
+      $todo += @{ Attempt = $att; Got = $got; Anchor = $anchor[0]; Blob = $got.Want[$anchor[0]]; Why = $why }
+    }
+    if (-not $todo.Count) { Write-Output 'relay places to look for: none'; break }
+    # One pass over the relay branches in the shared mirror: every path that holds one of the searched blobs.
+    $blobs = @{}; foreach ($t in $todo) { $blobs[$t.Blob] = @() }
+    $refs = @(Run-Git --git-dir $mirror for-each-ref '--format=%(refname:strip=2)' refs/heads/board/ | Where-Object { "$_" -match '\Aboard/pc-out-[A-Za-z0-9._-]+\z' })
+    Write-Output "looking through $($refs.Count) relay branch(es) for $($todo.Count) attempt(s)"
+    foreach ($ref in $refs) {
+      foreach ($l in @(Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r "refs/heads/$ref")) {
+        if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z' -and $blobs.ContainsKey($Matches[1])) { $blobs[$Matches[1]] += , @{ Ref = $ref; Path = $Matches[2] } }
+      }
+    }
+    foreach ($t in $todo) {
+      $att = $t.Attempt; $tail = '/' + $t.Anchor
+      $cands = @(foreach ($h in $blobs[$t.Blob]) {
+        if (-not $h.Path.EndsWith($tail, [StringComparison]::Ordinal)) { continue }
+        $p = $h.Path.Substring(0, $h.Path.Length - $tail.Length)
+        if ("$($h.Ref) $p" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $p.Contains('..')) { continue }
+        @{ Ref = $h.Ref; Path = $p; From = 'the relay search' }
+      })
+      $found = $null; $near = ''
+      foreach ($cand in $cands) {
+        $w = Test-PlaceProof $cand $t.Got
+        if (-not $w) { $found = $cand; break }
+        if (-not $near) { $near = "closest $($cand.Ref) $($cand.Path): $w" }
+      }
+      if (-not $found) {
+        if (-not $near) { $near = "no relay branch holds $($t.Anchor) with its bytes" }
+        Write-Output "relay place not found: $att (own place: $($t.Why); $near)"; continue
+      }
+      $line = "$($found.Ref) $($found.Path)"
+      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_branch.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
+      try {
+        $fs = [IO.File]::Open((Join-Path $att 'relay_branch.txt'), 'CreateNew', 'Write', 'None')
+        try { $bytes = [Text.Encoding]::ASCII.GetBytes("$line`r`n"); $fs.Write($bytes, 0, $bytes.Length) } finally { $fs.Dispose() }
+        Write-Output "relay place written: $(Join-Path $att 'relay_branch.txt') = $line"
+      } catch { Write-Output "relay place not written: $att ($($_.Exception.Message))" }
+    }
   }
   'dropcache' {
     try {
@@ -838,7 +1154,7 @@ switch ($Action) {
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
       if ($head -ne $B) { throw "HEAD is $head, not the published commit $B" }
-      $script:mirrorLock = Lock-Mirror
+      $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
@@ -855,7 +1171,9 @@ switch ($Action) {
       Write-Output ("ship clone removed after the publish ({0:N1} GB): {1}" -f ($gone / 1GB), $repo)
       Write-Free $gone
     } catch { Write-Output "ship clone kept: $($_.Exception.Message)" }
-    finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+    finally {
+      if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
+      if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
   }
   'survey' {
     # Read only. What the job rules would do with every attempt and ship clone already on the PC (for a Board one-off).

@@ -12,7 +12,7 @@
 // against ceilings in checks_baseline.json that can only go down.
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 
 // Issue 357: the rules math targets V8 in Node 22; another major gives a false parity failure.
@@ -174,6 +174,7 @@ function buildChecks() {
   add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
   add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add('tools/ci/big_files.js', ['--self-test'], 'normal', 300, false, true); // #1491 (audit GH-01): self-test row; the warnings print below the table and never fail
   add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
   for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
   add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings', 300, false, true);
@@ -309,6 +310,13 @@ async function main() {
   for (const r of report) console.log(`${r.check} | ${r.result} | ${r.seconds.toFixed(2)} | ${r.detail}`);
   const skipped = report.filter(r => r.result === 'SKIP').map(r => r.check);
   if (skipped.length) console.log('\nSKIP: ' + skipped.join(', '));
+  // Issue 1491 (audit GH-01): big files added outside godot/ and assets/ are a warning, never a failure.
+  if (report.some(r => r.check === 'big_files' && r.result === 'PASS')) {
+    const big = spawnSync(process.execPath, [path.join(ROOT, 'tools/ci/big_files.js')], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
+    const lines = ascii(big.stdout || '').split(/\r?\n/).filter(l => /^(WARN|SKIP) /.test(l));
+    console.log('\nbig files (warning only):' + (lines.length ? '' : ' none over 2 MB outside godot/ and assets/'));
+    for (const l of lines) console.log(l);
+  }
   if (args.includes('--json')) fs.writeFileSync(path.join(ROOT, 'checks_report.json'), JSON.stringify(report, null, 2) + '\n');
   process.exitCode = exitCodeFor(report);
 }
