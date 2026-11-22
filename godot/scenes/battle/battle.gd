@@ -98,8 +98,11 @@ var views := {}            # id -> ShipView
 var wrecked := {}
 # issue 1586: a kill the rules call "big" after a ram, or "dark" after a boarding scuttle, plays its own death look ("ram",
 # "board"); the view picks it from the event that came before, so the rules and battle.js keep their killCause (R312)
-var _view_cause := {}      # id -> ["ram" | "board", when (ms)]; only a death within VIEW_CAUSE_MS of it takes the look
+# Only the deaths of the action that set a mark take its look: any next action clears the marks (Artoo on PR 1666: a ram
+# both ships survived must not turn a later torpedo kill into a ram death), and a mark is ignored after VIEW_CAUSE_MS.
+var _view_cause := {}      # id -> ["ram" | "board", when (ms)]
 const VIEW_CAUSE_MS := 15000
+const VIEW_CAUSE_ACTIONS := ["fire", "move", "ram", "board", "ability", "blink", "activation", "command", "order", "tick", "round", "wing", "pulled", "burning"]
 var board: Node3D
 var cam: Camera3D
 var hud: CanvasLayer
@@ -1423,6 +1426,7 @@ func _voice_event(e: Dictionary) -> void:
 
 func _play_event(e: Dictionary, batch_view := {}) -> void:
 	_voice_event(e)
+	note_view_cause(e)
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
@@ -1579,8 +1583,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
 			await wait(200.0)
 		"ram":
-			_view_cause[str(e["target"])] = ["ram", Time.get_ticks_msec()]
-			_view_cause[str(e["unit"])] = ["ram", Time.get_ticks_msec()]
 			await _play_move(e["unit"], e["path"], true)
 			sfx.boom(0.8, _pos(e["target"]))
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
@@ -1606,8 +1608,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			var res := str(e["result"])
 			var who := _who(e["unit"])
-			if res == "scuttle":
-				_view_cause[str(e["target"])] = ["board", Time.get_ticks_msec()]
 			if res == "capture":
 				_log("Boarding parties from %s take %s. It now fights for %s." % [_name(e["unit"]), _name(e["target"]), "you" if _side(e["unit"]) == "player" else "the enemy"], who)
 				_float(e["target"], "Captured", Color("#ffb23e"), -30)
@@ -2745,6 +2745,18 @@ func _kill_skip() -> void:
 	if gfx != null and gfx.has_method("skip_death_slowmo"):
 		gfx.skip_death_slowmo()
 	_kill_let_go()
+
+
+# issue 1586: a new action ends the last one's marks; a ram marks both ships, a boarding scuttle its target
+func note_view_cause(e: Dictionary) -> void:
+	var kind := str(e.get("t", ""))
+	if kind in VIEW_CAUSE_ACTIONS:
+		_view_cause.clear()
+	if kind == "ram":
+		_view_cause[str(e["target"])] = ["ram", Time.get_ticks_msec()]
+		_view_cause[str(e["unit"])] = ["ram", Time.get_ticks_msec()]
+	elif kind == "board" and str(e.get("result", "")) == "scuttle":
+		_view_cause[str(e["target"])] = ["board", Time.get_ticks_msec()]
 
 
 # issue 1586: the death look for a kill: "ram" for a ram kill the rules call "big", "board" for a scuttle they call "dark"

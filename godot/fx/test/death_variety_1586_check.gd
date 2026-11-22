@@ -100,13 +100,23 @@ func _run() -> void:
 	# 6. the battle's view cause
 	var B = load("res://scenes/battle/battle.gd")
 	var bt = B.new()
-	bt._view_cause["a"] = ["ram", Time.get_ticks_msec()]
-	bt._view_cause["b"] = ["board", Time.get_ticks_msec()]
-	bt._view_cause["c"] = ["ram", Time.get_ticks_msec() - 60000]
-	check(bt.view_cause("big", "a") == "ram", "battle: a ram kill plays the ram death")
-	check(bt.view_cause("big", "a") == "big", "battle: the ram mark is used once")
-	check(bt.view_cause("dark", "b") == "board", "battle: a scuttle plays the boarding death")
-	check(bt.view_cause("big", "c") == "big", "battle: an old ram mark is ignored")
+	# a lethal ram: the ram event, then the target's death
+	bt.note_view_cause({"t": "ram", "unit": "a", "target": "b"})
+	bt.note_view_cause({"t": "float"})
+	check(bt.view_cause("big", "b") == "ram", "battle: a ram kill plays the ram death")
+	check(bt.view_cause("big", "b") == "big", "battle: the ram mark is used once")
+	# Artoo on PR 1666: a ram both ships survive, then a torpedo kills the rammer: a torpedo death, not a ram
+	bt.note_view_cause({"t": "ram", "unit": "c", "target": "d"})
+	bt.note_view_cause({"t": "fire", "unit": "e", "target": "c"})
+	check(bt.view_cause("big", "c") == "big", "battle: a later weapon kill of a ram survivor keeps its own death")
+	check(bt.view_cause("big", "d") == "big", "battle: and so does the rammed ship's")
+	# a boarding scuttle, and a boarding raid that does not scuttle
+	bt.note_view_cause({"t": "board", "unit": "f", "target": "g", "result": "scuttle"})
+	check(bt.view_cause("dark", "g") == "board", "battle: a scuttle plays the boarding death")
+	bt.note_view_cause({"t": "board", "unit": "f", "target": "h", "result": "raid"})
+	check(bt.view_cause("dark", "h") == "dark", "battle: a raid marks nothing")
+	bt._view_cause["i"] = ["ram", Time.get_ticks_msec() - 60000]
+	check(bt.view_cause("big", "i") == "big", "battle: an old ram mark is ignored")
 	check(bt.view_cause("flay", "x") == "flay", "battle: any other kill keeps the rules' cause")
 	bt.free()
 	print("DEATH_VARIETY failures=%d" % failures)
