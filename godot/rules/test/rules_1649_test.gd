@@ -1,5 +1,5 @@
-# Issue 1649 follow-up (Artoo, Nov 22): Fold skip and Blood frenzy end at their stated boundary, and Blood frenzy's regrowth
-# shares the Chorus feed cap with ordinary feeding.
+# Issue 1649 follow-up (Artoo, Nov 22; Board rulings in PR 1770): Fold skip and Blood frenzy end when the ship's next turn
+# starts, and Blood frenzy's regrowth shares the Chorus feed cap with ordinary feeding (no separate frenzy cap).
 #   godot --headless --path godot --script res://rules/test/rules_1649_test.gd
 extends SceneTree
 @warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "unused_variable", "return_value_discarded")
@@ -28,7 +28,7 @@ func _init() -> void:
 	var cases := [
 		["fold: an unspent Fold ends when the ship's next turn starts", c_fold_ends],
 		["fold: a spent Fold makes exactly one attack miss", c_fold_once],
-		["frenzy: the +20% bonus and the heal budget end when the ship's next turn starts", c_frenzy_ends],
+		["frenzy: the +20% bonus ends when the ship's next turn starts", c_frenzy_ends],
 		["frenzy: regrowth and ordinary feeding share the Chorus feed cap in a round", c_shared_cap],
 	]
 	var fails := 0
@@ -58,20 +58,20 @@ func c_frenzy_ends() -> Array:
 	fresh(["b_razor"], "chorus", "razormaw", "hegemony", ["h_picket"])
 	var u = P[0]; var t = E[0]; var w = u["weapons"][0]
 	var m0 = R.dmgMult(u, w, t, false)
-	u["frenzy"] = true; u["frenzyHealed"] = 5
+	u["frenzy"] = true
 	var m1 = R.dmgMult(u, w, t, false)
 	R.startSideTurn("enemy")
 	var kept = R.jt(u.get("frenzy"))
 	B["round"] = B["round"] + 1; R.startSideTurn("player")
 	var m2 = R.dmgMult(u, w, t, false)
-	return [m1 > m0 and kept and not R.jt(u.get("frenzy")) and u.get("frenzyHealed") == null and absf(m2 - m0) < 1e-9, "dmg %s -> %s -> %s, budget %s" % [m0, m1, m2, u.get("frenzyHealed")]]
+	return [m1 > m0 and kept and not R.jt(u.get("frenzy")) and absf(m2 - m0) < 1e-9, "dmg %s -> %s -> %s" % [m0, m1, m2]]
 
 func c_shared_cap() -> Array:
 	fresh(["b_razor"], "chorus", "razormaw", "hegemony", ["h_picket"])
 	var u = P[0]; u["maxHp"] = 1000; u["hp"] = 100; u["frenzy"] = true
 	var cap = R.JSM.jsround(1000 * float(R.TB.FEED_CAP))
 	var fed = R.chorusRegrow(u, 80, "Feeds")              # ordinary feeding first
-	var fr = R.frenzyRegrow(u, 1000)                      # frenzy wants min(20%, 30% of 1000) = 200
+	var fr = R.frenzyRegrow(u, 1000)                      # frenzy wants 30% of 1000 = 300
 	var total = u["hp"] - 100
 	var fr2 = R.frenzyRegrow(u, 1000)
 	return [total == cap and fed == 80 and fr == cap - 80 and fr2 == 0, "cap %s, feed %s, frenzy %s, total %s, again %s" % [cap, fed, fr, total, fr2]]
