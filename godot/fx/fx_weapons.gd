@@ -300,6 +300,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 				fx.later(fire_at, func l_recoil() -> void: A.hit_react(fx, recoil, lp, back, "recoil"))
 			if gun >= 0:
 				A.hull.turret_fire(gun, fire_at, (0.42 if w >= 3 else 0.30) * ka_geo)
+		elif A != null and gun >= 0 and A.hull != null:
+			# R412 recoil (Neon on PR 1699): every turreted gun kicks back; the light guns with a shorter stroke
+			A.hull.turret_fire(gun, fire_at, TURRET_LIGHT_KICK * ka_geo, false)
 		if gun >= 0:
 			tur_last[gun] = maxf(float(tur_last.get(gun, -INF)), fire_at)
 		froms.append({"p": from, "tur": int(m.get("tur", -1))})
@@ -2004,12 +2007,15 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
 		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		var ion := lk == "ion"
-		var brownout := crit or ion or (beam and lk != "needle") or (hull_damage and (w >= 3 or lk == "gauss"))
+		# R412 rule 4 (Neon on PR 1699): a shield block is quiet: no brownout and no engine stutter for an absorbed lance,
+		# ion or crit; only real hull damage, a shield break, a crit or an ion hit that reaches the hull
+		var felt: bool = not absorbed or breaking
+		var brownout := felt and (crit or ion or (beam and lk != "needle") or (hull_damage and (w >= 3 or lk == "gauss")))
 		var dip := (0.70 if crit else (0.62 if ion or w >= 3 else 0.48)) if brownout else 0.0
 		var duration := 0.38 + (dip - 0.40) * 0.85
 		fx.later(T, func l_hit_react() -> void:
 			Tg.hit_react(fx, imp, lhp, ldr, "shield" if absorbed and not breaking else "hull")
-			Tg.hit_power(fx, hull_damage or breaking or crit or ion, dip, duration))
+			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
 		if bio and not shield_only:
 			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
 			fx.later(T, func l_acid_spot() -> void:
@@ -2501,6 +2507,9 @@ static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2
 	fx.shake(T,0.15,p); fx.hit_pause(T,2); fx.punch(T,0.006,p)
 
 
+const TURRET_LIGHT_KICK := 0.14   # a turreted gun outside SHOOTER_RECOIL: its barrel stroke (heavy guns 0.30 to 0.42)
+
+
 static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_at: float, T: float, col: Color, dir: Vector3, k: float) -> float:
 	var exit: Vector3 = tg["p"]
 	if family_of(lk) == "lance" or lk == "tendril":
@@ -2521,8 +2530,11 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)
-	fx.stk(exit, T, life, col.lerp(Color.WHITE, 0.25), 5.0, 4.0 * k / maxf(speed, 1.0),
-		0.32 * k, 6, dir * speed, 0.0, 0.0, 3.0, 19.0)
+	# a world-length streak (Neon on PR 1699: the length was divided by the speed, so every miss drew the same pixel-floor
+	# stub) in the firing weapon's own streak kind (4 for the laser family, 0 for shells and bolts)
+	var skind := 4 if lk in ["las", "plasma_cannon", "prism"] else 0
+	fx.stk(exit, T, life, col.lerp(Color.WHITE, 0.25), 5.0, 4.0 * k,
+		0.32 * k, skind, dir * speed, 0.0, 0.0, 3.0, 19.0)
 	return T + life
 
 

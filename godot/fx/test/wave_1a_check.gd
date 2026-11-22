@@ -141,15 +141,26 @@ func _power() -> void:
 	_impact(hull, "torp", 3, 0, 20)
 	_check(is_equal_approx(shield._kick_p.length(), hull._kick_p.length() * 0.12), "the shield absorbs 88% of torpedo impulse")
 	_check(hull._stutter_until > fx.now and hull._power_dip >= 0.40, "torpedo hull damage stutters the engine and dims deck lights")
+	# R412 rule 4 (Neon on PR 1699): a shield block is quiet: an absorbed ion, lance or crit neither stutters the engine
+	# nor browns out the hull; the same shots on the hull do
 	_impact(ion, "ion", 2, 3, 0)
-	_check(ion._stutter_until > fx.now and ion._power_dip >= 0.40, "ion induces stutter and brownout through shields")
+	_check(ion._stutter_until < fx.now and ion._power_dip == 0.0, "a shield-absorbed ion is quiet: no stutter, no brownout")
 	_impact(lance, "lance", 3, 3, 0)
-	_check(lance._stutter_until < fx.now and lance._power_dip >= 0.40, "a shielded lance dims the lights without engine stutter")
+	_check(lance._stutter_until < fx.now and lance._power_dip == 0.0, "a shield-absorbed lance is quiet")
+	var crit_s := _ship("crit_shield", "hegemony", Vector3.ZERO, true)
+	_impact(crit_s, "macro", 3, 3, 0, true)
+	_check(crit_s._stutter_until < fx.now and crit_s._power_dip == 0.0, "a shield-absorbed crit is quiet")
+	var ion_h := _ship("ion_hull", "hegemony", Vector3.ZERO, true)
+	_impact(ion_h, "ion", 2, 0, 3)
+	var lance_h := _ship("lance_hull", "hegemony", Vector3.ZERO, true)
+	_impact(lance_h, "lance", 3, 0, 3)
+	_check(ion_h._stutter_until > fx.now and ion_h._power_dip >= 0.40, "an ion that reaches the hull stutters and browns out")
+	_check(lance_h._stutter_until > fx.now and lance_h._power_dip >= 0.40, "a lance on the hull browns out")
 	shield.shield_break(fx, 1)
 	_check(shield._stutter_until > fx.now, "a shield break also stutters the engine")
 	var bright := _ship("paint", "voidsworn", Vector3.ZERO, true)
 	var original: BaseMaterial3D = bright.meshes[0].get_active_material(0)
-	_impact(bright, "ion", 2, 3, 0)
+	_impact(bright, "ion", 2, 0, 3)
 	var dim: BaseMaterial3D = bright.meshes[0].get_active_material(0)
 	_check(dim.emission_energy_multiplier < original.emission_energy_multiplier * 0.6, "ion dims emissive paint before hull damage exists")
 	var damage := hull.damage_surface(fx, hull.meshes[0], 0, shell_before)
@@ -209,8 +220,41 @@ func _recoil() -> void:
 	_check(shooter.hull_pivot.position.x < 0.0 and shooter.root.position.is_zero_approx()
 		and not shooter.has_meta("last_hit") and shooter._stutter_until < fx.now, "shooter kicks opposite the shot on its hull pivot")
 	_check(barrel.position.z > 0.05 and muzzle.position.z > -1.95 and turret.position.y == 5.0, "barrel and muzzle retract along the barrel axis")
+	var barrel_peak := barrel.position.z
 	_advance(0.19)
 	_check(barrel.position.is_zero_approx() and is_equal_approx(muzzle.position.z, -2.0), "barrel and muzzle return to battery")
+	# Neon on PR 1699: a light turreted gun (autocannon, not in SHOOTER_RECOIL) kicks too, with a shorter stroke, and a
+	# turret whose barrel mesh has its own name still moves (the mesh fallback)
+	var light_s := _ship("light_shooter", "hegemony", Vector3(0, 0, -60))
+	var lt := Node3D.new()
+	lt.name = "turret_0"
+	lt.position.y = 5.0
+	light_s.root.get_node("hull_pivot").add_child(lt)
+	var gun_mesh := MeshInstance3D.new()
+	gun_mesh.name = "gun_barrels"
+	gun_mesh.mesh = BoxMesh.new()
+	lt.add_child(gun_mesh)
+	var lm := Node3D.new()
+	lm.name = "hp_w0_autocannon_F_0"
+	lm.position.z = -2.0
+	lt.add_child(lm)
+	light_s.hull.analyse(light_s.root, light_s.meshes, 71)
+	var lr := fx.volley(light_s.id, "battery", target.id, {"weapon_id": "autocannon", "slot": 0, "shots": [true]})
+	_check(not lr.fires.is_empty() and int(lr.muzzles[0].tur) == 0, "the autocannon fires from its turret")
+	if lr.fires.is_empty():
+		return
+	_advance(float(lr.fires[0]) + 0.045)
+	var kick := gun_mesh.position.z
+	_check(kick > 0.02 and kick < barrel_peak, "the light gun's own-named barrel mesh kicks back, shorter (%.3f, heavy %.3f)" % [kick, barrel_peak])
+	_check(is_equal_approx(lm.position.z, -2.0), "the light kick leaves its muzzle socket still, so the next shot leaves the turned muzzle (%.3f)" % lm.position.z)
+	_advance(0.25)
+	_check(gun_mesh.position.is_zero_approx(), "and returns to battery")
+
+
+func _last_stk() -> PackedFloat32Array:
+	var pool = fx.pools["stk"]
+	var pend: PackedFloat32Array = pool.pending
+	return pend.slice(pend.size() - 20) if pend.size() >= 20 else PackedFloat32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1])
 
 
 func _miss() -> void:
@@ -229,6 +273,12 @@ func _miss() -> void:
 	var n := cues.size()
 	var end := WEAP._miss_fade(fx, "macro", s, {"p": exit, "pass": point}, from, fx.now, fx.now + 0.50, Color.WHITE, Vector3.BACK, 1.0)
 	_check(fx.pools["stk"].emitted == streaks + 1 and end > fx.now + 0.50, "miss adds a cooling streak beyond the exit")
+	# Neon on PR 1699: a world-length streak (4 units at scale 1, not divided by the speed) in the weapon's own kind
+	var row := _last_stk()
+	_check(absf(row[16] - 4.0) < 1e-3 and int(row[19]) == 0, "a shell miss streaks %.2f units long, kind %d (4, 0)" % [row[16], int(row[19])])
+	WEAP._miss_fade(fx, "las", s, {"p": exit}, from, fx.now, fx.now + 0.50, Color.WHITE, Vector3.BACK, 1.0)
+	row = _last_stk()
+	_check(int(row[19]) == 4, "a laser miss streaks in the laser kind (%d)" % int(row[19]))
 	fx.now += 0.30
 	fx._run_later()
 	_check(cues.size() == n and fx.pools["spr"].emitted == sprites, "pass-by cue and graze wait for the projectile")

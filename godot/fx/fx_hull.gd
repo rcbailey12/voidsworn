@@ -1649,7 +1649,9 @@ func _seg_at(k: int, t: float) -> Dictionary:
 
 
 # Move the authored barrel assembly and its muzzle sockets under the fixed turning ring.
-func turret_fire(k: int, t: float, travel: float) -> void:
+# sockets false (the light kick of a gun without its own recoil) leaves the muzzle sockets still, so the next shot still
+# leaves from the turned muzzle; the heavy kick moves them with the barrels.
+func turret_fire(k: int, t: float, travel: float, sockets := true) -> void:
 	var tt: Dictionary = turrets[k]
 	if not tt.has("kick_parts"):
 		var muzzle := _first_muzzle(k)
@@ -1662,28 +1664,49 @@ func turret_fire(k: int, t: float, travel: float) -> void:
 		for child in n.get_children():
 			if child is Node3D and (child.name == String(n.name) + "_turn" or String(child.name).begins_with("hp_w")):
 				parts.append([child, child.position])
+		if not parts.any(func(pt: Array) -> bool: return not String((pt[0] as Node).name).begins_with("hp_w")):
+			# Neon on PR 1699: a turret whose barrel mesh has another name (no "<turret>_turn" child) still kicks: its
+			# visible mesh children with its muzzle sockets, or the turret node itself when it is the mesh (from its rest
+			# position, so the per-frame yaw pose is untouched)
+			var meshes_n := 0
+			for child in n.get_children():
+				if child is MeshInstance3D and (child as MeshInstance3D).visible:
+					parts.append([child, child.position])
+					meshes_n += 1
+			if meshes_n == 0 and n is MeshInstance3D:
+				parts = [[n, (tt["rest"] as Transform3D).origin, true]]   # its sockets ride along as its children
 		tt["kick_parts"] = parts
-	(tt["kicks"] as Array).append(Vector2(t, travel))
+	(tt["kicks"] as Array).append(Vector3(t, travel, 1.0 if sockets else 0.0))
 
 
 func _turret_kick(tt: Dictionary, t: float) -> void:
 	var kicks: Array = tt["kicks"]
 	var travel := 0.0
+	var sock_travel := 0.0
 	for i in range(kicks.size() - 1, -1, -1):
-		var pulse: Vector2 = kicks[i]
+		var pulse: Vector3 = kicks[i]
 		var age := t - pulse.x
 		if age >= BARREL_KICK_T:
 			kicks.remove_at(i)
 		elif age >= 0.0:
 			var stroke := smoothstep(0.0, 0.035, age) * (1.0 - smoothstep(0.035, BARREL_KICK_T, age))
 			travel = maxf(travel, pulse.y * stroke)
+			if pulse.z > 0.0:
+				sock_travel = maxf(sock_travel, pulse.y * stroke)
 	if travel == 0.0 and not bool(tt.get("kicking", false)):
 		return
 	tt["kicking"] = travel > 0.0
 	var offset: Vector3 = (tt["kick_axis"] as Vector3) * travel
+	var sock_offset: Vector3 = (tt["kick_axis"] as Vector3) * sock_travel
 	for part: Array in tt["kick_parts"]:
 		if is_instance_valid(part[0]):
-			(part[0] as Node3D).position = (part[1] as Vector3) + offset
+			var nd := part[0] as Node3D
+			if String(nd.name).begins_with("hp_w"):
+				nd.position = (part[1] as Vector3) + sock_offset
+			elif part.size() > 2:   # the turret node itself: its stroke along its own (turned) axis, from its rest point
+				nd.position = (part[1] as Vector3) + nd.basis * offset
+			else:
+				nd.position = (part[1] as Vector3) + offset
 
 
 # Every frame (fx_ship.update): put each turret's node at its pose for the effect clock and drop finished segments.
