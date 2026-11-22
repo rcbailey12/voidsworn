@@ -37,11 +37,13 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   22 GB each) go only when its `done.txt` says PASS and a relay branch on origin holds every file of its `out_*` folders
   at `<tree folder>/out_<name>/<path>` with the same bytes. The head proves the relay itself (issue 1535, Nov 22): no
   session writes a receipt by hand. Where to look is, in order, an older `relay_receipt.txt` (`<board/pc-out branch> <tree
-  folder>`), the attempt's `relay_branch.txt` that init writes before any result exists (`board/pc-out-<job> <attempt
-  folder name>`, also printed in status.txt), or else `board/pc-out-<job>` with the attempt folder name; `git ls-remote`
+  folder>`), the attempt's `relay_branch.txt` that init writes before any result exists (`relay/pc-out-<job> <attempt
+  folder name>` since issue 1657: branch `pc-out-<job>` of the private relay repo `rcbailey12/voidsworn-relay`, held in
+  its own `relay-mirror.git`; older attempts name `board/pc-out-<job>` on the main repo, also printed in status.txt), or
+  else by the job name, the relay repo's `pc-out-<job>` when its mirror has it, else `board/pc-out-<job>`; `git ls-remote`
   must show origin holding that branch at the commit checked in the shared mirror (the mirror is fetched once when it
-  does not). The Board relays an attempt in that layout (the attempt folder itself at the tree's root, on
-  `board/pc-out-<job>`, adding to the branch for later attempts) and then runs `dropcheckouts <attempt>`; a later tail of
+  does not). The Board relays an attempt in that layout with `tools\pc\relay_push.bat <job> <attempt folder>` (the attempt
+  folder at the tree's root on the relay repo's `pc-out-<job>`, adding to the branch for later attempts; RULEBOOK 3.3a) and then runs `dropcheckouts <attempt>`; a later tail of
   the same job repeats the check. The janitor (hourly and after jobs) runs the same proof over every PASS attempt that still lists
   checkouts (`opus_job_head.ps1 dropjobs <job>`, `dry` on a janitor dry run), so no hand step is needed after a relay. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its

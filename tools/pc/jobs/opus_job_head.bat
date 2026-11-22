@@ -79,8 +79,9 @@ rem Issue 1535: where the Board relays this attempt, written by the head before 
 rem receipt by hand. dropcheckouts proves the relay itself: origin's branch must hold every out_* file's exact bytes at
 rem <attempt folder name>/ (git ls-remote, then the tree).
 for %%L in ("%OJ_OUT%") do set "OJ_LEAF=%%~nxL"
-> "%OJ_OUT%\relay_branch.txt" echo board/pc-out-%OJ_JOB% %OJ_LEAF%
->> "%OJ_ST%" echo relay to: board/pc-out-%OJ_JOB% with this attempt folder at %OJ_LEAF%/ in its tree, then dropcheckouts "%OJ_OUT%"
+rem Issue 1657: results go to the private relay repo (voidsworn-relay, branch pc-out-<job>) by tools\pc\relay_push.bat.
+> "%OJ_OUT%\relay_branch.txt" echo relay/pc-out-%OJ_JOB% %OJ_LEAF%
+>> "%OJ_ST%" echo relay to: tools\pc\relay_push.bat %OJ_JOB% "%OJ_OUT%" (voidsworn-relay branch pc-out-%OJ_JOB%, folder %OJ_LEAF%/), then dropcheckouts "%OJ_OUT%"
 >> "%OJ_ST%" echo head %~f0
 if "%OJ_PRE%"=="1" >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE% >> "%OJ_ST%" 2>&1
