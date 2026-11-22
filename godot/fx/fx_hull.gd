@@ -1,4 +1,5 @@
 extends RefCounted
+const SHD := preload("res://fx/fx_shaders.gd")
 # Where effects sit on a hull, found from the hull's own triangles (in the ship root's frame: bow +X, up +Y, port +Z).
 #
 # The triangles go into a TriangleMesh (Godot's native BVH), so a ray against the real hull costs microseconds:
@@ -124,7 +125,12 @@ uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
 uniform float fx_scorch_heat = 0.0;
 uniform vec3 fx_scorch_col = vec3(1.0, 0.30, 0.05);   // R367: the scorch heat in the faction's death colour
+uniform int fx_v2 = -1;   // R416 Wounds V2: the faction's wound kind (0 Sunward .. 5 Eclipse); -1 off
+uniform float fx_v2_soot = 1.0;
+uniform vec3 fx_v2_lift = vec3(0.3);
+uniform vec3 fx_v2_accent = vec3(1.0, 0.5, 0.15);
 varying vec3 fx_hull_p;
+varying vec3 fx_hull_n;
 float fx_scorch_at(vec3 p) {
 	float s = 0.0;
 	for (int i = 0; i < 8; i++) {
@@ -143,6 +149,13 @@ float fx_mouth_edge(int i, vec3 p) {
 	float x = dot(d, fx_tangents[i].xyz);
 	float y = dot(d, cross(n, fx_tangents[i].xyz));
 	vec4 s = fx_shapes[i];
+	if (s.x > 3.5) {
+		// R416: a straight-edged glass pane (fx_tears.w sides, turned by fx_tears.x), as fx_breach Ent.edge
+		float seg = 6.2831853 / max(fx_tears[i].w, 3.0);
+		float a = length(vec2(x, y)) > 0.00001 ? atan(y, x) : 0.0;
+		float a2 = mod(a - fx_tears[i].x, seg) - seg * 0.5;
+		return length(vec2(x, y)) * cos(a2) - R * cos(seg * 0.5);
+	}
 	if (s.x > 2.5) {
 		float a = length(vec2(x, y)) > 0.00001 ? atan(y, x) : 0.0;
 		return length(vec2(x, y)) - R * (1.0 + 0.2 * sin(a * 5.0 + s.w));
@@ -291,6 +304,19 @@ static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
 	mat.set_shader_parameter("fx_scorch_heat", 0.0)
 
 
+# R416 (issue 1741): the faction's Wounds V2 profile on a hull damage surface; an empty profile turns it off.
+static func set_v2(mat: ShaderMaterial, wv: Dictionary) -> void:
+	if wv.is_empty():
+		mat.set_shader_parameter("fx_v2", -1)
+		return
+	mat.set_shader_parameter("fx_v2", int(wv.get("kind", 0)))
+	mat.set_shader_parameter("fx_v2_soot", float(wv.get("soot_weight", 1.0)))
+	for k in [["interior_lift", "fx_v2_lift"], ["interior_accent", "fx_v2_accent"]]:
+		var v = wv.get(k[0])
+		if v is Array and (v as Array).size() >= 3:
+			mat.set_shader_parameter(k[1], Vector3(float(v[0]), float(v[1]), float(v[2])))
+
+
 static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
 	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
@@ -328,23 +354,29 @@ static func _damage_code(source: String, disable_fog := false) -> String:
 	if not code.contains("cull_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
 	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS)
-	code = _inject(code, "vertex", "", "\nfx_hull_p = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;\n")
+	code = _inject(code, "vertex", "", "\nfx_hull_p = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;\nfx_hull_n = mat3(fx_hull_frame) * NORMAL;\n")
 	code = _inject(code, "fragment", """
 float fx_soot = 0.0;
+float fx_near = 0.0;   // R416: how close this pixel is to an open mouth (the V2 back-face look stays at the wounds)
 // cull_disabled flips back-facing normals in the renderer, including mirrored exteriors.
 if (determinant(mat3(MODEL_MATRIX)) < 0.0) { NORMAL = -NORMAL; }
 for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
 	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
 	float R = max(fx_mouths[i].w, 0.0001);
+	fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, length(fx_hull_p - fx_mouths[i].xyz)));
 	if (h < -fx_axes[i].w || h > R * 0.8) { continue; }
+	// R416 4.2: only plating facing along the cut (or straight against it: the inner liner) is cut, never a wall at
+	// right angles or a face standing above the hole
+	if (fx_v2 >= 0 && (h > R * 0.45 || abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25)) { continue; }
 	float edge = fx_mouth_edge(i, fx_hull_p);
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
 """, """
-ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
+ALBEDO *= (1.0 - fx_soot * 0.94 * (fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0)) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
+if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * pow(fx_soot, 3.0) * 0.18; }   // R416: a lit glass or violet seam edge, no soot
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
@@ -369,6 +401,15 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
 	}
 	EMISSION = max(EMISSION, structure);
+	if (fx_v2 >= 0 && fx_near > 0.0) {
+		// R416: the back of the plating seen through a cut is the faction's own lit matter, never a flat black (only
+		// round the wounds: a single-sided fin or sail seen from behind keeps its old look)
+		ALBEDO = mix(ALBEDO, fx_v2_lift * (0.45 + 0.55 * max(rib, beam)), fx_near);
+		ROUGHNESS = mix(ROUGHNESS, fx_v2 == 4 ? 0.1 : (fx_v2 == 3 ? 0.25 : 0.6), fx_near);
+		METALLIC = (fx_v2 <= 2 || fx_v2 == 5) ? 0.4 * fx_near : 0.0;
+		SPECULAR = 0.4 * fx_near;
+		EMISSION = mix(EMISSION, fx_v2_lift * 0.03 + fx_v2_accent * (fx_v2 == 4 ? 0.05 : 0.01), fx_near);
+	}
 }
 """)
 	if disable_fog and not code.contains("fog_disabled"):
@@ -428,6 +469,48 @@ static func _inject(code: String, method: String, start: String, finish: String)
 static func interior_material(mat: Material) -> bool:
 	if mat != null and mat.has_meta("fx_hull_source"): mat = mat.get_meta("fx_hull_source")
 	return mat != null and bool(mat.get_meta("fx_authored_interior", false))
+
+
+# R416 5.3 (issue 1741, Wounds V2): the shared interior shader (fx_shaders INTERIOR) for one authored inside surface,
+# with the source's own colour and glow kept underneath. It keeps the source as fx_hull_source, so interior_material()
+# still knows it for an inside surface. wreck 1: a dead hull's piece (every surface open, settled into the wreck look).
+static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dictionary, wv: Dictionary, L: float, wreck := 0.0) -> ShaderMaterial:
+	if src != null and src.has_meta("fx_hull_source"):
+		src = src.get_meta("fx_hull_source")
+	var m := ShaderMaterial.new()
+	m.shader = shared_shader(SHD.INTERIOR, "interior v2")
+	if src is BaseMaterial3D:
+		var b := src as BaseMaterial3D
+		m.set_shader_parameter("base_albedo", b.albedo_color)
+		if b.albedo_texture != null:
+			m.set_shader_parameter("base_tex", b.albedo_texture)
+		if b.emission_enabled:
+			m.set_shader_parameter("base_emission", b.emission)
+			m.set_shader_parameter("base_emission_energy", b.emission_energy_multiplier)
+	m.set_shader_parameter("tri_scale", 1.0 / maxf(L * 0.012, 1e-3))
+	m.set_shader_parameter("wound_v2", int(wv.get("kind", 0)))
+	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
+		var v = wv.get(key)
+		if v is Array and (v as Array).size() >= 3:
+			m.set_shader_parameter("v2_" + key, Vector3(float(v[0]), float(v[1]), float(v[2])))
+	m.set_shader_parameter("v2_rough", float(wv.get("interior_rough", 0.6)))
+	m.set_shader_parameter("v2_soot", float(wv.get("soot_weight", 1.0)))
+	m.set_shader_parameter("v2_wreck_soot", float(wv.get("wreck_soot", 0.3)))
+	m.set_shader_parameter("fx_wreck", wreck)
+	if wreck > 0.0:
+		mouths = {"count": -1}
+	set_interior_pose(m, frame, mouths)
+	if src != null:
+		m.set_meta("fx_hull_source", src)
+	return m
+
+
+static func set_interior_pose(m: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
+	m.set_shader_parameter("fx_hull_frame", frame)
+	m.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
+	for key in ["mouths", "axes"]:
+		if mouths.has(key):
+			m.set_shader_parameter("fx_" + key, mouths[key])
 
 
 func _authored(root: Node3D) -> void:

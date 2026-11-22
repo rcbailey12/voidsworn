@@ -1416,7 +1416,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
+	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null, "faction": s.faction, "L": s.hull.L,
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
@@ -1522,7 +1522,8 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 		if bool(sd.get("interior", false)):
 			# issue 1077 (prototype): the grouped wreck keeps its torn insides in view up close, and the live inside paint read
 			# as flat grey slabs there (pass 3, c26), so a strained wreck's insides are powered down and sooted
-			am.surface_set_material(si, fx.wreck_interior(sd["mat"]) if fx != null and fx.death_story else sd["mat"])
+			# R416 5.3 (Wounds V2): the faction's own interior shader carries on into the wreck (fx.wreck_interior)
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"], String(pc.get("faction", "")), float(pc.get("L", 1.0))) if fx != null and fx.death_story else sd["mat"])
 			si += 1
 			continue
 		var length := float(pc.get("section_scale", 1.0))
@@ -1805,7 +1806,8 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
-			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false),
+			"faction": job.get("faction", ""), "L": job.get("L", 1.0)})
 	return pieces
 
 
