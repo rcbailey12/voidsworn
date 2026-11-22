@@ -303,6 +303,12 @@ said a macro hit); Chorus acid is a torpedo row with the melt
 look (built in issue 461 as its own wet splash with bile drops and an acid fume that hangs, at the bio size; the
 Glasswright prism shard gun is the energy row with a rainbow glint).
 
+Boarding (issue 1547, look B; fx.gd `board` and its `BOARD` table): the breach goes on the target's side facing the attacker (from dead
+ahead or astern, the side the camera sees), with a hatch mark four times the first build's width, a pop ring and burst with pixel
+floors that hold at camera 170, a vent, an amber inside light, and three amber boarding lines in the shared line style (role
+`board`) from the attacker's hatch, fanned along the target's flank, held for the battle's 1.6 s boarding pause (paced with
+battle speed) so the player sees it before the next event. godot/fx/test/close_action_fx_check.gd. Set: Ryan, Nov 22 (R401).
+
 ## What Ryan will be shown
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.

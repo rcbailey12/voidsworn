@@ -18,7 +18,7 @@
       "merged": "PR 1245, 2533b90e", "proof": "PC run FIRSTHIT PASS; sheets in project files board/1235/sheets"},
     {"ruling": "issue 1466", "what": "ships push settled wreck plates instead of passing through them", "check": "fx/test/wreck_contact_check.gd",
       "merged": "PR 1476, 8383de7b", "proof": "wreck_contact_check (headless) and wreck_crossing_shot (gpu sheet)"},
-    {"ruling": "issue 1547 (Ryan, Nov 22 2026: look B)", "what": "boarding breach look B: wider hatch, pop ring, amber light, amber boarding lines, 1.6 s hold before the next event", "check": "fx/test/close_action_fx_check.gd"}
+    {"ruling": "R401", "what": "boarding breach look B: wider hatch, pop ring, amber light, amber boarding lines, 1.6 s hold before the next event", "check": "fx/test/close_action_fx_check.gd"}
   ],
   "unwired": [],
   "waiting": [
