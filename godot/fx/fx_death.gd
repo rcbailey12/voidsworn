@@ -872,7 +872,7 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 	var n = [1, 2, 3, 4, 5][clampi(s.weight, 0, 4)]
 	if cause == "rupture":
 		n = maxi(4, s.weight + 2)
-	if cause == "big" or cause == "flay":
+	if cause == "big" or cause == "ram" or cause == "flay":   # a ram kill is the rules' "big" (Fable audit of PR 1666)
 		n = mini(n + 1, 7)
 	if cause == "melt" or cause == "dark":
 		n = maxi(2, n - 1)
@@ -2511,6 +2511,9 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
 		mat.shader = template.shader
+		# Fable audit Nov 22, finding 1: the live surface may hold a hit brownout or the wound flicker (fx_flick); the death
+		# copy starts at full light so the power-down beat, not a frozen dip, darkens the hull
+		mat.set_shader_parameter("fx_flick", 1.0)
 	else:
 		mat = template.duplicate()
 		HULL.set_damage_pose(mat, pose, {})
@@ -3053,7 +3056,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 		var L: float = s.hull.L
 		for j in (22 if capital else 16):
 			var d: Vector3
-			if cause == "big":
+			if cause == "big" or cause == "ram":   # shrapnel in a cone away from the impact (deaths_and_hits.md)
 				d = fx.rcone(away, 0.55)
 			else:
 				d = fx.rdir()
