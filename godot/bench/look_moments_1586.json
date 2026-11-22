@@ -1,0 +1,753 @@
+{
+ "about": "Issue 1586: death variety. Each faction's big-hull signature beat (Sunward embers, Navy one-frame blackout, Hullbreaker tether snap and cook-offs, Glasswright fracture web and light shafts, Eclipse inward snap, Chorus twitches) with the afterlife pops, four kill causes (gauss flay, ram, boarding scuttle, burnout), and the four small-hull archetypes, at camera 170 and 26. Run with --moments res://bench/look_moments_1586.json on main plus this bench harness (before; it ignores arch and the new causes play as today's) and opus/issue-1586 (after).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "dv_void_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Sunward cruiser death: its signature beat and the afterlife",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_itha_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Glasswright cruiser death: its signature beat and the afterlife",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_chor_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Chorus cruiser death: its signature beat and the afterlife",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_hege_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Navy cruiser death: its signature beat and the afterlife",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_cors_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Hullbreaker cruiser death: its signature beat and the afterlife",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_deat_beat",
+   "group": "issue 1586 faction beats",
+   "label": "Eclipse cruiser death: its signature beat and the afterlife",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_cause_flay",
+   "group": "issue 1586 kill causes",
+   "label": "Eclipse cruiser killed by flay",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "flay",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ],
+   "pre": [
+    [
+     "gauss",
+     "gauss",
+     "mid"
+    ]
+   ]
+  },
+  {
+   "id": "dv_cause_ram",
+   "group": "issue 1586 kill causes",
+   "label": "Navy cruiser killed by ram",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "ram",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     -0.6,
+     1
+    ],
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.15,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     7.0,
+     1
+    ]
+   ],
+   "pre": [
+    [
+     "torp",
+     "ram",
+     "prow"
+    ]
+   ]
+  },
+  {
+   "id": "dv_cause_board",
+   "group": "issue 1586 kill causes",
+   "label": "Hullbreaker cruiser killed by board",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "board",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     1.0,
+     1
+    ],
+    [
+     "event",
+     1.6,
+     1
+    ],
+    [
+     "event",
+     2.4,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_cause_dark",
+   "group": "issue 1586 kill causes",
+   "label": "Sunward cruiser killed by dark",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "dark",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     1.0,
+     1
+    ],
+    [
+     "event",
+     1.6,
+     1
+    ],
+    [
+     "event",
+     2.4,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_small_torch",
+   "group": "issue 1586 small hulls",
+   "label": "Sunward destroyer: the torch death",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "arch": 0,
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.3,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.7,
+     1
+    ],
+    [
+     "split",
+     0.1,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_small_snap",
+   "group": "issue 1586 small hulls",
+   "label": "Navy destroyer: the snap death",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "arch": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.3,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.7,
+     1
+    ],
+    [
+     "split",
+     0.1,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_small_roll",
+   "group": "issue 1586 small hulls",
+   "label": "Hullbreaker destroyer: the roll death",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Destroyer"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "arch": 2,
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.3,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.7,
+     1
+    ],
+    [
+     "split",
+     0.1,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "dv_small_pop",
+   "group": "issue 1586 small hulls",
+   "label": "Glasswright destroyer: the pop death",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Destroyer"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "arch": 3,
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.3,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.7,
+     1
+    ],
+    [
+     "split",
+     0.1,
+     1
+    ],
+    [
+     "split",
+     0.5,
+     1
+    ]
+   ]
+  }
+ ]
+}

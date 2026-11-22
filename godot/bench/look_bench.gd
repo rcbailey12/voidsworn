@@ -656,6 +656,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		t_ev = fx.now
 		fx.shield_break("T", 3)
 	elif what == "death":
+		# issue 1586: a row may pick the small-hull archetype ("arch": 0 torch, 1 snap, 2 roll, 3 pop); a commit without
+		# the archetypes ignores it
+		if row.has("arch") and fx.ship("T") != null:
+			fx.ship("T").set_meta("death_arch_force", int(row["arch"]))
 		fx.death("T", str(row.get("cause", "blast")))
 		if death_audio != null:
 			death_audio.watch("T", T.global_position)
