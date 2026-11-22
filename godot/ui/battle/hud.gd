@@ -974,8 +974,13 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	c.visible = on
 	if not on:
 		return
-	var nm := c.get_node("st/v/nm") as Label
-	var tags := c.get_node("tags") as HBoxContainer
+	# issue 1437 (item 9): the plate's three parts are looked up once, not by path for every ship every frame
+	var refs: Array = c.get_meta("parts") if c.has_meta("parts") else []
+	if refs.is_empty():
+		refs = [c.get_node("st/v/nm"), c.get_node("tags"), c.get_node("st/v/bars")]
+		c.set_meta("parts", refs)
+	var nm := refs[0] as Label
+	var tags := refs[1] as HBoxContainer
 	var locked := bool(extra.get("regenLock", false))
 	# issue 221: the plate is laid out again only when its words change or its size no longer fits them
 	var relayout := nm.text != name_txt
@@ -991,7 +996,7 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	if not nm.has_theme_color_override("font_color") or nm.get_theme_color("font_color") != col:
 		nm.add_theme_color_override("font_color", col)
 	c.set_meta("keep", up or target or locked)
-	var bars_c := c.get_node("st/v/bars") as Control
+	var bars_c := refs[2] as Control
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	var g := float(extra.get("ghost", -1.0))
 	bars_c.set_meta("v", [f, clampf(sh / maxf(shmx, 1.0), 0.0, 1.0), shmx > 0.0, clampf(g / maxf(mx, 1.0), 0.0, 1.0) if g >= 0.0 else -1.0, -1.0])
