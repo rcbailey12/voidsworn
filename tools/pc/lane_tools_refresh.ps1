@@ -66,7 +66,22 @@ function Assert-IdleLane {
     } catch {
       throw "refused: cannot verify runner status at $file"
     }
-    if ($state.status -eq 'running') { throw "refused: job still running at $file" }
+    if ($state.status -eq 'running') {
+      # A record that still says running but was last written over a day ago, with no live process naming its issue
+      # number, is a run that died without closing its record (board_c issue-1194 and board_d issue-1180, Nov 19).
+      # It is skipped and left as it is. Unknown process list or any doubt still refuses.
+      $age = [DateTime]::UtcNow - (Get-Item -LiteralPath $file).LastWriteTimeUtc
+      $issueNo = [regex]::Match($file, 'issue-(\d+)').Groups[1].Value
+      if ($age.TotalHours -ge 24 -and $issueNo) {
+        $commands = Get-RunningCommandLines
+        if ($null -ne $commands -and
+            -not @($commands | Where-Object { $_ -and $_ -match "(?<!\d)$issueNo(?!\d)" }).Count) {
+          Write-Step "skipped stale record (running, last written $([int]$age.TotalHours) h ago, no live process): $file"
+          continue
+        }
+      }
+      throw "refused: job still running at $file"
+    }
   }
 }
 
