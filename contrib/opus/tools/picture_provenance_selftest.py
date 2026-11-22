@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from unittest.mock import patch
 # Issue 1739: a headless Godot opening a fresh temp project imports it first; on the PC beside other lanes that took over
 # 30 s, so every real Godot call here may take up to 2 minutes. A call that still runs then is stuck: its output so far
@@ -199,9 +200,16 @@ func _ready() -> void:
     image.fill(Color(0.1, 0.2, 0.3, 0.0))
     image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
     var stamp := preload("res://tools/picture_provenance.gd")
-    if stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof") != OK:
+    # Artoo on PR 1757: a failed save ends Godot at once with its error, never an idle wait for the timeout
+    var err := stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof")
+    if err != OK:
+        printerr("native fixture: save_png failed, error ", err)
+        get_tree().quit(1)
         return
-    if stamp.save_jpg(image, out.path_join("NATIVE_889.jpg"), 0.9, "paint proof") != OK:
+    err = stamp.save_jpg(image, out.path_join("NATIVE_889.jpg"), 0.9, "paint proof")
+    if err != OK:
+        printerr("native fixture: save_jpg failed, error ", err)
+        get_tree().quit(1)
         return
     get_tree().quit(0)
 '''
@@ -218,6 +226,11 @@ run/main_scene="res://test.tscn"
 renderer/rendering_method="gl_compatibility"
 ''')
     shutil.copyfile(ROOT / 'godot/tools/picture_provenance.gd', project / 'tools/picture_provenance.gd')
+    # Issue 1739: the stamp preloads every script it names (render/placeholder_guard.gd since PR 1600); copy them all,
+    # or the fixture fails to compile and Godot idles
+    for dep in re.findall(r'preload\("res://([^"]+\.gd)"\)', (ROOT / 'godot/tools/picture_provenance.gd').read_text(encoding='utf-8')):
+        (project / dep).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / 'godot' / dep, project / dep)
     shutil.copyfile(ROOT / 'godot/export_presets.cfg', project / 'export_presets.cfg')
     (project / 'test.tscn').write_text('''[gd_scene load_steps=2 format=3]
 [ext_resource type="Script" path="res://test.gd" id="1"]
@@ -233,7 +246,8 @@ script = ExtResource("1")
         out = folder / name
         out.mkdir()
         try:
-            result = subprocess.run([*command, '--', str(out)], cwd=build, env=settings,
+            # --quit-after: a fixture that never reaches its own quit (a compile error) ends in seconds, not at the timeout
+            result = subprocess.run([*command, '--quit-after', '3000', '--', str(out)], cwd=build, env=settings,
                                     capture_output=True, text=True, timeout=GODOT_TIMEOUT)
         except subprocess.TimeoutExpired as stuck:
             def text(v):
@@ -284,6 +298,16 @@ script = ExtResource("1")
             assert text_lines(record)[1] == 'built from ' + BUILD_COMMIT[:12] + ' | ' + record['sources'][0]['stage']
 
     check_build(invoke(editor, 'archive captures', dict(env, PICTURE_PYTHON='missing-python')))
+    # Artoo on PR 1757: a save that fails (the output folder is a file here) ends Godot at once and non-zero
+    blocked = folder / 'blocked output'
+    blocked.write_text('a file where the output folder should be')
+    started = time.monotonic()
+    result = subprocess.run([*editor, '--quit-after', '3000', '--', str(blocked)], cwd=build, env=dict(env, PICTURE_PYTHON='missing-python'),
+                            capture_output=True, text=True, timeout=GODOT_TIMEOUT)
+    log = result.stdout + result.stderr
+    assert result.returncode != 0 and ('native fixture: save_png failed' in log or 'Picture stamp FAILED' in log), log
+    assert time.monotonic() - started < 60, 'a failed save waited %.0f s' % (time.monotonic() - started)
+    print('PASS a failed native save exits non-zero at once')
     review = Review('paint proof')
     image = review.open(folder / 'archive captures/NATIVE_889.jpg')
     sheet = folder / 'BUILD_REVIEW.png'
