@@ -8,7 +8,10 @@
 param(
   [Parameter(Mandatory = $true)]
   [ValidateSet('build_b', 'build_c', 'build_d', 'build_e', 'work217', 'build', 'tools_live')]
-  [string]$Build
+  [string]$Build,
+  # R417 (Ryan, Nov 22 2026): -NoRotate installs or refreshes and deletes nothing (no old tools_live version, no old
+  # backup), so a relayed install needs no new yes from him. The rotation then waits for a run without it.
+  [switch]$NoRotate
 )
 
 $ErrorActionPreference = 'Stop'
@@ -352,7 +355,8 @@ try {
     if ($previous -ne $version) {
       Write-Step "tools_live now uses $version (was $(if ($previous) { $previous } else { 'none' }))"
     } else { Write-Step "tools_live already uses $version" }
-    try { Remove-OldLiveVersions $version } catch { Write-Step "kept old tools_live versions: $($_.Exception.Message)" }
+    if ($NoRotate) { Write-Step 'kept old tools_live versions: -NoRotate (R417)' }
+    else { try { Remove-OldLiveVersions $version } catch { Write-Step "kept old tools_live versions: $($_.Exception.Message)" } }
     exit 0
   }
   if (Test-ToolsMatch $liveTools $snapshot $sourceFiles) {
@@ -388,7 +392,8 @@ try {
     } catch { throw "restore failed, old tools kept at ${original}: $($_.Exception.Message)" }
     throw $installError
   }
-  try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" }
+  if ($NoRotate) { Write-Step 'kept old backups: -NoRotate (R417)' }
+  else { try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" } }
 } catch {
   $message = "FAILED: $($_.Exception.Message)"
   try { Write-Step $message } catch { Write-Host "$Build $message" }
