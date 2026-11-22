@@ -91,7 +91,8 @@ function loadGame(repoDir, opts = {}) {
   // delays keep real timers. Semantics of game rules are unaffected.
   const fastSetTimeout = (fn, ms, ...rest) => {
     if (!ms) { queueMicrotask(() => fn(...rest)); return 0; }
-    return setTimeout(fn, ms, ...rest);
+    // issue 1632: a delayed screen timer (a toast) can fire after its run ended; its error must not kill the batch
+    return setTimeout((...a) => { try { fn(...a); } catch (e) { sandbox.__timerErrors = (sandbox.__timerErrors || 0) + 1; } }, ms, ...rest);
   };
   const sandbox = {
     console: quietConsole, setTimeout: fastSetTimeout, clearTimeout, setInterval, clearInterval,
