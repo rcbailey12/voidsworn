@@ -103,6 +103,17 @@ func _run() -> void:
 		cover.add_child(bg)
 		root.add_child(cover)
 	var hud = b.hud
+	# the plain Battle 1 HUD at Normal and Larger (the ledger hit areas changed here and in #1610; Artoo on PR 1601)
+	if shots != "":
+		await _frames(3)
+		await _shot("b1_normal")
+		UiScale.set_player(1.3)
+		hud._rebuild()
+		await _frames(6)
+		await _shot("b1_larger")
+		UiScale.set_player(1.0)
+		hud._rebuild()
+		await _frames(6)
 	# 21
 	var keys: String = hud.keys_text()
 	_check(keys.contains("[b]Backspace[/b]") and keys.contains("[b]Z[/b]"), "item 21: the Controls page names Backspace and Z")
