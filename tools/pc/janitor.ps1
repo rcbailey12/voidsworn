@@ -225,6 +225,9 @@ function Test-RelayedResults($dir, $mirror) {
         if ($item -is [IO.DirectoryInfo]) {
           if (Test-Path -LiteralPath (Join-Path $item.FullName '.git') -PathType Container) { $script:outCheckouts += $item }
           else { $walk.Push($item) }
+        } elseif ($d.FullName -eq $dir.FullName -and $item.Name -eq '.voidsworn-run-active') {
+          # The lease a live run holds on a whole out folder is the janitor's own, not a result (CI on 5ff6f4ab).
+          continue
         } else { $files += $item }
       }
     }

@@ -40,7 +40,7 @@ const sideCommit = git(work, 'rev-parse', 'HEAD');
 git(work, 'push', '-q', mirror, 'side');
 git(tmp, 'clone', '-q', '--branch', 'side', mirror, co);
 const clean = path.join(tmp, 'clean');
-git(tmp, 'clone', '-q', '--branch', 'main', mirror, clean);
+git(tmp, 'clone', '-q', '--single-branch', '--branch', 'main', mirror, clean);  // no copy of the side branch it prunes
 
 const script = path.join(tmp, 'probe.ps1');
 fs.writeFileSync(script, [
