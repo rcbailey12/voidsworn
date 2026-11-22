@@ -10,6 +10,7 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
@@ -2249,6 +2250,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if s.squadron:
 		return _wing_death(fx, s)
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
+	s.set_meta("death_cause", cause)   # issue 1586 (fx_death_beats.gd)
 	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else Color(0.55, 0.65, 0.12)
 	_power_down(fx, s)
 	s.set_meta("death_start", T)
@@ -2279,7 +2281,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 		fx.later(T + otl.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + otl.cut + 2.5))
 		return otl.end
 	# Explicit burn-outs retain their cold hulk. Ordinary kills always break up.
-	var hulk := cause == "dark" or cause == "hulk"
+	# issue 1586: a scuttled hull (boarding, the battle's view cause "board") also stays a dark hulk, never a reactor blast
+	var hulk := cause == "dark" or cause == "hulk" or cause == "board"
 	s.set_meta("death_hulk", hulk)
 	if hulk:
 		s.set_meta("death_split", T + 0.72)
@@ -2320,6 +2323,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	s.set_meta("death_tear", [lp, ln])
 	fx.later(T + timeline.vent, func l_split_vent() -> void: _split_vent(fx, s, lp, ln))
 	fx.later(T + timeline.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, T + timeline.end))
+	BEATS.on_death(fx, s, cause, T, timeline.cut)
 	return timeline.end
 
 
@@ -2342,6 +2346,7 @@ static func _wing_death(fx, s) -> float:
 		var p: Vector3 = s.to_world(hit["p"])
 		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
 		fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
@@ -2540,8 +2545,15 @@ static func _update_dying(fx, s) -> void:
 	if not s.dead or s.has_meta("death_hidden") or not s.has_meta("death_start") or not is_instance_valid(s.root): return
 	var age: float = maxf(fx.now - float(s.get_meta("death_start")), 0.0)
 	var mats: Array = s.get_meta("death_power", [])
+	# issue 1586: a Navy hull keeps every light on through its tell, then all die on one frame (a tripped breaker)
+	var black_at: float = float(s.get_meta("death_blackout_at", -1.0))
 	for i in mats.size():
 		var delay := float(i % 3) * 0.055
+		if black_at >= 0.0:
+			var lit: bool = fx.now < black_at
+			(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 if lit else 0.0)
+			(mats[i] as ShaderMaterial).set_shader_parameter("death_age", 0.0 if lit else 99.0)
+			continue
 		(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 - smoothstep(delay, delay + 0.18, age) if s.death_big else 0.0)
 		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age if s.death_big else 1.0)
 	if bool(s.get_meta("death_organic", false)):
@@ -2560,7 +2572,16 @@ static func _update_dying(fx, s) -> void:
 	if bool(s.get_meta("death_hulk", false)): return
 	var velocity: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.65, age * 0.38, age * 0.54))
-	var motion := Transform3D(rot, s.root.global_basis.inverse() * velocity * age + s.hull.c - rot * s.hull.c)
+	var push := Vector3.ZERO
+	match int(s.get_meta("death_arch", -1)):
+		BEATS.ARCH_TORCH:
+			# issue 1586: the over-flaring drive shoves the hull forward into an arcing spiral
+			rot = Basis.from_euler(Vector3(age * 0.4, age * 2.4, age * 0.3))
+			push = rot * Vector3(1, 0, 0) * s.hull.L * 0.9 * age * age
+		BEATS.ARCH_ROLL:
+			# a hard roll about the long axis, then a dead tumble
+			rot = Basis.from_euler(Vector3(age * 3.4, age * 0.15, age * 0.12))
+	var motion := Transform3D(rot, s.root.global_basis.inverse() * velocity * age + s.hull.c - rot * s.hull.c + push)
 	if s.death_tier == "capital":
 		# The capital's hull shudders through its tell (the ship itself, never the camera), harder after each blast.
 		var tl: DeathTimeline = s.get_meta("death_timeline", null)
@@ -3339,8 +3360,10 @@ static func _hulk(fx, s) -> void:
 	_hide_ship(s)
 	var drift := node.basis.x * 0.45
 	drift.y = 0.0
+	# issue 1586: a burnout drifts dead with a gentle pitch and roll
+	var dead_drift: bool = str(s.get_meta("death_cause", "dark")) == "dark"
 	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
-		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
+		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.05, 0.035, 0.04) if dead_drift else Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
@@ -3354,6 +3377,7 @@ static func _hulk(fx, s) -> void:
 	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
+	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
 
 
 static func _break_up(fx, s, cause: String, tint: Color) -> void:
@@ -3530,6 +3554,10 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			# random axis and by 6 s showed the key light their dark bellies. They now turn mostly about the vertical, with
 			# a slight roll and pitch, so their plated tops stay lit while they drift and turn.
 			ang = Vector3(ang.x * 0.25, signf(ang.y + 0.001) * maxf(absf(ang.y), 0.08), ang.z * 0.25)
+		if s.has_meta("death_spin"):
+			# issue 1586: a ram kill spins its pieces hard and off centre, all the same way
+			var sp: float = float(s.get_meta("death_spin"))
+			ang += Vector3(0.25 * sp, (0.9 if is_main else 1.4) * sp, 0.15)
 		var release_delay := 0.0
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
@@ -3558,6 +3586,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		_gap_lights(fx, s, wreck, plan, xf)
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
+	BEATS.on_break(fx, s, wreck, cause, center, xf)
 	# R367 (issue 1399): Hegemony lightning jumps the gap the moment the pieces part, however late a cold cut split them
 	# (Artoo on 1399: a timer from the nominal cut gave up after a second); a no-pieces pop has no gap and gets none
 	if str(dstyle(s).get("style", "")) == "arc" and not organic: _arcs(fx, s)

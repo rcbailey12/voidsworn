@@ -206,9 +206,24 @@ Built (issue 1399, round 2), at the same punch level:
   ten or fourteen by class); steel-blue rims.
 - Ashfall Hullbreakers (patch): dirty red fire, smoke kept at about half (soot is theirs); during the tell patch plates tear
   loose from scattered spots and spin off (two, four or six by class); red rims.
-Not built yet: the Glasswrights' white fracture lines across the optics in the tell, whole rings shearing off, and the
-Nemesis's plates drifting back together; the Sunward spire snapping off as one piece; every Hegemony module's lights dying
-at the same instant and its drones going dark; the Hullbreakers' chains holding then snapping, and loot spilling. Check: godot/fx/test/faction_death_style_check.gd.
+Built (issue 1586, fx/fx_death_beats.gd; beats from the shared pools, no new nodes or materials): Sunward ember ticks on
+the hot seams for about 5 s after the split; every Navy light on through the tell, then all dark on one frame just before
+the pieces part; Hullbreaker pieces tug on two glowing cables for 0.45 s, the cables snap in sparks, scrap scatters and two
+late cook-offs go off; Glasswright white fracture lines race over the hull in the tell and soft prismatic shafts leave the
+split; Eclipse's core snaps inward (the scene dim stays Eclipse only); Chorus wrecks twitch two or three times.
+Not built yet: whole Glasswright rings shearing off, the Nemesis's plates drifting back together (with #1463), the Sunward
+spire snapping off as one piece and Navy drones going dark (both need authored parts), and a 4 to 6 piece gauss shred (it
+would undo Ryan's one-crack strained death; the flay instead throws extra shreds). Check: godot/fx/test/faction_death_style_check.gd.
+
+What killed it, and small hulls (issue 1586, Check: godot/fx/test/death_variety_1586_check.gd): a gauss or doom kill
+(flay) punches gas jets out along the shot line with spall at the entry and exit and throws extra shreds; a ram kill throws
+metal crush sparks and spins its pieces hard off centre (the battle picks "ram" from the ram event, so the rules keep "big",
+R312); a boarding scuttle leaves a dark hulk venting through its airlocks ("board", picked the same way from "dark"); the
+Hollow Sun's pull flares the sunward edge white-gold and draws spall toward the star; a burnout's corridor lights stutter
+out over about 2 s, an emergency beacon blinks and the hulk drifts with a slow pitch and roll. Frigates and destroyers die
+one of four ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
+burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s smoky corkscrew and two
+faction flecks. A big wreck gives 2 or 3 quiet ember or vent pops in the 10 s after it breaks.
 
 ## The hits, upgraded
 

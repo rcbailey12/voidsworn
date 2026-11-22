@@ -96,6 +96,10 @@ var disp := {}             # id -> {hp, sh} as drawn (changes as hits land)
 var regen_unlocks := {}    # id -> number of lock expiries played, so a late hit cannot restore an expired lock
 var views := {}            # id -> ShipView
 var wrecked := {}
+# issue 1586: a kill the rules call "big" after a ram, or "dark" after a boarding scuttle, plays its own death look ("ram",
+# "board"); the view picks it from the event that came before, so the rules and battle.js keep their killCause (R312)
+var _view_cause := {}      # id -> ["ram" | "board", when (ms)]; only a death within VIEW_CAUSE_MS of it takes the look
+const VIEW_CAUSE_MS := 15000
 var board: Node3D
 var cam: Camera3D
 var hud: CanvasLayer
@@ -1575,6 +1579,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
 			await wait(200.0)
 		"ram":
+			_view_cause[str(e["target"])] = ["ram", Time.get_ticks_msec()]
+			_view_cause[str(e["unit"])] = ["ram", Time.get_ticks_msec()]
 			await _play_move(e["unit"], e["path"], true)
 			sfx.boom(0.8, _pos(e["target"]))
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
@@ -1600,6 +1606,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			var res := str(e["result"])
 			var who := _who(e["unit"])
+			if res == "scuttle":
+				_view_cause[str(e["target"])] = ["board", Time.get_ticks_msec()]
 			if res == "capture":
 				_log("Boarding parties from %s take %s. It now fights for %s." % [_name(e["unit"]), _name(e["target"]), "you" if _side(e["unit"]) == "player" else "the enemy"], who)
 				_float(e["target"], "Captured", Color("#ffb23e"), -30)
@@ -2739,6 +2747,18 @@ func _kill_skip() -> void:
 	_kill_let_go()
 
 
+# issue 1586: the death look for a kill: "ram" for a ram kill the rules call "big", "board" for a scuttle they call "dark"
+func view_cause(cause: String, id: String) -> String:
+	var row: Array = _view_cause.get(id, [])
+	_view_cause.erase(id)
+	var v: String = str(row[0]) if row.size() >= 2 and Time.get_ticks_msec() - int(row[1]) <= VIEW_CAUSE_MS else ""
+	if v == "ram" and cause == "big":
+		return "ram"
+	if v == "board" and cause == "dark":
+		return "board"
+	return cause
+
+
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
@@ -2748,7 +2768,7 @@ func _play_death(e: Dictionary) -> void:
 		_kill_frame(id)
 		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
-	var cause := str(e.get("cause", "blast"))
+	var cause := view_cause(str(e.get("cause", "blast")), str(id))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
 	_log("%s %s." % [_name(id), "is shot down" if sq else "is destroyed"], "e" if friend else "p")
@@ -2793,7 +2813,7 @@ func _play_death(e: Dictionary) -> void:
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
 	# The fallback has no staged run. Dark/hulk outcomes still never get a boom.
-	if cause in ["dark", "hulk"]:
+	if cause in ["dark", "hulk", "board"]:
 		sfx.play("hulk_vent", {"pos": p})
 	else:
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
