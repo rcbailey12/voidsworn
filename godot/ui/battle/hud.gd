@@ -1154,11 +1154,14 @@ func hide_tipcard() -> void:
 
 # N4 (#282): the end card's focus grab retries once, so a transient focus holder that releases after the timer does not leave
 # Continue unfocused. The guard still refuses to steal focus from a menu opened meanwhile (the owner keeps it).
-func _grab_end_focus(first: Button, attempt := 1) -> void:
-	if not is_instance_valid(first) or not first.is_visible_in_tree(): return
-	if get_viewport().gui_get_focus_owner() == null: first.grab_focus()
+# Issue 1482: the timers hold a weak reference, never the button itself: an end card closed (or a battle left) inside the
+# beat frees the button, and a lambda that captured it logs "Lambda capture at index 0 was freed" when it fires.
+func _grab_end_focus(first_ref: WeakRef, attempt := 1) -> void:
+	var first = first_ref.get_ref()
+	if not is_inside_tree() or not is_instance_valid(first) or not (first as Button).is_visible_in_tree(): return
+	if get_viewport().gui_get_focus_owner() == null: (first as Button).grab_focus()
 	elif attempt < 2:
-		get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first, attempt + 1), CONNECT_ONE_SHOT)
+		get_tree().create_timer(0.75).timeout.connect(_grab_end_focus.bind(first_ref, attempt + 1), CONNECT_ONE_SHOT)
 
 
 # a centred box (the end card and the menu): the hover tip's near-black square with its hairline edge, in the middle of
@@ -1203,7 +1206,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	# keyboard focus on the first button, after a beat: a Space still held down to hurry the last enemy turn must not
 	# press Continue the moment the card appears (the battle's own 0.5 s guard on Space, battle.gd _on_key)
 	var first := row.get_child(0) as Button
-	get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first), CONNECT_ONE_SHOT)
+	get_tree().create_timer(0.75).timeout.connect(_grab_end_focus.bind(weakref(first)), CONNECT_ONE_SHOT)
 
 
 # the in-battle menu (Esc with nothing to cancel, or Menu on the sheet): items are [text, action, arg]. body, when given,

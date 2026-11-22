@@ -47,9 +47,9 @@ func _ready() -> void:
 	_report.call_deferred()
 	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)
 	if main != null and "args" in main and main.args.has("title-rebuild-test"):   # the rebuild a window resize triggers
-		get_tree().create_timer(1.0).timeout.connect(func() -> void: _built_vs = Vector2.ONE)
+		get_tree().create_timer(1.0).timeout.connect(set.bind("_built_vs", Vector2.ONE))   # issue 1482: a bound method, dropped with the title
 	if main != null and "args" in main and str(main.args.get("title-open", "")) == "credits":
-		get_tree().create_timer(1.5).timeout.connect(func() -> void: _credits())
+		get_tree().create_timer(1.5).timeout.connect(_credits)   # issue 1482: a bound method, dropped with the title
 
 
 # UI pass (Nov 1): the title is built for the window it is in, and built again when the window changes size (the game
