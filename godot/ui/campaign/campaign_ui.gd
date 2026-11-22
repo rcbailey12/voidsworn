@@ -273,6 +273,19 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		var lb = GS.lit_boxes(k, accent)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
+	# issue 1559 item 7: in a dialog its number key shows after the label, as on the choices and the finishing action (a
+	# boon's 4 and 5 ran Reroll and Decline with no cap shown, and Decline cannot be taken back)
+	var kk = _key_for(list, act, arg)
+	if kk != "":
+		var cap = keycap(kk); cap.mouse_filter = Control.MOUSE_FILTER_IGNORE; cap.name = "keycap"
+		cap.anchor_left = 1.0; cap.anchor_right = 1.0; cap.anchor_top = 0.5; cap.anchor_bottom = 0.5
+		cap.offset_left = -px(10); cap.offset_right = -px(10); cap.offset_top = 0; cap.offset_bottom = 0
+		cap.grow_horizontal = Control.GROW_DIRECTION_BEGIN; cap.grow_vertical = Control.GROW_DIRECTION_BOTH
+		b.add_child(cap)
+		var tw = b.get_theme_font("font").get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, b.get_theme_font_size("font_size")).x
+		var cw = font_num_b.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, px(17)).x + px(20)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.custom_minimum_size.x = maxf(b.custom_minimum_size.x, ceil(tw) + cw + px(44))
 	var aa = found[1]
 	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))

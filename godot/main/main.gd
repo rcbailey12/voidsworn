@@ -256,6 +256,16 @@ func _apply_settings() -> void:
 	_settings_to_ui_sound()
 
 
+# issue 1559 item 23: a volume slider being dragged sets only the volumes, every step; the file is written (and the rest of
+# _apply_settings run: window mode, UI scale) once, when the drag ends
+func apply_volumes() -> void:
+	if music != null:
+		music.set_volume(float(settings.get("music_volume", 0.7)))
+	if battle != null and is_instance_valid(battle) and battle.sfx != null:
+		battle.sfx.set_volume(float(settings["volume"]))
+	_settings_to_ui_sound()
+
+
 func _settings_to_ui_sound() -> void:
 	if ui_sound != null and is_instance_valid(ui_sound):
 		ui_sound.set_on(bool(settings.get("sound", true)))

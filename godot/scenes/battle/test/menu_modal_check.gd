@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1559 items 1, 2 and 18 (menus audit): the battle Esc menu is modal, fits the screen at every UI scale and keeps
+# Issue 1559 items 1, 2, 8, 13 and 18 (menus audit): the battle Esc menu is modal, fits the screen at every UI scale and keeps
 # its row. Test battle s1 in the real battle scene, a player ship
 # picked, the menu opened. Checks, through the engine's own input path (Viewport.push_input):
 #   - the keyboard is inside the menu on open, and a control outside that grabs focus is put back inside;
@@ -195,5 +195,32 @@ func _run() -> void:
 	await _key(KEY_B)
 	await _frames(3)
 	_check(_state() != before, "with the menu closed, B acts again")
+	# item 13: the end card keeps the keyboard after Esc, Esc (a menu over it opens and closes)
+	for early in [false, true]:
+		b.hud.show_end("Victory", "The line holds.", true)
+		var card: Control = b.hud.endcard
+		var first: Control = b.hud._end_first
+		if not early:
+			await create_timer(0.9).timeout
+			await _frames(3)
+			_check(root.gui_get_focus_owner() == first, "item 13: the end card's first button has the keyboard")
+		b._open_menu()
+		await _frames(4)
+		await _key(KEY_ESCAPE)
+		await _frames(4)
+		if early:
+			await create_timer(0.9).timeout
+			await _frames(3)
+		var fo := root.gui_get_focus_owner()
+		_check(b.hud.menu == null and fo != null and card.is_ancestor_of(fo), "item 13: after a menu over the end card closes%s, the card has the keyboard again" % (" (opened inside the first beat)" if early else ""))
+		b.hud.hide_end()
+		await _frames(3)
+	# item 8: Fight again during the victory beat; the old battle's end card must not land in the new fight
+	b._end_flow()
+	await create_timer(0.3).timeout
+	b._on_action("restart", null)
+	await create_timer(2.5).timeout
+	await _wait_idle(20000)
+	_check(b.hud.endcard == null and not b.ended, "item 8: Fight again during the victory beat leaves no old end card in the new fight")
 	print("MENU_MODAL fails=%d" % fails)
 	quit(1 if fails else 0)

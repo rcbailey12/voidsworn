@@ -950,6 +950,8 @@ func _runner() -> void:
 			busy = false
 			if api.phase == "over" and not ended:
 				await _end_flow()
+				if _stale(g):
+					return
 			_after_batches()
 			_refresh_ui()
 			return
@@ -1786,7 +1788,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	if size > 0.3:
 		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
-	while sv.burning() and not sv.dead:
+	while is_instance_valid(sv) and sv.burning() and not sv.dead:   # issue 1559 item 8: Fight again frees the old ships mid-move
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
@@ -1799,6 +1801,8 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			await _snap("f")
 		else:
 			await get_tree().process_frame
+	if not is_instance_valid(sv):
+		return   # a new battle owns the board and the counters now
 	if eng_on:
 		gfx.set_engine(str(id), ENGINE_IDLE if cin else 1.0)
 	burns_live -= 1
@@ -2643,15 +2647,22 @@ func _end_sound(win: bool) -> String:
 
 func _end_flow() -> void:
 	ended = true
+	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
+	# end card must not land in the new fight
+	var g := _gen
 	var outcome: String = api.battle_result()
 	var win := outcome == "win"
 	var withdrawal := outcome == "retreat"
 	var heading := "Withdrawal" if withdrawal else ("Victory" if win else "Defeat")
 	await wait(500.0)
+	if _stale(g):
+		return
 	if not withdrawal:
 		_end_sound(win)
 	hud.banner(heading, Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
+	if _stale(g):
+		return
 	var lost := 0
 	var killed := 0
 	for u in V["units"]:
