@@ -91,7 +91,7 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.has("--shots"):   # -- --shots DIR: the dialog's picture (needs a window: xvfb-run with opengl3 in the cloud)
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), args[args.find("--shots") + 1].path_join("I1559_boon_keycaps.png"))
+		preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), args[args.find("--shots") + 1].path_join("I1559_boon_keycaps.png"), "cloud direction check")
 	var on: Array = c.modal_d["acts"].filter(func(a): return a[2] == 1)
 	var reroll_key := -1
 	for i in range(mini(9, on.size())):
