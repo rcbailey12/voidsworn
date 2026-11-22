@@ -43,7 +43,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   does not). The Board relays an attempt in that layout (the attempt folder itself at the tree's root, on
   `board/pc-out-<job>`, adding to the branch for later attempts) and then runs `dropcheckouts <attempt>`; a later tail of
   the same job repeats the check. The janitor (hourly and after jobs) runs the same proof over every PASS attempt that still lists
-  checkouts (`opus_job_head.ps1 dropjobs`, `--dry-run` on a janitor dry run), so no hand step is needed after a relay. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
+  checkouts (`opus_job_head.ps1 dropjobs <job>`, `dry` on a janitor dry run), so no hand step is needed after a relay. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
   size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
   everything, and the log names the first files that differ or are missing. A proven checkout is first recorded in its folder's

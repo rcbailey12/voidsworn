@@ -752,11 +752,11 @@ switch ($Action) {
     # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
     # the janitor calls this hourly and after jobs. Every PASS attempt <job>\out_* that still lists a
     # checkout gets the same proof as dropcheckouts (origin's relay branch holds every out file byte for byte); anything
-    # else is logged as kept. --dry-run removes nothing, finishes no earlier removal and fetches nothing.
+    # else is logged as kept. dry (a janitor dry run) removes nothing, finishes no earlier removal and fetches nothing.
     # One job folder per call (A): the janitor takes that folder's lease, issue lock, keep list and process checks
     # first and holds them through this call (Artoo on PR 1592), so this never sweeps folders it was not handed.
-    $script:dropDry = $B -eq '--dry-run'
-    if ($B -and -not $script:dropDry) { throw "dropjobs takes only --dry-run after the job folder, got: $B" }
+    $script:dropDry = $B -eq 'dry'
+    if ($B -and -not $script:dropDry) { throw "dropjobs takes only dry after the job folder, got: $B" }
     $script:freed = [long]0
     $one = Get-Item -LiteralPath ([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) -Force -ErrorAction SilentlyContinue
     if (-not $A -or -not (Test-PlainDir $one) -or $one.Name -notmatch '\A[A-Za-z0-9_-]+\z' -or

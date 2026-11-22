@@ -408,7 +408,7 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
   # branch holds every out file byte for byte, PR 1600) and logs the rest as kept. The same checks as every other janitor
   # removal come first and hold through the call, a resumed removal included (Artoo on PR 1592): the Board keep list, the
   # job lease (taken even when missing, never created on a dry run), the issue lock, no running process naming the
-  # folder, and the PC pause. A dry run passes --dry-run: nothing removed or fetched.
+  # folder, and the PC pause. A dry run passes dry: nothing removed or fetched.
   if (-not (Test-ListsCheckouts $dir)) { return }
   $head = Join-Path (Join-Path $PSScriptRoot 'jobs') 'opus_job_head.ps1'
   $issueLock = $null; $lease = $null
@@ -428,7 +428,7 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
     if (Cleanup-Paused) { throw 'PC pause is active' }
     $exe = if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) { 'powershell.exe' } else { 'pwsh' }
     $words = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $head, 'dropjobs', $dir.FullName)
-    if ($dryRun) { $words += '--dry-run' }
+    if ($dryRun) { $words += 'dry' }   # a bare word: -File reads a leading -- as a parameter name
     $ErrorActionPreference = 'Continue'
     $out = @(& $exe @words 2>&1 | ForEach-Object { "$_" })
     $code = $LASTEXITCODE

@@ -420,16 +420,16 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   r = run('dropcheckouts', gone);
   assert(fs.existsSync(path.join(gone, 'new')) && /branch board\/pc-out-opus1535c \(from the job name\) is not on origin/.test(r.out), 'a branch gone from origin keeps the checkout: ' + r.out);
   // Issue 1396 (Board, Nov 22): the relay lands after the tail, so the janitor runs dropjobs over every PASS attempt that
-  // still lists checkouts. --dry-run removes and fetches nothing; the live run clears only what the relay proof clears.
+  // still lists checkouts. dry removes and fetches nothing; the live run clears only what the relay proof clears.
   const later = job1535('opus1396later');
   relay([[path.join(later, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1396later');
   const laterJob = path.dirname(later);
-  r = run('dropjobs', laterJob, '--dry-run');
+  r = run('dropjobs', laterJob, 'dry');
   assert.equal(r.status, 0, r.out);
   assert(fs.existsSync(path.join(later, 'new')) && r.out.includes(`checkout new would be checked and removed after the relay: ${path.join(later, 'new')}`), 'the dry run names the checkout and keeps it: ' + r.out);
   assert(!/would be checked and removed/.test(r.out.split('\n').filter(l => !l.includes('opus1396later')).join('\n')), 'nothing else is nominated: ' + r.out);
   assert(!/disk: checkouts freed/.test(r.out), 'a dry run frees nothing');
-  assert.notEqual(run('dropjobs', laterJob, 'now').status, 0, 'dropjobs takes only --dry-run');
+  assert.notEqual(run('dropjobs', laterJob, 'now').status, 0, 'dropjobs takes only dry');
   assert.notEqual(run('dropjobs').status, 0, 'dropjobs needs one job folder');
   assert.notEqual(run('dropjobs', later).status, 0, 'an attempt folder is not a job folder');
   r = run('dropjobs', path.dirname(gone));
