@@ -1,0 +1,3 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d61d1c1c4263\pc\run_timeout.ps1
+offline proof: 81 calls, all to the loopback test server http://127.0.0.1:62267; guard blocks ElevenLabs; "account: MOCK-not-a-real-account" lines in generator runs come from this fake server
+ELEVENLABS GEN SELFTEST PASS

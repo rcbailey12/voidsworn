@@ -1,0 +1,2 @@
+PASS: wave A, all 27 files made, see wave_a.txt for credits
+listen page: out_new\listen\index.html
