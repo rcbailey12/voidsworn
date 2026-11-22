@@ -177,6 +177,26 @@ try {
   assert(!fs.existsSync(markM), 'the new holder cleared the stale marker');
   run({}, 'slotrelease', aN);
 
+  // a holder that dies while its job is mid-reset (Artoo on PR 1728): a claimant that gets the lease waits on the slot's
+  // reset lock, the dying job's reset fails at its last check, and the claimant's reset runs after it
+  const aP = attempt('opus1659p', 10), aQ = attempt('opus1659q', 11);
+  r = run({}, 'slot', aP, 'new', one);
+  assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out), r.out);
+  const rcP = path.join(tmp, 'p_rc.txt'), outP = path.join(tmp, 'p_out.txt');
+  const quote = s => `'${s.replace(/'/g, `'\\''`)}'`;
+  spawnSync('sh', ['-c', `( PC_TEST_SLOT_RESET_DELAY=6 ${shell} -NoProfile -File ${quote(path.join(jobs, 'opus_job_head.ps1'))} slot ${quote(aP)} old ${two} > ${quote(outP)} 2>&1; echo $? > ${quote(rcP)} ) < /dev/null > /dev/null 2>&1 &`], { env, stdio: 'ignore' });
+  const tokP = fs.readFileSync(path.join(aP, 'slot.txt'), 'utf8').trim().split('|')[1];
+  assert(waitFor(() => fs.existsSync(path.join(slot('slot_gpu_2'), 'test_reset_in_flight')), 20000), 'the reset is in flight, holding its lock');
+  process.kill(Number(fs.readFileSync(path.join(slot('slot_gpu_2'), `holder_${tokP}.txt`), 'utf8').trim().split(' ')[1]), 'SIGKILL');
+  const startQ = Date.now();
+  r = run({}, 'slot', aQ, 'new', one);
+  assert(waitFor(() => fs.existsSync(rcP), 20000), 'the first reset ends');
+  const outPText = fs.readFileSync(outP, 'utf8').replace(/\s+/g, ' ');
+  assert(fs.readFileSync(rcP, 'utf8').trim() !== '0' && /was lost during the reset/.test(outPText), 'the dying job fails at its last check: ' + outPText + ' | claimant: ' + r.out + ' | waited ms ' + (Date.now() - startQ));
+  assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out) && Date.now() - startQ >= 3000, 'the claimant waited for the reset lock: ' + r.out);
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), one, "the claimant's pin, applied after the dying reset");
+  run({}, 'slotrelease', aQ);
+
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {
     fs.rmSync(slot('slot_cpu'), { recursive: true, force: true });

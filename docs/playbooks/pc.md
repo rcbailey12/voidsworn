@@ -27,7 +27,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
   each one reused `clone --local` of the mirror. The first checkout takes a free slot (waits up to `OJ_SLOT_WAIT_MINUTES`,
   360) and a hidden holder keeps its lease until the tail lets it go or the job's cmd ends. Every later checkout of the job
-  proves its holder still runs, owner.txt names its token and the lease is locked, or fails without touching the slot. Before each reset, anything
+  proves its holder still runs, owner.txt names its token and the lease is locked, or fails without touching the slot.
+  Each reset also holds the slot's own `.slot-reset` lock and proves the lease again before letting go, so a claimant that
+  gets the lease from a holder that died mid-reset waits for that reset, which then fails. Before each reset, anything
   the last job left there that is not proven rebuildable is saved into that job's `out_<name>\slot_leftovers`; when it
   cannot be (over 200 MB, a staged change, a nested repo) the slot gets `hold.txt` and is skipped until the Board has
   looked and removed it, and a job that just took it moves on to the next free slot. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only `godot\.godot`

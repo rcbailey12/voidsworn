@@ -951,6 +951,25 @@ function Exit-Slot($attempt) {
   else { Write-Output "slot $($parts[0]) let go" }
 }
 function Reset-Slot($dir, $attempt, $name, $pin) {
+  # Artoo on PR 1728: the lease is held by the holder process, so a holder that dies mid-reset would free the slot while
+  # this process is still checking out and cleaning. Every reset therefore also holds the slot's own reset lock
+  # (.slot-reset) from before its first check to after its last write, and proves the lease is still this attempt's both
+  # after taking that lock and before letting it go. A claimant that got the lease in between waits on the reset lock;
+  # this reset then fails at its last check, and the claimant starts from the state this reset left.
+  $token = ([IO.File]::ReadAllText((Join-Path $attempt 'slot.txt')).Trim().Split('|'))[1]
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open((Join-Path $dir '.slot-reset'), 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw "the reset lock of $dir stayed held for 30 minutes" }; Start-Sleep -Milliseconds 500 }
+  }
+  try {
+    if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir is no longer held for this attempt; nothing in it was touched" }
+    if ($test -and $env:PC_TEST_SLOT_RESET_DELAY) { [IO.File]::WriteAllText((Join-Path $dir 'test_reset_in_flight'), ''); Start-Sleep -Seconds ([int]$env:PC_TEST_SLOT_RESET_DELAY) }
+    Reset-SlotInner $dir $attempt $name $pin
+    if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir was lost during the reset; this checkout is not used" }
+  } finally { $lock.Dispose() }
+}
+function Reset-SlotInner($dir, $attempt, $name, $pin) {
   # The slot's repo at exactly $pin, the last job's own leftovers saved first, ready for the ships step.
   Assert-SlotDir $dir
   $repo = Join-Path $dir 'repo'
