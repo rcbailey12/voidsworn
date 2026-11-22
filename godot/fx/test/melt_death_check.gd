@@ -43,6 +43,7 @@ func _run() -> void:
 		check(m["radius_L"] > 0.0 and m["radius_L"] <= 0.3, "%s: only the hit area glows (radius %.2f of the length)" % [tag, m["radius_L"]])
 		check(int(m["haze"]) == 0, "%s: no smoke, haze or vapour (%d pictures; blast drew %d)" % [tag, m["haze"], b["haze"]])
 		check(int(m["flash"]) > 0, "%s: the faction's own cook-off flash still plays as it breaks (%d; blast drew %d)" % [tag, m["flash"], b["flash"]])
+		check(int(m["green_light"]) == 0, "%s: the cook-off lights the hulls in the faction's colours, never acid green (%d green light frames)" % [tag, m["green_light"]])
 		check(int(m["green_flash"]) == 0, "%s: the cook-off is in the faction's colours, never the acid green (%d green)" % [tag, m["green_flash"]])
 		check(int(b["haze"]) > 0, "%s control: a blast death's smoke is seen by this probe (%d)" % [tag, b["haze"]])
 		check(b["style"] != "melt" and b["overlay"] != "melt", "%s control: a blast death keeps its own look" % tag)
@@ -90,7 +91,7 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 	for n in _pics(world): before[n.get_instance_id()] = float((n as MeshInstance3D).material_override.get_shader_parameter("born")) if (n as MeshInstance3D).material_override is ShaderMaterial else 0.0
 	fx.death("k", cause)
 	var res := {"style": str(DEATH.dstyle(s).get("style", "")), "strain": s.has_meta("death_strain"), "overlay": "none", "overlay_all": true,
-		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0}
+		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0, "green_light": 0}
 	var first := true
 	for mm in s.meshes:
 		var ov = (mm as MeshInstance3D).material_overlay
@@ -111,6 +112,10 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 	for i in 5 * 60:
 		fx.step(1.0 / 60.0)
 		await process_frame
+		for e in fx._lev:
+			var lc: Color = e[4]
+			for g in [Vector3(0.55, 0.65, 0.12), Vector3(0.70, 0.85, 0.45), Vector3(0.45, 0.62, 0.10)]:
+				if Vector3(lc.r, lc.g, lc.b).distance_to(g) < 0.03: res["green_light"] += 1
 		for n in _pics(world):
 			var mi := n as MeshInstance3D
 			if not mi.visible or not (mi.material_override is ShaderMaterial): continue

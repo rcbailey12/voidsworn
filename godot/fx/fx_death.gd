@@ -308,6 +308,14 @@ const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid
 static var _boom := 0
 
 
+# A cook-off colour looked up outside a blast (Artoo on PR 1646: a secondary's light and sparks took the melt tint).
+static func boom_col(src, key: String, fallback: Color) -> Color:
+	_boom += 1
+	var c := dcol(src, key, fallback)
+	_boom -= 1
+	return c
+
+
 static func melting(src) -> bool:
 	return src is Object and is_instance_valid(src) and src.has_meta("death_melt")
 
@@ -3304,7 +3312,7 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
 	var p: Vector3 = frame * ship_p
 	# issue 484: secondaries vary plainly in size (the playbook floor is 75 px)
-	_blast(fx, s, p, frame.basis.y.normalized(), _death_rng(s).randf_range(76.0, 140.0), dcol(s, "spark", Color(1.0, 0.6, 0.26)), frame)
+	_blast(fx, s, p, frame.basis.y.normalized(), _death_rng(s).randf_range(76.0, 140.0), boom_col(s, "spark", Color(1.0, 0.6, 0.26)), frame)
 
 
 static func _hide_ship(s) -> void:
