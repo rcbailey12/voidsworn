@@ -30,7 +30,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   proves its holder still runs, owner.txt names its token and the lease is locked, or fails without touching the slot.
   Each reset also holds the slot's own `.slot-reset` lock and proves the lease again before letting go, so a claimant that
   gets the lease from a holder that died mid-reset waits for that reset, which then fails. A new holder also refuses a slot
-  while owner.txt's job process still runs and its tail has not released it, so a dead holder never frees a busy slot. Before each reset, anything
+  while owner.txt's job process still runs and its tail has not released it, so a dead holder never frees a busy slot.
+  The tail writes that released line itself for its own token, so a dead holder under the long-lived watcher shell still
+  frees the slot when the job ends; a job that dies before its tail keeps its slot until the watcher exits. Before each reset, anything
   the last job left there that is not proven rebuildable is saved into that job's `out_<name>\slot_leftovers`; when it
   cannot be (over 200 MB, a staged change, a nested repo) the slot gets `hold.txt` and is skipped until the Board has
   looked and removed it, and a job that just took it moves on to the next free slot. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only `godot\.godot`

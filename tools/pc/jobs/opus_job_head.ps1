@@ -945,6 +945,14 @@ function Exit-Slot($attempt) {
   if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
   $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
   $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
+  # Artoo on PR 1728: on the PC the recorded job process is the long-lived watcher shell, so a dead holder would keep the
+  # slot busy until the watcher ends. The tail therefore marks its own token released itself, only while owner.txt still
+  # names that token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
+  $ownerTxt = Join-Path $parts[0] 'owner.txt'
+  if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) {
+    $txt = [IO.File]::ReadAllText($ownerTxt)
+    if ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$') -and $txt -notmatch '(?m)^released') {
+      [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") } }
   if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; return }
   [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
   $until = [DateTime]::UtcNow.AddSeconds(30)
@@ -1140,7 +1148,7 @@ switch ($Action) {
       $released = Test-Path -LiteralPath $release
     } finally {
       # the tail's release frees the slot even while the job's cmd still runs its last lines
-      if ($released) { [IO.File]::AppendAllText((Join-Path $dir 'owner.txt'), "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
+      if ($released -and [IO.File]::ReadAllText((Join-Path $dir 'owner.txt')) -notmatch '(?m)^released') { [IO.File]::AppendAllText((Join-Path $dir 'owner.txt'), "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
       foreach ($f in @($ready, $release, (Join-Path $dir "holder_$token.err"))) { if (Test-Path -LiteralPath $f) { [IO.File]::Delete($f) } }
       $lease.Dispose()
     }

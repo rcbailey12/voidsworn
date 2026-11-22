@@ -220,6 +220,26 @@ try {
   assert.equal(git(['rev-parse', 'HEAD'], repo2), one);
   run({}, 'slotrelease', aS);
 
+  // Artoo on PR 1728: on the PC the recorded parent is the long-lived watcher shell, not the job. The holder dies, the
+  // job's tail runs while that parent lives on, and the next claimant gets the slot without the parent exiting
+  const aT = attempt('opus1659t', 14), aU = attempt('opus1659u', 15), watcher = sleeper();
+  r = run({ PC_TEST_SLOT_OWNER_PID: String(watcher) }, 'slot', aT, 'new', two);
+  assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out), r.out);
+  const tokT = fs.readFileSync(path.join(aT, 'slot.txt'), 'utf8').trim().split('|')[1];
+  process.kill(Number(fs.readFileSync(path.join(slot('slot_gpu_2'), `holder_${tokT}.txt`), 'utf8').trim().split(' ')[1]), 'SIGKILL');
+  r = run({}, 'slot', aU, 'new', one);
+  assert(r.status !== 0 && /no free gpu slot/.test(r.out), 'before the tail the slot is still the job\'s: ' + r.out);
+  r = run({}, 'slotrelease', aT);
+  assert(r.status === 0, r.out);
+  assert(/^released /m.test(fs.readFileSync(path.join(slot('slot_gpu_2'), 'owner.txt'), 'utf8')), 'the tail marked its token released');
+  r = run({}, 'slot', aU, 'new', one);
+  assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out) && !gone(watcher), 'the claimant takes the slot while the parent lives on: ' + r.out);
+  const ownerU = fs.readFileSync(path.join(slot('slot_gpu_2'), 'owner.txt'), 'utf8');
+  r = run({}, 'slotrelease', aT);
+  assert.equal(fs.readFileSync(path.join(slot('slot_gpu_2'), 'owner.txt'), 'utf8'), ownerU, "a late tail leaves the next job's owner.txt alone");
+  run({}, 'slotrelease', aU);
+  process.kill(watcher, 'SIGKILL');
+
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {
     fs.rmSync(slot('slot_cpu'), { recursive: true, force: true });
