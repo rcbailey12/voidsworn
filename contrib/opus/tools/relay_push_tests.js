@@ -45,6 +45,25 @@ try {
   assert.equal(run('opus1657', at).status, 0);
   const ls2 = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657']);
   assert(ls2.includes('out_20261122_150000_2/out_new/shot.png') && !ls2.includes('deep/clip.mp4'), 'resend replaces, other attempts stay: ' + ls2);
+  // Artoo on PR 1672: pushes go in bounded batches (here 20 bytes, so one file each); a batch refused midway leaves an
+  // incomplete tree that proves nothing, and a rerun sends the attempt whole
+  const at5 = path.join(vt, 'opus1657b', 'out_20261122_180000_5');
+  for (const n of ['a', 'b', 'c', 'd']) write(path.join(at5, 'out_new', n + '.txt'), n.repeat(15));
+  const benv = { ...env, PC_TEST_RELAY_BATCH_BYTES: '20' };
+  const runB = (...a) => { const x = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(ROOT, 'tools', 'pc', 'relay_push.ps1'), ...a], { env: benv, encoding: 'utf8', timeout: 120000 }); return { status: x.status, out: `${x.stdout}\n${x.stderr}` }; };
+  const hook = path.join(relaySource, 'hooks', 'pre-receive');
+  fs.writeFileSync(hook, '#!/bin/sh\nwhile read o n r; do git log -1 --format=%s "$n" | grep -q "part 3 of" && { echo refused part 3 >&2; exit 1; }; done\nexit 0\n');
+  fs.chmodSync(hook, 0o755);
+  r = runB('opus1657b', at5);
+  assert(r.status !== 0 && /push of part 3 of 4 to pc-out-opus1657b refused/.test(r.out), 'a refused batch stops the relay: ' + r.out);
+  const half = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657b']).split('\n');
+  assert(half.length === 2 && !half.some(f => f.endsWith('d.txt')), 'only the first two parts are there: ' + half);
+  fs.rmSync(hook);
+  r = runB('opus1657b', at5);
+  assert.equal(r.status, 0, r.out);
+  assert(/sent part 4 of 4/.test(r.out), 'four bounded pushes, one per file: ' + r.out);
+  const whole = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657b']).split('\n').sort();
+  assert.deepEqual(whole, ['a', 'b', 'c', 'd'].map(n => `out_20261122_180000_5/out_new/${n}.txt`), 'the rerun sends everything: ' + whole);
   // refusals
   const outside = path.join(tmp, 'elsewhere', 'out_1'); write(path.join(outside, 'out_x', 'a.txt'), 'x');
   assert.notEqual(run('opus1657', outside).status, 0, 'a folder outside voidsworn_test is refused');
@@ -63,5 +82,5 @@ try {
   r = run('opus1657', path.join(vt, 'linkedjob', 'out_20261122_170000_4'));
   assert(r.status !== 0 && /a link on the way to the attempt:[\s\S]*linkedjob/.test(r.out), 'an attempt under a link is refused: ' + r.out);
   assert.equal(git(['--git-dir', relaySource, 'rev-parse', 'refs/heads/pc-out-opus1657']), before, 'a refusal sends nothing');
-  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing, links refused');
+  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing, links refused, bounded batches');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

@@ -411,7 +411,8 @@ run before the first live run. A pause removes nothing (3.11).
 3.3a **PC results go to the private relay repo, never the main repo.** Videos, sheets, renders and logs from PC jobs go to
 `rcbailey12/voidsworn-relay` on branch `pc-out-<job>`, the attempt folder at `<attempt folder name>/` in its tree, through
 `tools\pc\relay_push.bat <job> <attempt folder>` (out_* folders and the top text files; files over 10 MB stay on the PC,
-listed in `skipped_over_10MB.txt`). The PR comment carries the links it prints. A job's cleanup proves the relay the same way
+listed in `skipped_over_10MB.txt`), in pushes of at most 512 MB each (GitHub refuses a push over 2 GiB); a relay stopped
+between pushes proves nothing until it is run again. The PR comment carries the links it prints. A job's cleanup proves the relay the same way
 as before, now from `relay/pc-out-<job>` (relay_branch.txt) or an older board/pc-out branch. No new board/pc-out branch is
 pushed to the main repo. Stale board/pc-out-* and board/pin-* branches go only through `tools\pc\PRUNE_RELAY_BRANCHES_DRY.bat`
 (lists, deletes nothing) and then `PRUNE_RELAY_BRANCHES_LIVE.bat` after Ryan's own yes on that list; a branch still named by

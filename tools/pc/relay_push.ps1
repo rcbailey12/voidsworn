@@ -48,6 +48,9 @@ if ((Get-Item -LiteralPath $vt -Force).Attributes -band [IO.FileAttributes]::Rep
 $leaf = $at.Name
 if ($leaf -notmatch '\A[A-Za-z0-9._-]+\z' -or $leaf -eq '..') { throw "not an attempt folder name: $leaf" }
 $branch = "pc-out-$Job"
+# one push stays well under GitHub's 2 GiB push limit (Artoo on PR 1672); tests set a tiny limit
+$batchBytes = 512MB
+if ($test -and $env:PC_TEST_RELAY_BATCH_BYTES) { $batchBytes = [long]$env:PC_TEST_RELAY_BATCH_BYTES }
 
 # What goes: top-level text files and every file under out_* folders (links refused, not followed).
 $files = New-Object 'Collections.Generic.List[object]'
@@ -95,41 +98,57 @@ try {
   }
   if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
   $env:GIT_INDEX_FILE = $index
-  for ($try = 0; $try -lt 2; $try++) {
-    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-    $ErrorActionPreference = 'Continue'
-    $parent = (& $gitExe --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
-    $ErrorActionPreference = 'Stop'
-    if (Test-Path -LiteralPath $index) { Remove-Item -LiteralPath $index -Force }
-    if ($parent) {
-      Run-Git --git-dir $relayMirror read-tree $parent | Out-Null
-      # a resend of the same attempt replaces its folder whole
-      $old = @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-files -- "$leaf/")
-      if ($old.Count) { Run-GitIn @($old | ForEach-Object { "0 0000000000000000000000000000000000000000`t$_" }) --git-dir $relayMirror update-index --index-info | Out-Null }
-    } else { Run-Git --git-dir $relayMirror read-tree --empty | Out-Null }
-    $shas = @(Run-GitIn @($send | ForEach-Object { $_.Path }) --git-dir $relayMirror hash-object -w --no-filters --stdin-paths)
-    if ($shas.Count -ne $send.Count) { throw "hashed $($shas.Count) of $($send.Count) files" }
-    $info = for ($i = 0; $i -lt $send.Count; $i++) { "100644 $($shas[$i])`t$($send[$i].Key)" }
-    if ($skipped.Count) {
-      $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
-      [IO.File]::WriteAllText($tmpList, (($skipped -join "`r`n") + "`r`n"))
-      $ls = (Run-Git --git-dir $relayMirror hash-object -w --no-filters -- $tmpList) | Select-Object -Last 1
-      Remove-Item -LiteralPath $tmpList -Force
-      $info = @($info) + "100644 $ls`t$leaf/skipped_over_10MB.txt"
+  $env:GIT_AUTHOR_NAME = 'voidsworn PC relay'; $env:GIT_AUTHOR_EMAIL = 'relay@voidsworn.invalid'
+  $env:GIT_COMMITTER_NAME = $env:GIT_AUTHOR_NAME; $env:GIT_COMMITTER_EMAIL = $env:GIT_AUTHOR_EMAIL
+  # Artoo on PR 1672: GitHub refuses a push over 2 GiB, so the files go in batches of at most $batchBytes, one commit and one
+  # push each, each built on the branch tip the last one left. The proof (opus_job_head.ps1) needs every file in the final
+  # tree, so a relay stopped between batches proves nothing and frees nothing; running it again resends the attempt whole.
+  $batches = New-Object 'Collections.Generic.List[object]'; $cur = @(); $curBytes = 0
+  foreach ($s1 in $send) {
+    $len = (Get-Item -LiteralPath $s1.Path -Force).Length
+    if ($cur.Count -and $curBytes + $len -gt $batchBytes) { $batches.Add($cur); $cur = @(); $curBytes = 0 }
+    $cur += $s1; $curBytes += $len
+  }
+  $batches.Add($cur)
+  for ($b = 0; $b -lt $batches.Count; $b++) {
+    $part = @($batches[$b]); $last = $b -eq $batches.Count - 1
+    for ($try = 0; $try -lt 2; $try++) {
+      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+      $ErrorActionPreference = 'Continue'
+      $parent = (& $gitExe --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
+      $ErrorActionPreference = 'Stop'
+      if (Test-Path -LiteralPath $index) { Remove-Item -LiteralPath $index -Force }
+      if ($parent) {
+        Run-Git --git-dir $relayMirror read-tree $parent | Out-Null
+        # the first batch of a resend replaces the attempt's folder whole; later batches add to what the earlier ones sent
+        if ($b -eq 0) {
+          $old = @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-files -- "$leaf/")
+          if ($old.Count) { Run-GitIn @($old | ForEach-Object { "0 0000000000000000000000000000000000000000`t$_" }) --git-dir $relayMirror update-index --index-info | Out-Null }
+        }
+      } else { Run-Git --git-dir $relayMirror read-tree --empty | Out-Null }
+      $shas = @(Run-GitIn @($part | ForEach-Object { $_.Path }) --git-dir $relayMirror hash-object -w --no-filters --stdin-paths)
+      if ($shas.Count -ne $part.Count) { throw "hashed $($shas.Count) of $($part.Count) files" }
+      $info = for ($i = 0; $i -lt $part.Count; $i++) { "100644 $($shas[$i])`t$($part[$i].Key)" }
+      if ($last -and $skipped.Count) {
+        $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
+        [IO.File]::WriteAllText($tmpList, (($skipped -join "`r`n") + "`r`n"))
+        $ls = (Run-Git --git-dir $relayMirror hash-object -w --no-filters -- $tmpList) | Select-Object -Last 1
+        Remove-Item -LiteralPath $tmpList -Force
+        $info = @($info) + "100644 $ls`t$leaf/skipped_over_10MB.txt"
+      }
+      Run-GitIn @($info) --git-dir $relayMirror update-index --add --index-info | Out-Null
+      $tree = (Run-Git --git-dir $relayMirror write-tree) | Select-Object -Last 1
+      $msg = "relay $Job $leaf (part $($b + 1) of $($batches.Count), $($part.Count) files)"
+      if ($parent) { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -p $parent -m $msg) | Select-Object -Last 1 }
+      else { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -m $msg) | Select-Object -Last 1 }
+      $ErrorActionPreference = 'Continue'
+      $pushOut = & $gitExe --git-dir $relayMirror push -q origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
+      $pushed = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
+      if ($pushed) { break }
+      if ($try) { throw "push of part $($b + 1) of $($batches.Count) to $branch refused: $($pushOut -join ' '). Nothing is proven until every part is sent; run the relay again." }
+      Write-Output "push of part $($b + 1) refused once (another relay moved $branch); fetching and trying again"
     }
-    Run-GitIn @($info) --git-dir $relayMirror update-index --add --index-info | Out-Null
-    $tree = (Run-Git --git-dir $relayMirror write-tree) | Select-Object -Last 1
-    $env:GIT_AUTHOR_NAME = 'voidsworn PC relay'; $env:GIT_AUTHOR_EMAIL = 'relay@voidsworn.invalid'
-    $env:GIT_COMMITTER_NAME = $env:GIT_AUTHOR_NAME; $env:GIT_COMMITTER_EMAIL = $env:GIT_AUTHOR_EMAIL
-    $msg = "relay $Job $leaf ($($send.Count) files)"
-    if ($parent) { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -p $parent -m $msg) | Select-Object -Last 1 }
-    else { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -m $msg) | Select-Object -Last 1 }
-    $ErrorActionPreference = 'Continue'
-    $pushOut = & $gitExe --git-dir $relayMirror push -q origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
-    $pushed = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
-    if ($pushed) { break }
-    if ($try) { throw "push to $branch refused: $($pushOut -join ' ')" }
-    Write-Output "push refused once (another relay moved $branch); fetching and trying again"
+    if ($batches.Count -gt 1) { Write-Output "sent part $($b + 1) of $($batches.Count) ($($part.Count) files)" }
   }
   Run-Git --git-dir $relayMirror update-ref "refs/heads/$branch" $commit | Out-Null
   $remote = @(Run-Git ls-remote $relaySource "refs/heads/$branch") | Select-Object -First 1
