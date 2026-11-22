@@ -690,6 +690,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		if row.has("well"):
 			var wv: Array = row["well"]
 			fx.well = T.global_position + Vector3(float(wv[0]), float(wv[1]), float(wv[2]))
+		# issue 1236: a row may anchor the wreck to a hex as the battle does on a rules wreck ("hex": the rest radius in
+		# world units; the game's is the hex radius 10 times 0.8)
+		if row.has("hex") and fx.has_method("anchor_wreck"):
+			fx.anchor_wreck("T", T.global_position, float(row["hex"]))
 		_log("%s: death call at %.2f (step %d)" % [id, fx.now, steps])   # issue 1236: one line a death row
 		fx.death("T", str(row.get("cause", "blast")))
 		if row.has("well"):
