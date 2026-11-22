@@ -18,6 +18,7 @@ signal title_earned(row: Dictionary)            # at the end of a run, with the 
 var C = null                    # the campaign
 var career = Career.new()
 var V: Dictionary = {}          # voices.json
+var SIT: Dictionary = {}        # situations.json
 var prompt_rename := true       # offer "name your flagship" once at the start of each run
 var _last_B = null              # the last battle B already recorded
 var _held_B = null              # the battle B being played
@@ -37,6 +38,10 @@ func _init() -> void:
 	if f != null:
 		var d = JSON.parse_string(f.get_as_text())
 		V = d if d is Dictionary else {}
+	var sf := FileAccess.open("res://story/data/situations.json", FileAccess.READ)
+	if sf != null:
+		var sd = JSON.parse_string(sf.get_as_text())
+		SIT = sd if sd is Dictionary else {}
 	# names only, read straight from G3's exported tables so the career screen also works from the title (no campaign)
 	var t := FileAccess.open("res://campaign/data/campaign_tables.json", FileAccess.READ)
 	if t != null:
@@ -139,7 +144,11 @@ func _fill(t: String, run) -> String:
 		var nem = C.nemRead(run) if C != null else run.get("nem")
 		if nem is Dictionary:
 			rival = preload("res://story/tokens.gd").full_name(nem)
-	return t.replace("{flagship}", flag if flag != "" else "the flagship").replace("{rival}", rival if rival != "" else "the enemy commander").replace("{enemy}", "the enemy")
+	var flag_out := flag if flag != "" else "the flagship"
+	var out := t.replace("{flagship}", flag_out).replace("{rival}", rival if rival != "" else "the enemy commander").replace("{enemy}", "the enemy")
+	if flag_out.begins_with("The ") or flag_out.begins_with("MDV "):
+		out = out.replace("the " + flag_out, flag_out).replace("The " + flag_out, flag_out)
+	return out
 
 
 # The admiral's raw line for a moment (pick, sector, start, boss, nemesis, kill_flag, lost, flag_hurt, command, win, loss).
@@ -151,32 +160,49 @@ func line(admiral_id: String, moment: String, run = null, seed := 0) -> String:
 
 
 # The same line with its speaker, ready for a text box: Admiral Roderic Vex: "Form the line."
-func said(admiral_id: String, moment: String, run = null) -> String:
-	var t := line(admiral_id, moment, run)
+func said(admiral_id: String, moment: String, run = null, seed := 0) -> String:
+	var t := line(admiral_id, moment, run, seed)
 	return "%s: \"%s\"" % [admiral_name(admiral_id), t] if t != "" else ""
+
+
+func sector_cond_line(run) -> String:
+	if not (run is Dictionary) or SIT.is_empty():
+		return ""
+	var fac := str(run.get("fac", ""))
+	var cond := str(run.get("map", {}).get("cond", "")) if run.get("map") is Dictionary else ""
+	if fac == "" or cond == "":
+		return ""
+	var t := str(SIT.get("by_cond", {}).get(fac, {}).get(cond, ""))
+	return "%s: \"%s\"" % [admiral_name(str(run.get("admiral", ""))), _fill(t, run)] if t != "" else ""
 
 
 # One line for the campaign screen the UI is drawing now ("" when none):
 #   page "admiral"          the picked admiral's pick line
-#   modal "intro"/"sector"  your admiral's sector line
+#   modal "intro"/"sector"  your admiral's sector line (and sector condition flavor on sector transitions)
 #   page "end"              your admiral's win or loss line, then the title earned this run
 func campaign_line() -> String:
 	if C == null:
 		return ""
 	if C.modal_d is Dictionary and C.modal_d.get("kind", "") in ["intro", "sector"] and C.RUN is Dictionary:
-		return said(str(C.RUN.get("admiral", "")), "sector", C.RUN)
+		var sec_idx := maxi(0, int(C.RUN.get("sector", 1)) - 1)
+		var base := said(str(C.RUN.get("admiral", "")), "sector", C.RUN, sec_idx)
+		var cond_note := sector_cond_line(C.RUN)
+		if cond_note != "" and str(C.modal_d.get("kind", "")) == "sector":
+			return base + "\n" + cond_note
+		return base
 	var kind: String = str(C.page.get("kind", ""))
 	if kind == "admiral":
 		return said(str(C.picked_admiral), "pick")
 	if kind == "end" and C.page.get("data") is Dictionary and C.page["data"].get("run") is Dictionary:
 		var run: Dictionary = C.page["data"]["run"]
-		var s := said(str(run.get("admiral", "")), "win" if bool(C.page["data"].get("victory", false)) else "loss", run)
+		var end_seed := int(float(run.get("t0", 0))) % 100000
+		var s := said(str(run.get("admiral", "")), "win" if bool(C.page["data"].get("victory", false)) else "loss", run, end_seed)
 		var t := earned_title_text(run)
 		return s + ("\n" + t if t != "" else "")
 	return ""
 
 
-# "Title earned: Admiral Roderic Vex the Breaker (4 or more rams and boarding actions in the run)."
+# "Title earned: Admiral Roderic Vex the Breacher (4 or more rams and boarding actions in the run)."
 func earned_title_text(run: Dictionary) -> String:
 	var h: Array = career.P.get("history", [])
 	if h.is_empty():
@@ -188,7 +214,10 @@ func earned_title_text(run: Dictionary) -> String:
 	for t in career.titles_data.get("titles", []):
 		if str(t["id"]) == str(row.get("title", "")):
 			rule = str(t.get("rule", ""))
-	return "Title earned: %s %s%s" % [admiral_name(str(row["admiral"])), str(row.get("title_name", "")), (" (" + rule.trim_suffix(".") + ").") if rule != "" else "."]
+	var base_name := admiral_name(str(row["admiral"]))
+	var tname := str(row.get("title_name", ""))
+	var sep := ", " if (base_name.contains(", ") or base_name.contains(" the ") or base_name.contains(" of ")) else " "
+	return "Title earned: %s%s%s%s" % [base_name, sep, tname, (" (" + rule.trim_suffix(".") + ").") if rule != "" else "."]
 
 
 # The admiral's name with their latest earned title, for the map sidebar or the admiral card ("" title when none yet).
@@ -196,7 +225,14 @@ func titled_name(admiral_id: String) -> String:
 	var a: Dictionary = career.P.get("admirals", {}).get(admiral_id, {})
 	var t := str(a.get("last_title", ""))
 	var at: String = career.arc_title(admiral_fac(admiral_id), admiral_id)
-	return admiral_name(admiral_id) + (" " + career.title_name(t, admiral_fac(admiral_id)) if t != "" else "") + ((", " + at) if at != "" else "")
+	var base := admiral_name(admiral_id)
+	var out := base
+	if t != "":
+		var sep := ", " if (base.contains(", ") or base.contains(" the ") or base.contains(" of ")) else " "
+		out += sep + career.title_name(t, admiral_fac(admiral_id))
+	if at != "":
+		out += ", " + at
+	return out
 
 
 func medal_name(id: String) -> String:

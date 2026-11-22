@@ -364,8 +364,8 @@ func _top_right(r: Rect2) -> void:
 	var hw := 0.0
 	if int(info.get("heat", -1)) >= 0:
 		hw = _right(xr, y, str(clampi(int(info.heat), 0, 9)), f_num, 18, TEXT)
-		hw += px(8) + _right(xr - hw - px(8), y, "Heat", f_body, 18, TEXT3, "join")
-		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Heat: the run's difficulty level, up to 9.")))
+		hw += px(8) + _right(xr - hw - px(8), y, "Threat", f_body, 18, TEXT3, "join")
+		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Threat: the run's difficulty level, up to 9.")))
 		hw += px(20)
 	var faction := str(info.get("foe_name", ""))
 	if faction != "":
@@ -469,7 +469,7 @@ static func keyword_tip(line: String) -> String:
 	var keywords := {
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
-		"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
+		"focusing its fire": "Focus fire: the enemy fleet favors this ship when it picks targets.",
 		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
 	for kw in keywords:
 		if line.contains(kw):

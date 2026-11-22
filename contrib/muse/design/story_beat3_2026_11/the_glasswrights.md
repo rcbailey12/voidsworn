@@ -1,33 +1,31 @@
 ## The Glasswrights
 
-### Core decision: The Killing Flaw
-
-Scene purpose: The forge sends this fleet the read of a recovered shard-field: the replay of a fleet that died on this exact approach three centuries ago, and the replay names the killing flaw in the approach. Flying the corrected approach costs the element of surprise; keeping the fast approach keeps surprise and repeats the flaw.
+### Core decision: The Last Lens & the Killing Flaw
 
 Node:
 ```
-id:'arc_gw_flaw', t:'The Killing Flaw', fight:false,
+id:"arc_gw_flaw", t:"The Last Lens & the Killing Flaw", fight:false,
 o:[
- {t:'Fly the corrected approach', r:{weak:1, clock:1}, tx:'The fleet re-forms on the corrected line the dead fleet paid for. It is slower and it is seen coming. {rival} watches you take the long way around a grave only you can see.'},
- {t:'Keep the fast approach', r:{xp:20}, tx:'You keep the fast line and the surprise, and you fly it knowing exactly where the old fleet died on it. Your captains are very quiet at their stations. Precision is a kind of courtesy, for the Glasswrights. They pay it at speed.'}
+ {"t":"Fly the corrected slow arc to avoid the old trap","r":{"weak":1,"clock":1},"tx":"You swing the fleet along the corrected vector your ancestors paid for with their ships. {rival} spots the wider approach early, yet you enter the lens's orbit knowing the exact firing blind spot that killed the first voyage."},
+ {"t":"Hold the fast burn straight for the lens mounting","r":{"xp":20},"tx":"You commit at full speed straight down the hazardous lane to deny {rival} time to fortify the lens. Every captain runs razor-thin tolerances, shaving past the exact debris field that claimed the old fleet."}
 ]
 ```
 
 Text lines:
-- Lens-keeper: "The replay is clear, Captain. At full fidelity. We watched them die at the turn, in light, three hundred years late and exactly on time."
-- Captain: "Then we owe them a different ending."
-- Lens-keeper: "We owe them a read that matters. Endings are your department. Forgive me. That was almost a joke. Grief makes us imprecise."
+- Lens-keeper: "There hangs the last primary lens of Ardent, Captain, and our recorders just pulled the full optical replay of the fleet that died trying to recover it three centuries ago."
+- Captain: "They turned too early into the mounting's shadow."
+- Lens-keeper: "Exactly. Take the wide correction and lose surprise, or gamble our shields on outrunning the same mistake."
 
-Debrief: "Every ship in the fleet has seen the replay now. The mirrors hold it a moment longer than the light requires."
+Debrief: "Every bridge crew watched the old optical replay before locking weapons, their inlays pulsing pale violet in quiet tribute."
 
-Learning payoff: "Whether this fleet returns through the light or drifts as a shard-field until the gatherers find it, the forge will read the optical replay and recast the next fleet in the procession with the killing flaw corrected, long after everyone who loved this one is gone. That is not comfort. It is focus, which is the Glasswright word for it."
+Learning payoff: "Whether this fleet carries the lens home or breaks apart in the debris belt, the optical forge will pull your telemetry and cast the next expedition sharper."
 
 ### Admiral spotlights
 
-- Tamsa of the Clear Aperture: "Tamsa sends her starling wings out in a fan of light and reads the whole battle in their reflections. 'Forgive me,' she tells the enemy flagship, almost gently, a moment before the volley."
-- Saro of Long Focus: "Saro holds focus through three volleys without speaking. When Saro finally speaks it is one word, the range, and the lances are already away."
-- Vell of the Third Mirror: "Vell scatters the fleet's light until the enemy fire walks through reflections and finds nothing honest. 'We built the light,' Vell says. 'It holds our shape.'"
-- Brin of the Fourth Lens: "Brin raises the prism ward and the fleet stands inside a held rainbow, fragile and exact. 'Light, stored kindly. Light, returned.'"
+- Tamsa of the Clear Aperture: "Tamsa fans her starling wings wide around the aperture bays, checking every flight vector through rippling bands of blue-white light."
+- Saro of Long Focus: "Saro says nothing across three full minutes of approach, adjusting the primary mirror by fractions of a degree until the focal line locks dead center."
+- Vell of the Third Mirror: "Vell tilts the outer vanes into the black hole's halo, splitting the flagship's silhouette into four clean radar ghosts."
+- Brin of the Fourth Lens: "Brin brings the prism wards up to full brilliance around the smaller escorts, refusing to let another family line end on this rim."
 
 ### Flags
 

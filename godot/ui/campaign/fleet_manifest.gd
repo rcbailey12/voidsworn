@@ -251,7 +251,7 @@ func specification(ship: Dictionary) -> void:
 	if C.jt(cap.get("pending")):
 		var promote = Button.new(); promote.text = "Choose promotion perk"; style_link(promote)
 		promote.pressed.connect(func(): C.act("promote", ship["uid"])); v.add_child(promote)
-	v.add_child(body("Repairs and mark upgrades happen at shipyards and drydocks.", 17))
+	v.add_child(body("Repairs and Mark upgrades happen at shipyards and repair docks.", 17))
 	var st = ui._story()
 	if st != null and C.flagshipOf() != null and C.flagshipOf()["uid"] == ship["uid"]:
 		var rename = Button.new(); rename.text = "Rename flagship"; style_link(rename); rename.pressed.connect(func(): st.open_rename()); v.add_child(rename)
