@@ -53,9 +53,11 @@ for (const step of ['oj_checkout', 'oj_ships']) {
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
-assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1\nexit \/b %OJ_RC%/.test(tail), 'the tail runs the checkout step after job_wrap end has written the result, and keeps its exit code');
+assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1\n(?:[^\n]*\n)*?exit \/b %OJ_RC%/.test(tail), 'the tail runs the checkout step after job_wrap end has written the result, and keeps its exit code');
 assert(/shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied\.txt" "%LB_SHIPS%"/.test(ships) && ships.indexOf('shiprecord') > ships.indexOf('shipcheck "%OJ_REPO%"'), 'the ships step records what it copied, after the cache check (issue 1497)');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
+// Issue 1396 (Board, Nov 22): the tail starts the relay waiter hidden, after the result, only with the drop step on.
+assert(/if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*Start-Process -WindowStyle Hidden [^\n]*dropwait [^\n]*\$env:OJ_PS, \$env:OJ_OUT/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'the tail starts the relay waiter after its own drop step');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 
 // ---------------------------------------------------------------- static contract: the template
@@ -442,6 +444,30 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert.equal(r.status, 0, r.out);
   assert(!fs.existsSync(path.join(later, 'new')) && /checkout new removed after the job/.test(r.out) && /disk: checkouts freed/.test(r.out), 'the live run clears the relayed attempt: ' + r.out);
   assert(fs.existsSync(path.join(gone, 'new')) && fs.existsSync(path.join(attempt, 'new')), 'and nothing the proof refuses: ' + r.out);
+  // Issue 1396 (Board, Nov 22): the relay lands after the tail, so the tail's waiter (dropwait) asks origin until the branch
+  // shows up, then runs the same proof and drop for its attempt only. Without the branch it keeps everything at its limit.
+  const waitRun = (extra, ...args) => {
+    const w = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(jobs, 'opus_job_head.ps1'), ...args], { env: { ...env, ...extra }, encoding: 'utf8', timeout: 90000 });
+    if (w.error) throw w.error;
+    return { status: w.status, out: `${w.stdout}\n${w.stderr}` };
+  };
+  const waited = job1535('opus1396wait');
+  r = waitRun({ OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '3' }, 'dropwait', waited);
+  assert.equal(r.status, 0, r.out);
+  assert(fs.existsSync(path.join(waited, 'new')) && /waiting for board\/pc-out-opus1396wait on origin \(from the job name\)/.test(r.out) && /still lists checkouts after 3 s; the janitor's relay sweep handles it later/.test(r.out), 'no relay: the waiter keeps the checkout and stops at its limit: ' + r.out);
+  r = run('dropwait', waited, 'dry');
+  assert(fs.existsSync(path.join(waited, 'new')) && /board\/pc-out-opus1396wait is not on origin yet \(dry: one look\)/.test(r.out) && !/disk: checkouts freed/.test(r.out), 'dry looks once: ' + r.out);
+  assert.notEqual(run('dropwait', waited, 'now').status, 0, 'dropwait takes only dry');
+  const staged = relay([[path.join(waited, 'out_new'), 'out_1/out_new']], 'board/pc-out-stage1396wait');
+  const stagedSha = git(['--git-dir', source, 'rev-parse', `refs/heads/${staged}`]);
+  // the relay lands two seconds after the waiter starts
+  const landed = spawnSync('bash', ['-c', '(sleep 2; git --git-dir "$1" update-ref refs/heads/board/pc-out-opus1396wait "$2") & exec "$3" -NoProfile -ExecutionPolicy Bypass -File "$4" dropwait "$5"',
+    'x', source, stagedSha, shell, path.join(jobs, 'opus_job_head.ps1'), waited], { env: { ...env, OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '60' }, encoding: 'utf8', timeout: 90000 });
+  const landedOut = `${landed.stdout}\n${landed.stderr}`;
+  assert.equal(landed.status, 0, landedOut);
+  assert(!fs.existsSync(path.join(waited, 'new')) && landedOut.includes(`relay branch board/pc-out-opus1396wait is on origin at ${stagedSha}`) && /checkout new removed after the job/.test(landedOut) && /disk: checkouts freed/.test(landedOut), 'the waiter clears the checkout once the relay lands: ' + landedOut);
+  assert.equal(fs.readFileSync(path.join(waited, 'out_new', 'result.txt'), 'utf8'), 'opus1396wait result\n', 'results stay');
+  assert(fs.existsSync(path.join(gone, 'new')), 'and only its own attempt');
   assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');
   // Review of PR 1592: the sweep keeps a checkout whose reflog holds a commit no mirror ref reaches (a detached checkout
   // that went back to its pin), and one with a second worktree; and it finishes a recorded <name>.removing left alone.

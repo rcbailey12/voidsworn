@@ -21,6 +21,10 @@
 #                                              under godot\gen and godot\assets\ships that has the same bytes in the source, so the tail can prove a copy unchanged even
 #                                              after a later publish moves the shared build on (issue 1497)
 #   hashes <out file>                          sha256 of Ryan's real battle_opts.json and board_look.cfg
+#   dropwait <attempt folder> [dry]            the tail starts it in a hidden window (issue 1396): asks origin for the
+#                                              attempt's relay branch every 5 minutes for up to 12 hours and, each time it
+#                                              is new or moved, runs dropcheckouts' proof and drop for this attempt only;
+#                                              dry looks once and removes and fetches nothing
 #   dropcheckouts <attempt folder> [<relay branch> <tree folder>]
 #                                              the tail, and the Board right after it relays the results (with the branch
 #                                              and the tree folder that holds the attempt, written to the attempt's
@@ -60,7 +64,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -561,6 +565,12 @@ function Drop-Proven($attempt, $list, $outs) {
     } catch { Write-Output "checkout $name kept: $repo ($($_.Exception.Message))" }
   }
 }
+function Get-ListedLeft($attempt) {
+  # Listed checkouts of an attempt still on disk, or left as a recorded <name>.removing (review of PR 1592).
+  $list = Join-Path $attempt 'checkouts.txt'
+  if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { return @() }
+  return @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $attempt $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $attempt "$($Matches[1]).removing")))) { $Matches[1] } })
+}
 function Get-AttemptState($attempt) {
   # PASS or FAILED from job_wrap's done.txt; '' when the attempt never finished (killed, timed out or still running)
   $done = Join-Path $attempt 'done.txt'
@@ -784,6 +794,48 @@ switch ($Action) {
     }
     Write-Free $script:freed
   }
+  'dropwait' {
+    # Issue 1396 (Board, Nov 22): the PC relays an attempt only after its tail, so the tail's dropcheckouts finds no branch,
+    # and with a new job name every night no later attempt of the same job clears it (20 checkouts of about 8 GB each in
+    # one night). The tail starts this in a hidden window. It asks origin (git ls-remote) for this attempt's relay branch
+    # every OJ_DROPWAIT_POLL_SECONDS (300) for up to OJ_DROPWAIT_SECONDS (43200, 12 hours). Each time the branch is new or
+    # has moved it runs dropcheckouts' own proof and drop (Drop-Attempt) for this attempt only: the job's own leftovers
+    # (RULEBOOK 3.3, R326), under the mirror writers' lock like every live drop. It ends once no listed checkout is left,
+    # or at the limit (the janitor's relay sweep covers anything later). dry: one look and the dry proof, nothing removed
+    # or fetched.
+    $attempt = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
+    $problem = Get-AttemptProblem $attempt
+    if ($problem) { Write-Output "checkouts kept: $problem"; break }
+    $script:dropDry = $B -eq 'dry'
+    if ($B -and -not $script:dropDry) { throw "dropwait takes only dry after the attempt folder, got: $B" }
+    $script:freed = [long]0
+    $place = Get-RelayPlace $attempt (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt)
+    if (-not $place) { Write-Output "checkouts kept: no relay branch named for $attempt"; break }
+    $poll = 300; if ("$env:OJ_DROPWAIT_POLL_SECONDS" -match '\A[1-9][0-9]{0,4}\z') { $poll = [int]$env:OJ_DROPWAIT_POLL_SECONDS }
+    $limit = 43200; if ("$env:OJ_DROPWAIT_SECONDS" -match '\A[0-9]{1,6}\z') { $limit = [int]$env:OJ_DROPWAIT_SECONDS }
+    Write-Output "waiting for $($place.Ref) on origin (from $($place.From)) to clear $attempt; every $poll s for up to $limit s"
+    $clock = [Diagnostics.Stopwatch]::StartNew(); $seen = ''
+    while ($true) {
+      if (-not @(Get-ListedLeft $attempt).Count) { Write-Output "no listed checkout left in $attempt"; break }
+      $tip = ''
+      try {
+        $line = @(Run-Git ls-remote $source "refs/heads/$($place.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
+        if ($line) { $tip = "$line".Substring(0, 40) }
+      } catch { Write-Output "relay check failed, tried again later: $($_.Exception.Message)" }
+      if ($tip -and $tip -ne $seen) {
+        $seen = $tip
+        Write-Output "relay branch $($place.Ref) is on origin at $tip"
+        Drop-Attempt $attempt
+      }
+      if ($script:dropDry) { if (-not $tip) { Write-Output "checkouts kept: $($place.Ref) is not on origin yet (dry: one look)" }; break }
+      if ($clock.Elapsed.TotalSeconds + $poll -gt $limit) {
+        if (@(Get-ListedLeft $attempt).Count) { Write-Output "checkouts kept: $attempt still lists checkouts after $limit s; the janitor's relay sweep handles it later" }
+        break
+      }
+      Start-Sleep -Seconds $poll
+    }
+    if (-not $script:dropDry) { Write-Free $script:freed }
+  }
   'dropjobs' {
     # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
     # the janitor calls this hourly and after jobs. Every PASS attempt <job>\out_* that still lists a
@@ -802,8 +854,7 @@ switch ($Action) {
         if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
         $list = Join-Path $att.FullName 'checkouts.txt'
         if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { continue }
-        # A listed checkout, or its recorded <name>.removing left by a removal a lock stopped (review of PR 1592), is left.
-        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $att.FullName "$($Matches[1]).removing")))) { $Matches[1] } })
+        $left = @(Get-ListedLeft $att.FullName)
         if (-not $left.Count) { continue }
         $problem = Get-AttemptProblem $att.FullName
         if ($problem) { Write-Output "checkouts kept: $problem"; continue }

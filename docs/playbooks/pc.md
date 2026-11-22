@@ -66,6 +66,11 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `OJ_KEEP_CHECKOUTS=1` skips the step at the tail. Known and accepted: clearing read-only on git packs also clears it on
   the mirror's hard-linked copies, the logged GB counts hard-linked bytes the mirror still holds, and an error
   mid-removal leaves a half-removed checkout behind.
+- The relay lands after a job's tail, so the tail also starts a hidden waiter (`opus_job_head.ps1 dropwait <attempt>`,
+  log `<job>\dropwait_<attempt>.txt`). It asks origin for the attempt's relay branch every 5 minutes for up to 12 hours,
+  and each time the branch appears or moves it runs the same proof and drop for that attempt only. Past 12 hours the
+  janitor's relay sweep covers it. `OJ_NO_DROPWAIT=1` skips the waiter (issue 1396; Nov 22, with a new job name every
+  night no later attempt cleared the last one: 20 checkouts, about 8 GB each).
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
   folders and kept checkouts) holds the mirror writers' lock `repo-mirror.git.lock` from its last proof through the
   delete, so no lane's fetch or prune can drop a ref the proof read in between (issue 1396, Artoo on PR 1592). A lane

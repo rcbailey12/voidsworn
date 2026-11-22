@@ -175,4 +175,12 @@ if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOU
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
 if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+rem Issue 1396 (Board, Nov 22): the relay lands after this tail, so a hidden waiter (dropwait) asks origin for the relay
+rem branch every 5 minutes for up to 12 hours and then runs the same proof and drop for this attempt only. Its log is
+rem <job>\dropwait_<attempt>.txt. The job ends now; OJ_NO_DROPWAIT=1 skips it (tests).
+set "OJ_WAIT="
+if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"
+for %%L in ("%OJ_OUT%") do set "OJ_WAITLOG=%%~dpLdropwait_%%~nxL.txt"
+if defined OJ_WAIT powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -WindowStyle Hidden -FilePath powershell.exe -RedirectStandardOutput $env:OJ_WAITLOG -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" dropwait \"{1}\"' -f $env:OJ_PS, $env:OJ_OUT)" > nul 2>&1
+if defined OJ_WAIT >> "%OJ_ST%" echo checkouts: a hidden waiter clears them once the relay is on origin; log %OJ_WAITLOG%
 exit /b %OJ_RC%
