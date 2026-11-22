@@ -11,6 +11,9 @@ set "TMO=%ROOT%tools\pc\tmo.bat"
 set "LOG=%ROOT%..\shots\g2_export_log.txt"
 set "PROJ=%ROOT%godot"
 if not "%~1"=="" set "PROJ=%ROOT%%~1"
+rem Issue 1663: the overnight export passes its checkout's full path (C:\...).
+set "G2_ARG=%~1"
+if defined G2_ARG if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"
 set "TPL=%APPDATA%\Godot\export_templates\4.7.2.stable"
 echo export %date% %time% from %PROJ% > "%LOG%"
 if not exist "%TPL%\windows_release_x86_64.exe" (
@@ -75,6 +78,11 @@ rem the latest smoke under fixed names for people (no report this run: the old c
 if exist "%SMOKE_REPORT%" (move /y "%SMOKE_REPORT%" "%SHOTS%\g2_export_smoke.json" >nul) else (if exist "%SHOTS%\g2_export_smoke.json" del /f /q "%SHOTS%\g2_export_smoke.json")
 if exist "%SMOKE_OUT%" move /y "%SMOKE_OUT%" "%SHOTS%\g2_export_smoke_output.txt" >nul
 if not "%SMOKE_OK%"=="1" goto failed
+rem Issue 1663: the overnight export never replaces the live folder while the game runs (Ryan playing it).
+if not "%G2_PROMOTE_ONLY_IDLE%"=="1" goto promote
+tasklist /fo csv /nh 2>nul | findstr /i /c:"\"Voidsworn.exe\"" /c:"\"Voidsworn.console.exe\"" >nul
+if not errorlevel 1 (echo FAIL: Voidsworn is running, so the live export was not replaced; the candidate stays in %CANDIDATE_EXPORT% >> "%LOG%" & exit /b 1)
+:promote
 rem Keep the old folder intact. Roll it back if the second same-volume move fails.
 powershell -NoProfile -Command ^
   "$ErrorActionPreference = 'Stop'; $live = $env:LIVE_EXPORT; $backup = $env:BACKUP_EXPORT; $saved = $false;" ^
