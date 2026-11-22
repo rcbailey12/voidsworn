@@ -12,6 +12,7 @@ const ChoiceScript := preload("res://ui/campaign/choice_button.gd")
 const StoryScript := preload("res://story/story.gd")
 const Career := preload("res://story/career.gd")
 const JSM := preload("res://rules/jsm.gd")
+const PlayerPath := preload("res://main/player_path.gd")
 # RULEBOOK 8.4 and the sound playbook: count cues by family, never by one exact table total. Each family below lists the
 # takes it has now and is a floor: adding a cue to a family passes, removing one fails. A new cue id with no family fails.
 const CUE_FAMILIES := {
@@ -413,6 +414,21 @@ func _issue_1448(sfx_node: Node, real_music: Node) -> void:
 		picked = ear.heard.has("ui_reward")
 		break
 	_ok(picked or C.modal_d == null, "1448 a number key that takes a reward chimes too (%s)" % str(ear.heard))
+	# the player-path recorder presses the real button for a campaign choice, so its recordings carry the cue (SND1C's
+	# reward picks were silent: the recorder called the action under the button)
+	var rec := ""
+	for k in 6:
+		await _frames(3)
+		if C.modal_d == null: break
+		var ra = (C.modal_d["acts"] as Array).filter(func(a): return a[2] == 1 and str(a[0]) in CampaignUI.REWARD_ACTS)
+		if ra.is_empty(): break
+		ear.heard.clear()
+		var pressed := PlayerPath.press_act(ui, str(ra[0][0]), str(ra[0][1]))
+		rec = "%s %s pressed=%s heard=%s" % [ra[0][0], ra[0][1], pressed, str(ear.heard)]
+		_ok(pressed and ear.heard.has("ui_reward"), "1448 the recorder presses the reward button and the recording hears ui_reward (%s)" % rec)
+		break
+	_ok(rec != "", "1448 a reward choice is left for the recorder check")
+	_ok(not PlayerPath.press_act(ui, "noSuchAct", ""), "1448 the recorder falls back when no button carries the action")
 	var bad := []
 	for sc in screens:
 		if screens[sc][0] == 0 or not (screens[sc][1] as Array).is_empty(): bad.append("%s: %d pressable, unwired %s" % [sc, screens[sc][0], str(screens[sc][1])])

@@ -199,7 +199,11 @@ func _campaign_step(host: Node) -> bool:
 		ui.pick_route(id)
 		await _pause(1.0)
 		var jumped := _frame()
-		ui._jump()
+		var jb = ui.get("_jump_btn")
+		if jb is BaseButton and is_instance_valid(jb) and jb.is_visible_in_tree() and not jb.disabled:
+			jb.pressed.emit()   # the Jump button, with its cue (issue 1448)
+		else:
+			ui._jump()
 		# Normal map mode animates the ship's jump before handing over to the campaign.
 		for i in 45:
 			if host.in_battle or c.modal_d != null:
@@ -220,8 +224,25 @@ func _campaign_step(host: Node) -> bool:
 		return false
 	_event("campaign_choice", {"page": page, "action": choice[0], "choice": choice[1]})
 	await _pause(1.0)
-	ui._campaign_action(str(choice[0]), str(choice[1]))
+	# Issue 1448: press the button a player would, so the recording carries its cue; the action itself is the fallback.
+	if not press_act(host, str(choice[0]), str(choice[1])):
+		_event("choice_unpressed", {"action": choice[0], "choice": choice[1]})
+		ui._campaign_action(str(choice[0]), str(choice[1]))
 	return true
+
+
+# The visible, enabled button tagged with this campaign action (campaign_ui.press_tag); true once it is pressed.
+static func press_act(root: Node, act: String, arg: String) -> bool:
+	if root == null:
+		return false
+	for n in root.find_children("*", "Control", true, false):
+		if str(n.get_meta("press_act", "")) != act or str(n.get_meta("press_arg", "")) != arg:
+			continue
+		if n.is_queued_for_deletion() or not n.is_visible_in_tree() or bool(n.get("disabled")) or not n.has_signal("pressed"):
+			continue
+		n.emit_signal("pressed")
+		return true
+	return false
 
 
 func _offered(c, on: Array) -> Array:

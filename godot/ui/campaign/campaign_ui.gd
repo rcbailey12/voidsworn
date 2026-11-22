@@ -273,6 +273,7 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
@@ -295,6 +296,7 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	b.custom_minimum_size = Vector2(ceil(tw) + px(24) + px(28), px(46))
 	GS.finish_sheen(b, k)
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "primary"))
 	return b
@@ -333,6 +335,7 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	b.add_child(row)
 	var aa = found[1]
 	b.set_meta("act", act); b.set_meta("arg", aa)   # its key for keeping focus across a re-render (_focus_key)
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "quiet"))
 	return b
@@ -637,6 +640,7 @@ func kbtn(text: String, act: String, arg = "", role: String = "quiet", size: flo
 	var b = Kit.link(text, k, Callable(), size) if role == "link" else Kit.button(text, k, role, Callable(), size)
 	b.disabled = found[2] == 0
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, role))
 	return b
@@ -2496,6 +2500,10 @@ const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
 const REWARD_ACTS := ["takeMod", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+# Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
+# calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
+static func press_tag(b: Control, act: String, arg) -> void:
+	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
 func cue_role(act: String, fallback: String) -> String:
 	if act in REWARD_ACTS: return "reward"
 	if act in BACK_ACTS: return "back"
