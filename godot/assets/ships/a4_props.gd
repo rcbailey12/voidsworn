@@ -354,6 +354,8 @@ static func hulk(code: String) -> Node3D:
 # derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard.
 const HULK_BAND := Vector2(0.04, 0.12)
 const DEAD_DIM := 0.6   # a dead hull with no lights: its paint dimmed before any soot
+const OBSIDIAN := Color(0.22, 0.19, 0.28)   # an Eclipse hulk's effective albedo: violet-black obsidian (R420 Law 3)
+const OBSIDIAN_ROUGH := 0.3                 # obsidian keeps a glassy sheen
 # The burn comes from the faction's own wound profile (fx/faction_looks.json "wound": scorch_col, wreck_soot; PR 1755,
 # issue 1741), the one home for how a faction's hull scorches. Until that block is on main these are its values.
 const WOUND_FALLBACK := {
@@ -454,7 +456,16 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var soot := clampf(float(w.get("wreck_soot", 0.0)), 0.0, 1.0)
 	var sc: Array = w.get("scorch_col", [0.1, 0.1, 0.1])
 	var c := src.albedo_color
+	var mean := texture_mean(src)
+	if fac == "deathless":
+		# Ryan, Nov 22 2026 (Astra's cleanup, item 4): an Eclipse hulk is dark obsidian, violet-black and glossy, never a
+		# dimmed paint that reads brown; the tint is solved so paint times tint lands on OBSIDIAN, then held in the band
+		var t := Color(minf(1.0, OBSIDIAN.r / maxf(mean.r, 0.02)), minf(1.0, OBSIDIAN.g / maxf(mean.g, 0.02)),
+			minf(1.0, OBSIDIAN.b / maxf(mean.b, 0.02)), c.a)
+		b.albedo_color = into_band(t, mean)
+		b.roughness = minf(src.roughness, OBSIDIAN_ROUGH)
+		return b
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
-	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), texture_mean(src))
+	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
 	return b

@@ -202,6 +202,18 @@ func _hulk_checks() -> void:
 		lo = mini(lo, per[f])
 		hi = maxi(hi, per[f])
 	_report(per.size() == 6 and lo > 6000 * 0.12 and hi < 6000 * 0.22, "an ambient draw gives each faction about a sixth: %s" % str(per))
+	# an Eclipse hulk is dark violet obsidian whatever its paint (Ryan, Nov 22: Astra's cleanup item 4), glossy, not brown
+	var warm := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	warm.fill(Color(0.55, 0.42, 0.3))
+	var ecl_src := StandardMaterial3D.new()
+	ecl_src.albedo_texture = ImageTexture.create_from_image(warm)
+	ecl_src.roughness = 0.7
+	var ecl := PROPS.derelict(ecl_src, "deathless")
+	var ee := PROPS.texture_mean(ecl_src) * ecl.albedo_color
+	var ey := PROPS.linear_luma(Color(ee.r, ee.g, ee.b))
+	_report(ee.b > ee.r and ee.r > ee.g and ey <= PROPS.HULK_BAND.y + 1e-3 and ey >= PROPS.HULK_BAND.x - 1e-3
+		and ecl.roughness <= 0.3 + 1e-4 and not ecl.emission_enabled,
+		"an Eclipse hulk over warm paint lands on dark violet obsidian %s (%.3f linear), glossy" % [str(ee), ey])
 	# a textured pale glass hull stays in the dull band once its texture is counted (Fable on PR 1772, H9)
 	var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.95, 0.97, 1.0))
