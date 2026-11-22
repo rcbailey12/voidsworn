@@ -9,6 +9,9 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # 3. small hulls: four seeded archetypes, the same pick for the same ship and death count, all four in use
 # 4. strike craft: the corkscrew; 5. the afterlife: 2 or 3 quiet pops on a big wreck within 10 s of the break
 # 6. the battle's view cause: "ram" and "board" only right after their event, the rules' cause otherwise
+# 7. (Fable audit of PRs 1631 and 1666) a ram kill cuts like the rules' "big"; loose debris and crush sparks take the
+#    faction's own matter: metal shards on metal hulls, glass on Glasswrights, bile flecks (no plate) on the Chorus, cold
+#    shards on Eclipse, no brass sparks on those three (R367, R402)
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")
@@ -173,8 +176,59 @@ func _run() -> void:
 	check(bt.view_cause("flay", "g") == "flay", "battle: a boarding mark only turns a dark kill into the boarding death")
 	check(bt.view_cause("flay", "x") == "flay", "battle: any other kill keeps the rules' cause")
 	bt.free()
+	await _debris_check()
 	print("DEATH_VARIETY failures=%d" % failures)
 	quit(1 if failures else 0)
+
+
+func _debris_check() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	var fx = FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
+	fx.spr_kinds = {}
+	var brass := Color(1.0, 0.82, 0.55)
+	var want := {"voidsworn": [1, 0.0], "hegemony": [1, 0.0], "corsair": [1, 0.0], "ithar": [1, 2.0], "deathless": [1, 0.0], "chorus": [0, -1.0]}
+	for fac in want:
+		var holder := Node3D.new()
+		world.add_child(holder)
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(20, 4, 6)
+		mi.mesh = box
+		holder.add_child(mi)
+		fx.add_ship("db_" + fac, holder, {"faction": fac, "cls": "Cruiser", "size": 1.0})
+		var s = fx.ship("db_" + fac)
+		if fac == "voidsworn":
+			var r1 := RandomNumberGenerator.new(); r1.seed = 7
+			var r2 := RandomNumberGenerator.new(); r2.seed = 7
+			var nb: int = DEATH.seeds_for(s, "big", r1).size()
+			var nr: int = DEATH.seeds_for(s, "ram", r2).size()
+			check(nr == nb, "ram: cut into as many pieces as a big kill (%d, big %d)" % [nr, nb])
+		var pool = fx.pools["shd"]
+		var n0: int = int(pool.emitted)
+		var k0: int = int((fx.spr_kinds as Dictionary).get(20, 0))
+		BEATS.debris(fx, s, Vector3.ZERO, fx.now, 1.0, Vector3.UP, 0.1, 0.6)
+		var pend: PackedFloat32Array = pool.pending   # one row repeated per vertex: the last 20 floats are the new shard
+		var shards: int = int(pool.emitted) - n0
+		var w: Array = want[fac]
+		check(shards == int(w[0]), "%s: %d debris shard (want %d)" % [fac, shards, int(w[0])])
+		if shards == 1:
+			var tint: float = pend[pend.size() - 20 + 18]
+			var heat: float = pend[pend.size() - 20]
+			check(is_equal_approx(tint, float(w[1])), "%s: shard look %.1f (want %.1f)" % [fac, tint, float(w[1])])
+			check((heat == 0.0) == (fac == "deathless"), "%s: shard heat %.2f (Eclipse cold, the rest glow)" % [fac, heat])
+		else:
+			check(int((fx.spr_kinds as Dictionary).get(20, 0)) > k0, "%s: a wet fleck in place of the shard" % fac)
+		var sc: Color = BEATS.spark_col(s, brass)
+		var metal: bool = fac in ["voidsworn", "hegemony", "corsair"]
+		check(sc.is_equal_approx(brass) == metal, "%s: crush spark colour %s (brass on metal hulls only)" % [fac, str(sc)])
+	world.queue_free()
+	await process_frame
 
 
 class _Probe:
