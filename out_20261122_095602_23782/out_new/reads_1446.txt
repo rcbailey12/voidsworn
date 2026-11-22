@@ -1,0 +1,48 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1446)
+GPU: acquired shared claim 4cbef8b2-f209-42fa-bfca-75fe17405c3e
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c7a3f284578842d5a1e48e5762f693b2\godot-profile-dafdbcfce4794e0a8d7489b2f2263028
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 396 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.487, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 0561d4a129b223865a43264a76da6b850923c9967e95855858bf87d834015075 4096x2048 in 10234 ms (worker)
+[world] baked 218e2577354221f052dc668751ddd67b27e130d111102d11dddd0f2e4bec4ba8 4096x2048 in 12848 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 13263 ms (worker)
+[world] baked 34256ddb7841296bd3fc3cc7d8c67930a096a6b98280436d94adc59d0399bc5e 1024x512 in 13703 ms (worker)
+[world] baked f4eee6c6fd571eff92831355ea544d92efc019a03c31043a5339597edda8389e 4096x2048 in 2201 ms (worker)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1938 ms (worker)
+[world] baked 78a3e73472eb6e584ea271ae28e3fc5cf9f275b22f7dc5c68f5da369071605fa 1024x512 in 1837 ms (worker)
+PASS s1 has a shielded enemy (x07) and a ship of yours (x04)
+PASS ROUTE-1: the view exports route and cov
+PASS ROUTE-1: the enemy stands where your ship's guns reach it
+PASS ROUTE-1: the target sheet knows the struck side is routed (quad 3)
+PASS ROUTE-1: the attack tip names the routed side and its cost
+PASS ROUTE-1: the per-gun attack tip says the struck side is routed
+PASS ROUTE-1: the ship tip says which side is routed
+PASS ROUTE-1: the KEEL shield readout names the routed side
+PASS ROUTE-1: the bubble pulses on the starboard side only ((0.0, 1.0, 0.0, 0.0))
+PASS ROUTE-1: the routed bubble stays up between hits
+PASS shot ROUTE-1 saved with its stamp (error 0)
+PASS ROUTE-1: an empty pool shows no routed side
+PASS ARC-1: the inspected enemy draws one quiet fan per gun arc and range under it (1 of 1)
+PASS ARC-1: its own reach for next turn came from the threat worker (145 hexes)
+PASS ARC-1: with both fleet overlays off, inspecting one enemy runs no fleet-wide scan
+PASS ARC-1: its reach next turn shows as one outline round the area, not a fill
+PASS shot ARC-1 saved with its stamp (error 0)
+PASS ARC-1: the fans go when nothing is inspected
+PASS ARC-1: the reach outline goes when nothing is inspected
+PASS REINF-1: the strip holds the hex the rules would bring them in on (14 hexes)
+PASS REINF-1: the board draws the arrival strip during the warning
+PASS shot REINF-1 saved with its stamp (error 0)
+PASS REINF-1: no strip before the warning round
+BATTLE_READS_1446 fails=0
+[attach] battle x04 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c7a3f284578842d5a1e48e5762f693b2\godot-profile-dafdbcfce4794e0a8d7489b2f2263028
+GPU: released shared claim 4cbef8b2-f209-42fa-bfca-75fe17405c3e

@@ -1,0 +1,6 @@
+OPUS1446B_WAIT.bat waiting for OPUS1235WD exit in opus1235wd_wait.txt Sun 11/22/2026  7:44:57.69 
+OPUS1446B start  9:55:59.67 
+OPUS1446B exit 0 at 10:16:01.01 
+run folder out_20261122_095602_23782
+result: done PASS
+all done Sun 11/22/2026 10:16:01.48 
