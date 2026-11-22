@@ -62,7 +62,14 @@ const ok = (kind) => T.acts().filter(a => a[0] === kind && a[2] === 1);
   T.ACT.unequip(s.uid + ':' + s.mods.indexOf('prow')); const mid = s.hp; T.ACT.equip('0:' + s.uid);
   check(s.hp <= 10 && s.mods.includes('prow'), '(2) Reinforced prow off and on again at 10 hull never adds hull (10 to ' + mid + ' to ' + s.hp + ')');
   const full = T.derive(s).maxHp; s.hp = full; T.ACT.unequip(s.uid + ':' + s.mods.indexOf('prow')); T.ACT.equip('0:' + s.uid);
-  check(s.hp === full, '(2) a full ship still comes back full'); }
+  check(s.hp === full, '(2) a full ship still comes back full');
+  // Artoo on PR 1602: an unrelated refit in between keeps the owed hull; a partial gain carries the rest
+  s.hp = 10; T.run.inventory.push('auspex'); T.ACT.unequip(s.uid + ':' + s.mods.indexOf('prow'));
+  T.ACT.fleetScreen(); T.ACT.equip(T.run.inventory.indexOf('auspex') + ':' + s.uid); T.ACT.equip(T.run.inventory.indexOf('prow') + ':' + s.uid);
+  check(s.mods.includes('auspex') && s.mods.includes('prow') && s.hp <= 10, '(2) prow off, a scanner on, prow on again: still no free hull (' + s.hp + ')');
+  s.mods.splice(s.mods.indexOf('prow'), 1); T.run.inventory.push('prow'); s.hp = 1; s.hpOwed = [500, 1];
+  T.ACT.equip(T.run.inventory.indexOf('prow') + ':' + s.uid);
+  check(s.hp === 1 && s.hpOwed && s.hpOwed[0] > 0 && s.hpOwed[0] < 500, '(2) a gain smaller than the owed hull pays part and carries the rest (' + JSON.stringify(s.hpOwed) + ')'); }
 
 { const target = mapSave(1559, 'event'); T.ACT.enterNode(target);
   const ev = T.event && T.event.id, n = T.saved.map.cols.flat().find(x => x.id === target);

@@ -851,13 +851,19 @@ func buyClassTrack(cls) -> bool:
 # Twin: core.js changeShip.
 func changeShip(ship: Dictionary, fn: Callable) -> void:
 	var before = derive(ship)["maxHp"]; fn.call(ship); var after = derive(ship)["maxHp"]
-	var hp = float(ship["hp"]) + (after - before)
+	# The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that
+	# moves the hull (a repair, a battle) ends it (Artoo on PR 1602).
 	var ow = ship.get("hpOwed")
-	if ow is Array:
-		ship.erase("hpOwed")
-		if after > before and float(ship["hp"]) == float(ow[1]): hp -= min(float(ow[0]), float(after - before))
-	if hp < 1: ship["hpOwed"] = [1 - hp, 1]
-	ship["hp"] = clampv(hp, 1, after)
+	var owed: float = float(ow[0]) if (ow is Array and float(ship["hp"]) == float(ow[1])) else 0.0
+	var hp = float(ship["hp"]) + (after - before)
+	if after > before and owed > 0:
+		var pay = min(owed, float(after - before)); hp -= pay; owed -= pay
+	if hp < 1:
+		owed += 1 - hp; hp = 1
+	hp = clampv(hp, 1, after)
+	if owed > 0: ship["hpOwed"] = [owed, hp]
+	else: ship.erase("hpOwed")
+	ship["hp"] = hp
 func changeFleet(fn: Callable) -> void:
 	var b = []
 	for s in RUN["fleet"]: b.append(derive(s)["maxHp"])

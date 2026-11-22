@@ -117,6 +117,20 @@ func _case_hull() -> void:
 	var full = C.derive(s)["maxHp"]; s["hp"] = full
 	C.act("unequip", str(s["uid"]) + ":" + str((s["mods"] as Array).find("prow"))); C.act("equip", "0:" + str(s["uid"]))
 	_check(float(s["hp"]) == float(full), "(2) a full ship still comes back full (%s of %s)" % [str(s["hp"]), str(full)])
+	# Artoo on PR 1602: an unrelated refit in between keeps the owed hull, and so does a reload
+	s["hp"] = 10.0; C.RUN["inventory"].append("auspex")
+	C.act("unequip", str(s["uid"]) + ":" + str((s["mods"] as Array).find("prow")))
+	C.act("fleetScreen"); C.act("equip", str(C.RUN["inventory"].find("auspex")) + ":" + str(s["uid"]))
+	var D = _cold(path); var t = null
+	for x in D.RUN["fleet"]:
+		if x["uid"] == s["uid"]: t = x
+	D.act("fleetScreen"); D.act("equip", str(D.RUN["inventory"].find("prow")) + ":" + str(t["uid"]))
+	_check((t["mods"] as Array).has("auspex") and (t["mods"] as Array).has("prow") and float(t["hp"]) <= 10.0, "(2) prow off, a scanner on, a reload, prow on again: still no free hull (%s)" % str(t["hp"]))
+	# a partial gain carries the rest
+	t["mods"].erase("prow"); D.RUN["inventory"].append("prow"); t["hp"] = 1.0; t["hpOwed"] = [500.0, 1.0]
+	D.act("fleetScreen"); D.act("equip", str(D.RUN["inventory"].find("prow")) + ":" + str(t["uid"]))
+	var ow = t.get("hpOwed")
+	_check(float(t["hp"]) == 1.0 and ow is Array and float(ow[0]) > 0.0 and float(ow[0]) < 500.0, "(2) a gain smaller than the owed hull pays part and carries the rest (hp %s, owed %s)" % [str(t["hp"]), str(ow)])
 
 func _case_event() -> void:
 	var path := DIR.path_join("event.json")
