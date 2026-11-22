@@ -4,7 +4,6 @@ extends SceneTree
 # "Folded" miss or the "Blood frenzy +N" regrowth callout shows, and each moment is saved.
 # Run: godot --path godot --script res://bench/abil_1649_shot.gd -- --scenario s1649_fold --out <folder>
 const BattleScene = preload("res://scenes/battle/battle.tscn")
-const PP = preload("res://tools/picture_provenance.gd")
 var b
 var out_dir := "user://abil_1649"
 var lines: Array = []
@@ -41,7 +40,7 @@ func _shot(name: String) -> bool:
 	var img: Image = root.get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var path := out_dir.path_join(name + ".png")
-	var err = PP.save_png(img, path, PP.capture_stage())
+	var err = preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage())
 	if err != OK or not FileAccess.file_exists(path) or not FileAccess.file_exists(path + ".provenance.json"):
 		_say("[abil1649] FAIL could not save %s (error %s)" % [name, str(err)])
 		return false
