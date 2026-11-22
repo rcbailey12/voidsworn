@@ -400,6 +400,20 @@ try {
   write(path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 'T6_11 newer shared bake, different');
   buildTimes.push([path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 10]);
   dateTree(helperShip, 30);
+  // Artoo on PR 1592 (cd20c292): a checkout inside out is not hashed as a result but must still pass the Git proof. Every
+  // real result relayed; the nested checkout holds an unsaved file (opus1396n) or an unpushed commit (opus1396u): the
+  // whole folder and the work survive.
+  const nestDirty = helperFolder('opus1396n', { 'out/result.txt': 'opus1396n result relayed' });
+  relay(path.join(nestDirty, 'out', 'result.txt'));
+  const nestDirtyRepo = makeCopy('repo', 2, path.join(nestDirty, 'out'));
+  write(path.join(nestDirtyRepo, 'notes.txt'), 'unsaved notes in a nested checkout');
+  dateTree(nestDirty, 30);
+  const nestLocal = helperFolder('opus1396u', { 'out/result.txt': 'opus1396u result relayed' });
+  relay(path.join(nestLocal, 'out', 'result.txt'));
+  const nestLocalRepo = makeCopy('repo', 2, path.join(nestLocal, 'out'));
+  const nestUnpushed = commit(path.join(nestLocalRepo, '.git'), 'unpushed work in a nested checkout', main);
+  git(['-C', nestLocalRepo, 'update-ref', 'refs/heads/main', nestUnpushed]);
+  dateTree(nestLocal, 30);
   // A relayed helper whose clone has a live external worktree (it could hold staged-only work under the clone's .git).
   const helperWorktree = helperFolder('opus909', { 'out/result.txt': 'opus909 result relayed' });
   relay(path.join(helperWorktree, 'out', 'result.txt'));
@@ -533,7 +547,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, suffixRelayed, ...jobCheckoutsGone, ...recover];
-  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -602,6 +616,9 @@ try {
   // DRY2 on the PC (Artoo on PR 1592): a checkout inside an out folder is not output. Its files and pack are never hashed
   // as results; it takes the Git proof instead. pt1120c's out_A holds repo_A beside two unrelayed results: 2 of 2.
   assert.match(decision(dry, playtest, 'would keep'), /results not all relayed: 2 of 2 out files are not on a relay branch/);
+  for (const [dir, repo] of [[nestDirty, nestDirtyRepo], [nestLocal, nestLocalRepo]]) {
+    assert.match(decision(dry, dir, 'would keep'), new RegExp(`checkout ${repo.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} is not rebuildable: `), 'a nested checkout with local work keeps its folder: ' + dry);
+  }
   assert(!/helper file not on a relay branch: [^\r\n]*[\\/]\.git[\\/]/.test(dry) && !dry.includes(`helper file not on a relay branch: ${playtestRepo}`), 'no file inside a checkout is hashed as a result');
   assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
   const headOf = dir => git(['-C', dir, 'rev-parse', 'HEAD']);
