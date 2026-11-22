@@ -1564,6 +1564,9 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.ability(str(e["unit"]), ab)
 			else:
 				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
+			if ab == "phase":   # issue 1649: Fold skip leaves a violet after-image where the ship stood (Eclipse violet, never green)
+				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
+				sfx.play("phase", {"pos": _pos(e["unit"])})
 			if ab == "blink" and e.get("hex") != null:
 				sfx.play("phase", {"pos": _pos(e["unit"])})
 				var sv = views.get(e["unit"])
