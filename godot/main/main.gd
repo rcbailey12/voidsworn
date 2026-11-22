@@ -339,8 +339,7 @@ func show_title() -> void:
 	add_child(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
 	if _showcase_wanted():
-		_showcase_timer = get_tree().create_timer(0.5)
-		_showcase_timer.timeout.connect(_start_showcase)
+		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
 
@@ -427,7 +426,6 @@ func _start_showcase() -> void:
 # Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
 # setting (Low has none), so what shows is what the setting gives
 var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
-var _showcase_timer: SceneTreeTimer   # the newest backdrop timer (checks wait on it)
 
 
 func restart_showcase() -> void:
@@ -438,12 +436,17 @@ func restart_showcase() -> void:
 	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
 		title.cover_showcase()
 	if _showcase_wanted():
-		var gen := _showcase_gen
-		_showcase_timer = get_tree().create_timer(0.3)
-		_showcase_timer.timeout.connect(func() -> void:
-			# a quicker press (say on to Low) since this was asked for wins: only the newest request, still wanted, builds
-			if gen == _showcase_gen and _showcase_wanted():
-				_start_showcase())
+		_arm_rebuild(_showcase_gen)
+
+
+func _arm_rebuild(gen: int) -> void:
+	get_tree().create_timer(0.3).timeout.connect(_rebuild_due.bind(gen))
+
+
+# a quicker press (say on to Low) since this was asked for wins: only the newest request, still wanted, builds
+func _rebuild_due(gen: int) -> void:
+	if gen == _showcase_gen and _showcase_wanted():
+		_start_showcase()
 
 
 # the title's battle backdrop: not in bot or headless runs, never on Low (Low has none), not with --no-showcase

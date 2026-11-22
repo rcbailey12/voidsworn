@@ -36,19 +36,18 @@ class TestMain extends MAIN:
 	func restart_showcase() -> void:
 		restarts += 1
 		super.restart_showcase()
-	# headless has no backdrop; stand in for a windowed run so the rebuild timers are armed
-	func _showcase_wanted() -> bool: return str(settings.get("quality", "max")) != "low"
+	var armed := false   # off until the title is up, so its own first backdrop timer is never armed here
+	var pending: Array[int] = []
+	# headless has no backdrop; stand in for a windowed run, and keep each rebuild request to fire by hand in order
+	func _showcase_wanted() -> bool: return armed and str(settings.get("quality", "max")) != "low"
 	func _start_showcase() -> void: starts += 1
+	func _arm_rebuild(gen: int) -> void: pending.append(gen)
+	func fire() -> void:
+		var due := pending.duplicate()
+		pending.clear()
+		for g in due: _rebuild_due(g)
 
 var failures := 0
-
-
-# wait for the newest backdrop timer main armed, then one frame for its callback
-func _timer_fired(tm) -> void:
-	var t: SceneTreeTimer = tm._showcase_timer
-	if t != null and t.time_left > 0.0:
-		await t.timeout
-	await process_frame
 
 
 func _check(ok: bool, message: String) -> void:
@@ -135,7 +134,10 @@ func _run() -> void:
 		tm.settings["fps_cap"] = 60.0
 		tm._apply_settings()
 		_check(Engine.max_fps == 0, "6: a check run with a saved 60 fps cap leaves the frame cap off (%d)" % Engine.max_fps)
-		tm.settings["fps_cap"] = 0.0
+		# the check sandbox is shared by the checks in one run: start these rows from today's defaults, whatever an
+		# earlier check saved
+		for k in ["render_scale", "fps_cap", "vsync", "quality", "taa"]:
+			tm.settings[k] = {"render_scale": 1.0, "fps_cap": 0.0, "vsync": true, "quality": "max", "taa": false}[k]
 		tm.show_title()
 		tm.title._settings()
 		for i in 3: await process_frame
@@ -155,23 +157,23 @@ func _run() -> void:
 			back.free()
 		var have_q: bool = rows.has("quality") and rows.has("taa")
 		if have_q:
-			await _timer_fired(tm)   # the title's own first backdrop timer
+			tm.armed = true
 			tm.starts = 0
 			rows["quality"].pressed.emit()   # Max to High
-			await _timer_fired(tm)
+			tm.fire()
 			var one: int = tm.starts
 			rows["taa"].pressed.emit()
-			await _timer_fired(tm)
+			tm.fire()
 			var two: int = tm.starts
 			rows["quality"].pressed.emit()   # High to Low
 			rows["taa"].pressed.emit()
 			rows["quality"].pressed.emit()   # quickly: back to Max ...
 			rows["quality"].pressed.emit()   # ... and on to High
-			rows["quality"].pressed.emit()   # ... then Low before any timer fires
-			await _timer_fired(tm)   # the newest pending rebuild (from High) has fired, so every earlier one has too
+			rows["quality"].pressed.emit()   # ... then Low, before any rebuild is due
+			tm.fire()   # every request still pending comes due, oldest first
 			var low_starts: int = tm.starts - two
 			rows["quality"].pressed.emit()   # Low to Max
-			await _timer_fired(tm)
+			tm.fire()
 			_check(one == 1 and two == 2, "6: a new Graphics or TAA setting rebuilds the battle behind the menu (%d, %d)" % [one, two])
 			_check(low_starts == 0 and str(tm.settings["quality"]) == "max" and tm.starts == two + 1, "6: a quick switch to Low cancels every pending rebuild; Max again builds one (%d during Low, %d after)" % [low_starts, tm.starts - two])
 		else:
