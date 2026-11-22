@@ -10,6 +10,7 @@ accepted. Ryan's done-when still needs the PC captures after green checks and th
 | PV2_board_close.jpg | The same five, close over the lit limb |
 | PV2_backdrop_1.jpg, PV2_backdrop_2.jpg | The eight backdrop planets (world_sky.gd PLANETS 0 to 7), before and after |
 | PV2_moons.jpg | The four new moon minerals; before, every moon was one of two looks (rock or ice) |
+| PV2_standin.jpg | Each board look with its final maps (top) and the procedural stand-in it keeps if the maps miss the loading cover (bottom) |
 
 Made with `godot/world/planet_v2_shots.gd` (the same script draws the old board path on a checkout without
 `install_board`), then cropped and labelled. PC capture (Board queues it):
