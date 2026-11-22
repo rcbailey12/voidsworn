@@ -442,6 +442,15 @@ func set_nemesis(info: Dictionary) -> void:
 
 
 # --- the ship that is up (or the one you inspect): name, class and captain, hull, shields, armour, move, turns
+# issue 1708 (Ryan, Nov 22): the bottom sheet hides while an event plays and comes back when it ends
+func set_playing(on: bool) -> void:
+	_last["set_playing"] = [on]
+	if ledger.playing == on:
+		return
+	ledger.playing = on
+	ledger.mark()
+
+
 func set_panel(info: Dictionary) -> void:
 	_last["set_panel"] = [info]
 	_panel_info = info
