@@ -41,6 +41,7 @@ func _init() -> void:
 		["ram: +50% ram damage, cap 50% of the target, no recoil", c_ram],
 		["mirror: the first hull hit sends half back once, a boss takes at most 10%", c_mirror],
 		["mirror: inside a volley the reflect waits for the volley's end", c_mirror_volley],
+		["mirror: a torpedo hit reflects onto the live launcher, not its flight copy", c_mirror_torp],
 		["marks: a hit the shields fully absorb still places the flank and spotter marks", c_marks_shield],
 		["beacon: +2 movement and +1 turn on round 1 only", c_beacon],
 		["quiet: round 1 blocks enemy fire from 6 or more hexes, not closer and not in round 2", c_quiet],
@@ -251,3 +252,17 @@ func c_marks_shield() -> Array:
 	wing["isSq"] = true; wing["dead"] = false
 	var r2 = R.applyHit(wing, wing["weapons"][0], t, 5.0, 0)    # a wing hit, all on the shields
 	return [r1["hull"] == 0 and r2["hull"] == 0 and t["hp"] == hp0 and t.get("flankMark") == B["round"] and t.get("spotMark") == B["round"], "hull %s/%s, flank %s, spot %s" % [r1["hull"], r2["hull"], t.get("flankMark"), t.get("spotMark")]]
+
+func c_mirror_torp() -> Array:
+	fresh(["warden"], "hegemony", ["h_picket"], ["mirror"])
+	var u = P[0]; var t = E[0]
+	u["q"] = 8; u["r"] = 8; u["facing"] = 3; t["q"] = 11; t["r"] = 8; t["facing"] = 3
+	t["hp"] = 500; t["maxHp"] = 500
+	for i in range(u["sh"].size()): u["sh"][i] = 0
+	u["weapons"] = []
+	var w = R.mkWeapon("torp", "F", {}); t["weapons"] = [w]
+	var i := 0
+	while i < 30 and not R.jt(u.get("mirrorUsed")):
+		w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; t["postFire"] = false
+		R.fireWeapon(t, 0, u); i += 1
+	return [R.jt(u.get("mirrorUsed")) and t["hp"] < 500 and B.get("mirrorQ") == null, "latched %s after %d shots, launcher hp %s" % [u.get("mirrorUsed"), i, t["hp"]]]

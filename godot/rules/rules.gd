@@ -3594,6 +3594,9 @@ func settleMirror() -> void:
 	var q: Array = B["mirrorQ"]; B.erase("mirrorQ")
 	for e in q:
 		var t = e["t"]; var att = e["att"]
+		if jt(att.get("ghost")):   # a torpedo hits through a copy of its launcher: reflect onto the live ship (Artoo on PR 1744)
+			for x in B["units"]:
+				if x["id"] == att["id"]: att = x; break
 		if jt(att.get("dead")): continue
 		var back = JSM.jsround(e["hull"] * rfx("mirror"))
 		if jt(att.get("boss")): back = min(back, JSM.jsround(att["maxHp"] * 0.1))
