@@ -1736,6 +1736,8 @@ void fragment() {
 		float cool = exp(-age / 3.0);
 		float mol = exp(-max(s - 0.9, 0.0) * 2.4);
 		em = heatRamp(cool * mol) * mol * cool * 5.0;
+		// issue 1587: a dull cherry tail so the cut keeps a faint glow to about 10 s before it goes to cold char
+		em += vec3(0.45, 0.05, 0.01) * mol * 0.5 * exp(-age / 6.0) * (1.0 - cool);
 		alb += vec3(0.05, 0.035, 0.07) * smoothstep(1.4, 2.4, s) * (1.0 - smoothstep(2.4, 3.8, s)) * (1.0 - cool) * (0.5 + streak);
 		a = max(charr * (0.7 + 0.3 * streak), mol * cool);
 	} else if (style == 7) {
