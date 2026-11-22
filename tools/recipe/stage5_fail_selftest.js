@@ -216,7 +216,7 @@ console.log('Evidence: ' + root);
 const fixtureRepo = path.join(root, 'scripts');
 for (const file of ['tools/recipe/5_paint_bake.bat', 'tools/recipe/env.bat', 'tools/pc/jobs/bench207_scene_gate.bat',
   'tools/blender/r209/bakeAb6.py', 'tools/blender/r209/bake_sheet.py', 'tools/blender/r209/render.py',
-  'tools/blender/r209/close6.py', 'tools/recipe/surface_check.py']) {
+  'tools/blender/r209/close6.py', 'tools/recipe/surface_check.py', 'tools/recipe/detail_check.py']) {
   const dest = path.join(fixtureRepo, file);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(path.join(ROOT, file), dest);
@@ -315,7 +315,8 @@ for (const step of ['bake', 'render', 'surface', 'close']) {
 stage5Case('surfacefail', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_SURFACE_FAIL: '1', FAKE_FAIL_CODE: '7' }, r =>
   expectFail('stage 5 surface exit fails even with a PASS marker', r, ['Stage 5 FAILED: the surface check exited code 7']));
 stage5Case('detailfail', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_DETAIL_FAIL: '1', FAKE_FAIL_CODE: '5' }, r =>
-  expectFail('stage 5 stops a ship under its surface-detail floor', r, ['Stage 5 FAILED: the surface-detail check failed']));
+  // the fake check's own FAIL line proves the stage ran detail_check.py, not a missing copy of it (issue 1739)
+  expectFail('stage 5 stops a ship under its surface-detail floor', r, ['FAIL detail check: flat clay surface (fake)', 'Stage 5 FAILED: the surface-detail check failed']));
 stage5Case('sheetviews', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_SHIP_SHEET: 'corsair_A17', FAKE_SHEET_VIEWS: '1' }, r => {
   check(r.code === 0 && r.text.includes('Stage 5 done'), 'sheet paint views failed: ' + r.text);
   pass('stage 5 sheet ships select the paint views and finish all three passes');
