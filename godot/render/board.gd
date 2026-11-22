@@ -986,11 +986,11 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 const BEACON_LEN := 12.0      # O3's length_world 7.5 times the board's ship scale (hull_table SHIP_K 1.6)
 const BEACON_TOP := -0.6      # the highest point of the beacon, just under the grid
 const BEACON_TILT := 35.0     # degrees the lens is tipped up from level
-# Ryan's 1536B look (Nov 22): under the grid, the beacon slid to the near edge of its hex from the battle camera. The
-# camera's home view (camera_rig home_b, 0.98 rad from straight up, so about 34 degrees above level)
-# sees a point d under the grid d * tan(0.98) toward itself, so the beacon moves that far away from the camera (-z) and
-# reads centred in the gold hex at the home view.
-const BEACON_VIEW_B := 0.98
+# Ryan's 1536B look (Nov 22, "Lift it onto the hex"): under the grid, the beacon slid to the near edge of its hex from the
+# battle camera. Its middle now sits on the sightline from the camera's opening (home) eye through the hex centre, so the
+# player sees it centred in the gold hex at the opening view while its top stays under the grid (Artoo on PR 1561: a real
+# perspective sightline, not a fixed z shift, so a hold hex off the camera's axis centres too).
+const BEACON_VIEW_B := 0.98   # camera_rig home_b: the home view's angle from straight up
 var beacon_node: Node3D = null
 
 
@@ -1015,10 +1015,39 @@ func _beacon() -> void:
 		first = false
 	var drop := BEACON_TOP - box.end.y              # the top just under the grid
 	var depth := -(box.get_center().y + drop)       # how far the beacon's middle sits under the grid
-	var at := hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), drop) - Vector3(box.get_center().x, 0.0, box.get_center().z)
-	n.transform = Transform3D(basis, at + Vector3(0.0, 0.0, -depth * tan(BEACON_VIEW_B)))
+	var h := hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), 0.0)
+	var eye := home_eye(VW.get("units", []))
+	var mid := h + (h - eye) * (depth / maxf(eye.y, 1.0))   # on the sightline from the eye through h, depth under the grid
+	n.transform = Transform3D(basis, mid - box.get_center())
 	props.add_child(n)
 	beacon_node = n
+
+
+# The battle camera's opening view (scenes/battle/battle.gd _begin uses this): it looks at a point 30% of the way from the
+# player's fleet centre to the enemy's, from home_r away (the fleets' distance * 0.75, 130 to 210).
+func home_view(units: Array) -> Dictionary:
+	var pc := Vector3.ZERO
+	var ec := Vector3.ZERO
+	var np := 0
+	var ne := 0
+	for u in units:
+		if str(u.get("side", "")) == "player":
+			pc += hex_world(u["q"], u["r"])
+			np += 1
+		else:
+			ec += hex_world(u["q"], u["r"])
+			ne += 1
+	pc /= maxf(1.0, np)
+	ec = ec / maxf(1.0, ne) if ne > 0 else pc
+	var target := pc.lerp(ec, 0.3)
+	target.y = 0.0
+	return {"target": target, "r": clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)}
+
+
+# the camera's eye at the opening view (camera_rig _apply at a = -PI/2, b = home_b)
+func home_eye(units: Array) -> Vector3:
+	var hv := home_view(units)
+	return (hv["target"] as Vector3) + Vector3(0.0, cos(BEACON_VIEW_B), sin(BEACON_VIEW_B)) * float(hv["r"])
 
 
 # a node's transform relative to an ancestor (before either is in the tree)

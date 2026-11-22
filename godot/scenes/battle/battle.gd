@@ -601,23 +601,10 @@ func _begin(a) -> void:
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
-	var pc := Vector3.ZERO
-	var ec := Vector3.ZERO
-	var np := 0
-	var ne2 := 0
-	for u in V["units"]:
-		if u["side"] == "player":
-			pc += board.hex_world(u["q"], u["r"])
-			np += 1
-		else:
-			ec += board.hex_world(u["q"], u["r"])
-			ne2 += 1
-	pc /= maxf(1.0, np)
-	ec = ec / maxf(1.0, ne2) if ne2 > 0 else pc
-	cam.home = pc.lerp(ec, 0.3)
-	cam.home.y = 0.0
+	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
+	cam.home = hv["target"]
 	cam.reset_view()
-	cam.home_r = clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)
+	cam.home_r = hv["r"]
 	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
