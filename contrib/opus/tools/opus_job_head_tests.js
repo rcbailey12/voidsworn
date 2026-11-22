@@ -344,7 +344,7 @@ assert.equal(r.status, 0, r.out);
 assert(fs.existsSync(path.join(attempt, 'new')) && /checkouts kept: .*has no result yet/.test(r.out), 'an attempt with no done.txt keeps its checkouts: ' + r.out);
 write(path.join(attempt, 'done.txt'), 'PASS\r\n');
 r = run('dropcheckouts', attempt);
-assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: branch board\/pc-out-opus1303 \(from the job name\) is not on origin/.test(r.out), 'a passed attempt keeps its checkouts until the relay receipt: ' + r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-opus1303:out_1: branch board\/pc-out-opus1303 \(from the job name\) is not on origin/.test(r.out), 'a passed attempt keeps its checkouts until the relay receipt: ' + r.out);
 // a receipt whose tree folder does not hold this attempt's files (the bytes sit under another folder) proves nothing
 const other = relay([[path.join(attempt, 'out_new'), 'opus9999/out_9/out_new']]);
 r = run('dropcheckouts', attempt, other, 'out_1');
