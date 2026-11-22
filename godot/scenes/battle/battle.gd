@@ -5503,6 +5503,7 @@ func _refresh_ui() -> void:
 	hud.set_target(_target_info())
 	# F1: the activation card (the ship that is up and how to finish it) and the phase strip
 	hud.set_card(_card_info() if mine and not busy and not bot and not showcase else {})
+	hud.set_playing(busy and not ended and api.phase != "over")   # issue 1708: the sheet steps aside while a scene plays
 	if showcase or bot or ended or api.phase == "over":
 		hud.set_phase("", "")
 	elif mine and not busy:

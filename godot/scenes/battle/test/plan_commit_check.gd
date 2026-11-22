@@ -314,9 +314,25 @@ func _run() -> void:
 	_check(b.plan == null and b.aims.is_empty(), "the plan is cleared once it is sent")
 	var card_now = b.hud._last.get("set_card", [{"open": true}])[0]
 	_check(card_now is Dictionary and (card_now as Dictionary).is_empty(), "the card leaves as soon as the event starts (Ryan, Nov 22)")
+	# issue 1708 (Ryan, Nov 22): the whole bottom ship sheet steps aside while the scene plays
+	var Lp = b.hud.ledger
+	Lp.layout()
+	var ship_name: String = str(b._name(ship))
+	var sheet_drawn := false
+	for it in Lp.items:
+		if str(it["t"]).to_upper() == ship_name.to_upper() and float(it["y"]) >= Lp.sheet_r.position.y:
+			sheet_drawn = true
+	_check(bool(Lp.playing) and not sheet_drawn, "the bottom ship sheet is hidden while the event plays (playing %s)" % str(Lp.playing))
+	_check(not Lp.blockers.has(Lp.sheet_r), "the hidden sheet blocks no clicks or camera drags (Neon on PR 1709)")
 	b.hold = false
 	await _wait_idle(90000)
 	var u1: Dictionary = b.VU.get(ship, {})
+	Lp.layout()
+	var back := false
+	for it in Lp.items:
+		if float(it["y"]) >= Lp.sheet_r.position.y and str(it["t"]).strip_edges() != "":
+			back = true
+	_check(not bool(Lp.playing) and back, "the bottom sheet pops back once the event has played")
 	_check(not u1.is_empty() and int(u1["q"]) == int(best.q) and int(u1["r"]) == int(best.r), "the ship stands on the planned hex")
 	_check(want_picks >= 1 and bool(u1.get("fired", false)), "the ship fired")
 	var unknown: Dictionary = b.get_meta("unknown_events", {})
