@@ -278,7 +278,7 @@ function derive(ship){
 const CLASS_TRACK_MAX=3;
 function classTrack(cls){ return (typeof RUN!=='undefined'&&RUN&&RUN.classTrack&&RUN.classTrack[cls])||0; }
 function classTrackCost(cls){ return Math.round((60+50*classTrack(cls))*priceMult()); }
-function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(RUN.credits<c) return false; RUN.credits-=c; changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
+function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(hullFunds()<c) return false; hullPay(c); changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
 // issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]), and a later
 // gain on the same hull pays it back first, so taking a hull refit off and on again never adds hull (twin: campaign.gd changeShip)
 // The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that moves

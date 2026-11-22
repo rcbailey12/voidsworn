@@ -199,7 +199,7 @@ function shipyardStock(n){
   return n.stock;
 }
 // issue 1178: the Sector 3 market, things worth buying late. Two relics (picked without the random stream, so the rest of the run
-// rolls as before) and one extra command point per yard, at most LATE_SHOP.cpMax a run. Paid in credits, never touches repair prices.
+// rolls as before) and one extra command point per yard, at most LATE_SHOP.cpMax a run. Paid in credits (biomass for the Chorus, issue 1484), never touches repair prices.
 function lateStock(n){
   const pool=Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r)&&!LATE_SHOP.skip.includes(r)).sort(), k=pool.length?((n.col||0)*7+RUN.stats.battles*3)%pool.length:0;
   return {relics:pool.length>1?[pool[k],pool[(k+1)%pool.length]]:pool.slice(),bought:[],cp:false};
@@ -209,11 +209,11 @@ function lateShopOffers(){
   const pm=priceMult(), rc=Math.round(LATE_SHOP.relic*pm), cc=Math.round(LATE_SHOP.cp*pm);
   // issue 1290: a yard stocked before the skip list (an older save) still never sells a skipped relic; one already bought stays
   // listed as bought, so the purchase history and the command point state are untouched
-  const out=st.relics.filter(r=>!LATE_SHOP.skip.includes(r)||st.bought.includes(r)).map(r=>({id:'relic:'+r,kind:'relic',r,cost:rc,value:2,ok:!st.bought.includes(r)&&!RUN.relics.includes(r)&&RUN.credits>=rc,done:st.bought.includes(r)}));
-  out.push({id:'cp',kind:'cp',cost:cc,value:1,ok:!st.cp&&(RUN.lateCp||0)<LATE_SHOP.cpMax&&RUN.credits>=cc,done:st.cp,full:(RUN.lateCp||0)>=LATE_SHOP.cpMax});
+  const out=st.relics.filter(r=>!LATE_SHOP.skip.includes(r)||st.bought.includes(r)).map(r=>({id:'relic:'+r,kind:'relic',r,cost:rc,value:2,ok:!st.bought.includes(r)&&!RUN.relics.includes(r)&&hullFunds()>=rc,done:st.bought.includes(r)}));
+  out.push({id:'cp',kind:'cp',cost:cc,value:1,ok:!st.cp&&(RUN.lateCp||0)<LATE_SHOP.cpMax&&hullFunds()>=cc,done:st.cp,full:(RUN.lateCp||0)>=LATE_SHOP.cpMax});
   return out;
 }
-ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) return; const st=yardNode.stock.late; RUN.credits-=o.cost;
+ACT.lateBuy=id=>{ const o=lateShopOffers().find(x=>x.id===id); if(!o||!o.ok) return; const st=yardNode.stock.late; hullPay(o.cost);
   if(o.kind==='relic'){ st.bought.push(o.r); changeFleet(()=>RUN.relics.push(o.r)); toast(`${relicName(o.r)} is yours. ${RELICS[o.r].d}`); }
   else { st.cp=true; RUN.lateCp=(RUN.lateCp||0)+1; RUN.cpCap++; toast(`Command grows: ${RUN.cpCap} command points.`); }
   try{ tel('shop',{k:'late',id,cost:o.cost}); }catch(e){} shipyardScreen(yardNode); };
@@ -236,7 +236,7 @@ function shipyardScreen(n){
     return `<div class="card"><h3>${t.n}</h3><p class="gilt" style="font-size:14px">Captured prize, links ripped out.</p><p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
       <div class="foot"><button ${hullFunds()>=cost&&fits?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}${hw}</button> ${!fits?'<span class="dim">Not enough command points</span>':''}</div></div>`; }).join('');
   const mods=st.mods.map((m,i)=>{ const sold=st.sold.includes(i), cost=Math.round(MODULES[m].cost*pm);
-    return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${RUN.credits>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}</button>`}</div></div>`; }).join('');
+    return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${hullFunds()>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}${hw}</button>`}</div></div>`; }).join('');
   const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=sellValue(s); // R1 (TXT-8): the label pays what the button pays (no NaN for hulls without a shop price)
     return shipCard(s,{extra:`<div class="sect row wrap">
       <button class="small" ${miss>0&&hullFunds()>=rc?'':'disabled'} data-act="repair" data-arg="${s.uid}">${miss>0?`Repair ${miss} for ${rc}${hw}`:'Fully repaired'}</button>
@@ -246,16 +246,16 @@ function shipyardScreen(n){
   show(`<div class="screen"><div class="page">
     <div class="row wrap"><h2 class="gothic">Shipyard</h2><span class="spacer"></span><span class="gilt num" style="font-size:22px">${RUN.credits} credits${hw?` · ${RUN.bio||0} biomass`:''}</span>
       <span class="num">${cp}/${RUN.cpCap} CP</span><button data-act="yardFleet">Refits</button><button class="primary" data-act="leaveYard">Leave shipyard</button></div>
-    <p class="lede">${hw?'The Chorus regrow with biomass: repairs cost 1 biomass per 2 hull, and new hulls and Marks are paid in biomass. Credits buy refits.':'Repairs cost 1 credit per 2 hull.'} A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh ${hw?'spawn-mind':'lieutenant'}.</p>
+    <p class="lede">${hw?'The Chorus regrow with biomass: repairs cost 1 biomass per 2 hull, and new hulls, Marks, refits, upgrade tracks, protocol rerolls and the late market are all paid in biomass.':'Repairs cost 1 credit per 2 hull.'} A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh ${hw?'spawn-mind':'lieutenant'}.</p>
     <div class="row" style="margin-bottom:14px"><button ${allMiss>0&&hullFunds()>=allCost?'':'disabled'} data-act="repairAll">${allMiss>0?`Repair entire fleet for ${allCost}${hw}`:'Fleet fully repaired'}</button></div>
     ${(RUN.cores||[]).length?`<h3 style="margin:26px 0 10px">Recovered cores</h3><p class="muted" style="margin:0 0 10px">Each core regrows its ship at Mk I, full hull, no refits.</p><div class="row wrap">${RUN.cores.map((tpl,i)=>{ const c=coreCost(tpl), fits=cp+(HULLS[tpl].cp||1)<=RUN.cpCap; return `<button ${RUN.credits>=c&&fits?'':'disabled'} data-act="restoreCore" data-arg="${i}">Regrow the ${esc(HULLS[tpl].n)} for ${c}</button>`; }).join('')}</div>`:''}
-    ${st.late?`<h3 style="margin:26px 0 10px">Late market</h3><p class="muted" style="margin:0 0 10px">Sector 3 yards sell whatever the war left behind: salvage and room for one more ship.</p><div class="cards">${lateShopOffers().map(o=>o.kind==='relic'?`<div class="card"><h3>${esc(relicName(o.r))}</h3><p>${esc(RELICS[o.r].d)}</p><div class="foot">${o.done?'<span class="verd">Bought</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="${o.id}">Buy for ${o.cost}</button>`}</div></div>`:`<div class="card"><h3>Command expansion</h3><p>+1 command point for the rest of the run (at most ${LATE_SHOP.cpMax} a run).</p><div class="foot">${o.done?'<span class="verd">Bought</span>':o.full?'<span class="dim">Already at the limit</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="cp">Buy for ${o.cost}</button>`}</div></div>`).join('')}</div>`:''}
+    ${st.late?`<h3 style="margin:26px 0 10px">Late market</h3><p class="muted" style="margin:0 0 10px">Sector 3 yards sell whatever the war left behind: salvage and room for one more ship.</p><div class="cards">${lateShopOffers().map(o=>o.kind==='relic'?`<div class="card"><h3>${esc(relicName(o.r))}</h3><p>${esc(RELICS[o.r].d)}</p><div class="foot">${o.done?'<span class="verd">Bought</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="${o.id}">Buy for ${o.cost}${hw}</button>`}</div></div>`:`<div class="card"><h3>Command expansion</h3><p>+1 command point for the rest of the run (at most ${LATE_SHOP.cpMax} a run).</p><div class="foot">${o.done?'<span class="verd">Bought</span>':o.full?'<span class="dim">Already at the limit</span>':`<button ${o.ok?'':'disabled'} data-act="lateBuy" data-arg="cp">Buy for ${o.cost}${hw}</button>`}</div></div>`).join('')}</div>`:''}
     <div class="cards">${ships}</div>
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
     ${capHulls?`<h3 style="margin:26px 0 10px">Captured hulls</h3><p class="muted" style="margin:0 0 10px">Prizes taken from the Meridian Directorate and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.</p><div class="cards">${capHulls}</div>`:''}
     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
     <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
-    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(clsName(cls))} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
+    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&hullFunds()>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(clsName(cls))} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}${hw}`}</button>`; }).join('')}</div>
   </div></div>`);
   RUN.inYard=n.id; saveRun(); // issue 1556: every stock roll, buy, sale, repair and refit is on disk at once (twin: campaign.gd shipyardScreen)
 }
@@ -264,7 +264,7 @@ ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
 ACT.buyHull=h=>{ if(!yardNode||!HULLS[h]) return; const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h); if(!st.hulls.includes(h)&&!captured) return; if(!captured&&t.unique&&RUN.fleet.some(s=>s.tpl===h)) return; /* issue 1556: only a hull this yard sells, one of a unique hull */ const cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(hullFunds()<cost||fleetCP()+t.cp>RUN.cpCap) return; hullPay(cost); try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`${shipWithArticle(s.name,true)} joins the fleet.`); shipyardScreen(yardNode); };
-ACT.buyMod=i=>{ if(!yardNode||!/^(0|[1-9][0-9]*)$/.test(String(i))||+i>=yardNode.stock.mods.length) return; /* issue 1556: bounds first */ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
+ACT.buyMod=i=>{ if(!yardNode||!/^(0|[1-9][0-9]*)$/.test(String(i))||+i>=yardNode.stock.mods.length) return; /* issue 1556: bounds first */ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||hullFunds()<cost) return; hullPay(cost); try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
 ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; const d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(hullFunds()<c) return; hullPay(c); s.hp=d.maxHp; shipyardScreen(yardNode); };
 ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(hullFunds()<c) return; hullPay(c); RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
 ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; const c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
@@ -797,13 +797,13 @@ function boonStep(p,minR){ if(RUN&&RUN.eatenCore===p) p=(RUN.patrons||[]).find(q
     <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>${rewardDef('boon')}
     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
       <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}
-    <div class="row" style="margin-top:10px"><button ${boonRerollOk(p,minR)?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} credits, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
+    <div class="row" style="margin-top:10px"><button ${boonRerollOk(p,minR)?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} ${hullWord()}, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
 // B4 step 3 (v54): decline a boon offer for credits, or reroll it once per reward for a price that grows each time you reroll in a run
 function boonDeclineCred(){ return 30+10*((RUN&&RUN.sector)||1); }
 function boonRerollCost(){ return 25+15*((RUN&&RUN.boonRerolls)||0); }
 // R1 (RWD-6): no reroll (and no charge) when the core has nothing beyond what is already on offer
-function boonRerollOk(p,minR){ if(!(RUN&&RUN.reward&&!RUN.reward.rerolled&&RUN.credits>=boonRerollCost())) return false; if(p==null) return true; const cur=(RUN.reward.boonOffer||[]).map(o=>o.id); return boonOfferCan(p,minR).some(id=>!cur.includes(id)); }
-function boonReroll(p,minR){ if(!boonRerollOk(p,minR)) return null; RUN.credits-=boonRerollCost(); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
+function boonRerollOk(p,minR){ if(!(RUN&&RUN.reward&&!RUN.reward.rerolled&&hullFunds()>=boonRerollCost())) return false; if(p==null) return true; const cur=(RUN.reward.boonOffer||[]).map(o=>o.id); return boonOfferCan(p,minR).some(id=>!cur.includes(id)); }
+function boonReroll(p,minR){ if(!boonRerollOk(p,minR)) return null; hullPay(boonRerollCost()); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
   let off=rollBoonOffer(p,minR); for(let k=0;k<4&&off.length&&off.every(o=>old.includes(o.id));k++) off=rollBoonOffer(p,minR); RUN.reward.boonOffer=off; return off; }
 function boonDecline(){ const c=boonDeclineCred(); RUN.credits+=c; return c; }
 ACT.boonReroll=a=>{ const [p,m]=String(a).split(':'); if(!boonReroll(p,+m||0)) return; saveRun(); closeModal(); boonStep(p,+m||0); };

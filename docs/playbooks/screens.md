@@ -167,8 +167,8 @@ Sector 3 shipyards add a Late market: two relics (picked from the run's useful, 
 stream; never the Smuggler's ledger, the logbook or the Scrap rig, which cannot earn back 120 that late, LATE_SHOP.skip, issue 1290) and one Command expansion (+1 command point, at most two a run), all paid in credits. Paid repair prices never
 change (Oct 29 ruling). Three factions show their own money on the shipyard, the map purse and the victory card:
 
-- Chorus: hull work (repairs, new hulls, Marks) is paid in biomass, earned flat per win like credits plus 8 per kill, at
-  most 50 a battle (BIO_KILL in core.js). Credits still buy refits, class refits, events and the late market. Every hull button names biomass, and decommissioning pays biomass too (issue 1290).
+- Chorus: hull work (repairs, new hulls, Marks), refits, class refits, protocol rerolls and the late market are paid in biomass (R382, issue 1484), earned flat per win like credits plus 8 per kill, at
+  most 50 a battle (BIO_KILL in core.js). Credits (from declined protocols, ransoms, scrap and events) still pay for events. Every price button names biomass, and decommissioning pays biomass too (issue 1290).
 - Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (25, 45, 70, 85, 100, about 25% of
   the price and still under the 35% decommission value), at most 100 a battle (issue 1290).
 - Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value. A regrown ship

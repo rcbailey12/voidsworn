@@ -1739,7 +1739,7 @@ func _shipyard() -> Control:
 	var rb = abtn("Refits", "yardFleet")
 	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
-	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Credits buy refits.", 18, VERD))
+	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls, Marks, refits, upgrade tracks, protocol rerolls and the late market are all paid in biomass.", 18, VERD))
 	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
@@ -1769,7 +1769,7 @@ func _shipyard() -> Control:
 				lc[1].add_child(lbl("Command expansion", 20, BONE, font_semi)); lc[1].add_child(lbl("+1 command point for the rest of the run (at most " + C.numstr(C.TB["LATE_SHOP"]["cpMax"]) + " a run).", 18, BONE2))
 			if C.jt(o["done"]): lc[1].add_child(lbl("Bought", 18, VERD))
 			elif C.jt(o.get("full")): lc[1].add_child(lbl("Already at the limit", 18, BONE3))
-			else: add(lc[1], abtn("Buy for " + C.numstr(o["cost"]), "lateBuy", o["id"]))
+			else: add(lc[1], abtn("Buy for " + C.numstr(o["cost"]) + hw, "lateBuy", o["id"]))
 			lm.add_child(lc[0])
 		v.add_child(lm)
 	var cards = flow()
@@ -1814,7 +1814,7 @@ func _shipyard() -> Control:
 		var m = st["mods"][i]; var cv2 = card(false, 300)
 		cv2[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv2[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
 		if C._has_num(st["sold"], i): cv2[1].add_child(lbl("Bought", 18, VERD))
-		else: add(cv2[1], abtn("Buy for " + C.numstr(C.jsround(float(C.MODULES[m]["cost"]) * pm)), "buyMod", i))
+		else: add(cv2[1], abtn("Buy for " + C.numstr(C.jsround(float(C.MODULES[m]["cost"]) * pm)) + hw, "buyMod", i))
 		ms.add_child(cv2[0])
 	v.add_child(ms)
 	v.add_child(sec_head("Class refits"))
@@ -1822,7 +1822,7 @@ func _shipyard() -> Control:
 	var tr = flow(8)
 	for cls in C.fleetClasses():
 		var lv = int(C.classTrack(cls)); var mx = lv >= int(C.CLASS_TRACK_MAX)
-		add(tr, abtn(C.clsName(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls))), "buyTrack", cls))
+		add(tr, abtn(C.clsName(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls)) + hw), "buyTrack", cls))
 	v.add_child(tr)
 	return v
 
@@ -2470,7 +2470,7 @@ func _modal(md: Dictionary) -> void:
 				var fleet_line := _boon_fleet_line(o["id"], r)
 				if fleet_line != "": detail += "\n" + fleet_line
 				add(v, choice(b["n"], detail, "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
-			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
+			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " " + C.hullWord() + ", once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
 		"eatCore":
 			h2.call("The swarm hungers.")
