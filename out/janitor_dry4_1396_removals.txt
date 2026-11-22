@@ -1,0 +1,292 @@
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-ff7ceba4a37440d3adafaabf9aaddff3 (5051920694 bytes)
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-19ad9e56fd054bb291cb90a8d57e7139 (6116258059 bytes)
+time: lanes and runner records done at 7 s
+would remove C:\Users\rcbai\AppData\Local\Temp\stage7-checked-O2_37-006dbug8 (93919784 bytes; scratch named by our tools, untouched for at least 24 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\stage7-checked-O3_11-xhvluszr (21457568 bytes; scratch named by our tools, untouched for at least 24 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-043f50117788471ca89a06727d0036bf (260256180 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4865ede7f0d34780923e2827614d6403 (268869763 bytes, 1 links not followed; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5dfbf6285cc14c9b9f00e23db7c06e89 (279556484 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fc953796e9c04d8d88b5d98d35feb72f (1481287175 bytes; owned TEMP scratch, untouched for at least 3 hours)
+time: TEMP folders done at 26 s
+folder time: C:\Users\rcbai\Downloads\voidsworn_test\opus1079 26 s
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1079_run12 (506391 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motn
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1121moto
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motp
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motq
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7 HEAD 4d886988e2e559c14f61a0f678208a15579fd1dc, 3826 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/assets/ships/manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/cool_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/cool_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/cool_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/flash_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/flash_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/flash_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/vent_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/vent_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/capital/vent_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/cool_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/cool_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/cool_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/flash_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/flash_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/flash_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/vent_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/vent_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/cruiser/vent_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7:  M godot/fx/atlases/death/small/cool_color.png.import
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1180\live_repo HEAD eace9e2cc53e0f9ebcd7fdd1f20dd96633c49a10, 0 status lines
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1180\main HEAD 2e457c0e9014cf8cbe1f46590ada387eca16afc7, 0 status lines
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1186
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1194\main HEAD 6769f41195399fc7729e9807a0d076fabfd4b0f0, 0 status lines
+job relay: checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1235\out_20261121_191315_32105 (results not relayed yet: board/pc-out-opus1235:out_20261121_191315_32105: branch board/pc-out-opus1235 (from the job name) is not on origin at the shared mirror's commit)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1235
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1235 (job folder touched in the last 6 hours)
+job relay: results relayed: 56 of 56 result file(s) are on board/pc-out-opus1235w under out_20261121_224521_13803, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1235w\out_20261121_224521_13803\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1235w\out_20261121_224521_13803\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1235w
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1235w (job folder touched in the last 6 hours)
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1237 (650108 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1239
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo HEAD 475b98f53e2c66fadc391e36de016488faf22e30, status unreadable
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo: fatal: bad object HEAD
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo HEAD 475b98f53e2c66fadc391e36de016488faf22e30, status unreadable
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: error: unable to normalize alternate object path: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\repo/.git/objects
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_030017\repo: fatal: bad object HEAD
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1262f (38525625 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1279
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1289 (1084132 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852 HEAD 943bfb94632b2ed3746878901c46174009a02a50, 3863 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/cool_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/cool_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/cool_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/flash_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/flash_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/flash_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/vent_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/vent_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/capital/vent_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/cool_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/cool_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/cool_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/flash_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/flash_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/flash_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/vent_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/vent_flow.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/cruiser/vent_thickness.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/small/cool_color.png.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1291\repo_2026000025_22852:  M godot/fx/atlases/death/small/cool_flow.png.import
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k_doorcheck2\repo HEAD 616b143ff2e1098fe032177cd9805e4ea2143ce5, 0 status lines
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\opus1291c14k_doorcheck2\repo (2169003849 bytes)
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1303d (2291 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+would remove C:\Users\rcbai\Downloads\voidsworn_test\opus1303neg (2836 bytes; helper folder with its results relayed, untouched for at least 24 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1316
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo HEAD 746d8d7c9a27a155575727e9e4c018b7ba6ebd66, 1373 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo:  M godot/assets/ships/manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo:  M tools/pc/tmo.bat
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: ?? godot/.stage7-replaced-91k2u1o0/previous/asset_manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: ?? godot/.stage7.lock
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/a4_props.gd.uid
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2.glb
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_emission.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_parts_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_parts_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/ithar_GV2/ithar_GV2_parts_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B16_23.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B16_23_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B19_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B19_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B20_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B20_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\repo: !! godot/assets/ships/previews/B21_11.jpg.import
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo HEAD 746d8d7c9a27a155575727e9e4c018b7ba6ebd66, 1373 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo:  M godot/assets/ships/manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo:  M tools/pc/tmo.bat
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: ?? godot/.stage7-replaced-is6xx9xn/previous/asset_manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: ?? godot/.stage7.lock
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/a4_props.gd.uid
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4.glb
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_emission.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_parts_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_parts_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/ithar_GW4/ithar_GW4_parts_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B16_23.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B16_23_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B19_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B19_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B20_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B20_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4n\repo: !! godot/assets/ships/previews/B21_11.jpg.import
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo HEAD 237fd5b260efe1be2df04aba5492ed7d41e505c6, 3898 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo:  M godot/assets/ships/manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: ?? godot/.stage7-replaced-4axytuo1/previous/asset_manifest.json
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: ?? godot/.stage7.lock
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/a4_props.gd.uid
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1.glb
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_glow_emission.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_parts_base.jpg
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_parts_normal.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/corsair_KF1/corsair_KF1_parts_orm.png
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B16_23.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B16_23_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B19_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B19_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B20_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B20_11_damage.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B21_11.jpg.import
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373kf1l\repo: !! godot/assets/ships/previews/B21_11_damage.jpg.import
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo HEAD 746d8d7c9a27a155575727e9e4c018b7ba6ebd66, 5760 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_151131
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_151811
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_160008
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_161733
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_163550
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_165324
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_225634
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_231542
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261116_235238
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_000508
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_001724
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_003243
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_011012
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_150619
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_174152
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261117_174153
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261118_100448
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261118_100517
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261118_100550
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1373probe11\repo: ?? godot/assets/ships/manifest.json.bak_20261118_100621
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379b
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379c
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379d
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379f
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379g
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379h
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1379i
+job relay: results relayed: 306 of 306 result file(s) are on board/pc-out-opus1394melt under out_20261122_003506_28847, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1394melt\out_20261122_003506_28847\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1394melt\out_20261122_003506_28847\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1394melt
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1394melt (job folder touched in the last 6 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb (job folder touched in the last 6 hours)
+job relay: results relayed: 306 of 306 result file(s) are on board/pc-out-opus1394meltd under out_20261122_024200_27017, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd (job folder touched in the last 6 hours)
+job relay: results relayed: 8 of 8 result file(s) are on board/pc-out-opus1395b under out_20261122_021050_14445, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1395b\out_20261122_021050_14445\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1395b\out_20261122_021050_14445\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1395b
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1395b (job folder touched in the last 6 hours)
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GA1 (job folder touched in the last 6 hours)
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1 (job folder touched in the last 6 hours)
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GP1 (job folder touched in the last 6 hours)
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GS1 (job folder touched in the last 6 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1421
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1433
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1433pp
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1433pp2
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434b
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434e
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434f
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434i
+job checkout record: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new HEAD 8f044a1278fb535082c0972f54518479061b68c7, 5682 status lines
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_151131
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_151811
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_160008
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_161733
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_163550
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_165324
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_225634
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_231542
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261116_235238
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_000508
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_001724
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_003243
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_011012
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_150619
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_174152
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261117_174153
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261118_100448
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261118_100517
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261118_100550
+job checkout status: C:\Users\rcbai\Downloads\voidsworn_test\opus1434i\out_20261121_092140_22531\new: ?? godot/assets/ships/manifest.json.bak_20261118_100621
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434k
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434l
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434m
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434n
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434o
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1434r
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1435d
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1435e
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1435g
+job relay: checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1439\out_20261121_181411_15138 (results not relayed yet: board/pc-out-opus1439:out_20261121_181411_15138: branch board/pc-out-opus1439 (from the job name) is not on origin at the shared mirror's commit)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1439
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1439 (job folder touched in the last 6 hours)
+job relay: checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1448\out_20261121_173716_21528 (results not relayed yet: board/pc-out-opus1448:out_20261121_173716_21528: branch board/pc-out-opus1448 (from the job name) is not on origin at the shared mirror's commit)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1448
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1448 (job folder touched in the last 6 hours)
+folder time: C:\Users\rcbai\Downloads\voidsworn_test\opus1448 10 s
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1448g
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1457main1
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1457pp2
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1460
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1466
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1468
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st2
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st3
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1497st4
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1516
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1524
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1524 (job folder touched in the last 6 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1524b
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1524c
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1529
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1529c
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1531b
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1531d
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1535
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1536a
+job relay: results relayed: 78 of 78 result file(s) are on board/pc-out-opus1536b under out_20261121_234907_28847, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1536b
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1536b (job folder touched in the last 6 hours)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1539proof
+job relay: checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1547c\out_20261121_221628_5015 (results not relayed yet: board/pc-out-opus1547c:out_20261121_221628_5015: branch board/pc-out-opus1547c (from the job name) is not on origin at the shared mirror's commit)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1547c
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1547c (job folder touched in the last 6 hours)
+job relay: results relayed: 4522 of 4522 result file(s) are on board/pc-out-opus1581a under out_20261122_011306_28847, 0 over 10 MB listed as skipped
+job relay: checkout new would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1581a\out_20261122_011306_28847\new
+job relay: checkout old would be checked and removed after the relay: C:\Users\rcbai\Downloads\voidsworn_test\opus1581a\out_20261122_011306_28847\old
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1581a
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1581a (job folder touched in the last 6 hours)
+folder time: C:\Users\rcbai\Downloads\voidsworn_test\opus1581a 38 s
+job relay checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1581b (a running process names this folder (process 35116 Godot_v4.7.2-stable_win64_console.exe))
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1581b (job folder touched in the last 6 hours)
+job relay: checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1585key\out_20261121_223559_14521 (results not relayed yet: board/pc-out-opus1585key:out_20261121_223559_14521: branch board/pc-out-opus1585key (from the job name) is not on origin at the shared mirror's commit)
+job relay check exit 0 in C:\Users\rcbai\Downloads\voidsworn_test\opus1585key
+job checkouts would keep in C:\Users\rcbai\Downloads\voidsworn_test\opus1585key (job folder touched in the last 6 hours)
+time: job folders done at 327 s
