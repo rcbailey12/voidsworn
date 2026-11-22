@@ -3,6 +3,7 @@ extends RefCounted
 ## Python and Godot share tools/picture_font.json and the same sidecar schema.
 const BUILD_INFO := "res://build_info.json"
 const BUILD_FONT := "res://tools/picture_font.json"
+const PLACEHOLDER_GUARD := preload("res://render/placeholder_guard.gd")
 static var _contexts: Dictionary = {}
 static var _glyphs: Dictionary = {}
 
@@ -31,7 +32,7 @@ static func capture_is_direction_check() -> bool:
 	for soft in ["llvmpipe", "lavapipe", "swiftshader", "software", "mesa offscreen"]:
 		if adapter.contains(soft):
 			return true
-	if ResourceLoader.exists("res://render/placeholder_guard.gd") and int(load("res://render/placeholder_guard.gd").count) > 0:
+	if int(PLACEHOLDER_GUARD.count) > 0:
 		return true
 	return false
 
