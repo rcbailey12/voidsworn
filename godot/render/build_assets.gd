@@ -378,7 +378,7 @@ static func source_stamp(base: String, code: String) -> String:
 				continue
 			var path := dir.path_join(uri)
 			var map := FileAccess.open(path, FileAccess.READ)
-			sources[uri] = [FileAccess.get_modified_time(path), map.get_length()] if map != null else []
+			sources[uri] = [FileAccess.get_modified_time(path), map.get_length(), FileAccess.get_sha256(path)] if map != null else []
 	return JSON.stringify(sources)
 
 
