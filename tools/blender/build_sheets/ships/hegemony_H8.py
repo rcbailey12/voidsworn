@@ -327,13 +327,12 @@ def build(K):
         K.vent('V2' + sn, (2.05, side * 0.55, deck_z(2.05) + 0.004), (0, 0, 1), 0.18, 0.4, slats=6, inv='vents', note='heat louvre over the reactor')
         K.vent('V3' + sn, (-1.55, side * 0.42, deck_z(-1.55) + 0.004), (0, 0, 1), 0.16, 0.5, slats=5, inv='vents', note='heat louvre over the crew decks')
         K.vent('V4' + sn, (-3.25, side * 0.42, deck_z(-3.25) + 0.004), (0, 0, 1), 0.16, 0.5, slats=5, inv='vents', note='heat louvre over the engine room')
-        K.vent('V5' + sn, (-4.05, side * 0.42, deck_z(-4.05) + 0.004), (0, 0, 1), 0.16, 0.4, slats=4, inv='vents', note='heat louvre over the drive feeds')
         for xb_ in BANDS_B:
             for d in (0.3, -0.3):
                 K.organ('LB%s%s' % (sn, 'f' if d > 0 else 'a'), HP.latch(n=4, pitch=0.18, w=0.12), (xb_ + d, side * 0.95, deck_z(xb_ + d) + 0.004), (0, 0, 1), fwd=(1, 0, 0),
                         inv='latches', what='module latch row (4 clamps)', kind='latch', note='locks the two block modules together across the band')
         for d in (0.3, -0.3):
-            K.organ('LA%s%s' % (sn, 'f' if d > 0 else 'a'), HP.latch(n=3, pitch=0.16, w=0.1), (BANDS_A[1] + d, side * 0.45, deck_z(BANDS_A[1] + d) + 0.004), (0, 0, 1), fwd=(1, 0, 0),
+            K.organ('LA%s%s' % (sn, 'f' if d > 0 else 'a'), HP.latch(n=3, pitch=0.16, w=0.1), (BANDS_A[1] + d, side * 0.45, deck_z(BANDS_A[1] + d) + 0.03), (0, 0, 1), fwd=(1, 0, 0),
                     inv='latches', what='module latch row (3 clamps)', kind='latch', note='locks two aft body modules together across the band')
         for i, x in enumerate((1.7, -3.5)):
             p, nrm = facet(x, 6, side)
@@ -445,9 +444,9 @@ def build(K):
     def keep(pc, hd):
         if XB + 0.1 < pc.x < XF and abs(pc.y) < tw + 0.05 and pc.z > 0.0:
             return True   # the trench's roof window
-        return any((pc - c).length < r + hd * 0.6 for c, r in K.keepouts)
+        return any((pc - c).length < r * 0.85 + max(hd * 0.3, 0.06) for c, r in K.keepouts)   # the narrow decks are crowded with fittings: a tighter margin keeps the grid
     for nm_, rs_, spec in plate_jobs:
-        acc, laid = HP.module_panels(rs_, spec['faces'], pv=0.36, keep=keep, closed=spec.get('closed', True), unit=0.75)
+        acc, laid = HP.module_panels(rs_, spec['faces'], pv=0.28 if nm_.endswith('deck') else 0.36, keep=keep, closed=spec.get('closed', True), unit=0.75)
         for m_, (V_, F_) in acc.items():
             if V_:
                 K._obj('H8_%s_panels_%s' % (nm_, m_), V_, F_, m_, grp='hull')
@@ -476,6 +475,8 @@ def build(K):
     K.fix('Windows W1 inside the bow frame, where the block tapers in plan', 'the forward windows moved aft to 3.55 and 3.15, where the sides run parallel')
     K.fix('Deck louvres V1, V2 and V3 against the module latch rows', 'the block\'s latch rows out to 0.95 off the axis, V2 forward to 2.05 and shortened, V3 forward to 1.55 aft of middle')
     K.fix('Aft latch row LA against the deck hatch H2', 'H2 aft to 3.0')
+    K.fix('The aft deck took no panels and the block deck few: the deck fittings\' keep-outs covered the narrow decks', 'a tighter keep-out margin and a finer deck grid (0.28); the aft louvre pair over the drive feeds left out')
+    K.fix('The aft latch rows\' clamps inside the new deck panels', 'the aft latch rows set 0.03 proud, on the panels')
     K.open_item('Stencil marks and the steel-blue trim tone are paint (the Hegemony stack), not modelled')
 
 

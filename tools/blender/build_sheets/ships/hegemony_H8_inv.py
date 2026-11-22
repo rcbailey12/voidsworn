@@ -50,7 +50,7 @@ INVENTORY = [
     dict(id='latches', job='lock the hull modules together across each module band', type='latch', what='rows of clamp heads beside the bands', count=8, cells=ALL_TOP,
          reads='a base plate, machined clamps', src='picture'),
     dict(id='vents', job='heat louvres over the ion capacitors, the reactor and the engine room (the concept\'s many ladder louvres)', type='vent',
-         what='long louvres on the decks', count=10, cells=ALL_TOP, reads='a machined frame, straight slats over a dark recess', src='picture'),
+         what='long louvres on the decks', count=8, cells=ALL_TOP, reads='a machined frame, straight slats over a dark recess', src='picture'),
     dict(id='windows', job='blue-white windows of the crew decks (lore 3.3)', type='slit', what='window slits on the block\'s flank band', count=12,
          cells=['bow/side', 'mid/side', 'stern/side'], reads='a trim frame round a recessed pane', src='picture'),
     dict(id='hatches', job='crew and stores access: deck, belly and flank hatches', type='hatch', what='flush rectangular armoured hatches', count=9,
