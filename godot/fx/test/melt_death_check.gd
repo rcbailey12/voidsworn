@@ -15,6 +15,18 @@ const FX := preload("res://fx/fx.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const HAZE := ["cool", "vent", "impact"]
+const POOLS := preload("res://fx/fx_pool.gd")
+const ACID_SPARK := Vector3(0.55, 0.65, 0.12)
+
+
+# Neon on PR 1646: records every streak's colour as the pool flushes it, so a green cook-off spark is seen.
+class SpyPool extends POOLS.Pool:
+	var cols: Array = []
+	func flush() -> void:
+		var rec: int = POOLS.STRIDE * vpp
+		for r in n_pending:
+			cols.append(Vector3(pending[r * rec + 12], pending[r * rec + 13], pending[r * rec + 14]))
+		super.flush()
 var failures := 0
 
 
@@ -43,17 +55,20 @@ func _run() -> void:
 		check(m["radius_L"] > 0.0 and m["radius_L"] <= 0.3, "%s: only the hit area glows (radius %.2f of the length)" % [tag, m["radius_L"]])
 		check(int(m["haze"]) == 0, "%s: no smoke, haze or vapour (%d pictures; blast drew %d)" % [tag, m["haze"], b["haze"]])
 		check(int(m["flash"]) > 0, "%s: the faction's own cook-off flash still plays as it breaks (%d; blast drew %d)" % [tag, m["flash"], b["flash"]])
+		check(int(m["green_spark"]) == 0, "%s: no acid-green cook-off sparks (%d)" % [tag, m["green_spark"]])
 		check(int(m["green_light"]) == 0, "%s: the cook-off lights the hulls in the faction's colours, never acid green (%d green light frames)" % [tag, m["green_light"]])
 		check(int(m["green_flash"]) == 0, "%s: the cook-off is in the faction's colours, never the acid green (%d green)" % [tag, m["green_flash"]])
 		check(int(b["haze"]) > 0, "%s control: a blast death's smoke is seen by this probe (%d)" % [tag, b["haze"]])
 		check(b["style"] != "melt" and b["overlay"] != "melt", "%s control: a blast death keeps its own look" % tag)
+	var late := await _kill("hegemony", "Cruiser", "melt", 20.0)
+	check(late["spot_err"] < 0.01, "an acid burn tick kill 20 s after the volley still glows on the acid hit, not the later hit (off by %.3f)" % late["spot_err"])
 	var spots := await _acid_volley()
 	check(spots >= 1, "a spine volley's hull hits are kept as the target's acid spots (%d)" % spots)
 	print("MELT_DEATH %s, %d failures" % ["PASS" if failures == 0 else "FAIL", failures])
 	quit(1 if failures else 0)
 
 
-func _kill(faction: String, cls: String, cause: String) -> Dictionary:
+func _kill(faction: String, cls: String, cause: String, acid_age := 0.0) -> Dictionary:
 	var world := Node3D.new()
 	root.add_child(world)
 	var cam := Camera3D.new()
@@ -77,6 +92,9 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
+	var quad := PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.UP, Vector3.ONE])
+	var spy := SpyPool.new(4096, StandardMaterial3D.new(), world, "spy_stk", [quad, PackedVector3Array(), PackedInt32Array([0, 1, 2, 2, 1, 3])])
+	fx.pools["stk"] = spy
 	fx.add_ship("k", holder, {"faction": faction, "cls": cls, "size": 1.0})
 	var s = fx.ship("k")
 	var t0 := Time.get_ticks_msec()
@@ -86,12 +104,14 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 		if (s.get_meta("cut_job", {}) as Dictionary).get("built", false): break
 	# the acid hit, recorded the way fx_weapons records one, on the bow's flank
 	var spot := Vector3(s.hull.box.position.x + s.hull.L * 0.8, s.hull.c.y, s.hull.box.end.z)
-	if cause == "melt": s.set_meta("acid_spots", [[spot, fx.now]])
+	if cause == "melt": s.set_meta("acid_spots", [[spot, fx.now - acid_age]])
+	# a later non-acid hit on the other flank: a fresh acid hit wins over it, and so does a stale one (an acid tick kill)
+	s.set_meta("last_hit", [Vector3(s.hull.box.position.x + s.hull.L * 0.2, s.hull.c.y, s.hull.box.position.z), Vector3.FORWARD, fx.now])
 	var before := {}
 	for n in _pics(world): before[n.get_instance_id()] = float((n as MeshInstance3D).material_override.get_shader_parameter("born")) if (n as MeshInstance3D).material_override is ShaderMaterial else 0.0
 	fx.death("k", cause)
 	var res := {"style": str(DEATH.dstyle(s).get("style", "")), "strain": s.has_meta("death_strain"), "overlay": "none", "overlay_all": true,
-		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0, "green_light": 0}
+		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0, "green_light": 0, "green_spark": 0}
 	var first := true
 	for mm in s.meshes:
 		var ov = (mm as MeshInstance3D).material_overlay
@@ -130,6 +150,8 @@ func _kill(faction: String, cls: String, cause: String) -> Dictionary:
 				var ff = mi.material_override.get_shader_parameter("fac_fire")
 				if ff is Color and (ff as Color).a > 0.5 and Vector3(ff.r, ff.g, ff.b).distance_to(Vector3(0.80, 0.95, 0.55)) < 0.05: res["green_flash"] += 1
 			if kind == "flash" and float(mi.material_override.get_shader_parameter("soft_flash")) < 0.5: res["hard"] += 1
+	for c in spy.cols:
+		if (c as Vector3).distance_to(ACID_SPARK) < 0.03: res["green_spark"] += 1
 	world.queue_free()
 	await process_frame
 	return res

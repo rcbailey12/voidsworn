@@ -2265,7 +2265,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if s.squadron:
 		return _wing_death(fx, s)
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
-	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else Color(0.55, 0.65, 0.12)
+	# a metal acid kill's break and cook-off spark in its faction's colours (Neon on PR 1646); a Chorus acid kill stays green
+	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else (boom_col(s, "spark", Color(0.95, 0.34, 0.08)) if melting(s) else Color(0.55, 0.65, 0.12))
 	_power_down(fx, s)
 	s.set_meta("death_start", T)
 	s.set_meta("death_hull_motion", s.hull_motion())
@@ -2865,13 +2866,13 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
-	var melt := cause == "melt"
 	# issue 484: the cruiser's chain blasts measured 24 to 57 px on the strip against a 75 px floor; drawn at 100 now
-	_blast(fx, s, p, n, 100.0 if s.death_tier == "cruiser" else 84.0, Color(0.55, 0.65, 0.12) if melt else dcol(s, "spark", Color(1.0, 0.62, 0.28)), pose, melt)
+	# (an acid kill draws no chain; if one ever does, it is a cook-off in the faction's colours, Neon on PR 1646)
+	_blast(fx, s, p, n, 100.0 if s.death_tier == "cruiser" else 84.0, boom_col(s, "spark", Color(1.0, 0.62, 0.28)), pose)
 	# a narrow jet of fire, then gas, from the opened plating
 	if fx.quality != "low":
 		var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.55, dcol(s, "spark", Color(0.95, 0.5, 0.18)), 2.5, s.hull.L * 0.012, s.hull.L * 0.06, 20, inherited + n * s.hull.L * 0.25, 1.2)
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.55, boom_col(s, "spark", Color(0.95, 0.5, 0.18)), 2.5, s.hull.L * 0.012, s.hull.L * 0.06, 20, inherited + n * s.hull.L * 0.25, 1.2)
 	if s.death_tier == "capital":
 		s.set_meta("death_jolt", fx.now)
 
@@ -3030,7 +3031,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 			else:
 				d = fx.rdir()
 				d = (d - axis_w * d.dot(axis_w)).normalized()
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
+			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
 	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
@@ -3060,8 +3061,13 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 # the hull parts. One overlay per mesh (the tear is not drawn on a melt death, so the overlay slot is free).
 static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	var spots: Array = []
-	for sp in s.get_meta("acid_spots", []):
+	var stored: Array = s.get_meta("acid_spots", [])
+	for sp in stored:
 		if T - float(sp[1]) <= 6.0: spots.append(sp[0])
+	# Neon on PR 1646: an acid burn tick can kill a turn or more after the volley. Its stored hits are still where the
+	# acid is, so the last three of them win over a later non-acid hit.
+	if spots.is_empty():
+		for sp in stored.slice(maxi(stored.size() - 3, 0)): spots.append(sp[0])
 	if spots.is_empty():
 		var last: Array = s.get_meta("last_hit", [])
 		if last.size() >= 1: spots.append(last[0])
@@ -3788,7 +3794,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
-		fx.stk(p, fx.now, 0.65, dcol(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
+		fx.stk(p, fx.now, 0.65, boom_col(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 
