@@ -43,7 +43,10 @@ if (!python) {
     'with tempfile.TemporaryDirectory(prefix="t-") as t: inside = os.path.isdir(t)',
     // Artoo on issue 1535: an explicit dir= outside the job scratch keeps the standard library's private folder
     'c = tempfile.mkdtemp(dir=os.environ["OUTSIDE_1535"])',
-    'print(json.dumps({"a": a, "b": b, "modeA": stat.S_IMODE(os.stat(a).st_mode), "modeB": stat.S_IMODE(os.stat(b).st_mode), "modeC": stat.S_IMODE(os.stat(c).st_mode), "t": t, "inside": inside, "gone": not os.path.exists(t)}))'
+    // Artoo on PR 1600: a prefix that climbs out of the scratch is judged by the folder actually made
+    'd = tempfile.mkdtemp(prefix=os.path.join("..", os.path.basename(os.environ["OUTSIDE_1535"]), "esc-"))',
+    'assert os.path.dirname(os.path.realpath(d)) == os.path.realpath(os.environ["OUTSIDE_1535"]), d',
+    'print(json.dumps({"a": a, "b": b, "modeA": stat.S_IMODE(os.stat(a).st_mode), "modeB": stat.S_IMODE(os.stat(b).st_mode), "modeC": stat.S_IMODE(os.stat(c).st_mode), "modeD": stat.S_IMODE(os.stat(d).st_mode), "t": t, "inside": inside, "gone": not os.path.exists(t)}))'
   ].join('\n');
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'outside1535-'));
   const env = { ...process.env, VOIDSWORN_PYSITE_TEST: '1', PYTHONPATH: site, TMPDIR: tmp, TEMP: tmp, TMP: tmp, OUTSIDE_1535: outside };
@@ -54,6 +57,7 @@ if (!python) {
   assert.equal(got.modeA, 0o755, 'a plain mkdir (inherits), not the private 0o700 folder');
   assert.equal(got.modeB, 0o755, 'an explicit dir= inside the job scratch inherits too');
   assert.equal(got.modeC, 0o700, 'an explicit dir= outside the job scratch keeps the private folder');
+  assert.equal(got.modeD, 0o700, 'a prefix that lands the folder outside the job scratch keeps the private folder');
   // a process whose TEMP is not job scratch never installs the override
   const notJob = spawnSync(python, ['-c', 'import tempfile; print(getattr(tempfile, "_voidsworn_inherited_acl", False))'], { env: { ...env, TMPDIR: outside, TEMP: outside, TMP: outside }, encoding: 'utf8' });
   assert.equal(notJob.stdout.trim(), 'False', 'outside job scratch the override is off: ' + notJob.stdout + notJob.stderr);

@@ -52,6 +52,10 @@ def _mkdtemp(suffix=None, prefix=None, dir=None):
     for _ in range(tempfile.TMP_MAX):
         name = next(names)
         file = os.path.join(dir, prefix + name + suffix)
+        # The folder actually made must sit inside the job scratch too: a prefix or suffix carrying a path (or ..)
+        # could put it elsewhere, so that goes to the standard library (Artoo on PR 1600).
+        if not _inside_root(os.path.dirname(os.path.abspath(file))):
+            return tempfile._voidsworn_stock_mkdtemp(suffix, prefix, dir)
         sys.audit('tempfile.mkdtemp', file)
         try:
             os.mkdir(file)
