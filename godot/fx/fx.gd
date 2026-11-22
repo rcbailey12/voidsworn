@@ -2215,8 +2215,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).
 	if warmup_batch > 0:
 		var shown: Array = []
-		for wc in tmp.get_children():
-			if wc is GeometryInstance3D and (wc as GeometryInstance3D).visible:
+		# Artoo on PR 1445: every visible mesh under the warm root, nested ones too (issue 1528's munition bodies sit
+		# under a plain Node3D), so none skips the batch
+		for wc in tmp.find_children("*", "GeometryInstance3D", true, false):
+			if (wc as GeometryInstance3D).visible:
 				(wc as GeometryInstance3D).visible = false
 				shown.append(wc)
 		for i in shown.size():
