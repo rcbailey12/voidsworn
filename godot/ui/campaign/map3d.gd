@@ -107,8 +107,8 @@ var loading := false:
 	set(v):
 		loading = v
 		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
-		if not v and _queued_jump != "": _run_queued_jump.call_deferred()
-var _queued_jump := ""   # the stop a Jump pressed during loading will fly to
+		if not v and _queued_jump: _run_queued_jump.call_deferred()
+var _queued_jump := false   # a Jump pressed during loading; it jumps to the pick current when loading clears
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -207,8 +207,10 @@ func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()
 	if C != null and C.RUN != null: return false
 	cover.queue_free()
-	_queued_jump = ""
+	var had_jump := _queued_jump
+	_queued_jump = false
 	loading = false
+	if had_jump: _reset_jump_label()
 	_sig = ""
 	return true
 
@@ -1228,7 +1230,7 @@ func _input(e: InputEvent) -> void:
 
 func fly_to(id: String) -> void:
 	if loading and not _flying and not backdrop:
-		_queued_jump = id
+		_queued_jump = true
 		var lbl = ui.get("_jump_lbl") if ui != null else null
 		if lbl is Label and is_instance_valid(lbl): lbl.text = "JUMPING WHEN READY"
 		return
@@ -1244,11 +1246,16 @@ func fly_to(id: String) -> void:
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
 
+# Runs the campaign UI's _jump, so the jump goes to the pick current now and passes all its
+# guards (modal, overlay, the stop still offered). A dropped jump puts the Jump label back.
 func _run_queued_jump() -> void:
-	if loading or _queued_jump == "": return
-	var id := _queued_jump
-	_queued_jump = ""
-	fly_to(id)
+	if loading or not _queued_jump: return
+	_queued_jump = false
+	if ui != null and ui.has_method("_jump"): ui._jump()
+	if not _flying: _reset_jump_label()
+
+func _reset_jump_label() -> void:
+	if ui != null and ui.has_method("_show_pick"): ui._show_pick()   # rebuilds the rail: JUMP TO <pick>
 
 # Cosine acceleration, constant-speed cruise, then matching braking. The
 # integral is continuous in speed and acceleration, including both endpoints.
