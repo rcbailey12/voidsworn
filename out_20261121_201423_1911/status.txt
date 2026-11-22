@@ -1,0 +1,33 @@
+[Sat 11/21/2026 20:14:23.48] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T02:14:24Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+found ffmpeg: C:\Users\rcbai\Downloads\voidsworn_test\ffmpeg\bin\ffmpeg.exe
+all tools found
+[Sat 11/21/2026 20:14:24.78] ready: GPU label 1523
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+verified 4e3783d42a698614bf8467ddc4d839ef54e4713e5ff470aa2408d166bcd8c61f C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 4ac7794ef042cdbdf09fd39d809b01b677ef5cb10aa049ec98a06f9429d52094 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1 (tools_live version a41a4147845e)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 53f4b64ffb4a11ca248afec169bbb49695cb2bca C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sat 11/21/2026 20:15:10.75] step new import start
+[Sat 11/21/2026 20:29:24.21] step new import ok
+[Sat 11/21/2026 20:29:24.22] step capture kill_frigate start
+[Sat 11/21/2026 20:29:53.31] step capture kill_frigate ok
+[Sat 11/21/2026 20:29:53.67] step capture kill_enemy start
+[Sat 11/21/2026 20:30:22.24] step capture kill_enemy ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026 20:30:23.03
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911 (results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1121motr\out_20261121_201423_1911 (the Board writes it when it relays))
+disk: checkouts freed 0.0 GB in all, C: 121.5 GB free

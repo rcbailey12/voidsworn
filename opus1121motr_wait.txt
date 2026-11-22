@@ -1,0 +1,10 @@
+OPUS1121R_WAIT.bat waiting for OPUS1235_FIRSTHIT exit in opus1235_wait.txt Sat 11/21/2026 16:53:08.01 
+stopped while only waiting 16:53:23 to fix its call line (it named the 1121Q bat); restarted with wait1121motr\OPUS1121R_small_deaths_close.bat
+OPUS1121R_WAIT.bat waiting for OPUS1235_FIRSTHIT exit in opus1235_wait.txt Sat 11/21/2026 16:53:23.48 
+swapped out while only waiting 18:44:22: replaced by OPUS1121R_WAIT2.bat (waits for OPUS1448_SND1G exit in opus1448g_wait.txt, Board Nov 22 00:43 UTC)
+OPUS1121R_WAIT2.bat waiting for OPUS1448_SND1G exit in opus1448g_wait.txt Sat 11/21/2026 18:44:22.72 
+OPUS1121R_DEATHS start 20:14:22.18 
+OPUS1121R_DEATHS exit 0 at 20:30:23.46 
+run folder out_20261121_201423_1911
+result: done PASS
+all done Sat 11/21/2026 20:30:23.81 
