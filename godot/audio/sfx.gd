@@ -45,6 +45,11 @@ var _quiet_db := 0.0
 var _quiet_until := 0.0
 # Cues changed in issue 771, so the bake's legacy pass can render the old (main) sound:
 # the late tail layers and the small death pitch variation are left out.
+const PASS_BY_CUE := {
+	"g": 0.17, "pri": 0, "max": 2, "gap": 0.12, "defer": 0.0, "bus": "weapons",
+	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
+	"layers": [{"s": "whoosh", "d": 0.0, "g": 1.0, "r": 1.0, "pj": null}],
+}
 const LEGACY_TAIL_CUES := ["hit_heavy", "shield_break"]
 const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent"]
 
@@ -54,6 +59,7 @@ func _ready() -> void:
 	var t0 := Time.get_ticks_msec()
 	if FileAccess.file_exists("res://audio/cues.json"):
 		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
+	cues["shot_pass_by"] = PASS_BY_CUE
 	var want := {}
 	if only != "":
 		for k in cues.keys():

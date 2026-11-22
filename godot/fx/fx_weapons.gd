@@ -54,6 +54,8 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"auto": 0.3, "scatter": 0.35, "guns": 0.25, "las": 0.08, "prism": 0.12, "flak": 0.2, "pflak": 0.2, "mflak": 0.2,
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
+const SHOOTER_RECOIL := {"macro": 0.22, "gauss": 0.20, "torp": 0.25, "rockets": 0.18, "star": 0.25}
+const ABSORBED_IMPULSE := 0.12
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
 const MELT_SPOTS := 6   # R398: the acid hits a ship remembers for its melt death (fx_shaders MELT_GLOW holds six)
 const CRIT_BEAT := 0.12
@@ -287,8 +289,22 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 				str((tgt["p"] as Vector3) - tp), str(tgt["n"]), str(tgt.get("shield", false)), str(tgt.get("miss", false)),
 				str(hd.get("section", ""))])
 		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0 + float(m.get("lead", 0.0)), col, fac, A, Tg, hd, ka, kt, faction, pattern[i], rhythm)
-		if int(m.get("tur", -1)) >= 0:
-			tur_last[int(m["tur"])] = maxf(float(tur_last.get(int(m["tur"]), -INF)), float(r[2]))
+		var gun := int(m.get("tur", -1))
+		var fire_at := float(r[2])
+		if A != null and SHOOTER_RECOIL.has(lk):
+			if A.hull_pivot != null:
+				var inv: Transform3D = A.xf().affine_inverse()
+				var lp := inv * from
+				var back := (inv.basis * (from - (tgt["p"] as Vector3))).normalized()
+				var recoil: float = _hit_impulse(lk, w, false) * float(SHOOTER_RECOIL[lk])
+				fx.later(fire_at, func l_recoil() -> void: A.hit_react(fx, recoil, lp, back, "recoil"))
+			if gun >= 0:
+				A.hull.turret_fire(gun, fire_at, (0.42 if w >= 3 else 0.30) * ka_geo)
+		elif A != null and gun >= 0 and A.hull != null:
+			# R412 recoil (Neon on PR 1699): every turreted gun kicks back; the light guns with a shorter stroke
+			A.hull.turret_fire(gun, fire_at, TURRET_LIGHT_KICK * ka_geo, false)
+		if gun >= 0:
+			tur_last[gun] = maxf(float(tur_last.get(gun, -INF)), fire_at)
 		froms.append({"p": from, "tur": int(m.get("tur", -1))})
 		impacts.append(float(r[0]) - T0)
 		fires.append(float(r[2]) - T0)
@@ -316,11 +332,28 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 		var d = (to_c - from).normalized()
 		return {"p": to_c, "n": -d, "shield": false, "miss": not hit}
 	if not hit:
-		var d = (to_c - from).normalized()
-		var side = d.cross(Vector3.UP).normalized()
-		var p = to_c + side * (fx.rng.randf_range(-1.0, 1.0) * Tg.hull.W * 1.5 + signf(fx.rng.randf() - 0.5) * Tg.hull.W) \
-			+ Vector3(0, fx.rng.randf_range(-0.5, 1.0) * Tg.hull.H * 1.5, 0) + d * Tg.hull.L * fx.rng.randf_range(0.4, 1.2)
-		return {"p": p, "n": -d, "shield": false, "miss": true}
+		var forward := (to_c - from).normalized()
+		var side := forward.cross(Vector3.UP).normalized()
+		if side == Vector3.ZERO:
+			side = Vector3.RIGHT
+		var across: Vector3 = side * signf(fx.rng.randf() - 0.5)
+		var frame: Transform3D = Tg.xf()
+		var inv := frame.affine_inverse()
+		var half: Vector3 = Tg.hull.box.size * 0.5
+		var support := (inv.basis * across).abs().dot(half)
+		var offset: Vector3 = across * (support * fx.rng.randf_range(0.85, 1.65) + 0.25)
+		offset.y += fx.rng.randf_range(-0.55, 0.85) * half.y
+		var pass_point := to_c + offset
+		var local_from := inv * from
+		# A rotated or deep hull can cross the line before the target plane. Keep it a clear miss.
+		if not Tg.hull.ray(local_from, inv * pass_point - local_from).is_empty():
+			var range_to_plane := maxf(from.distance_to(to_c), 0.001)
+			var depth := (inv.basis * forward).abs().dot(half)
+			var near_scale := maxf(0.25, 1.0 - depth / range_to_plane)
+			pass_point = to_c + across * (support + 0.5) / near_scale + Vector3.UP * offset.y
+		var path := (pass_point - from).normalized()
+		var exit: Vector3 = pass_point + path * Tg.hull.L * fx.rng.randf_range(0.4, 1.2)
+		return {"p": exit, "n": -path, "shield": false, "miss": true, "pass": pass_point}
 	var on_shield: bool = Tg.shielded and Tg._shield_mat != null and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0
 	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(String(hd.get("section", "")), -1)
 	var inv: Transform3D = Tg.xf().affine_inverse()
@@ -569,7 +602,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		if not bool(tg.get("miss", false)):
 			_impact(fx, lk, w, Tg, tg, ti, col, dir, hd, kt, tend - ti)
 		else:
-			_miss_fade(fx, lk, tg, ti, col, dir, kt)
+			tend = maxf(tend, _miss_fade(fx, lk, Tg, tg, from, tf, ti, col, dir, kt))
 	return [ti, tend + 0.3, tf]
 
 
@@ -1959,6 +1992,10 @@ static func _heat_pool(fx, src):
 	return pool
 
 
+static func _hit_impulse(lk: String, weight: int, critical: bool) -> float:
+	return float(REACT_IMPULSE.get(lk, 0.5)) * [0.7, 0.85, 1.0, 1.3, 1.6][clampi(weight, 0, 4)] * (1.6 if critical else 1.0)
+
+
 static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, hd: Dictionary, k: float, sustain: float) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
@@ -1967,29 +2004,39 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	var beam = family_of(lk) == "lance"
 	var bio = lk in ["spine", "tendril", "sporeb", "spores"]
 	var light = lk in ["auto", "junk", "las", "scatter", "guns", "flak", "pflak", "mflak", "gflak", "gsentry", "prism"]
-	# the target's physical reaction, by the weapon's momentum and its weight (a shield takes most of the shove)
+	var shield_only: bool = bool(tg.get("shield", false))
+	var hull_damage := float(hd.get("hull", 0)) > 0.0
+	var breaking: bool = bool(tg.get("breaking", false))
+	if tg.has("through") and breaking:
+		# Let the shield failure read before the hull catches the rest of the shot.
+		T += BREAK_HULL_BEAT
+	# Momentum and the ship's electrical response have separate inputs.
 	if Tg != null:
-		var imp: float = float(REACT_IMPULSE.get(lk, 0.5)) * [0.7, 0.85, 1.0, 1.3, 1.6][clampi(w, 0, 4)] * (1.6 if crit else 1.0)
-		if bool(tg.get("shield", false)):
-			imp *= 0.35
+		var absorbed := shield_only or (float(hd.get("shield", 0)) > 0.0 and not hull_damage)
+		var imp := _hit_impulse(lk, w, crit) * (ABSORBED_IMPULSE if absorbed else 1.0)
 		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
 		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
-		fx.later(T, func l_hit_react() -> void: Tg.hit_react(fx, imp, lhp, ldr))
-		if bio and not bool(tg.get("shield", false)):
+		var ion := lk == "ion"
+		# R412 rule 4 (Neon on PR 1699): a shield block is quiet: no brownout and no engine stutter for an absorbed lance,
+		# ion or crit; only real hull damage, a shield break, a crit or an ion hit that reaches the hull
+		var felt: bool = not absorbed or breaking
+		var brownout := felt and (crit or ion or (beam and lk != "needle") or (hull_damage and (w >= 3 or lk == "gauss")))
+		var dip := (0.70 if crit else (0.62 if ion or w >= 3 else 0.48)) if brownout else 0.0
+		var duration := 0.38 + (dip - 0.40) * 0.85
+		fx.later(T, func l_hit_react() -> void:
+			Tg.hit_react(fx, imp, lhp, ldr, "shield" if absorbed and not breaking else "hull")
+			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
+		if bio and not shield_only:
 			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
 			fx.later(T, func l_acid_spot() -> void:
 				var sp: Array = Tg.get_meta("acid_spots", [])
 				sp.append([lhp, fx.now])
 				while sp.size() > MELT_SPOTS: sp.pop_front()
 				Tg.set_meta("acid_spots", sp))
-	if bool(tg.get("shield", false)):
+	if shield_only:
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return
-	if tg.has("through") and Tg != null and bool(tg.get("breaking", false)):
-		# issue 1239 (F2.2): the shot that breaks the shield and still hurts the hull. The failure's own flash marks the
-		# shield here, so no extra ripple, and the hull's fire waits a beat so the collapse's flash reads first
-		T += BREAK_HULL_BEAT
-	elif tg.has("through") and Tg != null:
+	if tg.has("through") and Tg != null and not breaking:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
 			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)
@@ -2172,7 +2219,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 			_shield_crackle(fx, p, n, T+0.2+j*0.25, k, sc, 32.0, 3, false)
 	if torp:
 		fx.dst(p,T,0.4,2.0*k,14.0*k,0,0.5)
-		fx.shake(T,0.35,p); fx.hit_pause(T,3)
+		fx.shake(T, 0.12, p)
 	fx.light(p+n*2.0*k,T,0.3 if not beam else sustain+0.2,HULL_LIGHT,sc,0 if not beam else 1, TORP_LIGHT_REACH if torp else 0.0)
 
 
@@ -2282,8 +2329,8 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 		var at := T + 0.05 + j * 0.11
 		fx.rib(p + n * 0.1 * k, d.normalized(), d.length(), at, 0.4, hot, 1.3, 0.10 * k, 0.03 * k, 6)
 		fx.spr(q + n * 0.1 * k, at + 0.05, 0.25, col, 1.6, 0.5 * k, 0.9 * k, 13)
-	if Tg != null and Tg.has_method("power_dip"):
-		fx.later(T, func() -> void: Tg.power_dip(fx, 0.5))
+	# The crawl's own half-second power_dip is gone (Artoo on PR 1699): the hit's brownout (hit_power, issue 1690) is the
+	# one transient dip for an ion hit, so the two never multiply on the hull's lights.
 
 
 # The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over
@@ -2470,10 +2517,54 @@ static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2
 	fx.shake(T,0.15,p); fx.hit_pause(T,2); fx.punch(T,0.006,p)
 
 
-static func _miss_fade(fx, lk: String, tg: Dictionary, T: float, col: Color, dir: Vector3, k: float) -> void:
-	# misses fly on and fade; a lance or arc sears empty space with a short flare
-	if lk in ["lance", "ion", "pulsar", "doom", "nlance"]:
-		fx.spr(tg["p"], T, 0.4, col, 2.0, 2.0 * k, 3.0 * k, 18)
+const TURRET_LIGHT_KICK := 0.14   # a turreted gun outside SHOOTER_RECOIL: its barrel stroke (heavy guns 0.30 to 0.42)
+
+
+static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_at: float, T: float, col: Color, dir: Vector3, k: float) -> float:
+	var exit: Vector3 = tg["p"]
+	if family_of(lk) == "lance" or lk == "tendril":
+		if lk not in ["needle", "tendril"]:
+			fx.spr(exit, T, 0.4, col, 2.0, 2.0 * k, 3.0 * k, 18)
+		return T
+	if lk == "ram":
+		return T
+	var flight := maxf(T - fire_at, 0.001)
+	if tg.has("pass"):
+		var point: Vector3 = tg["pass"]
+		var pass_at := lerpf(fire_at, T, from.distance_to(point) / maxf(from.distance_to(exit), 0.001))
+		fx.shot_pass_by(pass_at, point)
+		if Tg != null and Tg.shielded:
+			fx.later(pass_at, func l_graze() -> void: _shield_graze(fx, Tg, from, dir, fx.now, k))
+	# Gauss has its own cooling wake. Guided rounds and craft leave persistent exhaust, and flak bursts in the air.
+	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb"] or family_of(lk) == "flak":
+		return T
+	var speed := from.distance_to(exit) / flight
+	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)
+	# a world-length streak (Neon on PR 1699: the length was divided by the speed, so every miss drew the same pixel-floor
+	# stub) in the firing weapon's own streak kind (4 for the laser family, 0 for shells and bolts)
+	var skind := 4 if lk in ["las", "plasma_cannon", "prism"] else 0
+	fx.stk(exit, T, life, col.lerp(Color.WHITE, 0.25), 5.0, 4.0 * k,
+		0.32 * k, skind, dir * speed, 0.0, 0.0, 3.0, 19.0)
+	return T + life
+
+
+static func _shield_graze(fx, Tg, from: Vector3, dir: Vector3, at: float, k: float) -> void:
+	if Tg.dead or Tg.gone or Tg._shield_mat == null or Tg._last_sh == 0.0:
+		return
+	var centre: Vector3 = Tg.to_world(Tg.hull.shield_centre())
+	var along := (centre - from).dot(dir)
+	if along <= 0.0:
+		return
+	var closest := from + dir * along
+	var outward := (closest - centre).normalized()
+	if outward == Vector3.ZERO:
+		return
+	var radii: Vector3 = Tg.hull.shield_radii()
+	var rim: Dictionary = Tg.shield_point(centre + outward * radii.length() * 2.0)
+	var p: Vector3 = rim["p"]
+	if closest.distance_to(p) <= maxf(0.35, minf(radii.y, radii.z) * 0.25):
+		var sc: Color = Tg.fac["shield"]
+		fx.spr(p, at, 0.13, sc, 1.7, 0.36 * k, 0.1 * k, 13, dir * 1.5, 0.0, 0.0, 0.0, 10.0)
 
 
 # ---------------------------------------------------------------- carriers
