@@ -27,7 +27,8 @@
 #                                              relay_receipt.txt): removes the
 #                                              pinned checkouts of this attempt and of the same job's earlier attempts
 #                                              (voidsworn_test\<job>\out_* beside it), each only when its done.txt says
-#                                              PASS and its relay_receipt.txt names a board/pc-out branch whose tree holds
+#                                              PASS and a board/pc-out branch on origin (issue 1535: relay_receipt.txt,
+#                                              else the attempt's relay_branch.txt, else board/pc-out-<job>) whose tree holds
 #                                              every file of its out_* folders at <tree folder>/out_<name>/<path> with the
 #                                              same bytes (the mirror is fetched when it does not). A failed or
 #                                              unfinished attempt is never touched here (the janitor's rules cover it).
@@ -368,15 +369,28 @@ function Update-Mirror {
     Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
   } finally { $lock.Dispose() }
 }
-function Read-RelayReceipt($folder) {
-  # relay_receipt.txt, written by the Board when it relays (dropcheckouts and droprepo can write it from their arguments):
-  # one line "<branch> <tree path>": the board/pc-out branch and the folder in its tree that holds this folder's
-  # results, e.g. "board/pc-out-1211r6 out_20261120_223320_23241". $null when there is none or it is not well formed.
-  $file = Join-Path $folder 'relay_receipt.txt'
+function Read-RelayReceipt($folder, $name = 'relay_receipt.txt') {
+  # One line "<branch> <tree path>": the board/pc-out branch and the folder in its tree that holds this folder's results,
+  # e.g. "board/pc-out-1211r6 out_20261120_223320_23241". $null when there is none or it is not well formed. Read from
+  # relay_receipt.txt (older relays, written by dropcheckouts or droprepo from the Board's arguments) or relay_branch.txt
+  # (issue 1535: the head writes it at init, before any result exists, naming where the Board relays this attempt).
+  $file = Join-Path $folder $name
   if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
   $line = [string](Get-Content -LiteralPath $file -TotalCount 1)
   if ($line -notmatch '\A(board/pc-out-[A-Za-z0-9._-]+) ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z' -or $line.Contains('..')) { return $null }
-  return @{ Ref = $Matches[1]; Path = $Matches[2] }
+  return @{ Ref = $Matches[1]; Path = $Matches[2]; From = $name }
+}
+function Get-RelayPlace($base, $job, $tree) {
+  # Issue 1535 (Board, Nov 22): the PC session will not write relay_receipt.txt by hand (that file unlocks deletes), so
+  # since PR 1498 no job cleared its checkouts. Where to look comes from the job itself: a receipt from an older relay,
+  # else the relay_branch.txt the head wrote at init, else the job's own name (board/pc-out-<job>, the attempt at
+  # <tree>). Only a place to look: the proof is origin's branch holding every result file's exact bytes there.
+  $r = Read-RelayReceipt $base
+  if ($r) { return $r }
+  $r = Read-RelayReceipt $base 'relay_branch.txt'
+  if ($r) { return $r }
+  if ("board/pc-out-$job $tree" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+\z' -or "$job$tree".Contains('..')) { return $null }
+  return @{ Ref = "board/pc-out-$job"; Path = $tree; From = 'the job name' }
 }
 function Write-RelayReceipt($folder, $ref, $path) {
   if (-not $ref) { return }
@@ -392,6 +406,10 @@ function Test-ReceiptTree($receipt, $want) {
   $sha = (& $gitExe --git-dir $mirror rev-parse --verify -q "refs/heads/$($receipt.Ref)^{commit}" 2>$null) | Select-Object -Last 1
   if ($LASTEXITCODE -ne 0 -or -not $sha) { return $null }
   $ErrorActionPreference = 'Stop'
+  # Origin itself must hold the branch at this commit (git ls-remote), so a branch deleted or moved on GitHub since the
+  # last fetch proves nothing; a different commit refetches once (issue 1535). A failed ls-remote throws: kept.
+  $remote = @(Run-Git ls-remote $source "refs/heads/$($receipt.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
+  if (-not $remote -or "$remote".Substring(0, 40) -ne $sha) { return $null }
   $have = @{}
   foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
     if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
@@ -422,15 +440,15 @@ function Test-RelaySkipped($skipped, $key, $file) {
   }
   return $false
 }
-function Assert-Relayed($base, [string[]]$dirs, $skip) {
+function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
   # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
   # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
   # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
   # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
   # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
   # other difference: kept, and the reason names the first files.
-  $receipt = Read-RelayReceipt $base
-  if (-not $receipt) { throw "results not relayed yet: no relay_receipt.txt in $base (the Board writes it when it relays)" }
+  $receipt = Get-RelayPlace $base $job $tree
+  if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
   $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
   $want = @{}; $files = @{}
@@ -452,7 +470,7 @@ function Assert-Relayed($base, [string[]]$dirs, $skip) {
   for ($try = 0; $try -lt 2; $try++) {
     if ($try) { Update-Mirror }
     $r = Test-ReceiptTree $receipt $want
-    if ($null -eq $r) { $bad = @("branch $($receipt.Ref) is not in the shared mirror"); continue }
+    if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
     $big = @(); $bad = @()
     foreach ($m in $r.Missing) {
       if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $files[$m.Key])) { $big += $m.Key }
@@ -481,7 +499,7 @@ function Drop-Attempt($attempt) {
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
   if (-not $present.Count) { Write-Output "no listed checkout left in $attempt"; return }
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
-  try { Assert-Relayed $attempt $outs @('checkout_leftovers') }
+  try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   $src = $null
   $srcFile = Join-Path $attempt 'ships_source.txt'
@@ -756,7 +774,7 @@ switch ($Action) {
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
       Write-RelayReceipt (Join-Path $jobDir 'out') $D $Folder
-      Assert-Relayed (Join-Path $jobDir 'out') @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo')
+      Assert-Relayed (Join-Path $jobDir 'out') @((Join-Path $jobDir 'out')) @('checkout_leftovers_repo') (Split-Path -Leaf $jobDir) "$(Split-Path -Leaf $jobDir)_out"
       $work = @(Get-KeptWork $repo $null @{} "godot/assets/ships/$C/" $export)
       if (Test-Paused) { throw 'the Board PC pause is active' }
       if ($work.Count) {

@@ -1724,12 +1724,12 @@ func _cut_refresh(fx) -> void:
 # A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and
 # ldir are the hit point, its normal and the shot's direction in the ship frame. A fresh hit on an old mark of the same
 # style grows and reheats it instead of stacking more geometry (_place_mark has the budget).
-func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3) -> void:
+func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3, hatch_k := 1.0) -> void:
 	if squadron or weight <= 0 or dead or gone:
 		return
 	_mark_n += 1
 	var t_m := Time.get_ticks_usec()
-	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
+	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)], hatch_k)
 	if es.is_empty():
 		return
 	for e in es:
@@ -1753,7 +1753,7 @@ func _place_mark(fx, e) -> void:
 			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
-			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec])
+			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
 			if o.part_i < es2.size():
 				var n2 = es2[o.part_i]
 				n2.t0 = fx.now
@@ -2073,7 +2073,7 @@ func _regrade_marks(fx) -> void:
 		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
 		# the sync right after a volley does not rebuild the hull a second time for a few percent
 		if absf(BREACH.mark_scale(e.section_damage) - BREACH.mark_scale(damage)) > 0.05:
-			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
+			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage, e.hatch_k)
 			if e.part_i < entries.size():
 				var replacement = entries[e.part_i]
 				replacement.t0 = e.t0

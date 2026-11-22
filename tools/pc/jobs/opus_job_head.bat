@@ -75,6 +75,12 @@ if "%OJ_PRE%"=="1" set "JW=%OJ_VT%\tools_live\%OJ_TLV%\pc\job_wrap.bat"
 call "%JW%" init "%OJ_OUT%" "%~3" "%~4"
 if errorlevel 1 exit /b %ERRORLEVEL%
 set "OJ_ST=%JW_ST%"
+rem Issue 1535: where the Board relays this attempt, written by the head before any result exists, so no session writes a
+rem receipt by hand. dropcheckouts proves the relay itself: origin's branch must hold every out_* file's exact bytes at
+rem <attempt folder name>/ (git ls-remote, then the tree).
+for %%L in ("%OJ_OUT%") do set "OJ_LEAF=%%~nxL"
+> "%OJ_OUT%\relay_branch.txt" echo board/pc-out-%OJ_JOB% %OJ_LEAF%
+>> "%OJ_ST%" echo relay to: board/pc-out-%OJ_JOB% with this attempt folder at %OJ_LEAF%/ in its tree, then dropcheckouts "%OJ_OUT%"
 >> "%OJ_ST%" echo head %~f0
 if "%OJ_PRE%"=="1" >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE% >> "%OJ_ST%" 2>&1

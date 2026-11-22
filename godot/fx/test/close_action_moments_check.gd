@@ -5,7 +5,7 @@ extends SceneTree
 #   ram:     the move finishes first; the ram volley (weapon_id ram) lands on the same frame as the ram's boom (gain 0.8 at
 #            the target); the hold after it stays 500 ms of battle pace.
 #   board:   fx.board plays on the same frame as board_grapple (the boarder's faction variant, so Chorus stays wet);
-#            the hold stays 600 ms.
+#            the hold is the breach look's (fx.board_hold_ms, issue 1547), so the player sees it before the next event.
 #   command: the flagship pulse plays under the banner; no sound of its own (the warning's ui_alert is
 #            the command's cue, audio README item 4); the hold stays the banner pace plus 140 ms.
 # Headless:  godot --headless --path godot --script res://fx/test/close_action_moments_check.gd
@@ -44,6 +44,9 @@ func _note(who: String, n: String, a: Array) -> void:
 	log.append([Engine.get_process_frames(), Time.get_ticks_msec(), who, n, a, clock.ms])
 
 
+const BOARD_HOLD := 1600.0   # issue 1547: the recording fx's breach hold (the real one is fx.gd board_hold_ms)
+
+
 class RecFx extends Node:
 	var tree
 	var now := 0.0
@@ -62,6 +65,9 @@ class RecFx extends Node:
 	func board(...a: Array) -> float:
 		_r("board", a)
 		return 3.2
+	# issue 1547: the breach look's hold before the next event (fx.gd BOARD)
+	func board_hold_ms() -> float:
+		return BOARD_HOLD
 
 
 class RecSfx extends "res://audio/sfx.gd":
@@ -199,7 +205,7 @@ func _run() -> void:
 	_check(not gr.is_empty() and str(((gr[4] as Array)[0] as Dictionary).get("variant", "?")) == fac, "the boarding's approved sound: board_grapple, the boarder's variant (%s)" % fac)
 	_check(not gr.is_empty() and not bd.is_empty() and int(gr[0]) == int(bd[0]), "the grapple and the breach start on the same frame")
 	_check(_first("fx", "pop").is_empty(), "no placeholder pop")
-	_check(_held_ok(held, 600.0 * SPEED), "the boarding keeps its 600 ms hold (%.1f game ms, want %.0f to %.0f)" % [held, 600.0 * SPEED, 600.0 * SPEED + 2.0 * clock.max_dt])
+	_check(_held_ok(held, BOARD_HOLD * SPEED), "the boarding holds for the breach look's hold (%.1f game ms, want %.0f to %.0f)" % [held, BOARD_HOLD * SPEED, BOARD_HOLD * SPEED + 2.0 * clock.max_dt])
 	_check(_sounds() == ["board_grapple"], "the boarding plays only its grapple (%s)" % str(_sounds()))
 
 	print("-- command (the player's: names no unit)")

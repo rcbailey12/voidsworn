@@ -56,7 +56,7 @@ for (const [index, fac] of Object.keys(story55.table).entries()) {
   }
   for (const won of [false, true]) {
     story55.start(fac, admirals[0]); story55.end(won);
-    assert(global.story55html.includes(row.learning), fac + ' learning on ' + (won ? 'win' : 'loss'));
+    assert(global.story55html.includes(row.learning) || global.story55html.includes(row.learning.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')), fac + ' learning on ' + (won ? 'win' : 'loss'));
   }
 }
 assert.strictEqual(story55.admirals.grax.n, 'Warlord Grax Ironmaw');
@@ -110,7 +110,7 @@ for (const [fac, patron] of [['corsair', 'rook'], ['chorus', 'hunger']]) {
     assert.strictEqual(story55.run().credits, credits, 'offer is free');
     assert.strictEqual(story55.run().boonRerolls || 0, 0, 'offer does not spend a reroll');
     const offer = JSON.stringify(story55.offer());
-    assert(global.story55html.includes(patron === 'rook' ? 'R-5 Rook' : 'H-3 Crucible'), 'offering core is shown');
+    assert(global.story55html.includes(patron === 'rook' ? 'R-5 Rook' : 'H-3 Calyx'), 'offering core is shown');
     story55.resume(); story55.resumeReward();
     assert.strictEqual(JSON.stringify(story55.offer()), offer, 'reload keeps the same offer');
     if (take) story55.take(0); else story55.decline();
