@@ -1,0 +1,347 @@
+{
+ "about": "Issue 1236 wrecks (Ryan, Nov 22: big ships shrink after their death and it looks bad; picks: ends crumble away, keep the biggest piece and let it poke out). Each big death anchored to a hex (rest radius 8, as the game), shown to 8 s after the split at camera 170 and 60. Run with --moments res://bench/look_moments_1236.json on main plus this bench key (before: the wreck shrinks) and work/issue-1236-crumble plus it (after). With --sound and --write-movie the run is also a clip. WRECK2: the dreadnought row first, and the bench logs each death call, a heartbeat a second and a cut that keeps the clock waiting.",
+ "cameras": [
+  170,
+  60
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   640,
+   480
+  ],
+  "60": [
+   1280,
+   960
+  ]
+ },
+ "rows": [
+  {
+   "id": "wk_hege_super",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Navy dreadnought death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk_hege_cruiser",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Navy cruiser death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk_void_cruiser",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Sunward cruiser death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk_cors_battle",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Hullbreaker battle-barge death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk_itha_cruiser",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Glasswright cruiser death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk_chor_bio",
+   "group": "issue 1236 wreck in its hex",
+   "label": "Chorus bio-titan death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Bio-titan"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     1.0,
+     1
+    ],
+    [
+     "split",
+     1.8,
+     1
+    ],
+    [
+     "split",
+     2.6,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     5.0,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  }
+ ]
+}
