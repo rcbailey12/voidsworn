@@ -1,0 +1,63 @@
+start 2026-11-21 22:35:21 C free 58.8 GB (Ryan direct wake 04:21:36Z 'Yes remove saved runs')
+22:35:27 opus1434r\out_20261121_213248_31382\new gone=True freed 10.0 GB
+22:35:33 opus1536a\out_20261121_203110_108\old gone=True freed 10.0 GB
+22:35:38 opus1536a\out_20261121_203110_108\new gone=True freed 10.0 GB
+22:35:45 opus1121motr\out_20261121_201423_1911\new gone=True freed 9.9 GB
+22:35:55 opus1434o\out_20261121_183514_32105\new gone=True freed 9.9 GB
+22:36:02 opus1448g\out_20261121_195122_1911\new gone=True freed 10.0 GB
+22:36:08 opus1235\out_20261121_191315_32105\old gone=True freed 9.5 GB
+  err C:\Users\rcbai\Downloads\voidsworn_test\opus1235\out_20261121_191315_32105\new\GIT~1\objects\pack\pack-d46ec8ff6ee4a335cf35f12b0c146d789680e62c.pack - Access is denied.
+22:36:15 opus1235\out_20261121_191315_32105\new gone=False freed 9.1 GB
+  err C:\Users\rcbai\Downloads\voidsworn_test\opus1439\out_20261121_181411_15138\new\GIT~1\objects\pack\pack-d46ec8ff6ee4a335cf35f12b0c146d789680e62c.pack - Access is denied.
+22:36:22 opus1439\out_20261121_181411_15138\new gone=False freed 9.0 GB
+  err C:\Users\rcbai\Downloads\voidsworn_test\opus1448\out_20261121_173716_21528\new\GIT~1\objects\pack\pack-d46ec8ff6ee4a335cf35f12b0c146d789680e62c.pack - Access is denied.
+22:36:27 opus1448\out_20261121_173716_21528\new gone=False freed 9.9 GB
+22:36:33 opus1434n\out_20261121_170912_15248\new gone=True freed 9.8 GB
+22:36:38 opus1448\out_20261121_165054_12443\new gone=True freed 9.7 GB
+22:36:44 opus1121motq\out_20261121_162913_31750\new gone=True freed 9.5 GB
+22:36:49 opus1121motp\out_20261121_160714_3695\new gone=True freed 9.5 GB
+22:36:55 opus1434m\out_20261121_152322_26885\new gone=True freed 9.5 GB
+22:37:04 opus1121moto\out_20261121_150456_18760\new gone=True freed 9.5 GB
+22:37:11 opus1468\out_20261121_142951_22531\old gone=True freed 9.4 GB
+22:37:16 opus1468\out_20261121_142951_22531\new gone=True freed 9.4 GB
+22:37:22 opus1121motn\out_20261121_140917_26517\new gone=True freed 9.5 GB
+22:37:28 opus1524c\out_20261121_132716_26517\old gone=True freed 9.5 GB
+22:37:34 opus1524c\out_20261121_132716_26517\new gone=True freed 9.5 GB
+22:37:43 opus1434l\out_20261121_124404_23150\new gone=True freed 9.4 GB
+22:37:49 opus1531d\out_20261121_122103_23934\new gone=True freed 9.5 GB
+22:37:56 opus1524b\out_20261121_115913_15143\new gone=True freed 9.4 GB
+22:38:02 opus1434k\out_20261121_112721_11649\new gone=True freed 9.5 GB
+22:38:07 opus1529c\out_20261121_110513_9075\new gone=True freed 9.5 GB
+22:38:14 opus1531b\out_20261121_101550_28634\new gone=True freed 9.5 GB
+22:38:22 opus1466\out_20261121_180213_18187\old gone=True freed 2.8 GB
+22:38:27 opus1466\out_20261121_180213_18187\new gone=True freed 2.8 GB
+22:38:33 opus1373gw4m\repo gone=True freed 2.0 GB
+22:38:37 opus1373gv2m\repo gone=True freed 2.1 GB
+22:38:43 opus1413h10f\repo gone=True freed 2.1 GB
+22:38:48 opus1413hb1f\repo gone=True freed 2.1 GB
+22:38:54 opus1413o2f\repo gone=True freed 2.1 GB
+22:39:02 opus1413o3f\repo gone=True freed 2.1 GB
+22:39:09 opus1415h_GA1\repo gone=True freed 2.1 GB
+22:39:16 opus1415h_GP1\repo gone=True freed 2.1 GB
+22:39:21 opus1291c14i\repo gone=True freed 4.0 GB
+22:39:25 opus1415h_GL1\repo gone=True freed 2.1 GB
+22:39:29 opus1291c14k\repo gone=True freed 2.2 GB
+22:39:33 opus1415h_GS1\repo gone=True freed 2.1 GB
+22:39:38 opus1413h10e\repo gone=True freed 2.1 GB
+22:39:46 opus1413hb1e\repo gone=True freed 2.1 GB
+22:39:50 opus1413o3e\repo gone=True freed 2.1 GB
+22:39:56 opus1413o2e\repo gone=True freed 2.1 GB
+22:40:00 opus1415g_GS1b\repo gone=True freed 2.1 GB
+22:40:05 opus1539c14h\repo gone=True freed 3.7 GB
+22:40:10 opus1415g_GA1\repo gone=True freed 2.2 GB
+22:40:14 opus1415g_GP1\repo gone=True freed 2.1 GB
+22:40:19 opus1415g_GL1\repo gone=True freed 2.1 GB
+22:40:25 opus1415g_GS1\repo gone=True freed 2.1 GB
+22:40:30 opus1415f_GP1\repo gone=True freed 3.0 GB
+22:40:36 opus1415f_GL1\repo gone=True freed 3.0 GB
+22:40:41 opus1291c12g\repo gone=True freed 3.0 GB
+22:40:47 opus1415f_GS1\repo gone=True freed 2.9 GB
+22:40:52 opus1291c14h\repo gone=True freed 3.0 GB
+22:41:00 opus1291c11g\repo gone=True freed 3.0 GB
+22:41:06 opus1291c10h\repo gone=True freed 2.9 GB
+end 22:41:06 freed 335.1 GB, C free 393.9 GB
