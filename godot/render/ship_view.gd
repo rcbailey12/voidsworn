@@ -15,6 +15,8 @@ var squad_kind := ""
 
 var u: Dictionary
 var hull: Node3D
+var hull_pivot: Node3D
+var fx_clock: Node
 var L := 10.0
 var fac := "hegemony"
 var code := ""
@@ -87,6 +89,9 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var variant_code := str(u.get("tpl", ""))
 	if manifest().get("ships", {}).has(variant_code):
 		code = variant_code
+	hull_pivot = Node3D.new()
+	hull_pivot.name = "hull_pivot"
+	add_child(hull_pivot)
 	var battle_wing := bool(u.get("squadron", false))
 	var squad := cls == "Squadron" or battle_wing
 	if squad:
@@ -96,7 +101,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		bob_seed = float(posmod(hash(str(u.get("id", "wing"))), 10000)) / 1000.0
 		hull = WING.new()
 		hull.name = "hull"
-		add_child(hull)
+		hull_pivot.add_child(hull)
 		# Battle units carry the squadron flag; class-only portraits have no hex to patrol.
 		if battle_wing:
 			hull.patrol_limit = HT.HEX_S * sqrt(3.0) * 0.5
@@ -116,7 +121,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()
 	hull.name = "hull"
-	add_child(hull)
+	hull_pivot.add_child(hull)
 	var man := manifest()
 	var made := false
 	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
@@ -263,7 +268,7 @@ func _engines() -> void:
 		s.render_priority = 1
 		var zoff := (float(i) - (n - 1) * 0.5) * L * 0.09
 		s.position = Vector3(-L * 0.52, hull_lift, zoff)
-		add_child(s)
+		hull_pivot.add_child(s)
 		engines.append(s)
 	set_fallback_drive(0.0)
 
@@ -414,6 +419,8 @@ func revive() -> void:
 	dead = false
 	wreck = false
 	visible = true
+	if hull_pivot != null:
+		hull_pivot.transform = Transform3D.IDENTITY
 	hull.transform = Transform3D(hull_basis, hull_base)
 	position.y = 0.0
 	for node in _live_hull_poses:
@@ -562,6 +569,7 @@ var _yaw_v := 0.0
 var _yaw_a := 0.0
 var _puff_cd := {}
 var _idle_time := 0.0
+var _bob_time := 0.0
 var puffs: Array = []
 
 
@@ -872,7 +880,6 @@ func _emit(kind: String, f: Callable) -> void:
 # the longest a move may take. path_dur is the move's length once set up. Every number below is a tuning value chosen by
 # eye from the issue 505 strips, not a limit.
 var glide := false
-var glide_bank := 0.0        # roll about the bow, shared with the hit-reaction layer (always 0 now: no roll into turns)
 var gl_final_yaw := 0.0
 var gl_motion_time := 0.0
 var gl_ds: PackedFloat32Array = PackedFloat32Array()   # distance along the curve on an even time grid (motion time)
@@ -1425,7 +1432,6 @@ func _glide_step(dt: float) -> void:
 		position = fin[0]
 		cur_yaw = float(fin[1])
 		rotation.y = cur_yaw
-		glide_bank = 0.0
 		path_dur = 0.0
 		glide = false
 		_vel = Vector3.ZERO
@@ -1441,9 +1447,6 @@ func _glide_step(dt: float) -> void:
 	_acc = (d[2] as Vector3) / (path_dur * path_dur)
 	_yaw_v = float(d[3]) / path_dur
 	_yaw_a = float(d[4]) / (path_dur * path_dur)
-	# no roll into turns: nothing in space leans a hull into a turn (issue 505 item 4). ShipView never writes the root's
-	# roll or pitch (fx/API.md: G4's hit reactions own them); glide_bank stays 0 for fx_ship's read of it
-	glide_bank = 0.0
 	_prev_pos = position
 	_prev_yaw = cur_yaw
 	_glide_thrusters(d, dts)
@@ -1538,7 +1541,6 @@ func _emit_jet(kind: String, f: Callable) -> void:
 
 func snap_to(p: Vector3, yaw: float) -> void:
 	path_dur = 0.0
-	glide_bank = 0.0
 	glide = false
 	segs = []
 	path_yaws = []
@@ -1624,10 +1626,13 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 	var h: Dictionary = a.jet(aim, through, o)
 	if h.is_empty():
 		return Vector3.INF
-	return (h["p"] as Vector3) + (hull.position - hull_base)
+	var p: Vector3 = (h["p"] as Vector3) + (hull.position - hull_base)
+	return hull_pivot.transform * p if hull_pivot != null else p
 
 
 func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
+	if fac == "chorus":
+		return
 	jet_count += 1
 	if dead or not visible or DisplayServer.get_name() == "headless":
 		return
@@ -1643,7 +1648,9 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	# issue 1581: an escort's movement jets read at r 170: a floor on their strength, brighter and bigger at the nozzle
 	var esc := (1.0 - clampf(mass, 0.0, 1.0)) if glide else 0.0
 	k = maxf(k, lerpf(k, 0.6, esc))
-	sp.modulate = Color(0.85, 0.88, 0.95, 0.75 * k).lerp(Color(0.95, 0.97, 1.0, minf(0.95 * k + 0.1, 1.0)), esc)  # G4's hit-reaction RCS colour (fx_ship._rcs)
+	var tint: Color = {"corsair": Color(0.55, 0.48, 0.41), "ithar": Color(1.0, 0.86, 0.53),
+		"deathless": Color(0.57, 0.38, 0.96)}.get(fac, Color(0.85, 0.88, 0.95))
+	sp.modulate = Color(tint, minf(0.75 * k + esc * 0.15, 1.0))
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
@@ -1654,9 +1661,15 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 		sp.pixel_size *= 0.5
 	sp.top_level = true
 	add_child(sp)
-	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
-	var vw: Vector3 = global_transform.basis.orthonormalized() * dir.normalized()
-	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": sp.modulate.a, "life": lerpf(lerpf(0.4, 0.55, mk), 0.55, esc) if glide else 0.4})
+	var jet_dir := dir.normalized()
+	if hull_pivot != null:
+		jet_dir = hull_pivot.basis * jet_dir
+	sp.global_position = to_global(at + jet_dir * maxf(L, 6.0) * 0.03)
+	var vw: Vector3 = global_transform.basis.orthonormalized() * jet_dir
+	var glint := fac in ["ithar", "deathless"]
+	var life := 0.18 if glint else (lerpf(lerpf(0.4, 0.55, mk), 0.55, esc) if glide else 0.4)
+	var velocity := _vel * 0.6 if glint else vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6
+	puffs.append({"n": sp, "t": 0.0, "v": velocity, "s": sp.pixel_size, "a": sp.modulate.a, "life": life, "spread": 0.0 if glint else 5.0})
 
 
 static var _pm: StandardMaterial3D = null
@@ -1685,7 +1698,7 @@ func _puffs_step(dt: float) -> void:
 		var sp: Sprite3D = pf.n
 		var life: float = pf.get("life", 0.4)
 		sp.global_position += (pf.v as Vector3) * dt * (1.0 - pf.t / life)
-		sp.pixel_size = float(pf.s) * (1.0 + pf.t * 5.0)
+		sp.pixel_size = float(pf.s) * (1.0 + pf.t * float(pf.spread))
 		sp.modulate.a = maxf(0.0, float(pf.a) * (1.0 - pf.t / life))
 		if pf.t >= life:
 			sp.queue_free()
@@ -1740,18 +1753,20 @@ func _process(dt: float) -> void:
 		if fleeing > 1.5:
 			visible = false
 		return
+	var prior_bob_time := _bob_time
+	_bob_time = float(fx_clock.now) if is_instance_valid(fx_clock) else _bob_time + dt
 	# Let a battle ship settle before it vents a small pair. Each ship has its own cadence.
 	if not campaign_map and not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
-		_idle_time += dt
+		_idle_time += maxf(_bob_time - prior_bob_time, 0.0)
 		if _idle_time >= lerpf(8.0, 15.0, bob_seed * 0.1):
-			var phase := Time.get_ticks_msec() / 1000.0 + bob_seed
+			var phase := _bob_time + bob_seed
 			_side_puffs(1.0 if sin(phase) > 0.0 else -1.0, 0.16)
 			_idle_time = 0.0
 	else:
 		_idle_time = 0.0
 	# A slow idle drift, separate from the cinematic flight bank. Issue 1581: at rest in battle the hull also wanders a
 	# little on station (a slow drift across the beam and along the keel); Reduce motion holds it still.
-	var tt := Time.get_ticks_msec() / 1000.0
+	var tt := _bob_time
 	var bob := Vector3.ZERO if calm else Vector3(0, sin(tt * 0.6 + bob_seed) * 0.25, 0)
 	if not calm and not campaign_map and squad_kind.is_empty():
 		bob += Vector3(sin(tt * 0.21 + bob_seed * 1.7) * 0.14, 0, sin(tt * 0.17 + bob_seed * 2.3) * 0.12)
@@ -1760,8 +1775,7 @@ func _process(dt: float) -> void:
 	bob.y += elev
 	if not dead:
 		if squad_kind.is_empty() and absf(nod) > 0.0:
-			# the trim nod is laid on the hull node about its own centre (the root's roll and pitch belong to fx's hit
-			# reactions, fx/API.md), so attached effects follow it through hull_motion()
+			# Trim is local to the hull. The parent pivot carries hit reactions for the hull and its attachments.
 			var nb := Basis(Vector3(0, 0, 1), nod)
 			hull.transform = Transform3D(nb * hull_basis, nb * hull_base + bob)
 		else:

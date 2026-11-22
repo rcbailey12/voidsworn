@@ -33,3 +33,5 @@ Check method as well as output: the manifest against the build sheet (every part
 piece (no hollow or flat interior), the paint stack as named (no projected concept art, R96 Q1), and the budget numbers reported.
 A build pull request whose body carries no evidence section (build sheet link, manifest, budget numbers, changes to the sheet)
 is a BLOCKING finding.
+
+Reviewing a Godot FX, rendering, ship import, audio or battle-feel pull request? Apply `.agents/skills/independent-audit/SKILL.md` first and group findings Blocking, High / Medium, Ready, naming the commit read (RULEBOOK 3.13).
