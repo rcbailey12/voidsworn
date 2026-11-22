@@ -1,0 +1,24 @@
+OPUS1466C_WAIT.bat waiting for OPUS1468_SHADER3 exit in opus1468c_wait.txt Fri 11/20/2026 20:52:14.24 
+HELD 00:07:20 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule). Requeue after space is freed.
+OPUS1466C_WAIT2.bat waiting for OPUS1468_SHADER3 exit in opus1468c_wait.txt Sat 11/21/2026  6:14:35.42 
+HELD 08:40:05 by PC relay: waiter stopped while only waiting, C: under 60 GB (Board rule).
+OPUS1466C_WAIT2.bat waiting for OPUS1468_SHADER3 exit in opus1468c_wait.txt Sat 11/21/2026  8:42:55.18 
+swapped out while only waiting 14:35:53: replaced by OPUS1466C_WAIT3.bat (waits for OPUS1121O_MOTION exit in opus1121moto_wait.txt, Board Nov 21 20:35 UTC)
+OPUS1466C_WAIT3.bat waiting for OPUS1121O_MOTION exit in opus1121moto_wait.txt Sat 11/21/2026 14:35:53.44 
+swapped out while only waiting 15:17:21: replaced by OPUS1466C_WAIT4.bat (waits for OPUS1434_LOAD13 exit in opus1434m_wait.txt, Board Nov 21 21:16 UTC)
+OPUS1466C_WAIT4.bat waiting for OPUS1434_LOAD13 exit in opus1434m_wait.txt Sat 11/21/2026 15:17:21.58 
+swapped out while only waiting 15:39:29: replaced by OPUS1466C_WAIT5.bat (waits for OPUS1121P_MOTION exit in opus1121motp_wait.txt, Board Nov 21 21:37 UTC)
+OPUS1466C_WAIT5.bat waiting for OPUS1121P_MOTION exit in opus1121motp_wait.txt Sat 11/21/2026 15:39:30.11 
+swapped out while only waiting 15:42:11: replaced by OPUS1466C_WAIT6.bat (waits for OPUS1121Q_DEATHS exit in opus1121motq_wait.txt, Board Nov 21 21:41 UTC)
+OPUS1466C_WAIT6.bat waiting for OPUS1121Q_DEATHS exit in opus1121motq_wait.txt Sat 11/21/2026 15:42:11.95 
+swapped out while only waiting 16:33:23: replaced by OPUS1466C_WAIT7.bat (waits for OPUS1448_SND1B exit in opus1448_wait.txt, Board Nov 21 22:30 UTC)
+OPUS1466C_WAIT7.bat waiting for OPUS1448_SND1B exit in opus1448_wait.txt Sat 11/21/2026 16:33:23.76 
+swapped out while only waiting 17:05:12: replaced by OPUS1466C_WAIT8.bat (waits for OPUS1434_LOAD14 exit in opus1434n_wait.txt, Board Nov 21 23:04 UTC)
+OPUS1466C_WAIT8.bat waiting for OPUS1434_LOAD14 exit in opus1434n_wait.txt Sat 11/21/2026 17:05:12.79 
+swapped out while only waiting 17:20:12: replaced by OPUS1466C_WAIT9.bat (waits for OPUS1448_SND1C exit in opus1448c_wait.txt, Board Nov 21 23:19 UTC)
+OPUS1466C_WAIT9.bat waiting for OPUS1448_SND1C exit in opus1448c_wait.txt Sat 11/21/2026 17:20:12.68 
+OPUS1466_RUN3 start 18:02:12.16 
+OPUS1466_RUN3 exit 0 at 18:13:41.57 
+run folder out_20261121_180213_18187
+result: done PASS
+all done Sat 11/21/2026 18:13:41.95 

@@ -1,0 +1,48 @@
+[Sat 11/21/2026 18:02:13.70] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T00:02:14Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sat 11/21/2026 18:02:14.94] ready: GPU label 1466
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+verified 4e3783d42a698614bf8467ddc4d839ef54e4713e5ff470aa2408d166bcd8c61f C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 4ac7794ef042cdbdf09fd39d809b01b677ef5cb10aa049ec98a06f9429d52094 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1 (tools_live version a41a4147845e)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+[Sat 11/21/2026 18:02:17.07] no ffmpeg on PATH: the crossing frames stay as jpgs for the cloud to encode
+checkout new 1a8daa75a73dc0293ae068d99189065230fe14d0 C:\Users\rcbai\Downloads\voidsworn_test\opus1466\out_20261121_180213_18187\new
+[Sat 11/21/2026 18:02:32.67] step new import start
+[Sat 11/21/2026 18:07:24.79] step new import ok
+[Sat 11/21/2026 18:07:24.80] step new wreck_contact_check start
+[Sat 11/21/2026 18:07:47.19] step new wreck_contact_check ok
+[Sat 11/21/2026 18:07:47.21] step new fleet cost 1 start
+[Sat 11/21/2026 18:08:02.41] step new fleet cost 1 ok
+[Sat 11/21/2026 18:08:02.44] new fleet1 DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.524 p99_ms=4.846 one_percent_low_fps=103.1 max_ms=12.654 fx_p99_ms=1.618 particles=1352 wrecks=20
+[Sat 11/21/2026 18:08:02.45] step new fleet cost 2 start
+[Sat 11/21/2026 18:08:15.43] step new fleet cost 2 ok
+[Sat 11/21/2026 18:08:15.46] new fleet2 DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.522 p99_ms=5.092 one_percent_low_fps=101.2 max_ms=12.530 fx_p99_ms=1.475 particles=1352 wrecks=20
+[Sat 11/21/2026 18:08:15.47] step new crossing c60 start
+[Sat 11/21/2026 18:08:36.32] step new crossing c60 ok
+[Sat 11/21/2026 18:08:36.35] new WRECK_CROSSING {"arm":"new
+checkout old 080b7b55903167e1665aaf85e7cdf7192d13434e C:\Users\rcbai\Downloads\voidsworn_test\opus1466\out_20261121_180213_18187\old
+[Sat 11/21/2026 18:08:47.65] step old import start
+[Sat 11/21/2026 18:12:53.49] step old import ok
+[Sat 11/21/2026 18:12:53.50] step old fleet cost 1 start
+[Sat 11/21/2026 18:13:07.02] step old fleet cost 1 ok
+[Sat 11/21/2026 18:13:07.05] old fleet1 DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.435 p99_ms=5.020 one_percent_low_fps=100.4 max_ms=12.763 fx_p99_ms=1.442 particles=1352 wrecks=20
+[Sat 11/21/2026 18:13:07.06] step old fleet cost 2 start
+[Sat 11/21/2026 18:13:19.83] step old fleet cost 2 ok
+[Sat 11/21/2026 18:13:19.85] old fleet2 DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.461 p99_ms=5.074 one_percent_low_fps=101.5 max_ms=12.671 fx_p99_ms=1.445 particles=1352 wrecks=20
+[Sat 11/21/2026 18:13:19.86] step old crossing c60 start
+[Sat 11/21/2026 18:13:40.65] step old crossing c60 ok
+[Sat 11/21/2026 18:13:40.68] old WRECK_CROSSING {"arm":"old
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026 18:13:41.13
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1466\out_20261121_180213_18187 (results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1466\out_20261121_180213_18187 (the Board writes it when it relays))
+disk: checkouts freed 0.0 GB in all, C: 200.7 GB free

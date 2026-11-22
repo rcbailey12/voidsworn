@@ -1,0 +1,14 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1466)
+GPU: acquired solo claim 277cc6b5-adfb-4eaf-bac5-d25c014a749e
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b17f17436b87430c93c51681d4bce6ce\godot-profile-658987cd071142ad82fc7ab23cf69aab
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[attach] hp_core missing on victim (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on crosser (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] death on victim: placed on the plating (a surface sample; not a hard point type)
+WRECK_CROSSING {"arm":"old 080b7b5590","frames":150,"most_moved":0.0,"moved":0,"near_path":3,"plates":9,"resting_before":true,"save_errors":[],"space_asleep_before":true}
+[attach] battle victim victim: skipped 0; death hp 0 ray 1 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b17f17436b87430c93c51681d4bce6ce\godot-profile-658987cd071142ad82fc7ab23cf69aab
+GPU: released solo claim 277cc6b5-adfb-4eaf-bac5-d25c014a749e

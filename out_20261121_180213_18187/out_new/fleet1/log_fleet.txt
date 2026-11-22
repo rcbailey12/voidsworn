@@ -1,0 +1,50 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1466)
+GPU: acquired solo claim fe6dbcbf-a8c8-4726-acd9-82191174a632
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c8bedd4eee3d428891fd77e3c1b6d360\godot-profile-a5450cc8a392427c8f7e8ffb7fea6d7f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[attach] hp_core missing on 0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 2 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 3 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 4 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 5 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 6 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 7 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 8 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 9 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 10 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 11 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 12 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 13 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 14 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 15 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 16 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 17 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 18 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 19 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] death on 1: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 3: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 5: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 7: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 9: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 11: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 13: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 15: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 17: placed on the plating (a surface sample; not a hard point type)
+[attach] death on 19: placed on the plating (a surface sample; not a hard point type)
+DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.524 p99_ms=4.846 one_percent_low_fps=103.1 max_ms=12.654 fx_p99_ms=1.618 particles=1352 wrecks=20
+[attach] battle 1 1: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 3 3: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 5 5: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 7 7: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 9 9: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 11 11: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 13 13: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 15 15: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 17 17: skipped 0; death hp 0 ray 1 centre 0 skip 0
+[attach] battle 19 19: skipped 0; death hp 0 ray 1 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c8bedd4eee3d428891fd77e3c1b6d360\godot-profile-a5450cc8a392427c8f7e8ffb7fea6d7f
+GPU: released solo claim fe6dbcbf-a8c8-4726-acd9-82191174a632

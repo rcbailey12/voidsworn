@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAatJREFUeJzt1cEJwCAAwMDahwjuP69doiCEuwnyy5hrnwcASHlvBwAA/zN4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACDJ4AAgyeAAIMngACPoAXRwB3B+UZncAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T00:08:00Z",
+	"image_sha256": "21e726fdac8194acc8ebfc4ce8a3728dc489a0f92e54de43bb4e81463031d088",
+	"inputs": [],
+	"picture_name": "fleet_580.png",
+	"schema": 1,
+	"source_commit": "1a8daa75a73dc0293ae068d99189065230fe14d0",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"sources": [
+		{
+			"source_commit": "1a8daa75a73dc0293ae068d99189065230fe14d0",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		504,
+		1080
+	],
+	"stamp_template_sha256": "b49c6e50930af6da6d30c9061e97e17f6ae6237f8c2a0b97ceb2710adf0458f4",
+	"strip_sha256": [
+		"b49c6e50930af6da6d30c9061e97e17f6ae6237f8c2a0b97ceb2710adf0458f4"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}
