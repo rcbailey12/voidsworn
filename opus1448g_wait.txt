@@ -1,0 +1,6 @@
+OPUS1448G_WAIT.bat waiting for OPUS1235_FIRSTHIT exit in opus1235_wait.txt Sat 11/21/2026 18:44:22.70 
+OPUS1448_SND1G start 19:51:22.12 
+OPUS1448_SND1G exit 0 at 20:13:58.85 
+run folder out_20261121_195122_1911
+result: done PASS
+all done Sat 11/21/2026 20:13:59.22 

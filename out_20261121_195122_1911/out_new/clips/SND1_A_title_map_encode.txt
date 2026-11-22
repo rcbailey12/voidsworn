@@ -1,0 +1,17 @@
+[aist#0:1/pcm_s16le @ 000002460e048d40] Guessed Channel Layout: stereo
+Input #0, avi, from 'C:\Users\rcbai\Downloads\voidsworn_test\opus1448g\out_20261121_195122_1911\out_new\player_path\seed-10.avi':
+  Duration: 00:06:25.50, start: 0.000000, bitrate: 43867 kb/s
+  Stream #0:0: Video: mjpeg (Baseline) (MJPG / 0x47504A4D), yuvj420p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9], 42323 kb/s, 30 fps, 30 tbr, 30 tbn
+  Stream #0:1: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+Stream mapping:
+  Stream #0:1 -> #0:0 (pcm_s16le (native) -> aac (native))
+Press [q] to stop, [?] for help
+Output #0, ipod, to 'C:\Users\rcbai\Downloads\voidsworn_test\opus1448g\out_20261121_195122_1911\out_new\clips\SND1_A_title_map.m4a':
+  Metadata:
+    encoder         : Lavf63.1.102
+  Stream #0:0: Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 160 kb/s
+    Metadata:
+      encoder         : Lavc63.1.102 aac
+[out#0/ipod @ 000002460dffc600] video:0KiB audio:501KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.079742%
+size=     507KiB time=00:00:25.23 bitrate= 164.5kbits/s speed=  61x elapsed=0:00:00.41    
+[aac @ 000002460faf09c0] Qavg: 539.986
