@@ -1,0 +1,6 @@
+OPUS1394D_WAIT.bat waiting for OPUS1395B exit in opus1395b_wait.txt Sun 11/22/2026  2:26:59.83 
+OPUS1394D_MELT start  2:41:59.73 
+OPUS1394D_MELT exit 0 at  3:17:20.93 
+run folder out_20261122_024200_27017
+result: done PASS
+all done Sun 11/22/2026  3:17:21.34 

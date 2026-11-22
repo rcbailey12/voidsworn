@@ -1,0 +1,41 @@
+[Sun 11/22/2026  2:42:00.52] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T08:42:01Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026  2:42:01.57] ready: GPU label 1394
+relay to: board/pc-out-opus1394meltd with this attempt folder at out_20261122_024200_27017/ in its tree, then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+verified 033cfafb60df908ce5b8a75bfe7a6747d97c68486f254a382da30f999c8a6cb9 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 226978f9ab40d06ed0d021cd53ec2df139c6d6fcb807d6db43b9493ceeb73174 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1 (tools_live version 142ea5895b0d)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 33e037c39da8c0bd53a03e5f6520a9c4dfcabd72 C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026  2:42:44.78] step new import start
+[Sun 11/22/2026  2:57:05.75] step new import ok
+[Sun 11/22/2026  2:57:05.76] step new melt bench start
+[Sun 11/22/2026  2:59:46.76] step new melt bench ok
+checkout old b1addd667a449fa2b87ca1c4720a0f37e98e96b0 C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017\old are the same fleet as the first checkout
+[Sun 11/22/2026  3:00:26.48] step old import start
+[Sun 11/22/2026  3:14:47.39] step old import ok
+[Sun 11/22/2026  3:14:47.41] step old melt bench start
+[Sun 11/22/2026  3:17:18.27] step old melt bench ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026  3:17:18.76
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltd\out_20261122_024200_27017 (results not relayed yet: board/pc-out-opus1394meltd:out_20261122_024200_27017: branch board/pc-out-opus1394meltd (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 227.7 GB free
