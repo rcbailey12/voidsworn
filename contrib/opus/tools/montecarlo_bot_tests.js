@@ -21,6 +21,20 @@ const game = mod.exports.loadGame(ROOT, { extra: ['bot.js', 'driver.js', 'polici
     if (!ok) fail++;
     console.log(`${ok ? 'ok  ' : 'FAIL'}  ${fac}: ${r.battles.length} battles, ${r.won ? 'won' : 'lost'} in sector ${r.sectorReached}${r.errors.length ? ', errors: ' + r.errors.join(' | ') : ''}`);
   }
+  // An event fight retreated from comes back as the same fight, with no new event draw and no new choice (issue 1628 in the game).
+  const retry = game.api.get(`(() => { META = defaultMeta(); META.admirals.vex = true; rndSeed(1632); newRun('vex', 'voidsworn', {});
+    const ev = EVENTS.find(e => !(e.not && e.not.includes(RUN.fac)) && ((e.v && e.v[RUN.fac] && e.v[RUN.fac].o) || e.o).some(o => o.r && o.r.fight));
+    const ch = (ev.v && ev.v[RUN.fac] && ev.v[RUN.fac].o) || ev.o, i = ch.findIndex(o => o.r && o.r.fight);
+    const n = RUN.map.cols[1][0]; n.type = 'event'; n.evId = ev.id; n.evFight = ch[i].k || String(i);
+    const S = { events: [] }, seen = (RUN.seenEvents || []).length, flags = JSON.stringify(RUN.flags);
+    rndSeed(77); const r0 = rnd(); rndSeed(77);
+    const step = mcEvent(n, S), r1 = rnd();
+    return { ok: !!(step && step.battle && step.battle.fac === ch[i].r.fight && step.battle.node === n.id), fac: step && step.battle && step.battle.fac,
+      want: ch[i].r.fight, noDraw: (RUN.seenEvents || []).length === seen, noChoice: S.events.length === 0 && JSON.stringify(RUN.flags) === flags, sameRng: r0 === r1, ev: ev.id };
+  })()`);
+  const rok = retry.ok && retry.noDraw && retry.noChoice && retry.sameRng;
+  if (!rok) fail++;
+  console.log(`${rok ? 'ok  ' : 'FAIL'}  event fight retry (${retry.ev}): back into the ${retry.fac} fight (want ${retry.want}), no new event draw ${retry.noDraw}, no new choice ${retry.noChoice}, random stream untouched ${retry.sameRng}`);
   await new Promise(res => setTimeout(res, 2500));   // let delayed screen timers fire
   if (globalThis.__timerErrors) console.log(`note: ${globalThis.__timerErrors} delayed screen timer(s) threw after their run and were dropped`);
   if (fail) { console.log(`FAIL: ${fail} of ${facs.length} bot runs did not play through`); process.exitCode = 1; }

@@ -139,7 +139,15 @@ function mcShipyard(n,S){
   ACT.leaveYard();
 }
 function mcEvent(n,S){
-  const ev=nextEvent(); const cur=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{});
+  // issue 1632, as campaign_run.js eventScreen: the event drawn on entry stays on the node (issue 1556), and a stop whose fight was
+  // chosen (then retreated from) or whose Nemesis meeting was won goes straight back to that fight, with no new draw (issue 1628)
+  let ev; const want=n.evId||n.nemEvent; if(want) ev=EVENTS.find(e=>e.id===want);
+  if(!ev){ ev=nextEvent(); n.evId=ev.id; }
+  if(n.nemCleared) n.nemEvent=ev.id;
+  if(n.nemCleared||n.evFight!=null){ const choices=(ev.v&&ev.v[RUN.fac]&&ev.v[RUN.fac].o)||ev.o;
+    const fight=choices.find((o,i)=>(n.evFight!=null?n.evFight:RUN.flags[ev.id])===(o.k||String(i))&&o.r&&o.r.fight);
+    if(fight){ S.eventRetries=(S.eventRetries||0)+1; return {battle:{kind:'elite',fac:fight.r.fight,col:n.col+1,node:n.id,eventRelic:true}}; } }
+  const cur=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{});
   const rec={id:ev.id,s:RUN.sector,total:cur.o.length,enabled:0,choice:-1};
   const opts=cur.o.map((o,i)=>({o,i})).filter(x=>eventOptOk(x.o)); rec.enabled=opts.length; S.events.push(rec);
   if(!opts.length){ completeNode(); return {}; }
@@ -153,7 +161,7 @@ function mcEvent(n,S){
     return v; };
   let bx=opts[0], bv=-1e18; for(const x of opts){ const v=score(x); if(v>bv){ bv=v; bx=x; } }
   const o=bx.o; rec.choice=bx.i; eventFlags(cur,o,bx.i);
-  if(o.r&&o.r.fight) return {battle:{kind:'elite',fac:o.r.fight,col:n.col+1,node:n.id,eventRelic:true}};
+  if(o.r&&o.r.fight){ n.evFight=o.k||String(bx.i); return {battle:{kind:'elite',fac:o.r.fight,col:n.col+1,node:n.id,eventRelic:true}}; }
   applyOutcome(o.r||{}); completeNode(); return {};
 }
 // Issue 1632: drydocks and field repairs became one repair stop with two choices (drydockScreen and fieldRepairs are gone). The full
