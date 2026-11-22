@@ -137,7 +137,7 @@ func _in_jolt(rb: RigidBody3D) -> bool:
 
 
 # 2. a wreck's main pieces in a blocked hex (Ryan, Nov 22: no shrinking, no folding one half into the other, nothing
-# vanishing): two halves parting at 3 units a second keep their real size, are not pulled together or removed, and come
+# vanishing): two halves parting at 3 units a second, and spinning, keep their real size, are not pulled together or removed, and come
 # to rest a short way from where they parted
 func _brake(world: Node3D) -> void:
 	var fx = _fx(world)
@@ -147,25 +147,30 @@ func _brake(world: Node3D) -> void:
 	var b := _section(fx, c + Vector3(6, 0, 0), 12.0)
 	var wk := {"id": "w1", "t0": fx.now, "nodes": [a, b], "mats": [], "lights": [], "fires": [], "speed": 1.0, "frags": [], "heat_births": {}, "cut_events": []}
 	fx.dstate["wrecks"].append(wk)
-	DEATH._release_section(fx, wk, a, Vector3(-3, 0, 0), Vector3.ZERO, [], 24.0, true, 0)
-	DEATH._release_section(fx, wk, b, Vector3(3, 0, 0), Vector3.ZERO, [], 24.0, true, 1)
+	DEATH._release_section(fx, wk, a, Vector3(-3, 0, 0), Vector3(0.4, 1.5, 0.8), [], 24.0, true, 0)
+	DEATH._release_section(fx, wk, b, Vector3(3, 0, 0), Vector3(0.6, -1.2, 0.0), [], 24.0, true, 1)
 	var gap0: float = DEATH.leash_centre(a).distance_to(DEATH.leash_centre(b))
 	var end_t: float = fx.now + DEATH.LEASH_SETTLED + 2.0
 	while fx.now < end_t:
 		await _frames(fx, 1)
 	var gap: float = DEATH.leash_centre(a).distance_to(DEATH.leash_centre(b))
 	var spd := 0.0
+	var turn := 0.0   # Artoo on PR 1737: they start turning (no story damping here) and must stop turning too
 	for nd in [a, b]:
-		if not (nd as RigidBody3D).freeze: spd = maxf(spd, (nd as RigidBody3D).linear_velocity.length())
+		if not (nd as RigidBody3D).freeze:
+			spd = maxf(spd, (nd as RigidBody3D).linear_velocity.length())
+			turn = maxf(turn, (nd as RigidBody3D).angular_velocity.length())
 	for f in wk["fires"]:
 		if f.has("vel"): spd = maxf(spd, (f["vel"] as Vector3).length())
+		if f.has("ang"): turn = maxf(turn, (f["ang"] as Vector3).length())
 	var k: float = (a.get_node("mesh") as MeshInstance3D).transform.basis.get_scale().x
-	print("WRECK_CONTACT brake: gap %.2f to %.2f, fastest %.2f, scale %.2f, both kept %s" % [gap0, gap, spd, k, is_instance_valid(a) and is_instance_valid(b)])
+	print("WRECK_CONTACT brake: gap %.2f to %.2f, fastest %.2f, turn %.2f, scale %.2f, both kept %s" % [gap0, gap, spd, turn, k, is_instance_valid(a) and is_instance_valid(b)])
 	check(is_instance_valid(a) and is_instance_valid(b) and wk["nodes"].size() == 2, "both halves are kept")
 	check(is_equal_approx(k, 1.0), "at their real size (scale %.2f)" % k)
 	check(gap >= gap0, "they are never pulled toward each other (gap %.2f, at the part %.2f)" % [gap, gap0])
 	check(gap <= gap0 + 8.0, "a brake stops them close to where they parted (gap %.2f)" % gap)
 	check(spd < 0.3, "and they come to rest (fastest %.2f)" % spd)
+	check(turn < 0.3, "and stop turning, though released spinning (fastest turn %.2f rad/s)" % turn)
 	fx.queue_free()
 	await process_frame
 

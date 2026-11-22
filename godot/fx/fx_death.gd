@@ -4084,15 +4084,18 @@ static func _leash(fx, dt: float) -> void:
 		# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and
 		# a brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything.
 		var brake := exp(-MAIN_BRAKE * dt)
+		var abrake := exp(-MAIN_BRAKE * 0.5 * dt)   # Artoo on PR 1737: the halves stop turning too, a little slower
 		for f in w["fires"]:
 			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
 			if w["nodes"].has(f["node"]):
 				f["vel"] = (f["vel"] as Vector3) * brake
+				if f.has("ang"): f["ang"] = (f["ang"] as Vector3) * abrake
 			else:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
 		for nd in w["nodes"]:
 			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
 				(nd as RigidBody3D).linear_velocity *= brake
+				(nd as RigidBody3D).angular_velocity *= abrake
 		# the small fragments still settle inside the hex, as the thrown plates do
 		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
 		for nd in w.get("frags", []):
