@@ -344,6 +344,36 @@ floors that hold at camera 170, a vent, an amber inside light, and three amber b
 `board`) from the attacker's hatch, fanned along the target's flank, held for the battle's 1.6 s boarding pause (paced with
 battle speed) so the player sees it before the next event. godot/fx/test/close_action_fx_check.gd. Set: Ryan, Nov 22 (R401).
 
+## Weapon firing and hit reactions (R412, Nov 22)
+
+Ryan approved Neon's weapon firing, hit reaction, effects and damage audit on Nov 22 2026 (13:52 UTC). Tracker issue 1689;
+jobs 1690 (Wave 1A), 1691 (1B), 1692 (2A), 1693 (2B); the combat sound targets ride the 1585 pilot. What every effect job keeps:
+
+1. **The board stays flat.** Hit roll, pitch, yaw, drift, shudder and the crippled list move a `hull_pivot` inside the ship,
+   never the ShipView root, so the hex marker and selection ring never tilt.
+2. **Big ships heel, small ships skate.** One broadside rolls the hull one way, away from the blast. Heavy and capital hulls
+   slide about half as far as today and roll instead. The shake is a low tremor (3.5 to 6 Hz, gone in about 0.22 s), not a buzz,
+   and idle bob follows the hit pause.
+3. **Thrusters match the faction.** Cold gas for Sunward and Navy (sootier grey for Hullbreakers), pale-gold glints for
+   Glasswrights, violet shimmer for Eclipse, none on Chorus.
+4. **A shield block is quiet.** It pushes the hull at about a third of today's force, with no thruster spray and no engine
+   stutter. Engines stutter and the hull lights brown out only on real hull damage, shield breaks, crits and ion hits, and
+   only when the hit gets through or breaks the shield: a crit or ion hit fully absorbed by a shield that holds stays quiet
+   too (Ryan, Nov 22 16:48 UTC: "so 100% shield-blocked lances, ions, and crits do not brown out hull lights or stutter
+   engines"; code: `felt = not absorbed or breaking`, fx_weapons.gd).
+5. **Firing has weight.** Heavy guns push the shooter back a little (about a fifth of the target's push) and the turret barrel
+   kicks. A miss streaks past with a fading tail and never just vanishes.
+6. **The target's material decides the impact** (with R402). One substance table (metal, glass, bio, obsidian) feeds every
+   impact path. Glass gets white-gold flash and shard glints, never soot or red embers. Flesh gets bile and mist, never metal
+   plates. Eclipse sparks take its own damage glow, never green. Soot and wear patches are for metal ships only.
+7. **Each weapon reads as itself.** The heavy battery has a shock ring and heat vent, the plasma cannon its own cyan-white
+   pulse, the tendril an organic lash, and prism, star and nlance their own hull marks. salvo_check fails on any skipped volley.
+8. **Status shows on the board.** Acid leaves a light caustic mist while it burns, an ion lock flickers pale-blue arcs on the
+   shield, and a hit on a shield quadrant under 25% strains and crackles. Healthy shields stay hidden at rest.
+
+Order: 1A now; 1B after the held PRs 1646, 1631 and 1666 merge; 2A and 2B after 1A and 1B. Sizes and timings above are starting
+points judged by eye (R187).
+
 ## What Ryan will be shown
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.
