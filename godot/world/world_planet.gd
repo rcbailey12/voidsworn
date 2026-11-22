@@ -86,6 +86,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	params["pass_id"] = 2
 	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true)
 	if not is_instance_valid(planet) or a == null or b == null or h == null: return
+	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	stand_in.set_shader_parameter("tex_a", baker.texture(a))
 	stand_in.set_shader_parameter("tex_b", baker.texture(b))
 	stand_in.set_shader_parameter("tex_h", baker.texture(h))
@@ -119,6 +120,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	var colour: Image = await baker.authored(R01_DIR + "colour.json", R01_SIZE)
 	var data: Image = await baker.authored(R01_DIR + "relief.json", R01_SIZE, true)
 	if not is_instance_valid(planet) or colour == null or data == null: return
+	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var clouds := bool(opts.get("clouds", true))
 	var ground := ShaderMaterial.new()

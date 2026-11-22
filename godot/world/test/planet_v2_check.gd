@@ -99,6 +99,18 @@ func _run() -> void:
 			mi.queue_free()
 			shell.queue_free()
 			await process_frame
+	# 2b. maps that miss the loading cover never swap in mid-battle (Artoo, PR 1776)
+	var late := _planet()
+	(late[0] as MeshInstance3D).set_meta("planet_frozen", true)
+	_done = false
+	_install(late[0], late[1], 0, 5, Vector3(0.4, 0.6, 0.7) * 100000.0)
+	while not _done:
+		await process_frame
+	_check(_code(late[0]) == PL.BOARD_SURFACE, "a frozen planet still swapped to R01 after the cover lifted")
+	var bsrc := FileAccess.get_file_as_string("res://render/board.gd")
+	_check(bsrc.contains("Time.get_ticks_msec() - planet_t0 < 20000"), "board.gd wait_planet no longer counts from the planet's own start")
+	(late[0] as Node).queue_free()
+	(late[1] as Node).queue_free()
 	# 3. the remix differs per battle
 	for k in [0, 5]:
 		var a := float(turns.get("%d|3" % k, 0.0))

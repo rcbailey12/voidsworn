@@ -25,6 +25,7 @@ var VW := {}                 # the view the board was built from
 var WI := {}                 # world_info()
 var planet_node: MeshInstance3D = null   # the board planet, when the map has one
 var planet_pending := false              # issue 1765: its maps are still loading or baking
+var planet_t0 := 0                       # issue 1765: when they started (one load deadline shared with the world)
 var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
 # the board planet's look per battle: [kind (0 rock, 1 terran, 3 ice, 4 lava, 5 barren; world_planet.gd BOARD_LOOKS draws
 # each), colour a, b, atmosphere]. The colours are the old map shader's, kept for anything that reads the table.
@@ -1101,15 +1102,21 @@ func _planet() -> void:
 	shell.position = mi.position
 	props.add_child(shell)
 	planet_pending = true
+	planet_t0 = Time.get_ticks_msec()
 	await PL.install_board(mi, shell, int(look[0]), seed_v, sun)
 	planet_pending = false
 
 
-# Issue 1765: the battle's loading cover waits for the board planet's maps (capped, like the world's bakes).
+# Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is
+# built, alongside the world's bakes, so the 20 s cap counts from then, not after the world is ready (Artoo, PR 1776).
+# Maps that miss the cover are never swapped in mid-battle (a late 4K or 8K upload would hitch the first turns): the
+# planet keeps its lit stand-in for this battle, and the finished bake stays cached for the next.
 func wait_planet() -> void:
-	var t0 := Time.get_ticks_msec()
-	while planet_pending and Time.get_ticks_msec() - t0 < 20000:
+	while planet_pending and Time.get_ticks_msec() - planet_t0 < 20000:
 		await get_tree().process_frame
+	if planet_pending and is_instance_valid(planet_node):
+		planet_node.set_meta("planet_frozen", true)
+		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")
 
 
 # issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks
