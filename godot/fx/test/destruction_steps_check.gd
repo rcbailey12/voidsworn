@@ -183,7 +183,7 @@ func _sealed_stills() -> void:
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 1.0 if state == "hot" else 0.0)
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("sealed_" + state + ".png"))
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("sealed_" + state + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("DESTRUCTION_STILLS wrote hot/cold opaque caps")
 
 func _check(ok: bool, message: String) -> void:

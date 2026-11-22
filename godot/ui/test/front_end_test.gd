@@ -306,9 +306,13 @@ func campaign_checks(snd: FakeSound) -> void:
 	if ui._aspect_cards.size() > 1:
 		for b in (ui._aspect_cards[1][0] as Node).find_children("*", "Button", true, false): hit = b
 	var found_hit := hit != null   # the button is freed by the re-render, so remember that it was there
+	var podium0 = ui.podium
 	if found_hit: hit.pressed.emit()
 	await frames(3)
 	go = ui.page_box.find_child("LaunchButton", true, false)
+	# issue 1559 item 27: the pick keeps the live podium (its turning ship carries on; no reload, no snap to the start angle)
+	check(podium0 != null and is_instance_valid(podium0) and ui.podium == podium0 and podium0.is_inside_tree() and ui.page_box.is_ancestor_of(podium0),
+		"an aspect pick keeps the same flagship podium on the new render (item 27)")
 	check(found_hit and go != null and not go.disabled and ui.aspect_pick == pick_id and go.text.ends_with(str(C.ASPECTS[pick_id]["n"])),
 		"clicking an aspect card picks it and Launch names it (%s)" % (go.text if go != null else "no button"))
 	var bk: Button = null

@@ -127,7 +127,7 @@ void fragment() {
 	print("SAIL_ALPHA_CAM r=%.1f pos=%s target=%s" % [cam.r, str(cam.global_position), str(cam.t)])
 	for i in 6:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("sails_" + label + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("sails_" + label + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("SAIL_ALPHA_CAPTURE %s -> %s" % [label, out.path_join("sails_" + label + ".png")])
 	fx.release()
 	world.queue_free()

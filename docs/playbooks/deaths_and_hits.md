@@ -233,6 +233,10 @@ Three upgrades run through all of them:
    (CRATER_MAX_L, so first hit and worst state never read the same size), the section's drawn marks are the heavy ones and then the newest (never
    the oldest), bomber runs leave a crater, turret meshes take no baked scars, only meshes a wound reaches lose their
    automatic LOD, the stage 4 hole is 0.048 of the ship's length (was 0.032) and moves off a turret's foot. godot/fx/test/first_hit_scars_check.gd.
+   Issue 1235 run 2: below 80% hull HP the whole ship wears (fx_ship hull_wear, 1 at 20%): the damage shader's
+   fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
+   (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
+   degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)

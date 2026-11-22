@@ -91,7 +91,7 @@ func capture(code: String) -> void:
 	await frames(12); await RenderingServer.frame_post_draw
 	if preload("res://render/placeholder_guard.gd").stop_if_any(): failures += 1; return
 	for art in page().portraits.values(): check(art["installed"], "capture has installed hull " + art["code"])
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("FL5_" + code + ".png")) == OK, "capture " + code)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("FL5_" + code + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "capture " + code)
 	print("shot FL5_" + code)
 
 func capture_states() -> void:
@@ -177,6 +177,20 @@ func run() -> void:
 	if not action.is_empty(): action[0].pressed.emit()
 	await frames(); check(C.RUN["credits"] == credit - 40 and C.page["kind"] == "map", "doctrine uses original cost and original return route")
 	C.fleetScreen(""); await frames(); page().primary.pressed.emit(); await frames(); check(C.page["kind"] == "map", "Done returns to map")
+	# issue 1559 item 9: a mouse click on a ship row picks it without keeping the keyboard, so Enter (through the engine's
+	# input path) is the screen's Done, not a second press of the row
+	C.fleetScreen(""); await frames()
+	var row_b: Button = page().rows[1]["button"]; var at = row_b.get_global_rect().get_center()
+	for pressed in [true, false]:
+		var mb = InputEventMouseButton.new(); mb.button_index = MOUSE_BUTTON_LEFT; mb.position = at; mb.global_position = at; mb.pressed = pressed
+		root.push_input(mb); await process_frame
+	await frames()
+	var fo = root.gui_get_focus_owner()
+	check(fo == null or not (fo in page().rows.map(func(r): return r["button"])), "item 9: a clicked ship row does not keep the keyboard")
+	for pressed in [true, false]:
+		var ke = InputEventKey.new(); ke.keycode = KEY_ENTER; ke.physical_keycode = KEY_ENTER; ke.pressed = pressed
+		root.push_input(ke); await process_frame
+	await frames(); check(C.page["kind"] == "map", "item 9: Enter after a row click is Done")
 	var yard = {"stock": {"hulls": [], "mods": [], "sold": [], "cap": []}}
 	C.yard_node = yard; C.fleetScreen("shipyard"); await frames(); key(KEY_ENTER); await frames()
 	check(C.page["kind"] == "shipyard", "Done returns to originating shipyard")

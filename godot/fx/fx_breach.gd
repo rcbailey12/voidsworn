@@ -1750,6 +1750,8 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 	if s.dead or (fx != null and fx.compat):
 		return
 	var mouths := _mouth_uniforms(ents)
+	var wear_on: bool = "hull_wear" in s
+	var wear_p: Array = s.wear_patches() if wear_on else []
 	for m in mis:
 		if not is_instance_valid(m):
 			continue
@@ -1765,6 +1767,8 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 				continue
 			var surface: ShaderMaterial = s.damage_surface(fx, mi, si, src)
 			HULL.set_damage_pose(surface, frame, mouths)
+			if wear_on:
+				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null

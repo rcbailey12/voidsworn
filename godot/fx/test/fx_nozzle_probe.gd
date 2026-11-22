@@ -80,7 +80,7 @@ func _run() -> void:
 		cam.look_at_from_position(c + sv.global_transform.basis * (Vector3(-1.1, 0.45, 0.75).normalized() * L * 1.25), c)
 		for i in 3:
 			await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/nozzle_%s.png" % [out, code])
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/nozzle_%s.png" % [out, code], preload("res://tools/picture_provenance.gd").capture_stage())
 		fx.remove_ship(sv.name)
 		sv.queue_free()
 		await process_frame

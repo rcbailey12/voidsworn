@@ -77,5 +77,5 @@ func _run() -> void:
 	print("shield node: vis=%s inside=%s scale=%s pos=%s global=%s" % [s._shield_mi.visible, s._shield_mi.is_inside_tree(), s._shield_mi.scale, s._shield_mi.position, s._shield_mi.global_position])
 	for i in 3:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), OS.get_environment("PROBE_OUT"))
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), OS.get_environment("PROBE_OUT"), preload("res://tools/picture_provenance.gd").capture_stage())
 	PG.finish(0)

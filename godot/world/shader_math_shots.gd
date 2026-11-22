@@ -35,7 +35,7 @@ func _save(name: String) -> bool:
 
 # every still goes through the shared stamp; a failed save (or a missing sidecar) fails the whole run
 func _stamp(img: Image, path: String) -> bool:
-	if preload("res://tools/picture_provenance.gd").save_png(img, path) != OK or not FileAccess.file_exists(path) \
+	if preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage()) != OK or not FileAccess.file_exists(path) \
 			or not FileAccess.file_exists(path + ".provenance.json"):
 		printerr("shader math shots: FAILED to save ", path)
 		quit(1)

@@ -307,7 +307,7 @@ func _still(kind: String) -> void:
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return
-	preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("stills").path_join("%s_%s_%s.png" % [cur_label, cur_range, kind]))
+	preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("stills").path_join("%s_%s_%s.png" % [cur_label, cur_range, kind]), preload("res://tools/picture_provenance.gd").capture_stage())
 	# a tight crop on the vent itself, so the gas can be judged rather than the whole tableau
 	var keep := [cam.a, cam.b, cam.r, cam.t]
 	_crop_cam(kind)
@@ -315,7 +315,7 @@ func _still(kind: String) -> void:
 	await RenderingServer.frame_post_draw
 	img = vp.get_texture().get_image()
 	if img != null and not img.is_empty():
-		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("stills").path_join("%s_%s_%s_crop.png" % [cur_label, cur_range, kind]))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("stills").path_join("%s_%s_%s_crop.png" % [cur_label, cur_range, kind]), preload("res://tools/picture_provenance.gd").capture_stage())
 	cam.a = keep[0]
 	cam.b = keep[1]
 	cam.r = keep[2]

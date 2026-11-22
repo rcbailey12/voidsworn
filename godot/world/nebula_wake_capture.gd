@@ -197,7 +197,7 @@ func _clip(tier: String, wake: bool, size: Vector2i) -> void:
 		_fly(pair, k)
 		await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), dir.path_join("f%04d.jpg" % k), 0.92)
+		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), dir.path_join("f%04d.jpg" % k), 0.92, preload("res://tools/picture_provenance.gd").capture_stage())
 	var meta := {"draft": draft, "camera_r": cam_r, "tier": tier, "actual_quality": b.world.quality, "wake": wake, "frames": CLIP_FRAMES, "fps": 30, "size": [size.x, size.y],
 		"focus": [focus.x, focus.z], "frigate": [str(pair[0].u.get("cls")), str(pair[0].code), pair[0].L], "capital": [str(pair[1].u.get("cls")), str(pair[1].code), pair[1].L],
 		"adapter": RenderingServer.get_video_adapter_name(), "renderer": RenderingServer.get_current_rendering_method(),
@@ -250,7 +250,7 @@ func _still(tier: String, size: Vector2i) -> void:
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
 		var tag: String = ["off", "on", "off_again"][pass_i]
-		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), tag]), 0.95)
+		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), tag]), 0.95, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("WAKE1079 still ", tier, " ", size)
 
 

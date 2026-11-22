@@ -63,7 +63,7 @@ func _snap(code: String, what: String) -> void:
 	if img.get_height() > 720:
 		img.resize(int(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join("%s.jpg" % code)
-	preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.9)   # the shared stamp (stage: installed in game, on this branch)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.9, preload("res://tools/picture_provenance.gd").capture_stage())   # the shared stamp (stage: installed in game, on this branch)
 	print("[forecast-shots] ", p)
 
 
