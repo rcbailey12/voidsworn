@@ -74,6 +74,44 @@ static func station(size: float, debris_clearance := 0.0) -> Node3D:
 	return root
 
 
+# Issue 1536 (Ryan, Nov 22 2026: "Yes" to showing the Relay in Hold battles): the Navy relay beacon O3_11 for the hold hex, in
+# the Navy finish (render/look.gd, as the station), scaled so its length along x is `length`, centred on its own box. Null when
+# the build has no O3_11 (the board then keeps its gold hex alone).
+static func beacon(length: float) -> Node3D:
+	var n := _scene("O3_11")
+	if n == null:
+		return null
+	var look = load("res://render/look.gd")
+	var painted := {}
+	var box := AABB()
+	var first := true
+	for child in n.find_children("*", "MeshInstance3D", true, false):
+		var mi := child as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var source: Material = mi.get_active_material(i)
+			if source != null and not painted.has(source):
+				painted[source] = look.hull(source, "hegemony", true)
+			if source != null:
+				mi.set_surface_override_material(i, painted[source])
+		var xf := Transform3D.IDENTITY
+		var p: Node = mi
+		while p != null and p != n:
+			xf = (p as Node3D).transform * xf if p is Node3D else xf
+			p = p.get_parent()
+		var bb := xf * mi.get_aabb()
+		box = bb if first else box.merge(bb)
+		first = false
+	var root := Node3D.new()
+	root.name = "relay_beacon"
+	var k := length / maxf(box.size.x, 1e-3)
+	n.scale = Vector3.ONE * k
+	n.position = -box.get_center() * k
+	root.add_child(n)
+	return root
+
+
 # a derelict: the A4 hull in its own paint, burnt (darker, rougher, its windows and engines dead), unit length: scale it as the
 # board scales its hulks
 static func hulk(code: String) -> Node3D:

@@ -866,6 +866,7 @@ func _terrain() -> void:
 			"station":
 				pass
 	_planet()
+	_beacon()
 	# one station structure per cluster of station hexes (the game builds one across the cluster)
 	var seen := {}
 	for k in T:
@@ -976,6 +977,47 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 	mi.material_override = m
 	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
 	props.add_child(mi)
+
+
+# Issue 1536 (Ryan, Nov 22 2026, "Yes"): in a Hold battle the Navy relay beacon O3_11 stands under the hold hex, so the gold hex
+# reads as the relay the fleets fight over. Picture only: the rules place nothing there and ships still end their moves on
+# the hex above it. It sits below the board plane (its top under the grid), so a ship holding the hex floats over it, and its
+# lens is turned toward the player's side of the board and tipped up, so the blue rings read from the battle camera.
+const BEACON_LEN := 12.0      # O3's length_world 7.5 times the board's ship scale (hull_table SHIP_K 1.6)
+const BEACON_TOP := -0.6      # the highest point of the beacon, just under the grid
+const BEACON_TILT := 35.0     # degrees the lens is tipped up from level
+var beacon_node: Node3D = null
+
+
+func _beacon() -> void:
+	beacon_node = null
+	var o = VW.get("obj")
+	if not (o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary):
+		return
+	var n := A4P.beacon(BEACON_LEN)
+	if n == null:
+		return
+	# lens (+x) toward +z (the player's side, where the battle camera starts), then tipped up by BEACON_TILT
+	var basis := Basis(Vector3.RIGHT, -deg_to_rad(BEACON_TILT)) * Basis(Vector3.UP, -PI / 2.0)
+	var top := 0.0
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		var xf := Transform3D(basis, Vector3.ZERO) * _rel_to(mi as Node3D, n)
+		var bb: AABB = xf * (mi as MeshInstance3D).get_aabb()
+		top = maxf(top, bb.end.y)
+	n.transform = Transform3D(basis, hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), BEACON_TOP - top))
+	props.add_child(n)
+	beacon_node = n
+
+
+# a node's transform relative to an ancestor (before either is in the tree)
+static func _rel_to(node: Node3D, ancestor: Node) -> Transform3D:
+	var xf := Transform3D.IDENTITY
+	var p: Node = node
+	while p != null and p != ancestor:
+		if p is Node3D:
+			xf = (p as Node3D).transform * xf
+		p = p.get_parent()
+	return xf
 
 
 func _planet() -> void:
