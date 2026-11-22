@@ -110,31 +110,60 @@ No visual rule stays intact if it relies on human memory alone. Add these automa
    - Assert Chorus has zero metal (`metallic == 0.0`) and zero magenta/neon-lime saturation spikes.
    - Assert Glasswrights have zero soot/wear/metal.
    - Assert Eclipse has zero green (`g > r * 1.15 and g > b * 1.15` banned on both albedo and emission).
-5. **Unified 6-Faction Lineup Review Sheet (`cutaway.py`):** Render one side-by-side 6-faction strip at identical exposure (showing exterior hull + cut-open interior for Sunward, Directorate, Hullbreakers, Chorus, Glasswrights, Eclipse together) AND require calibration against `#1741` Layer 1 breach cavity lights before locking final lift values.
+5. **Lossless Normal & ORM Map Gate (`#1778`):** Fail any ship export carrying lossy `.jpg` normal or ORM maps (lossless `.png` / BC5 only; fixes JPEG 8x8 plastic-smudge normals like `C19_51_normal.jpg` and `D21_23_normal.jpg`).
+6. **Unified 6-Faction Lineup Review Sheet (`cutaway.py`):** Render one side-by-side 6-faction strip at identical exposure (showing exterior hull + cut-open interior for Sunward, Directorate, Hullbreakers, Chorus, Glasswrights, Eclipse together) AND require calibration against `#1741` Layer 1 breach cavity lights before locking final lift values.
 
-### 6.2 Godot Headless World & Palette Parity Gates (`godot/world/test/`)
+### 6.2 Godot Headless World, Exterior & Palette Parity Gates (`godot/world/test/`, `godot/render/`)
 1. **Unwired-Asset Gate:** Assert `board.gd` wires high-relief planet shaders across all 5 `PLANET_LOOKS` (no silent fallback to `map3d_shaders.gd`), `a4_props.gd` uses `station_T2` across small and large clusters when installed, and `board.gd:_hulk()` covers all 6 factions.
-2. **Rock Scan Channel Gate:** Inspect every rock `.glb` in `godot/world/rocks/scans.json` and assert `COLOR_0.b` spans usable dynamic range (`>= 0.45`) and minimum triangle quality (preventing flat/low-poly outlier regressions like `scan_07` and crushed `COLOR_0.b`).
-3. **Zero-Purple & Starfield Budget Gate:** Assert zero indigo-to-purple entries in `world_sky.gd` (`PLANETS`, `PLANETS_ALT`) and `godot/fx/faction_looks.json` (`nebula`), and assert default `star_floor == 0.0` and grounded starfield thresholds in `world_sky.gd`.
+2. **Ship Exterior Lighting & Micro-Detail Gate (`#1777`):** Assert Space PBR reflection IBL and per-faction `ao_light_affect` are enabled by default in play (not hidden behind an off-by-default env flag), `key.shadow_normal_bias <= 0.5`, and all 6 faction micro-detail normal/roughness maps resolve cleanly in `look.gd`.
+3. **Rock Scan Channel Gate:** Inspect every rock `.glb` in `godot/world/rocks/scans.json` and assert `COLOR_0.b` spans usable dynamic range (`>= 0.45`) and minimum triangle quality (preventing flat/low-poly outlier regressions like `scan_07` and crushed `COLOR_0.b`).
+4. **Zero-Purple & Starfield Budget Gate:** Assert zero indigo-to-purple entries in `world_sky.gd` (`PLANETS`, `PLANETS_ALT`) and `godot/fx/faction_looks.json` (`nebula`), and assert default `star_floor == 0.0` and grounded starfield thresholds in `world_sky.gd`.
 
 ### 6.3 Audio Pack Gate (`contrib/opus/tools/sound/`)
 - Keep automated `elevenlabs_gen_selftest.js` + manifest lint checking: one shot per wired SFX clip, zero naval/ocean/pink-elephant words, zero em dashes, exact `today` baseline mapping against `godot/audio/cues.json`, and `FAC_WNAMES` roster coverage.
 
 ---
 
-## 7. Global Execution Sequence (Zero Overlap, Maximum Cohesion)
+## 7. Law 6: AAA Ship Exterior Lighting, Per-Faction Micro-Detail & PBR Standard (#1777 Godot + #1778 Blender)
+
+Visual and code audits of live in-game ship renders (`S9`, `S10`, `S8`, `H10`, `A16`, `C11`, `C14`, `E12`) vs accepted concepts proved that even newly built hulls read slightly clay-ish or miniature-like due to global Godot lighting defaults and mid-roughness/mid-metallic PBR values (`metal = 0.48`, `VS_FLEET_LIGHTING` off by default, `ao_light_affect = 0.0`, `shadow_normal_bias = 2.0`, `LookRim spec = 8.0`, zero tiling micro-detail normal/roughness layer, missing scale cues, and lossy `.jpg` normals on legacy hulls).
+
+### 7.1 Global Godot Ship Look & Per-Faction Micro-Detail Layer (#1777, Lifts All 45 Ships Instantly)
+1. **Default-On Multi-Lobe Space PBR Reflection IBL & `ao_light_affect`:** Graduate `#1679` ON by default in `godot/render/look.gd` and `godot/world/world.gd` with warm sun specular + cool nebula/planet bounce lobes + deep dark-space troughs, plus per-faction `ao_light_affect` so baked AO darkens sunlit seams and recesses.
+2. **Crisp Contact Shadows & Cinematic Contrast:** Reduce `key.shadow_normal_bias` from `2.0` down to a calibrated crisp contact-shadow range (`~0.15 to 0.35`), lower flat diffuse `ambient_light_energy` (`0.50` -> `~0.16 to 0.22`) so shadow sides deepen while IBL preserves silhouette readability, and tame `LookRim` `spec: 8.0` plastic glare streaks across beveled decks.
+3. **Alive HDR Ship Emissives:** Push hot ship focal accents (Sunward ember spires, engine bells, core slits, Directorate bays, Eclipse corona rims) cleanly above bloom threshold (`0.8`) so vents glow warmly rather than reading as flat orange/blue paint stickers.
+4. **Faction-by-Faction Tiling Micro-Detail Normal + Roughness Layer (`godot/assets/ships/detail/`):** Inject six dedicated tileable micro-detail normal/roughness maps (mip-faded to prevent camera-170 shimmer) so every faction has unmistakable close-up surface tactility without rebaking:
+
+| Faction | Godot Tiling Micro-Detail Normal + Roughness (#1777) | Blender Exterior PBR Separation & Scale Cues (#1778) |
+| :--- | :--- | :--- |
+| **Sunward Crusade (`voidsworn`)** | Rolled/forged dark cast-iron micro-grain + subtle furnace carbon mottling + fine weld seam pitting | Raw forged dark iron (`metal 0.80..0.92`, varied `rough 0.25..0.50`) vs deep matte furnace soot crevices (`metal 0.0`, `rough 0.88`), brass fittings (`metal 0.92`), recessed hot ember spires + micro-porthole strips and stenciled markings |
+| **Meridian Directorate (`hegemony`)** | Tight directional brushed aerospace alloy + crisp micro-machined panel fastener grit | Satin coated clinical navy-slate (`metal 0.10..0.20`, `rough 0.36..0.52`) contrasting sharply with bare chipped/machined titanium edge wear (`metal 0.90`, `rough 0.20`), deep recessed armor seams, crisp fleet stripes & viewport rows |
+| **Ashfall Hullbreakers (`corsair`)** | Coarse hammered/pitted salvage iron + rough oxidized rust crust & oil-streak micro-roughness breakup | Dark oil-streaked raw salvage iron base (`metal 0.72..0.88`) with localized weathered rust-red plates and matte rust crusts (`metal 0.0`, `rough 0.85..0.95`; pull back from uniform bright red plastic on `A16`), vent grates, weld scars & stencils |
+| **The Chorus (`chorus`)** | Directional keratin/chitin striations + wet organic micro-pores & dermal wrinkles (zero metal) | High-relief multi-scale keratin/scute grooves, porous bone ridges, wet mucosa crevice sheen (`rough 0.16..0.28`) vs dry chalky horn lips (`rough 0.58..0.74`, `metal 0.0`), eliminating smooth wax/play-doh close-ups (`C11`, `C14`) |
+| **The Glasswrights (`ithar`)** | Fine annealed crystal micro-facets + delicate optical edge micro-refraction grain (zero metal, zero grime) | Deep refractive/reflective smoked seafoam & amber annealed glass (dark glassy internal depth + sharp Fresnel grazing mirror reflections + fine etched prism rings, replacing blinding white origami A4 hulls via `#1682` / `#1146`) |
+| **Eclipse (`deathless`)** | Smooth-yet-etched obsidian-slate micro-fracture grain + hairline geometric veining | Deep satin obsidian-violet composite plates (`metal 0.15..0.35`, `rough 0.22..0.42`) contrasted with mirror-dark metallic bus channels (`metal 0.88`), fine monolith geometric seams, and crisp all-violet corona rims (`#1422`) |
+
+### 7.2 Blender Exterior PBR, Scale-Cue & Lossless-Normal Pipeline (#1778)
+- Pair directly with `#1680` (4K capital map sizing) and PR `#1763` (`#1743` Interior Kit V2) so every active and upcoming rebake (`#1681`, `#1682`, `#1684`, `#1422`, `#1412`, `#1291`, `#1153`, `#1155`) automatically exits the `metal = 0.48` clay dead zone, gains faction-matched massive-scale cues, and exports strictly lossless `.png` / BC5 normal and ORM maps.
+
+---
+
+## 8. Global Execution Sequence (Zero Overlap, Maximum Cohesion)
 
 1. **Gate 0 (Immediate Merges & Guardrails):**
    - Land this master standard PR (`opus/issue-1774`), merge PR `#1753` (confirming `main` holds the 72-item sound pack) -> launch Audio Wave A (`--max-credits 1200`).
    - Land `#1724`'s `export7.py` map-size fix, then apply Law 2 + Section 6.1 automated gates to **PR `#1763`** (`#1743` Interior Kit V2) and verify on one unified 6-faction lineup cutaway sheet before merging.
 2. **Wave A (Parallel, Zero File Overlap):**
-   - **`#1741` (Wounds V2 Layers 1+2, `VS_WOUNDS_V2=1`):** calibrated jointly with PR `#1763`'s moody interior values (`<= 0.10` linear walls) so breach-mouth cavity lights look dramatic, never washed out.
+   - **`#1777` (Godot AAA Ship Exteriors: Space PBR IBL, crisp contact shadows, 6-faction micro-detail normal/roughness maps, HDR emissive bloom):** lifts all 45 installed ships immediately.
+   - **`#1741` (Wounds V2 Layers 1+2, `VS_WOUNDS_V2=1`):** calibrated jointly with `#1777`'s lighting and PR `#1763`'s moody interior values (`<= 0.10` linear walls) so breach-mouth cavity lights look dramatic, never washed out.
    - **`#1765` (Planets V2, coordinated with `#1463`)**
    - **`#1361` (Asteroids & Crystals V2)**
    - **`#1767` (Stations & 6-Faction Hulks V2)**
-3. **Wave B (Coordinated Sky & Audio Follow-Up):**
+3. **Wave B (Coordinated Sky, Blender PBR & Audio Follow-Up):**
+   - **`#1778` (Blender Faction-by-Faction Exterior PBR, Scale Cues & Lossless Normal/ORM Gate):** lands right before active rebakes (`#1681`, `#1682`, `#1684`, `#1422`, `#1412`, `#1291`) so every rebake ships at full AAA fidelity.
    - **`#1766` (Grounded Cinematic Space Sky & Dead Star Seam)** sequenced cleanly with **`#1502` (16-bit sky bake)** and **`#1328` / `#1360`** (volumetric clouds & storm bolts).
    - **Audio Wave B** (after Ryan ear-checks Wave A listening page).
 4. **Wave C (Unified Final Polish):**
-   - **`#1362` (Graveyard debris scraps from faction ship kits)** aligned with R416 (`#1741` + `#1743`) so combat wreckage and terrain graveyards share one visual language.
+   - **`#1362` (Graveyard debris scraps from faction ship kits)** aligned with R416 (`#1741` + `#1743`) and `#1778` PBR standards so combat wreckage and terrain graveyards share one visual language.
    - Full `independent-audit` (RULEBOOK 3.13) + solo RTX 5080 frame-time check + full 6-faction / multi-biome PC capture pass for Ryan's final visual sign-off.
+

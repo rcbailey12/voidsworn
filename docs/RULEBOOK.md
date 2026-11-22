@@ -535,17 +535,21 @@ checks missed; Ryan: "Instruct Opus, Codex, and Muse review runs to apply `indep
 rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC, Board thread). Set: Ryan, Nov 22 (R413).
 
 3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
-wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the five laws of
+wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
 `contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
 darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
 emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
 colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
 hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan) obey the same
-ladder and palette; (5) the standard's automated anti-drift checks (export, Godot world and palette, sound pack) are added
-and kept green. A fix for one faction is made at the shared root for all six. Why: silo patches kept drifting (chalk-white
-Directorate corridors, neon Chorus organs from diagram colours, purple and mustard leaks, unwired 8K planet maps); Ryan: "We
-are moving from one-off visual tweaks to one global visual, material, world, and audio standard so subsystems stop drifting in
-silos." (Nov 22 2026, 22:03 UTC, tracker #1774). Set: Ryan, Nov 22 (R420).
+ladder and palette; (5) the standard's automated anti-drift checks (export, Godot world, exterior and palette, sound pack) are
+added and kept green; (6) AAA ship exterior lighting, per-faction micro-detail and PBR separation (#1777, #1778: default-on
+Space PBR reflection IBL and per-faction `ao_light_affect`, crisp contact shadows without `LookRim` plastic glare, six
+distinct faction tiling micro-detail normal/roughness maps, true paint-vs-metal separation per faction, massive-scale cues,
+and a hard export ban on lossy `.jpg` normal and ORM maps). A fix for one faction is made at the shared root for all six. Why:
+silo patches kept drifting (chalk-white Directorate corridors, neon Chorus organs from diagram colours, clay-ish ship exteriors
+under black-space reflection defaults, purple and mustard leaks, unwired 8K planet maps); Ryan: "We are moving from one-off
+visual tweaks to one global visual, material, world, and audio standard so subsystems stop drifting in silos." (Nov 22 2026,
+22:03 UTC, tracker #1774). Set: Ryan, Nov 22 (R420).
 
 ## 4. Ships and concepts
 
