@@ -107,15 +107,15 @@ Audio reads the exact same runtime events and faction metadata (`godot/fx/factio
 - **Mechanical tail.** Astra: a return layer inside one accepted shot cue. Fable: its own per-volley cue at pri 0 (a delayed layer inside a `gun_` cue fails `sound_weight_check.gd`). **Kept Fable's** for Gate 2; it is a Gate 3 wiring choice either way.
 - **Sunward Sear guns.** Astra wrote them as sear pulses (heat bolts); Fable as shell guns. That is Ryan's call 1 below. No Gate 2 credits are spent before the Board merges.
 
-**Ryan's three calls (on the Evening Pick Sheet; the manifest carries option A until he picks):**
+**Ryan's three calls: all three locked as A (Ryan, Nov 22 2026, 21:41 UTC). The manifest carries A; B stays written out below as the record.**
 1. **Sunward "Sear" guns: shell guns or heat bolts?**
-   - **A, shell guns (in the manifest now):** iron and propellant cracks with a forged-iron ring (`wep_sunward_battery`, `wep_sunward_hbattery`, `wep_sunward_turret`, `wep_sunward_autocannon`).
+   - **A, shell guns (picked, in the manifest):** iron and propellant cracks with a forged-iron ring (`wep_sunward_battery`, `wep_sunward_hbattery`, `wep_sunward_turret`, `wep_sunward_autocannon`).
    - **B, heat bolts:** the same four ids reworded as superheated plasma bolts from a solar furnace: "an immediate dense searing heat-bolt discharge with a deep furnace roar and a solid low thump", keeping iron for the hull and recoil only. Same seconds and credits; it moves Sunward closer to the Directorate's plasma, so the Directorate keeps its capacitor-bank thump to stay apart.
 2. **Eclipse: railgun crack or hollow low "null" note?**
-   - **A, railgun (in the manifest now, softened):** a hard heavy magnetic slam with a short hollow cold tone (`wep_eclipse_gauss_fire`, `wep_eclipse_gsentry`).
+   - **A, railgun (picked, in the manifest, softened):** a hard heavy magnetic slam with a short hollow cold tone (`wep_eclipse_gauss_fire`, `wep_eclipse_gsentry`).
    - **B, null note:** the same ids reworded to lead with "a deep hollow low tone that swells and cuts dead, like air pulled out of a vast stone hall", the magnetic slam reduced to a soft onset. Closer to `sound.md`'s "a low held note for Eclipse" and further from the Sunward guns; less punch in a volley.
 3. **Reward music: is the one Ryan likes the Gate 1 `reward_preview` clip?**
-   - **A, yes (assumed now):** `mus_reward_proto` keeps that clip's wording ("warm brass and strings, quietly triumphant, calm, not cheesy") on 16 whole bars, and the listening page plays `reward_preview` beside it as the control.
+   - **A, yes (picked):** `mus_reward_proto` keeps that clip's wording ("warm brass and strings, quietly triumphant, calm, not cheesy") on 16 whole bars, and the listening page plays `reward_preview` beside it as the control.
    - **B, no, it is a track already in the game:** name it on the Pick Sheet; the prompt is rewritten to describe that track's instruments and tempo, and `reward_preview` drops to an ordinary candidate.
 
 **Follow-ups outside this pack (not Gate 2 blockers):** `docs/playbooks/sound.md` still says "Free tools and free sources only" and "a soft top"; both need a matching playbook edit with Ryan's ElevenLabs ruling when Gate 3 is planned (R214). The `eleven_text_to_sound_v2` removal date (Mar 1 2027) bounds any v2 family.
