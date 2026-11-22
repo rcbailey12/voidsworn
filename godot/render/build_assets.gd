@@ -342,6 +342,11 @@ func _build_a4_ships() -> void:
 		if not FileAccess.file_exists(src):
 			continue
 		var out := gen_root.path_join("ships/%s.scn" % code)
+		# Artoo on PR 1714: hashing every map is slow on a whole fleet, so a time-limited run checks its budget before
+		# fingerprinting the next ship; the version marker stays unset and the next run carries on from here.
+		if max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
+			out_of_time = true
+			break
 		# A4 re-exports ships under the same names. Check geometry and paint even when the generator version is current.
 		var stamp := source_stamp(base, code)
 		if manifest["ships"].has(code):
