@@ -67,6 +67,7 @@ const ROLE := {
 	"edge_arrive_enemy": Color(1.0, 0.54, 0.42, 0.9),
 	"edge_arrive_ally": Color(0.32, 0.94, 0.77, 0.9),
 	"arc_enemy": Color(0.941, 0.918, 0.871, 0.42),
+	"edge_reach_enemy": Color(0.941, 0.918, 0.871, 0.6),   # issue 1446: the outline of where an inspected enemy can reach next turn
 	# storm lightning until its baked bolts land (issue 1360): hot tube, cyan skirt, cool cyan-white corona (HDR values)
 	"bolt_core": Color(2.2, 2.1, 2.4, 1.0),
 	"bolt_skirt": Color(0.005, 0.8, 2.0, 1.0),

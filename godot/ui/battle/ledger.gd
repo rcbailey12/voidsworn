@@ -459,11 +459,11 @@ func _ship_block(r: Rect2, compact: bool) -> void:
 	_hit(Rect2(bars_x, yy, bars_w, px(82)), "", null, detail_bb)
 
 
-# issue 1446: "starboard routed" for the KEEL shield readout (quad order prow, starboard, rear, port)
+# issue 1446: "stbd routed" for the KEEL shield readout (quad order prow, starboard, rear, port)
 static func _routed_tag(sides) -> String:
 	if not (sides is Array) or (sides as Array).is_empty():
 		return ""
-	var words := ["prow", "starboard", "rear", "port"]
+	var words := ["fore", "stbd", "aft", "port"]   # short, so the tag fits beside the numbers (the ship tip spells them out)
 	var names := PackedStringArray()
 	for q in sides:
 		names.append(words[int(q)])

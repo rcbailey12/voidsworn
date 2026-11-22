@@ -3093,6 +3093,11 @@ func _enemy_fans(id: String) -> void:
 	efan_root.position.y = -0.36
 	var col: Color = Board.LS.ROLE["arc_enemy"]
 	var done := {}
+	# the fans stop at the board edge (a long gun's range ran out over open space in the PC pictures)
+	var xf := efan_root.global_transform
+	var keep := func(v: Vector3) -> bool:
+		var h: Vector2i = board.world_hex(xf * v)
+		return board.on_board(h.x, h.y)
 	for w in ru["weapons"]:
 		var arc := str(w["arc"])
 		if not _ready_next(w) or w["kind"] == "flak" or not ARC_SPAN.has(arc):
@@ -3102,7 +3107,7 @@ func _enemy_fans(id: String) -> void:
 		if done.has(dk):
 			continue
 		done[dk] = true
-		efan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col, 0.4, col.a))
+		efan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col, 0.4, col.a, keep))
 
 
 # Issue 1446 (R246): the sides the rules have routed this ship's shield power to (a side that was struck since its own
@@ -3161,7 +3166,7 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 
 
 # F1: the outline of a firing fan: a bright line along its range and its two sides, so arc and range read at a glance
-func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha := 0.75) -> MeshInstance3D:
+func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha := 0.75, keep = null) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var n := 28
@@ -3171,6 +3176,8 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
 		var o0 := Vector3(cos(t0), 0, sin(t0))
 		var o1 := Vector3(cos(t1), 0, sin(t1))
+		if keep != null and not bool(keep.call((o0 + o1) * 0.5 * rad)):
+			continue   # issue 1446: this stretch of the rim lies off the board
 		for v in [o0 * rad, o1 * rad, o1 * (rad - w), o0 * rad, o1 * (rad - w), o0 * (rad - w)]:
 			st.set_color(c)
 			st.add_vertex(v)
@@ -3179,7 +3186,12 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 			var d := Vector3(cos(deg_to_rad(a)), 0, sin(deg_to_rad(a)))
 			var sd := Vector3(-d.z, 0, d.x) * (w * 0.5)
 			var near := d * 6.0
-			var far := d * rad
+			var reach_r := rad
+			if keep != null:
+				reach_r = 6.0
+				while reach_r + 1.0 <= rad and bool(keep.call(d * (reach_r + 1.0))):
+					reach_r += 1.0
+			var far := d * reach_r
 			for v in [[near - sd, 0.0], [far - sd, 0.5], [far + sd, 0.5], [near - sd, 0.0], [far + sd, 0.5], [near + sd, 0.0]]:
 				st.set_color(Color(col.r, col.g, col.b, v[1] * alpha / 0.75))
 				st.add_vertex(v[0])
@@ -3328,10 +3340,12 @@ func _overlay() -> void:
 		board.show_blockers([])
 	# issue 1446: an inspected enemy you are not aiming at shows every hex its guns can reach next turn, faintly, under
 	# whatever else the board shows (the threat map's own bone, at a quarter of its full strength)
+	var reach := {}
 	if _one_current() and _one_want() != "":
 		for k in _threat_one:
-			if not fills.has(k) and float(_threat_one[k]) > 0.0:
-				fills[k] = Color(Board.THREAT, 0.07)
+			if float(_threat_one[k]) > 0.0:
+				reach[k] = true
+	board.set_reach(reach)   # an outline round the area, not a fill (PC pictures, Nov 22)
 	board.set_overlay(fills, rings, styles)
 	board.set_focus(_pos(sel) if sel != "" and views.has(sel) else cam.t)
 

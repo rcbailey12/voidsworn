@@ -57,13 +57,13 @@ func _resync() -> void:
 	b._overlay()
 
 
-func _shot(code: String, what: String, at: Vector3) -> void:
+func _shot(code: String, what: String, at: Vector3, dist := 170.0) -> void:
 	if shots == "":
 		return
 	b.cam.t = at
-	b.cam.r = 170.0
+	b.cam.r = dist
 	b.cam.snap()
-	label.text = "%s  %s  c170  %s" % [code, what, Prov.capture_stage()]
+	label.text = "%s  %s  c%d  %s" % [code, what, int(dist), Prov.capture_stage()]
 	await _frames(12)
 	await RenderingServer.frame_post_draw
 	var img: Image = root.get_texture().get_image()
@@ -161,12 +161,12 @@ func _run() -> void:
 	await _frames(3)
 	var pi: Dictionary = b._panel_info()
 	_check(str(pi.get("stats", "")).contains("Shields routed to the starboard side"), "ROUTE-1: the ship tip says which side is routed")
-	_check(b.hud.ledger._routed_tag(pi.get("routed", [])) == "starboard routed", "ROUTE-1: the KEEL shield readout names the routed side")
+	_check(b.hud.ledger._routed_tag(pi.get("routed", [])) == "stbd routed", "ROUTE-1: the KEEL shield readout names the routed side")
 	var fxs = b.gfx.ships.get(foe) if b.gfx != null else null
 	_check(fxs != null and fxs._route_on == Vector4(0, 1, 0, 0), "ROUTE-1: the bubble pulses on the starboard side only (%s)" % (str(fxs._route_on) if fxs != null else "no fx"))
 	await _frames(4)
 	_check(fxs != null and fxs._shield_mi != null and fxs._shield_mi.visible, "ROUTE-1: the routed bubble stays up between hits")
-	await _shot("ROUTE-1", "the routed starboard shield pulses at its rim; the sheet says starboard routed", b._pos(foe))
+	await _shot("ROUTE-1", "the routed starboard shield pulses at its rim; the sheet says stbd routed", b._pos(foe), 110.0)
 	# a drained pool routes nothing
 	var keep = fu["shp"]
 	fu["shp"] = 0
@@ -200,11 +200,13 @@ func _run() -> void:
 	_check(b._one_current() and not b._threat_one.is_empty(), "ARC-1: its own reach for next turn came from the threat worker (%d hexes)" % b._threat_one.size())
 	_check(not b._threat_current() and not b._threat_next.has("dmg"), "ARC-1: with both fleet overlays off, inspecting one enemy runs no fleet-wide scan")
 	b._overlay()
+	_check(is_instance_valid(b.board.reach_edge), "ARC-1: its reach next turn shows as one outline round the area, not a fill")
 	await _shot("ARC-1", "the inspected enemy's gun arcs and its reach next turn", b._pos(foe))
 	b.inspect = ""
 	b._overlay()
 	await _frames(2)
 	_check(b.efan_root == null, "ARC-1: the fans go when nothing is inspected")
+	_check(b.board.reach_edge == null, "ARC-1: the reach outline goes when nothing is inspected")
 
 	# ---- REINF-1: a reinforcement wave warned for round 3
 	var rnd := int(R.B["round"])

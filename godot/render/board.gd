@@ -1099,6 +1099,25 @@ func set_arrival(keys: Dictionary, side := "enemy") -> void:
 	arrival_edge = _edge_mesh(self, "ArrivalEdge", LS.material(true), keys, LS.ROLE["edge_arrive_enemy" if side == "enemy" else "edge_arrive_ally"])
 
 
+# issue 1446: the outline of every hex an inspected enemy can reach next turn (one edge around the area, never a fill,
+# so it still reads as a shape when the enemy can reach most of the board)
+var reach_edge: MeshInstance3D
+var reach_key := ""
+
+
+func set_reach(keys: Dictionary) -> void:
+	var k := ",".join(PackedStringArray(keys.keys())) if not keys.is_empty() else ""
+	if k == reach_key:
+		return
+	reach_key = k
+	if is_instance_valid(reach_edge):
+		reach_edge.queue_free()
+	reach_edge = null
+	if keys.is_empty():
+		return
+	reach_edge = _edge_mesh(self, "ReachEdge", LS.material(true), keys, LS.ROLE["edge_reach_enemy"])
+
+
 func show_blockers(hexes: Array) -> void:
 	if not is_instance_valid(blocker_highlights): return
 	for child in blocker_highlights.get_children():

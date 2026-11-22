@@ -1387,10 +1387,10 @@ void fragment() {
 		vec3 un = normalize(vL);
 		float side = 0.0;
 		for (int q = 0; q < 4; q++) {
-			side = max(side, route_on[q] * smoothstep(0.30, 0.80, dot(un, route_dirs[q])));
+			side = max(side, route_on[q] * smoothstep(0.45, 0.85, dot(un, route_dirs[q])));
 		}
 		float beat = 0.6 + 0.4 * sin(scene_t * mix(5.5, 2.0, fx_calm));
-		I += side * (0.08 + 0.55 * fres) * beat;
+		I += side * (0.25 + 1.6 * fres) * beat;   // issue 1446 pictures: the routed side reads at camera distance, not as an even glow
 	}
 	float pat = 1.0;
 	vec2 hexId = vec2(0.0);
