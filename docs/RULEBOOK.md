@@ -421,7 +421,7 @@ added after the dry run still keeps an unmoved branch. Why: the main repo was 22
 "Private GitHub relay repo" (Nov 22 2026, 12:14 UTC, decision card in thread "Upgrade studio ops and PC harness"), and approved
 the plan: "Route binary PC outputs ... to a disposable private relay repo (`rcbailey12/voidsworn-relay`, wiped monthly) ...
 Ship a safe double-click Windows `.bat` script (dry-run default first) ... to prune the 447 stale `board/pc-out-*` and
-`board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R409).
+`board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R410).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
