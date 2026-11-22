@@ -493,6 +493,14 @@ static func keyword_tip(line: String) -> String:
 
 func _status(x: float, y: float, w: float, foot: float) -> void:
 	var fl := plain(str(ship.get("flags", "")))
+	var keys := plain(str(card.get("keys", "")))
+	if keys != "":   # issue 1589 (Ryan, Nov 22): an open plan says what it does and its keys; the ship's flags wait for the tip
+		var plan_say := plain(str(card.get("say", ""))) + " " + keys
+		if y + px(23) > foot:
+			return
+		var plan_end := _paragraph(x, y, plan_say, w, mini(2, int((foot - y) / (ceilf(_text_h(f_body, 17)) + px(2)))))
+		_hit(Rect2(x, y, w, plan_end - y), "", null, plain(str(card.get("hint", ""))) + ("\n" + fl if fl != "" else ""))
+		return
 	var say := fl if fl != "" else plain(str(card.get("say", "")))
 	if say == "" or y + px(23) > foot:
 		return

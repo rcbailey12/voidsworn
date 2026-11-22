@@ -275,6 +275,10 @@ func _run() -> void:
 	for e in picks:
 		_click_unit(e)
 	var want_picks: int = b.aims.size()
+	b._refresh_ui()
+	var card_plan = b.hud._last.get("set_card", [{}])[0]
+	var keys_say := str((card_plan as Dictionary).get("keys", "")) if card_plan is Dictionary else ""
+	_check("Enter" in keys_say and "Backspace" in keys_say and "Esc" in keys_say, "the open plan's card names its keys on screen (%s)" % keys_say)
 	b.hold = true
 	b._confirm()
 	_check(b.batches.size() == 1, "the commit makes one batch (%d)" % b.batches.size())

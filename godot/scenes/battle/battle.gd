@@ -5424,6 +5424,7 @@ func _card_info() -> Dictionary:
 		{"n": 3, "label": "End ship", "detail": "Space", "st": en_st}]
 	var hint := ""
 	var say := ""   # issue 271: the sheet's one short sentence for what to do now (the full hint is on the action's hover)
+	var keys := ""   # issue 1589 (Ryan, Nov 22): the keys of an open plan, always on screen beside what it does
 	var btns: Array = []
 	if nothing or ending:
 		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
@@ -5452,6 +5453,7 @@ func _card_info() -> Dictionary:
 		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+		keys = "Enter goes. Backspace steps back. Esc cancels."
 	elif plan != null or not aims.is_empty():
 		# issue 1589: the open plan, step by step; the commit plays all of it as one event
 		var pt := _plan_text(id)
@@ -5459,6 +5461,7 @@ func _card_info() -> Dictionary:
 		say = pt["say"]
 		btns.append({"text": pt["go"], "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Clear plan (Esc)", "act": "cancel", "on": true})
+		keys = "Enter plays it. Backspace steps back. Esc clears."
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
 		say = "%d gun%s still ready: pick another target, or end the ship." % [bear, "" if bear == 1 else "s"]
@@ -5495,7 +5498,7 @@ func _card_info() -> Dictionary:
 		btns.append({"text": "Undo move (Backspace)", "act": "undo", "on": true,
 			"tip": "Take back the last move or turn. Allowed until the ship fires, rams, boards or uses an ability."})
 	return {"name": str(u["name"]), "cls": _class_label(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
-		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
+		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "keys": keys, "buttons": btns, "aim": target != "" and plan == null}
 
 
 # F1: the play log goes three places: the battle result (campaign_host hands results to the campaign), the campaign's
