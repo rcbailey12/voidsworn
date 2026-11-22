@@ -480,6 +480,14 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   fs.rmSync(path.join(vt, 'janitor_keep.txt'));
   r = waitRun({ ...quick, PC_TEST_COMMAND_LINES: `godot.exe --path "${path.join(guarded, 'new')}"` }, 'dropwait', guarded);
   assert(fs.existsSync(path.join(guarded, 'new')) && /a running process names this attempt/.test(r.out), 'a checkout in use survives its relay: ' + r.out);
+  // Artoo on PR 1644 at 1c264710: the issue lock as well. While a runner for issue 1396 holds it, the relayed checkout stays.
+  const runTemp = path.join(tmp, 'runtemp1644');
+  fs.mkdirSync(runTemp, { recursive: true });
+  const issueLock = path.join(runTemp, 'voidsworn-runner-issue-1396.lock');
+  const held = spawnSync('bash', ['-c', '"$1" -NoProfile -Command "$h = [IO.File]::Open($env:LOCK1644, \'OpenOrCreate\', \'ReadWrite\', \'None\'); Start-Sleep -Seconds 12; $h.Dispose()" & sleep 4; exec "$1" -NoProfile -ExecutionPolicy Bypass -File "$2" dropwait "$3"',
+    'x', shell, path.join(jobs, 'opus_job_head.ps1'), guarded], { env: { ...env, ...quick, PC_RUN_TEMP: runTemp, LOCK1644: issueLock }, encoding: 'utf8', timeout: 90000 });
+  const heldOut = `${held.stdout}\n${held.stderr}`;
+  assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(the issue lock \S+voidsworn-runner-issue-1396\.lock is held\)/.test(heldOut), 'a held issue lock keeps the relayed checkout: ' + heldOut);
   const pauseFile = path.join(tmp, 'pause1644.txt');
   write(pauseFile, 'GPU not cleared: paused by the Board for a fixture\r\n');
   const resumed = spawnSync('bash', ['-c', '(sleep 2; rm -f "$1") & exec "$2" -NoProfile -ExecutionPolicy Bypass -File "$3" dropwait "$4"',

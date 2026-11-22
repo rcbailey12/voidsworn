@@ -181,6 +181,7 @@ rem <job>\dropwait_<attempt>.txt. The job ends now; OJ_NO_DROPWAIT=1 skips it (t
 set "OJ_WAIT="
 if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"
 for %%L in ("%OJ_OUT%") do set "OJ_WAITLOG=%%~dpLdropwait_%%~nxL.txt"
-if defined OJ_WAIT powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -WindowStyle Hidden -FilePath powershell.exe -RedirectStandardOutput $env:OJ_WAITLOG -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" dropwait \"{1}\"' -f $env:OJ_PS, $env:OJ_OUT)" > nul 2>&1
+set "OJ_DROPWAIT_LOG=%OJ_WAITLOG%"
+if defined OJ_WAIT powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" dropwait \"{1}\"' -f $env:OJ_PS, $env:OJ_OUT)" > nul 2>&1
 if defined OJ_WAIT >> "%OJ_ST%" echo checkouts: a hidden waiter clears them once the relay is on origin; log %OJ_WAITLOG%
 exit /b %OJ_RC%

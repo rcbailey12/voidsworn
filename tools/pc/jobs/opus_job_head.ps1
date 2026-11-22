@@ -839,8 +839,17 @@ switch ($Action) {
     $script:dropDry = $B -eq 'dry'
     if ($B -and -not $script:dropDry) { throw "dropwait takes only dry after the attempt folder, got: $B" }
     $script:freed = [long]0
+    # The tail names a log (OJ_DROPWAIT_LOG) instead of redirecting the hidden window: a redirected start would inherit the
+    # tail's handles, and with them any held issue lock, for the whole wait.
+    if ($env:OJ_DROPWAIT_LOG) { try { $null = Start-Transcript -LiteralPath $env:OJ_DROPWAIT_LOG -Append } catch { } }
     $place = Get-RelayPlace $attempt (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt)
     if (-not $place) { Write-Output "checkouts kept: no relay branch named for $attempt"; break }
+    $jobName = Split-Path -Leaf (Split-Path -Parent $attempt)
+    $issueLockPath = ''
+    if ($jobName -match '\Aopus([1-9][0-9]*)') {
+      $runTemp = if ($env:PC_RUN_TEMP) { $env:PC_RUN_TEMP } else { [IO.Path]::GetTempPath() }
+      $issueLockPath = Join-Path $runTemp "voidsworn-runner-issue-$($Matches[1]).lock"
+    }
     $poll = 300; if ("$env:OJ_DROPWAIT_POLL_SECONDS" -match '\A[1-9][0-9]{0,4}\z') { $poll = [int]$env:OJ_DROPWAIT_POLL_SECONDS }
     $limit = 43200; if ("$env:OJ_DROPWAIT_SECONDS" -match '\A[0-9]{1,6}\z') { $limit = [int]$env:OJ_DROPWAIT_SECONDS }
     Write-Output "waiting for $($place.Ref) on origin (from $($place.From)) to clear $attempt; every $poll s for up to $limit s"
@@ -858,18 +867,24 @@ switch ($Action) {
         if ($tip -ne $seen) { Write-Output "relay branch $($place.Ref) is on origin at $tip" }
         $seen = $tip; $retry = $false
         $why = Get-WaitGuard $attempt
-        $lease = $null
+        $lease = $null; $issueLock = $null
         if (-not $why -and -not $script:dropDry) {
           try { $lease = [IO.File]::Open((Join-Path (Split-Path -Parent $attempt) '.voidsworn-run-active'), 'OpenOrCreate', 'ReadWrite', 'None') }
           catch { $why = 'a helper run holds the job folder''s lease' }
         }
+        # The janitor's issue lock too (Artoo on PR 1644): a runner for this issue can be active in another folder.
+        if (-not $why -and -not $script:dropDry -and $issueLockPath) {
+          try { $issueLock = [IO.File]::Open($issueLockPath, 'OpenOrCreate', 'ReadWrite', 'None') }
+          catch { $why = "the issue lock $issueLockPath is held" }
+        }
+        if ($why -and $lease) { $lease.Dispose(); $lease = $null }
         if ($why) { Write-Output "checkouts kept for now: $attempt ($why); tried again at the next look"; $retry = $true }
         else {
           try {
             $said = @(Drop-Attempt $attempt)
             foreach ($o in $said) { Write-Output $o }
             if (($said -join "`n") -match 'pause is active|stayed locked') { $retry = $true }
-          } finally { if ($lease) { $lease.Dispose() } }
+          } finally { if ($issueLock) { $issueLock.Dispose() }; if ($lease) { $lease.Dispose() } }
         }
       }
       if ($script:dropDry) { if (-not $tip) { Write-Output "checkouts kept: $($place.Ref) is not on origin yet (dry: one look)" }; break }
