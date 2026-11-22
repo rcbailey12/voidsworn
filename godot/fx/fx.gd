@@ -1805,7 +1805,8 @@ const BOARD_LOOKS := {
 }
 var board_look := "B"
 var board_inside_s := 0.0  # when the last of look C's inside flashes ends (s after the call; checked against the hold)
-var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
+var board_lines_s := 0.0
+var board_pop_lives: Array = []   # fx-time lives of look C's inside pops as they start (checked with the fx clock slowed)   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
@@ -1839,7 +1840,8 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	# issue 1547: a party coming from dead ahead or astern (no clear side) breaks in on the side the camera sees; the
 	# first cloud shots put it on the far side, hidden by the hull
 	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
-	if absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
+	# (look r0 keeps PR 1527's side choice, so the "before" pictures show main as it was; Sol review of PR 1549)
+	if board_look != "r0" and absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
 		var cl: Vector3 = inv * cam.global_position
 		side = Vector3(0, 0, 1.0 if cl.z >= s.hull.core.z else -1.0)
 	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
@@ -1848,8 +1850,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 		return 0.0
 	var lp: Vector3 = h["p"]
 	var ln: Vector3 = h["n"]
-	BREACH.board_k = float(bl["hatch"])
-	s.add_mark(self, "board", 2, lp, ln, -ln)
+	s.add_mark(self, "board", 2, lp, ln, -ln, float(bl["hatch"]))
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var k: float = s.scale_k()
@@ -1887,12 +1888,25 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
 		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
 		var ip: Vector3 = s.to_world(smp["p"])
-		# staggered over the same hold as the battle's wait and gone by its end at any pace (Artoo, PR 1549)
+		# staggered over the same hold as the battle's wait and gone by its end at any pace (Artoo, PR 1549). Sol review:
+		# the battle's wait runs on a scene timer, not the fx clock (which a hit pause or kill slow-mo slows), so each pop
+		# starts from a scene timer too and takes its life in fx time at the fx clock's speed when it starts
 		var t_in: float = hold * (0.2 + 0.55 * float(j) / maxf(1.0, float(int(bl["inside"]) - 1)))
 		var life: float = minf(0.35, hold * 0.2)
-		sprx(14.0, ip + s.dir_world(smp["n"]) * 0.1 * k, now + t_in, life, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
+		var pp: Vector3 = ip + s.dir_world(smp["n"]) * 0.1 * k
 		board_inside_s = maxf(board_inside_s, t_in + life)
+		if is_inside_tree():
+			get_tree().create_timer(t_in).timeout.connect(_board_pop.bind(pp, life, k))
+		else:
+			_board_pop(pp, life, k)
 	return maxf(3.2, hold)
+
+
+# one of look C's inside pops, now, living `life` seconds of scene time (in fx time at the fx clock's current speed)
+func _board_pop(p: Vector3, life: float, k: float) -> void:
+	var life_fx: float = life * clampf(_speed, 0.01, 1.0)
+	board_pop_lives.append(life_fx)
+	sprx(14.0, p, now, life_fx, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
 
 
 # Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the
