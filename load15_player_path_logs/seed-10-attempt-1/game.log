@@ -1,0 +1,91 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[load] battle scene ready in 337 ms (title backdrop)
+[world] baked 58413c805df71a726a99c0f230a401cd9cc49e57fe41b5bca00c2081a09dacaa 4096x2048 in 5164 ms (worker; stages ms { "began": 9515, "device": 290, "spirv": 2, "pipeline": 1, "dispatch": 107, "worst_strip": 6, "readback": 40, "save_began": 9959, "save": 3360, "prune": 2, "mips": 9 }; queued at 8169, worker from 9515, handed back at 13333 ms)
+[world] baked a274f108eddffa284941daadf14bbbd66b190a7234e6914f34c63d191e47190a 4096x2048 in 7863 ms (worker; stages ms { "began": 13334, "device": 195, "spirv": 4, "pipeline": 2, "dispatch": 13, "worst_strip": 3, "readback": 36, "save_began": 13587, "save": 2428, "prune": 2, "mips": 10 }; queued at 8172, worker from 13334, handed back at 16035 ms)
+[world] baked d8002323e9deb4fc943bc39fdc90c8608d6555071d3c866f8c051dcfa5301b1c 4096x2048 in 1275 ms (worker; stages ms { "began": 16055, "device": 209, "spirv": 3, "pipeline": 1, "dispatch": 14, "worst_strip": 2, "readback": 37, "save_began": 16322, "save": 991, "prune": 3, "mips": 9 }; queued at 16054, worker from 16055, handed back at 17329 ms)
+[sfx] 71 cues, 67 clip sets, loaded in 120 ms
+[load] battle scene ready in 298 ms
+[world] baked 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d 1024x512 in 370 ms (worker; stages ms { "began": 20805, "device": 161, "spirv": 3, "pipeline": 1, "dispatch": 5, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 0 }; queued at 20803, worker from 20804, handed back at 21173 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.262, target 4.4; visual tuning (R191)
+[world] baked 441af199859ba4baf13a8f506dd00238f092103e076fa0c2e8befb5edd10420f 1024x512 in 798 ms (worker; stages ms { "began": 21174, "device": 194, "spirv": 7, "pipeline": 1, "dispatch": 9, "worst_strip": 2, "readback": 44, "save": "deferred (a load is running)", "mips": 1 }; queued at 20803, worker from 21173, handed back at 21601 ms)
+[world] baked 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 1024x512 in 527 ms (worker; stages ms { "began": 21601, "device": 200, "spirv": 4, "pipeline": 1, "dispatch": 5, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 0 }; queued at 21329, worker from 21601, handed back at 21856 ms)
+[world] baked bd4e038767bb0dd5f89b0c336cd581b0fc5b506bba4e4f6ede100c52423cd0a0 1024x512 in 304 ms (worker; stages ms { "began": 21857, "device": 208, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 2, "readback": 31, "save": "deferred (a load is running)", "mips": 2 }; queued at 21824, worker from 21857, handed back at 22128 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 6 ships built in 1126 ms over 14 frames: longest stretch 93 ms; ship setup 9 ms (worst 6 ms, V16_37: inst 0, look_new_mats 0, look_assign 0, look_worst_assign 0, look_counts 0, look_touch 0, look 0, fit 0, rest 0), effects registration 178 ms (worst 53 ms, V15_37: analyse 51, damage_root 0, engines 0, shield 0, collider 1), hull geometry 357 ms (worst 92 ms, H7_23), waiting on hull files and worker instances 42 ms; 6 hulls instanced on workers
+[world] saved 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d later (stages ms { "save_began": 36086, "save": 164, "prune": 2 })
+[world] saved 441af199859ba4baf13a8f506dd00238f092103e076fa0c2e8befb5edd10420f later (stages ms { "save_began": 36298, "save": 167, "prune": 2 })
+[world] saved 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 later (stages ms { "save_began": 36539, "save": 119, "prune": 3 })
+[world] saved bd4e038767bb0dd5f89b0c336cd581b0fc5b506bba4e4f6ede100c52423cd0a0 later (stages ms { "save_began": 36712, "save": 73, "prune": 3 })
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H7_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] battle x01 V16_37: skipped 0; rcs hp 154 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 1 centre 0 skip 0
+[attach] battle x02 V15_37: skipped 0; rcs hp 256 ray 0 centre 0 skip 0; gun hp 16 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x03 V14_23: skipped 0; rcs hp 190 ray 0 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 8 centre 0 skip 0
+[attach] battle x04 H7_23: skipped 0; rcs hp 0 ray 218 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[attach] battle x05 H8_23: skipped 0; rcs hp 0 ray 280 centre 0 skip 0; gun hp 27 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; core hp 3 ray 0 centre 0 skip 0
+[attach] battle x06 H7_23: skipped 0; rcs hp 0 ray 128 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[fx] late shader: death debris body frame 6488 186958.5 ms
+[sfx] 71 cues, 67 clip sets, loaded in 116 ms
+[load] battle scene ready in 390 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.262, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[load] 4 ships built in 1006 ms over 10 frames: longest stretch 209 ms; ship setup 31 ms (worst 29 ms, V16_37: inst 0, look_new_mats 0, look_assign 0, look_worst_assign 0, look_counts 0, look_touch 0, look 0, fit 0, rest 0), effects registration 290 ms (worst 180 ms, C14s_23: analyse 178, damage_root 0, engines 1, shield 0, collider 1), hull geometry 286 ms (worst 208 ms, C14s_23), waiting on hull files and worker instances 23 ms; 4 hulls instanced on workers
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] battle x01 V16_37: skipped 0; rcs hp 116 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 10 ray 0 centre 0 skip 0
+[attach] battle x02 V14_23: skipped 0; rcs hp 140 ray 0 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x03 C14s_23: skipped 0; rcs hp 131 ray 43 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x04 C14s_23: skipped 0; rcs hp 66 ray 12 centre 0 skip 0
+[attach] battle x05 C13s_23: skipped 0; core hp 1 ray 0 centre 0 skip 0; rcs hp 9 ray 1 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0
+[player-path] ROUTE DRIFT after Battle 2: planned 2-2, taking 2-1; offered [{ "id": "2-1", "type": "battle", "enc": "flagship", "fac": "hegemony", "nemesis": false }, { "id": "2-2", "type": "event", "enc": "", "fac": "", "nemesis": false }]
+[sfx] 71 cues, 67 clip sets, loaded in 114 ms
+[load] battle scene ready in 365 ms
+[world] baked eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c 1024x512 in 315 ms (worker; stages ms { "began": 265895, "device": 160, "spirv": 5, "pipeline": 1, "dispatch": 4, "worst_strip": 1, "readback": 53, "save": "deferred (a load is running)", "mips": 0 }; queued at 265894, worker from 265895, handed back at 266209 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 3.759, target 4.4; visual tuning (R191)
+[world] baked aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c 1024x512 in 344 ms (worker; stages ms { "began": 266229, "device": 203, "spirv": 4, "pipeline": 1, "dispatch": 8, "worst_strip": 3, "readback": 26, "save": "deferred (a load is running)", "mips": 0 }; queued at 266226, worker from 266228, handed back at 266570 ms)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[load] 4 ships built in 448 ms over 9 frames: longest stretch 76 ms; ship setup 29 ms (worst 26 ms, V16_37: inst 0, look_new_mats 1, look_assign 0, look_worst_assign 0, look_counts 17, look_touch 0, look 1, fit 0, rest 0), effects registration 91 ms (worst 46 ms, V14_23: analyse 44, damage_root 0, engines 0, shield 0, collider 1), hull geometry 149 ms (worst 75 ms, H8_23), waiting on hull files and worker instances 22 ms; 4 hulls instanced on workers
+[world] saved eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c later (stages ms { "save_began": 271822, "save": 156, "prune": 3 })
+[world] saved aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c later (stages ms { "save_began": 272036, "save": 117, "prune": 3 })
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[player-path] completed three battles (route drift: 1 stops, see route_drift rows)
+[main] quit (menu) at 336507 ms
+[main] frames before the close, oldest first: 27 ms (-), 27 ms (-), 28 ms (-), 27 ms (-), 27 ms (-), 27 ms (-), 26 ms (-), 27 ms (-), 1 ms so far (this frame)
+[main] loading at the close: nothing
+[attach] battle x01 V16_37: skipped 0; rcs hp 58 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0
+[attach] battle x02 V14_23: skipped 0; rcs hp 106 ray 0 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0
+[attach] battle x03 H8_23: skipped 0; rcs hp 0 ray 132 centre 0 skip 0; gun hp 2 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x04 H8_23: skipped 0; rcs hp 0 ray 42 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x05 H7_23: skipped 0; rcs hp 0 ray 10 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 704 ms, statics and fx drain 108 ms, engine exit from 337319 ms

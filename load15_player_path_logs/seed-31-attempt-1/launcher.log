@@ -1,0 +1,41 @@
+﻿tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1434o\out_20261121_183514_32105\new\tools\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1434)
+GPU: acquired shared claim 50596724-b594-4e45-a6a5-22149835aba3
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+[sfx] 11 cues, 10 clip sets, loaded in 12 ms
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[main] capture window (1920, 1080) viewport (1920.0, 1080.0)
+[load] battle scene ready in 349 ms (title backdrop)
+[world] baked cfcd180d58e9e710fed64050b34f071575129f16f2934ddae39dec813c0ef283 4096x2048 in 496 ms (worker; stages ms { "began": 4246, "device": 166, "spirv": 3, "pipeline": 1, "dispatch": 88, "worst_strip": 3, "readback": 43, "save": "deferred (a load is running)", "mips": 14 }; queued at 4245, worker from 4245, handed back at 4741 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.495, target 4.4; visual tuning (R191)
+[world] baked 499e7d7c785dc1f5ea628afdadcdd0936e76573101bbbbdaf6d7a23401369017 4096x2048 in 768 ms (worker; stages ms { "began": 4742, "device": 214, "spirv": 3, "pipeline": 3, "dispatch": 14, "worst_strip": 2, "readback": 62, "save": "deferred (a load is running)", "mips": 13 }; queued at 4441, worker from 4741, handed back at 5209 ms)
+[world] baked c64a95e1ddffd490d9e4f74cbf3da7b939c6bd776ec596e33b768bc9e744bb90 4096x2048 in 518 ms (worker; stages ms { "began": 5437, "device": 206, "spirv": 5, "pipeline": 2, "dispatch": 16, "worst_strip": 2, "readback": 58, "save": "deferred (a load is running)", "mips": 16 }; queued at 5241, worker from 5437, handed back at 5759 ms)
+[world] saved cfcd180d58e9e710fed64050b34f071575129f16f2934ddae39dec813c0ef283 later (stages ms { "save_began": 6636, "save": 3468, "prune": 1 })
+[world] baked 6ebb27301791be221e512ab79f2c67e0322a02aef315dfc03324e9d79bb9ff01 4096x2048 in 5914 ms (worker; stages ms { "began": 11438, "device": 166, "spirv": 3, "pipeline": 2, "dispatch": 97, "worst_strip": 3, "readback": 44, "save_began": 11752, "save": 3439, "prune": 2, "mips": 12 }; queued at 9296, worker from 11437, handed back at 15210 ms)
+[world] baked 3ac63adf53f560964ed9076b29c9d41eb5c68232a2f262d54c51b5bf8fffe263 4096x2048 in 8164 ms (worker; stages ms { "began": 15211, "device": 155, "spirv": 3, "pipeline": 1, "dispatch": 10, "worst_strip": 2, "readback": 40, "save_began": 15423, "save": 2012, "prune": 2, "mips": 11 }; queued at 9296, worker from 15210, handed back at 17460 ms)
+[world] saved 499e7d7c785dc1f5ea628afdadcdd0936e76573101bbbbdaf6d7a23401369017 later (stages ms { "save_began": 17461, "save": 2575, "prune": 2 })
+[world] baked 3764508aaa34c58da6ac400425d2c6d9abce516454243a3999b5ebe0efc2fb91 4096x2048 in 3705 ms (worker; stages ms { "began": 20062, "device": 144, "spirv": 4, "pipeline": 1, "dispatch": 10, "worst_strip": 2, "readback": 41, "save_began": 20265, "save": 887, "prune": 2, "mips": 11 }; queued at 17480, worker from 20062, handed back at 21185 ms)
+[world] saved c64a95e1ddffd490d9e4f74cbf3da7b939c6bd776ec596e33b768bc9e744bb90 later (stages ms { "save_began": 21186, "save": 1276, "prune": 3 })
+[main] quit (menu) at 27610 ms
+[main] frames before the close, oldest first: 21 ms (-), 22 ms (-), 22 ms (-), 22 ms (-), 22 ms (-), 21 ms (-), 22 ms (-), 22 ms (-), 1 ms so far (this frame)
+[main] loading at the close: nothing
+[main] quit stages: scenes freed + 2 frames 65 ms, statics and fx drain 26 ms, engine exit from 27701 ms
+tmo.bat : [player-path] FAIL jump to 0-0 did not open
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1434o\out_20261121_183514_32105\new\contrib\codex\player_path_1119\run.p
+s1:63 char:9
++         & $tmo 1800 $game --log-file $gameLog --resolution 1920x1080  ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([player-path] F...-0 did not open:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1434o\out_20261121_183514_32105\out_new\player_path\seed-31.avi
+891 frames at 30 FPS (movie length: 00:00:29:21), recorded in 00:00:27 (107% of real-time speed).
+CPU render time: 1.60 seconds (average: 1.80 ms/frame)
+GPU render time: 0.05 seconds (average: 0.06 ms/frame)
+Encoding time: 10.15 seconds (average: 11.39 ms/frame)
+--------------------------------------------------------------------------------
+GPU: released shared claim 50596724-b594-4e45-a6a5-22149835aba3
