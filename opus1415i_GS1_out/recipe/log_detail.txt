@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1415)
+GPU: acquired shared claim a23dd71c-38d9-4caa-8a8f-4bd96fb6e473
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GS1\GS1.blend"
+PASS detail check: normal relief 5.98 deg (floor 0.47), albedo contrast 0.096 (floor 0.020), roughness spread 0.102 (floor 0.010), 248371 texels
+GPU: released shared claim a23dd71c-38d9-4caa-8a8f-4bd96fb6e473

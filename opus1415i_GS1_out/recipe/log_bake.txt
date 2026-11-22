@@ -1,0 +1,164 @@
+GPU: waiting for shared claim, weight 2 (1415)
+GPU: acquired shared claim da711921-27a3-4f36-a9aa-a2f6af54a8be
+Cycles device: OPTIX (NVIDIA GeForce RTX 5080)
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_silver
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:939.50M (Peak 940.61M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_H_bake
+Fra:1 Mem:941.52M (Peak 941.52M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:941.69M (Peak 941.69M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:941.79M (Peak 941.79M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:951.30M (Peak 952.45M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:951.30M (Peak 952.45M) | Time:69:39:53.68 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_H_masks
+Fra:1 Mem:1023.89M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:1023.90M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:1024.02M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:1024.08M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:1024.18M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:1024.20M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:1024.34M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:1024.39M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:1024.62M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_H_bake
+Fra:1 Mem:1031.83M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1031.83M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_hull_albedo
+Fra:1 Mem:1031.83M (Peak 3129.24M) | Time:69:40:03.06 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_H_masks
+Fra:1 Mem:1095.74M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:1095.74M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:1095.84M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:1095.97M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_white_bloom
+Fra:1 Mem:1096.08M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_01
+Fra:1 Mem:1096.09M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_04
+Fra:1 Mem:1096.23M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:1096.39M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:1096.44M (Peak 3207.75M) | Time:69:40:10.62 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_H_bake
+Fra:1 Mem:1096.46M (Peak 3207.75M) | Time:69:40:10.63 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:1105.68M (Peak 3207.75M) | Time:69:40:10.63 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1105.68M (Peak 3207.75M) | Time:69:40:10.63 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_hull_orm
+Fra:1 Mem:1105.68M (Peak 3207.75M) | Time:69:40:10.63 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_H_masks
+Fra:1 Mem:1175.27M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:1175.27M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_light
+Fra:1 Mem:1175.37M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_pearl
+Fra:1 Mem:1175.54M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_deep_lens
+Fra:1 Mem:1175.58M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:1175.62M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:1175.65M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:1175.66M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_07
+Fra:1 Mem:1175.76M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_08
+Fra:1 Mem:1175.85M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:1175.86M (Peak 3279.60M) | Time:69:40:18.33 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_H_bake
+Fra:1 Mem:1182.63M (Peak 3279.60M) | Time:69:40:18.34 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1182.63M (Peak 3279.60M) | Time:69:40:18.34 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_hull_emission
+Fra:1 Mem:1182.63M (Peak 3279.60M) | Time:69:40:18.34 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_H_masks
+Fra:1 Mem:1244.46M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_lance
+Fra:1 Mem:1244.46M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:1244.59M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_grown_stern
+Fra:1 Mem:1244.71M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_white_bloom
+Fra:1 Mem:1244.77M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_00
+Fra:1 Mem:1244.81M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_02
+Fra:1 Mem:1244.98M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_03
+Fra:1 Mem:1245.24M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_06
+Fra:1 Mem:1245.28M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_09
+Fra:1 Mem:1245.45M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_silver_flow_10
+Fra:1 Mem:1245.49M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_H_bake
+Fra:1 Mem:1253.54M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1253.54M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_hull_normal
+Fra:1 Mem:1253.54M (Peak 3359.13M) | Time:69:40:25.49 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_H_masks
+Fra:1 Mem:1328.40M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:1328.40M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_2
+Fra:1 Mem:1329.34M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3
+Fra:1 Mem:1331.05M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3_silver_s
+Fra:1 Mem:1331.24M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3_silver_p
+Fra:1 Mem:1331.29M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0_silver_s
+Fra:1 Mem:1331.34M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0_silver_p
+Fra:1 Mem:1331.54M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1_silver_p
+Fra:1 Mem:1331.81M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2
+Fra:1 Mem:1333.02M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2_silver_s
+Fra:1 Mem:1333.02M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2_silver_p
+Fra:1 Mem:1333.06M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3_silver_s
+Fra:1 Mem:1333.61M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3_silver_p
+Fra:1 Mem:1333.73M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_P_bake
+Fra:1 Mem:1333.88M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_light
+Fra:1 Mem:1334.14M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_deep_lens
+Fra:1 Mem:1336.38M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_white_bloom
+Fra:1 Mem:1336.53M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:1342.36M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1342.35M (Peak 3428.31M) | Time:69:40:34.00 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_P_masks
+Fra:1 Mem:1412.32M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:1412.32M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_0
+Fra:1 Mem:1414.28M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_0_silver_p
+Fra:1 Mem:1414.41M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_1_silver_p
+Fra:1 Mem:1414.55M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_2_silver_s
+Fra:1 Mem:1414.62M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3
+Fra:1 Mem:1414.71M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3_silver_s
+Fra:1 Mem:1414.96M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0
+Fra:1 Mem:1415.18M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0_silver_p
+Fra:1 Mem:1415.26M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1_silver_s
+Fra:1 Mem:1415.44M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1_silver_p
+Fra:1 Mem:1416.10M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2
+Fra:1 Mem:1416.18M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2_silver_p
+Fra:1 Mem:1416.25M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3_silver_s
+Fra:1 Mem:1416.36M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3_silver_p
+Fra:1 Mem:1416.40M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_P_bake
+Fra:1 Mem:1416.45M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_deep_lens
+Fra:1 Mem:1416.64M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_white_bloom
+Fra:1 Mem:1416.91M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:1420.18M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1420.18M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_parts_albedo
+Fra:1 Mem:1420.18M (Peak 3518.36M) | Time:69:40:44.58 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_P_masks
+Fra:1 Mem:1477.12M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:1477.13M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_0_silver_s
+Fra:1 Mem:1479.09M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_1
+Fra:1 Mem:1479.20M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_2
+Fra:1 Mem:1479.32M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_2_silver_p
+Fra:1 Mem:1479.52M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_3_silver_p
+Fra:1 Mem:1479.73M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0_silver_s
+Fra:1 Mem:1479.86M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1
+Fra:1 Mem:1479.99M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1_silver_p
+Fra:1 Mem:1480.06M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2
+Fra:1 Mem:1480.89M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2_silver_s
+Fra:1 Mem:1480.93M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3
+Fra:1 Mem:1481.05M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3_silver_s
+Fra:1 Mem:1481.16M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_P_bake
+Fra:1 Mem:1481.28M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:1481.81M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_light
+Fra:1 Mem:1482.37M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_deep_lens
+Fra:1 Mem:1482.55M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:1485.45M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1485.45M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_parts_orm
+Fra:1 Mem:1485.45M (Peak 3596.18M) | Time:69:40:50.84 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_P_masks
+Fra:1 Mem:1552.24M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ithar_GS1_mosaic_core
+Fra:1 Mem:1552.25M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_0_silver_s
+Fra:1 Mem:1554.21M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_0_1_silver_s
+Fra:1 Mem:1554.42M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0
+Fra:1 Mem:1554.50M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_0_silver_s
+Fra:1 Mem:1554.56M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1
+Fra:1 Mem:1554.88M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_1_silver_s
+Fra:1 Mem:1555.73M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2
+Fra:1 Mem:1556.05M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_2_silver_s
+Fra:1 Mem:1556.16M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | ribbon_1_3
+Fra:1 Mem:1556.35M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | GS1_P_bake
+Fra:1 Mem:1556.40M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_tip
+Fra:1 Mem:1556.52M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | S1_mount_gw_light
+Fra:1 Mem:1556.63M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_deep_lens
+Fra:1 Mem:1556.79M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_white_bloom
+Fra:1 Mem:1556.90M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Synchronizing object | E1_cut_face
+Fra:1 Mem:1560.26M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Initializing
+Fra:1 Mem:1560.26M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_P_masks
+Fra:1 Mem:1560.26M (Peak 3660.99M) | Time:69:40:57.68 | Mem:0.00M, Peak:0.00M | Scene | Updating Images | Loading GS1_parts_normal
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Baking map saved to internal image, save it externally or pack it
+Info: Saved as "GS1.blend"
+[209] GS1 {"cell": "GS1", "route": "build sheet ithar_GS1 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)", "build_seconds": 89.1, "geometry_seconds": 2.3, "res": 4096, "parts_res": 4096, "samples": 64, "paint": {"hull_objects": 25, "part_objects": 15, "glow_objects": 5, "interior_objects": 14, "device": "OPTIX", "samples": 64, "textures": [], "decals": [], "bake_H_masks_s": 8.8, "bake_H_albedo_s": 6.9, "bake_H_orm_s": 6.8, "bake_H_emission_s": 6.6, "bake_H_normal_s": 7.6, "zones_H": ["gw_mosaic", "gw_pearl", "gw_silver"], "bake_P_masks_s": 9.8, "bake_P_albedo_s": 5.8, "bake_P_orm_s": 6.0, "bake_P_normal_s": 12.3, "zones_P": ["gw_lance", "gw_pearl", "gw_silver"], "glow_materials": ["ithar_glow_gw_drive", "ithar_glow_gw_drive_core", "ithar_glow_gw_drive_cut", "ithar_glow_gw_light", "ithar_glow_gw_tip"], "inside_materials": ["ithar_inside_gw_in_amber", "ithar_inside_gw_in_frame", "ithar_inside_gw_in_green", "ithar_inside_gw_in_violet"], "texel_density": {"hull": {"uv_share": 0.2499, "area": 1.62682, "texels_per_unit2": 2576840.1}, "parts": {"uv_share": 0.5069, "area": 0.07022, "texels_per_unit2": 121119089.8}}, "stack_seconds": 83.6}, "density": {"paint_flags": ["gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3", "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3", "part: paint_detail_share 0.0 is 0.00 of the hull's 0.3"], "mesh_flags": ["engine: edges_per_unit2 6490.1 is 0.47 of the hull's 13951.2"], "hull": {"area": 1.62682, "triangles": 150016, "tris_per_unit2": 92214.3, "edges_per_unit2": 13951.2, "texels_per_unit2": 2576840.1, "atlas": "hull", "paint_detail_share": 0.3}, "rule": "R224: a part type more than 25 percent under the hull is flagged", "paint_bar_per_unit": 66.0, "paint_top": 0.3}, "contract": {"sheet": "ithar_GS1", "game_ship": "i_wisp", "variant": "", "model_length": 6.26178, "scale": 0.15969912033636882, "length_world": 6.5, "t_lines": [-0.15171], "l_line": [], "l_lines": [], "muzzles": 3, "guns": 1, "engines": 1, "bays": 
+
+Blender quit
+GPU: released shared claim da711921-27a3-4f36-a9aa-a2f6af54a8be
