@@ -994,9 +994,11 @@ func _beacon() -> void:
 	var o = VW.get("obj")
 	if not (o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary):
 		return
+	var t0 := Time.get_ticks_usec()
 	var n := A4P.beacon(BEACON_LEN)
 	if n == null:
 		return
+	print("[board] relay beacon ready in %.1f ms (threaded prefetch collected, issue 1536)" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	# lens (+x) toward +z (the player's side, where the battle camera starts), then tipped up by BEACON_TILT
 	var basis := Basis(Vector3.RIGHT, -deg_to_rad(BEACON_TILT)) * Basis(Vector3.UP, -PI / 2.0)
 	var top := 0.0
