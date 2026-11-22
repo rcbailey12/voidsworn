@@ -1,5 +1,6 @@
 extends SceneTree
-# Issue 1559 items 1 and 18 (menus audit): the battle Esc menu is modal and keeps its row. Test battle s1 in the real battle scene, a player ship
+# Issue 1559 items 1, 2 and 18 (menus audit): the battle Esc menu is modal, fits the screen at every UI scale and keeps
+# its row. Test battle s1 in the real battle scene, a player ship
 # picked, the menu opened. Checks, through the engine's own input path (Viewport.push_input):
 #   - the keyboard is inside the menu on open, and a control outside that grabs focus is put back inside;
 #   - order keys (B brace, X ram, G board, C command, Q/E turn, 1 weapon, Backspace undo) change nothing in the battle;
@@ -8,6 +9,7 @@ extends SceneTree
 # Prints PASS or FAIL lines; exit 0 when all pass.
 # Run: godot --headless --path godot --script res://scenes/battle/test/menu_modal_check.gd
 const BattleScene = preload("res://scenes/battle/battle.tscn")
+const UiScale = preload("res://ui/ui_scale.gd")
 var b
 var fails := 0
 
@@ -33,6 +35,19 @@ func _wait_idle(ms: int) -> void:
 		await process_frame
 	for k in 10:
 		await process_frame
+
+
+var shots := ""   # -- --menu-shots DIR: also saves the menu at each UI scale (needs a window: xvfb-run with opengl3 in the
+# cloud). The 3D board is covered by a plain sheet in these pictures: they show the HUD layout only, never ships.
+
+
+func _shot(name: String) -> void:
+	if shots == "":
+		return
+	await RenderingServer.frame_post_draw
+	var img := root.get_texture().get_image()
+	img.save_png(shots.path_join("I1559_" + name + ".png"))
+	print("shot I1559_" + name)
 
 
 func _frames(n: int) -> void:
@@ -74,6 +89,12 @@ func _focus_inside() -> bool:
 
 
 func _run() -> void:
+	var args := OS.get_cmdline_user_args()
+	if args.size() >= 2 and args[0] == "--menu-shots":
+		shots = args[1]
+		DirAccess.make_dir_recursive_absolute(shots)
+		DisplayServer.window_set_size(Vector2i(1920, 1080))
+	root.size = Vector2i(1920, 1080)   # the design screen (headless starts at 64 x 64)
 	b = BattleScene.instantiate()
 	b.tips_off = true
 	b.external = true
@@ -95,6 +116,15 @@ func _run() -> void:
 			foe = str(u["id"])
 	b.select(ship, "roster")
 	await _wait_idle(5000)
+	if shots != "":
+		var cover := CanvasLayer.new()
+		cover.layer = 9   # under the HUD (10), over the board
+		var bg := ColorRect.new()
+		bg.color = Color(0.05, 0.06, 0.09)
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cover.add_child(bg)
+		root.add_child(cover)
 	b._open_menu()
 	await _frames(4)
 	_check(b.hud.menu != null, "the menu opened")
@@ -126,11 +156,9 @@ func _run() -> void:
 	_check(_state() == before, "a click on the board behind the menu plans and picks nothing")
 	# item 18: Enter on the UI scale row keeps the keyboard on that row after the HUD rebuilds for the new scale
 	var ui_row := -1
-	var v: Node = b.hud.menu.get_child(0)
-	for i in v.get_child_count():
-		var c = v.get_child(i)
-		if c is Button and (c as Button).text.begins_with("UI scale"):
-			ui_row = i - 1
+	for c in b.hud.menu.find_children("*", "Button", true, false):
+		if (c as Button).text.begins_with("UI scale"):
+			ui_row = c.get_index() - 1   # row 0 is the title
 			(c as Button).grab_focus()
 	await _frames(2)
 	var rows_ok := ui_row >= 0
@@ -139,6 +167,27 @@ func _run() -> void:
 		await _frames(4)
 		rows_ok = rows_ok and b.hud.menu != null and b.hud.menu_row() == ui_row
 	_check(rows_ok, "item 18: cycling the UI scale keeps the keyboard on its row (row %d)" % ui_row)
+	# item 2: at Large and Larger the menu stays on screen, and the keyboard can reach its last row ("Quit the game")
+	for sc in [1.0, 1.15, 1.3]:
+		UiScale.set_player(sc)
+		b.hud._rebuild()
+		b._open_menu()
+		await _frames(6)
+		var vr := Rect2(Vector2.ZERO, root.get_visible_rect().size)
+		var mr: Rect2 = b.hud.menu.get_global_rect()
+		_check(vr.grow(1).encloses(mr), "item 2: at UI scale %.2f the menu fits the screen (%s in %s)" % [sc, str(mr), str(vr.size)])
+		var last: Button = null
+		for c in b.hud.menu.find_children("*", "Button", true, false):
+			last = c
+		if last != null:
+			last.grab_focus()
+		await _frames(4)
+		_check(last != null and last.text == "Quit the game" and vr.grow(1).encloses(last.get_global_rect()), "item 2: at UI scale %.2f the last row is on screen once the keyboard reaches it" % sc)
+		await _shot("menu_scale_%d" % int(round(sc * 100)))
+	UiScale.set_player(1.0)
+	b.hud._rebuild()
+	b._open_menu()
+	await _frames(4)
 	await _key(KEY_ESCAPE)
 	await _frames(3)
 	_check(b.hud.menu == null, "Esc closes the menu")

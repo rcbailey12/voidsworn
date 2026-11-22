@@ -1232,7 +1232,15 @@ func show_menu(title: String, items: Array, row := -1, body := "") -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(2))
 	v.custom_minimum_size = Vector2(s(360), 0)
-	(mw[1] as Control).add_child(v)
+	# issue 1559 item 2: the rows scroll inside a box no taller than the screen (about 20 rows ran off the top and bottom at
+	# Large and Larger, and the UI scale toggle lives in this menu). The keyboard scrolls it (follow_focus); row 0 is still
+	# the title, so the rows keep their indices.
+	var sc := ScrollContainer.new()
+	sc.name = "menu_scroll"
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.follow_focus = true
+	(mw[1] as Control).add_child(sc)
+	sc.add_child(v)
 	var t := _label(title.to_upper(), 40, S_TEXT, font_name)
 	v.add_child(t)
 	for it in items:
@@ -1244,6 +1252,11 @@ func show_menu(title: String, items: Array, row := -1, body := "") -> void:
 		var bl := _rich(recol(body), 18)
 		bl.custom_minimum_size = Vector2(s(560), 0)
 		v.add_child(bl)
+	var want := v.get_combined_minimum_size()
+	var room: float = get_viewport().get_visible_rect().size.y - float(s(22)) * 2.0 - float(s(16)) * 2.0
+	var tall := want.y > room
+	sc.custom_minimum_size = Vector2(want.x + (float(sc.get_v_scroll_bar().get_combined_minimum_size().x) + s(6) if tall else 0.0), minf(want.y, maxf(room, float(s(120)))))
+	sc.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if tall else ScrollContainer.SCROLL_MODE_DISABLED
 	if items.size() > 0:
 		(v.get_child(1 + mini(refocus, items.size() - 1)) as Button).grab_focus.call_deferred()
 

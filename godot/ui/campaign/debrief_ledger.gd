@@ -3,6 +3,8 @@ extends Control
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Portraits = preload("res://portraits/portraits.gd")
 const ShipPortrait = preload("res://ui/campaign/ledger_ship.gd")
+const FIT_H := 1080.0   # issue 1559 item 3: the design sheet the fixed layout needs (height, and width before columns meet)
+const FIT_W := 1800.0
 const KEYS := {KEY_S: "cores", KEY_L: "nemesis", KEY_R: "record", KEY_P: "spend", KEY_B: "renown", KEY_V: "hulls", KEY_A: "lineage", KEY_F: "fleet"}
 var ui
 var C
@@ -22,11 +24,18 @@ var flagship: Dictionary = {}
 var ship_portrait: Control
 
 func setup(host, data: Dictionary) -> void:
-	ui = host; C = ui.C; d = data; R = d["run"]; receipt = R["carry"]["inheritance"]; k = ui.k
-	width = ui.get_viewport().get_visible_rect().size.x / k
+	ui = host; C = ui.C; d = data; R = d["run"]; receipt = R["carry"]["inheritance"]
+	# issue 1559 item 3: the page is laid out in fixed places on a 1080-high, at least 1800-wide design sheet, so its scale
+	# is the shared one capped where that sheet still fits the window. At Large and Larger (and in a narrow window) the
+	# page stops growing instead of running off the bottom or squeezing its columns into each other.
+	var vs: Vector2 = ui.get_viewport().get_visible_rect().size
+	k = minf(ui.k, minf(vs.y / FIT_H, vs.x / FIT_W))
+	width = vs.x / k
 	name = "DB1"; set_anchors_preset(Control.PRESET_FULL_RECT); theme = GS.ledger_theme(k)
 	var veil = TextureRect.new(); veil.texture = GS.ledger_veil(); veil.set_anchors_preset(Control.PRESET_FULL_RECT); veil.mouse_filter = MOUSE_FILTER_IGNORE; add_child(veil)
 	_build()
+
+func px(v: float) -> int: return int(round(v * k))   # this page's own scale (see setup)
 
 func _at(node: Control, rect: Rect2, parent: Control = self) -> Control:
 	parent.add_child(node); node.position = rect.position * k; node.size = rect.size * k
@@ -35,7 +44,7 @@ func _at(node: Control, rect: Rect2, parent: Control = self) -> Control:
 func words(t: String, rect: Rect2, size_px := 18, col := GS.TEXT2, face: Font = null, parent: Control = self) -> Label:
 	var l = Label.new(); l.text = t; l.mouse_filter = MOUSE_FILTER_IGNORE
 	l.add_theme_font_override("font", GS.sheet_body() if face == null else face)
-	l.add_theme_font_size_override("font_size", ui.px(size_px)); l.add_theme_color_override("font_color", col)
+	l.add_theme_font_size_override("font_size", px(size_px)); l.add_theme_color_override("font_color", col)
 	l.autowrap_mode = TextServer.AUTOWRAP_OFF if t in ["S", "L", "R", "P", "V", "A", "F", "Esc", "Enter"] else TextServer.AUTOWRAP_WORD_SMART
 	_at(l, rect, parent); ink.append({"node": l, "size": size_px, "color": col, "text": t})
 	return l
@@ -52,7 +61,7 @@ func link(t: String, rect: Rect2, cb: Callable, tip := "", parent: Control = sel
 	var parts = t.rsplit(" ", true, 1)
 	if parts.size() == 2 and parts[1] in ["S", "L", "R", "P", "V", "A", "F", "Esc"]:
 		b.text = parts[0].strip_edges()
-		var start = GS.sheet_body().get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(18)).x / k + 10
+		var start = GS.sheet_body().get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(18)).x / k + 10
 		var key_label = words(parts[1], Rect2(start, 0, rect.size.x - start, rect.size.y), 17, GS.TEXT2, GS.num(), b)
 		key_label.autowrap_mode = TextServer.AUTOWRAP_OFF; key_label.size.y = rect.size.y * k; key_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	ink.append({"node": b, "size": 18, "color": GS.TEXT2, "text": b.text})
@@ -292,7 +301,7 @@ func _build_fleet(w: float, right: float) -> void:
 		words(caption, Rect2(360, 1044, 320, 28), 17, GS.TEXT2, GS.num())
 	else: words("No ships still flying.\nThe fleet and its losses are recorded.   F", Rect2(72, 965, 560, 76), 20)
 	var lost_text = _fallen_text()
-	if GS.sheet_body().get_string_size(lost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(18)).x > (width - 1448) * k:
+	if GS.sheet_body().get_string_size(lost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(18)).x > (width - 1448) * k:
 		lost_text = "Captains lost: " + str(R["fallen"].size()) + " - full roll F"
 	var lost = words(lost_text, Rect2(704, 1000, width - 1448, 28), 18); hover(lost, _fallen_text())
 	link("Core sync S", Rect2(704, 1027, 135, 32), func(): open_detail("cores"))
@@ -319,7 +328,7 @@ func open_detail(which: String) -> void:
 	_at(panel, Rect2((width - 1080) / 2, 110, 1080, 860), overlay)
 	var col = ui.vbox(16); panel.add_child(col)
 	var close = link("Close   Esc", Rect2(0, 0, 160, 34), close_detail, "", col)
-	close.custom_minimum_size.y = ui.px(40)
+	close.custom_minimum_size.y = px(40)
 	var titles = {"cores": "Core sync", "nemesis": "Nemesis lesson", "record": "The record", "renown": "What it bought", "lineage": "Admiral line", "fleet": "The fleet", "admirals": "Admiral rewards"}
 	var title = ui.lbl(str(titles.get(which, which)).to_upper(), 32, GS.TEXT, GS.sheet_name()); col.add_child(title)
 	var sc = ScrollContainer.new(); sc.size_flags_vertical = SIZE_EXPAND_FILL; sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; col.add_child(sc)
