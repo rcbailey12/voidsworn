@@ -1,6 +1,6 @@
-"""One entry point for base sheets and their named data.js variants (issue 812).
+"""One entry point for base sheets and their named Godot variants (issue 812).
 
-VARIANTS maps a data.js id to a sheet callback. The callback runs after build(), before
+VARIANTS maps a Godot hull id to a sheet callback. The callback runs after build(), before
 finish(), so its parts, keep-outs, fit records and hard points use the same contract.
 For replacements, build() can read K.variant before placing the base weapons.
 """
@@ -8,9 +8,10 @@ import re
 
 
 def base_game(design):
+    # Existing sheets store the hull id in a GAME line with the old data.js label.
     match = re.search(r'data\.js\s+([A-Za-z0-9_]+)', str(getattr(design, 'GAME', '')))
     if not match:
-        raise ValueError('the sheet GAME line names no data.js ship')
+        raise ValueError('the sheet GAME line names no Godot hull id')
     return match.group(1)
 
 
@@ -27,7 +28,7 @@ def build(design, game=None):
     callback = None
     if game != base:
         if gamedata.ship_attr(game, 'base') != base:
-            raise ValueError(f'{game} is not a data.js variant of {base}')
+            raise ValueError(f'{game} is not a Godot variant of {base}')
         callback = getattr(design, 'VARIANTS', {}).get(game)
         if not callable(callback):
             raise ValueError(f'{design.CODE} has no variant builder for {game}')

@@ -1,3 +1,5 @@
+# Saved from contrib/opus/tools/shadow_xp_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://campaign/test/shadow_xp_cases.json.
 extends SceneTree
 # Run with -- <fixtures.json> from shadow_xp_tests.js for exact browser parity.
 const Campaign = preload("res://campaign/campaign.gd")
@@ -44,5 +46,5 @@ func _init() -> void:
 		check(c.META["shadowPool"] == f["expected"]["shadowPool"], "saved overflow survives reopening")
 	var old = c.defaultMeta(); old.erase("heirs"); old.erase("shadowPool"); c.META = c.migrateMeta(old)
 	check(c.META["heirs"].is_empty() and c.META["shadowPool"].is_empty(), "old profiles migrate")
-	print("PASS: shadow XP, debrief heirs, saves and exact browser overflow parity." if failures == 0 else "FAIL: %d checks" % failures)
+	print("PASS: shadow XP, debrief heirs and saves match the recorded overflow cases." if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)

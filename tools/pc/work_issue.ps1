@@ -493,7 +493,7 @@ Rules:
 Before you finish, check how your change reaches the rest of the game (the reviewer checks all five, so do it first):
 - Callers: search the whole repo for every function, constant and save field you changed or added, and check or fix each use.
 - Saves: a player profile or run save written before your change must still load and behave; say how you checked.
-- Twins: rules that live in both the JS root files (battle.js, data.js and core.js) and the Godot port must change on both sides. The root files are the only copy (the oracle folders were deleted in PR 381). If you change one of them, re-export both tables (godot/rules/data/tables.json and godot/campaign/data/campaign_tables.json) and run contrib/opus/tools/oracle_copy_test.js last; rules parity and campaign parity prove the two sides match.
+- Rules (R405): change Godot and its tables. Reseal edited tables with res://rules/tools/reseal_tables.gd and check the saved Godot results. Keep the browser rules frozen. Follow RULEBOOK 3.1 for the current ship-data exception.
 - UI: every screen that shows what you changed (campaign map, intel, panels, HUD) must read the new value the same way.
 - CI: a new test file must be added to contrib/opus/tools/run_all_checks.js, or GitHub never runs it; say which checks GitHub runs.
 Put one line per item in your report with what you found.

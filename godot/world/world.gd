@@ -488,6 +488,9 @@ func _make_sky(env: Environment) -> void:
 	var sf := OS.get_environment("VS_STAR_FLOOR")
 	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
 	m.set_shader_parameter("sun_dir", SUN.normalized())
+	if LOOK.fleet_lighting_enabled():
+		m.set_shader_parameter("fleet_reflections", true)
+		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment
 	# and finds the painting on its sky's "pano" for the next battle

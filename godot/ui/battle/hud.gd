@@ -478,7 +478,7 @@ func _show_dtip() -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#a7b09d]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the last move or turn (until the ship fires), [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
+	return "[font_size=%d][color=#a7b09d]Plan the ship's turn on its ghost: click a blue hex to move the ghost, [b]Q[/b]/[b]E[/b] turn it, click enemies to aim the guns that bear from it. Click the hex or a target again (or [b]Enter[/b]) and it all plays out at once. [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the plan's last step (after a move has played, the last move or turn, until the ship fires), [b]Esc[/b] clear the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
 
 
 

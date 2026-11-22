@@ -105,6 +105,12 @@ func _run() -> void:
 	var hold := {"type": "hold", "hex": {"q": 1, "r": -1}, "score": 0, "escore": 0}
 	A4P.prefetch_beacon()
 	_check(A4P._pending.has(STUB), "the beacon prefetch did not start a threaded load")
+	# Let the worker finish before the board builds. Headless checks run on Godot's dummy renderer, whose mesh store is not
+	# thread safe: the stub's box mesh made on the loader thread while the board made its hex meshes on this one raced, gave
+	# null meshes and aborted Godot (exit 134) about one run in six (PR 1698 CI). The real renderers allocate meshes thread
+	# safely, so the game's own prefetch overlap is unchanged; the collect still goes through the board build below.
+	while ResourceLoader.load_threaded_get_status(STUB) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		OS.delay_msec(1)
 	var board := _board(hold)
 	_check(A4P._pending.is_empty(), "the board build left the beacon prefetch uncollected")
 	_beacon_checks(board, Vector2i(1, -1))

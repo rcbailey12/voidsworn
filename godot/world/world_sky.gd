@@ -369,6 +369,32 @@ void fragment() {
 
 # ---------------------------------------------------------------- the per-frame sky shader
 
+# Issue 1679, SG option. Broad, subdued lobes in linear light. The sun side is warmer and brighter than the back-bounce.
+const FLEET_REFLECTIONS := """
+uniform bool fleet_reflections = false;
+
+vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
+	float sun_side = dot(direction, sun_direction);
+	float warm = smoothstep(0.0, 1.0, sun_side);
+	float cool = smoothstep(0.0, 1.0, -sun_side);
+	return vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+}
+"""
+
+const PANORAMA_SKY := """
+shader_type sky;
+uniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform vec3 sun_dir;
+""" + FLEET_REFLECTIONS + """
+void sky() {
+	vec3 c = texture(pano, SKY_COORDS).rgb;
+	COLOR = min(c * 0.8, vec3(0.6));
+	if (AT_CUBEMAP_PASS && fleet_reflections) {
+		COLOR += fleet_reflection_gradient(EYEDIR, sun_dir);
+	}
+}
+"""
+
 const SKY := """
 shader_type sky;
 uniform sampler2D neb_tex : filter_linear, repeat_enable;
@@ -396,6 +422,7 @@ uniform float has_pano = 0.0;
 uniform float sun_k = 1.0;
 uniform float dawn = 0.0;
 uniform vec3 dawn_dir = vec3(-0.6, 0.7, -0.2);
+""" + FLEET_REFLECTIONS + """
 
 float sh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 sh33(vec3 p) { p = fract(p * vec3(0.1031, 0.103, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -465,6 +492,9 @@ void sky() {
 	float catch_light = pow(max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir))), 2.0);
 	col = mix(col, col * vec3(1.18, 1.03, 0.84), dawn * 0.55);
 	col += vec3(0.10, 0.047, 0.016) * catch_light * dawn;
+	if (AT_CUBEMAP_PASS && fleet_reflections) {
+		col += fleet_reflection_gradient(EYEDIR, normalize(sun_dir));
+	}
 	COLOR = col;
 }
 """

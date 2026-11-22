@@ -1,6 +1,7 @@
 # Issue #24, progression step 7: the Godot twin of the Nemesis teaching loop.
-# Reads fixtures written by contrib/opus/tools/nemesis_teach_tests.js and proves the same debrief data and map line.
 # godot --headless --path godot --script res://campaign/test/nemesis_teach_test.gd -- <fixtures.json>
+# Saved from contrib/opus/tools/nemesis_teach_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://campaign/test/nemesis_teach_cases.json.
 extends SceneTree
 const CampaignScript = preload("res://campaign/campaign.gd")
 const JSM = preload("res://rules/jsm.gd")
@@ -13,7 +14,7 @@ func check(value, message: String) -> void:
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() != 1:
-		printerr("Expected the browser fixture JSON path"); quit(1); return
+		printerr("Expected the saved fixture JSON path"); quit(1); return
 	var fixtures = JSON.parse_string(FileAccess.get_file_as_string(args[0]))
 	if not fixtures is Array or fixtures.is_empty():
 		printerr("Missing or empty teaching fixtures"); quit(1); return
@@ -41,5 +42,5 @@ func _init() -> void:
 	check(c.nemLessonAdd(N, "ion", true) != "" and N["lessons"][0]["taught"] == true, "new lesson records taught")
 	var old = {"lessons": [{"w": "ion", "t": "old", "sector": 1}], "fac": "hegemony", "title": "T", "name": "N", "persona": "x"}
 	check(c.nemDebrief({"nems": {"hegemony": old}})["lessons"][0]["taught"] == true, "old save lesson reads as taught")
-	print("PASS: %d Nemesis teaching fixtures match the browser debrief and map line." % fixtures.size() if failures == 0 else "FAIL: %d checks" % failures)
+	print("PASS: %d Nemesis teaching fixtures match the saved debrief and map line." % fixtures.size() if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)
