@@ -167,6 +167,13 @@ static func _model_code(fac: String, kind: String) -> String:
 const CRAFT_K := {"corsair_KF1": 0.7}
 
 
+# the installed model scene for this faction and role, or "" (the procedural craft); issue 1434: the battle preloads it
+static func model_res(fac: String, kind: String) -> String:
+	var code := _model_code(fac, kind)
+	var path := ship_cache_dir.path_join(code + ".scn")
+	return path if not code.is_empty() and ResourceLoader.exists(path, "PackedScene") else ""
+
+
 func _make_craft(fac: String, kind: String) -> Node3D:
 	var code := _model_code(fac, kind)
 	var path := ship_cache_dir.path_join(code + ".scn")

@@ -1430,6 +1430,10 @@ func _build_death_pieces() -> void:
 			return
 
 
+# issue 1434 (LOAD15: one 3 to 6 s draw inside prepare_hulls, 83 pipelines): the step under way, read by the load bench
+var prep_step := ""
+
+
 func prepare_battle_hulls() -> void:
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
@@ -1440,6 +1444,7 @@ func prepare_battle_hulls() -> void:
 		var ship_s: SHIP = value
 		if ship_s.shield_later:
 			var t_s := Time.get_ticks_usec()
+			prep_step = "shield " + str(ship_s.id)
 			ship_s.build_shield_later(self)
 			pend("prep:shield", t_s)
 			if Time.get_ticks_usec() >= deadline:
@@ -1447,6 +1452,7 @@ func prepare_battle_hulls() -> void:
 				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
+		prep_step = "surfaces " + str(ship.id)
 		FRAGMENTS.warm_source(ship)
 		if ship.weight <= 0:
 			continue
@@ -1472,6 +1478,7 @@ func prepare_battle_hulls() -> void:
 	# together while the loading cover is up.
 	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
+	prep_step = "cuts"
 	while not pending.is_empty() or not active.is_empty():
 		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
@@ -1482,10 +1489,12 @@ func prepare_battle_hulls() -> void:
 				active.remove_at(i)
 		_finish_shield_skins()
 		await get_tree().process_frame
+	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
 	defer_initial_cuts = false
+	prep_step = ""
 
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.

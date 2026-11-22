@@ -301,6 +301,8 @@ func build(rules, slice := false) -> void:
 		# Every request is collected once or handed on (_drop_terrain_loads), also when the board leaves the tree mid-wait
 		_drop_terrain_loads(false)
 		for p in _terrain_files():
+			if _terrain_keep.has(p):
+				continue   # loaded by an earlier battle or the title this session: load() is a cache hit
 			if ResourceLoader.load_threaded_request(p) == OK:
 				_terrain_loads.append(p)
 		t = _step("terrain_request", t)
@@ -320,7 +322,6 @@ func build(rules, slice := false) -> void:
 				break
 		# each request classified once (Artoo on PR 1445): a finished or failed one is collected here, an unfinished one
 		# is handed on with no second status read in between
-		_terrain_held.clear()
 		var running := []
 		for p in _terrain_loads:
 			var st := ResourceLoader.load_threaded_get_status(p)
@@ -329,7 +330,7 @@ func build(rules, slice := false) -> void:
 			else:
 				var res = ResourceLoader.load_threaded_get(p)
 				if res != null:
-					_terrain_held.append(res)   # kept until the next build, so load() finds it cached
+					_terrain_keep[p] = res   # kept for the session, so load() finds it cached in this battle and the next
 		_terrain_loads.clear()
 		if not running.is_empty():
 			printerr("[board] %d terrain file(s) still loading after %d ms; the terrain loads them itself: %s" % [running.size(), TERRAIN_WAIT_MS, ", ".join(running)])
@@ -361,7 +362,13 @@ func build(rules, slice := false) -> void:
 	_step("look", t)
 
 
-var _terrain_held := []
+# issue 1434 (LOAD15: b2 and b2r each waited 1.4 s for the same terrain files): every terrain file loaded once for the
+# session. GPU-holding static: render/static_caches.gd clears it before the engine exits.
+static var _terrain_keep := {}
+
+
+static func clear_static() -> void:
+	_terrain_keep.clear()
 var _terrain_loads := []   # threaded requests not collected yet
 const TERRAIN_WAIT_MS := 60000
 

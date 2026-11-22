@@ -166,6 +166,9 @@ func step(dt: float) -> void:
 
 # ---------------------------------------------------------------- battle build (API.md 9)
 
+var load_step := ""   # issue 1434: where build() is, for the frame log before a close
+
+
 func build(view: Dictionary, opts: Dictionary) -> void:
 	var t0 := Time.get_ticks_usec()
 	_backdrop_angle_max = 0.0
@@ -226,6 +229,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 	if env != null:
 		_make_sky(env)
+	load_step = "sky done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
@@ -238,6 +242,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_look["rim_pos"] = _well
 	if not deadstar:
 		system(mk != "planet")
+	load_step = "system done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	_batch = WR.Batch.new()
 	var rock_kind := String(setting["rock"])
@@ -260,15 +265,19 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	for t in clouds:
 		if not (clouds[t] as Array).is_empty():
 			cloud_hexes(clouds[t], t, fac)
+	load_step = "terrain done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	fields(mk, rock_kind)
+	load_step = "fields done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
+	load_step = "rocks done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	dust(mk)
 	wisps()
 	underlay()
+	load_step = "dust done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield: await get_tree().process_frame
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])
@@ -277,7 +286,9 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_rock_kind = rock_kind
 	_fac = fac
 	add_to_group("vs_world")
+	load_step = "look"
 	await set_look()
+	load_step = ""
 	if finale:
 		_build_dawn(env)
 

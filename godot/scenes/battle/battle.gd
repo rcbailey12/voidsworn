@@ -970,6 +970,8 @@ func _preload_hulls(v: Dictionary) -> void:
 	_drop_preload(false)
 	for u in v.get("units", []):
 		var p := ShipView.hull_res(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: a strike craft wing's model scene loads on a worker too
 		if p == "" or _preload.has(p) or not ResourceLoader.exists(p):
 			continue
 		if ResourceLoader.load_threaded_request(p) == OK:
@@ -1061,6 +1063,8 @@ func _make_views_sliced(gen: int) -> bool:
 			continue
 		_start_inst(units, i)
 		var p := ShipView.hull_res(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: wait for a wing's model on the worker, never load it here
 		var tw := Time.get_ticks_usec()
 		# the hull file, then its worker instance (the cover keeps drawing while either is still running)
 		while (_preload.has(p) and _preload[p] == null and ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS) \

@@ -48,6 +48,9 @@ func _process(_dt: float) -> void:
 			what = "battle " + str(battle.get("load_phase"))
 		elif showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
 			what = "backdrop " + str(showcase.get("load_phase"))
+			var w = showcase.get("world")
+			if w != null and is_instance_valid(w) and str(w.get("load_step")) != "":
+				what += ", world " + str(w.get("load_step"))
 		_frames.append("%d ms (%s)" % [(now - _frame_t) / 1000, what])
 		if _frames.size() > 8:
 			_frames.pop_front()

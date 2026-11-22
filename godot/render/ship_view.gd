@@ -233,6 +233,18 @@ static func hull_res(unit: Dictionary, use_hi := true) -> String:
 	return ""
 
 
+# Issue 1434 (LOAD15: a Navy fighter wing's setup 0.7 s, its model scene loaded on the main thread): the installed strike
+# craft model a squadron unit draws, for the battle's threaded preload; "" for a ship or a procedural craft
+static func wing_res(unit: Dictionary) -> String:
+	var cls := str(unit.get("cls", "Frigate")) if unit.get("cls") != null else "Frigate"
+	if not (cls == "Squadron" or bool(unit.get("squadron", false))):
+		return ""
+	var fac := str(unit.get("fac", "hegemony"))
+	if not FLOOK.has(fac):
+		fac = "hegemony"
+	return WING.model_res(fac, CRAFT.kind_for(unit))
+
+
 # Issue 1434: the battle's sliced build may hand over the A4 hull already instantiated on a worker thread (pre_inst, a
 # node not in the tree), and calls setup_begin and setup_end in separate frames when a stretch runs long. setup() runs
 # both at once as before. stage_us holds the last setup's time per stage in microseconds (inst, look, fit, rest).

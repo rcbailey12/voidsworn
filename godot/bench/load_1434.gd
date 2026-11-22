@@ -78,6 +78,7 @@ static func _fx_work(node) -> String:
 	var fx = node.get("gfx")
 	if fx == null or not is_instance_valid(fx) or not fx.has_method("prof_take"):
 		return "-"
+	var step := str(fx.get("prep_step")) if fx.get("prep_step") != null else ""
 	var p: Dictionary = fx.prof_take()
 	var keys := p.keys()
 	keys.sort_custom(func(x, y): return int(p[x]) > int(p[y]))
@@ -85,7 +86,8 @@ static func _fx_work(node) -> String:
 	for k in keys.slice(0, 3):
 		if int(p[k]) >= 1000:
 			out.append("%s %d ms" % [str(k), int(p[k]) / 1000])
-	return ", ".join(out) if not out.is_empty() else "-"
+	var said := ", ".join(out) if not out.is_empty() else "-"
+	return said + (" (hull prep at: %s)" % step if step != "" else "")
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
