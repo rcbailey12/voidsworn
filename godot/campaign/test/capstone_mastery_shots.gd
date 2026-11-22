@@ -1,4 +1,4 @@
-# Step 14 screenshots: capstone mastery on a flown evolution, at 320 and 440 XP, plus the admiral bar.
+# Step 14 screenshots: capstone mastery on a flown evolution, at 320, 440 and 600 XP (issue 1650), plus the admiral bar.
 #   godot --path godot --resolution 1920x1080 --script res://campaign/test/capstone_mastery_shots.gd -- <out dir>
 extends SceneTree
 const PG := preload("res://render/placeholder_guard.gd")
@@ -34,12 +34,12 @@ func _find_text(n: Node, needle: String) -> Node:
 func _scroll_to(needle: String) -> void:
 	var target = _find_text(ui.page_box, needle)
 	if target == null: return
-	var panel = target.get_parent().get_parent()
-	for ch in ui.page_box.get_children():
-		if ch is ScrollContainer:
-			ch.ensure_control_visible(panel)
-			ch.scroll_vertical = max(0, ch.scroll_vertical - 24)
-			return
+	var sc = target.get_parent()
+	while sc != null and not (sc is ScrollContainer): sc = sc.get_parent()   # the page scroller may sit deeper than page_box's children
+	if sc == null: return
+	await _frames(2)
+	sc.scroll_vertical = max(0, sc.scroll_vertical + int(target.global_position.y - sc.global_position.y) - 24)   # the target near the top
+	await _frames(2)
 
 func _shot(name: String) -> void:
 	if PG.stop_if_any():
@@ -62,15 +62,19 @@ func _run() -> void:
 	BattleAPI.JSM.rnd_seed(4242)
 	_profile(320.0)
 	C.act("lineage", "vaelen")
-	await _frames(4); _scroll_to("Capstone mastery")
+	await _frames(4); await _scroll_to("Capstone mastery: ")
 	await _shot("capstone_01_mastery_320")
 	_profile(440.0)
 	C.act("lineage", "vaelen")
-	await _frames(4); _scroll_to("Capstone mastery")
+	await _frames(4); await _scroll_to("Capstone mastery: ")
 	await _shot("capstone_02_mastery_440")
+	_profile(600.0)   # issue 1650: Mastery III names the capstone's signature
+	C.act("lineage", "vaelen")
+	await _frames(4); await _scroll_to("Capstone mastery: ")
+	await _shot("capstone_04_mastery_600")
 	_profile(440.0)
 	C.act("progTab", "mastery")
-	await _frames(4); _scroll_to("Saro of Long Focus")
+	await _frames(4); await _scroll_to("Saro of Long Focus")
 	await _shot("capstone_03_bar_and_mastery_tab")
 	print("capstone mastery shots done")
 	PG.finish(0)
