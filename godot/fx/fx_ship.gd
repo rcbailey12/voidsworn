@@ -43,6 +43,18 @@ var _eng_cur = 1.0
 var _eng_node: MeshInstance3D = null
 var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
+# Issue 1587: with the engine section at stage 3+, one nozzle (sick_nozzle) is built into its own batches so it can gutter
+# on its own: a shorter plume with gaps, and a cough of smoke as the ship starts to move.
+var sick_nozzle := -1
+var _sick_mat: ShaderMaterial
+var _sick_rib_mat: ShaderMaterial
+var _cough_next := 0.0
+var _was_moving := false
+var _jammed := {}            # section -> {"k": turret, "next": the next spark pop} (issue 1587)
+var _power_dip_until := -1.0
+var _power_shown := -1.0
+var _born := 0.0
+var wound_log: Array = []    # one-shot wound events (blowouts, coughs), for the checks: [kind, section or nozzle, time]
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
@@ -150,6 +162,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	if meshes.is_empty():
 		meshes = _find_meshes(root)
 	_seed = hash(sid)
+	_born = fx.now
 	hull = HULL.new()
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
@@ -302,7 +315,15 @@ func _build_engines(fx) -> void:
 	var corsair = extra == "soot" or _eng_sputter
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
-	for nz in hull.nozzles:
+	var b_main = b
+	var rb_main = rb
+	var sb = POOLS.Batch.new()
+	var srb = POOLS.Batch.new()
+	sick_nozzle = posmod(_seed, hull.nozzles.size()) if _eng_sputter and not hull.nozzles.is_empty() else -1
+	for ni in hull.nozzles.size():
+		var nz: Dictionary = hull.nozzles[ni]
+		b = sb if ni == sick_nozzle else b_main
+		rb = srb if ni == sick_nozzle else rb_main
 		var np: Vector3 = nz["p"]
 		var r: float = nz["r"]
 		var nd: Vector3 = nz.get("d", Vector3(-1, 0, 0))
@@ -343,8 +364,15 @@ func _build_engines(fx) -> void:
 	holder.name = "fx_engines"
 	_attach(holder)
 	_eng_node = holder
-	b.build(_eng_mat, holder, "fx_eng_cores")
-	rb.build(_eng_rib_mat, holder, "fx_eng_plumes")
+	b_main.build(_eng_mat, holder, "fx_eng_cores")
+	rb_main.build(_eng_rib_mat, holder, "fx_eng_plumes")
+	_sick_mat = null
+	_sick_rib_mat = null
+	if sick_nozzle >= 0:
+		_sick_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+		_sick_rib_mat = fx.mat(SH.RIBBON, 1)
+		sb.build(_sick_mat, holder, "fx_eng_sick_core")
+		srb.build(_sick_rib_mat, holder, "fx_eng_sick_plume")
 
 
 func _build_trails(fx) -> void:
@@ -398,6 +426,16 @@ func update(fx, dt: float) -> void:
 		_eng_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+		if _sick_mat != null:
+			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
+			_sick_mat.set_shader_parameter("gate", sg)
+			_sick_rib_mat.set_shader_parameter("gate", sg)
+			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * SICK_LEN)
+	var moving_now: bool = _moving > 0.0 and not dead
+	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
+		_cough(fx)
+	_was_moving = moving_now
+	_wound_step(fx)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
 		_shield_mi.visible = fx.now < _shield_until
@@ -1387,6 +1425,7 @@ func _set_wear(fx, hpf: float) -> void:
 # Push the wear onto every damage surface this ship has now (a rebuild applies it to new ones in fx_breach).
 func _apply_wear() -> void:
 	_wear_shown = hull_wear
+	_power_shown = -1.0     # issue 1587: new surfaces get the flicker (fx_flick) on the next frame
 	_wear_marks = _marks.size()
 	var patches := wear_patches()
 	for key in _damage_surfaces:
@@ -1508,12 +1547,18 @@ func _apply_stages(fx, want: Array) -> void:
 	for i in 3:
 		if int(want[i]) != int(stage[i]):
 			var up: bool = int(want[i]) > int(stage[i])
+			var was: int = int(stage[i])
 			if int(stage[i]) == 4 and int(want[i]) < 4:
 				_patch_time[i] = fx.now
 			_scar_stage[i] = maxi(_scar_stage[i], stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
+			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on a view rebuilt with the
+			# damage already there, which reaches here within half a second of the ship's arrival)
+			if up and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)) and fx.now > _born + 0.5:
+				_blowout(fx, i)
 
+	_refresh_wounds(fx)
 	_refresh_damage_emitters(fx)
 	var sp: bool = int(stage[0]) >= 3
 	if sp != _eng_sputter:
@@ -2022,6 +2067,11 @@ func _refresh_damage_emitters(fx) -> void:
 				if stage[i] >= 3 and smoke < caps.y:
 					desired.append({"id": "vent%d" % i, "kind": "vent", "sec": i, "st": stage[i]})
 					smoke += 1
+		# issue 1587: a jammed turret's thin smoke wisp takes a smoke slot (the class caps hold)
+		for i in _jammed:
+			if smoke < caps.y:
+				desired.append({"id": "wisp%d" % i, "kind": "smoke", "sec": i, "st": stage[i], "tur": int(_jammed[i]["k"])})
+				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
 		var match_i := -1
@@ -2044,6 +2094,9 @@ func _refresh_damage_emitters(fx) -> void:
 
 
 func _build_damage_emitter(fx, e: Dictionary) -> void:
+	if e.has("tur"):
+		_build_wisp(fx, e)
+		return
 	var a := _anchor(e.sec, "a")
 	if a.is_empty(): return
 	var p: Vector3 = a.p
@@ -2119,6 +2172,209 @@ func _update_damage_emitters(fx) -> void:
 		fx.spr(to_world(hull.c - Vector3.RIGHT * hull.L * 0.2), fx.now, 1.2,
 			Color(0.12, 0.12, 0.13), 0.32, hull.L * 0.015, hull.L * 0.10, 3,
 			dir_world(Vector3.LEFT) * hull.L * 0.20)
+
+
+# ---------------------------------------------------------------- live wounds (issue 1587)
+# Neon's Nov 21-22 hull FX audit (issue 1587, Refs #1239 Top 6): a wounded ship looks like a failing warship, not a dimmed
+# mesh. View only; the rules never see any of it. Everything here is one-shot pool sprites or a uniform write, except the
+# jammed turret's wisp, which takes one of the ship's smoke slots (damage_caps), so steady-state counts do not grow.
+#   - engine section at stage 3+: one nozzle (sick_nozzle) gutters with gaps and a plume SICK_LEN as long, and coughs smoke
+#     as the ship starts to move
+#   - mid or prow section at stage 3+: one turret there freezes off its aim and sags (fx_hull jam_turret), trails a thin
+#     wisp and pops a spark every 2 to 4 s; the hull's lights flicker unevenly (fx_flick, multiplied onto the wear's fx_power)
+#   - a hit that pushes a section into stage 3 or 4: a one-shot blowout jet of vapour and a few tumbling bits
+#   - an ion hull hit: power_dip browns the hull's lights out for half a second (fx_weapons _beam_burn)
+const SICK_LEN := 0.6          # the sick nozzle's plume length against the others (the brief: about 40% shorter)
+const COUGH_GAP := 0.7         # seconds between two coughs of the sick nozzle
+const BLOWOUT_LIFE := 1.2
+
+
+# The sick nozzle's gate (0 to 1) at time t: a steady stutter of dropouts (about a fifth of each cycle near dark) plus a fast
+# gutter. Gentler under reduce flashing: no dropouts, a slow sway.
+func sick_gate(t: float, reduce := false) -> float:
+	var sf := float(posmod(_seed, 997)) * 0.013
+	if reduce:
+		return 0.6 + 0.15 * sin(t * 3.1 + sf)
+	var cyc := fposmod(t * 1.7 + sf, 1.0)
+	if cyc < 0.22:
+		return 0.12
+	var fl := fposmod(sin(t * 29.0 + sf * 7.0) * 43758.5, 1.0)
+	return 0.62 + 0.38 * fl
+
+
+# The sick nozzle coughs as the ship starts to move: smoke (the faction's own kind of smoke) and a few sputter sparks.
+func _cough(fx) -> void:
+	_cough_next = fx.now + COUGH_GAP
+	var nz: Dictionary = hull.nozzles[sick_nozzle]
+	var r: float = nz["r"]
+	var p := to_world(nz["p"])
+	var d := dir_world(nz.get("d", Vector3(-1, 0, 0))).normalized()
+	var eng: Color = fac["engine"]
+	var glow: Color = fac["damage_glow"]
+	if faction != "ithar":
+		var col := Color(0.06, 0.05, 0.045)
+		var kind := 3
+		if faction == "deathless":
+			col = Color(0.055, 0.025, 0.09); kind = 8
+		elif faction == "chorus":
+			col = glow * 0.45; kind = 20
+		for j in 4:
+			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
+				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
+	for j in 5:
+		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
+			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
+	wound_log.append(["cough", sick_nozzle, fx.now])
+
+
+# Jam one turret in each mid or prow section at stage 3+, free it when the section is repaired below 3.
+func _refresh_wounds(fx) -> void:
+	if hull == null:
+		return
+	for sec in [1, 2]:
+		var hurt: bool = not squadron and int(stage[sec]) >= 3
+		if hurt and not _jammed.has(sec):
+			var ks: Array = []
+			for k in hull.turrets.size():
+				if hull.turret_section(k) == sec and not hull.turret_jammed(k):
+					ks.append(k)
+			if ks.is_empty():
+				continue
+			var h := absi(_seed + sec * 7919)
+			var k: int = ks[h % ks.size()]
+			var off := (12.0 + float(h % 13)) * (1.0 if (h >> 4) % 2 == 0 else -1.0)
+			var droop := 4.0 + float((h >> 6) % 4)
+			hull.jam_turret(k, hull.turret_yaw(k, fx.now) + off, droop, fx.now)
+			_jammed[sec] = {"k": k, "next": fx.now + 1.0 + fx.rng.randf() * 2.0}
+		elif not hurt and _jammed.has(sec):
+			hull.unjam_turret(int(_jammed[sec]["k"]), fx.now)
+			_jammed.erase(sec)
+
+
+func jammed_turrets() -> Array:
+	var out: Array = []
+	for sec in _jammed:
+		out.append(int(_jammed[sec]["k"]))
+	return out
+
+
+# A jammed turret's wisp: a thin looping smoke from its base (a damage emitter entry, so it fades and frees like one).
+func _build_wisp(fx, e: Dictionary) -> void:
+	var k: int = e["tur"]
+	var p: Vector3 = (hull.turrets[k]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
+	var glow: Color = fac.damage_glow
+	var kind := 3
+	var color := Color(0.15, 0.14, 0.13)
+	var intensity := 0.26
+	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
+	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
+	var life := 2.2
+	var count := 3
+	var v: Vector3 = Vector3.UP * hull.L * 0.05
+	var b := POOLS.Batch.new()
+	for j in count:
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now - life + float(j) / count * life),
+			Vector4(v.x, v.y, v.z, life), Vector4(color.r, color.g, color.b, intensity),
+			Vector4(hull.L * 0.004, hull.L * 0.022, kind, j * 0.211), Vector4(life, 0, 0, 0.1)))
+	var holder := Node3D.new()
+	holder.name = "fx_damage_" + String(e.id)
+	_dmg_root.add_child(holder)
+	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+	b.build(material, holder, "fx_turret_wisp")
+	e["node"] = holder
+	e["mat"] = material
+	e["particles"] = b.particle_count
+	e["sprite_kind"] = kind
+	e["source"] = p
+
+
+# Every frame: spark pops on jammed turrets and the hull's uneven power (fx_flick: the damage shader multiplies it onto
+# the wear's steady fx_power, so the wear and the death fade keep their own uniform). Written only when it changes.
+func _wound_step(fx) -> void:
+	if gone:
+		return
+	if dead:
+		_write_flick(1.0)
+		return
+	for sec in _jammed:
+		var jm: Dictionary = _jammed[sec]
+		if fx.now < float(jm["next"]):
+			continue
+		jm["next"] = fx.now + 2.0 + fx.rng.randf() * 2.0
+		var k: int = jm["k"]
+		var p := to_world((hull.turrets[k]["xf"] as Transform3D).origin)
+		var sc := Color(0.75, 0.85, 1.0)
+		for j in 4:
+			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, sc, 4.0, 0.05, 0.08, 1,
+				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)
+		if not fx.reduce_flashing:
+			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
+		wound_log.append(["spark", k, fx.now])
+	_write_flick(power_flicker(fx.now, fx.reduce_flashing))
+
+
+func _write_flick(f: float) -> void:
+	if f == _power_shown or _damage_surfaces.is_empty():
+		return
+	_power_shown = f
+	for key in _damage_surfaces:
+		var entry: Array = _damage_surfaces[key]
+		if entry.size() > 1 and entry[1] is ShaderMaterial:
+			(entry[1] as ShaderMaterial).set_shader_parameter("fx_flick", f)
+
+
+# The power multiplier (1 steady) at time t: with mid or prow at stage 3+, uneven brownouts in steps of 1/12 s (a small dip
+# most of the time, now and then a deep one); an ion dip holds it low. Under reduce flashing, slower and shallower steps.
+func power_flicker(t: float, reduce := false) -> float:
+	var f := 1.0
+	if not squadron and (int(stage[1]) >= 3 or int(stage[2]) >= 3):
+		var rate := 4.0 if reduce else 12.0
+		var n := fposmod(sin(floorf(t * rate) * 12.9898 + float(posmod(_seed, 991))) * 43758.5453, 1.0)
+		if n > 0.9:
+			f = 0.8 if reduce else 0.5
+		elif n > 0.7:
+			f = 0.9 if reduce else 0.78
+		elif n > 0.45:
+			f = 0.95 if reduce else 0.9
+	if t < _power_dip_until:
+		f = minf(f, 0.7 if reduce else 0.35)
+	return f
+
+
+# An ion hit browns the hull out for dur seconds (fx_weapons _beam_burn).
+func power_dip(fx, dur := 0.5) -> void:
+	if dead or gone:
+		return
+	_power_dip_until = maxf(_power_dip_until, fx.now + dur)
+	wound_log.append(["power_dip", -1, fx.now])
+
+
+# A section pushed into stage 3 or 4 vents once: a 1.2 s jet of bright vapour along its breach normal, 3 or 4 tumbling
+# interior bits and a soft light. One-shot pool sprites only.
+func _blowout(fx, i: int) -> void:
+	if squadron or hull == null:
+		return
+	var a := _anchor(i, "a")
+	if a.is_empty():
+		return
+	var p := to_world(a.p)
+	var n := dir_world(a.n).normalized()
+	var L: float = hull.L
+	var glow: Color = fac.damage_glow
+	var col := glow.lerp(Color.WHITE, 0.75)
+	var kind := 7
+	if faction == "chorus":
+		col = glow * 0.6; kind = 20
+	var heavy := int(stage[i]) == 4
+	for j in 7:
+		var t: float = fx.now + j * 0.08
+		fx.spr(p + n * L * 0.01, t, BLOWOUT_LIFE - j * 0.08, col, 0.55 if heavy else 0.45, L * 0.008, L * (0.06 if heavy else 0.045),
+			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
+	for j in 3 + posmod(_seed + i, 2):
+		fx.shd(p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
+	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
+	wound_log.append(["blowout", i, fx.now])
 
 
 # ---------------------------------------------------------------- small events
