@@ -240,6 +240,8 @@ async function work(a) {
   if (before) console.log(`account: ${before.tier}, ${before.used} of ${before.limit} credits used`);
   else console.log(`account balance unreadable (${balanceWhy}): the stop uses the cost header where given, else the estimate`);
   let hdrSum = 0, noHdrEst = 0, estSpent = 0, made = 0, failed = 0, stopped = '';   // estSpent: header cost where given, else the estimate
+  // One accounting path for every accepted (likely charged) call, with or without its body (Artoo on PR 1590).
+  const account = (charged, est) => { if (charged != null) { hdrSum += charged; estSpent += charged; } else { noHdrEst += est; estSpent += est; } };
   for (const s of todo) {
     const now = before ? await usedCredits(a.base, key) : null;
     const spent = now ? now.used - before.used : estSpent;
@@ -275,8 +277,7 @@ async function work(a) {
         pend(s);
         res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
-      estSpent += res.charged ?? s.credits;
-      if (res.charged != null) hdrSum += res.charged; else noHdrEst += s.credits;
+      account(res.charged, s.credits);
       // If any write below fails, the pending line stays last and the step is held for RECONCILE.
       try {
         receipt(receiptsFile, { file: s.file, state: 'accepted', charged: res.charged, estimate: s.credits, request_id: res.req });
@@ -305,7 +306,7 @@ async function work(a) {
     } catch (e) {
       failed++;
       if (e.accepted) {
-        estSpent += e.accepted.charged ?? s.credits;
+        account(e.accepted.charged, s.credits);
         try { receipt(receiptsFile, { file: s.file, state: 'accepted_no_body', charged: e.accepted.charged, request_id: e.accepted.req }); } catch (e2) { /* pending stays */ }
       } else if (sent && e.status && e.status < 500) {
         // The vendor refused (4xx): nothing was made or charged, so a rerun may try again. If this write fails, pending stays.

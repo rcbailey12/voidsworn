@@ -15,7 +15,7 @@ const srv = http.createServer((q, r) => {
     if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'MOCK-not-a-real-account', character_count: used, character_limit: 999999 })); }
     if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
     if (fail500) { r.writeHead(500); return r.end('boom'); }
-    if (truncate) { used += 200; r.writeHead(200, { 'request-id': 'trunc', 'character-cost': '40', 'content-length': '5000' }); r.write(Buffer.alloc(10)); return setTimeout(() => r.socket.destroy(), 20); }
+    if (truncate) { used += 200; r.writeHead(200, Object.assign({ 'request-id': 'trunc', 'content-length': '5000' }, truncate === 'nohdr' ? {} : { 'character-cost': '40' })); r.write(Buffer.alloc(10)); return setTimeout(() => r.socket.destroy(), 20); }
     if (slow && route === '/v1/sound-generation') { const t = slow; return setTimeout(() => { used += 200; r.writeHead(200, { 'request-id': 'slow', 'character-cost': '40' }); r.end(Buffer.alloc(64, 7)); }, t); }
     used += route === '/v1/sound-generation' ? 200 : route === '/v1/music' ? 900 : 300;
     r.writeHead(200, { 'request-id': 'req' + calls.length, 'character-cost': '40' }); r.end(Buffer.alloc(64, calls.length % 250));
@@ -108,6 +108,18 @@ const l = dns.lookup; dns.lookup = function (h, ...a) { if (!ok(h)) throw block(
   ck(count('/v1/sound-generation') === sfxN + 1 && /STOP: an answer was lost/.test(r.out) && /INCOMPLETE/.test(r.out), 'truncated body stops the run: ' + r.out);
   let rc = fs.readFileSync(path.join(out, 'receipts.jsonl'), 'utf8');
   ck(/"state":"accepted_no_body"/.test(rc) && /"charged":40/.test(rc), 'truncated body leaves a charged receipt');
+  // Artoo on PR 1590 (53f3fcf2): a lost body is counted in the printed split, and the split adds up to the total.
+  const split = o => { const m = o.match(/credits: (\d+) charged \(cost header\) \+ (\d+) estimated \(no header, e\.g\. music\) = about (\d+)/); return m ? m.slice(1).map(Number) : null; };
+  let sp = split(r.out);
+  ck(sp && sp[0] === 40 && sp[1] === 0 && sp[2] === 40, 'lost body with a cost header: 40 charged + 0 estimated = 40: ' + JSON.stringify(sp));
+  fs.rmSync(out, { recursive: true });
+  truncate = 'nohdr';
+  r = await run(['--base', base, '--only', 'a'], mock);
+  sp = split(r.out);
+  ck(sp && sp[0] === 0 && sp[1] === 40 && sp[2] === 40, 'lost body without a cost header: 0 charged + 40 estimated = 40: ' + JSON.stringify(sp));
+  fs.rmSync(out, { recursive: true });
+  truncate = true;
+  r = await run(['--base', base, '--only', 'a'], mock);
   truncate = false;
   sfxN = count('/v1/sound-generation');
   r = await run(['--base', base, '--only', 'a'], mock);
