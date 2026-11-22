@@ -493,9 +493,11 @@ never bent to raise it (5.10).
 ## Stage 7: the game export (issue 209 round 7; FINDINGS R155, R156)
 
 **Map size by band (R411, RULEBOOK 5.18; issue 1680).** Stage 5 bakes at 4096. Stage 7 writes maps by the ship's length
-band from `length_world`: 4096 for length 21 and up (flagships, battleships), 2048 for 6.5 to 16.5 (cruisers, carriers,
-destroyers, frigates), 1024 for strike craft (1.6). Until issue 1680 merges, `7_export.bat` still passes `maps=2048`; a
-hero hull rebaked before then passes `maps=4096` by hand and says so in its PR. The export also carries `hp_rcs` and
+band: 4096 for length 21 and up (flagships, battleships), 2048 for 6.5 to 16.5 (cruisers, carriers, destroyers,
+frigates), 1024 for strike craft (1.6); a length between bands takes the lower one. The length is the ship json's
+`length_world`, else the class length (`hardpoints.CLASS_LENGTH`, kept equal to hull_table.gd CLS_LEN by
+contract_tables_selftest.py); `export7.py` picks it with no per-ship flag and logs `[export7] maps N (...)`. `EXPORT_MAPS=N`
+before `7_export.bat` (or `maps=N` to export7.py) overrides it for a test, and the log says so (issue 1680). The export also carries `hp_rcs` and
 `hp_board` on every destroyer and larger.
 
 The recipe writes the hard points as a required output, and the effects are built to that contract (outside audit pass 1,
