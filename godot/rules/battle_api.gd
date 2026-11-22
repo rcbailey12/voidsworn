@@ -334,16 +334,29 @@ func move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	if halted != "": var h = false; _leave(false); return h
 	var r = _i_move(id, state, opts); _leave(true); return r
 # issue 1560: a move is applied only if its end (hex and facing) is still reachable now at no more than its cost, so a stale
-# state (worked out before a turn, or before another ship moved) can never end on a taken hex or spend the wrong movement
-func _reachable(u, state: Dictionary) -> bool:
-	if state.get("q") == null or state.get("r") == null or state.get("f") == null or state.get("cost") == null: return false
+# state (worked out before a turn, or before another ship moved) can never end on a taken hex or spend the wrong movement.
+# It returns the state to commit: the given one when today's search still holds its exact path, else today's cheapest legal
+# path to the same end (Artoo on PR 1564: a stale path to a still-reachable end must not be walked), or null.
+func _same_path(a, b) -> bool:
+	if not (a is Array) or not (b is Array) or a.size() != b.size(): return false
+	for i in a.size():
+		var x = a[i]; var y = b[i]
+		if int(x.get("q", 0)) != int(y.get("q", 0)) or int(x.get("r", 0)) != int(y.get("r", 0)) or int(x.get("f", 0)) != int(y.get("f", 0)) or R.jt(x.get("rot")) != R.jt(y.get("rot")): return false
+	return true
+func _reachable(u, state: Dictionary):
+	if state.get("q") == null or state.get("r") == null or state.get("f") == null or state.get("cost") == null: return null
+	var best = null
 	for s in R.computeReach(u, true).states:
-		if int(s.q) == int(state.q) and int(s.r) == int(state.r) and int(s.f) == int(state.f) and float(s.cost) <= float(state.cost) + 1e-9: return true
-	return false
+		if int(s.q) != int(state.q) or int(s.r) != int(state.r) or int(s.f) != int(state.f) or float(s.cost) > float(state.cost) + 1e-9: continue
+		if _same_path(s.get("path"), state.get("path")): return state
+		if best == null or float(s.cost) < float(best.cost): best = s
+	return best
 func _i_move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
-	if not _reachable(u, state): return false
+	var live_state = _reachable(u, state)
+	if live_state == null: return false
+	state = live_state
 	R.B["busy"] = true
 	var lf = opts.get("late_fire")
 	if lf != null:
