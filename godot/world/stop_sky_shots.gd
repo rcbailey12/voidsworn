@@ -67,6 +67,6 @@ func _run() -> void:
 		for i in 40: await process_frame
 		await RenderingServer.frame_post_draw
 		var name := "stop_%s_c%d.png" % [stop, int(shot[0])]
-		preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), out.path_join(name))
+		preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("stop sky: ", name, " mood=", b.world.setting.get("mood", "?"), " frame=", b.world.setting.get("frame_scale", "?"), " planet=", b.world.setting.get("planet_i", "?"))
 	quit(0)

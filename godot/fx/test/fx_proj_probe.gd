@@ -58,7 +58,7 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 		await RenderingServer.frame_post_draw
 		if i == int(OS.get_environment("PROBE_I") if OS.get_environment("PROBE_I") != "" else "60") and OS.get_environment("PROBE_OUT") != "":
-			preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), OS.get_environment("PROBE_OUT"))
+			preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), OS.get_environment("PROBE_OUT"), preload("res://tools/picture_provenance.gd").capture_stage())
 		if i % 15 == 0:
 			var list: Array = fx.dstate.get("proj", [])
 			var s := "t=%.2f n=%d" % [fx.now, list.size()]

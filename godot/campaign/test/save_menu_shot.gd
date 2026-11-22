@@ -43,7 +43,7 @@ func _go() -> void:
 	b._open_menu()
 	for i in 20: await process_frame
 	var img := root.get_viewport().get_texture().get_image()
-	var werr: Error = preload("res://tools/picture_provenance.gd").save_png(img, out)   # stage: installed in game (the game's own battle menu)
+	var werr: Error = preload("res://tools/picture_provenance.gd").save_png(img, out, preload("res://tools/picture_provenance.gd").capture_stage())   # stage: installed in game (the game's own battle menu)
 	var items: Array = b.hud._last.get("show_menu", ["", []])[1]
 	var has_row := items.any(func(x): return x[1] == "save_quit")
 	print("SAVE-1: round %d saved %d time(s), menu row 'Save and quit to title' %s, battle save in campaign: %s -> %s" % [int(api.round_snap_round), saves, "PRESENT" if has_row else "MISSING", str(C.saved_battle != null), out])

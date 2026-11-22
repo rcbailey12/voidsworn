@@ -492,7 +492,7 @@ function pictureStamp(text) {
   let stamp;
   try { stamp = JSON.parse(text); } catch (_) { return null; }
   return sha(stamp?.source_commit) && /^[a-f0-9]{64}$/i.test(stamp.image_sha256 || '') && time(stamp.date) &&
-    ['sheet built','paint proof','installed in game','Ryan accepted'].includes(stamp.stage) ? stamp : null;
+    ['sheet built','paint proof','installed in game','cloud direction check','Ryan accepted'].includes(stamp.stage) ? stamp : null;
 }
 function sidecarRunLink(sidecar, info) {
   if (!info || (sidecar.issue != null && sidecar.issue !== info.issue)) return null;

@@ -137,7 +137,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var shot := root.get_texture().get_image().get_region(Rect2i(320, 180, 1280, 720))
 		var file: String = opts.out.path_join("E14_%s_cam%d.png" % [tag, int(radius)])
-		if preload("res://tools/picture_provenance.gd").save_png(shot, file) != OK:
+		if preload("res://tools/picture_provenance.gd").save_png(shot, file, preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 			quit(1)
 			return
 	var report := {"code": sv.code, "lift": lift, "bounds_min": var_to_str(box.position), "bounds_size": var_to_str(box.size),

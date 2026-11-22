@@ -5932,12 +5932,12 @@ func _snap(name: String) -> void:
 		# move captures: small JPGs per frame in a folder per ship
 		DirAccess.make_dir_recursive_absolute(move_frames)
 		shot_n += 1
-		preload("res://tools/picture_provenance.gd").save_jpg(img, move_frames.path_join("%04d.jpg" % shot_n), 0.85)
+		preload("res://tools/picture_provenance.gd").save_jpg(img, move_frames.path_join("%04d.jpg" % shot_n), 0.85, preload("res://tools/picture_provenance.gd").capture_stage())
 		return
 	DirAccess.make_dir_recursive_absolute(shots_dir)
 	shot_n += 1
 	var p := shots_dir.path_join("%02d_%s.png" % [shot_n, name])
-	preload("res://tools/picture_provenance.gd").save_png(img, p)
+	preload("res://tools/picture_provenance.gd").save_png(img, p, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[shots] ", p)
 
 
@@ -6176,7 +6176,7 @@ func _planet_shot() -> void:
 	await RenderingServer.frame_post_draw
 	if PG.stop_if_any():
 		return
-	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["planet-shot"]))
+	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["planet-shot"]), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[planet] shot saved ", args["planet-shot"])
 	_quit_report()
 

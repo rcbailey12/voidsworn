@@ -123,7 +123,7 @@ func capture(name: String) -> void:
 	if shots == "": return
 	await frames(12); await RenderingServer.frame_post_draw
 	if preload("res://render/placeholder_guard.gd").stop_if_any(): return
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("DB1_" + name + ".png")) == OK, "capture " + name)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("DB1_" + name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "capture " + name)
 	print("shot DB1_" + name)
 
 func run() -> void:
