@@ -10,6 +10,7 @@ const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -1027,10 +1028,7 @@ const FAIL_LOOKS := ["today", "shear", "collapse"]
 
 
 static func wounds_v2_setting() -> bool:
-	var v := OS.get_environment("VS_WOUNDS_V2")
-	if not v.is_empty():
-		return v == "1" or v.to_lower() == "true"
-	return bool(ProjectSettings.get_setting("rendering/effects/wounds_v2", false))
+	return WOUNDS.v2()
 
 
 static func fail_look_setting() -> int:
@@ -2506,8 +2504,10 @@ func _refresh_capability(fx) -> void:
 			var arc := str(want[slot])
 			var picked := -1
 			if sec_for.has(arc):
+				# Artoo on PR 1749: only a turret no slot owns (an old hull's turret with no muzzle points); a turret that
+				# belongs to a live slot never jams for another slot's loss
 				for k in hull.turrets.size():
-					if hull.turret_section(k) == int(sec_for[arc]) and not hull.turret_jammed(k):
+					if hull.turret_section(k) == int(sec_for[arc]) and not hull.turret_jammed(k) and not hull.turret_owned(k):
 						picked = k
 						break
 			if picked >= 0:
@@ -2515,8 +2515,13 @@ func _refresh_capability(fx) -> void:
 				hull.jam_turret(picked, hull.turret_yaw(picked, fx.now) + (12.0 + float(h2 % 13)) * (1.0 if (h2 >> 4) % 2 == 0 else -1.0), 4.0 + float((h2 >> 6) % 4), fx.now)
 				_jammed["s%d_t%d" % [int(slot), picked]] = {"k": picked, "next": fx.now + 1.0 + fx.rng.randf() * 2.0,
 					"sec": hull.turret_section(picked), "slot": int(slot), "wisp": true}
+			elif sec_for.has(arc):
+				# no unowned turret: the section's plating smokes and sparks for the slot, no gun's state changes
+				var sa := _anchor(int(sec_for[arc]), "sc1")
+				if not sa.is_empty():
+					_mount_dead[slot] = {"p": sa["p"], "n": sa["n"], "sec": int(sec_for[arc]), "next": fx.now + 0.6 + fx.rng.randf() * 1.5}
 			_wlog(["slot_fallback", slot, picked])
-		if not ms.is_empty():
+		if not ms.is_empty() and not _mount_dead.has(slot):
 			var pt: Dictionary = ms[ms.size() / 2]
 			var mp: Vector3 = pt["p"]
 			_mount_dead[slot] = {"p": mp, "n": pt.get("n", Vector3.UP), "sec": hull.section_of(mp.x),

@@ -1788,6 +1788,14 @@ func turrets_for_slot(slot: int) -> Array:
 	return out
 
 
+# Issue 1741 (Artoo on PR 1749): true when some weapon slot's muzzle hangs under turret k.
+func turret_owned(k: int) -> bool:
+	for pt in points.get("gun", []):
+		if pt.has("tur") and int(pt["tur"]) == k:
+			return true
+	return false
+
+
 # Issue 1741: the fixed mounts (casemates, launchers, spinal muzzles: gun points under no turret) of one weapon slot.
 func mounts_for_slot(slot: int) -> Array:
 	var out: Array = []

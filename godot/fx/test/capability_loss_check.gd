@@ -52,7 +52,7 @@ func _point(parent: Node3D, nm: String, pos: Vector3, yaw_deg := 0.0) -> Node3D:
 	return n
 
 
-func _ship(sid: String, faction: String, pos: Vector3, v2: bool):
+func _ship(sid: String, faction: String, pos: Vector3, v2: bool, unowned := false):
 	var body := Node3D.new()
 	world.add_child(body)
 	body.position = pos
@@ -61,7 +61,10 @@ func _ship(sid: String, faction: String, pos: Vector3, v2: bool):
 	hull.mesh = _box(Vector3(24, 5, 8), 17)
 	body.add_child(hull)
 	var meshes: Array = [hull]
-	for row in [["turret_1", 9.0, "hp_w0_lance_F_0"], ["turret_2", 0.0, "hp_w1_gun_T_0"]]:
+	var rows: Array = [["turret_1", 9.0, "hp_w0_lance_F_0"], ["turret_2", 0.0, "hp_w1_gun_T_0"]]
+	if unowned:
+		rows.append(["turret_3", 7.0, ""])   # an old hull's turret with no muzzle points: no slot owns it
+	for row in rows:
 		var tur := _point(body, row[0], Vector3(row[1], 2.5, 0))
 		var tm := MeshInstance3D.new()
 		tm.name = "turret_mesh"
@@ -69,7 +72,8 @@ func _ship(sid: String, faction: String, pos: Vector3, v2: bool):
 		tm.position = Vector3(0, 0.5, 0)
 		tur.add_child(tm)
 		meshes.append(tm)
-		_point(tur, row[2], Vector3(0, 0.6, -1.4))
+		if row[2] != "":
+			_point(tur, row[2], Vector3(0, 0.6, -1.4))
 	_point(body, "hp_w2_torp_P_0", Vector3(-3, 0, -4.05), 0.0)
 	for k in 3:
 		var e := _point(body, "hp_eng_%d" % k, Vector3(-12.05, 0, (k - 1) * 2.5), 90.0)
@@ -89,7 +93,7 @@ func _ship(sid: String, faction: String, pos: Vector3, v2: bool):
 func _unit(eng: float, mid: float, prow: float, off := [0, 0, 0], eng_hit := false, shield_off := false, eng_broken := false) -> Dictionary:
 	var ws: Array = []
 	for i in off.size():
-		ws.append({"i": i, "id": ["lance", "gun", "torp"][i], "arc": ["F", "T", "P"][i], "off": off[i]})
+		ws.append({"i": i, "id": ["lance", "gun", "torp", "rail"][i], "arc": ["F", "T", "P", "F"][i], "off": off[i]})
 	return {"hp": (eng + mid + prow) / 3.0, "maxHp": 100.0, "weapons": ws, "engHit": eng_hit, "shieldOff": shield_off,
 		"sec": {"eng": {"hp": eng, "max": 100, "broken": eng_broken}, "mid": {"hp": mid, "max": 100}, "prow": {"hp": prow, "max": 100}}}
 
@@ -279,5 +283,23 @@ func _run() -> void:
 	flush(o)
 	check(o.eng_tier == 0 and o.dead_nozzles.is_empty() and o.sick_nozzle >= 0, "flag off: stage 3 engines keep main's single sick nozzle")
 	check(not o.gen_down, "flag off: no generator crackle")
+	# 6. Artoo on PR 1749: a knocked-out slot with no authored point never jams a turret another (live) slot owns
+	var f = _ship("c_fb", "voidsworn", Vector3(x + 60.0, 0, 0), true)
+	f._anchors["sc12"] = {"p": Vector3(8, 2.5, 2.0), "n": Vector3.UP, "t": {}}
+	f.sync(fx, _unit(100, 100, 100, [0, 0, 0, 2]))
+	flush(f)
+	var fs: Dictionary = f.capability_state()
+	check(fs.off == [3] and fs.turrets.is_empty() and not f.hull.turret_jammed(0) and fs.mounts == [3] and _log(f, "slot_fallback") == 1,
+		"a slot with no point leaves slot 0's prow turret alone and smokes the prow plating instead (%s)" % str(fs))
+	f.sync(fx, _unit(100, 100, 100, [0, 0, 0, 0]))
+	flush(f)
+	check(f.capability_state().mounts.is_empty(), "repaired, the fallback smoke goes")
+	# an old hull's unowned prow turret may stand in for the slot
+	var g = _ship("c_fb2", "voidsworn", Vector3(x + 120.0, 0, 0), true, true)
+	g.sync(fx, _unit(100, 100, 100, [0, 0, 0, 2]))
+	flush(g)
+	var gs: Dictionary = g.capability_state()
+	check(not g.hull.turret_owned(2) and g.hull.turret_owned(0) and gs.turrets == [2] and not g.hull.turret_jammed(0),
+		"an unowned prow turret jams for the pointless F slot, the owned one tracks (%s)" % str(gs))
 	print("capability_loss_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)
