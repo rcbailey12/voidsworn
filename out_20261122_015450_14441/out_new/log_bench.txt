@@ -1,0 +1,13 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1394)
+GPU: acquired shared claim de0cc77b-9596-4f80-bbf5-d94ea1635b74
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7f75058679344d2aabbc224779a7e404\godot-profile-7e4f1e0a5ac14e13a121702941fc5c9f
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+SCRIPT ERROR: Parse Error: Too few arguments for "save_png()" call. Expected at least 3 but received 2.
+   at: GDScript::reload (C:/Users/rcbai/Downloads/voidsworn_test/opus1394meltb/out_20261122_015450_14441/capture1394.gd:166)
+ERROR: Failed to load script "C:/Users/rcbai/Downloads/voidsworn_test/opus1394meltb/out_20261122_015450_14441/capture1394.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7f75058679344d2aabbc224779a7e404\godot-profile-7e4f1e0a5ac14e13a121702941fc5c9f
+GPU: released shared claim de0cc77b-9596-4f80-bbf5-d94ea1635b74

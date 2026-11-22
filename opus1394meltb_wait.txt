@@ -1,0 +1,6 @@
+OPUS1394B_WAIT.bat waiting for OPUS1581A exit in opus1581a_wait.txt Sun 11/22/2026  1:22:48.97 
+OPUS1394B_MELT start  1:54:49.66 
+OPUS1394B_MELT exit 1 at  2:10:31.84 
+run folder out_20261122_015450_14441
+result: done FAILED: new melt bench
+all done Sun 11/22/2026  2:10:32.22 

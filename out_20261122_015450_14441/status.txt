@@ -1,0 +1,36 @@
+[Sun 11/22/2026  1:54:50.47] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T07:54:51Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026  1:54:51.68] ready: GPU label 1394
+relay to: board/pc-out-opus1394meltb with this attempt folder at out_20261122_015450_14441/ in its tree, then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+verified 033cfafb60df908ce5b8a75bfe7a6747d97c68486f254a382da30f999c8a6cb9 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 226978f9ab40d06ed0d021cd53ec2df139c6d6fcb807d6db43b9493ceeb73174 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1 (tools_live version 142ea5895b0d)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new ce6940bed2d43ec8b86d999ad473f9e02b28c888 C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026  1:55:32.88] step new import start
+[Sun 11/22/2026  2:10:26.76] step new import ok
+[Sun 11/22/2026  2:10:26.77] step new melt bench start
+[Sun 11/22/2026  2:10:30.88] step new melt bench exit 1
+FAILED: new melt bench
+skipped checkout old: an earlier step failed 
+skipped ships: an earlier step failed 
+[Sun 11/22/2026  2:10:30.91] skipped old import: an earlier step failed
+[Sun 11/22/2026  2:10:30.92] skipped old melt bench: an earlier step failed
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: new melt bench
+all done Sun 11/22/2026  2:10:31.40
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1394meltb\out_20261122_015450_14441 failed (the janitor handles old failures)
+disk: checkouts freed 0.0 GB in all, C: 266.5 GB free
