@@ -5,7 +5,10 @@ twin is retired and this is the rules gate: `run_parity.sh` runs Godot alone and
 compares every battle, the PRNG draws, the math verdict and the threat maps with
 the results accepted in the repo. The math inputs come from the saved `math.txt`.
 `RULES_TWIN=browser` still runs the old comparison with the frozen browser files,
-for history only. Read "browser parity" below as that historical mode; an update
+for history only. It exports to a scratch file, never to the live table, and stops if
+the Godot table no longer matches the frozen export. CI also lists every saved result
+a branch changes compared with main (`diff_vs_main.js`), so a deliberate update stays
+visible even when the check is green. Read "browser parity" below as that historical mode; an update
 needs no browser check in the default mode. The campaign has its own saved
 results: `godot/campaign/test/saved/`, checked by `run_campaign_checks.sh`.
 

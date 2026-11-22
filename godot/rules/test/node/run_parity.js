@@ -175,8 +175,16 @@ async function runChecks(names, count, seconds, retrySeconds) {
   say(`Started (UTC): ${new Date(started).toISOString()}; Node ${process.version}; Godot ${godot}`);
   say(`Records and log: ${root}`);
   if (TWIN) {
-    say('[1/5] Exporting the game data tables for Godot...');
-    checked('data export', cleanExit(await js('export_data.js', [path.join(P, 'rules/data/tables.json')], path.join(root, 'export.log'))));
+    // History mode never writes the live table (Artoo on PR 1669): Godot is the source now. The frozen browser export goes to
+    // a scratch file; if it no longer matches the live table, the old comparison means nothing and the run stops.
+    say('[1/5] Exporting the frozen browser tables to a scratch file and comparing with the live Godot table...');
+    const live = path.join(P, 'rules/data/tables.json'), scratch = path.join(root, 'browser_tables.json');
+    const before = fs.readFileSync(live);
+    const ex = await js('export_data.js', [scratch], path.join(root, 'export.log'));
+    const same = cleanExit(ex) && present(scratch) && fs.readFileSync(scratch).equals(before);
+    if (!fs.readFileSync(live).equals(before)) throw new Error('history mode changed godot/rules/data/tables.json; stopped');
+    checked('frozen browser tables match the live Godot table', same);
+    if (!same) throw new Error('the Godot table has moved on from the frozen browser files, so RULES_TWIN=browser has nothing to compare; stopped');
   } else say('[1/5] Tables: godot/rules/data/tables.json is the source (no export from the browser files)');
   say('[2/5] Random numbers: first 10,000 draws from 3 seeds...');
   for (const seed of ['1001', '7', '4242424242']) {

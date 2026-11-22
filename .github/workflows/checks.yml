@@ -136,6 +136,9 @@ jobs:
       - name: Rules, every battle against the saved Godot results
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/rules/test/run_parity.sh
+      - name: Saved results this branch changes compared with main
+        if: ${{ always() }}
+        run: node godot/rules/test/saved/diff_vs_main.js origin/main "$RUNNER_TEMP/saved_changes_vs_main.txt"
       - name: Keep changed-battles evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -146,6 +149,7 @@ jobs:
             ${{ runner.temp }}/voidsworn-parity-*/changed-battles.txt
             ${{ runner.temp }}/voidsworn-parity-*/saved_summary.json
             ${{ runner.temp }}/voidsworn-parity-*/summary.json
+            ${{ runner.temp }}/saved_changes_vs_main.txt
       - name: Campaign, 30 seeded runs and the Nemesis scenarios against the saved Godot results
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_campaign_checks.sh 1 30
