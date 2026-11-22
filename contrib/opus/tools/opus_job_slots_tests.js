@@ -26,7 +26,7 @@ assert(!ships.includes('%OJ_REPO%_ships') && (ships.match(/%OJ_SIDE%_ships_/g) |
 const tail = head.slice(head.indexOf('\n:oj_tail\n'));
 assert(/if "%OJ_SLOTS%"=="1" set "OJ_DROP="\ncall "%JW%" end\n/.test(tail), 'a slot job drops no checkout of its own');
 assert(tail.indexOf('slotrelease "%OJ_OUT%"') > tail.indexOf('call "%JW%" end'), 'the slot is let go after the result is written');
-assert(/\nset "OJ_SLOTS=1"\n/.test(tpl) && /\nset "OJ_SLOT_KIND=gpu"\n/.test(tpl), 'new bats from the template use the warm slots');
+assert(/\nset "OJ_SLOTS=0"\n/.test(tpl) && /\nset "OJ_SLOT_KIND=gpu"\n/.test(tpl), 'the template names the slot switch, off until the Windows proof (Artoo on PR 1728)');
 console.log('PASS slots static: checkout goes through a slot with OJ_SLOTS=1, side files in the attempt, release after the result');
 
 // ---------------------------------------------------------------- live fixtures (pwsh)
@@ -50,7 +50,9 @@ function git(args, cwd = tmp) {
 function run(extra, ...args) {
   const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(jobs, 'opus_job_head.ps1'), ...args], { env: { ...env, ...extra }, encoding: 'utf8', timeout: 90000 });
   if (r.error) throw r.error;
-  return { status: r.status, out: `${r.stdout}\n${r.stderr}` };
+  // CI's pwsh wraps error text into a boxed, coloured layout: join it back into one line for the message checks
+  const flat = `${r.stdout}\n${r.stderr}`.replace(/\x1b\[[0-9;]*m/g, '').replace(/\s*\n\s*\|\s*/g, ' ').replace(/\s+/g, ' ');
+  return { status: r.status, out: flat };
 }
 const waitFor = (test, ms) => { const end = Date.now() + ms; while (Date.now() < end) { if (test()) return true; spawnSync('sleep', ['0.2']); } return test(); };
 const attempt = (job, n) => { const a = path.join(vt, job, `out_20261122_18000${n}_1`); fs.mkdirSync(a, { recursive: true }); return a; };
@@ -148,6 +150,33 @@ try {
   assert.equal(git(['rev-parse', 'HEAD'], repo2), jobCommit, 'the commit is still checked out');
   run({}, 'slotrelease', a7);
 
+  // a claimant whose new slot turns out to need the Board's look lets it go and takes the next free one (Artoo on PR 1728)
+  run({}, 'slotrelease', a3);
+  fs.rmSync(path.join(slot('slot_gpu_2'), 'hold.txt'));
+  git(['checkout', '-q', '--detach', one], repo2);
+  write(path.join(repo1, 'godot', 'big_result.bin'), 'x'.repeat(4096));
+  const aM = attempt('opus1659m', 8);
+  r = run({ PC_TEST_LEFTOVER_CAP: '100' }, 'slot', aM, 'new', two);
+  assert(r.status === 0 && /slot held: the last job's leftovers/.test(r.out) && /slot slot_gpu_2 taken/.test(r.out), 'moves on to the next free slot: ' + r.out);
+  assert(fs.existsSync(path.join(slot('slot_gpu_1'), 'hold.txt')) && fs.existsSync(path.join(repo1, 'godot', 'big_result.bin')), 'the held slot is kept as it is');
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), two);
+
+  // a holder stopped abruptly leaves its marker; a new job takes the slot, and the old attempt's next checkout must not
+  // touch it (Artoo on PR 1728: prove the holder, the owner token and the lease, fail closed on a stale mark)
+  const tokM = fs.readFileSync(path.join(aM, 'slot.txt'), 'utf8').trim().split('|')[1];
+  const markM = path.join(slot('slot_gpu_2'), `holder_${tokM}.txt`);
+  const holderPid = Number(fs.readFileSync(markM, 'utf8').trim().split(' ')[1]);
+  process.kill(holderPid, 'SIGKILL');
+  assert(fs.existsSync(markM), 'the stopped holder left its marker');
+  const aN = attempt('opus1659n', 9);
+  assert(waitFor(() => run({}, 'slot', aN, 'new', one).status === 0, 15000), 'a new job takes the freed slot');
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), one);
+  r = run({}, 'slot', aM, 'old', two);
+  assert(r.status !== 0 && /no longer held for this attempt/.test(r.out), 'the old attempt is refused: ' + r.out);
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), one, "the new job's slot is untouched");
+  assert(!fs.existsSync(markM), 'the new holder cleared the stale marker');
+  run({}, 'slotrelease', aN);
+
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {
     fs.rmSync(slot('slot_cpu'), { recursive: true, force: true });
@@ -156,7 +185,6 @@ try {
     r = run({ OJ_SLOT_KIND: 'cpu' }, 'slot', a6, 'new', two);
     assert(r.status !== 0 && /not a plain folder/.test(r.out), 'a linked slot is refused: ' + r.out);
   }
-  run({}, 'slotrelease', a3);
   console.log('PASS slots live: two gpu slots then none, leftovers saved before a reset, warm import cache, release by tail and by process end, held and linked slots refused');
 } finally {
   spawnSync('sleep', ['1']);

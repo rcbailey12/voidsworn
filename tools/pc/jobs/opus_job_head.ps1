@@ -900,7 +900,7 @@ function Enter-Slot($attempt) {
         if (Test-Path -LiteralPath $ready) { $got = [IO.File]::ReadAllText($ready).Trim(); if ($got) { break } }
         Start-Sleep -Milliseconds 200
       }
-      if ($got -like 'held *') {
+      if ($got -like 'held *' -and (Test-SlotHeld $dir $token)) {
         [IO.File]::WriteAllText((Join-Path $attempt 'slot.txt'), "$dir|$token`r`n")
         Write-Output "slot $n taken for $attempt (holder $($got.Substring(5)), job process $owner)"
         return $dir
@@ -912,15 +912,43 @@ function Enter-Slot($attempt) {
     Start-Sleep -Seconds $(if ($test) { 1 } else { 15 })
   }
 }
+function Test-SlotHeld($dir, $token) {
+  # Artoo on PR 1728: a holder stopped abruptly leaves its marker behind, so the marker alone proves nothing. All three
+  # must hold: the marker names a holder process that still runs (same start time), owner.txt names this token (a later
+  # holder rewrites it), and the lease file is locked right now.
+  $ready = Join-Path $dir "holder_$token.txt"
+  if (-not (Test-Path -LiteralPath $ready -PathType Leaf)) { return $false }
+  if ([IO.File]::ReadAllText($ready).Trim() -notmatch '\Aheld ([0-9]+) ([0-9]+)\z') { return $false }
+  if (-not (Test-SameProcess ([int]$Matches[1]) ([long]$Matches[2]))) { return $false }
+  $own = Join-Path $dir 'owner.txt'
+  if (-not (Test-Path -LiteralPath $own -PathType Leaf) -or -not ([IO.File]::ReadAllText($own) -match "(?m)^token $token\r?$")) { return $false }
+  try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose(); return $false } catch [IO.IOException] { return $true }
+}
 function Get-HeldSlot($attempt) {
   # The slot this attempt holds, checked: its holder still answers for the token in slot.txt.
   $f = Join-Path $attempt 'slot.txt'
   if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { return $null }
   $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
   if ($parts.Count -ne 2) { throw "slot.txt not readable in $attempt" }
-  $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
-  if (-not (Test-Path -LiteralPath $ready) -or -not ([IO.File]::ReadAllText($ready).Trim() -like 'held *')) { throw "the lease on $($parts[0]) is no longer held for this attempt" }
+  if (-not (Test-SlotHeld $parts[0] $parts[1])) { throw "the lease on $($parts[0]) is no longer held for this attempt; nothing in it was touched" }
   return @{ Dir = $parts[0]; Token = $parts[1] }
+}
+function Set-SlotHold($dir, $why, $u) {
+  # The slot is set aside for the Board (Enter-Slot skips it) and the caller moves on or fails; nothing in it is changed.
+  [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
+  throw "slot held: $why"
+}
+function Exit-Slot($attempt) {
+  $f = Join-Path $attempt 'slot.txt'
+  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
+  $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
+  $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
+  if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; return }
+  [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
+  $until = [DateTime]::UtcNow.AddSeconds(30)
+  while ((Test-Path -LiteralPath $ready) -and [DateTime]::UtcNow -lt $until) { Start-Sleep -Milliseconds 250 }
+  if (Test-Path -LiteralPath $ready) { Write-Output "slot $($parts[0]): the holder did not end within 30 s; it ends with the job's process" }
+  else { Write-Output "slot $($parts[0]) let go" }
 }
 function Reset-Slot($dir, $attempt, $name, $pin) {
   # The slot's repo at exactly $pin, the last job's own leftovers saved first, ready for the ships step.
@@ -928,14 +956,16 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
   $repo = Join-Path $dir 'repo'
   $last = Join-Path $dir 'last_use.txt'
   if (Test-Path -LiteralPath $repo) {
-    $ri = Get-Item -LiteralPath $repo -Force
-    if (-not ($ri -is [IO.DirectoryInfo]) -or ($ri.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "slot repo is not a plain folder: $repo" }
-    if ((Run-Git -C $repo config --get remote.origin.url) -ne $mirror) { throw "slot repo $repo does not come from the shared mirror" }
-    $nested = @(Get-ChildItem -LiteralPath $repo -Recurse -Force -Filter '.git' -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $repo '.git') } | Select-Object -First 1)
-    if ($nested.Count) { throw "a repo inside the slot repo: $($nested[0].FullName)" }
-    # the last job's leftovers go to its own attempt before anything is reset
     $u = @{}
     if (Test-Path -LiteralPath $last -PathType Leaf) { foreach ($l in [IO.File]::ReadAllLines($last)) { if ($l -match '\A(attempt|name|src) (.+)\z') { $u[$Matches[1]] = $Matches[2] } } }
+    $ri = Get-Item -LiteralPath $repo -Force
+    if (-not ($ri -is [IO.DirectoryInfo]) -or ($ri.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Set-SlotHold $dir "the slot repo is not a plain folder: $repo" $u }
+    $origin = ''
+    try { $origin = (Run-Git -C $repo config --get remote.origin.url) | Select-Object -Last 1 } catch { $origin = '' }
+    if ($origin -ne $mirror) { Set-SlotHold $dir "the slot repo $repo does not come from the shared mirror" $u }
+    $nested = @(Get-ChildItem -LiteralPath $repo -Recurse -Force -Filter '.git' -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $repo '.git') } | Select-Object -First 1)
+    if ($nested.Count) { Set-SlotHold $dir "a repo inside the slot repo: $($nested[0].FullName)" $u }
+    # the last job's leftovers go to its own attempt before anything is reset
     $src = $null; $rec = @{}
     if ($u.attempt -and $u.name) {
       $rec = Read-ShipRecord (Join-Path $u.attempt "$($u.name)_ships_copied.txt")
@@ -951,11 +981,7 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
       if ($parts[1] -eq 'refs/stash') { $own += 'a stash'; continue }
       if (-not (Test-InMirror $parts[0])) { $own += "$($parts[1]) at $($parts[0]), which no mirror branch holds" }
     }
-    if ($own.Count) {
-      $why = "the last job left $($own -join '; ') in $repo; the slot is kept as it is"
-      [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
-      throw "slot held: $why"
-    }
+    if ($own.Count) { Set-SlotHold $dir "the last job left $($own -join '; ') in $repo; the slot is kept as it is" $u }
     $work = @(Get-KeptWork $repo $src $rec $null $null)
     if ($work.Count) {
       $dest = $null
@@ -963,11 +989,7 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
       else { $dest = Join-Path $dir ('leftovers_' + [DateTime]::UtcNow.ToString('yyyyMMdd_HHmmss')) }
       if (Test-Path -LiteralPath $dest) { $dest = $dest + '_' + [DateTime]::UtcNow.ToString('HHmmssfff') }
       try { Write-Output (Save-Leftovers $repo $work $dest) }
-      catch {
-        $why = "the last job's leftovers in $repo could not be saved ($($_.Exception.Message)); the slot is kept as it is"
-        [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
-        throw "slot held: $why"
-      }
+      catch { Set-SlotHold $dir "the last job's leftovers in $repo could not be saved ($($_.Exception.Message)); the slot is kept as it is" $u }
     }
     Invoke-WithPinnedMirror $pin { Run-Git -C $repo fetch -q --prune origin | Out-Null }
   } else {
@@ -1048,8 +1070,22 @@ switch ($Action) {
     if (-not $attempt.StartsWith($vt + $sep, [StringComparison]::OrdinalIgnoreCase)) { throw "attempt folder must be under $vt" }
     if (-not (Test-Path -LiteralPath $attempt -PathType Container)) { throw "no attempt folder $attempt" }
     $held = Get-HeldSlot $attempt
-    if ($held) { $dir = $held.Dir } else { Enter-Slot $attempt; $dir = (Get-HeldSlot $attempt).Dir }
-    Reset-Slot $dir $attempt $B $C
+    if ($held) { Reset-Slot $held.Dir $attempt $B $C; $dir = $held.Dir }
+    else {
+      # A slot that turns out to need the Board's look (Reset-Slot sets hold.txt) is let go, and the next free one is
+      # taken (Artoo on PR 1728). The job's own second checkout never moves: its slot holds its first arm's state.
+      while ($true) {
+        Enter-Slot $attempt
+        $dir = (Get-HeldSlot $attempt).Dir
+        try { Reset-Slot $dir $attempt $B $C; break }
+        catch {
+          if ($_.Exception.Message -notlike 'slot held:*') { throw }
+          Write-Output $_.Exception.Message
+          Exit-Slot $attempt
+          [IO.File]::Delete((Join-Path $attempt 'slot.txt'))
+        }
+      }
+    }
     $repo = Join-Path $dir 'repo'
     [IO.File]::WriteAllText((Join-Path $attempt 'slot_repo.txt'), "$repo`r`n")
     [IO.File]::AppendAllText((Join-Path $attempt 'slots.txt'), "$B $C $repo`r`n")
@@ -1064,8 +1100,10 @@ switch ($Action) {
     try { $lease = [IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None') }
     catch { [IO.File]::WriteAllText($ready, "busy`r`n"); exit 1 }
     try {
-      [IO.File]::WriteAllText((Join-Path $dir 'owner.txt'), "attempt $env:OJ_SLOT_ATTEMPT`r`njob process $owner`r`nholder $PID`r`nsince $([DateTime]::UtcNow.ToString('o'))`r`n")
-      [IO.File]::WriteAllText($ready, "held $PID`r`n")
+      # markers of earlier holders are stale now that this one holds the lease
+      foreach ($old in @(Get-ChildItem -LiteralPath $dir -Force -File | Where-Object { $_.Name -match '\A(holder|release)_[0-9a-f]{32}(\.txt|\.err)?\z' -and $_.Name -notlike "*$token*" })) { [IO.File]::Delete($old.FullName) }
+      [IO.File]::WriteAllText((Join-Path $dir 'owner.txt'), "attempt $env:OJ_SLOT_ATTEMPT`r`ntoken $token`r`njob process $owner`r`nholder $PID`r`nsince $([DateTime]::UtcNow.ToString('o'))`r`n")
+      [IO.File]::WriteAllText($ready, "held $PID $(Get-ProcStart $PID)`r`n")
       $end = [DateTime]::UtcNow.AddHours(48)
       while ([DateTime]::UtcNow -lt $end -and -not (Test-Path -LiteralPath $release) -and (Test-SameProcess $owner $ownerStart)) { Start-Sleep -Milliseconds 1000 }
     } finally {
@@ -1075,18 +1113,9 @@ switch ($Action) {
   }
   'slotrelease' {
     # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free.
-    $attempt = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
-    $f = Join-Path $attempt 'slot.txt'
-    if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; break }
-    $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
-    $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
-    if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; break }
-    [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
-    $until = [DateTime]::UtcNow.AddSeconds(30)
-    while ((Test-Path -LiteralPath $ready) -and [DateTime]::UtcNow -lt $until) { Start-Sleep -Milliseconds 250 }
-    if (Test-Path -LiteralPath $ready) { Write-Output "slot $($parts[0]): the holder did not end within 30 s; it ends with the job's process" }
-    else { Write-Output "slot $($parts[0]) let go" }
+    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
   }
+
   'tracked' {
     $changed = @(Run-Git -C $A status --porcelain --untracked-files=no | Where-Object { $_ })
     if ($changed.Count) { $changed | ForEach-Object { Write-Output "tracked change: $_" }; throw "$($changed.Count) tracked file(s) differ from the pin in $A" }

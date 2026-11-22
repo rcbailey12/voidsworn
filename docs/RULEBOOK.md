@@ -346,7 +346,7 @@ each slot like a board lane's, and accepts a runner-managed sparse copy under th
 checkout per run and picture folders in code jobs drove up disk use (issue 1186).
 
 
-Helper PC jobs from the template (`OJ_SLOTS=1`, issue 1659) reset one of three warm slots under `voidsworn_test\slots`
+Helper PC jobs with `OJ_SLOTS=1` (issue 1659; the template's switch, off until the Board's Windows proof) reset one of three warm slots under `voidsworn_test\slots`
 (slot_gpu_1, slot_gpu_2, slot_cpu: reused `clone --local` copies of the mirror, the import cache kept) to their pin instead
 of making a checkout per attempt; the last job's unproven leftovers are saved into its own attempt before each reset, a
 slot whose leftovers cannot be saved is set aside with `hold.txt` for the Board, and the reset deletes only inside `slots`
