@@ -11,8 +11,7 @@
 //    command point arrived, the offer was replaced), and the run records per kind: opportunities (the bot's rule is met by the
 //    larger of the run's credits and biomass), attempts (met by the purse the tree charges), successes, and the biomass and
 //    credits actually debited;
-//  - torpThreat is stubbed to 0 when the tree has none (torpedoes have had no lanes since issue 1379; the Muse bot still
-//    calls it, which ended every run at its first battle).
+//  The Muse bot and loader it runs were brought up to the current game in issue 1632 (it had stopped at the first battle since Nov 20).
 'use strict';
 const fs = require('fs'), path = require('path'), Module = require('module');
 const [root, AI, runsArg, seedArg, out] = process.argv.slice(2);
@@ -20,7 +19,6 @@ const RUNS = Number(runsArg), SEED = Number(seedArg);
 const src = path.join(__dirname, '../../contrib/muse/tools/montecarlo');
 const read = n => fs.readFileSync(path.join(src, n), 'utf8');
 const shim = `
-var torpThreat=(typeof torpThreat==='function')?torpThreat:function(){ return 0; };
 var MC78={}, MC84={};
 // which purse each sink charges in this tree
 function mc84Pays(fn){ const s=String(fn); return s.includes('shopPay(')?'shop':s.includes('hullPay(')?'hull':'credits'; }
@@ -122,8 +120,6 @@ MC.runOne=async function(c){ MC78={}; MC84={}; const S=await _mc78Run(c);
   S.m78=Object.assign({},MC78); S.m84=JSON.parse(JSON.stringify(MC84)); S.pays=Object.assign({},MC84PAY);
   S.m78.creditsEnd=(typeof RUN!=='undefined'&&RUN)?RUN.credits:null; S.m78.bioEnd=(typeof RUN!=='undefined'&&RUN)?(RUN.bio||0):null; return S; };
 `;
-// a toast the game schedules for later can fire after its run ended (RUN is null by then): drop its error, keep the run
-{ const st = global.setTimeout; global.setTimeout = (f, ms, ...a) => st(() => { try { f(...a); } catch (e) {} }, ms); }
 const loaderPath = path.join(src, 'loader_main.js');
 const mod = new Module(loaderPath, module); mod.filename = loaderPath; mod.paths = Module._nodeModulePaths(src);
 mod._compile(read('loader_main.js'), loaderPath);

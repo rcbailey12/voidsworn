@@ -144,9 +144,9 @@ function buildChecks() {
     'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
     'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
-    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
-    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
+    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
     'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
     'ui_spec_tests', 'weapon_match_tests', 'workflow_config_tests',
   ]);

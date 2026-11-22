@@ -1461,7 +1461,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(220.0)
 		"risen":
 			_reassemble(e, batch_view)
-			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
+			_float(e["unit"], "Risen", Color("#ddc4ff"), -30)   # only Eclipse ships rise (legionCan); Eclipse violet, never green (issue 1641)
 			await wait(600.0)
 		"stance":
 			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
