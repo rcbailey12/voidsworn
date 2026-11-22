@@ -1390,9 +1390,10 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
-		# the worker's results, keyed here before the job is shared: the worker only overwrites these values and never adds
-		# a key while the main thread may read the dictionary (a cold kill reads it before "out" is set; issue 1395 review)
-		"cut_usec": 0, "hulls_usec": 0}
+		# the worker's results (its timings, and the uploaded geometry on a windowed run), keyed here before the job is
+		# shared: the worker only overwrites these values and never adds a key while the main thread may read the
+		# dictionary (a cold kill reads it before "out" is set; issue 1395 review)
+		"cut_usec": 0, "hulls_usec": 0, "geo": []}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid: int = fx.submit_death_cut(func() -> void:
