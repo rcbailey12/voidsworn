@@ -1,11 +1,11 @@
-"""Run PR checks with all generated rules fixtures and logs under TEMP."""
+"""Run PR checks against the saved Godot results, with logs under TEMP."""
 import argparse
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
+import tempfile
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
@@ -17,11 +17,13 @@ def summary(work,node):
     text=raw.decode('utf-16') if raw.startswith(b'\xff\xfe') else raw.decode('utf-8',errors='replace')
     rows=[line for line in text.splitlines() if ' | PASS | ' in line]
     assert rows and not any(' | FAIL | ' in line for line in text.splitlines())
-    assert (work/'parity.txt').read_text().rstrip().endswith('PASS: all CI rules parity checks')
-    scenarios=json.loads((REPO/'godot/rules/test/scenarios.json').read_text())
+    assert (work/'parity.txt').read_text(encoding='utf-8').rstrip().endswith(
+        'PASS: every Godot battle matches the reviewed saved results.')
+    parity=json.loads((work/'parity_summary.json').read_text(encoding='utf-8'))
+    assert parity['failures']==0
     result=dict(result='PASS',standing_checks=len(rows),node=subprocess.check_output([node,'--version'],text=True).strip(),
-                prng_seeds=3,draws_per_seed=10000,scenarios=len(scenarios),threat_maps=3,
-                threads_and_hard_stop='PASS',parity_subprocesses=1+9+2+3*len(scenarios)+6+1)
+                prng_seeds=3,draws_per_seed=10000,scenarios=parity['battles'],threat_maps=3,
+                threads_and_hard_stop='PASS')
     (work/'checks.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result))
 
@@ -38,52 +40,22 @@ def main():
         return
     env=dict(os.environ);env['PATH']=str(node.parent)+os.pathsep+env['PATH']
     env['APPDATA']=str(work/'check_user')
+    env['XDG_DATA_HOME']=env['APPDATA']
     if not a.parity_only:
         with (work/'standing_checks.log').open('w') as out:
             result=subprocess.run([str(node),'contrib/opus/tools/run_all_checks.js'],cwd=REPO,
                                   env=env,stdout=out,stderr=subprocess.STDOUT)
         assert result.returncode==0,'Standing checks failed'
-    project=work/'parity';project.mkdir(exist_ok=True)
-    shutil.copytree(REPO/'godot/rules',project/'rules',dirs_exist_ok=True,
-                    ignore=shutil.ignore_patterns('out','golden','*.log'))
-    (project/'project.godot').write_text('config_version=5\n[application]\nconfig/name="Repair129Parity"\n'
-        '[debug]\ngdscript/warnings/inference_on_variant=0\ngdscript/warnings/integer_division=0\n')
-    test=project/'rules/test';out=test/'out';gold=test/'golden'
-    out.mkdir(exist_ok=True);gold.mkdir(exist_ok=True)
-    results=[]
-    with (work/'parity.txt').open('w',encoding='utf-8') as transcript:
-        def run(command, name, stdout=None):
-            r=subprocess.run(list(map(str,command)),cwd=test,env=env,stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace',timeout=120)
-            if stdout:stdout.write_text(r.stdout,encoding='utf-8')
-            transcript.write(name+'\n'+r.stdout+'\n');transcript.flush()
-            assert r.returncode==0, name+' failed; see '+str(work/'parity.txt')
-            results.append(name)
-            return r.stdout
-        def js(script,*args):return [node,test/'node'/script,*args]
-        def gd(*args):return [godot,'--headless','--path',project,'--script','res://rules/test/parity_main.gd','--',*args]
-        run(js('export_data.js',project/'rules/data/tables.json'),'tables')
-        for seed in [1001,7,4242424242]:
-            expected=gold/f'prng_{seed}.txt';actual=out/f'prng_{seed}.txt'
-            run(js('golden.js','prng',seed,10000,expected),'golden prng '+str(seed))
-            run(gd('prng',seed,10000,actual),'Godot prng '+str(seed))
-            run(js('compare.js','same',expected,actual),'compare prng '+str(seed))
-        run(js('golden.js','math',gold/'math.txt'),'golden math')
-        run(gd('math',gold/'math.txt'),'Godot math')
-        scenarios=json.loads((test/'scenarios.json').read_text())
-        for name in scenarios:
-            expected=gold/(name+'.jsonl');actual=out/(name+'.jsonl')
-            run(js('golden.js','scenario',name,expected),'golden '+name)
-            run(gd('scenario',name,actual),'Godot '+name)
-            run(js('compare.js','scenario',expected,actual),'compare '+name)
-        for name in ['s4','s19','s23']:
-            expected=gold/('threat_'+name+'.json');actual=out/('threat_'+name+'.json')
-            run(js('golden.js','threat',name,expected),'golden threat '+name)
-            run(gd('threat',name,actual),'Godot threat '+name)
-            assert expected.read_bytes()==actual.read_bytes(),'Threat map differs: '+name
-        run([godot,'--headless','--path',project,'--script','res://rules/test/thread_test.gd','--','s4','s23'],
-            'threads and hard stop')
-        transcript.write('PASS: all CI rules parity checks\n')
+    env['GODOT']=str(godot)
+    env.pop('RULES_TWIN', None)
+    # A new folder per run keeps repeated checks in the same work folder usable.
+    parity=Path(tempfile.mkdtemp(prefix='parity-',dir=work))
+    env['PARITY_RUN_ROOT']=str(parity)
+    with (work/'parity.txt').open('wb') as transcript:
+        result=subprocess.run([str(node),'godot/rules/test/node/run_parity.js'],cwd=REPO,
+                              env=env,stdout=transcript,stderr=subprocess.STDOUT)
+    assert result.returncode==0,'Godot rules check failed; see '+str(work/'parity.txt')
+    (work/'parity_summary.json').write_bytes((parity/'summary.json').read_bytes())
     summary(work,node)
 
 
