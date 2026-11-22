@@ -756,7 +756,9 @@ quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 
 7.9 **Firing ends a non-Glasswright ship's movement for that activation: no move, turn in place or ram after it fires.**
 Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
-movement or a free turn after firing (Fleet Elsewhere, The Wall Moves, Cut and Turn) still work through that same budget. Why:
+movement after firing (Fleet Elsewhere, The Wall Moves) add to that same budget. A tree free-turn token (Cut and Turn, Fleet
+Elsewhere, Trophy Standard) is the one exception: it turns the ship once even with no post-fire budget left, and spends the
+token, not the budget. Why:
 Ryan, "Agree no" (issue 1560 item 14). Set: Ryan, Nov 22 (R396). Code: canRotate and ramInfo in both rules twins.
 
 8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
