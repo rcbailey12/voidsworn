@@ -17,7 +17,7 @@ standing check `skills_mirror_tests.js` fails when the two differ. Edit here, th
 | pocock-code-review | mattpocock/skills (renamed from code-review) | two-axis review: standards and spec |
 | pr | mattpocock/skills | PR body: summary, evidence, merge danger |
 | retro, writing-for-agents | mattpocock/skills | improve the agents' setup after a session |
-| wizard | mattpocock/skills | step-by-step guide for something only a human can do |
+| wizard | mattpocock/skills (disabled stub) | plan steps only Ryan can do as a .bat; keys only through the masked *_api_key.bat installers |
 | godot-4-api-pitfalls, godot-control-layout, godot-signals, godot-scene-organization, godot-verify | ziva-sh/godot-skills (MIT) | Godot 4 code, UI layout, signals, scenes, and checking from the command line |
 
 Ryan named the first nine Pocock skills and the five Godot skills. grilling, domain-modeling, codebase-design and
@@ -29,8 +29,8 @@ Ryan's word: Claude-Code-Game-Studios, gd-agentic-skills --all, the full obra/su
 - **Tracker and domain docs**: `docs/agents/issue-tracker.md` and `docs/agents/domain.md` stand in for
   `/setup-matt-pocock-skills`. No triage labels, no `docs/adr/`: rules go in RULEBOOK with a FINDINGS row.
 - **Only Ryan rules.** A skill that says "decide", "record a decision" or "apply" means: propose it. The Board merges.
-- **Ryan is not a coder.** Anything he runs is a double-click .bat (RULEBOOK 1.4). The wizard's bash template is for
-  cloud threads only; a wizard for Ryan is a .bat with the same stages. Questions to him follow RULEBOOK 1.5 and 1.8.
+- **Ryan is not a coder.** Anything he runs is a double-click .bat (RULEBOOK 1.4). The wizard skill is a disabled stub:
+  its upstream bash template (reads .env, sets GitHub secrets) is not installed; a wizard for Ryan is a .bat. Questions to him follow RULEBOOK 1.5 and 1.8.
 - **Reports**: improve-codebase-architecture writes its HTML report outside the repo; in a project thread publish it as
   an artifact instead of opening a browser.
 - **Reviews**: the built-in `/code-review` stays the default code review seat (R406); pocock-code-review adds the
@@ -43,6 +43,8 @@ Ryan's word: Claude-Code-Game-Studios, gd-agentic-skills --all, the full obra/su
 
 Every file was read before it was added. Licences: MIT (Matt Pocock 2026; Zivash, Inc. 2026); each folder carries its
 LICENSE and a SOURCE.md with the exact commit. Contents are instructions only: no install steps, no network calls, no
-hooks. Two touch the outside world when used: wizard's template.sh opens URLs, writes .env and can set GitHub secrets
-(gh secret), and improve-codebase-architecture's report loads Tailwind and Mermaid from public CDNs. The agents/openai.yaml
+hooks. One touches the outside world when used: improve-codebase-architecture's report loads Tailwind and Mermaid from public
+CDNs. The wizard's upstream template.sh (opens URLs, reads and writes .env, sets GitHub secrets with gh secret on the
+current repo) was removed and its SKILL.md replaced with a disabled stub that points at the masked key installers
+(Artoo on PR 1675, Board, Nov 22). The agents/openai.yaml
 files are Codex display metadata.
