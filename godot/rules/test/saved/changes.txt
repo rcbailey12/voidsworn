@@ -1,78 +1,14 @@
-Saved manifest before: 2316c52cefd83ed73ac73f151b2e87fe44c717a9e0782b9d5d2ab8ad013c4f88
-Saved manifest after: 460877ce1ff226e76c45e6e66880ad644da7bc02c79b4a23f5717958e4f4fa86
+Saved manifest before: 460877ce1ff226e76c45e6e66880ad644da7bc02c79b4a23f5717958e4f4fa86
+Saved manifest after: 4781f16d2b62abff3ada67b0953a4bec33eeb35ec00a1cb7e7f8e73979394939
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_unpaid
-  turn 0, round 1, after tick player; unit x04 (player warden)
-  state.units[0].name: "Pale Sentinel" -> "Bright Censure"
-  later changed records: 132; total records: 133 -> 123
-FAIL battle t_ecl_arcswarm
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].name: "Silent Procession" -> "Ninth Winter"
-  later changed records: 182; total records: 183 -> 61
-FAIL battle t_ecl_copiedbehind
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].name: "The Unsleeping" -> "Never-Ending"
-  later changed records: 74; total records: 75 -> 75
-FAIL battle t_ecl_iterationkill
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].name: "The Unsleeping" -> "Cold Memory"
-  later changed records: 114; total records: 99 -> 115
-FAIL battle t_ecl_twicerestored
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 0 -> 5
-  later changed records: 107; total records: 108 -> 104
-FAIL battle t_breathbite
-  turn 0, round 1, after tick player; unit x06 (player b_razor)
-  state.units[0].name: "Node Vesk" -> "Shrieker"
-  later changed records: 138; total records: 130 -> 139
-FAIL battle t_throatspits
-  turn 0, round 1, after tick player; unit x02 (player b_brood)
-  state.units[0].name: "Node Vesk" -> "Shrieking Coil"
-  later changed records: 154; total records: 155 -> 141
-FAIL battle t_hb_railboarding
-  turn 0, round 1, after tick player; unit x04 (player c_raider)
-  state.units[0].name: "Red Tally" -> "Scrapjaw"
-  later changed records: 81; total records: 78 -> 82
-FAIL battle t_hb_packbites
-  turn 0, round 1, after tick player; unit x04 (player c_reaver)
-  state.units[1].name: "Red Tally" -> "Long Howl"
-  later changed records: 134; total records: 111 -> 135
-FAIL battle t_heg_permanentfile
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Punctual" -> "HNS Consensus"
-  later changed records: 69; total records: 70 -> 68
-FAIL battle t_heg_standinggroup
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Forecast" -> "HNS Dominator"
-  later changed records: 72; total records: 54 -> 73
-FAIL battle t7a_lensrotates
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].name: "Held Spectrum" -> "Far Focus"
-  later changed records: 37; total records: 23 -> 38
-FAIL battle t7a_lastaccount
-  turn 0, round 1, after tick player; unit x03 (player penitent)
-  state.units[0].name: "Bright Censure" -> "Burning Spire"
-  later changed records: 44; total records: 40 -> 45
-FAIL battle t7a_accountsplits
-  turn 0, round 1, after tick player; unit x03 (player reliquary)
-  state.units[0].name: "Wrath of Vesper" -> "Dawn of Cinders"
-  later changed records: 98; total records: 94 -> 99
-FAIL battle t7b_ecl_shadow
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 5 -> 0
-  later changed records: 92; total records: 64 -> 93
-FAIL battle t7b_ecl_archive
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].name: "Cold Memory" -> "Copy of Ardent"
-  later changed records: 106; total records: 90 -> 107
-FAIL battle t7b_ch_broodsplits
-  turn 0, round 1, after tick player; unit x03 (player b_brood)
-  state.units[0].name: "Sour Spine" -> "Gnawing Bloom"
-  later changed records: 60; total records: 59 -> 61
-FAIL battle t529_nostop
-  turn 0, round 1, after tick player; unit x04 (player b_brood)
-  state.units[0].facing: 1 -> 5
-  later changed records: 100; total records: 101 -> 99
-FAIL: saved Godot results; 288 battles checked, 18 changed, 0 other files changed, 18 failures; 10.758 s
+FAIL battle s2
+  turn 0, round 1, after tick player; unit x09 (enemy h_boss)
+  state.units[4].hp: 238 -> 210
+  later changed records: 158; total records: 141 -> 159
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x013 (enemy h_boss)
+  state.units[6].hp: 413 -> 365
+  later changed records: 594; total records: 595 -> 595
+FAIL: saved Godot results; 288 battles checked, 2 changed, 0 other files changed, 2 failures; 10.609 s

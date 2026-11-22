@@ -149,7 +149,7 @@ function fleetPower(){ if(typeof RUN==='undefined'||!RUN||!RUN.fleet) return 99;
   const boons=(RUN.boons||[]).reduce((a,b)=>a+((RARITY[b.r||0]||RARITY[0]).m),0); return p*(1+.035*boons+.025*((RUN.relics||[]).length)); }
 function playerStrength(){ return fleetPower(); }
 // sector flagship hull/shield scale and damage, by sector (sims can override with BOSS_SCALE / BOSS_DMG)
-const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.85,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
+const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.75,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12; hegemony .85 to .75 in issue 1565 after the 1560 AI fixes)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
 // B2 battle-size ramp (R1): enemy fleets grow by sector toward about 10, 14 and 20 ships on board with a small elite player fleet (4 to 7, wings
