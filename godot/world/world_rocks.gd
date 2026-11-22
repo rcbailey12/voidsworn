@@ -37,6 +37,7 @@ static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
 static var _scans: Array = []   # not GPU: scan names
 static var _scans_checked := false
+static var fallbacks: Array = []   # names mesh() had to draw as a fallback sphere
 
 
 # Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
@@ -466,6 +467,7 @@ static func mesh(name: String) -> Mesh:
 		n.free()
 	if m == null:
 		m = fallback_mesh(name)
+		fallbacks.append(name)   # issue 1361: the rock bench fails on any (Artoo on PR 1782)
 	_meshes[name] = m
 	return m
 
