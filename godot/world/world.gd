@@ -1130,8 +1130,9 @@ func fields(mk: String, kind: String) -> void:
 				continue
 			var nm: String = names[r.randi() % names.size()]
 			var s := _backdrop_scale(nm, r.randf_range(2.0, 6.0), p, 20.0)
-			# issue 1361 (Ryan, Nov 22): these drift past the board's edge, so they draw the far mesh (a quarter of the triangles)
-			_batch.add(nm + "_lo", _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
+			# issue 1361 (Ryan, Nov 22): these drift past the board's edge, so they draw the far mesh (a quarter of the triangles);
+			# the old look's library (VS_1361_OLD) has no crystal far meshes (Artoo on PR 1782)
+			_batch.add(nm if WR.OLD else nm + "_lo", _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
 
 
