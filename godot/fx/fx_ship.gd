@@ -53,7 +53,6 @@ var _sick_rib_mat: ShaderMaterial
 var _cough_next := 0.0
 var _was_moving := false
 var _jammed := {}            # section -> {"k": turret, "next": the next spark pop} (issue 1587)
-var _power_dip_until := -1.0
 var _power_shown := -1.0
 var _stages_seen := false   # the first stage update is the ship's state as it arrives (a rebuilt view): no blowout
 # one-shot wound events for the checks only ([kind, section or nozzle, time]); off in play (Artoo on PR 1631)
@@ -133,8 +132,6 @@ var _power_dip := 0.0
 var _dip_peak := 0.0
 var _dip_start := 0.0
 var _dip_duration := 0.0
-var _dip_overrides: Array = []
-var _dip_materials := {}
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
 
@@ -1421,6 +1418,10 @@ func _rcs(fx) -> void:
 
 
 # Stutter is about the hit outcome. Recoil and fully absorbed impacts can still move the hull.
+# The one brownout path (Neon on PR 1699, item c): a felt hit sets a transient dip here, and _wound_step writes it onto
+# the hull's damage surfaces as fx_flick, multiplied with the wound flicker. A fresh hull gets its damage surfaces first
+# (ensure_damage_surfaces, PR 1631), so no painted material is copied or swapped, and fx_power stays the wear's steady
+# value and the death fade's.
 func hit_power(fx, stutter: bool, dip := 0.0, duration := 0.45) -> void:
 	if dead or gone:
 		return
@@ -1428,37 +1429,12 @@ func hit_power(fx, stutter: bool, dip := 0.0, duration := 0.45) -> void:
 		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
 	if dip <= 0.0 or squadron:
 		return
-	if _dip_duration == 0.0:
-		# Untouched surfaces still use their painted materials. Dim private copies until the hit wears off.
-		for m in meshes:
-			if not is_instance_valid(m) or m.mesh == null:
-				continue
-			var mi: MeshInstance3D = m
-			if mi.material_override != null:
-				_dim_paint(mi, -1, mi.material_override)
-			else:
-				for i in mi.mesh.get_surface_count():
-					_dim_paint(mi, i, mi.get_active_material(i))
+	ensure_damage_surfaces(fx)
 	_dip_peak = maxf(_power_dip, dip)
 	_dip_start = fx.now
 	_dip_duration = duration
 	_set_power_dip(_dip_peak)
-
-
-func _dim_paint(mi: MeshInstance3D, surface: int, source: Material) -> void:
-	if not source is BaseMaterial3D or not source.emission_enabled:
-		return
-	if not _dip_materials.has(source):
-		var copy: BaseMaterial3D = source.duplicate()
-		copy.set_meta("fx_hull_source", source)
-		_dip_materials[source] = copy
-	var dim: BaseMaterial3D = _dip_materials[source]
-	var saved := mi.material_override if surface < 0 else mi.get_surface_override_material(surface)
-	_dip_overrides.append([mi, surface, saved, dim])
-	if surface < 0:
-		mi.material_override = dim
-	else:
-		mi.set_surface_override_material(surface, dim)
+	_wlog(["power_dip", -1, fx.now])
 
 
 func _power_step(fx) -> void:
@@ -1473,12 +1449,9 @@ func _power_step(fx) -> void:
 	_set_power_dip(_dip_peak * recovery * flicker)
 
 
+# The dip reaches the shader through _wound_step (fx_flick) on the same frame: _power_step runs before it in step().
 func _set_power_dip(dip: float) -> void:
 	_power_dip = dip
-	for entry: Array in _damage_surfaces.values():
-		HULL.set_power(entry[1], hull_wear, dip)
-	for source: BaseMaterial3D in _dip_materials:
-		(_dip_materials[source] as BaseMaterial3D).emission_energy_multiplier = source.emission_energy_multiplier * (1.0 - dip)
 
 
 func end_brownout() -> void:
@@ -1486,17 +1459,6 @@ func end_brownout() -> void:
 		return
 	_dip_duration = 0.0
 	_set_power_dip(0.0)
-	for entry: Array in _dip_overrides:
-		var mi: MeshInstance3D = entry[0]
-		if not is_instance_valid(mi):
-			continue
-		var surface: int = entry[1]
-		if surface < 0 and mi.material_override == entry[3]:
-			mi.material_override = entry[2]
-		elif surface >= 0 and surface < mi.get_surface_override_material_count() and mi.get_surface_override_material(surface) == entry[3]:
-			mi.set_surface_override_material(surface, entry[2])
-	_dip_materials.clear()
-	_dip_overrides.clear()
 
 
 # ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
@@ -1566,7 +1528,7 @@ func _apply_wear() -> void:
 	for key in _damage_surfaces:
 		var entry: Array = _damage_surfaces[key]
 		if entry.size() > 1 and entry[1] is ShaderMaterial:
-			HULL.set_wear(entry[1], hull_wear, patches, _power_dip)
+			HULL.set_wear(entry[1], hull_wear, patches)
 
 
 # Soot patches on the sides that were hit: per hurt section (worst first), up to WEAR_PATCHES_SEC of its drawn marks,
@@ -2337,7 +2299,7 @@ func _update_damage_emitters(fx) -> void:
 #   - mid or prow section at stage 3+: one turret there freezes off its aim and sags (fx_hull jam_turret), trails a thin
 #     wisp and pops a spark every 2 to 4 s; the hull's lights flicker unevenly (fx_flick, multiplied onto the wear's fx_power)
 #   - a hit that pushes a section into stage 3 or 4: a one-shot blowout jet of vapour and a few tumbling bits
-#   - an ion hull hit: power_dip browns the hull's lights out for half a second (fx_weapons _beam_burn)
+#   - a felt hull hit (crit, ion, lance, heavy shot): hit_power browns the hull's lights out (fx_flick) for about half a second
 const SICK_LEN := 0.6          # the sick nozzle's plume length against the others (the brief: about 40% shorter)
 const COUGH_GAP := 0.7         # seconds between two coughs of the sick nozzle
 const BLOWOUT_LIFE := 1.2
@@ -2470,7 +2432,7 @@ func _wound_step(fx) -> void:
 		if not fx.reduce_flashing:
 			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
 		_wlog(["spark", k, fx.now])
-	_write_flick(power_flicker(fx.now, fx.reduce_flashing))
+	_write_flick(power_flicker(fx.now, fx.reduce_flashing) * (1.0 - _power_dip))
 
 
 func _write_flick(f: float) -> void:
@@ -2484,7 +2446,8 @@ func _write_flick(f: float) -> void:
 
 
 # The power multiplier (1 steady) at time t: with mid or prow at stage 3+, uneven brownouts in steps of 1/12 s (a small dip
-# most of the time, now and then a deep one); an ion dip holds it low. Under reduce flashing, slower and shallower steps.
+# most of the time, now and then a deep one). Under reduce flashing, slower and shallower steps. A hit's brownout
+# (hit_power) multiplies onto this in _wound_step.
 func power_flicker(t: float, reduce := false) -> float:
 	var f := 1.0
 	if not squadron and (int(stage[1]) >= 3 or int(stage[2]) >= 3):
@@ -2496,18 +2459,7 @@ func power_flicker(t: float, reduce := false) -> float:
 			f = 0.9 if reduce else 0.78
 		elif n > 0.45:
 			f = 0.95 if reduce else 0.9
-	if t < _power_dip_until:
-		f = minf(f, 0.7 if reduce else 0.35)
 	return f
-
-
-# An ion hit browns the hull out for dur seconds (fx_weapons _beam_burn).
-func power_dip(fx, dur := 0.5) -> void:
-	if dead or gone:
-		return
-	ensure_damage_surfaces(fx)   # Neon on PR 1631: an ion hit on a fresh hull browns it out too
-	_power_dip_until = maxf(_power_dip_until, fx.now + dur)
-	_wlog(["power_dip", -1, fx.now])
 
 
 # A section pushed into stage 3 or 4 vents once: a 1.2 s jet of bright vapour along its breach normal, 3 or 4 tumbling

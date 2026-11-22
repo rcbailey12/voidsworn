@@ -158,28 +158,46 @@ func _power() -> void:
 	_check(lance_h._stutter_until > fx.now and lance_h._power_dip >= 0.40, "a lance on the hull browns out")
 	shield.shield_break(fx, 1)
 	_check(shield._stutter_until > fx.now, "a shield break also stutters the engine")
+	# Neon on PR 1699 item c: one brownout path. A fresh hull gets its damage surfaces (no painted copies), the dip rides
+	# on fx_flick, and fx_power keeps the wear's steady value.
 	var bright := _ship("paint", "voidsworn", Vector3.ZERO, true)
-	var original: BaseMaterial3D = bright.meshes[0].get_active_material(0)
+	_check(bright._damage_surfaces.is_empty(), "a fresh hull has no damage surfaces before its first felt hit")
 	_impact(bright, "ion", 2, 0, 3)
-	var dim: BaseMaterial3D = bright.meshes[0].get_active_material(0)
-	_check(dim.emission_energy_multiplier < original.emission_energy_multiplier * 0.6, "ion dims emissive paint before hull damage exists")
-	var damage := hull.damage_surface(fx, hull.meshes[0], 0, shell_before)
+	_check(not bright._damage_surfaces.is_empty() and bright.meshes[0].get_active_material(0) is ShaderMaterial,
+		"an ion hull hit gives a fresh hull its damage surfaces")
+	_check(not "_dip_materials" in bright and not bright.has_method("power_dip") and not bright.has_method("_dim_paint"),
+		"the painted-copy dip and the separate crawl dip are gone")
 	_advance(0.08)
-	_check(float(damage.get_shader_parameter("fx_power")) < 0.8, "damage shader shares the transient power dip")
+	var lo := _flick_range(bright)
+	_check(lo.x < 0.6, "the brownout reaches the hull as fx_flick (lowest %.2f)" % lo.x)
+	_check(lo.y == 1.0, "fx_power keeps the wear's steady value under the brownout (%.2f)" % lo.y)
 	_advance(1.0)
-	_check(bright.meshes[0].get_active_material(0) == original and float(damage.get_shader_parameter("fx_power")) == 1.0,
-		"paint and damage shader recover their original brightness")
+	lo = _flick_range(bright)
+	_check(bright._power_dip == 0.0 and lo.x == 1.0 and lo.y == 1.0, "the hull's lights recover their full brightness")
 	_ion_hull("fresh", false)
 	_ion_hull("wounded", true)
 
 
+# The lowest fx_flick and fx_power on a ship's damage surfaces (1.0 when it has none).
+func _flick_range(s) -> Vector2:
+	var out := Vector2.ONE
+	for key in s._damage_surfaces:
+		var e: Array = s._damage_surfaces[key]
+		if e.size() > 1 and e[1] is ShaderMaterial:
+			var fl = (e[1] as ShaderMaterial).get_shader_parameter("fx_flick")
+			var pw = (e[1] as ShaderMaterial).get_shader_parameter("fx_power")
+			out.x = minf(out.x, 1.0 if fl == null else float(fl))
+			out.y = minf(out.y, 1.0 if pw == null else float(pw))
+	return out
+
+
 # Artoo on PR 1699: an ion HULL hit (the beam's impact and its crawl, as fx_weapons plays them) brownouts once: the hit's
-# own dip (hit_power), never a second crawl dip (power_dip) multiplied on top; on a fresh hull and on a wounded one,
+# own dip (hit_power), never a second crawl dip multiplied on top; on a fresh hull and on a wounded one,
 # whose ordinary wound flicker keeps running.
 func _ion_hull(tag: String, wounded: bool) -> void:
 	var s := _ship("ion_hull_" + tag, "hegemony")
+	s.wound_log_on = true
 	if wounded:
-		s.wound_log_on = true
 		fx.sync_ship(s.id, {"hp": 40.0, "maxHp": 100.0, "burning": false, "sh": [0, 0, 0, 0],
 			"sec": {"eng": {"hp": 100, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 100, "max": 100}}})
 		_advance(0.5)
@@ -188,7 +206,10 @@ func _ion_hull(tag: String, wounded: bool) -> void:
 	WEAP._ion_crawl(fx, s, p, Vector3.UP, fx.now, Color.SKY_BLUE, 1.0)
 	_advance(0.08)
 	_check(s._dip_peak >= 0.60 and s._power_dip > 0.0, "%s hull: an ion hull hit dims its lights once (peak %.2f, now %.2f)" % [tag, s._dip_peak, s._power_dip])
-	_check(s._power_dip_until < fx.now, "%s hull: the ion crawl adds no second dip" % tag)
+	var dips := 0
+	for e in s.wound_log:
+		dips += 1 if e[0] == "power_dip" else 0
+	_check(dips == 1, "%s hull: the ion crawl adds no second dip (%d dips)" % [tag, dips])
 	_check(s.power_flicker(fx.now) >= 0.5, "%s hull: only the wound flicker rides on the hit's dip (%.2f)" % [tag, s.power_flicker(fx.now)])
 	_advance(1.2)
 	_check(s._power_dip == 0.0, "%s hull: the dip recovers" % tag)

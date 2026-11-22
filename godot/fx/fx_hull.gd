@@ -265,13 +265,14 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 # patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
 const WEAR_WEATHER := 0.45   # fx_weather at full wear
 const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
-static func set_power(mat: ShaderMaterial, wear: float, dip: float) -> void:
-	mat.set_shader_parameter("fx_power", (1.0 - WEAR_POWER * wear) * (1.0 - dip))
+# fx_power is the wear's steady value (and the death fade's); a hit's brownout rides on fx_flick (fx_ship hit_power).
+static func set_power(mat: ShaderMaterial, wear: float) -> void:
+	mat.set_shader_parameter("fx_power", 1.0 - WEAR_POWER * wear)
 
 
-static func set_wear(mat: ShaderMaterial, wear: float, patches: Array, dip := 0.0) -> void:
+static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
 	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
-	set_power(mat, wear, dip)
+	set_power(mat, wear)
 	var n := mini(patches.size(), 8)
 	mat.set_shader_parameter("fx_scorch_count", n)
 	if n > 0:
