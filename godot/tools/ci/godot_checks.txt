@@ -243,3 +243,4 @@ headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels a
 headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
 headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")
+headless|fx/test/status_fx_check.gd|-|-|issue 1693: persistent hull acid and ion arcs, expiry, and a shield sputter on the hit crossing below one quarter

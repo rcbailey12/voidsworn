@@ -1285,6 +1285,7 @@ uniform bool fitted_shape = false;
 uniform int style = 0;
 uniform vec4 hits[6];
 uniform vec4 hitw[6];
+uniform vec2 ion_arc = vec2(-100.0, 0.0); // start time and azimuth in the shield's frame
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
@@ -1341,6 +1342,7 @@ void fragment() {
 	float I = 0.0;
 	float maxR = length(rad);
 	float web = 0.0;
+	float strain = 0.0;
 	// F3: hits read at distance and on small ships: the hot core, the ripple and its spread never shrink below a few
 	// pixels (wpx = world units per pixel here), and every hit lights the whole bubble faintly in the faction's colour
 	// and pattern for half a second (more when the camera is far out), so a shield hit reads as that ship's shield
@@ -1372,6 +1374,12 @@ void fragment() {
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
 		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
 		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
+		if (hitw[i].w > 0.5) {
+			// Two uneven surges on the edge near this contact. A single soft lift under reduce flashing.
+			float beat = 0.3 + 0.7 * pow(0.5 + 0.5 * cos(age * 28.0), 2.0);
+			float side = smoothstep(0.45, 0.8, dot(snorm(vL), snorm(h.xyz / rad)));
+			strain = max(strain, side * mask * fade * mix(beat, 0.55, fx_calm));
+		}
 		// shear look: each hit briefly lights the crack network round it, so the hit already shows how this shield fails
 		web += mask * (1.0 - f) * (1.0 - f) * S;
 	}
@@ -1383,6 +1391,7 @@ void fragment() {
 	}
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
 	float fres = spow(1.0 - abs(dot(normalize(vN), V)), 4.0);
+	I += strain * (0.25 + 2.0 * fres);
 	if (dot(route_on, route_on) > 0.0) {
 		vec3 un = normalize(vL);
 		float side = 0.0;
@@ -1553,10 +1562,23 @@ void fragment() {
 		if (style != 2) { add += alive * 0.3 * pat * (0.3 + 0.7 * fres); }
 		total = total * alive + add * life * (0.55 + 0.45 * fres);
 	}
-	if (total < 0.002) { discard; }
+	float ion = 0.0;
+	float ia = scene_t - ion_arc.x;
+	if (!breaking && ia >= 0.0 && ia < 0.45) {
+		// A short jagged filament across this flank, in the same coordinates on the egg and the fitted skin.
+		vec3 un = snorm(vL);
+		vec2 axis = vec2(cos(ion_arc.y), sin(ion_arc.y));
+		float along = dot(un.xz, vec2(-axis.y, axis.x));
+		float jag = vnoise(vec2(along * 21.0, ion_arc.x + floor(ia * mix(8.0, 0.0, fx_calm))));
+		float line = un.y - (0.48 + along * 0.20 + (jag - 0.5) * 0.20);
+		float width = max(fwidth(line), 0.018);
+		ion = (1.0 - smoothstep(0.0, width * 1.5, abs(line))) * smoothstep(0.50, 0.76, dot(un.xz, axis));
+		ion *= smoothstep(0.0, 0.07, ia) * (1.0 - smoothstep(0.23, 0.45, ia)) * 0.85;
+	}
+	if (total + ion < 0.002) { discard; }
 	// the shear's running crack and the collapse's band burn toward white (zero in today's look)
 	C = mix(C, vec3(length(col)) * 0.62, clamp(hot, 0.0, 0.75));
-	ALBEDO = clamp(C * total * fx_gain, 0.0, 512.0);
+	ALBEDO = clamp((C * total + vec3(0.52, 0.73, 1.0) * ion) * fx_gain, 0.0, 512.0);
 }
 """
 

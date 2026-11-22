@@ -2075,20 +2075,22 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
 		if bio and not shield_only:
 			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			var normal: Vector3 = tg.get("ln", Vector3.UP)
 			fx.later(T, func l_acid_spot() -> void:
 				var sp: Array = Tg.get_meta("acid_spots", [])
-				sp.append([lhp, fx.now])
+				sp.append([lhp, fx.now, normal])
 				while sp.size() > MELT_SPOTS: sp.pop_front()
 				Tg.set_meta("acid_spots", sp))
+	var fraction := 0.0 if breaking else float(hd.get("shieldFraction", -1.0))
 	if shield_only:
-		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
+		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col, fraction)
 		return
 	if tg.has("through") and Tg != null and not breaking:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
-			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)
+			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col, fraction)
 		else:
-			Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4)
+			Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4, fraction)
 	# every weapon leaves its own mark in the hull itself (R43; fx_breach.marks_for): burn-throughs, craters, punctures,
 	# blast holes, pockmarks, acid pits, electrical burns
 	if Tg != null and tg.has("lp"):
@@ -2206,7 +2208,7 @@ static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: b
 	fx.spr(p,T,0.7 if light else 1.0,col,1.0,sz*0.18,sz*0.13,21)
 
 
-static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE) -> void:
+static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE, fraction := -1.0) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
 	var sc: Color = Tg.fac["shield"] if Tg != null else FLOOK.shield("hegemony")
@@ -2234,12 +2236,12 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 		life = 0.3
 	strength *= 1.3
 	if Tg != null:
-		Tg.shield_hit(fx, tg["local"], T, strength, spread, life)
+		Tg.shield_hit(fx, tg["local"], T, strength, spread, life, fraction)
 		if beam and sustain > 0.3:
 			# slow rings while the beam holds (one per 0.35 s), not counted flashes
 			var t = T + 0.35
 			while t < T + sustain:
-				Tg.shield_hit(fx, tg["local"], t, 0.6, spread * 0.8, 0.6)
+				Tg.shield_hit(fx, tg["local"], t, 0.6, spread * 0.8, 0.6, 0.0)
 				t += 0.35
 	# F3 round 2: the bubble flashes in its faction's colour where it was struck: a ripple ring racing out along the
 	# bubble's surface and a soft coloured glow, each with its own size on screen, so a shield hit reads from the
