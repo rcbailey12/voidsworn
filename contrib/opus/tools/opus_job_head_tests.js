@@ -424,6 +424,10 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   const later = job1535('opus1396later');
   relay([[path.join(later, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1396later');
   const laterJob = path.dirname(later);
+  // a dry run never fetches, so the mirror must already hold the relay (on the PC other jobs refresh it); a live run fetches
+  r = run('dropjobs', laterJob, 'dry');
+  assert(fs.existsSync(path.join(later, 'new')) && /branch board\/pc-out-opus1396later \(from the job name\) is not on origin at the shared mirror's commit/.test(r.out), 'a dry run does not fetch: ' + r.out);
+  git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', '+refs/heads/board/pc-out-opus1396later:refs/heads/board/pc-out-opus1396later']);
   r = run('dropjobs', laterJob, 'dry');
   assert.equal(r.status, 0, r.out);
   assert(fs.existsSync(path.join(later, 'new')) && r.out.includes(`checkout new would be checked and removed after the relay: ${path.join(later, 'new')}`), 'the dry run names the checkout and keeps it: ' + r.out);
