@@ -64,6 +64,18 @@ try {
   assert(/sent part 4 of 4/.test(r.out), 'four bounded pushes, one per file: ' + r.out);
   const whole = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657b']).split('\n').sort();
   assert.deepEqual(whole, ['a', 'b', 'c', 'd'].map(n => `out_20261122_180000_5/out_new/${n}.txt`), 'the rerun sends everything: ' + whole);
+  // Issue 1739: Windows PowerShell 5.1 changed what reached git's stdin (CRLF lines, then a byte order mark before the first
+  // path), so relay_push never feeds git stdin; paths go as arguments in bounded calls. Many long names (several calls),
+  // a space and a non-ASCII letter, and the first path in path order must all land.
+  const src = fs.readFileSync(path.join(ROOT, 'tools', 'pc', 'relay_push.ps1'), 'utf8');
+  assert(!/--stdin-paths|--index-info|RedirectStandardInput|\|\s*&\s*\$gitExe/.test(src), 'relay_push.ps1 feeds nothing to git on stdin');
+  const at6 = path.join(vt, 'opus1739', 'out_20261122_200000_6');
+  const names = Array.from({ length: 120 }, (_, i) => `out_new/frame_${String(i).padStart(3, '0')}_${'x'.repeat(60)}.png`).concat(['out_new/a first file.txt', 'out_new/caf\u00e9.txt']);
+  for (const n of names) write(path.join(at6, n), n);
+  r = run('opus1739', at6);
+  assert.equal(r.status, 0, r.out);
+  const many = git(['--git-dir', relaySource, '-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1739']).split('\n').sort();
+  assert.deepEqual(many, names.map(n => 'out_20261122_200000_6/' + n).sort(), 'every file lands, the first one too: ' + many.slice(0, 3).join(', '));
   // refusals
   const outside = path.join(tmp, 'elsewhere', 'out_1'); write(path.join(outside, 'out_x', 'a.txt'), 'x');
   assert.notEqual(run('opus1657', outside).status, 0, 'a folder outside voidsworn_test is refused');
