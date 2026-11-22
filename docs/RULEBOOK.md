@@ -758,8 +758,8 @@ quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
 movement after firing (Fleet Elsewhere, The Wall Moves) add to that same budget. A free turn granted by an admiral tree skill
 (Cut and Turn, Fleet Elsewhere, Trophy Standard) still turns a ship after firing; that skill is the exception it grants (Set:
-Board reading of R396, Nov 22, until Ryan says otherwise). Why:
-Ryan, "Agree no" (issue 1560 item 14). Set: Ryan, Nov 22 (R396). Code: canRotate and ramInfo in both rules twins.
+Ryan, Nov 22, R397). Why:
+Ryan, "Agree no" (issue 1560 item 14) and "Yes agree on skills". Set: Ryan, Nov 22 (R396, R397). Code: canRotate and ramInfo in both rules twins.
 
 8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
 rising whooshes or stock explosions; weight in the low and low-mid with a soft top. Why: "The sounds that I've heard from the
