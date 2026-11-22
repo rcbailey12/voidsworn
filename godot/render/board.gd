@@ -986,6 +986,11 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 const BEACON_LEN := 12.0      # O3's length_world 7.5 times the board's ship scale (hull_table SHIP_K 1.6)
 const BEACON_TOP := -0.6      # the highest point of the beacon, just under the grid
 const BEACON_TILT := 35.0     # degrees the lens is tipped up from level
+# Ryan's 1536B look (Nov 22): under the grid, the beacon slid to the near edge of its hex from the battle camera. The
+# camera's home view (camera_rig home_b, 0.98 rad from straight up, so about 34 degrees above level)
+# sees a point d under the grid d * tan(0.98) toward itself, so the beacon moves that far away from the camera (-z) and
+# reads centred in the gold hex at the home view.
+const BEACON_VIEW_B := 0.98
 var beacon_node: Node3D = null
 
 
@@ -1001,12 +1006,17 @@ func _beacon() -> void:
 	print("[board] relay beacon ready in %.1f ms (threaded prefetch collected, issue 1536)" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	# lens (+x) toward +z (the player's side, where the battle camera starts), then tipped up by BEACON_TILT
 	var basis := Basis(Vector3.RIGHT, -deg_to_rad(BEACON_TILT)) * Basis(Vector3.UP, -PI / 2.0)
-	var top := 0.0
+	var box := AABB()
+	var first := true
 	for mi in n.find_children("*", "MeshInstance3D", true, false):
 		var xf := Transform3D(basis, Vector3.ZERO) * _rel_to(mi as Node3D, n)
 		var bb: AABB = xf * (mi as MeshInstance3D).get_aabb()
-		top = maxf(top, bb.end.y)
-	n.transform = Transform3D(basis, hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), BEACON_TOP - top))
+		box = bb if first else box.merge(bb)
+		first = false
+	var drop := BEACON_TOP - box.end.y              # the top just under the grid
+	var depth := -(box.get_center().y + drop)       # how far the beacon's middle sits under the grid
+	var at := hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), drop) - Vector3(box.get_center().x, 0.0, box.get_center().z)
+	n.transform = Transform3D(basis, at + Vector3(0.0, 0.0, -depth * tan(BEACON_VIEW_B)))
 	props.add_child(n)
 	beacon_node = n
 

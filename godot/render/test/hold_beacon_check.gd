@@ -2,7 +2,7 @@ extends SceneTree
 # Issue 1536 (Ryan, Nov 22 2026: "Yes" to showing the Relay in Hold battles): in a Hold battle the board stands the Navy relay
 # beacon O3_11 under the hold hex. GitHub has no built ship files, so the check points the props' manifest at a stub box
 # scene (fixtures/beacon) and checks, on a small board:
-#   a Hold battle: exactly one relay_beacon node, centred under the hold hex, no longer than BEACON_LEN and inside its hex,
+#   a Hold battle: exactly one relay_beacon node, centred on the hold hex as the camera's home view sees it, no longer than BEACON_LEN and inside its hex,
 #     its top under the board plane (a ship holding the hex floats over it), its lens (+x) turned toward +z and tipped up;
 #   a battle with another objective: no beacon;
 #   a Hold battle on a build without O3_11: no beacon and no error (the gold hex alone, as before);
@@ -74,7 +74,9 @@ func _run() -> void:
 		var box := _box(found[0] as Node3D)
 		var hex: Vector3 = board.hex_world(1.0, -1.0)
 		var c := box.get_center()
-		_check(Vector2(c.x - hex.x, c.z - hex.z).length() < 0.05, "the beacon's centre is %.2f off the hold hex" % Vector2(c.x - hex.x, c.z - hex.z).length())
+		# seen from the camera's home view, the beacon's middle lands on the hold hex's centre (Ryan's 1536B look, Nov 22)
+		var seen := Vector2(c.x - hex.x, c.z + (-c.y) * tan(BOARD.BEACON_VIEW_B) - hex.z)
+		_check(seen.length() < 0.05, "from the home view the beacon's middle is %.2f off the hold hex" % seen.length())
 		var longest := maxf(box.size.x, maxf(box.size.y, box.size.z))
 		_check(longest <= BOARD.BEACON_LEN + 0.05 and longest > 0.5 * BOARD.BEACON_LEN, "the beacon's longest side is %.2f, want up to %.2f" % [longest, BOARD.BEACON_LEN])
 		_check(box.end.y < 0.0, "the beacon's top is at %.2f, want under the board plane" % box.end.y)
