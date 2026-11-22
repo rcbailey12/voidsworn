@@ -42,7 +42,8 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   must show origin holding that branch at the commit checked in the shared mirror (the mirror is fetched once when it
   does not). The Board relays an attempt in that layout (the attempt folder itself at the tree's root, on
   `board/pc-out-<job>`, adding to the branch for later attempts) and then runs `dropcheckouts <attempt>`; a later tail of
-  the same job repeats the check. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
+  the same job repeats the check. The janitor (hourly and after jobs) runs the same proof over every PASS attempt that still lists
+  checkouts (`opus_job_head.ps1 dropjobs <job>`, `dry` on a janitor dry run), so no hand step is needed after a relay. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
   size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
   everything, and the log names the first files that differ or are missing. A proven checkout is first recorded in its folder's
@@ -65,6 +66,10 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `OJ_KEEP_CHECKOUTS=1` skips the step at the tail. Known and accepted: clearing read-only on git packs also clears it on
   the mirror's hard-linked copies, the logged GB counts hard-linked bytes the mirror still holds, and an error
   mid-removal leaves a half-removed checkout behind.
+- Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
+  folders and kept checkouts) holds the mirror writers' lock `repo-mirror.git.lock` from its last proof through the
+  delete, so no lane's fetch or prune can drop a ref the proof read in between (issue 1396, Artoo on PR 1592). A lane
+  fetch waits meanwhile; the janitor waits up to 10 minutes for the lock, then keeps the folder. Dry runs never take it.
 - Ship jobs (`ship_job.bat`): after a PASS the clone's Godot import cache `repo\godot\.godot` goes before the done line
   (`opus_job_head.ps1 dropcache`); the clone stays because the publish installs with its tools. `publish_ship.bat`
   removes the clone after a published PASS (`droprepo`: HEAD must be the published commit, every file in the job's
@@ -72,10 +77,12 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   <commit> <code> <branch> <tree folder>`, every local commit in the shared mirror or a merge of mirror commits, every tag or other non-branch ref in the mirror under the same name and object, no stash or staged change;
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
-  keeps its slimmer clone for the janitor (issue 1396). A second publish from the same job folder needs a new ship run.
+  keeps its slimmer clone: the janitor never removes a ship clone (issue 1396); an abandoned one goes to the Board as a
+  one-off. A second publish from the same job folder needs a new ship run.
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
+Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
 
 ## What the Board checks

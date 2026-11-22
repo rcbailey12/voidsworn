@@ -310,7 +310,7 @@ try {
   // The Board keep list (issue 1180, Nov 20): an owned scratch that would otherwise go stays when listed by exact path.
   const boardKept = scratch(temp, ownerName(309, 'a'), 26);
   markOwned(boardKept, 26);
-  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n\r\n`);
+  write(path.join(pc, 'janitor_keep.txt'), `\uFEFF# held on purpose by the Board\r\n${boardKept}\r\n${path.join(pc, 'opus1396kept')}\r\n\r\n`);
   for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, tokenOnly]) markOwned(dir, 26);
   for (const [dir, hours] of [[oldRetry, 25], [freshRetry, 4]]) {
     const marker = path.join(dir, '.voidsworn-run-failed');
@@ -377,6 +377,10 @@ try {
   dateTree(helperRelayed, 30);
   const helperUnrelayed = helperFolder('opus903', { 'out/result.txt': 'opus903 result relayed', 'out/shot.png': 'opus903 picture too big to relay' });
   relay(path.join(helperUnrelayed, 'out', 'result.txt'));
+  // DRY3 on the PC spent about 250 s per opus1434 folder hashing 2 GB videos: a file over GitHub's 100 MB limit is never
+  // on a relay branch, so it counts as not relayed without being read (a sparse file here).
+  const helperHuge = path.join(helperUnrelayed, 'out', 'capture.avi');
+  fs.writeFileSync(helperHuge, ''); fs.truncateSync(helperHuge, 101 * 1024 * 1024);
   dateTree(helperUnrelayed, 30);
   const helperLoose = helperFolder('opus906', { 'out/result.txt': 'opus906 loose blob only' });
   git(['--git-dir', mirror, 'hash-object', '-w', '--no-filters', path.join(helperLoose, 'out', 'result.txt')]);
@@ -400,12 +404,74 @@ try {
   write(path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 'T6_11 newer shared bake, different');
   buildTimes.push([path.join(pc, 'build', 'godot/assets/ships/T6_11/T6_11.glb'), 10]);
   dateTree(helperShip, 30);
+  // Artoo on PR 1592 (cd20c292): a checkout inside out is not hashed as a result but must still pass the Git proof. Every
+  // real result relayed; the nested checkout holds an unsaved file (opus1396n) or an unpushed commit (opus1396u): the
+  // whole folder and the work survive.
+  const nestDirty = helperFolder('opus1396n', { 'out/result.txt': 'opus1396n result relayed' });
+  relay(path.join(nestDirty, 'out', 'result.txt'));
+  const nestDirtyRepo = makeCopy('repo', 2, path.join(nestDirty, 'out'));
+  write(path.join(nestDirtyRepo, 'notes.txt'), 'unsaved notes in a nested checkout');
+  dateTree(nestDirty, 30);
+  // Review of PR 1592: a ship job's clone waits for its publish; the janitor never removes it, whole folder or checkout.
+  const shipJob = helperFolder('opus1396s', { 'out/result.txt': 'start S5 T9_11 opus/issue-1396 Sun 11/22/2026 1:00\r\ndone PASS\r\nall done\r\n' });
+  relay(path.join(shipJob, 'out', 'result.txt'));
+  const shipClone = makeCopy('repo', 2, shipJob);
+  dateTree(shipJob, 30);
+  const nestLocal = helperFolder('opus1396u', { 'out/result.txt': 'opus1396u result relayed' });
+  relay(path.join(nestLocal, 'out', 'result.txt'));
+  const nestLocalRepo = makeCopy('repo', 2, path.join(nestLocal, 'out'));
+  const nestUnpushed = commit(path.join(nestLocalRepo, '.git'), 'unpushed work in a nested checkout', main);
+  git(['-C', nestLocalRepo, 'update-ref', 'refs/heads/main', nestUnpushed]);
+  dateTree(nestLocal, 30);
   // A relayed helper whose clone has a live external worktree (it could hold staged-only work under the clone's .git).
   const helperWorktree = helperFolder('opus909', { 'out/result.txt': 'opus909 result relayed' });
   relay(path.join(helperWorktree, 'out', 'result.txt'));
   const helperWorktreeRepo = makeCopy('repo', 2, helperWorktree);
   git(['-C', helperWorktreeRepo, 'worktree', 'add', '-q', '--detach', path.join(root, 'opus909-external')]);
   dateTree(helperWorktree, 30);
+  // Issue 1396: suffixed job folders (opus1211_run6, opus1434o) and playtest folders (pt1120c) are job folders too. A folder
+  // the whole-folder rule keeps (results not relayed) still loses its rebuildable checkouts after 6 hours idle (Artoo on
+  // #1396: LOAD15's opus1434o; its unrelayed masters stay). Out files, pictures and logs are never touched.
+  const suffixRelayed = helperFolder('opus1211_run6', { 'out/result.txt': 'opus1211_run6 result relayed' });
+  relay(path.join(suffixRelayed, 'out', 'result.txt'));
+  makeCopy('repo', 2, suffixRelayed);
+  dateTree(suffixRelayed, 30);
+  const jobKeptOut = helperFolder('opus1434o', { 'out/result.txt': 'opus1434o review clip relayed', 'out/master_A.avi': 'opus1434o unrelayed master', 'run.log': 'opus1434o log' });
+  relay(path.join(jobKeptOut, 'out', 'result.txt'));
+  const jobKeptRepo = makeCopy('repo', 2, jobKeptOut);
+  dateTree(jobKeptOut, 30);
+  const playtest = helperFolder('pt1120c', { 'out_A/shot.png': 'pt1120c picture', 'out_A/done.txt': 'FAILED' });
+  const playtestRepo = makeCopy('repo_A', 2, path.join(playtest, 'out_A'));
+  dateTree(playtest, 30);
+  const jobRecent = helperFolder('opus1373probe2', { 'out/shot.png': 'opus1373probe2 picture' });
+  const jobRecentRepo = makeCopy('repo', 2, jobRecent);
+  dateTree(jobRecent, 4);
+  const jobWork = helperFolder('opus1238b', { 'out/shot.png': 'opus1238b picture' });
+  const jobWorkRepo = makeCopy('repo', 2, jobWork);
+  write(path.join(jobWorkRepo, 'godot', 'bench', 'probe.gd'), 'opus1238b unsaved probe');
+  dateTree(jobWork, 30);
+  const jobLookalike = scratch(pc, 'opus1396.old', 30);
+  const jobCheckoutsGone = [jobKeptRepo, playtestRepo];
+  // Board, Nov 22: the janitor runs the job head's relay proof (dropjobs) over PASS attempts that still list checkouts.
+  // With no relay branch for this job the proof refuses, so the checkout stays in both runs and the reason is logged.
+  const relayAttempt = path.join(pc, 'opus1396relay', 'out_20261122_010101_1');
+  write(path.join(relayAttempt, 'done.txt'), 'PASS\r\n');
+  write(path.join(relayAttempt, 'checkouts.txt'), `new ${'a'.repeat(40)}\r\n`);
+  write(path.join(relayAttempt, 'new', 'godot', 'project.godot'), 'pinned checkout stand-in');
+  write(path.join(relayAttempt, 'out_new', 'result.txt'), 'relay fixture result');
+  dateTree(path.join(pc, 'opus1396relay'), 30);
+  const relayCheckout = path.join(relayAttempt, 'new');
+  // Artoo on PR 1592: the relay proof never runs where the janitor's own checks refuse: a Board-kept job folder, and a
+  // job whose lease a helper run holds (opus910). Both carry a PASS attempt listing a checkout.
+  const relayGuarded = [path.join(pc, 'opus1396kept'), helperLeased].map(dir => {
+    const at = path.join(dir, 'out_20261122_020202_2');
+    write(path.join(at, 'done.txt'), 'PASS\r\n');
+    write(path.join(at, 'checkouts.txt'), `new ${'b'.repeat(40)}\r\n`);
+    write(path.join(at, 'new', 'godot', 'project.godot'), 'guarded checkout stand-in');
+    dateTree(dir, 30);
+    return dir;
+  });
+  const jobCheckoutsKept = [jobWorkRepo];
   // Older scratch with no ownership token: our tools' exact names, a day untouched, no process naming it.
   const legacyOld = scratch(temp, `voidsworn-run-${'a1'.repeat(16)}`, 30);
   const legacyIssue = scratch(temp, `voidsworn-run-320-${'b2'.repeat(16)}`, 30);
@@ -444,8 +510,9 @@ try {
   dateTree(liveHelper, 5);
   const invalidOwner = scratch(temp, ownerName(307, 'f'), 26);
   markOwned(invalidOwner, 26, 'invalid token');
-  const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob']
+  const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob', 'pt112', 'ptx1120']
     .map(name => scratch(pc, name, 26));
+  never.push(jobLookalike, jobRecentRepo, relayCheckout);
   never.push(makeCopy('repo', 1, laneB), scratch(temp, 'ordinary-folder', 26), scratch(root, 'issue-910-out-of-scope', 26));
   const lockPath = path.join(temp, 'voidsworn-runner-issue-302.lock');
   const work = path.join(pc, 'work217');
@@ -488,8 +555,8 @@ try {
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
-    legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, ...recover];
-  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+    legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, suffixRelayed, ...jobCheckoutsGone, ...recover];
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, shipJob, shipClone, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -513,7 +580,7 @@ try {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
   for (const dir of remove) decision(dry, dir, 'would remove');
-  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/]opus\d+[^\\/]*$/.test(dir) ? 'would keep' : 'kept');
+  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/](?:opus\d+|pt\d{4})[^\\/]*$/.test(dir) ? 'would keep' : (jobCheckoutsKept.includes(dir) ? 'retained' : 'kept'));
   for (const dir of lookalikes) {
     assert.match(decision(dry, dir, 'would keep'), /name match without owner record/);
   }
@@ -538,7 +605,8 @@ try {
   assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
-  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 2 of 3 out files are not on a relay branch/);
+  assert(dry.includes(`helper file not on a relay branch: ${helperHuge} (105906176 bytes; over GitHub's 100 MB file limit, not read)`), 'a huge file is not hashed: ' + dry);
   assert(dry.includes(`helper file not on a relay branch: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');
   assert.match(decision(dry, helperWorktree, 'would keep'), /is not rebuildable: checkout may be shared with another worktree: /);
   assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files that differ from the shared build/);
@@ -547,8 +615,34 @@ try {
   assert(dry.includes(`helper file outside out and outside a checkout: ${path.join(helperSibling, 'work.blend')} (`), 'working file is listed');
   assert.match(decision(dry, helperNoOut, 'would keep'), /no out folder to prove the results were relayed/);
   assert.match(decision(dry, helperLeased, 'would keep'), /a helper run holds this folder's lease/);
+  // Issue 1396: the checkout-only path, its record lines and its refusals.
+  assert(dry.includes(`job relay: checkouts kept: ${relayAttempt} (results not relayed yet: board/pc-out-opus1396relay:out_20261122_010101_1: branch board/pc-out-opus1396relay (from the job name) is not on origin`), 'the dry run lists the relay proof refusal: ' + dry);
+  assert(dry.includes(`job relay check exit 0 in ${path.join(pc, 'opus1396relay')}`), 'the head ran for the unguarded job');
+  assert(dry.includes(`job relay checkouts would keep in ${relayGuarded[0]} (kept: on the Board keep list)`), 'a Board-kept job never reaches the relay proof: ' + dry);
+  assert(dry.includes(`job relay checkouts would keep in ${relayGuarded[1]} (a helper run holds this folder's lease)`), 'a held lease never reaches the relay proof');
+  for (const dir of relayGuarded) assert(!dry.includes(`job relay check exit 0 in ${dir}`) && !dry.includes(`job relay: checkouts kept: ${dir}`), `the head never ran for ${dir}`);
+  assert.match(decision(dry, jobKeptOut, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, jobKeptRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
+  // DRY2 on the PC (Artoo on PR 1592): a checkout inside an out folder is not output. Its files and pack are never hashed
+  // as results; it takes the Git proof instead. pt1120c's out_A holds repo_A beside two unrelayed results: 2 of 2.
+  assert.match(decision(dry, playtest, 'would keep'), /results not all relayed: 2 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, shipJob, 'would keep'), /a ship clone waits for its publish/);
+  assert.match(decision(dry, shipClone, 'retained'), /a ship clone waits for its publish/);
+  for (const [dir, repo] of [[nestDirty, nestDirtyRepo], [nestLocal, nestLocalRepo]]) {
+    assert.match(decision(dry, dir, 'would keep'), new RegExp(`checkout ${repo.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} is not rebuildable: `), 'a nested checkout with local work keeps its folder: ' + dry);
+  }
+  assert(!/helper file not on a relay branch: [^\r\n]*[\\/]\.git[\\/]/.test(dry) && !dry.includes(`helper file not on a relay branch: ${playtestRepo}`), 'no file inside a checkout is hashed as a result');
+  assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
+  const headOf = dir => git(['-C', dir, 'rev-parse', 'HEAD']);
+  for (const dir of jobCheckoutsGone) assert(dry.includes(`job checkout record: ${dir} HEAD ${headOf(dir)}, `), `HEAD and status logged for ${dir}`);
+  assert.match(dry, new RegExp(`job checkouts would keep in ${jobRecent.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} \\(job folder touched in the last 6 hours\\)`));
+  assert.match(decision(dry, jobWorkRepo, 'retained'), /working tree needs keeping: \?\? godot\/bench\/probe\.gd/);
+  assert(dry.includes(`job checkout status: ${jobWorkRepo}: ?? godot/bench/probe.gd`), 'the unsaved file is listed');
+  assert.match(dry, /job checkouts would keep in .*opus910 \(a helper run holds this folder's lease\)/);
+  assert.match(decision(dry, helperShip, 'would keep'), /holds 1 ship or gen files/);
+  assert.match(decision(dry, path.join(helperShip, 'repo'), 'retained'), /superseded ship or gen files need a checked archive/);
   assert.match(decision(dry, boardKept, 'would keep'), /kept: on the Board keep list/);
-  assert.match(dry, /Board keep list: 1 paths/);
+  assert.match(dry, /Board keep list: 2 paths/);
   assert.match(decision(dry, legacyRecent, 'would keep'), /touched in the last 24 hours/);
   assert.match(decision(dry, legacyLocked, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, legacyProcess, 'would keep'), /a running process names this folder \(process 0 fixture\)/);
@@ -574,6 +668,8 @@ try {
   for (const dir of recover) decision(dry, dir, 'would remove (after checked salvage');
   decision(dry, failedSalvage, 'would remove (after checked salvage');
   for (const dir of [...remove, ...preserve, ...never]) assert(fs.existsSync(dir), `dry run changed ${dir}`);
+  // Artoo on PR 1592: a dry run never creates a job folder's lease; the live run below must take one where none existed.
+  for (const dir of [jobKeptOut, playtest]) assert(!fs.existsSync(path.join(dir, '.voidsworn-run-active')), `dry run created a lease in ${dir}`);
   for (const dir of never) assert(!dry.includes(`${dir} (`), `unexpected candidate ${dir}`);
   assert.match(dry, /issue #302 lock is held/);
   assert.match(dry, /touched in the last 3 hours/);
@@ -581,7 +677,37 @@ try {
   assert.match(dry, /shared generated copy could not be verified/);
   assert.match(dry, /free space before: [\d]+ bytes[\s\S]*free space after: [\d]+ bytes\r?\nall done$/);
   assert.deepEqual(fs.readdirSync(salvageRoot), ['earlier']);
+  // Issue 1396 (the first PC dry run ran 1 h 47 min unfinished): the time cap stops before the next folder and says where;
+  // a dry run never writes janitor_resume.txt; a resume file makes the job folders start at its name and wrap around.
+  const resumeFile = path.join(pc, 'janitor_resume.txt');
+  const ordinalTwin = scratch(pc, 'opus12110', 30);
+  const jobTimes = report => report.split(/\r?\n/).filter(l => l.startsWith('folder time: ' + pc + path.sep)).map(l => l.slice(13).replace(/ \d+ s$/, ''));
+  const capDry = runJanitor('--dry-run', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  assert.match(capDry, /time cap: stopped the temp folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
+  assert.match(capDry, /time cap: stopped the root folders at (?:opus|pt)\S* after \d+ s \(cap 0 s\); the next run starts there/);
+  assert(!/folder time: /.test(capDry) && !/job relay check exit/.test(capDry), 'a capped run reaches no folder: ' + capDry);
+  // Review of PR 1592: the board lanes and the Workhorse runs stop at the cap too, so no lane checkout is even sized.
+  assert.match(capDry, /time cap: stopped the lane folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
+  assert(!/kept checkout (?:would remove|retained|removed)/.test(capDry), 'a capped run reaches no lane checkout: ' + capDry);
+  assert(!fs.existsSync(resumeFile), 'a dry run never writes janitor_resume.txt');
+  // A fresh baseline with the same inventory as the resumed runs (Artoo on PR 1592: opus12110 is made after the first dry run).
+  const allJobs = jobTimes(runJanitor('--dry-run'));
+  assert(allJobs.includes(ordinalTwin), 'the baseline holds the new folder: ' + allJobs);
+  assert(allJobs.includes(path.join(pc, 'opus1396relay')) && allJobs.length > 5, 'every job folder has a folder time line in test mode: ' + allJobs);
+  write(resumeFile, 'root opus1396relay\r\n');
+  const resumed = jobTimes(runJanitor('--dry-run'));
+  assert.equal(resumed[0], path.join(pc, 'opus1396relay'), 'the job folders start at the resume name: ' + resumed);
+  assert.deepEqual([...resumed].sort(), [...allJobs].sort(), 'and wrap around to reach every job folder once');
+  assert.equal(read(resumeFile), 'root opus1396relay\r\n', 'a dry run leaves the resume file as it was');
+  // Review of PR 1592: one ordering for the walk and the lookup. Sort-Object put opus1211_run6 before opus12110 while the
+  // ordinal lookup judged it greater, so a cursor at opus12110 restarted at opus1211_run6.
+  write(resumeFile, 'root opus12110\r\n');
+  const resumedAt = jobTimes(runJanitor('--dry-run'));
+  assert.equal(resumedAt[0], ordinalTwin, 'an exact resume name starts there: ' + resumedAt);
+  assert.deepEqual([...resumedAt].sort(), [...allJobs].sort());
+  fs.rmSync(resumeFile);
   const live = runJanitor('--low-space');
+  assert(!fs.existsSync(resumeFile), 'a run that reached every folder leaves no resume file');
   const reportFile = fs.readdirSync(pc).find(name => /^janitor_\d{8}-\d{4}\.txt$/.test(name));
   assert(reportFile && read(path.join(pc, reportFile)).includes('all done'));
   for (const dir of remove) {
@@ -589,6 +715,18 @@ try {
     assert(!fs.existsSync(dir), `janitor left ${dir}`);
   }
   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
+  for (const [dir, file, text] of [[jobKeptOut, 'out/master_A.avi', 'opus1434o unrelayed master'], [jobKeptOut, 'run.log', 'opus1434o log'],
+    [playtest, 'out_A/shot.png', 'pt1120c picture'], [playtest, 'out_A/done.txt', 'FAILED']]) {
+    assert.equal(read(path.join(dir, file)), text, `checkout-only cleanup kept ${file} in ${dir}`);
+  }
+  assert(live.includes(`job relay: checkouts kept: ${relayAttempt} (`) && live.includes(`job relay check exit 0 in ${path.join(pc, 'opus1396relay')}`), 'the live run runs the relay proof and keeps an unrelayed checkout: ' + live);
+  assert(live.includes(`job relay checkouts kept in ${relayGuarded[0]} (kept: on the Board keep list)`) && live.includes(`job relay checkouts kept in ${relayGuarded[1]} (a helper run holds this folder's lease)`), 'guards hold in the live run too');
+  for (const dir of relayGuarded) assert(fs.existsSync(path.join(dir, 'out_20261122_020202_2', 'new', 'godot', 'project.godot')), `guarded checkout stays in ${dir}`);
+  // The missing-lease case (Artoo on PR 1592): the live run created and held a lease in each folder that had none, so a
+  // helper_clone start (OpenOrCreate, no sharing) during the removal would have stopped instead of overlapping.
+  for (const dir of [jobKeptOut, playtest]) assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')), `live run took no lease in ${dir}`);
+  // Review of PR 1592: the whole-folder rule creates and holds the lease on a live run when the folder had none.
+  assert(fs.existsSync(path.join(helperUnrelayed, '.voidsworn-run-active')), 'live run took the helper lease in a folder that had none');
   assert.equal(read(path.join(linkTarget, 'B16_23.glb')), 'shared ship the link points at', 'a removed link never touches its target');
   if (legacyUnreadable) {
     decision(live, legacyUnreadable, 'removed all but 1 folders another account owns');
@@ -614,6 +752,24 @@ try {
   assert.deepEqual(fs.readdirSync(store).sort(), Object.keys(stored).map(hash => `${hash}.bin`).sort());
   assert.match(live, /0 new bytes in the shared store, 1 already stored\)/);
   decision(live, failedSalvage, 'untracked path cannot be verified');
+  // A live run that reaches its cap writes where each loop stopped, for the next run.
+  if (!windows) {
+    // Review of PR 1592: a resume file that is a link is never written through (its target outside stays as it was).
+    const outside = path.join(root, 'resume-target.txt');
+    write(outside, 'not the janitor\'s file\n');
+    fs.symlinkSync(outside, resumeFile);
+    const linked = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+    assert.match(linked, /resume file (?:ignored|not written): .* is not a plain file/, linked);
+    assert.equal(read(outside), 'not the janitor\'s file\n', 'the link target is untouched');
+    assert(fs.lstatSync(resumeFile).isSymbolicLink(), 'the link stays a link');
+    fs.rmSync(resumeFile);
+  }
+  const capLive = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  const stopped = [...capLive.matchAll(/time cap: stopped the (lane|temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
+  assert.equal(stopped.length, 3, 'the lanes, TEMP and job folders each stop at a zero cap: ' + capLive);
+  assert(!fs.existsSync(resumeFile + '.new'), 'no half-written resume file is left');
+  assert.equal(read(resumeFile).replace(/\r\n/g, '\n'), stopped.join('\n') + '\n');
+  fs.rmSync(resumeFile);
   assert(fs.existsSync(failedSalvage));
   const historyBackup = path.join(salvageRoot, 'board_b_repo-kept-local-history', 'salvage.bundle');
   const restored = makeCopy('restored', 2);
