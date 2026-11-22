@@ -673,7 +673,9 @@ static func _piece_hulls(pieces: Array) -> void:
 		for i in hp.size():
 			hp[i] -= cen
 		pc["hull"] = hp
+		var tr := Time.get_ticks_usec()
 		pc["reach"] = _piece_reach(pc)
+		pc["reach_usec"] = Time.get_ticks_usec() - tr   # issue 1395: the worker's share, printed by fx/test/death_cost_check.gd
 
 
 # Issue 1395 (Neon F9): the piece's reach for the leash (see _measure_reach), worked out here on the cut's worker from
@@ -1394,7 +1396,9 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		var tc := Time.get_ticks_usec()
 		var pieces := _cut(job)
 		job["cut_usec"] = Time.get_ticks_usec() - tc
+		var th := Time.get_ticks_usec()
 		_piece_hulls(pieces)
+		job["hulls_usec"] = Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
 		if bool(job.get("sites", false)):
 			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
 			for i in mini(n_main, pieces.size()):

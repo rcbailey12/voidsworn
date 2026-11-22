@@ -3,6 +3,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 1395 (Neon F9): where a capital kill spends main-thread time. One big kill of A16 (C19_51, the fixture when the
 # installed glb is missing), its cut ready as in a battle, quality high, anchored to its hex so the wreck draws together.
 # Prints, in milliseconds of this machine's CPU:
+#   DEATH_COST precompute: the cut's start to ready (wall clock), the cut itself and its hull-and-reach step (worker)
 #   DEATH_COST frames: the kill frame and the worst frames after it (fx.step plus the engine frame), with the effect time
 #   DEATH_COST reach: _measure_reach (the leash's one-piece-a-frame face read) per piece: worst, total, vertex counts
 #   DEATH_COST tell: _tell's tear material copy per hull mesh (duplicate, frame uniform, overlay), all meshes together
@@ -71,9 +72,20 @@ func _run() -> void:
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	# Artoo on PR 1596: the reach moved onto the cut's worker, so time the cut's start-to-ready too (wall clock, from the
+	# submit to the pieces handed over, frames included) and the worker's hull-and-reach step inside it
+	var c0 := Time.get_ticks_usec()
 	DEATH.precompute(fx, s, "big", true)
+	var ready_frames := 0
 	while not DEATH.finish_precompute(fx, s):
 		await process_frame
+		ready_frames += 1
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var reach_usec := -1000
+	for pc in (job.get("out", []) if job.get("out") != null else []):
+		if (pc as Dictionary).has("reach_usec"): reach_usec = maxi(reach_usec, 0) + int(pc["reach_usec"])
+	print("DEATH_COST precompute ready_ms=%.1f frames=%d cut_ms=%.1f hulls_and_reach_ms=%.2f reach_only_ms=%.2f (old code: -1, it has neither timer)" % [
+		_ms(c0), ready_frames, float(job.get("cut_usec", -1000)) / 1000.0, float(job.get("hulls_usec", -1000)) / 1000.0, float(reach_usec) / 1000.0])
 	fx.anchor_wreck("a16", ship.global_position, 14.0)
 	for i in 10:
 		fx.step(1.0 / 60.0)
@@ -86,10 +98,16 @@ func _run() -> void:
 	var frames: Array = []
 	for i in 60 * 12:
 		var f0 := Time.get_ticks_usec()
+		fx.prof_take()
 		fx.step(1.0 / 60.0)
 		var step_ms := _ms(f0)
+		if step_ms > 12.0: print("DEATH_COST hitch at %.2fs step %.1f ms, fx parts (usec): %s" % [fx.now - t_fx, step_ms, str(fx.prof_take())])
 		await process_frame
 		frames.append([_ms(f0), step_ms, fx.now - t_fx])
+	var hitches: Array = []
+	for f in frames:
+		if float(f[0]) > 12.0: hitches.append("%.2fs %.1f" % [f[2], f[0]])
+	print("DEATH_COST hitches over 12 ms (time after the kill, ms): %s" % (", ".join(hitches) if not hitches.is_empty() else "none"))
 	frames.sort_custom(func(a, b): return a[0] > b[0])
 	var worst: Array = []
 	for f in frames.slice(0, 6):
