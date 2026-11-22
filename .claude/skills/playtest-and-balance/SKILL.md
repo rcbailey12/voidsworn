@@ -1,33 +1,42 @@
 ---
 name: playtest-and-balance
-description: Use after any Voidsworn rules, balance, pacing or content change (battle.js, core.js, data.js, campaign files, sim3d.js). Runs the check pack, the unit checks and the sims, compares against the balance baseline, and reports only the deltas with the mode that produced them. Also covers running heavy jobs on Ryan's PC.
+description: Use after any Voidsworn rules, balance, pacing or content change (godot/rules, godot/campaign and their table files). Runs the standing checks and the Godot rules checks against the saved results, then the balance sims, and reports only the deltas with the mode that produced them. Points at the PC job rules for heavy runs.
 ---
 
 # Playtest and balance
 
-## Fast checks (cloud, every change)
-1. `node contrib/opus/tools/checkpack/checks.js` (or `RUN_CHECKS.bat` on the PC): must stay 0 FAIL.
-2. `node contrib/opus/tools/b1_tests.js`: all ok (save repair, reward chain, capture, retreat and more).
-3. `python3 build.py test` builds; `grep -c` for em dashes is 0 in what you wrote.
+Godot is the only rules source (R405, RULEBOOK 3.1). The root browser files (data.js, core.js, battle.js, campaign files)
+are frozen history: never change them, except a ship's weapon list or hull entry until issue 1667 lands.
 
-## Sims (`node sim3d.js <mode>`)
-- `campaign`: win rate, rounds, hull left, ships lost and waits per sector and kind. Use the `real` timing model for waits (FINDINGS S8); `PACE_OLD=1` re-measures the old pace.
-- `bossmatrix N` (sector 1 unless `BS=2` or `BS=3`), `archmatrix`, `fmatrix`, `matrix`, `shipcount`, `fuzz N` (crash test; must show 0 exceptions).
-- Long runs crawl in the cloud when helpers share the machine: run `fuzz 2000` and big matrices on the PC (below).
-- Baseline: `contrib/opus/compute/balance_reference.md` and its CSVs (rebuild CSVs with `python3 contrib/opus/tools/mega_report.py`).
+## Fast checks (cloud, every change)
+1. `node contrib/opus/tools/run_all_checks.js --jobs 4`: no new FAIL (rows that need pwsh SKIP or fail in a container
+   without it; CI runs them).
+2. `GODOT=godot sh godot/rules/test/run_parity.sh`: every battle against the saved Godot results. An intended change fails
+   by battle name; read `changed-battles.txt`, then update the saved results in the same pull request
+   (`godot/rules/test/saved/README.md`) and say why each battle moved.
+3. `GODOT=godot sh godot/campaign/test/run_campaign_checks.sh 1 30`: the 30 seeded campaign runs and the Nemesis
+   scenarios against their saved results; after a reviewed change, `node godot/campaign/test/node/saved_campaign.js update 1 30`.
+4. After editing `godot/rules/data/tables.json` or `godot/campaign/data/campaign_tables.json`, reseal their checksums:
+   `godot --headless --path godot --script res://rules/tools/reseal_tables.gd`.
+5. No em dashes in what you wrote (`node contrib/opus/tools/check_em_dashes.js`).
+
+## Sims
+- The balance sim `node sim3d.js <mode>` plays the frozen browser rules, so it measures nothing added since R405. Until its
+  Godot port lands (issue 1656), say so in any balance report and do not present its numbers as the new rules.
+- Modes: `campaign` (win rate, rounds, hull left, ships lost and waits per sector and kind; `real` timing model, FINDINGS
+  S8), `bossmatrix N` (`BS=2` or `BS=3` for later sectors), `archmatrix`, `fmatrix`, `matrix`, `shipcount`, `fuzz N`
+  (crash test; must show 0 exceptions). Big runs go to the PC.
+- Baseline: `contrib/opus/compute/balance_reference.md` and its CSVs (`python3 contrib/opus/tools/mega_report.py`).
 
 ## Report
-Only deltas against the baseline, in a table: cell, before, after, the mode and sample size. Flag exit criteria: no admiral below 50% or above 90% against a sector 1 flagship; waits reported as the worst case per round, not held to a target (the old 15 s, target 12, is retired: Ryan accepted longer enemy turns, R64, RULEBOOK 7.3); no crashes. Update FINDINGS rows (evidence, status) and the plan's phase status. Rules and outcomes must not change when only presentation time changes.
+Only deltas against the baseline, in a table: cell, before, after, the mode and sample size. Flag exit criteria: no admiral
+below 50% or above 90% against a sector 1 flagship; waits reported as the worst case per round (R64, RULEBOOK 7.3); no
+crashes. Rules and outcomes must not change when only presentation time changes.
 
 ## Playtest
-Ryan's own run is the exit for B1 and B2. Give him a short list of what to feel for, and record what he says in FINDINGS.
+Ryan's own run is the exit. Give him a short list of what to feel for, and record what he says in FINDINGS.
 
-## PC runner (heavy jobs)
-- **Job queue (Oct 26, preferred):** drop a uniquely named job file into `Downloads\voidsworn_test\queue\` (for example `g1_parity_0426.bat`). The watcher runs queued jobs one at a time, oldest first, from `build\`; output lands in `queue\logs\<name>.log` and the file moves to `queue\done\`. Jobs must end with `exit /b` (never plain `exit`) and must not touch `build\job.bat`. Copy any files the job needs first, from a fresh staging folder. Several helpers can queue jobs safely; never edit a job after it is queued.
-- **Lane B (Oct 26):** a second watcher ("VS job queue B", `watcher_b.bat`) runs `queue_b\*.bat` from its own folder `build_b\`, in parallel with lane A. Use lane B ONLY for CPU-only work that does not touch `build\` or the GPU: downloads, parity checks, headless bot runs, sims. Lane B jobs must unpack their own copy of what they need into `build_b\` (never run from or write into `build\`), use `..\node\node.exe` and `..\godot_path.txt`, and call `tools\pc\tmo.bat` (present in `build_b\tools\pc\`). Logs in `queue_b\logs\`. Lane A (`queue\`) stays for GPU and anything that needs `build\` (renders, shots, Blender, ComfyUI, exports). Lane B starts after the current lane A job (it was launched through run.request); autostart only starts lane A.
-- **Watchdog (Oct 26, required):** wrap every program launch in a queue job as `call tools\pc\tmo.bat <seconds> <exe> [args ...]` from build\ (kills the process tree on overrun, exit 124, logged to queue\logs\timeouts.log). A hung Godot without it blocked the queue for hours on Oct 26. Never drive the PC by computer control to unstick jobs: Task Manager runs elevated and ignores remote clicks, and opening a portable Godot exe starts a new instance.
-- The running watcher is `watcher_q.bat` (window title "VS job queue"); `watcher.bat` is the same script and is what autostart launches. Never edit a watcher script while it runs (cmd reads it line by line).
-- `Downloads\voidsworn_test` with `watcher.bat` running (if it is not, start it with computer control: Explorer, Downloads, voidsworn_test, double-click watcher.bat).
-- Copy changed game files into `voidsworn_test\build\` with device_commit_files. Write the job as `build\job.bat` (CRLF, written by Python; it runs once from `build\`, logs to `..\smoke_log.txt`; `PYEXE` comes from python_path.txt; node is `voidsworn_test\node\node.exe`).
-- Never write job.bat while a run is going. Stage every file from a fresh staging folder (re-using a staged path can commit a stale copy), stage `build\job.bat` back and compare byte for byte, then send `run.request` in a separate, later call.
-- Read results by staging `smoke_log.txt` and the output files back.
+## Heavy jobs on Ryan's PC
+Helper threads never drive the PC: write a proof bat from `tools/pc/jobs/opus_job_template.bat` and send its path to the
+Board, which queues it (R334; how: `docs/playbooks/pc.md`; rules: RULEBOOK section 3). GPU captures wait for green checks
+and a passed review (R407, RULEBOOK 3.12). Results come back on the private relay repo (RULEBOOK 3.3a, after PR 1672).
