@@ -1,36 +1,14 @@
-Saved manifest before: 19b5b624266a63f7c1c747f7861440f9ff3df05083032ff9c0c24844a969cff3
-Saved manifest after: 69a8da160eec7475390a8113b12d7c27270ffa1c84c796e5c62661e5100ad83a
+Saved manifest before: 69a8da160eec7475390a8113b12d7c27270ffa1c84c796e5c62661e5100ad83a
+Saved manifest after: cc6329d17ebc58dadd48c2e6fbd836332773a9fa31b3d7cc7b67b10c13e127f3
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle r1653_gunnery
-  new battle; no saved result
-FAIL battle r1653_afterburn
-  new battle; no saved result
 FAIL battle r1653_flankmark
-  new battle; no saved result
-FAIL battle r1653_spotter
-  new battle; no saved result
-FAIL battle r1653_lastlight
-  new battle; no saved result
-FAIL battle r1653_coolant
-  new battle; no saved result
-FAIL battle r1653_spare
-  new battle; no saved result
-FAIL battle r1653_ram
-  new battle; no saved result
+  turn 34, round 2, after fire x05; unit x012 (enemy h_picket)
+  state.units[7].flankMark: <missing> -> 2
+  later changed records: 135; total records: 170 -> 135
 FAIL battle r1653_mirror
-  new battle; no saved result
-FAIL battle r1653_beacon
-  new battle; no saved result
-FAIL battle r1653_quiet
-  new battle; no saved result
-FAIL battle r1653_locker
-  new battle; no saved result
-FAIL battle r1653_chaser
-  new battle; no saved result
-FAIL battle r1653_spill
-  new battle; no saved result
-FAIL battle r1653_relay
-  new battle; no saved result
-FAIL: saved Godot results; 304 battles checked, 15 changed, 0 other files changed, 15 failures; 11.239 s
+  turn 95, round 4, after activation x09; unit none (battle state)
+  state.b.log[50].c: "p" -> "e"
+  later changed records: 57; total records: 153 -> 153
+FAIL: saved Godot results; 304 battles checked, 2 changed, 0 other files changed, 2 failures; 11.924 s

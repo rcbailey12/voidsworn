@@ -40,6 +40,8 @@ func _init() -> void:
 		["spare: a second Command the round after the first, at tier 0, once", c_spare],
 		["ram: +50% ram damage, cap 50% of the target, no recoil", c_ram],
 		["mirror: the first hull hit sends half back once, a boss takes at most 10%", c_mirror],
+		["mirror: inside a volley the reflect waits for the volley's end", c_mirror_volley],
+		["marks: a hit the shields fully absorb still places the flank and spotter marks", c_marks_shield],
 		["beacon: +2 movement and +1 turn on round 1 only", c_beacon],
 		["quiet: round 1 blocks enemy fire from 6 or more hexes, not closer and not in round 2", c_quiet],
 		["locker: boarding +40%, speed -1 but never below 2", c_locker],
@@ -229,3 +231,23 @@ func c_relay() -> Array:
 	var m1 = R.braceMul(a); var cov = a.get("relayBy")
 	R.startSideTurn("player")
 	return [cov is Dictionary and near(m1, m0 * 0.8) and b.get("relayBy") == null and a.get("relayBy") == null, "cover %s, mult %s -> %s, far ally %s, after turn %s" % [cov, m0, m1, b.get("relayBy"), a.get("relayBy")]]
+
+func c_mirror_volley() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket"], ["mirror"])
+	var u = P[0]; var t = E[0]; t["hp"] = 500; t["maxHp"] = 500
+	R._volleyDepth = 1
+	var r1 = R.applyHit(t, t["weapons"][0], u, 40.0, 0)
+	R.applyHit(t, t["weapons"][0], u, 40.0, 0)
+	var mid = t["hp"]
+	R._volleyDepth = 0; R.settleMirror()
+	return [mid == 500 and 500 - t["hp"] == round(r1["hull"] * 0.5) and B.get("mirrorQ") == null, "during volley %s, after %s, first hull %s" % [mid, t["hp"], r1["hull"]]]
+
+func c_marks_shield() -> Array:
+	fresh(["reliquary", "harrow"], "hegemony", ["h_picket"], ["flankmark", "spotter"])
+	var wing = P[0]; var ship = P[1]; var t = E[0]; t["hp"] = 9999; t["maxHp"] = 9999
+	for i in range(t["sh"].size()): t["sh"][i] = 999
+	var hp0 = t["hp"]
+	var r1 = R.applyHit(ship, {"crit": 0, "pierce": 0}, t, 4.0, 2)   # a rear hit, all on the shields
+	wing["isSq"] = true; wing["dead"] = false
+	var r2 = R.applyHit(wing, wing["weapons"][0], t, 5.0, 0)    # a wing hit, all on the shields
+	return [r1["hull"] == 0 and r2["hull"] == 0 and t["hp"] == hp0 and t.get("flankMark") == B["round"] and t.get("spotMark") == B["round"], "hull %s/%s, flank %s, spot %s" % [r1["hull"], r2["hull"], t.get("flankMark"), t.get("spotMark")]]

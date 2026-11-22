@@ -3382,7 +3382,9 @@ func factionWinEcon(credits: float, summary: Dictionary) -> Dictionary:
 	var lost = or_(summary.get("lost"), []).filter(func(l): return l is Dictionary and HULLS.has(l.get("tpl")))
 	var out = {}
 	if RUN["fac"] == "chorus":
-		out["bio"] = credits + min(float(TB["BIO_KILL"]["cap"]), float(TB["BIO_KILL"]["per"]) * float(z0(summary.get("kills")))); RUN["bio"] = float(z0(RUN.get("bio"))) + out["bio"]
+		var killBio = min(float(TB["BIO_KILL"]["cap"]), float(TB["BIO_KILL"]["per"]) * float(z0(summary.get("kills"))))
+		if RUN["relics"].has("ledger2"): killBio = jsround(killBio * (1.0 + float(z0(RELICS["ledger2"]["run"].get("credPct")))))   # issue 1653: the Ledger's 10% also cuts kill biomass
+		out["bio"] = credits + killBio; RUN["bio"] = float(z0(RUN.get("bio"))) + out["bio"]
 	else: RUN["credits"] = float(RUN["credits"]) + credits
 	if RUN["fac"] == "ithar" and lost.size() > 0:
 		var CU = TB["CULLET"]; var sum = 0.0

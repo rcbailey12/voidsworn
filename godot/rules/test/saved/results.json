@@ -2040,10 +2040,10 @@
       "scenario_sha256": "69c195a4f5cb8a5adf547995b01a094366f9b1173c281711ed2f84967774401a"
     },
     "r1653_flankmark": {
-      "sha256": "e596636b6c184014bc85e2eb82cb82ea75252178549d16f0ebe1bb57f2d455af",
-      "bytes": 4806565,
+      "sha256": "22ba690180af2c3ef15534689cb7a15c84603675b35010427a5b53729971c0d7",
+      "bytes": 3664627,
       "archive": "r1653_flankmark.jsonl.br",
-      "records": 170,
+      "records": 135,
       "scenario_sha256": "ec77dd84445918fce0f278456590304963948912dd27534d76663df9cc8948bb"
     },
     "r1653_spotter": {
@@ -2082,7 +2082,7 @@
       "scenario_sha256": "f4573d744734afbbbb2f549d396609d5c8bdd07a8f024c73cd84cf936ef4fbf2"
     },
     "r1653_mirror": {
-      "sha256": "aeafcc6e1e5c8085abb0e920a96109ed29260838867d4847c944e27b32961a16",
+      "sha256": "eeab64cb18711fc11aaa30b35cc3b724c0891900cc3d3cee22dfe588b20ca83f",
       "bytes": 3679129,
       "archive": "r1653_mirror.jsonl.br",
       "records": 153,

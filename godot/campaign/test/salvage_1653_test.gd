@@ -78,5 +78,13 @@ func _initialize() -> void:
 	check(float(C.RUN["cpCap"]) == cap0 + 1 and C.RUN["relics"].has("ledger2"), "ledger2 gives +1 Command cap")
 	check(C.TB["LATE_SHOP"]["skip"].has("ledger2"), "ledger2 stays out of the late shop")
 
+	# the Ledger's cut also reaches the Chorus kill biomass (Artoo on PR 1744)
+	start("chorus")
+	var bio0 = C.factionWinEcon(100.0, {"kills": 3, "lost": []})["bio"]
+	C.addRelic("ledger2")
+	var bio1 = C.factionWinEcon(100.0, {"kills": 3, "lost": []})["bio"]
+	var kill0 = bio0 - 100.0
+	check(kill0 > 0 and bio1 - 100.0 == C.jsround(kill0 * 0.9), "ledger2 cuts Chorus kill biomass by 10%%: kill part %s -> %s" % [kill0, bio1 - 100.0])
+
 	print("salvage_1653: %s" % ("PASS" if fails == 0 else "%d FAIL" % fails))
 	quit(0 if fails == 0 else 1)

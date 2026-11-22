@@ -3266,18 +3266,15 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 		if jt(w.get("acid")): t["st"]["acid"] = 2
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
-	if hull > 0 and att != null and att.get("side") == "player" and t["side"] == "enemy" and not jt(t.get("isSq")) and B != null:   # issue 1653 marks
+	if (hull > 0 or absorbed > 0) and att != null and att.get("side") == "player" and t["side"] == "enemy" and not jt(t.get("isSq")) and B != null:   # issue 1653 marks: any landed hit, shields or hull
 		if rfx("flankmark") > 0 and rear and t.get("flankMark") != B["round"]: t["flankMark"] = B["round"]; flt(t, "Marked", "#f0b35a", -24)
 		if rfx("spotter") > 0 and jt(att.get("isSq")) and t.get("spotMark") != B["round"]: t["spotMark"] = B["round"]; flt(t, "Marked", "#f0b35a", -24)
 	lastLightCheck(t)
 	if hull > 0 and t["side"] == "player" and not jt(t.get("isSq")) and rfx("mirror") > 0 and not jt(t.get("mirrorUsed")) and att != null and not jt(att.get("isSq")) and att["side"] != t["side"] and not jt(att.get("dead")):
-		t["mirrorUsed"] = 1   # issue 1653 Feedback Lattice Core: the first hull hit sends half back, never a kill, bosses at most 10%
-		var back = JSM.jsround(hull * rfx("mirror"))
-		if jt(att.get("boss")): back = min(back, JSM.jsround(att["maxHp"] * 0.1))
-		back = min(back, att["hp"] - 1)
-		if back > 0:
-			att["hp"] = att["hp"] - back; flt(att, "Reflected", "#ffe0a8", -24)
-			logm(String(t["name"]) + " reflects " + ns(back) + " hull back to " + String(att["name"]) + ".", "p")
+		t["mirrorUsed"] = 1   # issue 1653 Feedback Lattice Core: the first hull hit sends half back after the volley
+		if not (B.get("mirrorQ") is Array): B["mirrorQ"] = []
+		B["mirrorQ"].append({"t": t, "att": att, "hull": hull})
+		if _volleyDepth == 0: settleMirror()
 	var hit_event := {"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
 	if locks_regen:
 		hit_event["regenLock"] = true
@@ -3590,7 +3587,27 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			if not jt(xR.get("isSq")) and hdist(u, xR) == 1: nearR = true; break
 		if nearR: u["treeRushLogged"] = 1; treeFx(u, "rushRail", "hard breach on the burn")   # Grax T2b
 	return landed
-func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
+# issue 1653: a Feedback Lattice reflect waits for the whole volley, then lands once, never a kill, bosses at most 10%
+var _volleyDepth := 0
+func settleMirror() -> void:
+	if B == null or not (B.get("mirrorQ") is Array): return
+	var q: Array = B["mirrorQ"]; B.erase("mirrorQ")
+	for e in q:
+		var t = e["t"]; var att = e["att"]
+		if jt(att.get("dead")): continue
+		var back = JSM.jsround(e["hull"] * rfx("mirror"))
+		if jt(att.get("boss")): back = min(back, JSM.jsround(att["maxHp"] * 0.1))
+		back = min(back, att["hp"] - 1)
+		if back > 0:
+			att["hp"] = att["hp"] - back; flt(att, "Reflected", "#ffe0a8", -24)
+			logm(String(t["name"]) + " reflects " + ns(back) + " hull back to " + String(att["name"]) + ".", "p")
+func landVolley(u, w, t, o) -> bool:
+	_volleyDepth += 1
+	var r := _landVolley_raw(u, w, t, o)
+	_volleyDepth -= 1
+	if _volleyDepth == 0: settleMirror()
+	return r
+func _landVolley_raw(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
 	var evMark := events.size()   # issue 1481: a mid-section loss inside this volley already sends its own break
 	if called != null:
