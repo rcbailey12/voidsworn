@@ -1,14 +1,10 @@
-Saved manifest before: 69a8da160eec7475390a8113b12d7c27270ffa1c84c796e5c62661e5100ad83a
-Saved manifest after: cc6329d17ebc58dadd48c2e6fbd836332773a9fa31b3d7cc7b67b10c13e127f3
+Saved manifest before: 10126a8ae9afe10268d9072f5c14c0f5fa4190f383a1f0e823bd0619e5ad03d6
+Saved manifest after: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle r1653_flankmark
-  turn 34, round 2, after fire x05; unit x012 (enemy h_picket)
-  state.units[7].flankMark: <missing> -> 2
-  later changed records: 135; total records: 170 -> 135
-FAIL battle r1653_mirror
-  turn 95, round 4, after activation x09; unit none (battle state)
-  state.b.log[50].c: "p" -> "e"
-  later changed records: 57; total records: 153 -> 153
-FAIL: saved Godot results; 304 battles checked, 2 changed, 0 other files changed, 2 failures; 11.924 s
+FAIL battle r1653_coolant
+  turn 3, round 1, after ability x04; unit x04 (player b_razor)
+  state.units[0].focus: true -> false
+  later changed records: 170; total records: 174 -> 165
+FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 11.932 s

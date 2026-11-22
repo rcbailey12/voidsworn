@@ -161,6 +161,33 @@ docs/playbooks/sound.md; routing done (issue 506); sound weight, the listening p
 
 A playbook is done when a model that has never seen this repo ships the next item from it and the Board changes nothing.
 
+## Pick Sheets (Ryan, Nov 22 2026; RULEBOOK 1.8, R408)
+
+Ryan's non-urgent product and visual calls wait for one of two sheets a day. The Board compiles each one in its own
+thread and the coordinator carries it to the project chat with the pictures attached.
+
+- **When.** Morning sheet by 8 AM Central, Evening sheet by 6 PM Central. An empty sheet is not sent.
+- **What goes on it.** Picks that change what Ryan sees, hears or plays, money, and anything only he can approve. Never
+  status, never a technical choice the Board can make itself (RULEBOOK 2.1).
+- **Outside the sheets** the Board interrupts him only for: PC disk under 75 GB, a key to paste, or a stuck job to kill.
+- **Format.** A title line, then numbered items. Each item is one question in plain words, two to four lettered options
+  with what each means for what he will see, the Board's pick and why in one line, and one current picture with its code
+  name on it (no taller than 720 px). A yes or no item says so. He answers on one line, `1=B, 2=Yes, 3=skip`; a skipped
+  or unanswered item rolls to the next sheet once, then the Board decides it with its pick and says so.
+
+```
+Evening Pick Sheet, Nov 22 (3 picks)
+
+1. Hit sparks on Glasswright glass: which look? (picture: GH2_sheet)
+   A. White glints only   B. White glints plus a short blue crack   C. Keep today's
+   Pick: B, it reads as glass at battle distance.
+2. Run the ElevenLabs sound pilot tonight (about 2,200 credits)? Yes or No.
+   Pick: Yes, it is the last step before you can hear the new sounds.
+3. ...
+
+Answer like: 1=B, 2=Yes
+```
+
 ## Budget and pacing (rewritten Nov 11 2026 evening)
 
 - Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: two Opus workers at most while the

@@ -93,13 +93,19 @@ library; paint from geometry masks, trim sheets and decals, never projected conc
 concept paint was dropped on all 36 hulls (R82); Ryan adopted the research route (R96); the method kept drifting between
 documents (R214). Set: Ryan (R82, R96, R214, R215). Ids: R82d, R96a, R96c, R150a.
 
-5.4 **Breakable by design, with comprehensive insides.** Every hull has real thickness and insides through the whole hull
+5.4 **Breakable by design, with comprehensive, detailed insides.** Every hull has real thickness and insides through the whole hull
 (decks, frames, spaces, machinery; Chorus flesh and bone; Glasswright layered glass), rim bands and a dark liner where the
-intact ship shows; the build check fails a hull whose broken pieces show a hollow or flat inside. Hulls built before this rule
-rely on the game-side interior fallback (issue 167). Why: "the broken open pieces
+intact ship shows; the build check fails a hull whose broken pieces show a hollow or flat inside. Starting with the Blender
+Interior Kit V2 (issue 1743, R416 Layer 3), new ship builds and rebakes replace plain untextured chamfered boxes and flat slabs
+with modeled interior modules (ribbed decks, framed arch bulkheads, cylindrical reactors/turbines/racks, sculpted organic sacs
+and bone struts, collared crystal waveguides), UV-mapped to a shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
+optional `emission`, supported by `tools/recipe/export7.py`) and verified by a build-sheet cutaway render while staying 0 px
+clean on `surface_check.py`. Hulls built before this rule rely on the runtime Wounds V2 triplanar interior shader and breach-mouth
+3D dressing (issue 1741) or, for legacy hollow hulls, the game-side interior fallback (issue 167). Why: "the broken open pieces
 are visibly empty" (R98); "so we don't run into the issues of before with just empty looking husks" (R209); "I think it's
-better to be comprehensive with internal if we can without performance issues" (R215). Set: Ryan, Nov 4 and 11. Ids: R70,
-R98a, R98b, R99a, R209, R215.
+better to be comprehensive with internal if we can without performance issues" (R215); auditing all 45 ships under R416 showed
+plain untextured boxes and flat slabs behind the hull skin (Ryan, Nov 22). Set: Ryan, Nov 4, 11 and 22. Ids: R70, R98a, R98b,
+R99a, R209, R215, R416.
 
 5.5 **Breaks follow the faction's rule and the class, never a fixed count or a straight cut**; hard points and breach anchors
 scale with class and faction, read from one table (factions.md; the check reads it, issue 363). Why: "is 28 hard points for

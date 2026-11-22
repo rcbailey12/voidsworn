@@ -136,6 +136,12 @@ public static class Fake873 {
       Console.WriteLine(Env("FAKE_BAKE_MESSAGE", ""));
       return 0;
     }
+    if (name == "detail_check.py") {
+      // issue 1739: the surface-detail check (issues 1291, 1517) that stage 5 runs for every paint-stack ship
+      if (Env("FAKE_DETAIL_FAIL", "") == "1") { Console.WriteLine("FAIL detail check: flat clay surface (fake)"); return FailCode(); }
+      Console.WriteLine("PASS detail check");
+      return 0;
+    }
     if (name == "surface_check.py") {
       Console.WriteLine("PASS surface check");
       if (Env("FAKE_SURFACE_FAIL", "") == "1") return FailCode();
@@ -308,6 +314,8 @@ for (const step of ['bake', 'render', 'surface', 'close']) {
 }
 stage5Case('surfacefail', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_SURFACE_FAIL: '1', FAKE_FAIL_CODE: '7' }, r =>
   expectFail('stage 5 surface exit fails even with a PASS marker', r, ['Stage 5 FAILED: the surface check exited code 7']));
+stage5Case('detailfail', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_DETAIL_FAIL: '1', FAKE_FAIL_CODE: '5' }, r =>
+  expectFail('stage 5 stops a ship under its surface-detail floor', r, ['Stage 5 FAILED: the surface-detail check failed']));
 stage5Case('sheetviews', { FAKE_SHIP_BAKE: 'bake_sheet.py', FAKE_SHIP_SHEET: 'corsair_A17', FAKE_SHEET_VIEWS: '1' }, r => {
   check(r.code === 0 && r.text.includes('Stage 5 done'), 'sheet paint views failed: ' + r.text);
   pass('stage 5 sheet ships select the paint views and finish all three passes');

@@ -1,0 +1,273 @@
+{
+ "batch": "elevenlabs_pilot",
+ "gate": 1,
+ "made_for": "issue 1585 Gate 1 Calibration Pilot (Ryan, Nov 22 2026)",
+ "note": "One take of 12 benchmark cues plus 2 v2 A/B takes, plus 13 combat and death beats from R412 (broadside thump, 3-beat gauss, Glasswright shatter, Chorus acid sizzle and tendril lash) and R409 (the new 1586/1587 beats). No stems (Gate 3 only, on picked songs). Menu clicks come from free Sonniss/CC0 switches, not here. Every beat is atomic: no boom, tail or second stage inside a cue; the game layers them (godot/audio/death_audio.gd, sfx.gd).",
+ "sfx_model": "eleven_text_to_sound_v3",
+ "music_model": "music_v2",
+ "items": [
+  {
+   "id": "battle_preview",
+   "kind": "music",
+   "cue": "battle music",
+   "group": "music",
+   "seconds": 45,
+   "prompt": "Instrumental space fleet battle music for a tactical strategy game, restrained and clear, brass and tactical percussion over a low string ostinato, steady 90 BPM, steady energy throughout so it can loop, no lead melody that tires the ear, no vocals.",
+   "takes": 1
+  },
+  {
+   "id": "reward_preview",
+   "kind": "music",
+   "cue": "reward screen music",
+   "group": "music",
+   "seconds": 30,
+   "prompt": "Short instrumental reward-screen music for a space strategy game, warm brass and strings, quietly triumphant, calm, not cheesy, no vocals.",
+   "takes": 1
+  },
+  {
+   "id": "ui_boss",
+   "kind": "sfx",
+   "cue": "ui_boss",
+   "group": "menu",
+   "seconds": 2.0,
+   "prompt": "Huge bulkhead locking clamps slamming shut one after another, deep metallic booms and a low hull groan, ominous. No beeps or synth tones.",
+   "takes": 1
+  },
+  {
+   "id": "ui_reward",
+   "kind": "sfx",
+   "cue": "ui_reward",
+   "group": "menu",
+   "seconds": 1.5,
+   "prompt": "Heavy brass lock tumblers turning and a vault latch releasing with a satisfying low clunk, then a faint ring of metal. No beeps or synth tones.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_macro",
+   "kind": "sfx",
+   "cue": "gun_shell",
+   "group": "ladder",
+   "seconds": 1.2,
+   "prompt": "Macro cannon firing: heavy breech block slamming, a deep cannon thump felt through the deck, brief metallic ring. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_macro_v2ab",
+   "kind": "sfx",
+   "cue": "gun_shell",
+   "group": "ab",
+   "seconds": 1.2,
+   "model": "eleven_text_to_sound_v2",
+   "prompt": "Macro cannon firing: heavy breech block slamming, a deep cannon thump felt through the deck, brief metallic ring. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_torp",
+   "kind": "sfx",
+   "cue": "torp",
+   "group": "ladder",
+   "seconds": 1.6,
+   "prompt": "Torpedo launch from a tube: pneumatic clamp release, a heavy mechanical shove, then a muffled rocket motor igniting and rumbling away. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "shield_break",
+   "kind": "sfx",
+   "cue": "shield_break",
+   "group": "hit",
+   "seconds": 1.4,
+   "prompt": "Energy shield collapsing: a deep electrical thump and a fading crackle like a huge capacitor discharging, clean and heavy. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "shield_break_v2ab",
+   "kind": "sfx",
+   "cue": "shield_break",
+   "group": "ab",
+   "seconds": 1.4,
+   "model": "eleven_text_to_sound_v2",
+   "prompt": "Energy shield collapsing: a deep electrical thump and a fading crackle like a huge capacitor discharging, clean and heavy. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "arrive_jump",
+   "kind": "sfx",
+   "cue": "arrive_jump",
+   "group": "event",
+   "seconds": 1.8,
+   "prompt": "Warship arriving from a warp jump: a pressure-wave rush and a deep air-displacement boom, then a short hull creak.",
+   "influence": 0.4,
+   "takes": 1
+  },
+  {
+   "id": "fac_ithar_crack",
+   "kind": "sfx",
+   "cue": "death_crack (ithar variant)",
+   "group": "death beat",
+   "seconds": 1.0,
+   "prompt": "Thick crystal hull fracturing: fast bright glass cracks racing across a large pane, low resonant body, no explosion, no boom.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "fac_chorus_burst",
+   "kind": "sfx",
+   "cue": "boom_l (chorus variant)",
+   "group": "death beat",
+   "seconds": 1.6,
+   "prompt": "A huge living organic ship bursting at the moment it splits: one deep wet fleshy rupture with a rush of breath, short, no fire, no metal.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "fac_deathless_peel",
+   "kind": "sfx",
+   "cue": "death_crack (deathless variant)",
+   "group": "death beat",
+   "seconds": 1.0,
+   "prompt": "Dark armor plates peeling and lifting off a hull with a soft dry tearing hiss, low and muffled, no explosion, no boom.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "map_bed",
+   "kind": "sfx",
+   "cue": "ambient (map bed)",
+   "group": "bed",
+   "seconds": 12.0,
+   "loop": true,
+   "influence": 0.3,
+   "prompt": "Quiet deep-space ship interior ambience: low engine hum, faint air recyclers, a distant metal creak, calm and steady, seamless loop.",
+   "takes": 1
+  },
+  {
+   "id": "r412_broadside_thump",
+   "kind": "sfx",
+   "cue": "gun_shell (broadside)",
+   "group": "R412 combat",
+   "seconds": 1.2,
+   "prompt": "A full broadside of heavy guns firing almost together: one massive layered thump that shakes the deck, a short metallic shudder after. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "r412_gauss_charge",
+   "kind": "sfx",
+   "cue": "gun_rail (beat 1 of 3: charge)",
+   "group": "R412 combat",
+   "seconds": 1.0,
+   "prompt": "Gauss cannon charging: rising magnetic coil whine with a low electric hum building under it, stops abruptly, no shot. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r412_gauss_crack",
+   "kind": "sfx",
+   "cue": "gun_rail (beat 2 of 3: crack)",
+   "group": "R412 combat",
+   "seconds": 0.6,
+   "prompt": "Gauss cannon firing: one sharp supersonic crack with a hard low punch, very short, no tail. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r412_gauss_rip",
+   "kind": "sfx",
+   "cue": "gun_rail (beat 3 of 3: exit rip)",
+   "group": "R412 combat",
+   "seconds": 1.0,
+   "prompt": "A slug tearing away at enormous speed: a fast tearing rip through the air that fades into the distance, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r412_glass_shatter",
+   "kind": "sfx",
+   "cue": "hit_glass (Glasswright hit)",
+   "group": "R412 combat",
+   "seconds": 1.2,
+   "prompt": "A heavy shot striking thick crystal armor: a sharp crystal shatter with fragments tinkling, a low glassy ring under it, no metal, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r412_chorus_sizzle",
+   "kind": "sfx",
+   "cue": "new cue: Chorus acid sizzle",
+   "group": "R412 combat",
+   "seconds": 1.5,
+   "prompt": "Strong acid eating into living flesh and metal: a hot wet sizzle and bubbling hiss, slightly organic, no fire, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r412_chorus_lash",
+   "kind": "sfx",
+   "cue": "new cue: Chorus tendril lash",
+   "group": "R412 combat",
+   "seconds": 0.8,
+   "prompt": "A huge wet organic tendril whipping and striking a hull: a fleshy whoosh and a heavy slap, no metal, no blood squelch overload.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_navy_blackout",
+   "kind": "sfx",
+   "cue": "new beat: Navy blackout thump",
+   "group": "R409 death beat",
+   "seconds": 1.2,
+   "prompt": "Ship systems losing power all at once: one deep electrical thump and a fast falling power-down hum, then silence, no explosion. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_tether_snap",
+   "kind": "sfx",
+   "cue": "new beat: Hullbreaker tether snap",
+   "group": "R409 death beat",
+   "seconds": 0.8,
+   "prompt": "A huge steel cable under tension snapping: a sharp metallic twang and a whip crack, short, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_fracture_crackle",
+   "kind": "sfx",
+   "cue": "new beat: Glasswright fracture crackle",
+   "group": "R409 death beat",
+   "seconds": 1.5,
+   "prompt": "Crystal hull slowly fracturing under strain: a spreading fine crackle of glass cracks, quiet and brittle, no shatter, no boom.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_turret_spark",
+   "kind": "sfx",
+   "cue": "new beat: jammed turret spark",
+   "group": "R409 death beat",
+   "seconds": 0.8,
+   "prompt": "A jammed gun turret shorting out: a grinding stall and a few electrical sparks snapping, short, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_blowout_hiss",
+   "kind": "sfx",
+   "cue": "new beat: blowout hiss",
+   "group": "R409 death beat",
+   "seconds": 1.5,
+   "prompt": "A hull breach venting air into space: a hard rushing hiss of escaping atmosphere that thins out quickly, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  },
+  {
+   "id": "r409_ion_crawl",
+   "kind": "sfx",
+   "cue": "new beat: ion crawl static",
+   "group": "R409 death beat",
+   "seconds": 2.0,
+   "prompt": "Ion energy crawling over a disabled hull: crackling electrical static and small arcs skittering across metal, dry and restless, no explosion.",
+   "takes": 1,
+   "influence": 0.6
+  }
+ ]
+}

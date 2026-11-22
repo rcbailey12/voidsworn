@@ -151,9 +151,17 @@ function scan(files, pats, allow = {}, root = ROOT) {
     } else strings = literals(source, path.extname(target).slice(1));
     for (const item of strings) for (const rule of rules) {
       if (rule.type === 'WORD' && (item.wordContext || (!target.endsWith('.html') && /^[a-z0-9_.-]+$/.test(item.text)))) continue;
-      if (Object.entries(allow).some(([sub, list]) => file.includes(sub.replace(/\\/g, '/')) && list.includes(rule.pattern))) continue;
+      if (Object.entries(allow).some(([sub, list]) => sub !== '_phrases' && file.includes(sub.replace(/\\/g, '/')) && list.includes(rule.pattern))) continue;
       rule.re.lastIndex = 0;
       for (const match of item.text.matchAll(rule.re)) {
+        // A whole new phrase that only contains an old name (issue 1650: "Turn of the Knife" holds "the Knife") is allowed
+        // by naming that phrase in _phrases; the old name on its own still fails.
+        if (((allow._phrases || {})[rule.pattern] || []).some(ph => {
+          for (let i = item.text.indexOf(ph); i >= 0; i = item.text.indexOf(ph, i + 1)) {
+            if (i <= match.index && match.index + match[0].length <= i + ph.length) return true;
+          }
+          return false;
+        })) continue;
         // Translate decoded offsets back to source offsets, including escapes.
         let offset = 0;
         while (offset < item.raw.length && unescapeText(item.raw.slice(0, offset)).length < match.index) offset++;
