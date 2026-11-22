@@ -1344,6 +1344,8 @@ func route_num(id: String) -> int:   # the number a next jump wears in the list 
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
+	# A new pick is only a selection: it cancels a Jump queued under the loading cover, so the player confirms again (issue 1448).
+	if map3d != null and map3d.has_method("cancel_queued_jump"): map3d.cancel_queued_jump()
 	picked = id; _show_pick()
 func _show_pick() -> void:
 	if not _rail_pending and is_instance_valid(_rail_host):

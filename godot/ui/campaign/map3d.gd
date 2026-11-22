@@ -108,7 +108,7 @@ var loading := false:
 		loading = v
 		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
 		if not v and _queued_jump: _run_queued_jump.call_deferred()
-var _queued_jump := false   # a Jump pressed during loading; it jumps to the pick current when loading clears
+var _queued_jump := false   # a Jump pressed during loading; it jumps to the confirmed pick when loading clears (a new pick cancels it)
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -1246,13 +1246,17 @@ func fly_to(id: String) -> void:
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
 
-# Runs the campaign UI's _jump, so the jump goes to the pick current now and passes all its
+# Runs the campaign UI's _jump, so the jump goes to the confirmed pick (any new pick cancelled the queue) and passes all its
 # guards (modal, overlay, the stop still offered). A dropped jump puts the Jump label back.
 func _run_queued_jump() -> void:
 	if loading or not _queued_jump: return
 	_queued_jump = false
 	if ui != null and ui.has_method("_jump"): ui._jump()
 	if not _flying: _reset_jump_label()
+
+# A selection change while a jump is queued cancels it; the caller's rail rebuild puts back JUMP TO <new pick>.
+func cancel_queued_jump() -> void:
+	_queued_jump = false
 
 func _reset_jump_label() -> void:
 	if ui != null and ui.has_method("_show_pick"): ui._show_pick()   # rebuilds the rail: JUMP TO <pick>

@@ -1,5 +1,6 @@
 extends SceneTree
-# Issue 1448: a Jump pressed while the map's loading cover is up is kept and flies once loading clears.
+# Issue 1448: a Jump pressed while the map's loading cover is up is kept and flies once loading clears;
+# a new pick while it waits cancels it.
 # godot --headless --path godot --script res://campaign/test/map_jump_queue_test.gd
 const Map = preload("res://ui/campaign/map3d.gd")
 const System = preload("res://ui/campaign/map3d_system.gd")
@@ -28,7 +29,10 @@ class UIProbe extends RefCounted:
 	var map3d = null
 	var _jump_lbl := Label.new()
 	var rebuilds := 0
-	func pick_route(id): picked = str(id); _show_pick()
+	func pick_route(id):   # campaign_ui.gd pick_route: a new pick cancels a queued jump
+		if str(id) == picked: return
+		if map3d != null: map3d.cancel_queued_jump()
+		picked = str(id); _show_pick()
 	func _show_pick(): rebuilds += 1; _jump_lbl.text = "JUMPING WHEN READY" if map3d != null and map3d._queued_jump else "JUMP TO " + picked.to_upper()
 	# campaign_ui.gd _jump: its guards, then the map flies the current pick
 	func _jump():
@@ -82,18 +86,30 @@ func _run():
 	m._finish_flight()
 	check(m.ui.C.acts == [["enterNode", "b"]], "the jump enters the stop once")
 
-	# A pick changed while queued: the jump goes to the new pick.
+	# A pick changed while queued is only a selection: it cancels the jump, and nothing is entered.
 	reset.call(m)
 	m.ui.picked = "b"
 	m.loading = true
 	m.ui._jump()
 	m.ui.pick_route("c")
-	check(m.ui._jump_lbl.text == "JUMPING WHEN READY", "a rail rebuilt while queued still says jumping when ready")
+	check(not m._queued_jump, "a new pick cancels the queued jump")
+	check(m.ui._jump_lbl.text == "JUMP TO C", "the rail rebuilt after a new pick reads JUMP TO C")
 	m.loading = false
 	await process_frame
-	check(m._flying and m._flight_id == "c", "a pick changed while queued flies to the new pick")
+	check(not m._flying, "a cancelled queued jump starts no flight")
+	check(m.ui.C.acts.is_empty(), "a new pick while queued enters neither C nor B")
+	check(m.ui._jump_lbl.text == "JUMP TO C", "the label still reads JUMP TO C after loading clears")
+
+	# The confirmed pick, unchanged while queued, is the one entered.
+	reset.call(m)
+	m.ui.picked = "b"
+	m.loading = true
+	m.ui._jump()
+	m.loading = false
+	await process_frame
+	check(m._flying and m._flight_id == "b", "the confirmed pick flies when loading clears")
 	m._finish_flight()
-	check(m.ui.C.acts == [["enterNode", "c"]], "only the new pick is entered")
+	check(m.ui.C.acts == [["enterNode", "b"]], "the confirmed pick B is entered")
 
 	# A modal opened while queued drops the jump and puts the label back.
 	reset.call(m)
