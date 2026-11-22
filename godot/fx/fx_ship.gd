@@ -2137,7 +2137,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 		else:
 			fx.stk(wp, fx.now, 0.45, glow, 2.0, 0.04, 0.08, 1, fx.rcone(wn, 0.8) * hull.L * 0.18)
 	if st == 4 and faction != "chorus":
-		for j in 4: fx.shd(wp, fx.now, 2.0, fx.rcone(wn, 0.8) * hull.L * 0.07, hull.L * 0.009, 0.8)
+		for j in 4: DEATH.BEATS.debris(fx, self, wp, fx.now, 2.0, fx.rcone(wn, 0.8) * hull.L * 0.07, hull.L * 0.009, 0.8)
 
 
 func _set_burning(fx, on: bool) -> void:
@@ -2489,7 +2489,7 @@ func _blowout(fx, i: int) -> void:
 		fx.spr(p + n * L * 0.01, t, BLOWOUT_LIFE - j * 0.08, col, 0.55 if heavy else 0.45, L * 0.008, L * (0.06 if heavy else 0.045),
 			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
 	for j in 3 + posmod(_seed + i, 2):
-		fx.shd(p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
+		DEATH.BEATS.debris(fx, self, p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
 	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
 	_wlog(["blowout", i, fx.now])
 
