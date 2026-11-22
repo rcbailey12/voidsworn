@@ -100,7 +100,8 @@ The ship's turn is a plan on screen until the player commits it. Code: `battle.g
 `aims` (each pick: an enemy and the guns aimed at it), `plan_steps` (what the plan was before each step, for Backspace).
 
 - Blue hex: the ghost moves there. Q/E: it turns (on the ship's own hex too, as the rules' own reach state with that
-  facing). Enemy with a red ring: every free gun that bears from the ghost aims at it. An enemy no gun reaches, with
+  facing). Exception: with a skill's free turn earned (`treeFreeTurn`), Q/E on the ship's own hex call the rules' rotate at
+  once, as before, because the reach search does not price the free turn; Backspace undoes it as a played move (R376). Enemy with a red ring: every free gun that bears from the ghost aims at it. An enemy no gun reaches, with
   nothing planned yet, plans a Burn and fire (the ghost stands on its stop).
 - The ghost is the see-through hull with a bright outline (an inverted shell, `GHOST_EDGE`); picked enemies wear the lock
   ring; the card lists the move, each pick with its expected damage from the ghost, and the free guns left.

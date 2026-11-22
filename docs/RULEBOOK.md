@@ -863,7 +863,8 @@ the ghost there, Q and E turn it, and clicking an enemy aims every free gun that
 the guns still free). Nothing reaches the rules until the commit (Enter, or a second click on the hex or a target); then the
 move and every planned volley go as one command and play as one event, with the guns turning onto the first target while
 the hull brakes (issue 1581). Backspace takes back the plan's last step; with no plan open it still undoes a move already
-made (9.17). A shot the move made impossible is dropped with a message, never silently. Each ship plays out right after its
+made (9.17). One exception: with an admiral skill's free turn earned, Q and E still turn the ship at once through the
+rules (the reach search does not price that turn), and Backspace takes it back as a played move (9.17). A shot the move made impossible is dropped with a message, never silently. Each ship plays out right after its
 commit (not the whole fleet at the end of the turn); the old instant move-and-shoot is gone; enemy activations play the same
 way. UI only: no rule changes, and firing still ends movement for every ship except Glasswrights (R396). Why: Ryan, Nov 22
 2026: "you see the firing options at your destination and make your firing decisions ... then it actually moves and
