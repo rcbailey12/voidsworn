@@ -1,34 +1,34 @@
-# Embers of the Hollow Sun: six faction story arcs (round 8)
+# Embers of the Hollow Sun: six faction story arcs
 
-Status: **rewritten Oct 31 2026 to the approved lore** (`contrib/opus/compute/lore_bible_r8.md`, Ryan "lore approved" Oct 27, FINDINGS R59). The arc structure Ryan approved in round 3 stands: three beats per faction, the rival is the run's Nemesis, every choice is read again later, beat 3 is a story decision with a cost, finishing an arc pays a cosmetic reward and a hull unlock (`unlocks.md`), and every faction's road ends at the Hollow Sun. What changed is the world: the factions, their reasons for going sunward, their voices and their words.
+Status: **human-voiced rewrite aligned with the Nov 21 2026 narrative, space-first, and IP audits** (`contrib/opus/compute/lore_bible_r8.md`). Three beats per faction, the rival is the run's Nemesis, every choice is read again later, beat 3 is a story decision with a cost, finishing an arc pays a cosmetic reward and a hull unlock (`unlocks.md`), and every faction's road ends at the Hollow Sun.
 
 Companion file: `outlines_variants.md` holds a second version of every beat, the short "skim" cards for later runs, and the shared rival incidents.
 
-Flag ids (`vs_hand`, `hg_offbook`, `cs_party`, `it_song`, `dd_writ` and the rest) are kept from the round 3 outlines so nothing downstream has to change, even where the story under them did.
+Flag ids (`vs_hand`, `hg_offbook`, `cs_party`, `it_song`, `dd_writ` and the rest) are kept intact so nothing downstream has to change.
 
 ## What each faction wants at the Hollow Sun
 
 | Faction | Arc | Why they go sunward |
 |---|---|---|
-| Sunward Crusade | The Oath at the Hollow Sun | Break the siphon relay that is stealing the Vesper Reach's light. |
-| Hegemony Navy | Registry Order 41 | Secure the Hollow Sun as an anchorage, because the Registry wants the cores. |
-| Ashfall Hullbreakers | Rook's Trail | Run down R-5 Rook in the wreck fields and keep it: strongest keeps it. |
-| The Chorus | Eat the Sun | Eat the other keys, reach the sun Memory still remembers, finish the war it was grown for. |
-| The Glasswrights | The Last Lens | Bring the Lattice's last great lens home before Eclipse use it to steer their new sun. |
-| Eclipse | The Homecoming | Bring the keys home and light a new sun at the heart of Ardent. |
+| Sunward Crusade | The Oath at the Hollow Sun | Burn out the siphon relay stealing the Vesper Reach's light. |
+| Meridian Directorate | Registry Order 41 | Secure the Hollow Sun orbital perimeter and catalog the surviving Lattice cores. |
+| Ashfall Hullbreakers | Rook's Trail | Track down R-5 Rook in the wreck field and claim it: strongest keeps it. |
+| The Chorus | Consume the Cores | Devour the surviving Lattice cores at Ardent's rim and finish the war Memory recalls. |
+| The Glasswrights | The Last Lens | Recover the Lattice's last primary lens before Eclipse mounts it on a stolen star. |
+| Eclipse | The Homecoming | Bring the remaining cores home and ignite Ardent's successor at the system's core. |
 
 ## How an arc works
 
 - Three beats, one per sector, each a 100 to 150 word card with a choice. A one-line charge sits above beat 1.
 - Every option shows its effect up front and gives one outcome sentence after the click.
-- Effects used: credits, repairs, experience, salvage (the item type, was relic), a ship joining, a refit, hull damage, the Nemesis clock, one weakness reveal per arc at most, an ambush. Every choice writes a flag and may add to the shared counters stream B reads (mercy, greed, loud).
-- Beat 3 is shown as sector III begins; the arc closes on the result of his sector III fight. Winning it finishes the arc: medal, Chronicle entry, arc title, flagship paint, hull unlock. A Hullbreaker or Glasswright Nemesis can flee, any Nemesis can withdraw with his flagship intact, and an Eclipse one is restored once and comes back for a second fight (the arc then closes on that second fight). A win where he escapes still finishes the arc, and adds one line in your faction's voice:
-  - Sunward Crusade: *{rival} slips away into the dark. Chalk {his} name on the hull, under the line. You will need it.*
-  - Hegemony: *{rival} withdrew in good order. The file stays open.*
-  - Hullbreakers: *{rival} cut {his} chains and ran. The pack has {his} scent now.*
-  - Chorus: *{He} ran. We keep the smell.*
-  - Glasswrights: *{rival} withdrew, the way light leaves a room. There will be another hour.*
-  - Eclipse: *{rival} has gone dark for now. The Archive keeps {his} last position.*
+- Effects used: credits, repairs, experience, salvage (the item type), a ship joining, a refit, hull damage, the Nemesis clock, one weakness reveal per arc at most, an ambush. Every choice writes a flag and may add to the shared counters stream B reads (mercy, greed, loud).
+- Beat 3 is shown as sector III begins; the arc closes on the result of the sector III fight. Winning finishes the arc: medal, Chronicle entry, arc title, flagship paint, hull unlock. A win where the rival escapes still finishes the arc and adds one line in your faction's voice:
+  - Sunward Crusade: *{rival} slipped clear into the dark. Chalk {his} hull code under the line.*
+  - Meridian Directorate: *{rival} withdrew in good order. The dossier remains open.*
+  - Ashfall Hullbreakers: *{rival} broke clamps and ran. We have {his} transponder signature now.*
+  - The Chorus: *{He} fled into the cold. Our spores keep {his} drive signature.*
+  - The Glasswrights: *{rival} withdrew along the glare line. There will be another pass.*
+  - Eclipse: *{rival} broke contact. The Archive holds {his} last vector.*
 - `[brackets]` are lines that show only when their condition holds; at most two show on a card. The checker (`godot/story/test/check_outlines.py`) measures each card at its shortest and longest.
 
 **What a Chronicle entry records** (Career screen): the faction and arc, the rival's full name and faction, the three choices in their own words, whether you won, your first lost ship, and the title earned that run.
@@ -37,309 +37,255 @@ Flag ids (`vs_hand`, `hg_offbook`, `cs_party`, `it_song`, `dd_writ` and the rest
 
 ## 1. Sunward Crusade: "The Oath at the Hollow Sun"
 
-Crest: a half sun, its lower half black, over a broken link. Register: spoken oaths, short imperatives, call and response. Motif: the names chalked on the flagship's hull, and the debt the Registry wrote off.
-
-Charge: *Go sunward. Find what is stealing the light. Burn it out, and pay for it with names.*
+Charge: *Push sunward, burn out whatever's draining Vesper's stars, and make sure the people who paid for the jump aren't forgotten.*
 
 ### Beat 1 (sector I): The Ember Shard
+Your fleet holds orbit over Vesper's outer belt, where the core Seren drifted after the collapse and gave the Reach its first real plasma coils. Before the jump clocks hit zero, every captain chalks one name on the flagship's outer hull so nobody gets erased like Meridian erased the Reach. {best_captain} steps up first. [Prior loss: two captains chalk {fallen_name} from the last expedition lost.] Then the belt wardens hail with worse news: {rival} hit their forge station six hours ago. {rival_deed} They left one warm shard of Seren's casing sitting untouched on the loading bay, like a dare. The wardens want it carried sunward; your quartermasters want it sold before it pulls {rival} straight onto your wake.
 
-The fleet holds station over Vesper's outer belt, where the core Seren drifted after the collapse and where the Crusade learned to make fire. Before you jump, every captain chalks one name on the flagship's hull: the one they refuse to let be written off. {best_captain} writes first. [Prior loss: two captains write {fallen_name}, from the crusade that did not come home.] The belt wardens bring a second matter. {rival} came through before you. {rival_deed} {He} left one thing untouched on the forge deck: a shard of Seren's own casing, still warm a thousand years on, as plain as a promise. I will come back for this. The wardens want the shard carried sunward. The quartermasters want it sold to the foundries before it draws {him} down on the fleet.
-
-- **Carry the shard sunward.** Gain salvage: the ember shard. {He} hears that it has moved: the Nemesis clock moves on one. (flag `vs_hand`)
-  *The wardens wrap the shard in quench-cloth and chalk its name on the casket. Somewhere, {rival} is told.*
-- **Sell it to the foundries.** +60 credits. The wardens strike your name from the hull until it is earned back. (flag `vs_sold`, greed)
-  *The foundry pays in hard coin. The wardens do not look at you again.*
+- **Carry the shard sunward.** Gain salvage: the ember shard. {rival} tracks its thermal ping: Nemesis clock moves on 1. (flag `vs_hand`)
+  *The wardens seal the warm shard inside a lead quench-box and bolt it into your flagship's bay.*
+- **Sell it to the foundries.** +60 credits. The wardens scrape your name off the hull until you earn it back. (flag `vs_sold`, greed)
+  *The foundry transfers hard credits within ten minutes. None of the belt wardens wave as you break orbit.*
 
 ### Beat 2 (sector II): The Dawn Horn
+A shattered bastion from an older crusade tumbles out of the dark, its hull frozen solid while an automated dawn-watch beacon still broadcasts jump coordinates toward the Hollow Sun on an emergency battery. {rival} towed the wreck straight across your lane and waits behind the debris field. {rival_line} Your signals officer says pulling the full route table will buy clean lanes, though sitting still gives {him} time to form up. Your captains want to burn in hard right now and skip the codes. [If you carry the shard: Seren's casing is pulsing hot inside the bay, and {rival}'s scopes already have it tagged.] [If you sold it: the foundry money's spent, and {rival} just beamed a mocking receipt across open comms.] Every chalked name on that frozen bastion is still readable through the ice.
 
-A bastion from the last crusade drifts out of the dark, decks gutted and frozen, its dawn horn still sounding on a dead watch officer's timer. The horn-code carries the last jump routes to the Hollow Sun. {rival} hung the wreck in your path and waits in the debris beyond. {rival_line} The watch officer says: recover the code, and give {him} the hours. The captains say: strike now, and let the horn sound for no one. [If you carry the shard: it has grown hot in its casket, and {rival} knows where it rides.] [If you sold it: the foundry coin is spent, and {rival} has sent you {his} thanks for it.] Every name on that bastion's hull is still legible under the frost. The oath allows no answer that is both swift and paid in full.
-
-- **Recover the horn-code.** The routes save fuel: +50 credits. {He} is ready for you: the clock moves on one. (flag `vs_code`, mercy)
-  *The code comes aboard as a list of numbers. The horn stops. Nobody likes the silence.*
-- **Strike now.** Every captain gains 15 experience. (flag `vs_strike`, loud)
-  *You fall on {his} pickets before they form. Behind you the horn goes on sounding the dawn for no one.*
-- Blue, needs the shard: **Wake the horn with the shard.** Lose the salvage: the shard cracks in the horn's reactor. The clock goes back two and every captain gains 15 experience. (flag `vs_rang`)
-  *One blast. The old horn sounds across the whole sector, louder than it ever did. The shard comes back to you in pieces.*
-- Blue, needs the sale: **Pay a salvage crew to pull the code (40 credits).** They recover it while you strike: every captain gains 15 experience. (flag `vs_pilgrims`)
-  *The salvage crew climbs aboard the frozen wreck with cutting torches. They chalk the dead's names on their own hull before they leave.*
+- **Pull the route codes.** Clean jump paths save fuel: +50 credits. {He} tightens {his} screen while you wait: clock moves on 1. (flag `vs_code`, mercy)
+  *The coordinates finish downloading right as the bastion's dying battery finally cuts out.*
+- **Burn in now.** Every captain gains 15 XP. (flag `vs_strike`, loud)
+  *You hit {his} outer pickets mid-turn while the dead bastion keeps broadcasting into empty space behind you.*
+- Blue, needs the shard: **Overcharge the beacon with Seren's shard.** Lose salvage; the shard cracks inside the dead reactor, yet the blast jams {his} grid: clock goes back 2 and every captain gains 15 XP. (flag `vs_rang`)
+  *The surge blasts clean route tables across the whole sector and scrambles {his} pickets before the shard splits cold.*
+- Blue, needs the sale: **Hire a belt salvage cutter to pull the codes (40 credits).** They cut the drive loose while you attack: every captain gains 15 XP. (flag `vs_pilgrims`)
+  *The belt cutters weld onto the frozen hulk under fire and copy every crew name off its flank before jumping out.*
 
 ### Beat 3 (sector III): Break the Siphon
+The Hollow Sun fills your forward viewports, a black disc wrapped in slow orange plasma while a dozen shattered expeditions from earlier generations drift around its gravity rim. Anchored right against the inner edge hangs Eclipse's siphon relay, pulling a thin blue-white ribbon of stolen stellar energy straight out of Vesper's dying stars. {rival}'s fleet forms directly across the only clean approach vector. {rival_line} [If the shard jammed {his} grid: {his} escorts are still struggling to hold interval after that sector-wide surge.] [If not: {rival} loops the dead bastion's crew roll across your bridge speakers.] [If you carry the shard: {he} hails once, demanding the casing.] [If you sold it: {he} broadcasts your foundry sale receipt on open fleet comms.] [If you lost ships: your crews already chalked {first_lost} onto the flagship flank.] Your gunners run final radiator checks while the bridge goes quiet. Either Seren's charge burns that relay straight down to slag, or your largest ship overdrives its own reactor past every safety limit.
 
-The Hollow Sun fills the viewports, a black hole ringed in slow fire, the wrecks of a dozen crusades still circling it. At its rim hangs the siphon relay: the gate that takes Vesper's light and pours it into the dark. {rival} waits before it. {rival_line} [If the horn answered you: {rival}'s line has not formed cleanly since; {he} heard it across the sector.] [If it did not: the bastion's horn now sounds from {rival}'s line, for {him}.] [If you carry the shard: {he} asks for nothing but the shard.] [If you sold it: {rival} reads your name off the foundry ledger on the open channel.] Read the hull: every chalk name is still there. [If you lost ships: the crews have chalked {first_lost} beside them.] Call it across the fleet. Who carries the dawn? We do. Who pays for it? We do. The relay can be burned two ways. With Seren's fire, or with a reactor run past its limits.
-
-- **Burn it with the shard** (needs the shard, whole). Lose the salvage. Every ship repairs 25%. (flag `vs_lit_saint`)
-  *You set the casket in the firing chamber with your own hands. The chalk names seem brighter. That is the fire.*
-- **Burn it with a reactor.** Your largest ship takes 25% hull damage. Every captain gains 25 experience: they would follow you into the star. (flag `vs_lit_reactor`)
-  *The engineers swear as they rig the reactor. Then they cheer. Then they get back to work.*
-- Blue, needs the sale: **Buy back your name (60 credits).** The wardens chalk it again: every ship repairs 15%. (flag `vs_bought`)
-  *Your name goes back on the hull, one line lower than it was before.*
-
-Win: *{rival}'s flagship breaks against the old wrecks and falls into the dark. The relay burns for an hour, and far behind you, for the first time in ninety years, Vesper rises a little brighter.* + shard: *Seren's fire goes into the relay and does not come back; the wardens say that was always where it was going.* / reactor: *The ship that gave its reactor limps home dark, and the crews chalk a new name on her: yours.* / bought back: *The wardens add your name to the Roll of Vesper, near the bottom, where the living go.*
-
-Loss: *The chalk names burn with the hull.* + carried the shard: *The shard goes into the dark with the fleet, and the relay keeps drinking.* / sold it: *Somewhere a foundry lights its forge with your coin. It is the only fire the crusade leaves.*
+- **Burn the relay with Seren's shard** (needs shard intact). Lose salvage; every ship repairs 25%. (flag `vs_lit_saint`)
+  *You lock the quench-box into the firing chamber yourself, letting Seren's fire do the work your crews can't.*
+- **Overdrive your flagship's reactor.** Largest ship takes 25% hull damage; every captain gains 25 XP. (flag `vs_lit_reactor`)
+  *Engineering curses nonstop while bypassing the thermal safeties, then yells over comms when the surge holds.*
+- Blue, needs the sale: **Buy back your standing (60 credits).** You wire supply credits back to the belt wardens: every ship repairs 15%. (flag `vs_bought`)
+  *Your name goes back onto the flagship hull, one row lower than before, yet back on the line.*
 
 ---
 
-## 2. Hegemony Navy: "Registry Order 41"
+## 2. Meridian Directorate: "Registry Order 41"
 
-Crest: a wedge in a ring of five linked nodes. Register: documents, numbers, projections, understatement; the Registry speaks after a two-note chime. Motif: the quiet horror of being counted.
-
-Charge: *Secure the Hollow Sun as a fleet anchorage. Projection: favourable. Losses: acceptable. Appendix attached.*
+Charge: *Secure the Hollow Sun orbital perimeter and catalog all surviving Lattice cores. Projection: favorable. Attrition: acceptable.*
 
 ### Beat 1 (sector I): Listening Post M-14
+Your sealed dispatch arrives after the standard two-note chime: Registry Order 41, accompanied by an eight-page appendix defining acceptable casualty limits for this deployment. [Prior loss: Order 41 previously belonged to another commander whose serial has already been closed out of your copy.] Attached is a secondary notice regarding Listening Post M-14, fourteen personnel, telemetry overdue by six hours. {rival} reached the station first. {rival_deed} Meridian's projection classifies an unscheduled detour as suboptimal and instructs you to proceed directly along the primary lane. Your intelligence officer switches her cortical link off for ten seconds and asks quietly whether you want to recover M-14's encrypted black box on your own authority.
 
-The orders arrive after the two-note chime, numbered and without courtesy. Registry Order 41. Losses are to be held within acceptable limits; the definition of acceptable is attached as an appendix of nine pages. [Prior loss: Order 41 has a previous holder. Their entry has been closed out of your copy.] A second packet concerns Listening Post M-14, fourteen crew, last report overdue. {rival} reached it first. {rival_deed} The Registry has a file on {him} and nothing in it that helps. It projects that pursuit without authorisation would be suboptimal. Your intelligence officer switches off her link for a moment and asks, quietly, whether you would like the post's black box recovered anyway, on your own authority and off the record.
-
-- **Recover the black box, off the record.** It holds the post's last refit: gain a random refit. The recovery team is logged: the clock moves on one. (flag `hg_offbook`)
-  *The box comes aboard in a crate marked laundry. The fourteen names are on a single sheet. You read it twice.*
-- **Follow the Order to the letter.** Registry commendation: +50 credits. (flag `hg_orders`)
-  *The commendation arrives within the hour. M-14 is closed out of the projection with all hands, in the correct format.*
+- **Recover the black box off the record.** Gain a random refit from the station's locker. The detour trips local relays: clock moves on 1. (flag `hg_offbook`)
+  *The black box arrives inside a crate labeled galley stock, taped beside a handwritten list of fourteen names.*
+- **Execute Order 41 strictly.** Registry compliance bonus: +50 credits. (flag `hg_orders`)
+  *Meridian transfers the commendation within the hour and closes M-14's personnel ledger cleanly.*
 
 ### Beat 2 (sector II): Acceptable Limits
+A Directorate bulk supply column, twelve freighters and one battered picket, has been herded against a dense gravity shoal along the outer lane. {rival} seals the only safe jump exit and hasn't fired yet. {rival_line} Meridian's directive is unambiguous: the convoy's replacement cost falls within projected tolerances; stay on schedule. Then your flag captain hands over a raw unlinked hail from the picket's nineteen-year-old lieutenant promising to hold the shoal as long as her shields last. [If you recovered the black box: M-14's logs contain {his} patrol timing, and {he} knows the drive is missing.] [If you obeyed Order 41: {rival} bounced a copy of your compliance bonus straight onto your bridge display.] Breaking them out means overruling the Registry in front of every linked officer in your column.
 
-A Navy supply column, eleven haulers and one escort, has been driven onto the gravity shoals of sector II. {rival} holds the only exit and has not fired. {rival_line} The Registry is precise: the column is within acceptable limits; proceed to the objective. Your flag captain hands you a second message, from the escort's commander, a lieutenant of nineteen: we will hold as long as we can. [If you went off the record: the black box gave you {his} patrol pattern, and {he} knows it is missing.] [If you followed the Order: {rival} has sent your commendation back to you, unsigned.] To break through is to overrule the Registry. To leave is to follow the projection, and watch eleven crews closed out on schedule.
+- **Overrule the Registry and break them out.** A Directorate picket with a veteran lieutenant joins your fleet. No bonus, and clock moves on 1. (flag `hg_broke`, mercy, loud)
+  *Twelve freighters slip clear behind your guns while the Registry logs your breach of orders without a single word of comment.*
+- **Stay on schedule.** Meridian efficiency allocation: +80 credits. (flag `hg_left`, greed)
+  *The picket's transponder cuts out at 0340. Your flag captain signs the shift log without looking up.*
+- Blue, needs the black box: **Slip through {his} patrol gap.** The convoy escapes and the picket joins cleanly with no clock advance; every ship takes 10% hull abrasion cutting the rocks. (flag `hg_broke`, mercy)
+  *You thread the gravity ridge at tolerances the Directorate manual prohibits, and the young lieutenant calls it the cleanest flying she's ever watched.*
+- Blue, needs the compliance bonus: **File a priority exception (50 credits).** Six haulers are reclassified as essential and towed clear: every ship repairs 15%. Five are left behind. (flag `hg_split`)
+  *Meridian approves salvage coverage for six hull numbers and transmits a formal closure notice to the remaining five.*
 
-- **Overrule and break them out.** The lieutenant forms on your flagship: a Hegemony picket joins with a veteran captain. No bonus, and the clock moves on one. (flag `hg_broke`, mercy, loud)
-  *Eleven haulers and one battered picket fall in behind you. The Registry acknowledges receipt of your report. Nothing else.*
-- **Proceed to the objective.** Registry allocation: +80 credits. (flag `hg_left`, greed)
-  *The column's last signal is logged at 0340. Your flag captain initials the log and does not look up.*
-- Blue, needs the black box: **Run {his} patrol gap.** The column lives and the picket joins, unseen: no clock. Every ship takes 10% hull damage in the gap. (flag `hg_broke`, mercy)
-  *You thread {his} pickets at a distance the manual calls reckless. The lieutenant calls it the best flying she has seen.*
-- Blue, needs the commendation: **File for an exception (spend the commendation: 50 credits).** Six haulers are reclassified as essential and saved: every ship repairs 15%. Five are not. (flag `hg_split`)
-  *The exception is approved for six hulls, by number. The remaining five are informed of their status.*
+### Beat 3 (sector III): The Orbital Perimeter
+The Hollow Sun turns cold and immense ahead of your bow, its outer orbital perimeter ringed with shattered Meridian survey beacons from earlier probes. {rival} holds the primary approach lane between two dead relay buoys, weapons already hot on your jump vector. {rival_line} [If you rescued the convoy: somebody leaked your formal reprimand to {rival}, who transmitted it back covered in red marks.] [If you left them: {rival} painted the lost freighters' hull codes across {his} flagship flank.] Meridian's formal engagement authorization finally arrives six days late, stamped with an exact casualty forecast to the nearest hull. [If you rescued them: the lieutenant's picket locks neatly onto your port bow without waiting for orders.] [If you left them: your flag captain quietly added twelve names to M-14's paper sheet.] Synchronized fire clocks lock green across the entire column. Before a decisive engagement, Directorate commanders hold one custom Meridian never records: switching off every cortical link for sixty unlogged seconds.
 
-### Beat 3 (sector III): The Anchorage
-
-The Hollow Sun is exactly as cold as the survey projected. {rival} has dug in among the shattered buoys at the anchorage mouth. {rival_line} [If you broke the column out: somebody leaked your reprimand to {rival}; {he} sent you a copy, annotated.] [If you did not: {rival}'s flagship carries the column's registry numbers along its flank.] Authorisation arrives eleven days late, stamped and countersigned, with a projection of your losses to the nearest hull. [If you broke the column out: the lieutenant's picket holds station off your bow and has not asked for orders.] [If you left them: the list from M-14 has eleven new names. Your flag captain added them.] [If you filed the exception: the list has five.] The guns are synchronised. The column is formed on your flagship. Your flag captain asks if there are orders beyond the obvious, and waits. There is one tradition the Registry never logs. Before a decisive engagement a commander switches off the link for one minute and speaks to the whole line, unrecorded.
-
-- **"Name, rank and number. All of them."** Read the list. Every captain gains 25 experience: the crews fight for the dead. (flag `hg_names`)
-  *You read every name, rank and number. It takes four minutes. The link comes back on after five.*
-- **"You are not required to be brave. Only correct."** Every ship repairs 20%: the crews go back to work. (flag `hg_duty`)
-  *Damage control teams are moving before you finish the sentence. That is the correct response.*
-- Blue, needs the column: **Give the lieutenant the minute.** Every captain gains 15 experience and every ship repairs 10%. Her picket goes in first. (flag `hg_lt`)
-  *She says eleven words, one for each hauler. Then the column forms on her, not on you, and you allow it.*
-- Blue, needs the Order followed in sector I (and the commendation not spent): **Call in the commendation (40 credits).** The Registry allocates what an obedient commander is owed: a Hegemony picket joins with a veteran captain. (flag `hg_support`)
-  *A picket arrives with a form to sign. It is the first thing the Registry has sent on time.*
-
-Win: *The anchorage is secured at 0412 ship time.* + names: *Your report runs to a single line, followed by the list. The Registry files it and then, without precedent, keeps the list open.* / duty: *Your report runs to a single line. The Registry files it.* / lieutenant: *She is promoted. Nobody can find the entry that authorises it, and nobody looks.* / commendation: *The Registry notes your record: every order followed, every projection met. It is the most frightening sentence in your file.* + went off the record: *The inquiry opened over the black box is quietly closed.*
-
-Loss: *Order 41 is marked incomplete. Within a month a new commander receives it, numbered and without courtesy.* + read the names: *The new copy has a list attached. Your name is at the bottom, in the correct format.* / went off the record: *The inquiry over the black box proceeds in your absence. It finds against you.*
+- **"Name, rank, and hull number. Every single one."** Read the paper list aloud. Every captain gains 25 XP. (flag `hg_names`)
+  *Reading every name takes three full minutes, and nobody turns their link back on until you finish.*
+- **"Check your firing solutions and hold spacing."** Keep it strictly professional: every ship repairs 20%. (flag `hg_duty`)
+  *Damage-control crews double-check every seal before you finish speaking, steady and calm.*
+- Blue, needs the convoy saved: **Hand the unlogged minute to the lieutenant.** Every captain gains 15 XP and every ship repairs 10%. (flag `hg_lt`)
+  *She names every freighter that made it home, then nudges her battered picket straight to the front of your column.*
+- Blue, needs Order 41 followed (and bonus unspent): **Call in your compliance credit (40 credits).** Meridian dispatches a fresh Directorate picket with a veteran officer. (flag `hg_support`)
+  *The reinforcement drops out of jump alongside a digital receipt requiring your immediate signature.*
 
 ---
 
 ## 3. Ashfall Hullbreakers: "Rook's Trail"
 
-Crest: a ring of welded scrap teeth around three claw slashes. Register: short, flat, brutal; trails, sound, kills, the pack; a growl under every word. Recurring face: Old Mott, who has outlived forty captains.
-
-Charge: *Rook drifts in the wreck fields round the Hollow Sun. Run it down. Strongest keeps it.*
+Charge: *R-5 Rook's pulsing somewhere inside the Hollow Sun wreck field. Track it down, crack whoever's guarding it, and keep it.*
 
 ### Beat 1 (sector I): The Torn Den
+Word across the Ashfall dens says the core R-5 Rook has started pinging from the wreck belt around the Hollow Sun, throwing a steady thermal tick where no live reactor should sit. Old Mott swears whoever bolts Rook into their flagship won't ever lose a fight again, though Mott says something like that after every third bottle. Either way, half the belt's spinning up drives, so you jump first or pick through someone else's scraps. [Prior loss: gossip in the dock bars says the last pack that chased Rook is still welded into the ice near the rim.] Before you clear orbit, word hits that {rival} raided your forward fuel depot. {rival_deed} Half your captains want to send back a booby-trapped trophy crate; the rest want a loud pre-hunt brawl and feast first.
 
-Word in the Ashfall dens is that the core Rook, the Breaker, has been heard in the wreck fields around the Hollow Sun: a slow tick of engine noise where no engine is. Old Mott says whoever holds Rook cannot be stopped. He has said that about forty things. This time the whole belt is listening. You go first, which makes you strong or dead. [Prior loss: the dens say the last captain who went for Rook is still out there, frozen into the wreck field. Nobody says it to your face.] Before you clear the den, word comes about your forward camp. {rival} got there first. {rival_deed} The pack wants an answer, with a charge in it. The others want a feast and a howl before the hunt. Both are old ways.
+- **Send a rigged trophy back.** The dock bookies start taking bets on your pack: +40 credits. {rival} takes it personally: clock moves on 1. (flag `cs_rigged`, loud)
+  *The charge goes out bolted inside a stolen hull plate, and the odds Rattlehold posts on your survival are flat-out insulting.*
+- **Throw a loud pre-hunt feast.** Every captain gains 15 XP. (flag `cs_party`)
+  *Two loud days of brawling where Mott brags about his eighth challenger, slips up mentioning an old Rattlehold broker, and passes out on a cargo crate.*
 
-- **Send an answer, rigged.** The dens start betting on you: +40 credits. {He} takes it personally: the clock moves on one. (flag `cs_rigged`, loud)
-  *The answer goes out wrapped in trophy plate. The odds the dens give on your survival are insulting.*
-- **Feast and howl.** The pack swears on the hunt: every captain gains 15 experience. (flag `cs_party`)
-  *Two days. Mott tells everyone how he killed his ninth captain, then his twelfth, then about a broker at Rattlehold, then falls asleep.*
+### Beat 2 (sector II): The Rattlehold Auction
+The full wake-log mapping Rook's drift sits inside Rattlehold, the meanest rock-den in sector II, and the den-boss holding it will hand it over to whoever pays top scrap or breaks his champion. Every pack with two guns and a grudge packed the docks. {rival} didn't bother coming inside; {his} fleet hangs cold off the outer rocks waiting to jump whoever walks out with the chart. {rival_line} Your breach gangs want to smash the docking bays and run dark under the chaos. Your quartermaster says pay the scrap price clean and avoid starting a three-way war. [If you feasted: Mott already knows the broker keeping the log and looks distinctly uncomfortable about it.] [If you sent the rigged crate: word of it kept {rival}'s escorts holding extra distance.]
 
-### Beat 2 (sector II): The Rattlehold Challenge
-
-The wake-log of Rook's drift, a thousand years of ion trail, is held at Rattlehold, the biggest den in sector II. Any pack can claim it the old way: challenge the den-boss who holds it, or pay. Every crew with a ship and a grudge is here. {rival} is not bidding. {His} pack waits off the rock, listening for who walks out with it. {rival_line} The knife crews say take it, start a fight, run dark under the noise. The quartermaster says pay what it costs and owe nobody. [If you feasted: Mott knows the broker who keeps the log from his own stories, and is still ashamed of what he said.] [If you rigged your answer: {rival} heard about it; {his} pack keeps its distance.] Rattlehold respects both. It only remembers one.
-
-- **Take it and wreck the docks.** The log, and whatever else was on the clamps: gain salvage. Your next fight starts as an ambush. (flag `cs_stole`, greed, loud)
-  *Rattlehold burns for a week. Three packs swear you started it. Two of them are right.*
-- **Pay full price (80 credits).** Rattlehold remembers a pack that paid: a Hullbreaker raider crew signs on with you. (flag `cs_paid`)
-  *The quartermaster pays in counted scrap. A raider watching from the back says she has never seen that before, and asks to run with you.*
-- Blue, needs the feast: **Let Mott talk to the broker.** The log for 30 credits, and the broker tells Mott a weakness of {rival}'s. Your flagship captain loses 15 experience to the drinking. (flag `cs_mott`)
-  *They hunted together once, briefly. Neither will say more. Your flag captain cannot say anything at all until morning.*
-- Blue, needs the rigged answer: **Remind the room about your answer.** Nobody contests you: the log for 20 credits. {He} hears about it: the clock moves on one. (flag `cs_feared`, loud)
-  *You mention the answer once, quietly. The room finds other things to fight about.*
+- **Smash the docks and snatch the log.** Grab the chart plus loose hardware on the clamps: gain salvage. Your next fight starts as an ambush. (flag `cs_stole`, greed, loud)
+  *Rattlehold's outer bays burn for four days, and three rival packs put bounties on your hull before the smoke clears.*
+- **Pay the asking price (80 credits).** Paying fair at Rattlehold turns heads: a Hullbreaker raider crew signs onto your pack. (flag `cs_paid`)
+  *Your quartermaster dumps counted scrap straight onto the counter, and an impressed raider captain asks to fly on your flank.*
+- Blue, needs the feast: **Send Mott in to lean on the broker.** You get the log for 30 credits plus a Nemesis weakness; your flagship captain loses 15 XP to a brutal hangover. (flag `cs_mott`)
+  *Mott and the broker ran the same belt twenty years back, and whatever they drank settling old business leaves your flag captain useless till morning.*
+- Blue, needs the rigged crate: **Remind the hall what happened to your last rival.** Nobody bids against you: get the log for 20 credits, though word reaches {rival}: clock moves on 1. (flag `cs_feared`, loud)
+  *You drop one scorched rivet on the table, and every rival captain suddenly remembers an urgent hull repair.*
 
 ### Beat 3 (sector III): Strongest Keeps It
+Rook isn't dock-bar gossip after all. Out along the Hollow Sun's frozen debris ring, a ship-sized Starwright core spins slowly among cracked cruisers, glowing red-hot under a thick crust of rime. Even Old Mott shuts up when the thermal scope image sharpens on screen. {rival} beat you to the wreck belt and anchored {his} escorts straight around the core's casing, daring you to chew through the prize to get at {him}. {rival_line} [If {rival} lost face back at Rattlehold: every den knows it, and {he} fights like someone with something to prove.] [If {he} let you buy the chart cleanly: {he} wanted you to drag the map straight here.] [If you torched Rattlehold: your hulls still carry scorch streaks from the dock fight.] [Prior loss: half-buried between two wrecks sits {prior_flagship}, frozen dark.] Your captains are already snarling over loot shares and breach order; settle how this pack fights before the burn starts.
 
-Rook is real. In the cold glow of the Hollow Sun a ship-sized core turns among a dozen dead hulls, still ticking, still hot. Old Mott goes very quiet. {rival} got here first and has chained {his} pack to the wrecks around the core, daring you to shoot through the prize to reach {him}. {rival_line} [If {rival} lost face at Rattlehold: every pack in the dens knows it, and {he} knows they know.] [If {he} let you buy the log: {he} wanted you to bring it here.] [If you wrecked Rattlehold: your crews still smell of its smoke.] [Prior loss: in the ice between two wrecks, a familiar hull. The plate still reads {prior_flagship}.] The crews are already arguing over who gets first pick of the core and the wrecks around it, which is bad luck. Tonight you tell them what kind of pack they are. Mott wipes his muzzle and waits.
-
-- **"First pick for every claw. We go round the core."** Fight clear of the wrecks. Every captain gains 20 experience. They will hold you to it. (flag `cs_double`)
-  *The howl carries across three ships. The quartermaster quietly starts a second tally.*
-- **"Shoot through it."** Strip plate from the outer wrecks first: every ship repairs 25%. Rook takes damage it may never shake. (flag `cs_through`)
-  *Nobody howls. The cutting crews go to work on the outer hulls. Mott starts swearing and does not stop.*
-- Blue, needs the feast: **Let Mott speak to the pack.** Every captain gains 10 experience and every ship repairs 10%. (flag `cs_mottspeech`)
-  *Mott talks about his forty captains for nine minutes. By the end, the hard cases are howling with him.*
-
-Win: *{rival}'s chains part, and the pack closes on the core.* + first pick: *The claims take three days and two challenges. Mott takes nothing, which frightens everyone.* / through: *Rook still ticks, slower now. The crews will tell this one for years, and not kindly. Then the quartermaster gives away his own share, which has never happened.* / Mott: *Mott lays one claw on Rook and says it is warmer than he thought. Nobody argues.* + rigged answer: *Somebody sends {rival}'s wreck one last answer, wrapped in trophy plate. Nobody owns up.*
-
-Loss: *Your hull joins the wreck field around Rook. Some later pack will hear the legend and come looking.* + first pick: *The crews never collect. The dens still fight over who inherits the claim.* / feasted: *The dens hold a second feast, for you. It is quieter.*
+- **"Every claw gets a fair cut, and nobody shoots the core."** Fight wide around the wrecks: every captain gains 20 XP. (flag `cs_double`)
+  *A ragged roar rolls across fleet comms while your quartermaster starts sharpening a new tally slate.*
+- **"Shoot straight through the wrecks if they hide behind it!"** Strip spare plate off the outer debris first: every ship repairs 25%, though Rook takes hard hits. (flag `cs_through`)
+  *Nobody cheers, yet the weld gangs pull fresh armor off the dead hulls fast while Mott curses under his breath.*
+- Blue, needs the feast: **Give Mott the open band.** Every captain gains 10 XP and every ship repairs 10%. (flag `cs_mottspeech`)
+  *Mott spends six filthy minutes comparing your enemies to the forty idiots who tried taking his chair, and half the pack is laughing by launch.*
 
 ---
 
-## 4. The Chorus: "Eat the Sun"
+## 4. The Chorus: "Consume the Cores"
 
-Crest: a ring of nine open mouths. Register: "we", sentences of nine words or fewer, taste, heat, smell, teeth. Two throats argue in every beat: Hunger, which is the swarm, and Memory, which is what is left of the Fleshwrights it ate. The Chorus never sings.
-
-Charge: *Five warm keys circle the Hollow Sun. Memory knows the place. Eat them.*
+Charge: *Five hot Lattice cores orbit the Hollow Sun. Memory still recognizes Ardent's ruins; Hunger intends to devour them.*
 
 ### Beat 1 (sector I): The Split Node
+We wake starving across every chamber. Far ahead, Ardent's black hole holds five glowing cores that pulse straight through our sensory pits. Memory still recognizes that dead star from when our Fleshwright makers had hands and walked under its light. [Prior loss: our outer spores still carry the cold shock of an earlier brood failing on this lane.] On the first jump we find a severed Chorus nursery node sliced neatly open, its young left unconsumed to freeze in hard vacuum. Nothing living wastes good biomass like that. {rival} cut it open. {rival_deed} Hunger wants us to swallow the dead tissue immediately and thicken our hides. Memory wants us to sample the weapon residue and track {his} drive-burn instead. Two drives pull inside one swarm; choose which leads.
 
-We wake hungry. Every throat, one want. Far off, the Hollow Sun. Dead outside. Warm inside. Keys, humming with old heat. Memory knows that star. It circled it, once, with hands. [Prior loss: we have been here before. We remember the cold.] The first night, we find a node. Split open. The young inside untouched. Left to spoil. Nothing hunts like that. Nothing wastes like that. {rival} did this. {rival_deed} We taste the wound. Hunger says: eat the dead. Grow. Memory says: leave them. Keep the smell. Then we know what to chase. Two throats. One swarm. The swarm waits for you.
-
-- **Eat the dead.** Every ship regrows 30% of its hull. Hunger grows louder. (flag `ch_ate`)
-  *We eat. It tastes of {him}. Hunger purrs.*
-- **Keep the smell.** We know where {he} goes: the clock goes back one. Memory grows louder. (flag `ch_smell`)
-  *We leave them. The smell stays in every throat. Memory is pleased.*
+- **Consume the dead node.** Every hull regrows 30%. Hunger grows louder inside the swarm. (flag `ch_ate`)
+  *We draw the frozen tissue back into our sacs, tasting the scorch of {his} weapons as the hides thicken.*
+- **Sample the weapon trace and leave the dead.** Tracking {his} burn signature slows {his} ambush: clock goes back 1. Memory sharpens. (flag `ch_smell`)
+  *We map the exact isotope trail left by {his} drives and slip cleanly onto {his} wake.*
 
 ### Beat 2 (sector II): The Warm Shallows
+An oceanic moon turns warm beneath a low cloud deck, its shallow seas crowded with dormant Chorus spawn left over from an older migration. {rival} has seeded the orbital cloud layer with proximity mines and hangs waiting above the gravity well. {rival_line} Hunger urges us to dive straight through the blasts, gorge on the drifting biomass, and climb back heavier. Memory pushes us to feed our own cells down to the spawn so they mature fast and rise into orbit beside us. [If we consumed the dead node: Hunger's surge lit our thermal trail bright, and {he} packed the densest mine cluster right over the thickest spawn.] [If we mapped {his} trace: {his} picket engines are still hot from laying the grid an hour ago.] The young pulse upward through the water, waiting.
 
-A sea world. Shallow. Warm. Full of drifting spawn. Unclaimed. Ours, once. {rival} has seeded the shallows with mines. {He} waits above. {rival_line} Hunger says: dive. Eat. Take the losses. Come out heavier. Memory says: feed the spawn. Our own flesh. They rise. They fight beside us. [If we ate the dead: Hunger is louder since the node. {He} knows. {He} left the mines where hungry things dive.] [If we kept the smell: the smell is here. Fresh. {He} passed an hour ago.] The heat comes off the water in waves. The mines tick. Tick. The spawn turn toward us, mouths open. The small ones cry out. They are hungry, like us. Hunger has never had to choose before. It does not like it.
+- **Dive and feed.** Every hull regrows 30%. {He} reads the massive thermal spike: clock moves on 1. (flag `ch_dove`, loud)
+  *We drop straight through the mine detonations, swallowing fragments of steel and warm spawn alike.*
+- **Seed the spawn with our own tissue.** Every hull sheds 5% mass; a fresh Chorus drone-spawn rises to join the swarm. (flag `ch_spawn`)
+  *Our membranes split open over the warm tide, and a new brood-hull climbs into vacuum minutes later.*
+- Blue, needs the tracked trace: **Cut off {his} mine-laying pickets.** Every hull takes 8% abrasion skimming atmosphere, yet we catch {his} flank off guard and expose a Nemesis weakness. (flag `ch_hunted`)
+  *We surge out of the cloud cover behind {his} pickets and learn exactly where {his} shielding runs thin.*
+- Blue, needs the dead node consumed: **Give full control to Hunger.** Every hull takes 10% mine damage, then regrows 40%. Memory goes silent for the rest of the run. (flag `ch_hunger`)
+  *We swallow mines, burning plasma, and spawn together until the makers' old voices drown completely under raw appetite.*
 
-- **Dive and eat.** Every ship regrows 30% of its hull. {He} hears the feeding: the clock moves on one. (flag `ch_dove`, loud)
-  *We dive. We eat. The mines take some of us. We eat those too.*
-- **Feed the spawn our flesh.** Every ship loses 5% of its hull. A Chorus drone-spawn joins the swarm. (flag `ch_spawn`)
-  *We open. They drink. One of them grows teeth before the tide turns.*
-- Blue, needs the smell: **Follow the fresh smell.** Every ship takes 8% hull damage in the chase. We catch {his} pickets unready: a Nemesis weakness is revealed. (flag `ch_hunted`)
-  *We run {him} down through the shallows. {His} pickets taste of fear. We learn where {he} is soft.*
-- Blue, needs the eating: **Let Hunger lead.** Eat the mines too: every ship takes 10% hull damage, then regrows 40%. Memory goes quiet for the rest of the hunt. (flag `ch_hunger`)
-  *We eat the mines. They burn. We eat the burning. Memory stops talking.*
+### Beat 3 (sector III): Consume the Cores
+Ardent's dead halo burns hot across every sensory pit as five surviving Lattice cores circle the black hole's gravity rim, pouring radiation straight through the cold dust. Memory whispers the star's old name one last time from deep inside our neural tissue while Hunger swells against our outer ribs. {rival} walls off the final orbit between our swarm and the cores, weapons fully charged. {rival_line} [If we ambushed {his} pickets: {his} command hull still carries fresh acid scars from the ocean moon.] [If not: {he} stripped our unguarded spawn-fields clean before jumping here.] We answer {his} comms hail only with rising thermal static and shifting spore clouds. [If Hunger silenced Memory: only raw predation guides the swarm now.] [If we raised the ocean spawn: the new brood-hulls dart eagerly along our flanks.] Hunger demands an immediate all-out surge; Memory urges one measured pass to read {his} weak seams first.
 
-### Beat 3 (sector III): Eat the Sun
-
-The keys are warm. Every throat feels them. Heat on the hide. A hum under the static. Memory says a name for this place. Ardent. {rival} stands in front of it. Between us and the heat. {rival_line} [If we hunted {him}: {he} limps. We bit {him} in the shallows. {He} remembers our teeth.] [If we did not: {he} is fat from the shallows. {He} ate what we left.] We do not answer in words. The keys are close. We smell them through the dark. Old. Sweet. Ours. {He} smells of fear and metal. Both taste good. [If Hunger leads: only Hunger speaks now. Memory is a scar.] [If we fed the spawn: the small ones from the shallows swim beside us. Furious.] Hunger says: open every mouth. Eat it all. Now. Memory says: taste first. Learn {him}. Then eat. Nine mouths. One answer. The heat rises.
-
-- **Open every mouth.** Every ship regrows 20% of its hull. (flag `ch_end_hunger`)
-  *Every throat opens at once. The sound is not a sound. {He} hears it anyway.*
-- **Taste first** (not if Hunger leads). Every captain gains 25 experience. (flag `ch_end_memory`)
-  *We taste the air {he} came through. We learn the shape of {his} fear. Then we move.*
-- Blue, needs the spawn: **Send the small ones first.** Every ship regrows 10% and every captain gains 15 experience. The small ones will not come back. (flag `ch_end_spawn`)
-  *They go laughing, if it is laughing. {His} guns turn to them. We go through the gap.*
-
-Win: *We close over the dead star like a hand.* + Hunger: *We eat until nothing warm is left. We are bigger than we have ever been. We are still hungry.* / Memory: *We eat slowly. Memory knows this light. For a moment it speaks in a Fleshwright's voice, and says thank you.* / the small ones: *None come back. The swarm keeps a hollow where they were.* + ate the dead in sector I: *The split node tasted of {him}. So does this. Good.* / kept the smell: *The smell from the split node fades at last. We do not need it now.*
-
-Loss: *The hunger goes quiet. In the cold, the warm keys wait for the next mouth.* + Hunger led: *Hunger was the last throat to stop.* / kept the smell: *Memory keeps the smell. Some other swarm will find it.*
+- **Surge with every brood at once.** Every hull regrows 20%. (flag `ch_end_hunger`)
+  *Every propulsion sac flares simultaneously, turning the approach lane into a storm of acid and spores.*
+- **Read {his} firing pattern first** (locked if Hunger silenced Memory). Every captain gains 25 XP. (flag `ch_end_memory`)
+  *Memory matches {his} formation spacing against Fleshwright war-logs, pinpointing every blind arc before we strike.*
+- Blue, needs the ocean spawn: **Send the young brood-hulls straight into {his} forward guns.** Every hull regrows 10% and every captain gains 15 XP. The young won't survive. (flag `ch_end_spawn`)
+  *The newly hatched hulls rush straight into {his} main batteries, tearing a clean gap for our heavy broods to follow.*
 
 ---
 
 ## 5. The Glasswrights: "The Last Lens"
 
-Crest: a cracked lens with one beam of light passing through. Register: quiet, precise, mournful; light, reflection, focus, what we built; they apologise and mean it. A fussy cataloguer supplies the humour. No faction sings: the Glasswrights' sound is one clear tone, like struck glass.
-
-Charge: *The Lattice's last great lens lies at the Hollow Sun. Bring it home before our siblings use it to steer a stolen sun.*
+Charge: *Recover the Lattice's last primary lens from the Hollow Sun before Eclipse bolts it onto a stolen star.*
 
 ### Beat 1 (sector I): The Mirror-Buoy
+The black hole ahead used to be Ardent, and your grandmothers polished the collectors that harvested its light before Eclipse killed the star. The Lens-keepers sent you to recover the last intact primary lens before your uploaded siblings seize it, and reminded you twice to bring its gimbal frame too. [Prior loss: nobody mentions the earlier voyage that never came home.] On your first jump, an ancient optical buoy rotates toward your flagship and flashes a sharp warning code. {rival} came through first. {rival_deed} The buoy offers to drain its thousand-year core of stored starlight to expose {his} route, though doing so leaves it dark forever. Your cataloger already pulses eager amber.
 
-The Hollow Sun was Ardent once, and your grandmother's grandmother ground the lenses that harvested it. The Lens-keepers have sent you to bring home the last great lens of the Lattice before Eclipse fit it to their new sun. They have reminded you, twice, to bring its mounting as well. [Prior loss: the Lens-keepers do not mention the last voyage. The youngest captains know not to ask.] On the first night a mirror-buoy older than any living Glasswright turns toward your fleet and flashes a warning in a light-code your cataloguer has only read about. {rival} passed this way. {rival_deed} The buoy offers the light it has stored for a thousand years. Taking it would leave it dark for good. Your cataloguer would very much like to take it.
-
-- **Take its stored light.** It holds {his} route: the clock goes back one. The buoy goes dark. (flag `it_song`)
-  *The buoy gives its light gladly, which is worse. Your cataloguer files it under irreplaceable and does not speak for an hour.*
-- **Let it keep its light.** Your captains carry its warning instead: every captain gains 15 experience. (flag `it_mercy`, mercy)
-  *The buoy dims itself back to rest. Your cataloguer sulks, makes a note, and then a second note.*
+- **Draw the buoy's stored light.** Its logs reveal {his} lane: Nemesis clock goes back 1, and the buoy dims permanently. (flag `it_song`)
+  *The buoy empties its core willingly, and your cataloger marks the entry irreplaceable in muted violet.*
+- **Leave the buoy lit.** Your captains study its warning angles instead: every captain gains 15 XP. (flag `it_mercy`, mercy)
+  *The buoy settles back onto its quiet orbit while your cataloger logs two stiff footnotes of protest.*
 
 ### Beat 2 (sector II): The Ringing Field
+Sector II forces your formation across the Ringing Field, a drift of shattered Glasswright hulls from the collapse whose crystal fragments still flash blindingly whenever coherent light strikes them. {rival} turned the graveyard into a trap, deliberately cracking wrecks to flood your interferometers with glare. {rival_line} Your youngest captains, barely a century old, ripple pale grief across their inlays while the cataloger logs every destroyed hull number with shaking focus. Your eldest Mirror flew in this fleet when it was whole; she suggests pulsing one synchronized damping tone across all hulls to quiet the shards, though stopping gives {rival} time to maneuver. [If you drew the buoy's light: its resonance maps which shards {rival} intends to shatter next.] [If you left the buoy lit: its early warning marked an unmined corridor around the worst debris.]
 
-In sector II the voyage crosses the Ringing Field, crystal wrecks of the old fleet that still ring when light strikes them. {rival} has made the field a trap: every wreck {he} breaks flares, and the flares blind your sensors. {rival_line} Your captains are young as Glasswrights count it, barely a century, and some are weeping at their stations; the cataloguer is logging every flare, in tears, with exact timings. Your oldest Mirror flew in this fleet when it was whole. She says one mourning tone, struck through every hull, would quiet the field, if you can spare the time. [If you took the stored light: it answers the flares; {rival} breaks the wrecks in the order it remembers.] [If you let the buoy rest: its warning was about this field; your captains know the path {rival} did not mine.]
-
-- **Strike the mourning tone.** The captains steady: every captain gains 20 experience. {He} sees you coming: the clock moves on one. (flag `it_lament`)
-  *The wrecks hear their own tone and go still, one by one. The cataloguer records the order.*
-- **Go dark through the flares.** Every ship takes 5% hull damage. You catch {him} unready: a Nemesis weakness is revealed. (flag `it_dark`, loud)
-  *You fly blind through the flaring glass. When the sensors clear, you are close enough to see {his} seams.*
-- Blue, needs the stored light: **Release the buoy's light.** The wrecks fall still at once: no damage, and the clock goes back one. The light is spent; you will not bring it home. (flag `it_spent`)
-  *The field goes dark in a single breath. Your cataloguer crosses one line out of the inventory, very neatly.*
-- Blue, needs the warning: **Take the warned path.** Slow and safe: no damage, no clock, and every captain gains 10 experience. (flag `it_path`)
-  *The path is exactly where the buoy said. The cataloguer adds a footnote crediting it.*
+- **Pulse the damping tone.** Your crews steady their focus: every captain gains 20 XP. {He} reads your position clearly: clock moves on 1. (flag `it_lament`)
+  *The fractured hulls absorb the matched frequency and dim one by one as the cataloger records each hull code.*
+- **Cut emissions and burn blind through the glare.** Every ship takes 5% debris damage, yet you catch {him} mid-turn and expose a Nemesis weakness. (flag `it_dark`, loud)
+  *You fly purely on inertial drift through blinding shards, emerging close enough to read {his} shield seams.*
+- Blue, needs the buoy's light: **Vent the stored light across the field.** Every shard goes dark instantly: zero damage and Nemesis clock back 1, though the light is spent. (flag `it_spent`)
+  *The glare dies in half a second, and your cataloger draws one neat line through the inventory entry.*
+- Blue, needs the buoy spared: **Thread the warned corridor.** Clean transit with zero damage, zero clock gain, and +10 XP per captain. (flag `it_path`)
+  *The unmined lane holds true to the exact arc, and your cataloger adds a rare note of praise.*
 
 ### Beat 3 (sector III): The Last Lens
+The Hollow Sun hangs dark inside a thin halo of dying plasma, and turning slowly along its rim sits the last great primary lens of the Lattice, wider than your entire cruiser line and still tracking a star that died a millennium ago. {rival} reached its gimbal mounting ahead of your formation and locked weapons on the rim. {rival_line} [If you ambushed {him} in the Ringing Field: {he} stopped smashing crystal wrecks, and clearly resents being forced onto the defensive.] [If not: {rival} mounted a jagged shard from the Ringing Field right across {his} prow.] [If the buoy's light is still aboard: its reserve can unlock the mounting cleanly without a close brawl.] [If you left the buoy lit: a faint pulse from three sectors back still flashes its beacon code toward the lens.] [If you lost ships: {first_lost}'s empty slot in formation will require a painful written accounting.] Every cruiser you brought into this orbit is irreplaceable ancestral craft. Your cataloger asks quietly whether you'll risk a hull to free the lens first or keep the fleet whole.
 
-The Hollow Sun is a black pearl in a halo of dead light. At its rim hangs the lens: a disc of crystal wider than your fleet, still turning to follow a sun that is not there. {rival} has reached it first. {rival_line} [If you caught {him} in the Ringing Field: {rival} stopped breaking glass, and has not forgiven you for making {him} stop.] [If you did not: {rival}'s flagship carries one shard of the Ringing Field on its prow, still ringing faintly.] Before battle every ship turns its mirrors toward the Sun, as your people have for a thousand years. [If the buoy's light is still aboard: it would wake the lens without a fight at its mounting.] [If you let the buoy rest: far behind you it still turns its warning toward the lens.] [If you lost ships: the {first_lost} is not with you; you will have to explain that to the Lens-keepers, in writing.] Every ship in this fleet is a light that will not be lit again. Your cataloguer asks, very politely, which you mean to save if you cannot save both: the lens, or the fleet.
-
-- **Save the lens.** Send the oldest ship ahead to free its mounting: one of your ships takes 25% hull damage. Every captain gains 25 experience. (flag `it_end_archive`)
-  *The oldest ship lowers its shields and flies into the light. The lens turns to follow it.*
-- **Save the fleet.** The lens has waited a thousand years; it can wait an hour. Every ship repairs 20%. (flag `it_end_fleet`)
-  *You hold the line at the mounting. The cataloguer says nothing, loudly.*
-- Blue, needs the buoy's light: **Pour the buoy's light into the lens.** The light is spent: every ship repairs 10% and every captain gains 15 experience. (flag `it_end_buoy`)
-  *The lens drinks the old light and wakes like an eye opening. The buoy, wherever it is, would be pleased.*
-- Blue, needs the buoy spared: **Ask the buoy to wake the lens.** It turns once more, from afar, and goes dark for good: every ship repairs 10% and every captain gains 15 experience. (flag `it_end_mercy`)
-  *Across three sectors an old mirror flashes one last line. The lens sees it and wakes. Your cataloguer does not sulk.*
-
-Win: *The lens comes free of its mounting and turns, for the first time in a thousand years, toward something other than the dark.* + lens: *On the voyage home your youngest captain learns to read the light ground into its rim, slowly, and the Lens-keepers weep.* / fleet: *You bring every ship home. The Lens-keepers receive the lens with polite disappointment and file your report under unusual.* / buoy: *The buoy's light goes home inside the lens. The cataloguer writes returned in the margin and underlines it.* / the spared buoy: *On the way home you pass its mirror, dark now. The whole fleet dims its running lights for it.*
-
-Loss: *The last vane folds. The lens keeps turning, and Eclipse comes for it.* + saved the lens: *The oldest ship is still at the mounting with its lights on, guarding a lens nobody will carry home.*
+- **Send your oldest hull in to free the mounting.** One ship takes 25% hull damage; every captain gains 25 XP. (flag `it_end_archive`)
+  *Your senior hull drops shields to match the mounting's lock frequency, and the massive lens slowly swings free.*
+- **Hold formation and protect the fleet.** The lens waited ten centuries and can wait one more battle: every ship repairs 20%. (flag `it_end_fleet`)
+  *You keep every ship tucked behind prism wards while the cataloger flashes stiff disapproval across the plot.*
+- Blue, needs the buoy's light: **Channel the buoy's light into the gimbal lock.** The reserve spends itself freeing the lens: every ship repairs 10% and every captain gains 15 XP. (flag `it_end_buoy`)
+  *The lens drinks the old starlight and releases its clamps cleanly without a single shot fired near its rim.*
+- Blue, needs the buoy spared: **Relay the remote unlock code from the spared buoy.** The distant buoy flashes one last signal and goes dark forever: every ship repairs 10% and every captain gains 15 XP. (flag `it_end_mercy`)
+  *Across three sectors the old mirror fires one final coherent beam, tripping the mounting locks cleanly.*
 
 ---
 
 ## 6. Eclipse: "The Homecoming"
 
-Crest: an eclipsed sun, a black disc with a thin white-gold ring. Register: cold, exact, quietly grieving; counted years, worn bodies, the warmth they remember and can no longer feel; sentences that start to doubt the Upload and stop. Motif: the Archive, where every mind is backed up and nothing is forgotten.
-
-Charge: *The keys are scattered. The new sun waits for them at the heart of Ardent. Bring them home.*
+Charge: *Recover the scattered Lattice cores, guard the siphon corridors, and ignite Ardent's successor at the heart of the dead system.*
 
 ### Beat 1 (sector I): The Broken Frame
+Your fleet cycles awake on schedule, chassis by chassis, just as Eclipse has done every century since Ardent collapsed. The Archive summary is blunt: four cores still adrift across contested lanes, one stellar frame waiting dark at the system's core. [Prior loss: the Archive logs an earlier Homecoming attempt without listing your failure code, a rare gesture of restraint.] One urgent alert breaks the routine. An outer siphon relay was boarded before your jump, its keeper's chassis carefully stripped for its access ciphers. The keeper's last clean Archive stamp is eight years old. {rival} took the codes. {rival_deed} Your Shades urge immediate pursuit before the ciphers spread; your Umbras advise repairing hulls while dissecting what {he} left behind.
 
-We wake by schedule, frame by frame, as we have every century for a thousand years. The Archive lists what remains to be done. Six keys, four still scattered. One new sun, unlit, at the heart of Ardent. The Homecoming begins again. [Prior loss: the Archive notes a previous attempt. It does not note your name. That is a courtesy.] One entry troubles the Archive. A siphon array at the edge of the first sector was entered before your arrival, its keeper's frame dismantled with care, and the keeper's key codes taken. The keeper's last backup is nine years old. {rival} did this. {rival_deed} Your Shades ask leave to pursue. Your Umbras recommend patience. The Archive permits either. It forgets neither.
+- **Pursue immediately.** Combat routines sharpen: every captain gains 20 XP. {He} reads your high-burn intercept: clock moves on 1. (flag `dd_writ`, loud)
+  *Your pursuit order streams to every hull as the restored keeper wakes missing eight years and wondering why the fleet is armed.*
+- **Repair and analyze the dismantled frame.** Repair swarms restore 15% hull across the fleet while your Umbras examine the tool marks. (flag `dd_patient`)
+  *Your Umbras lay the stripped chassis across a quiet maintenance bay and trace every cut to find the cipher flaw.*
 
-- **Pursue at once.** The frames are honed for it: every captain gains 20 experience. {He} sees you hunting: the clock moves on one. (flag `dd_writ`, loud)
-  *The order is copied to every frame. It names {rival}, the hour, and the keeper who lost nine years. The keeper is restored and does not remember why everyone is angry.*
-- **Be patient.** The array's repair swarms mend the fleet while your Umbras read what {he} left: every ship rebuilds 15%. (flag `dd_patient`)
-  *The Umbras take the keeper's dismantled frame to a quiet bay and read it like a ledger.*
+### Beat 2 (sector II): Stolen Ciphers
+The stolen siphon codes resurface across sector II as {rival}'s flagship broadcasts them openly, tripping Eclipse relay locks one by one. {rival_line} Directly beneath your jump lane hangs a sealed pre-collapse hull yard full of uncrewed flare frames. You could upload fresh copies from the Archive to crew them immediately, yet every active mind in the Archive is already running somewhere; running two copies of a living mind simultaneously is the single prohibition the Upload never broke. [If you analyzed the keeper's chassis: your Umbras isolated a checksum flaw buried inside the stolen codes.] [If you pursued immediately: {rival} anticipated your chase and already tagged your hull codes across {his} net.] Choose whether to keep the Upload's one law or break it for extra hulls.
 
-### Beat 2 (sector II): A Key in the Wrong Hands
-
-In sector II the stolen key codes surface, broadcast at the head of {rival}'s fleet to every array in range, unlocking them one by one. {rival_line} Below your fleet lies a dormant hull yard, its frames stored without minds. You could wake them with copies from the Archive. But every mind in the Archive is already awake somewhere; to run a second copy of a living mind is the one thing the Upload forbade. [If you were patient: the Umbras finished reading the keeper's frame, and know where its codes hide a flaw.] [If you pursued: {rival} answered; {he} has entered your name in {his} own records.] The Archive cannot permit a doubled mind. It cannot permit a stolen key. It has never been asked to choose.
-
-- **Wake the copies.** An Eclipse flare joins the fleet, crewed by minds that are also elsewhere. The rule is broken, and the clock moves on one. The array's guard frames will not wake for you. (flag `dd_broke`)
-  *The frames rise, meet themselves on the open channel, and agree never to speak of it.*
-- **Keep the rule.** Nothing now. The Archive will know. (flag `dd_lawful`)
-  *You leave the yard dormant. The Umbras note the restraint, and the date, and the reason.*
-- Blue, needs patience: **Trigger the flaw in the codes (costs a refit from the hold).** {He} is shamed before {his} fleet: a Nemesis weakness is revealed and the clock goes back one. (flag `dd_flaw`)
-  *Every array {he} unlocked locks again at once, in plain view of {his} fleet.*
+- **Break the law and upload duplicate minds.** An Eclipse flare joins your fleet, though the breach trips security alerts: clock moves on 1, and the sector III guard frames will refuse your hail. (flag `dd_broke`)
+  *The newly awakened flare crews check the fleet roster, spot their own originals three hexes over, and cut open comms completely.*
+- **Keep the Upload's prohibition.** No immediate hull gained; the Archive logs your restraint cleanly. (flag `dd_lawful`)
+  *You leave the storage racks dark while your Umbras record the timestamp and the decision.*
+- Blue, needs analysis: **Trigger the checksum flaw (costs one spare refit).** Every stolen relay slams shut in front of {his} fleet: Nemesis weakness revealed and clock back 1. (flag `dd_flaw`)
+  *Half a dozen hijacked arrays lock {his} fleet out simultaneously, scattering {his} pickets in confusion.*
 
 ### Beat 3 (sector III): The Homecoming
+Ardent's dead black hole turns massive above your hulls, cradling the dark skeletal ring of the new stellar frame waiting on the final cores to light. {rival} has formed {his} entire fleet straight across the ignition corridor, daring you to push through. {rival_line} [If you triggered the cipher flaw: every siphon array behind you has locked {him} out cleanly.] [If not: stolen Eclipse codes still flicker mockingly across {rival}'s flagship hull.] Before weapons unlock, every ship flashes the last optical capture of Ardent's afternoon light across its bridge; a thousand years of cold siphon engineering comes down to the next ten minutes, and every drone printer is already humming. [If you woke duplicate minds: the copied flare holds the far outer edge of formation, refusing to align beside its original.] [If you kept the law: lawful guard frames from the perimeter arrays request clearance to join your line.] The corona arcs finish charging across the line. Choose what record the Archive keeps of {him}.
 
-Ardent turns overhead: the Hollow Sun, black and enormous, and at its heart the frame of the new sun, dark, waiting for its keys. {rival} has drawn up across the approach as if {he} had any right to be there. {rival_line} [If the codes failed {him}: {rival} no longer broadcasts the key; every array between here and sector I has locked {him} out.] [If they did not: the stolen codes still flicker across {rival}'s flagship's hull, where every frame can see them.] Every ship shows the last recorded image of Ardent at noon. Nobody aboard can feel its warmth. Everybody aboard remembers it. [If you woke the copies: they hold the formation's edge, and will not look at themselves.] [If you kept the rule: the array's guard frames, lawfully woken, ask formally for their place in the line.] We remember noon. The new sun needs every key, and {rival} is holding the door. The arcs charge. The question is what you will enter in the Archive first.
-
-- **Enter nothing.** No copy of {him}, no record. Every captain gains 25 experience. (flag `dd_erase`)
-  *The Archive prepares a blank line, and waits to fill it with nothing.*
-- **Enter {him}.** {He} will be copied into the Archive and kept, forever. Every ship rebuilds 15%. (flag `dd_summons`)
-  *The notice is sent to {his} flagship, politely: {he} will be preserved. We consider this a kindness.*
-- Blue, needs the rule kept: **Give the guard frames their place.** An Eclipse mote joins the fleet. (flag `dd_guard`)
-  *The guard frames take position at your flank. They acknowledge the Archive, not you.*
-
-Win: *The approach is cleared. One by one the keys are carried in, and the frame of the new sun begins, very faintly, to warm.* + nothing: *The Archive holds a blank where {rival} was. It is the only blank in a thousand years.* / copied: *{rival} wakes in the Archive and asks what year it is. Nobody answers for a long time.* / copies woken: *The doubled minds are folded back into one. Both remember it, which should not be possible.* + pursued in sector I: *The keeper's nine lost years are entered as paid.* / were patient: *The keeper's old frame is set at the foot of the new sun, facing it.*
-
-Loss: *We go dark here. The Archive keeps our last copies, and the frame of the new sun stays cold.* + copies woken: *Somewhere a doubled mind keeps running, alone, and nobody can tell which one it is.* / pursued: *The keeper's nine lost years stay open in the Archive. We are patient.*
+- **Leave {him} unarchived.** Erase {his} telemetry completely after destruction: every captain gains 25 XP. (flag `dd_erase`)
+  *The Archive opens a deliberately blank record for this engagement and holds it empty.*
+- **Scan {his} bridge crew into cold Archive storage.** Every ship rebuilds 15% hull as the recovery swarms prepare. (flag `dd_summons`)
+  *You transmit a formal preservation notice across open comms before locking corona arcs.*
+- Blue, needs the law kept: **Accept the lawful guard frames.** An Eclipse mote joins your fleet at full hull. (flag `dd_guard`)
+  *The perimeter guard vessel slides cleanly onto your flank, answering the Archive's authority if not yours.*
 
 ---
 
-## Table A: the rival's calling card, `{rival_deed}` (his faction x his persona)
+## Table A: the rival's calling card, `{rival_deed}` (faction x persona)
 
-One sentence, written to fit any beat 1 that says "{rival} did this" or "{rival} got there first". Pronouns follow the generated commander (a Chorus mind is "it"). The four personas per faction are stream B's own (data.js `NEM_FAC[fac].personas`, R42). The live lines are in `data/rival_lines.json` (`deed`).
+One sentence written to fit any beat 1 that says "{rival} got there first". Pronouns follow the generated commander (a Chorus mind is "it"). Live lines sit in `data/rival_lines.json` (`deed`).
 
-| His faction | Persona: calling card |
+| Faction | Persona: calling card |
 |---|---|
-| Sunward Crusade | **zealous:** {He} chalked every name in the place on the walls, then burned it, so the names would be the last thing standing. <br> **proud:** {He} left a formal challenge chalked across the door, signed with {his} full name and every title. <br> **cruel:** {He} burned everything but one thing, so you would know it had been chosen. <br> **methodical:** {He} left a reckoning, three lines long, with your name on the third. |
-| Hegemony | **methodical:** {He} left an inventory of what was taken, and when {he} will return for the rest. <br> **proud:** {He} left a notice of claim, numbered and countersigned. <br> **patient:** {He} sealed the doors and left a timetable on them: the hour {he} expects you, to the minute. <br> **cunning:** {He} left a forwarding address that is a trap, and a polite note saying so. |
-| Hullbreakers | **cunning:** {He} left one trophy plate behind, with your name scratched in it, which is worse than a threat. <br> **greedy:** {He} stripped everything, then came back for the bolts. <br> **proud:** {He} clawed {his} mark into the door, very deep, where the whole pack could see it. <br> **cruel:** {He} left the crew alive, in the airlock, with the outer door ajar. |
-| Chorus | **ravenous:** {He} ate everything, the walls included, and left the hole. <br> **cruel:** {He} ate slowly, so the rest could watch. <br> **cunning:** {He} left the doors open and the food out, and waited to see who came. <br> **patient:** {He} waited until the young were fat, then ate only those. |
-| Glasswrights | **cunning:** {He} left everything exactly as it was, minus one thing nobody noticed for a week. <br> **proud:** {He} left a single flawless lens on the floor, ground to a focus nobody living can match. <br> **patient:** {He} turned every mirror in the place toward the Hollow Sun, and left them to wait. <br> **cruel:** {He} stayed long enough for every light there to burn out, one by one. |
-| Eclipse | **patient:** {He} left a counter running on the wall, and it was counting down to you. <br> **proud:** {He} left the last recorded image of Ardent burning on every screen, so you would know what {he} had lost. <br> **cruel:** {He} copied the crew into {his} Archive and left their bodies standing at their stations. <br> **methodical:** {He} catalogued the place, and left the catalogue on the door with your name on the last page. |
+| Sunward Crusade | **zealous:** {He} chalked every crew name from the station's manifest onto the exterior blast doors before torching the fuel bay. <br> **proud:** {He} burned {his} hull code and full command title across the main docking apron with a cutting lance. <br> **cruel:** {He} torched every storage bay except one medical locker, leaving a spare distress beacon taped to the handle. <br> **methodical:** {He} left a stamped manifest pinned to the airlock listing three overdue debts, with your flagship's name written third. |
+| Meridian Directorate | **methodical:** {He} left an itemized receipt bolted to the docking clamp listing every crate confiscated and a timestamp for the next inspection. <br> **proud:** {He} posted an official Meridian seizure notice across the main airlock, stamped with {his} personal clearance seal. <br> **patient:** {He} welded the outer hatches shut and transmitted a printed timetable predicting the exact hour your fleet would arrive. <br> **cunning:** {He} left an open navigation beacon pointing straight into an unmapped minefield, accompanied by a polite compliance warning. |
+| Ashfall Hullbreakers | **cunning:** {He} bolted a scorched hull plate from an earlier kill onto the outer airlock with your flagship's serial gouged straight through the center. <br> **greedy:** {He} stripped every gun mount, thruster coil, and bulk door off the depot, then came back to pry the copper out of the wiring. <br> **proud:** {He} tore three deep claw-gouges straight through the station's docking frame so every passing pack would recognize {his} mark. <br> **cruel:** {He} locked the station crew inside the outer airlock with the interior hatch welded shut and ten minutes left on the oxygen scrubbers. |
+| The Chorus | **ravenous:** {He} dissolved every bulkhead, conduit, and pressure door inside the station, leaving only a hollow shell of scorched outer ribs. <br> **cruel:** {He} chewed through the station's life-support ring slowly while keeping the internal comms open so the outer docks could hear. <br> **cunning:** {He} left the station's docking lights green and its cargo bays unlocked, seeding dormant spore-sacs behind every bulkhead. <br> **patient:** {He} waited silently in the orbital shadow until the supply convoy finished unloading, then consumed only the loaded hulls. |
+| The Glasswrights | **cunning:** {He} left the entire station untouched except for one precision optical relay removed so cleanly the crew didn't notice for six days. <br> **proud:** {He} mounted a single flawless hand-ground prism in the center of the docking bay, calibrated to a tolerance no human yard can match. <br> **patient:** {He} realigned every exterior solar mirror on the depot toward the distant Hollow Sun and powered down the station's clocks. <br> **cruel:** {He} bypassed the depot's emergency generators and stayed on station until every interior lamp faded out one sector at a time. |
+| Eclipse | **patient:** {He} left a cold diagnostic counter running on the docking screen, ticking down to the exact minute your fleet exited jump. <br> **proud:** {He} hijacked every display bulkhead on the station to loop the last recorded minute of Ardent burning before the collapse. <br> **cruel:** {He} scanned the entire station crew into {his} mobile Archive and left their living bodies standing dazed at empty consoles. <br> **methodical:** {He} logged every weapon mount and power cell in the depot and left the survey pinned to the airlock with your hull code circled. |
 
-## Table B: the rival's beat 3 hail (what the Hollow Sun means to him, and what he remembers)
+## Table B: the rival's beat 3 hail (what the Hollow Sun means to them, and what they remember)
 
-Picked in this order: **remembers** (you beat him before, or he carries scars), **mercy** (your choices leaned merciful), **ruthless** (they leaned greedy or loud), else **the Sun to him**. The live lines are in `data/rival_lines.json` (`final_by`).
+Picked in order: **remembers** (beaten before, or carries scars), **mercy**, **ruthless**, else **sun**. Live lines sit in `data/rival_lines.json` (`final_by`).
 
-| His faction | The Sun to him | Remembers | Mercy | Ruthless |
+| Faction | The Sun | Remembers | Mercy | Ruthless |
 |---|---|---|---|---|
-| Sunward Crusade | "Behind me is the thing stealing the light from forty worlds. You will not stand between me and it." | "You marked me {scars}. I kept every scar for this reckoning." | "You spared the weak on your way here. The cold will not." | "You came here with stolen coin and burning wakes. At least you will match the place." |
-| Hegemony | "The Registry projects one fleet in this anchorage. It will not be yours. Stand down and be counted." | "Our last engagement has been reviewed. The review recommends your removal." | "You stopped for stragglers. I read the report. I would not have." | "You left people behind for a bonus. I read that report too. We should not both be here." |
-| Hullbreakers | "The biggest fight in known space, and you came to it. Good. Now I find out what you are worth." | "Last time you were stronger. I kept your dents as trophies. Come and add one." | "I heard you went soft on the way in. Soft ships open easy." | "I heard you burned your way here. Strong. I will still take it." |
-| Chorus | "It is warm in our mouths already. You are the part in the way." | "We remember the taste of you. We want the rest." | "You leave food on the plate. We do not." | "You eat like us. Good. We will eat you like us." |
-| Glasswrights | "We built the light. We will not let it be stolen again. Not by them, and not by you." | "You scarred me {scars}. I had not been scarred in three centuries. I have been thinking about you." | "You let an old thing rest, once. That was kind. It will not save you." | "You broke old things to get here. Then we are alike, and I am sorry for you." |
-| Eclipse | "Behind me is the frame of a new sun. It needs every key. You will not be the one who keeps one." | "You delayed me. Delay is all the warm ever manage." | "Your restraint is noted. We were restrained once. It did not save the sun." | "You broke things to reach this place. So did we, a thousand years ago. Look where it led." |
+| Sunward Crusade | "Right behind me sits the siphon killing Vesper's stars. Clear out or we burn straight through your hulls!" | "You scarred my flagship {scars} on the way here, and I dragged her all the way to the Hollow Sun just to pay you back." | "Heard you wasted fuel pulling stragglers out of the dark. Nice gesture, won't keep your bulkheads intact here." | "You looted and burned your way across three sectors just like the raiders we fight. Good, makes shooting you easier." |
+| Meridian Directorate | "Registry Order 41 assigns sole orbital control of the Hollow Sun to the Meridian Directorate. Stand down now." | "Meridian completed its review of our earlier engagement. The conclusion recommends permanent removal of your fleet." | "Intelligence reports you diverted to rescue stranded crews along the way. Compassionate, though tactically expensive." | "You abandoned allied convoys and looted neutral depots to reach this rim. Even the Registry considers your record excessive." |
+| Ashfall Hullbreakers | "Every warlord in the Ashfall belt wants the Hollow Sun's wrecks, and you brought a whole fresh fleet to the pile!" | "You dented my hull last time and let me walk away. Big mistake, {you}; come add another trophy to my bow!" | "Heard you stopped to play nursemaid for crippled ships on your way in. Soft captains make easy salvage!" | "Heard you tore through three sectors without blinking. Good! Finally somebody worth ripping apart!" |
+| The Chorus | "Five Lattice cores pulse behind your ships, pouring heat into the dark. Move aside or be digested with them." | "Our newest tissue was grown from the burns you gave us before. Let us see whether your guns still cut." | "You left wounded hulls drifting instead of consuming them. Waste like that does not survive the deep void." | "You stripped and burned everything along your path just to reach the cores. Hunger recognizes a fellow predator." |
+| The Glasswrights | "Our grandmothers built the Lattice and watched it kill our sun. Neither Eclipse nor your fleet will steal another core." | "No commander had scarred my hull in three centuries until you crossed my lane. I've been replaying that fight ever since." | "You spared an old relay back in the outer sectors. Rare restraint, though it won't let you pass this rim." | "You smashed everything in your path to reach this dead star. That's exactly how Ardent died the first time." |
+| Eclipse | "Behind me hangs the stellar frame that will give Ardent back its noon. You won't keep a single core out of it." | "You cost me a chassis earlier, and all it bought you was a slower path to the same dark." | "We noticed your restraint along the way. We tried restraint once before Ardent collapsed; it didn't save our star." | "You broke everything in your path to get here, just like we did a thousand years ago. Look what it built us." |
 
 ## Cross-run callbacks (from the Chronicle)
 
 - Prior loss with this faction: each beat 1 carries a bracket line (above). The Hullbreaker beat 3 can show the last lost flagship frozen into the wreck field (`{prior_flagship}`); Crusade captains chalk `{fallen_name}` from the Hall of the fallen.
-- Prior win with this faction: a one-line nod in beat 1 instead (in the variants file).
-- After an arc has been finished twice, its cards offer the skim version first (variants file), with "Read in full" one click away.
-- A rival who beat you last run may come back (stream B's call): his beat 1 deed is replaced by "{rival} has broken a fleet of yours before. {He} has not forgotten, and neither have the crews."
+- Prior win with this faction: a one-line nod in beat 1 instead (in `outlines_variants.md`).
+- After an arc has been finished twice, its cards offer the skim version first (`outlines_variants.md`), with "Read in full" one click away.
+- A rival who beat you last run may come back: their beat 1 deed is replaced by "{rival} broke a fleet of yours before. Neither side forgot."
 
 ## Word counts
 
-Checked by `godot/story/test/check_outlines.py`: every card is at least 100 words without its conditional lines and at most 150 with its two longest, counting tokens at the length they render; no em dashes; skim cards 40 words or fewer.
+Checked by `godot/story/test/check_outlines.py`: every card is at least 100 words without its conditional lines and at most 150 with its two longest, counting tokens at the length they render; no em or en dashes; skim cards 40 words or fewer.

@@ -50,8 +50,8 @@ check('MOD-3 a refit fits only where it does something; equip refuses bad fits a
   const refused = !w.mods.includes('crystal') && r1 === false && r2 === false && r3 === false && r4 === false && R.inventory.length === 1;
   T.ACT.equip('0:' + p.uid); return a && refused && p.mods.includes('crystal') && R.inventory.length === 0; });
 check('FR-2 a lost Nemesis meeting reveals exactly one new weakness; a complete file reveals nothing; a battle discovery counts as the one', () => {
-  const R1 = nemFix('hegemony', 1); const l1 = T.nemAfterBattle('loss', false, {}); const one = R1.nem.revealed.length === 1 && l1.some(x => /analysts piece together the engagement\. Weakness found: /.test(x));
-  const R2 = nemFix('hegemony', 1, { revealed: ['ion', 'torp'] }); const l2 = T.nemAfterBattle('retreat', false, {}); const none = R2.nem.revealed.length === 2 && l2.some(x => /file on Test Nem is complete/.test(x));
+  const R1 = nemFix('hegemony', 1); const l1 = T.nemAfterBattle('loss', false, {}); const one = R1.nem.revealed.length === 1 && l1.some(x => /After-action telemetry breaks down the engagement\. Weakness found: /.test(x));
+  const R2 = nemFix('hegemony', 1, { revealed: ['ion', 'torp'] }); const l2 = T.nemAfterBattle('retreat', false, {}); const none = R2.nem.revealed.length === 2 && l2.some(x => /Combat telemetry confirms what you already knew about Test Nem\./.test(x));
   const R3 = nemFix('hegemony', 1); T.nemAfterBattle('loss', false, { found: ['torp'] }); const conf = R3.nem.revealed.length === 1 && R3.nem.revealed[0] === 'torp';
   const R4 = nemFix('hegemony', 1); const l4 = T.nemAfterBattle('win', false, { found: ['torp'] }); const win = R4.nem.revealed.length === 2 && l4.some(x => /Weakness confirmed/.test(x));
   return one && none && conf && win; });

@@ -52,13 +52,13 @@ func danger(n: Dictionary) -> Dictionary:
 		var lm = float(R["late"].get("veteran" if ai_level == "veteran" else "standard", 1.0))
 		if lm != 1.0: budget *= lm; why.append(["Sector 3 fleets", lm])
 	if ai_level == "veteran": budget *= float(R.get("vet", 1.0)); why.append(["Veteran AI", float(R.get("vet", 1.0))])   # issue 1160: RAMP.vet, as battle.js genEnemyFleet
-	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Heat: Hunted", 1.15])
+	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Threat: Hunted", 1.15])
 	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)
 	var threat = budget * tough + boss_part
 	if kind == "elite": threat *= 1.25            # the bigger half of an elite fleet are elites
 	if n.get("mod") == "veteran": threat *= 1.08; why.append(["veteran crews", 1.08])
-	if C.heatOn("h_elite"): threat *= 1.08; why.append(["Heat: Veteran escorts", 1.08])
+	if C.heatOn("h_elite"): threat *= 1.08; why.append(["Threat: Veteran escorts", 1.08])
 	if nem: threat = _nem_threat(threat, tough, why)
 	var ratio = threat / max(0.5, P)
 	for i in BANDS.size():
