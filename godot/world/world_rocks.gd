@@ -37,7 +37,7 @@ static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
 static var _scans: Array = []   # not GPU: scan names
 static var _scans_checked := false
-static var fallbacks: Array = []   # names mesh() had to draw as a fallback sphere
+static var fallbacks: Array = []   # not GPU: names mesh() had to draw as a fallback sphere
 
 
 # Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
