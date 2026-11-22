@@ -1,0 +1,5 @@
+2026-11-22T21:00:07.122Z start: 278868 bytes, key present (length 106)
+2026-11-22T21:00:08.332Z http 200 request-id req_011ChJe3E5nxN2Evbeee7C75
+2026-11-22T21:19:18.253Z end: model claude-fable-5-2, stop end_turn, in 127479, out 123620, about $5.96
+2026-11-22T21:19:18.253Z done PASS
+2026-11-22T21:19:18.253Z all done
