@@ -284,6 +284,16 @@ paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Clau
 cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
 Set: Ryan, Nov 22 (R406).
 
+2.19 **A paid API call never loses its work: no tight answer caps, and every call saves partial output as it streams.** Any
+script that calls a paid model API (Claude, OpenAI, Kimi, DeepSeek) sets the output limit to the model's ceiling, not a small
+guess, sets no advisory task budget, and streams the answer, the visible thinking summary and the raw event stream to files
+as they arrive, so a cut, a timeout or a max-tokens stop still leaves every event the provider returned, and marks the
+deliverable as complete, partial or missing in its result file. Hidden reasoning that the provider never returns cannot be
+saved, so long jobs ask for visible checkpoints. Spend limits Ryan approved (a credit cap on a key) are separate and stay. Why: on Nov 22 the Fable
+review of the Gate 2 sound plan (issue 1752) hit a 64,000-token cap entirely in unsaved thinking, cost about $3.83 and
+returned an empty review. "yes, stop randomly capping and make sure thatr work gets saved" (Ryan, Nov 22 2026, 20:53 UTC).
+Set: Ryan, Nov 22 (R418).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
