@@ -12,7 +12,7 @@ const srv = http.createServer((q, r) => {
     calls.push({ route, key: q.headers['xi-api-key'], query: q.url.split('?')[1] || '' });
     if (route === '/v1/redirect') { r.writeHead(302, { location: 'http://127.0.0.1:1/' }); return r.end(); }
     if (q.headers['xi-api-key'] !== MOCK_KEY) { r.writeHead(401); return r.end('bad key'); }
-    if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'creator', character_count: used, character_limit: 121000 })); }
+    if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'MOCK-not-a-real-account', character_count: used, character_limit: 999999 })); }
     if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
     if (fail500) { r.writeHead(500); return r.end('boom'); }
     if (truncate) { used += 200; r.writeHead(200, { 'request-id': 'trunc', 'character-cost': '40', 'content-length': '5000' }); r.write(Buffer.alloc(10)); return setTimeout(() => r.socket.destroy(), 20); }
@@ -29,10 +29,27 @@ srv.listen(0, '127.0.0.1', async () => {
     { id: 'm', kind: 'music', seconds: 60, takes: 1, stems: true, prompt: 'song' } ] }));
   const out = path.join(dir, 'out');
   const gen = path.join(__dirname, 'elevenlabs_gen.js');
+  // Offline guard (PILOT4, Nov 22): every generator this test starts is preloaded with a guard that refuses any fetch,
+  // socket or DNS lookup that is not loopback, so the test cannot reach ElevenLabs even if the code under test tried.
+  const guard = path.join(dir, 'offline_guard.js');
+  fs.writeFileSync(guard, `'use strict';
+const net = require('net'), tls = require('tls'), dns = require('dns');
+const ok = h => h === undefined || h === null || h === '' || h === '127.0.0.1' || h === 'localhost' || h === '::1';
+const block = h => { process.stdout.write('OFFLINE GUARD BLOCKED ' + h + '\\n'); process.exitCode = 9; return new Error('offline guard blocked ' + h); };
+const f = globalThis.fetch;
+globalThis.fetch = (u, o) => { const h = new URL(typeof u === 'string' ? u : u.url || String(u)).hostname.replace(/^\\[|\\]$/g, ''); return ok(h) ? f(u, o) : Promise.reject(block(h)); };
+for (const m of [net, tls]) { const c = m.connect; m.connect = m.createConnection = function (...a) { const o = a[0]; const h = typeof o === 'object' ? o.host : (typeof a[1] === 'string' ? a[1] : undefined); if (!ok(h)) throw block(h); return c.apply(this, a); }; }
+const l = dns.lookup; dns.lookup = function (h, ...a) { if (!ok(h)) throw block(h); return l.call(this, h, ...a); };
+`);
+  let guardHits = 0, liveCalls = 0;
   const run = (extra, env) => new Promise(res => {
-    const c = spawn(process.execPath, [gen, '--list', list, '--out', out, ...extra],
+    const c = spawn(process.execPath, ['-r', guard, gen, '--list', list, '--out', out, ...extra],
       { env: Object.assign({}, process.env, { VOIDSWORN_ELEVENLABS_API_KEY: REAL }, env) });
-    let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', code => res({ out: o, code }));
+    let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', code => {
+      if (/OFFLINE GUARD BLOCKED/.test(o)) guardHits++;
+      if (env && env.ELEVENLABS_MOCK === '1' && /account: /.test(o) && !/MOCK MODE: offline test server http:\/\/127\.0\.0\.1:/.test(o)) liveCalls++;
+      res({ out: o, code });
+    });
   });
   const mock = { ELEVENLABS_MOCK: '1', ELEVENLABS_MOCK_KEY: MOCK_KEY };
   const fails = [];
@@ -61,7 +78,7 @@ srv.listen(0, '127.0.0.1', async () => {
   ck(calls.some(c => c.route === '/v1/music' && /output_format=auto/.test(c.query)), 'music output_format=auto');
   const bad = path.join(dir, 'bad.json');
   fs.writeFileSync(bad, JSON.stringify({ items: [{ id: 'x', kind: 'music', seconds: 30, stems: true, prompt: 'p' }] }));
-  const rb = await new Promise(res => { const c = spawn(process.execPath, [gen, '--list', bad, '--out', out, '--dry']); let o = ''; c.stdout.on('data', d => o += d); c.on('close', code => res({ out: o, code })); });
+  const rb = await new Promise(res => { const c = spawn(process.execPath, ['-r', guard, gen, '--list', bad, '--out', out, '--dry']); let o = ''; c.stdout.on('data', d => o += d); c.on('close', code => res({ out: o, code })); });
   ck(rb.code === 2 && /stems only in a Gate 3 list/.test(rb.out), 'stems refused outside Gate 3');
 
   fs.unlinkSync(path.join(out, 'manifest.jsonl'));
@@ -130,10 +147,18 @@ srv.listen(0, '127.0.0.1', async () => {
 
   ck(calls.filter(c => c.route !== '/v1/redirect').every(c => c.key === MOCK_KEY), 'the real key never reached the server');
   ck(!/real_key_must_not_leave/.test(r.out), 'real key not printed');
+  const probe = await new Promise(res => { const c = spawn(process.execPath, ['-r', guard, '-e',
+    "fetch('https://api.elevenlabs.io/v1/user').then(() => console.log('REACHED'), e => console.log('CAUGHT ' + e.message))"]);
+    let o = ''; c.stdout.on('data', d => o += d); c.on('close', () => res(o)); });
+  ck(/OFFLINE GUARD BLOCKED api\.elevenlabs\.io/.test(probe) && !/REACHED/.test(probe), 'offline guard blocks api.elevenlabs.io: ' + probe);
+  ck(!guardHits, 'no generator run tried to leave loopback');
+  ck(liveCalls === 0, 'every paid-looking call went to the mock server');
   let redirectRefused = false;
   try { await fetch(base + '/v1/redirect', { redirect: 'error' }); } catch (e) { redirectRefused = true; }
   ck(redirectRefused, 'redirect: error refuses a redirect');
-  srv.close();
+  console.log(`offline proof: ${calls.length} calls, all to the loopback test server ${base}; guard blocks ElevenLabs; ` +
+    '"account: MOCK-not-a-real-account" lines in generator runs come from this fake server');
+  srv.closeAllConnections(); srv.close();
   console.log(fails.length ? 'SELFTEST FAIL: ' + fails.join('; ') : 'ELEVENLABS GEN SELFTEST PASS');
-  process.exit(fails.length ? 1 : 0);
+  process.exitCode = fails.length ? 1 : 0;   // not process.exit(): see the libuv note in elevenlabs_gen.js
 });

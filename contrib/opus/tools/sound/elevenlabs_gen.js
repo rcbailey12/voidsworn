@@ -208,6 +208,7 @@ async function main() {
     `(stems priced at their song's cost; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
   if (a.dry) { for (const s of todo) console.log(`  would make ${s.file} (${s.step}, est ${s.credits})`); console.log('DRY RUN: nothing sent'); return 0; }
   const key = readKey(a);
+  if (a.mock) console.log(`MOCK MODE: offline test server ${a.base}, dummy key only, no ElevenLabs calls`);
   if (!key) { console.log('FAILED: no key saved. Double-click ELEVENLABS_API_KEY.bat first.'); return 2; }
   const redact = t => String(t).split(key).join('[redacted]');
   const before = await usedCredits(a.base, key);
@@ -301,5 +302,7 @@ async function main() {
   return left.length === 0 ? 0 : 1;
 }
 
-if (require.main === module) main().then(c => process.exit(c), e => { console.log('FAILED: ' + e.message); process.exit(2); });
+// exitCode, not process.exit(): on Windows, exiting while fetch's sockets are closing trips a libuv assertion
+// (src\\win\\async.c) and turns a PASS into a crash (PILOT4 selftest, Nov 22 2026).
+if (require.main === module) main().then(c => { process.exitCode = c; }, e => { console.log('FAILED: ' + e.message); process.exitCode = 2; });
 module.exports = { plan, args };
