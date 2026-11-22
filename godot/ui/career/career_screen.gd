@@ -20,6 +20,7 @@ const BLOOD := BONE
 const TABS := [["records", "Records"], ["medals", "Medals"], ["titles", "Titles"], ["history", "History"], ["chronicle", "Chronicle"]]
 const ROMAN := ["0", "I", "II", "III", "IV", "V"]
 const Crest := preload("res://ui/career/crest.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: the shared ui cues (watch_sound)
 
 var story = null
 var tab := "records"
@@ -121,6 +122,7 @@ func _panel(bg := IRON, border := IRON3, pad := 12.0) -> PanelContainer:
 
 func open(st) -> void:
 	story = st
+	Kit.watch_sound(self)   # issue 1448: tabs and buttons click like every other screen
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	regular = GS.sheet_body()
 	semi = GS.sheet_medium()
@@ -151,6 +153,7 @@ func open(st) -> void:
 	head.add_child(sp)
 	var close := _key_button("Close", "Esc", _close, false, true)
 	close.name = "Close"
+	Kit.wire_sound(close, "back")
 	close.custom_minimum_size = Vector2(px(288), px(56))
 	close.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	head.add_child(close)
@@ -531,7 +534,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		var key := (e as InputEventKey).keycode
 		if key == KEY_ESCAPE:
 			get_viewport().set_input_as_handled()
+			Kit.play("ui_cancel")
 			_close()
 		elif key >= KEY_1 and key <= KEY_5:
 			get_viewport().set_input_as_handled()
+			Kit.play("ui_select")
 			set_tab(TABS[key - KEY_1][0])
