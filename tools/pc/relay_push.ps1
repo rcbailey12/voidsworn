@@ -24,11 +24,25 @@ function Run-Git {
   $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 function Run-GitIn($lines) {
-  # git with lines on stdin (hash-object --stdin-paths, update-index --index-info)
-  $ErrorActionPreference = 'Continue'
-  $a = $args
-  $out = $lines | & $gitExe @a 2>&1 | ForEach-Object { "$_" }
-  if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($a -join ' ') + ': ' + ($out -join ' ')) }; $out }
+  # git with lines on stdin (hash-object --stdin-paths, update-index --index-info). Issue 1739: Windows PowerShell 5.1 pipes
+  # text to a native program as CRLF lines in its own encoding, and update-index --index-info keeps the CR, so every
+  # path got a trailing CR and the relay pushed a commit whose tree held none of the files. The lines go to git's stdin
+  # as UTF-8 bytes with LF endings instead, the same under 5.1 and pwsh.
+  $a = @($args | ForEach-Object { "$_" })
+  $psi = New-Object Diagnostics.ProcessStartInfo
+  $psi.FileName = $gitExe
+  $psi.Arguments = (($a | ForEach-Object {
+    if ($_ -and $_ -notmatch '[\s"]') { $_ } else { '"' + ($_ -replace '(\\*)"', '$1$1\"' -replace '(\\+)\z', '$1$1') + '"' } }) -join ' ')
+  $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
+  $psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+  $psi.StandardOutputEncoding = New-Object Text.UTF8Encoding($false); $psi.StandardErrorEncoding = $psi.StandardOutputEncoding
+  $p = [Diagnostics.Process]::Start($psi)
+  $outTask = $p.StandardOutput.ReadToEndAsync(); $errTask = $p.StandardError.ReadToEndAsync()
+  $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes((@($lines | ForEach-Object { "$_" + "`n" }) -join ''))
+  $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length); $p.StandardInput.Close()
+  $p.WaitForExit()
+  $out = @($outTask.Result -split "`r?`n" | Where-Object { $_ -ne '' })
+  if ($p.ExitCode -ne 0) { throw ('git failed: ' + ($a -join ' ') + ': ' + (($out + $errTask.Result) -join ' ')) }; $out }
 
 if ($Mode -and $Mode -ne 'dry') { throw "the third argument may only be dry, got: $Mode" }
 $dry = $Mode -eq 'dry'
@@ -140,6 +154,10 @@ try {
       }
       Run-GitIn @($info) --git-dir $relayMirror update-index --add --index-info | Out-Null
       $tree = (Run-Git --git-dir $relayMirror write-tree) | Select-Object -Last 1
+      # issue 1739: never push a tree that lost files on the way in (a pushed empty tree was a silent PASS)
+      $inTree = @{}; foreach ($n in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r --name-only $tree)) { $inTree["$n"] = $true }
+      $lost = @($part | Where-Object { -not $inTree.ContainsKey($_.Key) })
+      if ($lost.Count) { throw "the relay tree is missing $($lost.Count) of $($part.Count) files, first $($lost[0].Key); nothing pushed" }
       $msg = "relay $Job $leaf (part $($b + 1) of $($batches.Count), $($part.Count) files)"
       if ($parent) { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -p $parent -m $msg) | Select-Object -Last 1 }
       else { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -m $msg) | Select-Object -Last 1 }

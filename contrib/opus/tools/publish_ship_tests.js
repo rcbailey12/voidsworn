@@ -94,8 +94,10 @@ assert(iStamp >= 0 && iStamp < iShots && main.some(l => /^set "PICTURE_PYTHON=%B
 pass('the shots step uses tools_live\'s stamp tool and the Blender python');
 pass('Ryan\'s real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail');
 
-const py = ['python3', 'python'].map(c => spawnSync(c, ['-B', path.join(ROOT, 'tools/recipe/test/publish_ship_selftest.py')], { encoding: 'utf8' })).find(r => !r.error);
-assert(py, 'no python to run publish_ship_selftest.py');
+// Issue 1739: a real Python 3, never the Windows Store alias that answers to python3 on the Codex lanes
+const pyCmd = require('./find_python').findPython();
+assert(pyCmd, 'no Python 3 to run publish_ship_selftest.py');
+const py = spawnSync(pyCmd, ['-B', path.join(ROOT, 'tools/recipe/test/publish_ship_selftest.py')], { encoding: 'utf8' });
 assert.equal(py.status, 0, 'publish_ship_selftest.py failed:\n' + py.stdout + py.stderr);
 pass('publish_ship_selftest.py: ' + py.stdout.trim().split('\n').pop());
 
