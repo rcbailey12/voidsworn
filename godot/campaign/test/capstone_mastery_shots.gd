@@ -41,6 +41,9 @@ func _scroll_to(needle: String) -> void:
 	sc.scroll_vertical = max(0, sc.scroll_vertical + int(target.global_position.y - sc.global_position.y) - 24)   # the target near the top
 	await _frames(2)
 
+var failed := 0
+
+# counts a picture as made only when the PNG and its provenance file are both written (Artoo on PR 1738)
 func _shot(name: String) -> void:
 	if PG.stop_if_any():
 		return
@@ -49,7 +52,11 @@ func _shot(name: String) -> void:
 		print("built ", name, " (", C.page.get("kind"), ")"); return
 	await RenderingServer.frame_post_draw
 	var img = root.get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()); print("shot ", name)
+	var path := dir.path_join(name + ".png")
+	var err = preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage())
+	if err != OK or not FileAccess.file_exists(path) or not FileAccess.file_exists(path + ".provenance.json"):
+		failed += 1; printerr("FAIL could not save ", name, " (error ", err, ")"); return
+	print("shot ", name)
 
 func _profile(xp: float) -> void:
 	C.META = C.migrateMeta(C.defaultMeta())
@@ -76,5 +83,5 @@ func _run() -> void:
 	C.act("progTab", "mastery")
 	await _frames(4); await _scroll_to("Saro of Long Focus")
 	await _shot("capstone_03_bar_and_mastery_tab")
-	print("capstone mastery shots done")
-	PG.finish(0)
+	print("capstone mastery shots done" if failed == 0 else "capstone mastery shots: %d picture(s) not saved" % failed)
+	PG.finish(0 if failed == 0 else 1)
