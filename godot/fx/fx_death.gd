@@ -2866,11 +2866,10 @@ const CORE_VEIL_DELAY := 0.45
 
 
 # Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
-static func _core_gas_veil(fx, s_ref: WeakRef, p: Vector3, L: float, capital: bool, vel: Vector3, frame: Transform3D) -> void:
-	var gas := flipbook(fx, p, Vector3.UP, L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(L), null)
+static func _core_gas_veil(fx, s, p: Vector3, capital: bool, vel: Vector3, frame: Transform3D) -> void:
+	var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(s.hull.L), null)
 	gas.set_meta("spawn_frame", frame)
-	var s = s_ref.get_ref() if s_ref != null else null
-	if s != null: fx.record_spawn(s, p, false, frame)
+	fx.record_spawn(s, p, false, frame)
 
 
 static func _death_rng(s) -> RandomNumberGenerator:
@@ -2935,10 +2934,9 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	if fx.quality != "low":
 		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
 		if not story:
-			# Issue 1558 item 2: the veil is spawned 0.45 s late (light first, then matter). Moving `born` ahead after
-			# flipbook() drew frame 0 at full alpha over the core flash, then the pool took it back while still visible.
-			fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil.bind(fx, weakref(s), p, s.hull.L, capital,
-				s.get_meta("death_velocity", Vector3.ZERO) * 0.5, frame))
+			# Issue 1558 item 2: the veil is spawned 0.45 s late (light first, then matter). Moving `born` ahead after the
+			# picture was made drew frame 0 at full alpha over the core flash, then the pool took it back while still visible.
+			fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil.bind(fx, s, p, capital, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, frame))
 		var gm: Array = s.get_meta("death_grow", [])
 		var axis_w: Vector3 = (s.xf().basis * (gm[3] as Vector3)).normalized() if gm.size() >= 4 else s.xf().basis.x
 		var away: Vector3 = (s.xf().basis * (gm[0] as Vector3)).normalized() if gm.size() >= 4 else Vector3.FORWARD

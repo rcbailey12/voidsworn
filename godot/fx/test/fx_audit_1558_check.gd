@@ -74,7 +74,7 @@ func _veil() -> void:
 	fx.now = 5.0
 	var target := _ship(fx, "veil")
 	var frame := Transform3D.IDENTITY
-	DEATH._core_gas_veil(fx, weakref(fx.ships["veil"]), Vector3.ZERO, 60.0, true, Vector3.ZERO, frame)
+	DEATH._core_gas_veil(fx, fx.ships["veil"], Vector3.ZERO, true, Vector3.ZERO, frame)
 	var veil: MeshInstance3D = null
 	for c in fx.find_children("*", "MeshInstance3D", true, false):
 		if String(c.get_meta("fx_picture_kind", "")) == "cool":

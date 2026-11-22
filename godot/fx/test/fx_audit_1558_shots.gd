@@ -80,10 +80,11 @@ func _scene(scene: String, variant: String, times: Array) -> void:
 	else:
 		DEATH._core_flash(fx, Vector3.ZERO, 22.0, 70.0, Color(1.0, 0.8, 0.55), null, Vector3.ZERO, null, "capital")
 		if variant == "before":
-			var gas := DEATH.flipbook(fx, Vector3.ZERO, Vector3.UP, 40.0 * 0.8, "cool", 3.6, Vector3.ZERO, 0.38, DEATH.atlas_band(40.0), null)
+			var L: float = _stand_in().hull.L
+			var gas := DEATH.flipbook(fx, Vector3.ZERO, Vector3.UP, L * 0.8, "cool", 3.6, Vector3.ZERO, 0.38, DEATH.atlas_band(L), null)
 			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
 		else:
-			fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, null, Vector3.ZERO, 40.0, true, Vector3.ZERO, Transform3D.IDENTITY))
+			fx.later(fx.now + DEATH.CORE_VEIL_DELAY, DEATH._core_gas_veil.bind(fx, _stand_in(), Vector3.ZERO, true, Vector3.ZERO, Transform3D.IDENTITY))
 	var start: float = fx.now
 	for t in times:
 		while fx.now < start + float(t):
@@ -95,5 +96,21 @@ func _scene(scene: String, variant: String, times: Array) -> void:
 		await RenderingServer.frame_post_draw
 		var img := vp.get_texture().get_image()
 		var path := out.path_join("%s_%s_t%03d.png" % [scene, variant, int(round(float(t) * 1000.0))])
-		img.save_png(path)
+		preload("res://tools/picture_provenance.gd").save_png(img, path, "cloud effects probe, no ships")
 		print("[shots] ", path)
+
+
+# A hidden 40-long hull record for the veil (it sizes the gas and takes the spawn record); never drawn.
+func _stand_in():
+	if fx.ships.has("veil"):
+		return fx.ships["veil"]
+	var target := Node3D.new()
+	target.visible = false
+	world.add_child(target)
+	var mi := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(40, 6, 10)
+	mi.mesh = box
+	target.add_child(mi)
+	fx.add_ship("veil", target, {"meshes": [mi], "shielded": false, "cls": "Battleship"})
+	return fx.ships["veil"]
