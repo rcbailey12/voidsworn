@@ -5,7 +5,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # high with physics plates, against a plain control (corsair's look with its death entry removed: today's shared fire):
 #   plain: its death pictures keep the baked colours (fac_fire off), it smokes, its torn faces glow orange;
 #   ithar (shatter): white and rainbow fire, no smoke picture, more and smaller fragments, glittering dust, stored-light faces;
-#   deathless (peel): violet-white fire, plates peel off band by band before the split, the scene dims at its core flash;
+#   deathless (peel): violet-white fire, plates peel off band by band before the split, the scene dims at its core flash
+#     (and no other faction dims it, R389);
 #   voidsworn (drumbeat, round 2): ember fire, a row of magazine pops down the broadside before the split;
 #   hegemony (arc, round 2): blue-white fire, lightning ribbons jump the gap as the pieces part;
 #     and again with its cut held 1.5 s past the split (a late cold cut): the arcs still strike (Artoo on 1399);
@@ -61,6 +62,9 @@ func _run() -> void:
 	check(not ecl["prism"], "deathless: no rainbow edge")
 	check(int(ecl["plates_before_split"]) > int(today["plates_before_split"]), "deathless: plates peel off before the split (%d against plain %d)" % [ecl["plates_before_split"], today["plates_before_split"]])
 	check(ecl["dimmed"], "deathless: the scene dims at its core flash")
+	# R389 (issue 1509): the scene dim is Eclipse only
+	for r in [today, glass, sun, heg, ash]:
+		check(not r["dimmed"], "%s: no scene dim (Eclipse only)" % r["fac"])
 	check((ecl["ember"] as Vector3).z > 0.9 if ecl.get("ember") is Vector3 else false, "deathless: its tear is violet")
 	# Sunward Crusade
 	check(int(sun["sprites_before_split"]) >= int(today["sprites_before_split"]) + 5, "voidsworn: a row of magazine pops before the split (%d sprites against plain %d)" % [sun["sprites_before_split"], today["sprites_before_split"]])
