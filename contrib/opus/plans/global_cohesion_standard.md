@@ -1,0 +1,140 @@
+# Global Visual & Sensory Cohesion Standard (Master Tracker #1774)
+
+**Owner directive (Ryan, Nov 22 2026):**
+> "make sure we're not just doing individual patches but taking a more global approach? And then include everything we've discussed"
+
+This document establishes **one unified visual, material, world, and audio contract** across the entire game so subsystems stop drifting in silos. Every ship exterior, ship interior, weapon effect, combat wound, destruction sequence, graveyard hulk, debris hex, station, planet, asteroid, crystal cluster, space sky, and audio cue derives from the same grounded sci-fi hierarchy and is protected by automated anti-drift gates.
+
+**Companion specs unified under this standard:**
+- **R416 Cohesive Ship-to-Destruction Pipeline:** `contrib/opus/plans/cohesive_damage_v2.md` (`#1741` Wounds V2 Layers 1+2, `#1743` / PR `#1763` Interior Kit V2 Layer 3, `#1692` weapon marks, `#1422` / `#1681` / `#1684` active rebakes).
+- **R419 World & Backdrop Consistency V2:** `contrib/opus/plans/world_consistency_v2.md` (`#1764` tracker, `#1765` / `#1463` Planets V2, `#1361` Asteroids & Crystals V2, `#1766` / `#1502` / `#1328` Grounded Cinematic Space Sky & Dead Star Seam, `#1767` / `#1362` Stations, Hulks & R416 Wreckage).
+- **Cohesive Dark Sci-Fi Audio V2:** `contrib/opus/plans/cohesive_audio_v2.md` (`#1752`, PR `#1753`, Ryan picks locked `1=A, 2=A, 3=A`, 72 items / 138 files, Wave A first after `main` merge confirmation).
+
+---
+
+## 1. Why Silo Patches Kept Breaking Cohesion
+
+Independent audits across the entire game exposed **one repeating structural failure** across every visual and audio pipeline:
+
+1. **No shared value / luminance budget:** Grounded dark-space hulls sit at `0.04` to `0.15` linear albedo, yet Directorate interiors jumped to matte pale clay (`0.175` linear, `metal 0.2`, `var 0.05`, 2.5x to 6x brighter than every other metal faction), old `O1_37` stations stayed chalk-white, and `world_sky.gd` painted ~85,000 bright 2px stars (~6,800 to 11,600 per frame) behind the fleet.
+2. **Schematic blockout colors leaked into final renders:** `tools/blender/build_sheets/kit.py` lines 54 to 105 carry early CAD/diagram room colors (`engroom` orange, `magazine` red, `hangar` blue, `crew` green, `bridge` yellow, Eclipse `archive` teal-green, Chorus `vat` neon lime emitting `2.0`, `gland` acid yellow-green emitting `0.6`, `brood` bright yellow). PR `#1763` raised `INSIDE_TINT` from `0.18` to `0.55` and passed Chorus schematic colors and full-surface emissions straight into final V2 materials, turning Chorus organs into neon green/yellow lightbulbs, binding bone hoops (`bonefr`) to wet glowing flesh trim, leaking teal-green `archive` tint into Eclipse, and tinting metal rooms like a color-coded cutaway diagram.
+3. **Unenforced hue / palette rules:** RULEBOOK 10.9 banned indigo-to-purple gradients on battle nebulas, yet `PLANETS[2]` stayed a cartoon purple gas giant, Eclipse kept purple `[0.34, 0.14, 0.52]` in `godot/fx/faction_looks.json:102`, `nebula_crystal_belt` turned yellow-mustard soup, and Chorus interiors turned neon lime.
+4. **Asset fidelity mismatches & silent wiring gaps:** 39.7 MB of 8K NASA `R01` rocky planet maps sat completely unwired in git while `board.gd` rendered a blurry campaign-icon sphere; crushed `COLOR_0.b` (`facet`) channels on `scan_00..05` plus a blanket warm-tan tint collapsed all 5 asteroid biomes to identical tan stone; 216-tri flat cyan crystal spikes sat on 90K-tri boulders; `station_T2` was gated strictly to `size == 46.0` leaving chalky `O1_37` on smaller clusters; `board.gd:_hulk()` skipped Chorus and Glasswrights completely; and old `wreck_kit.py` trusses clashed against detailed hulls.
+5. **Isolated review views:** Interiors were tuned in Blender without `#1741`'s dynamic breach cavity lights (`s._hole_lights`), skies were tuned without judging full-frame 1080p ship readability, and Gate 1 audio prompts were written without checking Godot's per-muzzle trigger loop.
+
+**Rule going forward:** No subsystem is tuned or patched in isolation. Every change must satisfy the five global laws below and pass the automated anti-drift gates in Section 6.
+
+---
+
+## 2. Law 1: Global Value & Luminance Hierarchy
+
+Every visual element in a battle frame belongs to one strict luminance band so silhouettes, depth, and tactical clarity never fight each other:
+
+| Band | Target Linear Albedo / Luminance | Role & Hard Rules |
+| :--- | :--- | :--- |
+| **1. Deep Space Void** | 0.00 to 0.015 (near-black) | Majority of the sky frame (`#1766`, RULEBOOK 10.11). Calm dark negative space so ships, hex lines, and weapon fire read effortlessly. |
+| **2. Cosmic Landmarks & Backdrop Planets** | 0.03 to 0.25 (terminator shadow near 0) | Milky Way band carved by opaque dust rifts (`star_floor = 0.0`), restrained non-purple/non-mustard regional nebula, 16-bit band-free bake (`#1502`), realistic planets and moons matching A-tier ringed gas giants (`#1765`). |
+| **3. Lit Outer Hulls, Stations & Asteroids** | 0.04 to 0.30 linear base (15 to 55% shaded lit faces) | Physically grounded PBR armor, `station_T2` across all sizes (`#1767`), distinct 5-biome asteroids and faceted multi-crystal clusters (`#1361`), 6-faction hulks & ship-kit debris (`#1767`, `#1362`). |
+| **4. Shadowed Ship Interiors & Wreckage Cavities** | **Strictly darker than lit outer armor: 0.03 to 0.10 linear mean max** (bone/glass structural trim exempted up to 0.18 matte/refractive) | Broken-open compartments sit in deep vacuum shadow, NEVER stark matte chalk-white (`0.175`) and NEVER rainbow diagram colors. Mood and readability come from modeled ribs/machinery, crisp normal/AO relief, thin recessed accent light strips, and `#1741` Layer 1 dynamic breach cavity lights. |
+| **5. Emissives, Weapons, Cores & Breach Arcs** | Reserved HDR top band (localized only) | Muzzle flashes, beams, projectiles, reactor cores, engine throats, shield flares, and tiny recessed interior light strips or gland pores. **Never** full-surface glowing organs (`vat 2.0`), full-wall neon, or wall-to-wall starfield static. |
+
+---
+
+## 3. Law 2: Global Fix for Modeled Ship Interiors (PR #1763 / #1743 + #1741)
+
+Instead of patching individual faction colors after each cutaway review, PR `#1763` (`#1743`) must enforce one global material architecture across **all 6 factions**:
+
+1. **Decouple `inside_material()` from `kit.py` schematic blockout colors completely:**
+   - `kit.py` lines 54 to 105 (`engroom`, `magazine`, `machinery`, `hangar`, `crew`, `bridge`, `archive`, `organ`, `gut`, `gland`, `brood`, `vat`, `ganglion`, `septum`, `bonefr`) are **semantic role tags ONLY**.
+   - `inside_material(room, trim=True)` in EVERY faction `stack.py` MUST ignore `kit.py`'s schematic `Base Color` and non-core `Emission Strength`. Instead, map each room/part role through that faction's **authored interior role table** (`wall`, `deck`, `frame`, `machinery`, `core`, `organ`, `bone`, `gland`, `glass_strut`).
+   - Room differentiation comes from **modeled architecture** (`interior_kit.py`), **roughness/metal/panel variation**, **subtle micro-tint (`<= 15%` shift within the faction's own grounded palette)**, and **localized accent lights**, NEVER from orange/red/blue/green/yellow CAD color-coding.
+2. **Strict Structural-vs-Surface Separation:**
+   - Structural frames (`bonefr`, `frame`, `truss`, `bulkhead`, `deck`) MUST take structural finishes (dry weathered bone on Chorus, dark brushed alloy on metal factions, faceted clear/tinted struts on Glasswrights). Never apply wet glowing flesh trim to Chorus bone hoops/struts.
+3. **Coordinated Six-Faction Interior Calibration (Jointly with `#1741` Layer 1 Breach Lights):**
+   - **Sunward Crusade (`voidsworn`):** Dark forged-iron bulkheads (`~0.045 to 0.065` linear, `metal 0.35..0.5`), subtle ash/carbon panel contrast, restrained warm ember recessed strips (`strength <= 1.5`), hot reactor core slits only.
+   - **Meridian Directorate (`hegemony`):** **Cool brushed clinical steel-slate (`~0.075 to 0.095` linear, `metal 0.45`, `var 0.10`, low grime `0.10`)** — noticeably cleaner, cooler, and slightly lighter than Sunward/Hullbreakers without ever looking like stark chalky white clay (`0.175` matte is retired). Crisp cold-blue emergency strips carry the sterile Directorate identity.
+   - **Ashfall Hullbreakers (`corsair`):** Dark oil-stained scavenged steel (`~0.045 to 0.065` linear, mismatched plates, rust/soot pockets unique to Hullbreakers), sparse dim red-orange cage lamps (`strength <= 1.1`).
+   - **The Chorus (`chorus`):** Deep wet dark crimson-umber / bruised mahogany organic cavity tissue (`~0.035 to 0.075` linear, wet roughness `0.24..0.46`, zero metal, zero magenta, **zero bright yellow `flesh_tone`/`brood` and zero neon lime `vat`/`gland` full-surface glow**). `bonefr` hoops and cross-struts use **dry weathered muted ochre-ivory bone** (`~0.14 to 0.18` linear, roughness `0.60..0.72`, zero glow). Any bioluminescent bile accent stays strictly tiny, deep, and muted (dim olive-amber capillary pores inside gland/vat recesses only, `strength <= 0.25`, `share <= 0.08`).
+   - **The Glasswrights (`ithar`):** Deep translucent-reading annealed seafoam/smoky-amber faceted crystal bulkheads (`~0.05 to 0.10` linear, low roughness `0.08..0.28`, zero metal, zero soot, zero grime), subtle seafoam edge-refraction highlights (`strength <= 0.6`), luminous crystal prism core nodes only.
+   - **Eclipse (`deathless`):** Deep obsidian-violet monolithic vaults (`~0.025 to 0.045` linear, satin dark alloy/obsidian `rough 0.28..0.55`, **zero green from `archive` or `ecore`**, zero rust), hairline violet-white power bus rails (`faction_looks.json` `death.fire`, `strength <= 1.6`).
+4. **Merge Order Guard (Artoo finding on PR `#1763`):** Resolve and land `#1724`'s `export7.py` map-size reporting fix cleanly before merging `#1763`, so reference rebakes report true pixel dimensions.
+
+---
+
+## 4. Law 3: Single Six-Faction Identity Matrix (All 7 Pipelines Locked Together)
+
+Every faction must read as **one cohesive species/culture** across all 7 pipelines (zero cross-contamination):
+
+| Faction | Exterior & Interior (R416 `#1743`) | Weapons & Firing FX (`#1692`, `#1741`) | Combat Wounds & Cavity Lights (`#1741`) | Capability Loss & Destruction (`#1741`) | Graveyard Hulks & Debris (`#1767`, `#1362`) | Sci-Fi Audio V2 (`#1752` / PR `#1753`, Picks `A/A/A`) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sunward Crusade (`voidsworn`)** | Forged dark iron + brass; ember-lit iron decks | Heavy forged-iron kinetic/propellant shell cannons, lances, torpedoes | Bent steel ribs, burning amber slag, soot & spark plumes | Jammed slot casemates/turrets, failing ember drive nozzles, ember core split | `V15_37` hulks + iron-kit burnt debris with R416 interior cuts | **1=A:** Forged-iron propellant shell crack + low thump; weathered low brass & cellos |
+| **Meridian Directorate (`hegemony`)** | Slate-navy alloy; cool brushed steel-slate interiors + blue strips | Tight regulated plasma cannons, flak, turbo batteries | Clean sheared alloy, blue-white plasma arc burn, zero orange soot | Jammed precision turrets, vented blue thruster plumes, clean snapped hull segments | `H8_23` hulks + clean-sheared Directorate kit debris | Tight capacitor-bank plasma thump + clean cutoff; taut cold strings & pulse |
+| **Ashfall Hullbreakers (`corsair`)** | Welded scrap steel; dark soot/rust scavenged interiors + red lamps | Rattling autocannons, junk guns, brutal salvos | Torn jagged scrap plates, dark oil smoke, glowing rust/char | Spluttering rough drive bells, jammed scrap mounts, violent shrapnel breakup | `C14s_23` hulks + jagged scorched scrap-kit debris | Heavy rattling mechanical cannon & industrial junk bark; gritty bowed metal & scrap percussion |
+| **The Chorus (`chorus`)** | Pale horn/chitin over wet umber hide; deep wet crimson-umber organs + dry ochre bone ribs | Pressurized bio-acid sacs (`sporeb`), spine volleys, organic lances | Torn dark wet tissue, snapped bone ribs, dim oozing olive-amber ichor (zero soot, zero magenta) | Ruptured brood/spine glands, failing organic thruster vents, visceral split | **`B20_11`, `B21_11` hulks** (`#1767`) + non-soot bio/chitin R416 debris | Wet pressurized bio-thump & viscous sac burst (zero balloon/metal); low contrabassoon & bone harmonics |
+| **The Glasswrights (`ithar`)** | Annealed seafoam/amber glass + lattice; clean faceted glass interiors | Harmonic shard volleys, needle beams, focused prism lenses | Crisp fractured crystal planes, escaping seafoam light, zero soot/fire/smoke | Shattered lens emitters, dimmed resonant drive lattice, crystalline shatter | **`I11_37`, `I15_11` hulks** (`#1767`) + clean fractured crystal debris | Crisp harmonic glass crack & resonant crystalline beam; glass harmonica & ethereal strings |
+| **Eclipse (`deathless`)** | Obsidian-violet monoliths; dark obsidian vaults + violet-white bus rails (zero green) | Heavy magnetic null cannons, Corona arc (`doom`), sentry arrays | Fractured obsidian plates, sharp violet-white electrical arcs (zero fire/soot/green) | Deadened null emitters, collapsing violet field vents, silent brittle shard breakup | `D20_23` hulks + obsidian-truss R416 debris (zero purple sky wash) | **2=A:** Heavy magnetic slam + cold hollow void decay; glacial sub-brass & obsidian chimes |
+
+---
+
+## 5. Law 4: World, Planets, Asteroids, Sky & Audio Integration
+
+All world and audio tracks operate under the exact same cohesion rules (full line-level specs in `contrib/opus/plans/world_consistency_v2.md` and `contrib/opus/plans/cohesive_audio_v2.md`):
+
+1. **Planets V2 (`#1765`, coordinated with `#1463`):**
+   - Wire the unwired 39.7 MB 8K NASA `R01` rocky maps into `board.gd:_planet()` AND upgrade all 5 foreground `PLANET_LOOKS` off `map3d_shaders.gd`.
+   - Re-palette cartoon purple `PLANETS[2]` (RULEBOOK 10.9), sharpen Terran (`PLANETS[3]`), Ice (`PLANETS[6]`), Barren (`PLANETS[5]` using remixed `R01` relief per RULEBOOK 10.3), and moons to match A-tier ringed gas giants (`PLANETS[0]`, `PLANETS[7]`).
+2. **Asteroids & Crystals V2 (`#1361`):**
+   - Fix crushed `COLOR_0.b` (`facet`) on `scan_00..05` so iron metal, ice frost, and crystal veins work on photogrammetry rocks.
+   - Remove the blanket warm-tan tint (`world_rocks.gd:227`) from iron and carbon; restore biome shape variety in `names_for()`; retire flat boomerang `scan_07` and weak `scan_06`; replace 216-tri flat cyan `crystal_00..02.glb` spikes with faceted Blender multi-crystal clusters + `_lo` LODs.
+3. **Grounded Cinematic Space Sky & Dead Star (`#1766`, coordinated with `#1502` and `#1328`, RULEBOOK 10.11):**
+   - Cut starfield density by ~85% (~6,800 to 11,600 static dots/frame -> ~250 to 500 crisp pinpoint stars/frame clustered along a richer tilted Milky Way band), drop `star_floor` to `0.0` so dark molecular dust lanes carve real black voids, bake skies in 16-bit half-float (`#1502`), remove `nebula_crystal_belt` mustard fog and Eclipse purple nebula (`faction_looks.json:102`), soften the Dead Star grazing equator seam (`world_shaders.gd:96`), and finish soft volumetric on-board clouds (`#1328` / `#1360`).
+4. **Stations, Hulks & Graveyard Wreckage (`#1767`, coordinated with `#1362`):**
+   - Retire chalky `O1_37` onto cleanly scaled `station_T2` across all cluster sizes and teaching battles; wire `rig`/`ring`/`spire` biome hooks; expand `board.gd:_hulk()` to all 6 factions (adding Chorus `B20_11`/`B21_11` and Glasswright `I11_37`/`I15_11`); align `#1362` graveyard debris scraps with R416 lit interior cut-faces.
+5. **Cohesive Dark Sci-Fi Audio V2 (`#1752`, PR `#1753`):**
+   - Wait for PR `#1753` (72 items / 138 files, merge conflict resolved cleanly on `opus/issue-1752`) to merge and verify `main` holds the 72-item manifest before any spend.
+   - Ryan's three picks are locked (`1=A` Sunward shell guns, `2=A` Eclipse heavy magnetic slam + cold hollow decay, `3=A` Gate 1 `reward_preview` wording on 16 whole bars).
+   - Run Wave A (14 diagnostic items, `--max-credits 1200`) and ear-check on the corrected `listen_page.js` before Wave B (~4,300 real credits total).
+
+---
+
+## 6. Law 5: Automated Anti-Drift CI Gates (Stopping Regressions Forever)
+
+No visual rule stays intact if it relies on human memory alone. Add these automated checks directly into the existing pipelines:
+
+### 6.1 Blender Export & Material Gates (`tools/recipe/check_export.py` + `cutaway.py`)
+1. **No Schematic Blockout Color Leak:** Fail export or test if any V2 interior material inherits unmapped `kit.py` schematic room hues/emissions (e.g., `vat 2.0`, `gland 0.6`, `archive` green on Eclipse, red `magazine`, blue `hangar`).
+2. **Interior Albedo Ceiling Gate:** Compute mean linear base albedo of every non-bone, non-glass interior material; fail if `> 0.11` linear (automatically blocks chalky white `0.175` clay corridors from ever slipping back in).
+3. **Interior Non-Core Emission Gate:** Fail if any non-core interior surface (outside `core` / `ecore` reactor slits) has full-surface constant emission `> 0.0` or area-weighted trim emission `> 0.25` (automatically blocks glowing neon-green Chorus organs).
+4. **Faction Palette & Role Guard:**
+   - Assert Chorus `bonefr` never binds to `style='flesh'` or any glowing vein emission.
+   - Assert Chorus has zero metal (`metallic == 0.0`) and zero magenta/neon-lime saturation spikes.
+   - Assert Glasswrights have zero soot/wear/metal.
+   - Assert Eclipse has zero green (`g > r * 1.15 and g > b * 1.15` banned on both albedo and emission).
+5. **Unified 6-Faction Lineup Review Sheet (`cutaway.py`):** Render one side-by-side 6-faction strip at identical exposure (showing exterior hull + cut-open interior for Sunward, Directorate, Hullbreakers, Chorus, Glasswrights, Eclipse together) AND require calibration against `#1741` Layer 1 breach cavity lights before locking final lift values.
+
+### 6.2 Godot Headless World & Palette Parity Gates (`godot/world/test/`)
+1. **Unwired-Asset Gate:** Assert `board.gd` wires high-relief planet shaders across all 5 `PLANET_LOOKS` (no silent fallback to `map3d_shaders.gd`), `a4_props.gd` uses `station_T2` across small and large clusters when installed, and `board.gd:_hulk()` covers all 6 factions.
+2. **Rock Scan Channel Gate:** Inspect every rock `.glb` in `godot/world/rocks/scans.json` and assert `COLOR_0.b` spans usable dynamic range (`>= 0.45`) and minimum triangle quality (preventing flat/low-poly outlier regressions like `scan_07` and crushed `COLOR_0.b`).
+3. **Zero-Purple & Starfield Budget Gate:** Assert zero indigo-to-purple entries in `world_sky.gd` (`PLANETS`, `PLANETS_ALT`) and `godot/fx/faction_looks.json` (`nebula`), and assert default `star_floor == 0.0` and grounded starfield thresholds in `world_sky.gd`.
+
+### 6.3 Audio Pack Gate (`contrib/opus/tools/sound/`)
+- Keep automated `elevenlabs_gen_selftest.js` + manifest lint checking: one shot per wired SFX clip, zero naval/ocean/pink-elephant words, zero em dashes, exact `today` baseline mapping against `godot/audio/cues.json`, and `FAC_WNAMES` roster coverage.
+
+---
+
+## 7. Global Execution Sequence (Zero Overlap, Maximum Cohesion)
+
+1. **Gate 0 (Immediate Merges & Guardrails):**
+   - Land this master standard PR (`opus/issue-1774`), merge PR `#1753` (confirming `main` holds the 72-item sound pack) -> launch Audio Wave A (`--max-credits 1200`).
+   - Land `#1724`'s `export7.py` map-size fix, then apply Law 2 + Section 6.1 automated gates to **PR `#1763`** (`#1743` Interior Kit V2) and verify on one unified 6-faction lineup cutaway sheet before merging.
+2. **Wave A (Parallel, Zero File Overlap):**
+   - **`#1741` (Wounds V2 Layers 1+2, `VS_WOUNDS_V2=1`):** calibrated jointly with PR `#1763`'s moody interior values (`<= 0.10` linear walls) so breach-mouth cavity lights look dramatic, never washed out.
+   - **`#1765` (Planets V2, coordinated with `#1463`)**
+   - **`#1361` (Asteroids & Crystals V2)**
+   - **`#1767` (Stations & 6-Faction Hulks V2)**
+3. **Wave B (Coordinated Sky & Audio Follow-Up):**
+   - **`#1766` (Grounded Cinematic Space Sky & Dead Star Seam)** sequenced cleanly with **`#1502` (16-bit sky bake)** and **`#1328` / `#1360`** (volumetric clouds & storm bolts).
+   - **Audio Wave B** (after Ryan ear-checks Wave A listening page).
+4. **Wave C (Unified Final Polish):**
+   - **`#1362` (Graveyard debris scraps from faction ship kits)** aligned with R416 (`#1741` + `#1743`) so combat wreckage and terrain graveyards share one visual language.
+   - Full `independent-audit` (RULEBOOK 3.13) + solo RTX 5080 frame-time check + full 6-faction / multi-biome PC capture pass for Ryan's final visual sign-off.
