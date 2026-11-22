@@ -1,9 +1,8 @@
 # Build variety: the full plan (issue 1453)
 
-Status: plan for review. No code yet. Ryan (Nov 22, 08:53 UTC) asked for a full plan that Neon can review end to end and then
-write the names, lines and text for. Every pick marked **OPEN** is a working assumption (the Board's recommendation in the
-short design pack), not a ruling. Ryan's earlier OK (Nov 21, "Yes on all" to call 4) covers doing this work as a design pack
-first.
+Status: **approved by Ryan (Nov 22, 11:59 UTC) with the recommended picks**; no code yet. Every pick still marked OPEN below is
+now the approved pick. Ryan asked for many balance passes so every option is worth taking: section 13. Ryan (Nov 22, 08:53
+UTC) asked for a full plan that Neon could review end to end and then write the names, lines and text for; Neon did (PR 1640).
 
 **Neon review folded in (Nov 22, PR 1640).** Neon reviewed commit b56c67e7
 (contrib/neon/reviews/build_variety_1453_review.md) and wrote every text slot
@@ -326,3 +325,32 @@ Not written yet, and not asked for: per-faction name variants for the new relics
 Neon reviewed the full plan (contrib/neon/reviews/build_variety_1453_review.md, commit b56c67e7) against the five checks this
 section asked for, and every finding is folded in above. Neon did not run the game, the sims or the save tests, and did not
 measure text on screen; each build part does those. What is left for Ryan is the OPEN picks.
+
+## 13. Balance passes (Ryan, Nov 22)
+
+Ryan approved the whole plan with the recommended picks (Nov 22, 11:59 UTC: "Yeah I like it all, I just think we'll need to do
+a ton of balance passes and checks on it because some seem great and others seem relatively meaningless like +1 to arc but
+reduce damage"). The rule that follows: **every option must be worth taking**. A relic, refit, rider or Mastery step that a
+player would skip is as much a failure as one that dominates.
+
+How each build part proves it, on fresh sims (the balance sim was fixed on the morning of Nov 22, so older numbers do not
+count):
+
+1. **Measure every option alone**, against a run without it, in `node sim3d.js campaign` (rounds, hull left, ships lost; win
+   rate is at its ceiling and is not the measure), with the sample size in the report.
+2. **A band, not a single number.** Today's middle relics (Founders' compass, Alien shield matrix) set the band. An option
+   below the band is buffed or redesigned in the same part; one above it is cut back. Nothing ships outside the band.
+3. **Weak-looking options first.** Each part names the options that look thin on paper and measures them first, so a
+   redesign lands before text and pictures. Already flagged:
+   - `chaser` (one arc wider at -20% damage): Ryan's example. If it measures low, drop the penalty (full damage in the wider
+     arc) before adding anything new.
+   - `gunnery`, `afterburn`, `spotter`, `quiet` and `beacon` (small or round-1-only effects); `locker` (boarding only);
+     Kassar's Mastery I row (a penalty removed); every "+10 aim" or "+5% armor" rider.
+4. **Strong-looking options get the same check from the other side:** `spare`, `mirror`, `lastlight`, `coolant`, Mastery II.
+5. **A second pass after all parts land**, with every new option in the pool together, to catch pairs that stack badly
+   (for example `flankmark` with `spotter`, or `spare` with Command-heavy admirals).
+6. **Report** as the playtest-and-balance skill says: deltas only, one row per option, the mode and sample size. The
+   report goes in the part's pull request and the option table in this plan gets a "measured" column.
+
+Size: each part gains about one more run for its balance pass; the final pass is about 1 run plus a PC sim job if the
+cloud sim is too slow.
