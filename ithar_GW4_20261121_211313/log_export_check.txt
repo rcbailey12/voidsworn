@@ -1,0 +1,6 @@
+[check] 114328 triangles (2728 on part surfaces), box x -0.454 to 0.546, y -0.196 to 0.196, z -0.408 to 0.408
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] slot 0 bombs T: 2 hard points
+[check] hard points: {"core": 1, "engine": 1, "gun": 2}
+PASS ithar_GW4 game export: every required point is there and every hard point passes the mesh checks

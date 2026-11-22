@@ -1,0 +1,1 @@
+[publish] kept ithar_GW4 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\ithar_GW4_20261121_211313

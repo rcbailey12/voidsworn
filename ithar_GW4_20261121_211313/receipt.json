@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1373gw4n",
+ "ship": "ithar_GW4",
+ "code": "ithar_GW4",
+ "commit": "746d8d7c9a27a155575727e9e4c018b7ba6ebd66",
+ "glb": "9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b",
+ "files": {
+  "ithar_GW4.glb": "9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b",
+  "ithar_GW4_base.jpg": "857e3484e22a96adfa3ca6b732f77dab77749f982f2806d8c13f9e52bd199bb0",
+  "ithar_GW4_emission.jpg": "635ab779bc8ed7b79686900f993db6bf961307de70083c654372025649fa4e94",
+  "ithar_GW4_normal.png": "2e56053d8a6f6a42137a3253fbb0310df7943e1083b174def99ceccf204b80dc",
+  "ithar_GW4_orm.png": "cea05f21c27d7965282ebc9e012255e7ac2b72aa3b52f3c41c9b582e9891e242",
+  "ithar_GW4_parts_base.jpg": "d51f56a09ca648cd93b21680214fa7c334e3082d21a6a8fe4a33647803f91078",
+  "ithar_GW4_parts_normal.png": "2f9cbcc911cf35c3dc88da44ac38e2bc2169e811d91aca94e30273deb1e49e88",
+  "ithar_GW4_parts_orm.png": "7127776f6552de02efc0fb559502a76966cef69f3f72260e5666a964f9a95d60"
+ },
+ "checked": [
+  "ithar_GW4.glb",
+  "ithar_GW4_base.jpg",
+  "ithar_GW4_emission.jpg",
+  "ithar_GW4_normal.png",
+  "ithar_GW4_orm.png",
+  "ithar_GW4_parts_base.jpg",
+  "ithar_GW4_parts_normal.png",
+  "ithar_GW4_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 4.96 deg (floor 0.47), albedo contrast 0.082 (floor 0.020), roughness spread 0.127 (floor 0.010), 512870 texels"
+}

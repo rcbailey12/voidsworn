@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_GW4 ithar_GW4 commit 746d8d7c9a27a155575727e9e4c018b7ba6ebd66, glb 9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b, 8 listed and 8 checked files
+SHIP=ithar_GW4
