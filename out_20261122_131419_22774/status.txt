@@ -1,0 +1,28 @@
+[Sun 11/22/2026 13:14:20.23] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T19:14:22Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Sun 11/22/2026 13:14:22.84] ready: GPU label 1585
+relay to: tools\pc\relay_push.bat opus1585pilot4 "C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot4\out_20261122_131419_22774" (voidsworn-relay branch pc-out-opus1585pilot4, folder out_20261122_131419_22774/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot4\out_20261122_131419_22774"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+verified 8d24b6a43964bb5110c00fa143dc5c323e369d2a1879c63ec826d493e38f65f3 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified a8dd73b87663dc628764bcd00fe129458d767c2948a7f42bdee92d8d23595321 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1 (tools_live version 8f04dc972f9a)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new fc3a30e69a55a2fba2b84c17f49d23cb8da81a1f C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot4\out_20261122_131419_22774\new
+[Sun 11/22/2026 13:14:46.97] step new selftest start
+[Sun 11/22/2026 13:15:00.29] step new selftest exit 1
+FAILED: new selftest
+note: tools_live moved from 8f04dc972f9a to 1bf30b74c032 during the job; every step stayed on 8f04dc972f9a
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: new selftest
+all done Sun 11/22/2026 13:15:01.67
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot4\out_20261122_131419_22774 failed (the janitor handles old failures)
+disk: checkouts freed 0.0 GB in all, C: 261.0 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt
