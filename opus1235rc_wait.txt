@@ -1,0 +1,6 @@
+OPUS1235RC_WAIT.bat waiting for OPUS1437A exit in opus1437a_wait.txt Sat 11/21/2026 23:48:54.36 
+OPUS1235RC start  5:51:55.67 
+OPUS1235RC exit 0 at  6:13:24.96 
+run folder out_20261122_055156_28811
+result: done PASS
+all done Sun 11/22/2026  6:13:25.43 

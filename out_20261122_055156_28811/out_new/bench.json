@@ -1,0 +1,205 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "45fd00c250c2ea361e7d79168efa77ffde7431c72f208a92a38b984151653154",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "4f03755b4f6522b645890802f143a91c1741f402c54dcd5b1213c7a9b400429f",
+ "parts": {
+  "0": {
+   "start_frame": 10800
+  },
+  "2": {
+   "start_frame": 11700
+  },
+  "3": {
+   "start_frame": 15300
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 10920
+  }
+ },
+ "pipelines_compiled": 1046,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 3480,
+     "t": 0.1
+    },
+    {
+     "step": 3715,
+     "t": 4.0013
+    },
+    {
+     "step": 3955,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_V16_37_shield_hull__c170.png",
+   "id": "rc_V16_37_shield_hull",
+   "impacts": [
+    0.546033079028129
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 4289,
+     "t": 0.1
+    },
+    {
+     "step": 4524,
+     "t": 4.0013
+    },
+    {
+     "step": 4764,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_V16_37_shield_hull__c26.png",
+   "id": "rc_V16_37_shield_hull",
+   "impacts": [
+    0.546033079028129
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 5098,
+     "t": 0.1
+    },
+    {
+     "step": 5333,
+     "t": 4.0013
+    },
+    {
+     "step": 5573,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_I15_11_shield_hull__c170.png",
+   "id": "rc_I15_11_shield_hull",
+   "impacts": [
+    0.550149232745171
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 5907,
+     "t": 0.1
+    },
+    {
+     "step": 6142,
+     "t": 4.0013
+    },
+    {
+     "step": 6382,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_I15_11_shield_hull__c26.png",
+   "id": "rc_I15_11_shield_hull",
+   "impacts": [
+    0.550149232745171
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 6672,
+     "t": 0.1014
+    },
+    {
+     "step": 6906,
+     "t": 4.0013
+    },
+    {
+     "step": 7146,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_V16_37_board_wear__c170.png",
+   "id": "rc_V16_37_board_wear",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 7436,
+     "t": 0.1014
+    },
+    {
+     "step": 7670,
+     "t": 4.0013
+    },
+    {
+     "step": 7910,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_V16_37_board_wear__c26.png",
+   "id": "rc_V16_37_board_wear",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 8200,
+     "t": 0.1038
+    },
+    {
+     "step": 8434,
+     "t": 4.0013
+    },
+    {
+     "step": 8674,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_B21_11_board_wear__c170.png",
+   "id": "rc_B21_11_board_wear",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 8964,
+     "t": 0.1038
+    },
+    {
+     "step": 9198,
+     "t": 4.0013
+    },
+    {
+     "step": 9438,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/rc_B21_11_board_wear__c26.png",
+   "id": "rc_B21_11_board_wear",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}
