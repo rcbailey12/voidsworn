@@ -355,16 +355,22 @@ function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $
     if (-not $checkouts.Count) { return }
     $listed = Get-BoardKeepReason $dir.FullName
     if ($listed) { throw $listed }
-    try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $true }
+    # Measured before the lease is taken: creating a lease file must not count as a touch. Each checkout is measured again
+    # just before its removal (Clear-KeptCheckout).
+    $stats = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
+    if ($stats.Latest -gt $now.AddHours(-$checkoutIdleHours)) { throw "job folder touched in the last $checkoutIdleHours hours" }
+    # A live run takes the lease even when the folder has none yet (created, never deleted, so helper_clone's own
+    # OpenOrCreate meets it held) and holds it through every removal: a helper run cannot start here meanwhile, which a
+    # missing lease and an earlier process scan alone would not prove (Artoo on PR 1592). A dry run never creates it.
+    try { $lease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $dryRun }
     catch { throw 'a helper run holds this folder''s lease' }
+    if (-not $dryRun -and -not $lease) { throw 'job folder lease could not be taken' }
     if ($issue -and $activeLegacy -contains $issue) { throw "issue #$issue has an active older runner" }
     if ($issue) {
       try { $issueLock = Open-CleanupLock (Issue-LockPath $issue $temp) $dryRun }
       catch { throw "issue #$issue lock is held or could not be verified" }
     }
     Assert-NoProcessUses $dir
-    $stats = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
-    if ($stats.Latest -gt $now.AddHours(-$checkoutIdleHours)) { throw "job folder touched in the last $checkoutIdleHours hours" }
     if (Cleanup-Paused) { throw 'PC pause is active' }
     foreach ($checkout in $checkouts) {
       Assert-GpuQuiet

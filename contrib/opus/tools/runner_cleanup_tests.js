@@ -611,6 +611,8 @@ try {
   for (const dir of recover) decision(dry, dir, 'would remove (after checked salvage');
   decision(dry, failedSalvage, 'would remove (after checked salvage');
   for (const dir of [...remove, ...preserve, ...never]) assert(fs.existsSync(dir), `dry run changed ${dir}`);
+  // Artoo on PR 1592: a dry run never creates a job folder's lease; the live run below must take one where none existed.
+  for (const dir of [jobKeptOut, playtest]) assert(!fs.existsSync(path.join(dir, '.voidsworn-run-active')), `dry run created a lease in ${dir}`);
   for (const dir of never) assert(!dry.includes(`${dir} (`), `unexpected candidate ${dir}`);
   assert.match(dry, /issue #302 lock is held/);
   assert.match(dry, /touched in the last 3 hours/);
@@ -630,6 +632,9 @@ try {
     [playtest, 'out_A/shot.png', 'pt1120c picture'], [playtest, 'out_A/done.txt', 'FAILED']]) {
     assert.equal(read(path.join(dir, file)), text, `checkout-only cleanup kept ${file} in ${dir}`);
   }
+  // The missing-lease case (Artoo on PR 1592): the live run created and held a lease in each folder that had none, so a
+  // helper_clone start (OpenOrCreate, no sharing) during the removal would have stopped instead of overlapping.
+  for (const dir of [jobKeptOut, playtest]) assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')), `live run took no lease in ${dir}`);
   assert.equal(read(path.join(linkTarget, 'B16_23.glb')), 'shared ship the link points at', 'a removed link never touches its target');
   if (legacyUnreadable) {
     decision(live, legacyUnreadable, 'removed all but 1 folders another account owns');
