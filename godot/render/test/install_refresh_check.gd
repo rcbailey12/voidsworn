@@ -5,7 +5,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # process, exactly as tools/recipe/7_export.bat does after an install:
 #   1. an old hull ZZ592 (the turret test ship's glb) with damage and wreck glbs: the cache names all three;
 #      the saved hull shares its packed ORM with fragments, its meshes have automatic LODs, and repainting an
-#      external map refreshes the cache without changing the GLB.
+#      external map refreshes the cache without changing the GLB, even when the map keeps its size and timestamp.
 #   2. a new hull is installed the way stage 7 does it (the old damage and wreck glbs moved aside, the new glb copied in):
 #      the cache is rebuilt from the new file and names no damage or wreck scene;
 #   3. the install readback (render/test/installed_ship_check.gd) passes, and ShipView, reading that cache, draws the new
@@ -109,7 +109,7 @@ func check_external_atlas() -> void:
 		"the ship cache builder reads the new atlas from disk")
 
 
-func write_paint(path: String, color: Color) -> void:
+func write_paint(path: String, color: Color, pad_to := 0) -> void:
 	var image := Image.create_empty(16, 16, false, Image.FORMAT_RGB8)
 	image.fill(color)
 	var bytes := PackedByteArray()
@@ -117,10 +117,14 @@ func write_paint(path: String, color: Color) -> void:
 		"png": bytes = image.save_png_to_buffer()
 		"jpg": bytes = image.save_jpg_to_buffer()
 		"webp": bytes = image.save_webp_to_buffer()
+	# JPEG decoders ignore padding after the end marker.
+	if not bytes.is_empty() and bytes.size() < pad_to:
+		bytes.resize(pad_to)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	check(file != null and not bytes.is_empty(), "wrote %s" % path.get_file())
 	if file != null:
 		file.store_buffer(bytes)
+		file.close()
 
 
 func textured_hull(path: String) -> void:
@@ -206,6 +210,34 @@ func check_cached_paint(cached: String, expected: Color) -> void:
 	built.free()
 
 
+func set_paint_time(path: String) -> void:
+	var absolute := ProjectSettings.globalize_path(path)
+	var result: int
+	if OS.get_name() == "Windows":
+		var command := "[IO.File]::SetLastWriteTimeUtc('%s', [DateTime]::new(2020, 1, 1, 0, 0, 0, [DateTimeKind]::Utc))" % absolute.replace("'", "''")
+		result = OS.execute("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", command])
+	else:
+		result = OS.execute("touch", ["-t", "202001010000", absolute])
+	check(result == 0, "set the fixture map's modification time")
+
+
+func check_same_metadata_repaint(path: String, built_marker: String) -> void:
+	write_paint(path, Color.BLACK, 4096)
+	set_paint_time(path)
+	builder()
+	var previous_bytes := FileAccess.get_file_as_bytes(path)
+	var previous_time := FileAccess.get_modified_time(path)
+	write_paint(path, Color.WHITE, 4096)
+	set_paint_time(path)
+	var repainted_bytes := FileAccess.get_file_as_bytes(path)
+	check(previous_time > 0 and previous_time == FileAccess.get_modified_time(path)
+		and previous_bytes.size() == repainted_bytes.size() and previous_bytes != repainted_bytes,
+		"the repainted albedo has different bytes and the same size and modification time")
+	check(built_marker in builder(), "a same-size, same-time repaint rebuilds gen/ships")
+	var cached := str(entry().get("res", ""))
+	check_cached_paint(cached, Color.WHITE)
+
+
 func _run() -> void:
 	run = "user://install_refresh_check/%d" % int(Time.get_unix_time_from_system())
 	var sh := run.path_join("ships").path_join(CODE)
@@ -241,6 +273,7 @@ func _run() -> void:
 	e = entry()
 	if e.has("res"):
 		check_cached_paint(e["res"], Color.REBECCA_PURPLE)
+	check_same_metadata_repaint(sh.path_join("maps").path_join(MAPS[1]), built_marker)
 	# 2. the install: the old hull's damage and wreck moved aside, the new hull copied over the old glb
 	OS.delay_msec(1100)   # file times count in seconds: the new glb must not share the old one's stamp by chance
 	for suf in ["_damage", "_wreck"]:
