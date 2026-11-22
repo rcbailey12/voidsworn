@@ -8,6 +8,8 @@ from paint3 import math_, mixc, node, ramp
 
 SCALE = 1.0
 AUTHORED_LOOK = True
+EMISSIVE_ATLAS = True
+RECESS_AMBER = (.46, .19, .028)  # linear RGB at unit strength, below the battle glow threshold (0.8)
 LAYERS = dict(ao_short=0.013, ao_long=0.045, edge_radius=0.0008, edge_gain=16,
               bump_distance=0.002, bump_strength=0.78)   # R341 round 3 (Neon): the horn grain holds at 1024 and 4096
 
@@ -158,6 +160,17 @@ def _ridge(c, scale, detail, stretch, w, lo, hi):
     return ramp(nt, band, lo, hi)
 
 
+def _recess_glow(c, zone, layers, detail):
+    # R411: even the strongest vein or pore pattern needs short-range occlusion to glow.
+    if zone in ('vein', 'pore'):
+        detail = 1.0
+    elif zone not in ('flesh', 'flesh2', 'hide'):
+        return layers
+    cavity = ramp(c.nt, c.ao, .90, .35)
+    glow = math_(c.nt, 'MULTIPLY', cavity, detail)
+    return (*layers, mixc(c.nt, (0.0, 0.0, 0.0), RECESS_AMBER, glow))
+
+
 def grown_flesh(c, zone, base, shade, roughness):
     """the hide (issue 1291): elephant-skin creases and a crack network that read at camera 26, pores and fine grain for the
     close-up, dark red veins, broad olive and brown mottling; matte, wet only in the folds and cavities. The relief goes to
@@ -208,7 +221,8 @@ def grown_flesh(c, zone, base, shade, roughness):
     wet = math_(nt, 'MAXIMUM', wet, math_(nt, 'MULTIPLY', deep, .8))
     rough = math_(nt, 'SUBTRACT', roughness, math_(nt, 'MULTIPLY', wet, max(0.0, roughness - .12)))
     rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', c.noise(9, 2, .5), .08), clamp=True)
-    return col, height, rough, 0.0
+    slits_and_pores = math_(nt, 'MAXIMUM', wr, pores)
+    return _recess_glow(c, zone, (col, height, rough, 0.0), slits_and_pores)
 
 
 def grown_chitin(c, zone, base, shade, roughness):
@@ -260,7 +274,8 @@ def surface_layers(c, zone, _tiles):
     height = math_(nt, 'ADD', math_(nt, 'MULTIPLY', folds, -.10),
                    math_(nt, 'MULTIPLY', pores, .025))
     rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', folds, .05))
-    return mixc(nt, base, shade, dark), height, rough, 0.0
+    layers = mixc(nt, base, shade, dark), height, rough, 0.0
+    return _recess_glow(c, zone, layers, ramp(nt, folds, .65, .95))
 
 
 def trim_sheet():
