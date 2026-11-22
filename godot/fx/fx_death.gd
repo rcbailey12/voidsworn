@@ -3847,7 +3847,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 # Issue 1237 (Neon F7.1): WRECK_PHYS_S after its release a wreck section leaves Jolt (it never slept: no damping) and
 # drifts on with the velocity and turn it had, on the effect clock, as the kinematic tiers do. A strained wreck's pieces
 # keep their damping. It no longer bounces off a hull it drifts into after that.
-static func _wreck_leave_physics(fx, wreck: Dictionary, node) -> void:   # untyped: a crumbled piece may be freed before its timer
+static func _wreck_leave_physics(fx, wreck: Dictionary, node) -> void:   # untyped: a piece may be freed before its timer
 	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is RigidBody3D): return
 	var rb := node as RigidBody3D
 	if rb.process_mode == Node.PROCESS_MODE_DISABLED: return
@@ -4017,15 +4017,17 @@ static func update(fx, dt: float) -> void:
 # across the board. A piece's middle brakes from LEASH_SOFT of its rest limit and never drifts past it; a piece past it
 # (a long hull overhangs its hex) is drawn back in, and nothing is ever farther out than where it was born or the rest
 # radius. The rest radius (0.8 of the hex radius) is inside the hex's flat edges (0.87).
-# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex. Nov 22 he saw the old way
-# (the whole wreck shrank to fit) and picked "ends crumble away" instead: nothing shrinks. From LEASH_SHRINK_FROM seconds
-# after the break, the pieces that cannot rest in the hex at their real size break up and are gone (_plan_crumble); the
-# kept ones are drawn in until their whole footprint is inside, and from LEASH_SETTLED held there. The biggest piece is
-# always kept, so on a long hull (a cruiser is 23 units, a dreadnought 34, the hex 17 across) it reaches past the hex.
+# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex, done by shrinking the wreck.
+# Nov 22 he saw it and called it bad, then saw the next try (the biggest piece drawn to the hex centre, the rest
+# crumbling) fold one half into the other and called that cheesy and broken. Now the hull's main pieces are never pulled,
+# shrunk or removed: they part as they broke and MAIN_BRAKE brings them to rest close together, as in the approved
+# one-crack death (issue 1077); on a cruiser or capital they overlap the next hexes, which the rules do not block. The
+# small fragments and thrown plates still settle inside the hex (LEASH_*).
 const LEASH_SOFT := 0.6        # share of the rest limit where a piece's brake starts
 const LEASH_BRAKE := 4.0       # per second, the brake at the rest limit (it ramps up from zero at LEASH_SOFT)
 const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes back in at this share of the gap
-const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the overhanging pieces start to crumble and the rest draw in
+const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
+const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
 const LEASH_SETTLED := 5.5     # seconds after the break: each main piece is held hard inside the rest radius
 
 
@@ -4079,27 +4081,21 @@ static func _leash(fx, dt: float) -> void:
 		var an = anchors.get(w["id"])
 		if an == null: continue
 		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
-		if drawing and not w.has("crumble_done"):
-			# Ryan, Nov 22 (decision card, "ends crumble away"): nothing shrinks. Once every piece is measured, the pieces
-			# that cannot rest in the hex at their real size crumble away (_plan_crumble); the middle stays.
-			var measured := true
-			for nd in w["nodes"] + w.get("frags", []):
-				if not is_instance_valid(nd): continue
-				if not nd.has_meta("leash_rad"):
-					_measure_reach(nd)
-					measured = false
-					break   # one piece's faces a frame, so a big wreck never costs one long frame
-			if measured:
-				_plan_crumble(fx, w, an)
-		var pieces: Array = w["nodes"] + w.get("frags", [])
-		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
+		# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and
+		# a brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything.
+		var brake := exp(-MAIN_BRAKE * dt)
 		for f in w["fires"]:
-			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
+			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
+			if w["nodes"].has(f["node"]):
+				f["vel"] = (f["vel"] as Vector3) * brake
+			else:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
-		# once the wreck has drawn together, each piece is held hard at its rest limit (a physics piece jostled past it
-		# by its neighbours is put back), so the settled wreck sits inside the hex's edges
+		for nd in w["nodes"]:
+			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+				(nd as RigidBody3D).linear_velocity *= brake
+		# the small fragments still settle inside the hex, as the thrown plates do
 		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
-		for nd in pieces:
+		for nd in w.get("frags", []):
 			if not is_instance_valid(nd): continue
 			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
 				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt, drawing)
@@ -4110,78 +4106,6 @@ static func _leash(fx, dt: float) -> void:
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
 		_leash_clamp(b, an)
-
-
-# Ryan, Nov 22 (decision card on the shrinking wrecks, "ends crumble away"): a wreck keeps its real size. The biggest
-# piece is always kept (pulled in to the middle; on a cruiser or dreadnought it reaches past the hex, since even that
-# piece is wider than a hex), then, nearest the hex centre first, each one that can rest inside the rest radius without lying over a kept piece. The
-# rest break up one after another into embers and the faction's own shards (BEATS.debris and spark_col) and are gone.
-static func _plan_crumble(fx, w: Dictionary, an: Dictionary) -> void:
-	w["crumble_done"] = true
-	var c: Vector3 = an["c"]
-	var r := float(an["r"])
-	var order: Array = []
-	for nd in w["nodes"]:
-		if is_instance_valid(nd) and not (nd as Node).is_queued_for_deletion(): order.append(nd)
-	order.sort_custom(func(a, b) -> bool: return float(a.get_meta("leash_off0", 0.0)) < float(b.get_meta("leash_off0", 0.0)))
-	# the biggest piece is the wreck's middle and is always kept (moved to the front); the others nearest first
-	var biggest: int = 0
-	for i in order.size():
-		if leash_half(order[i]) > leash_half(order[biggest]): biggest = i
-	if not order.is_empty(): order.push_front(order.pop_at(biggest))
-	var kept: Array = []   # [rest point on the board plane, half reach]
-	var gone: Array = []
-	for nd in order:
-		var half := leash_half(nd)
-		var off: Vector3 = leash_centre(nd) - c
-		off.y = 0.0
-		var rest: Vector3 = off.normalized() * minf(off.length(), maxf(0.0, r - half)) if off.length() > 0.001 else Vector3.ZERO
-		var ok := kept.is_empty() or half <= r
-		for k in kept:
-			if not ok: break
-			ok = rest.distance_to(k[0]) >= 0.7 * (half + float(k[1]))
-		if ok: kept.append([rest, half])
-		else: gone.append(nd)
-	for nd in w.get("frags", []):
-		if is_instance_valid(nd) and leash_half(nd) > r * 0.6: gone.append(nd)
-	gone.reverse()   # the farthest first
-	w["crumbled"] = gone.size()
-	for i in gone.size():
-		var big: bool = w["nodes"].has(gone[i])
-		fx.later(fx.now + minf(0.18 * i, 1.4) + fx.rng.randf() * 0.1, _crumble.bind(fx, w, gone[i], big))
-
-
-static func _crumble(fx, w: Dictionary, nd: Node3D, big: bool) -> void:
-	if not is_instance_valid(nd) or nd.is_queued_for_deletion(): return
-	var s = fx.ships.get(w["id"])
-	var p := leash_centre(nd)
-	var half := maxf(leash_half(nd), 0.3)
-	var drift := Vector3.ZERO
-	if nd is RigidBody3D: drift = (nd as RigidBody3D).linear_velocity / maxf(fx.anim_speed(), 0.01)
-	for f in w["fires"]:
-		if f.get("node") == nd and f.has("vel"): drift = f["vel"]
-	var n := 12 if big else 3
-	for j in n:
-		var q := p + Vector3(fx.rng.randf_range(-1.0, 1.0), fx.rng.randf_range(-0.3, 0.3), fx.rng.randf_range(-1.0, 1.0)) * half * 0.7
-		var away: Vector3 = (q - p).normalized() if q.distance_to(p) > 0.01 else fx.rdir()
-		var v: Vector3 = drift + away * half * fx.rng.randf_range(0.25, 0.7)
-		if s != null:
-			BEATS.debris(fx, s, q, fx.now + j * 0.03, 2.2, v, half * fx.rng.randf_range(0.04, 0.08), 0.7, 3.0, 0.25)
-		else:
-			fx.shd(q, fx.now + j * 0.03, 2.2, v, half * 0.06, 0.7, 3.0, 0.25)
-	if big and s != null and fx.quality != "low":
-		var col: Color = BEATS.spark_col(s, Color(1.0, 0.72, 0.4))
-		if int(s.fac.get("wound_kind", 0)) != 1:   # the Chorus has no sparks: its flecks are enough
-			for j in 10:
-				fx.stk(p + fx.rdir() * half * 0.4, fx.now + fx.rng.randf() * 0.15, 0.4 + fx.rng.randf() * 0.3, col, 3.0, 0.05, maxf(half * 0.01, 0.03), 1, drift + fx.rdir() * half * 0.9, 1.2)
-		fx.light(p, fx.now, 0.35, 1.6, col, 1)
-	for l in w["lights"]:
-		if l.get("node") == nd: l["on"] = false
-	w["fires"] = (w["fires"] as Array).filter(func(f) -> bool: return f.get("node") != nd)
-	w["nodes"].erase(nd)
-	if w.has("frags"): w["frags"].erase(nd)
-	if s != null: BEATS.note(s, "crumble")
-	nd.queue_free()
 
 
 # where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a

@@ -1,7 +1,7 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 1395 (Neon F9): where a capital kill spends main-thread time. One big kill of A16 (C19_51, the fixture when the
-# installed glb is missing), its cut ready as in a battle, quality high, anchored to a wide hex so every piece's reach is read.
+# installed glb is missing), its cut ready as in a battle, quality high, anchored to its hex so the wreck draws together.
 # Prints, in milliseconds of this machine's CPU:
 #   DEATH_COST precompute: the cut's start to ready (wall clock), the cut itself and its hull-and-reach step (worker)
 #   DEATH_COST frames: the kill frame and the worst frames after it (fx.step plus the engine frame), with the effect time
@@ -101,9 +101,7 @@ func _run() -> void:
 		if (pc as Dictionary).has("reach_usec"): reach_usec = maxi(reach_usec, 0) + int(pc["reach_usec"])
 	print("DEATH_COST precompute ready_ms=%.1f frames=%d cut_ms=%.1f hulls_and_reach_ms=%.2f reach_only_ms=%.2f (old code: -1, it has neither timer)" % [
 		_ms(c0), ready_frames, float(job.get("cut_usec", -1000)) / 1000.0, float(job.get("hulls_usec", -1000)) / 1000.0, float(reach_usec) / 1000.0])
-	# a rest radius the whole broken wreck fits in, so every piece is measured for the leash and none crumbles (Ryan,
-	# Nov 22: pieces that cannot rest in a real hex crumble; this check counts the reach reads, not the crumble)
-	fx.anchor_wreck("a16", ship.global_position, 40.0)
+	fx.anchor_wreck("a16", ship.global_position, 14.0)
 	var warm := OS.get_cmdline_user_args().has("--warm")
 	if warm:
 		var w0 := Time.get_ticks_usec()

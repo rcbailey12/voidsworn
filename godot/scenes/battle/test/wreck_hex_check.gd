@@ -6,14 +6,12 @@ extends SceneTree
 #   every rules "wreck" event gets a board wreck: board.wrecks names the hex, the board's own terrain has a hulk there,
 #     the edge mesh (the hex marker the grid shows, Z) was rebuilt with it, and the death is anchored in the effects;
 #   something of the wreck is on the board: its own pieces, or the burnt hulk the board lays when a death left none;
-#   no death piece leaves its hex: no main piece, fragment or thrown plate is farther out than the hex's rest radius
-#     (radius times WRECK_LEASH_K) or where it was born; the main pieces rest inside the rest radius. Nothing shrinks
-#     (Ryan, Nov 22, "ends crumble away"): pieces that cannot rest in the hex crumble, and the biggest piece is kept at
-#     real size, centred on the hex.
+#   no fragment or thrown plate leaves its hex: none is farther out than the hex's rest radius (radius times
+#     WRECK_LEASH_K) or where it was born;
 #   (Artoo) a piece's limit is read where it was made, before its first move: a hand-made piece born inside and thrown
 #     out stays inside, one born past the radius on purpose is drawn back;
-#   every kept piece but the biggest sits inside its hex's six edges (at most PAST_MAX past one); the biggest, wider
-#     than a hex on a cruiser or dreadnought, rests centred;
+#   the hull's main pieces (Ryan, Nov 22: no shrinking, no folding one half into the other, nothing vanishing) are never
+#     scaled or removed, have come to rest, and rest close to their hex (middles within MAIN_FAR_MAX hex radii);
 #   a death that left no pieces gets the burnt hulk the map's own wrecks use, in its hex.
 # Prints each wreck's farthest piece in hex radii. With "-- shot <png>" on a windowed run (the PC), also saves the
 # top-down c170 picture at +8 s, 720 px tall, with its code name on it.
@@ -24,7 +22,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const STEP := 1.0 / 60.0
 const SETTLE := 8.0
 const SEED := 1236
-const PAST_MAX := 0.1     # world units: the settled wreck's real hull may sit at most this far past any of its hex's six edges
+const MAIN_FAR_MAX := 1.5  # hex radii: the farthest a main piece's middle may rest from its hex centre
 
 class Playback extends "res://scenes/battle/battle.gd":
 	pass
@@ -85,8 +83,10 @@ func _play(quality: String) -> void:
 	_check(want.size() == 2, "%s: the rules lay two wrecks (got %d)" % [quality, want.size()])
 	await battle._play_batch({"events": events, "view": api.view()})
 	battle.gfx.manual = true
+	var born_pieces := {}   # the most main pieces each wreck had: none may be removed later
 	for i in roundi(SETTLE / STEP):
 		battle.gfx.step(STEP)
+		for id in want: born_pieces[id] = maxi(int(born_pieces.get(id, 0)), int(battle.gfx.wreck_pieces(id)))
 		# the physics pieces (max) move on the physics clock; the kinematic ones (low) only on the effects clock
 		if quality == "low": await process_frame
 		else: await physics_frame
@@ -112,56 +112,38 @@ func _play(quality: String) -> void:
 		var apothem: float = board.HS * cos(PI / 6.0)   # centre to the middle of an edge (the board's hexes have corners at 30 + 60 n degrees)
 		var worst := 0.0
 		var over := 0
+		var mains: Array = DEATH.leashed_nodes(battle.gfx, id, true)
 		for nd in nodes:
+			if mains.has(nd): continue   # the hull's main pieces are braked where they parted, never pulled (below)
 			var off: Vector3 = DEATH.leash_centre(nd) - c
 			off.y = 0.0
 			worst = maxf(worst, off.length() / board.HS)
 			# a physics plate can sit a frame's push past its limit (the leash runs before the physics step)
 			if off.length() > float(nd.get_meta("leash_born", radius)) + radius * 0.1:
 				over += 1
-		_check(over == 0, "%s %s: no death piece is farther out than it was born or the hex (%d of %d)" % [quality, id, over, nodes.size()])
-		# the main pieces: centres at rest inside the hex, and the whole settled wreck about the hex across (option 1)
-		var main_far := 0.0
-		var reach := 0.0
-		var past := -INF   # the farthest any hull point sits past one of the hex's six edges (negative: inside)
-		# Ryan, Nov 22 ("ends crumble away"): nothing shrinks; the biggest piece is kept at real size and centred, so it
-		# alone may reach past the edges; every other kept piece rests inside them
-		var mains: Array = DEATH.leashed_nodes(battle.gfx, id, true)
-		var big_nd: Node3D = null
-		for nd in mains:
-			if big_nd == null or DEATH.leash_half(nd) > DEATH.leash_half(big_nd): big_nd = nd
+		_check(over == 0, "%s %s: no fragment or plate is farther out than it was born or the hex (%d of %d)" % [quality, id, over, nodes.size() - mains.size()])
+		# Ryan, Nov 22 (third look): the hull's main pieces are never shrunk, pulled or removed; they come to rest close
+		# together where they parted (MAIN_BRAKE)
 		var shrunk := 0
+		var main_far := 0.0
+		var moving := 0.0
 		for nd in mains:
 			for mi in (nd as Node).find_children("*", "MeshInstance3D", true, false):
 				if absf((mi as MeshInstance3D).transform.basis.get_scale().x - 1.0) > 0.01: shrunk += 1
-		_check(shrunk == 0, "%s %s: no wreck piece is shrunk (%d meshes scaled)" % [quality, id, shrunk])
-		if big_nd != null:
-			var boff: Vector3 = DEATH.leash_centre(big_nd) - c
-			boff.y = 0.0
-			_check(boff.length() <= radius * 0.15, "%s %s: the biggest piece rests centred on its hex (%.2f off)" % [quality, id, boff.length()])
-		for nd in mains:
 			var off: Vector3 = DEATH.leash_centre(nd) - c
 			off.y = 0.0
 			main_far = maxf(main_far, off.length())
-			if nd == big_nd: continue
-			for mi in (nd as Node).find_children("*", "MeshInstance3D", true, false):
-				if (mi as MeshInstance3D).mesh == null: continue
-				# the real geometry, not its box: a tumbled long piece's box runs well past its corners
-				var xf: Transform3D = (mi as MeshInstance3D).global_transform
-				for v in (mi as MeshInstance3D).mesh.get_faces():
-					var q: Vector3 = xf * v - c
-					reach = maxf(reach, Vector2(q.x, q.z).length())
-					for e in 6:
-						var a := deg_to_rad(60.0 * e)
-						past = maxf(past, q.x * cos(a) + q.z * sin(a) - apothem)
-		_check(main_far <= radius * 1.05, "%s %s: main pieces rest within the hex (%.2f, rest radius %.2f)" % [quality, id, main_far, radius])
-		_check(past <= PAST_MAX, "%s %s: every kept piece but the biggest stays inside its hex's six edges (%.2f units past one)" % [quality, id, past])
-		var crumbled := 0
+			if nd is RigidBody3D and not (nd as RigidBody3D).freeze: moving = maxf(moving, (nd as RigidBody3D).linear_velocity.length())
 		for w in battle.gfx.dstate["wrecks"]:
-			if w["id"] == id: crumbled = int(w.get("crumbled", 0))
-		var big_reach: float = DEATH.leash_half(big_nd) / board.HS if big_nd != null else 0.0
-		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii (biggest piece %.2f) past_edge=%.2f units crumbled=%d hull_laid=%s" % [
-			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, big_reach, past, crumbled, str(hull_laid)])
+			if w["id"] != id: continue
+			for f in w["fires"]:
+				if mains.has(f.get("node")) and f.has("vel"): moving = maxf(moving, (f["vel"] as Vector3).length())
+		_check(shrunk == 0, "%s %s: no wreck piece is shrunk (%d meshes scaled)" % [quality, id, shrunk])
+		_check(mains.size() == int(born_pieces.get(id, mains.size())), "%s %s: no main piece is removed (%d of %d)" % [quality, id, mains.size(), int(born_pieces.get(id, -1))])
+		_check(moving < 0.5, "%s %s: the main pieces have come to rest (fastest %.2f units a second)" % [quality, id, moving])
+		_check(main_far <= board.HS * MAIN_FAR_MAX, "%s %s: the main pieces rest close to their hex (%.2f hex radii, at most %.1f)" % [quality, id, main_far / board.HS, MAIN_FAR_MAX])
+		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d small_farthest=%.2f main_farthest=%.2f hex radii fastest=%.2f hull_laid=%s" % [
+			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, moving, str(hull_laid)])
 	if quality == "low" and not want.is_empty():
 		# a death that left no pieces (the cold-kill fallback PR 1231 found): the board lays the burnt hulk in the hex
 		var id: String = want.keys()[0]
@@ -236,7 +218,8 @@ func _first_step() -> void:
 	DEATH.anchor_wreck(fx, "t1", c, r)
 	var cases := {"inside_thrown_out": [Vector3(r - 0.2, 0, 0), Vector3(400, 0, 0)], "born_past_on_purpose": [Vector3(r * 1.5, 0, 0), Vector3.ZERO]}
 	var nodes := {}
-	var wreck := {"id": "t1", "t0": fx.now, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0}
+	# fragments: the hull's main pieces are braked, never leashed (Ryan, Nov 22); the leash keeps the small pieces
+	var wreck := {"id": "t1", "t0": fx.now, "nodes": [], "frags": [], "mats": [], "lights": [], "fires": [], "speed": 1.0}
 	for name in cases:
 		var nd := Node3D.new()
 		var mi := MeshInstance3D.new()
@@ -246,7 +229,7 @@ func _first_step() -> void:
 		nd.add_child(mi)
 		fx.phys_root.add_child(nd)
 		nd.global_position = c + cases[name][0]
-		wreck["nodes"].append(nd)
+		wreck["frags"].append(nd)
 		wreck["fires"].append({"node": nd, "vel": cases[name][1], "ang": Vector3.ZERO})
 		nodes[name] = nd
 	fx.dstate["wrecks"].append(wreck)

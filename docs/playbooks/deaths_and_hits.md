@@ -155,16 +155,18 @@ A single-frame spark and a puff, under 40 px, no wreck. Twenty of them dying mus
 
 ### A wreck that blocks its hex (issue 1236; Ryan, Nov 22)
 
-A dead cruiser or capital leaves a rules wreck that blocks its hex, and its pieces settle in that hex. Nothing ever
-shrinks: Ryan saw the old fit (the whole wreck scaled down 1.5 s after the break) and called it bad. Since Nov 22:
+A dead cruiser or capital leaves a rules wreck that blocks its hex. Nothing ever shrinks and nothing vanishes: Ryan saw
+the old fit (the whole wreck scaled down 1.5 s after the break) and called it bad, then saw the next try (the biggest
+piece drawn to the centre over the other half, which then crumbled away) and called it "cheesy and broken". Since Nov 22
+evening:
 
-- The biggest piece stays at its real size, centred on its hex. On a cruiser or dreadnought it is wider than a hex and
-  pokes into the neighbours (about a quarter hex on a cruiser, half on a dreadnought); the wreck still blocks only its
-  own hex (Ryan's pick, "keep it, let it poke out").
-- Every other piece stays only if it can rest inside the hex at its real size without lying over a kept piece. The rest
-  crumble one after another from 1.5 s after the break: they break into embers and the faction's own shards (glass,
-  bile flecks, cold Eclipse shards, hot metal; never brass sparks on the Chorus, Glasswrights or Eclipse) and are gone
-  (Ryan's pick, "ends crumble away"). Code: fx_death.gd `_plan_crumble` and `_crumble`.
+- Both big halves stay where they broke, at real size. They part a little, as in the approved one-crack death, and a
+  steady brake brings them to rest close together. Nothing pulls them toward the hex centre and nothing removes them.
+- A cruiser or dreadnought wreck is wider than a hex, so it overlaps the neighbouring hexes; the rules wreck still blocks
+  only its own hex.
+- Small fragments and loose plates still settle inside the hex or where they were born, whichever is farther out.
+- Code: fx_death.gd `_leash` (MAIN_BRAKE for the halves, the leash only for fragments and plates). Checks:
+  wreck_hex_check.gd and wreck_contact_check.gd ("brake").
 
 ## How each faction dies
 
