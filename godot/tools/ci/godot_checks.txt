@@ -21,6 +21,7 @@ headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cach
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/capstone_mastery_iii_test.gd|-|-|issue 1650: every capstone has one Mastery III row and rules handler, every admiral a Mastery I row, and only the chosen capstone reaches a run
 headless|campaign/test/truth_pass_test.gd|-|-|issues 1144 and 1147: starters, capstones, Nemesis, selection, repair prices, join messages and battle tooltips
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
@@ -76,6 +77,7 @@ headless|rules/test/map_trial_test.gd|-|-|issues 1050 and 1160: compare every ma
 headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.json|R246 shield pool (issue 371): replay saved results for every shielded hull and for scripted hits and turns
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
+headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)

@@ -1,184 +1,102 @@
-Saved manifest before: 19b5b624266a63f7c1c747f7861440f9ff3df05083032ff9c0c24844a969cff3
-Saved manifest after: f7cac068d3e97b593594fb9e0949be3b5cf236c74218001b8bf3e3e84bba7f6d
+Saved manifest before: f7cac068d3e97b593594fb9e0949be3b5cf236c74218001b8bf3e3e84bba7f6d
+Saved manifest after: e4e6e329bf9964af4e4f0039baa01acc5425301236cbb9c4f04a2ad6e41bad08
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s9
-  turn 15, round 1, after ability x017; unit x017 (enemy d_jackal)
-  state.units[12].abCd: 0 -> 4
-  later changed records: 486; total records: 470 -> 502
-FAIL battle s13
-  saved archive hash/size differs
-FAIL battle s15
-  saved archive hash/size differs
-FAIL battle s19
-  saved archive hash/size differs
-FAIL battle s27
-  saved archive hash/size differs
-FAIL battle s28
-  saved archive hash/size differs
-FAIL battle s30
-  saved archive hash/size differs
-FAIL battle s39
-  saved archive hash/size differs
-FAIL battle s40
-  saved archive hash/size differs
-FAIL battle s44
-  saved archive hash/size differs
-FAIL battle s45
-  saved archive hash/size differs
-FAIL battle s48
-  saved archive hash/size differs
-FAIL battle t_longfocus
-  saved archive hash/size differs
-FAIL battle t_recordedangle
-  saved archive hash/size differs
-FAIL battle t_flawforever
-  saved archive hash/size differs
-FAIL battle t_refraction
-  saved archive hash/size differs
-FAIL battle t_mirrorturns
-  saved archive hash/size differs
-FAIL battle t_rechargelit
-  saved archive hash/size differs
-FAIL battle t_deployread
-  saved archive hash/size differs
-FAIL battle t_castcorrected
-  saved archive hash/size differs
-FAIL battle t_ecl_restoreninth
-  saved archive hash/size differs
-FAIL battle t_ecl_restoredbeyond
-  saved archive hash/size differs
-FAIL battle t_ecl_copiescontribute
-  saved archive hash/size differs
-FAIL battle t_ecl_tenthframe
-  saved archive hash/size differs
-FAIL battle t_ecl_earliercopy
-  saved archive hash/size differs
-FAIL battle t_ecl_arcswarm
-  saved archive hash/size differs
-FAIL battle t_ecl_noonchoice
-  saved archive hash/size differs
-FAIL battle t_ecl_copyfires
-  saved archive hash/size differs
-FAIL battle t_ecl_coronashadow
-  saved archive hash/size differs
-FAIL battle t_ecl_everyframe
-  saved archive hash/size differs
-FAIL battle t_ecl_noonrepeat
-  saved archive hash/size differs
-FAIL battle t_ecl_onesuncopy
-  saved archive hash/size differs
-FAIL battle t_ecl_copiedbehind
-  saved archive hash/size differs
-FAIL battle t_ecl_unseenarchive
-  saved archive hash/size differs
-FAIL battle t_ecl_uncopiedtarget
-  saved archive hash/size differs
-FAIL battle t_ecl_iterationkill
-  saved archive hash/size differs
-FAIL battle t_ecl_silentarchive
-  saved archive hash/size differs
-FAIL battle t_ecl_outshadow
-  saved archive hash/size differs
-FAIL battle t_ecl_longcopy
-  saved archive hash/size differs
-FAIL battle t_ecl_platesshadow
-  saved archive hash/size differs
-FAIL battle t_ecl_twicerestored
-  saved archive hash/size differs
-FAIL battle t_ecl_layersshift
-  saved archive hash/size differs
-FAIL battle t_ecl_nolayer
-  saved archive hash/size differs
-FAIL battle t_ecl_stillness
-  saved archive hash/size differs
-FAIL battle t_ecl_tenthousand
-  saved archive hash/size differs
-FAIL battle t_ecl_restoredfleet
-  saved archive hash/size differs
-FAIL battle t_ecl_iterationswap
-  saved archive hash/size differs
-FAIL battle t_ecl_flagshipindex
-  saved archive hash/size differs
-FAIL battle t_ecl_framezero
-  saved archive hash/size differs
-FAIL battle t_rundown
-  saved archive hash/size differs
-FAIL battle t_razorprey
-  saved archive hash/size differs
-FAIL battle t_frenzyfeeds
-  saved archive hash/size differs
-FAIL battle t_breathbite
-  saved archive hash/size differs
-FAIL battle t_throatred
-  saved archive hash/size differs
-FAIL battle t_preyeverymouth
-  saved archive hash/size differs
-FAIL battle t_growhurts
-  saved archive hash/size differs
-FAIL battle t_skinthick
-  saved archive hash/size differs
-FAIL battle t_fleshknit
-  saved archive hash/size differs
-FAIL battle t_tideend
-  saved archive hash/size differs
-FAIL battle t_acidseams
-  saved archive hash/size differs
-FAIL battle t_firstthroat
-  saved archive hash/size differs
-FAIL battle t_throatdeep
-  saved archive hash/size differs
-FAIL battle t7a_onelens
-  saved archive hash/size differs
-FAIL battle t7a_sunlens
-  saved archive hash/size differs
-FAIL battle t7a_weakside
-  saved archive hash/size differs
-FAIL battle t7a_prismsface
-  saved archive hash/size differs
-FAIL battle t7a_lensrotates
-  saved archive hash/size differs
-FAIL battle t7a_facetlit
-  saved archive hash/size differs
-FAIL battle t7b_ecl_formation_a
-  saved archive hash/size differs
-FAIL battle t7b_ecl_formation_b
-  saved archive hash/size differs
-FAIL battle t7b_ecl_formation_c
-  saved archive hash/size differs
-FAIL battle t7b_ecl_formation_d
-  saved archive hash/size differs
-FAIL battle t7b_ecl_shadow
-  saved archive hash/size differs
-FAIL battle t7b_ecl_wall
-  saved archive hash/size differs
-FAIL battle t7b_ecl_archive
-  saved archive hash/size differs
-FAIL battle t7b_ecl_iterfire
-  saved archive hash/size differs
-FAIL battle t7b_ecl_triage
-  saved archive hash/size differs
-FAIL battle t7b_ch_teeth
-  saved archive hash/size differs
-FAIL battle t7b_ch_growth
-  saved archive hash/size differs
-FAIL battle t7b_ecl_targetarchived
-  saved archive hash/size differs
-FAIL battle t529_roles_screen
-  saved archive hash/size differs
-FAIL battle t529_roles_mend
-  saved archive hash/size differs
-FAIL battle t529_roles_change
-  saved archive hash/size differs
-FAIL battle t529_scent
-  saved archive hash/size differs
-FAIL battle t529_may_grow_no
-  saved archive hash/size differs
-FAIL battle s1649_fold
+FAIL battle t7a_flightcast_m3
   new battle; no saved result
-FAIL battle s1649_frenzy
+FAIL battle t7a_forgeahead_m3
   new battle; no saved result
-FAIL file threat_s19.json
-  saved archive hash/size differs
-FAIL: saved Godot results; 291 battles checked, 3 changed, 0 other files changed, 88 failures; 11.187 s
+FAIL battle t_ecl_outshadow_m3
+  new battle; no saved result
+FAIL battle t_ecl_longcopy_m3
+  new battle; no saved result
+FAIL battle t_rollwings_m3
+  new battle; no saved result
+FAIL battle t_oathwings_m3
+  new battle; no saved result
+FAIL battle t_hb_burncarry_m3
+  new battle; no saved result
+FAIL battle t_hb_warlordrun_m3
+  new battle; no saved result
+FAIL battle t_heg_livingrelay_m3
+  new battle; no saved result
+FAIL battle t_heg_onevoice_m3
+  new battle; no saved result
+FAIL battle t_ecl_tenthousand_m3
+  new battle; no saved result
+FAIL battle t_ecl_restoredfleet_m3
+  new battle; no saved result
+FAIL battle t7a_salvoend_m3
+  new battle; no saved result
+FAIL battle t_namedprey_m3
+  new battle; no saved result
+FAIL battle t_heg_standardcovers_m3
+  new battle; no saved result
+FAIL battle t_heg_flagshipstandard_m3
+  new battle; no saved result
+FAIL battle t7b_ch_nine_m3
+  new battle; no saved result
+FAIL battle t529_nostop_m3
+  new battle; no saved result
+FAIL battle t_tideend_m3
+  new battle; no saved result
+FAIL battle t_tornback_m3
+  new battle; no saved result
+FAIL battle t_wardglass_m3
+  new battle; no saved result
+FAIL battle t7a_facetlit_m3
+  new battle; no saved result
+FAIL battle t_hb_swarmscrap_m3
+  new battle; no saved result
+FAIL battle t_hb_privatewing_m3
+  new battle; no saved result
+FAIL battle t_ecl_tenthframe_m3
+  new battle; no saved result
+FAIL battle t_ecl_earliercopy_m3
+  new battle; no saved result
+FAIL battle t_throatred_m3
+  new battle; no saved result
+FAIL battle t_preyeverymouth_m3
+  new battle; no saved result
+FAIL battle t_heg_onetarget_m3
+  new battle; no saved result
+FAIL battle t_heg_standinggroup_m3
+  new battle; no saved result
+FAIL battle t_hb_darkknives_m3
+  new battle; no saved result
+FAIL battle t_hb_cutfeeds_m3
+  new battle; no saved result
+FAIL battle t_ecl_noonrepeat_m3
+  new battle; no saved result
+FAIL battle t_ecl_onesuncopy_m3
+  new battle; no saved result
+FAIL battle t_irontestament_m3
+  new battle; no saved result
+FAIL battle t7a_wallmoves_m3
+  new battle; no saved result
+FAIL battle t7a_fleetelsewhere_m3
+  new battle; no saved result
+FAIL battle t_falsehulls_m3
+  new battle; no saved result
+FAIL battle t7a_sunlens_m3
+  new battle; no saved result
+FAIL battle t_flawforever_m3
+  new battle; no saved result
+FAIL battle t_hb_weldedwhole_m3
+  new battle; no saved result
+FAIL battle t_hb_nothingbroken_m3
+  new battle; no saved result
+FAIL battle t7a_grandledger_m3
+  new battle; no saved result
+FAIL battle t7a_lastaccount_m3
+  new battle; no saved result
+FAIL battle t_volleygrows_m3
+  new battle; no saved result
+FAIL battle t_mouthdeep_m3
+  new battle; no saved result
+FAIL battle t_heg_permanentfile_m3
+  new battle; no saved result
+FAIL battle t_heg_oneorder_m3
+  new battle; no saved result
+FAIL: saved Godot results; 339 battles checked, 48 changed, 0 other files changed, 48 failures; 11.120 s
