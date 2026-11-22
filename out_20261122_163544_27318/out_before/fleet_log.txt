@@ -1,0 +1,86 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d61d1c1c4263\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1741)
+GPU: acquired solo claim 09a2c6c7-7fef-4e52-9d09-f1e1932cb3cc
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-df4b95e37b1a45b6b9e13ccb7dc01298\godot-profile-7cb240d08c0a477f8f351556d602c4cc
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_1 (T1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D21_23: arc -180 to 180, trains all round
+[turret] turret_0 (O1) on I15_11: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on D22_23: arc -180 to 180, trains all round
+[turret] turret_1 (T1) on D22_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D22_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on B22_11: arc -180 to 180, trains -123.6 to 123.0 from rest; 116 degrees of its arc are kept clear of the ship
+[turret] turret_0 (O1) on I16_11: arc -180 to 180, trains all round
+DAMAGE_FLEET stage=0 {"avg_ms":1.799275,"build_ms":0.191,"emitters":{"fire":0,"particles":0,"smoke":0,"vent":0},"fx_cpu_p99_ms":1.332,"p99_ms":2.928,"prof":{"later":600,"lights_pools":5128,"ships":156826,"weap_death":7892}}
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on D9_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on B19_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on I14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on D9_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on B19_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on I14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H9_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on D21_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on B21_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on I15_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H9_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on D22_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on B22_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on I16_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V18_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs on I16_11: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+DAMAGE_FLEET stage=3 {"avg_ms":3.97527083333333,"build_ms":78437.279,"emitters":{"fire":60,"particles":852,"smoke":68,"vent":12},"fx_cpu_p99_ms":1.745,"p99_ms":6.465,"prof":{"later":982,"lights_pools":9288,"ships":224562,"weap_death":10383}}
+[attach] hp_breach on H9_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on D21_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on B21_11: no authored point fits this request; using the surface ray
+[attach] hp_breach on I15_11: no authored point fits this request; using the surface ray
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_breach on H9_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on D22_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on B22_11: no authored point fits this request; using the surface ray
+[attach] hp_breach on I16_11: no authored point fits this request; using the surface ray
+[attach] hp_breach on V18_51: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[attach] hp_rcs on I14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D21_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on I15_11: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] hp_rcs on I14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs on D9_23: no authored point fits this request; using the surface ray
+DAMAGE_FLEET stage=4 {"avg_ms":3.660875,"build_ms":129619.252,"emitters":{"fire":60,"particles":852,"smoke":68,"vent":12},"fx_cpu_p99_ms":1.468,"p99_ms":5.7,"prof":{"later":824,"lights_pools":7902,"ships":207135,"weap_death":9153}}
+[attach] battle 0 H7_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle 1 D9_23: skipped 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 2 B19_11: skipped 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle 3 I14_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 4 V14_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle 5 H7_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle 6 D9_23: skipped 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 7 B19_11: skipped 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle 8 I14_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 9 V14_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle 10 H9_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 0 ray 3 centre 0 skip 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle 11 D21_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 12 B21_11: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 0 ray 3 centre 0 skip 0
+[attach] battle 13 I15_11: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle 14 V16_37: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 0 ray 3 centre 0 skip 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle 15 H9_23: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 0 ray 3 centre 0 skip 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle 16 D22_23: skipped 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle 17 B22_11: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 1 ray 2 centre 0 skip 0
+[attach] battle 18 I16_11: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0; breach hp 1 ray 2 centre 0 skip 0
+[attach] battle 19 V18_51: skipped 0; scorch hp 0 ray 9 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; rcs hp 0 ray 2 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-df4b95e37b1a45b6b9e13ccb7dc01298\godot-profile-7cb240d08c0a477f8f351556d602c4cc
+GPU: released solo claim 09a2c6c7-7fef-4e52-9d09-f1e1932cb3cc

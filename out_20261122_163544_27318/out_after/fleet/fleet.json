@@ -1,0 +1,58 @@
+{
+	"0": {
+		"avg_ms": 1.5691625,
+		"build_ms": 0.215,
+		"emitters": {
+			"fire": 0,
+			"particles": 0,
+			"smoke": 0,
+			"vent": 0
+		},
+		"fx_cpu_p99_ms": 1.137,
+		"p99_ms": 2.378,
+		"prof": {
+			"later": 495,
+			"lights_pools": 4239,
+			"ships": 137538,
+			"weap_death": 7003
+		}
+	},
+	"3": {
+		"avg_ms": 3.42169583333333,
+		"build_ms": 61369.335,
+		"emitters": {
+			"fire": 60,
+			"particles": 897,
+			"smoke": 83,
+			"vent": 12
+		},
+		"fx_cpu_p99_ms": 1.532,
+		"p99_ms": 5.064,
+		"prof": {
+			"later": 683,
+			"lights_pools": 13515,
+			"ships": 185429,
+			"weap_death": 7719
+		}
+	},
+	"4": {
+		"avg_ms": 3.35251666666667,
+		"build_ms": 103840.325,
+		"emitters": {
+			"fire": 60,
+			"particles": 939,
+			"smoke": 97,
+			"vent": 12
+		},
+		"fx_cpu_p99_ms": 1.59,
+		"p99_ms": 5.278,
+		"prof": {
+			"later": 638,
+			"lights_pools": 16414,
+			"ships": 188845,
+			"weap_death": 7929
+		}
+	},
+	"adapter": "NVIDIA GeForce RTX 5080",
+	"renderer": "forward_plus"
+}

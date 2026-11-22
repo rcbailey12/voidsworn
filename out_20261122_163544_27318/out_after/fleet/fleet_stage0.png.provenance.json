@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJwCAAwMCquP/IdglBCHcT5Jcx1z4fAJAyXwcAAPcZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAQZPAAEGTwABBk8AAT9HJsBzXkQVqYAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T23:38:10Z",
+	"image_sha256": "eb31348de84d0f720f15f576bfe5432c598559b704ca4f46594161104f3bcef2",
+	"inputs": [],
+	"picture_name": "fleet_stage0.png",
+	"schema": 1,
+	"source_commit": "5db436b13174ff4f992c9400161175a906585430",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "5db436b13174ff4f992c9400161175a906585430",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		2062,
+		504,
+		2160
+	],
+	"stamp_template_sha256": "8e41b61c41d848eacd4d0013e1b6ad93d5af539d2401e8dec9e16d6bf9b8edf6",
+	"strip_sha256": [
+		"8e41b61c41d848eacd4d0013e1b6ad93d5af539d2401e8dec9e16d6bf9b8edf6"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}
