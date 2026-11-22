@@ -289,10 +289,11 @@ review sheets in the job's shots folder. No test export is installed into the li
 
 ## 2. Inputs (what must exist before a hull is started)
 
-The fleet list (docs/ship_pipeline/FLEET.md, made from docs/ship_pipeline/fleet.json; issue 1421) names, for every ship the
-game draws, the concept Ryan approved, its ruling, its job and whether the new build is installed. Read its row before
-writing a concept or build brief, and copy its "Approved pick" line into the brief. A new pick is added to fleet.json in
-the same pull request that records it.
+The [fleet list](../ship_pipeline/FLEET.md) names the concept Ryan approved for each ship, its ruling, its job and whether the
+new build is installed. Run `node contrib/opus/tools/fleet_list.js --write` to read the current table locally. Use the
+generator's `--pick "faction|Class"` option for the "Approved pick" line in a concept or build brief. Add a new pick to
+`fleet.json` in the same pull request that records it. The generated table stays out of ship pull requests so overlapping
+ship updates can merge without resolving a second copy of the fleet data (issue 1488).
 
 1. Ryan's picked direction for the faction (docs/playbooks/factions.md, "The concept redo"; FINDINGS has each pick).
    Every concept or build brief names the folder of that faction's earlier accepted picks (for the Glasswrights,

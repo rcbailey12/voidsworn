@@ -1,9 +1,10 @@
 'use strict';
 // Standing check for the fleet list (issue 1421): every ship the game draws has a row, every approved concept file
-// exists, no old hull sits without a job, and docs/ship_pipeline/FLEET.md matches what the repo says today.
+// exists, no old hull sits without a job, and the generated table stays out of ship PRs.
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const fleet = require('./fleet_list.js');
 const ROOT = path.resolve(__dirname, '../../..');
 
@@ -80,10 +81,10 @@ t('Bladeback reads as accepted after run D', () => {
   const look = fleet.lookOf(row);
   assert.ok(look.startsWith('Accepted:') && look.includes('R374'), look);
 });
-t('FLEET.md is current', () => {
-  const page = path.join(ROOT, fleet.PAGE);
-  const have = fs.existsSync(page) ? fs.readFileSync(page, 'utf8').replace(/\r\n/g, '\n') : '';
-  assert.ok(have === fleet.render(data), fleet.PAGE + ' is stale: run node contrib/opus/tools/fleet_list.js --write and commit it');
+t('the generated table stays out of Git', () => {
+  const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+  assert.strictEqual(git('ls-files', '--', fleet.PAGE), '', fleet.PAGE + ' must stay out of Git');
+  git('check-ignore', '--quiet', '--', fleet.PAGE);
 });
 
 if (bad) {

@@ -30,7 +30,7 @@ and their reasons live in `docs/RULEBOOK.md`, decisions in `contrib/opus/FINDING
 
 ## Ships
 
-- **Concept**: the approved picture of a ship design (Ryan's pick, listed in docs/ship_pipeline/FLEET.md).
+- **Concept**: the approved picture of a ship design (Ryan's pick, recorded in [the fleet records](docs/ship_pipeline/fleet.json)).
 - **Build sheet**: the written and drawn plan a ship is built from in Blender: parts, routes, paint stack, budget.
 - **Part kit**: the shared Blender parts a faction's ships are built from, so one fix reaches every ship.
 - **Stages**: sheet built, paint proof, installed in game, Ryan accepted. Each picture says which stage it shows.
