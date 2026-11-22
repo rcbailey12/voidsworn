@@ -1,0 +1,96 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1528)
+GPU: acquired solo claim 78f1070d-45d1-4e7e-883b-ef697542c7f8
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ec591a5f8afd4446937b27a2a22708ed\godot-profile-aba1bad10b0e48fca04831d4bf5cf1b1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 319 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.186, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[world] baked f015c3ceae4e862e0f1074749a20ebda446d5cc8b71648cc1602604374ae8a46 4096x2048 in 10303 ms (worker)
+[world] baked 85c2a04f012e8647d59e1fc9433a88011f202d6757f9dd58f496c237f87a6a0e 4096x2048 in 12637 ms (worker)
+[world] baked 3ee8af4138acf1b93fef078472f35b09f4db9c4cb3d37848526d8d536631d6d3 1024x512 in 13074 ms (worker)
+[world] baked 04a596a828fed691583b58022709b95f3d020e6d603ddcf6fedc3df1c6c4a941 1024x512 in 13501 ms (worker)
+[world] baked f7cf1c0316606dc7f4e4e8eaef4f5aefeebcacf5ab47559cf355768f76426d95 4096x2048 in 2108 ms (worker)
+[world] baked 2670b3d074aa7c224ee024986eee8ac65f6da67144ef732d7602003e9df512c3 1024x512 in 1814 ms (worker)
+[world] baked 5216a2b099522b47e00358f3fbfd1bdf4dbd70ae7f38841c71baff49e061ff35 1024x512 in 1825 ms (worker)
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/01_start.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/03_attack_tip.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/05_fire_1.png
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/06_fire_2.png
+TORP_FIRE r1_x07 weapon=torp shots=3 pd=0
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/07_fire_3.png
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=0
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/08_fire_4.png
+TORP_FT {"fps_cap":0,"frames":486,"max_ms":142.241333333334,"mean_ms":7.21548445358933,"over_16_7":2,"p95_ms":6.94444444444444,"tag":"r1_x05","vsync":1}
+TORP_FIRE r1_x09 weapon=torp shots=3 pd=0
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.94444444444444,"mean_ms":6.94444444444438,"over_16_7":0,"p95_ms":6.94444444444444,"tag":"r1_x05","vsync":1}
+TORP_FIRE r1_x08 weapon=torp shots=3 pd=0
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.94444444444444,"mean_ms":6.94444444444438,"over_16_7":0,"p95_ms":6.94444444444444,"tag":"r1_x08","vsync":1}
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+TORP_FIRE r2_x09 weapon=torp shots=3 pd=0
+TORP_FT {"fps_cap":0,"frames":498,"max_ms":33.3306666666667,"mean_ms":7.03048014279333,"over_16_7":1,"p95_ms":6.94444444444444,"tag":"r2_x09","vsync":1}
+TORP_FIRE r2_x05 weapon=torp shots=1 pd=0
+[attach] scorch on C15s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C15s_23: no authored point fits this request; using the surface ray
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.944,"mean_ms":6.94399999999997,"over_16_7":0,"p95_ms":6.944,"tag":"r2_x05","vsync":1}
+[attach] hp_w on C13s_23: no authored point fits this request; using the surface ray
+[attach] flare on C15s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+TORP_FIRE r3_x08 weapon=torp shots=3 pd=0
+[attach] hp_w on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+TORP_FT {"fps_cap":0,"frames":501,"max_ms":17.8151111111107,"mean_ms":6.99919006431575,"over_16_7":1,"p95_ms":6.94444444444444,"tag":"r3_x08","vsync":1}
+[attach] flare on V14_23: placed on the plating (a surface sample; not a hard point type)
+TORP_FIRE r4_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":491,"max_ms":84.7173333333333,"mean_ms":7.13061575016968,"over_16_7":1,"p95_ms":6.94444444444444,"tag":"r4_x05","vsync":1}
+TORP_FIRE r4_x09 weapon=torp shots=3 pd=2
+TORP_FT {"fps_cap":0,"frames":498,"max_ms":57.5530000000066,"mean_ms":7.03648036590801,"over_16_7":2,"p95_ms":6.94444444444444,"tag":"r4_x09","vsync":1}
+TORP_FIRE r5_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":500,"max_ms":19.4426666666667,"mean_ms":7.00233066666664,"over_16_7":1,"p95_ms":6.944,"tag":"r5_x05","vsync":1}
+TORP_FIRE r5_x09 weapon=torp shots=3 pd=0
+TORP_FT {"fps_cap":0,"frames":499,"max_ms":15.651696969688,"mean_ms":7.01888131819188,"over_16_7":0,"p95_ms":6.94444444444444,"tag":"r5_x09","vsync":1}
+TORP_FIRE r7_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":506,"max_ms":6.944,"mean_ms":6.9275309617918,"over_16_7":0,"p95_ms":6.944,"tag":"r7_x05","vsync":1}
+TORP_FIRE r7_x09 weapon=torp shots=3 pd=0
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+TORP_FT {"fps_cap":0,"frames":500,"max_ms":19.4355555555555,"mean_ms":7.00233066666664,"over_16_7":1,"p95_ms":6.94444444444444,"tag":"r7_x09","vsync":1}
+TORP_FIRE r8_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.944,"mean_ms":6.94399999999997,"over_16_7":0,"p95_ms":6.944,"tag":"r8_x05","vsync":1}
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_new\ft_corsair_7_1/09_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[22.2,9.0,11.9,8.9,5.7,3.7,4.1],"enemy_s_max":22.19,"enemy_s_mean":9.36,"movement":"brisk","per_round_by_kind":{"ability":0.07,"activation":0.08,"aiEnd":0.11,"death":0.16,"fire":2.04,"hit":0.01,"move":6.51,"ram":0.16,"round":0.2,"tick":0.02},"rounds":7},"pipeline_compiles_in_play":12,"result":"win","round":8,"secs":178.809}
+[attach] battle x04 V16_37: skipped 0; rcs hp 556 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 18 ray 0 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 214 ray 0 centre 0 skip 0; gun hp 25 ray 0 centre 0 skip 0; core hp 3 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 226 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 65 ray 57 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0
+[attach] battle x08 C15s_23: skipped 0; rcs hp 62 ray 114 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 30 ray 6 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; flare hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 49 ray 13 centre 0 skip 0; gun hp 57 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x010 C13s_23: skipped 0; rcs hp 13 ray 41 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 28 ray 1 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[fx] left with 1 jobs still running: retired, not waited for (3.3 ms)
+[fx] drained 1 retired jobs before quit in 538 ms
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ec591a5f8afd4446937b27a2a22708ed\godot-profile-aba1bad10b0e48fca04831d4bf5cf1b1
+GPU: released solo claim 78f1070d-45d1-4e7e-883b-ef697542c7f8

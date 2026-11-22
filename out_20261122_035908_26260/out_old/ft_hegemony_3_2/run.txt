@@ -1,0 +1,53 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1528)
+GPU: acquired solo claim 8b97086a-ae41-43ff-a696-74272e7ac8e2
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8264ac82daa84310bfee884f1c80abf3\godot-profile-1f1787dc89454cefb5a029abd90b6d67
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 331 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.547, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked 2a07824009555bb9987505c8f78c7d93e7be9bb33981be342dbda184ff833212 4096x2048 in 9395 ms (worker)
+[world] baked 6f5d22b0bee77b9e0ad85e5d188e39c92aee751faf95f85899b5ea36a8c1cf88 4096x2048 in 11664 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 12101 ms (worker)
+[world] baked 68914572724dd0d0692b995fb3375c3fc21750d0cee8efc67f80893adee952b4 4096x2048 in 2055 ms (worker)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1932 ms (worker)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/01_start.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/03_attack_tip.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/05_fire_1.png
+[attach] scorch on H10_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/07_fire_3.png
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=1
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/08_fire_4.png
+TORP_FT {"fps_cap":0,"frames":447,"max_ms":140.164,"mean_ms":7.84136142182447,"over_16_7":9,"p95_ms":7.14285714285714,"tag":"r1_x05","vsync":1}
+TORP_FIRE r1_x05 weapon=torp shots=1 pd=0
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.94444444444444,"mean_ms":6.94428844884481,"over_16_7":0,"p95_ms":6.94444444444444,"tag":"r1_x05","vsync":1}
+[attach] flare on H10_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H10_23: no authored point fits this request; using the surface ray
+TORP_FIRE r2_x05 weapon=torp shots=1 pd=0
+TORP_FT {"fps_cap":0,"frames":505,"max_ms":6.944,"mean_ms":6.94399999999997,"over_16_7":0,"p95_ms":6.944,"tag":"r2_x05","vsync":1}
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\out_old\ft_hegemony_3_2/09_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[15.3,3.2],"enemy_s_max":15.35,"enemy_s_mean":9.25,"movement":"brisk","per_round_by_kind":{"ability":0.15,"activation":0.08,"aiEnd":0.11,"command":0.13,"death":0.08,"fire":2.5,"move":6.08,"round":0.1},"rounds":2},"pipeline_compiles_in_play":21,"result":"win","round":2,"secs":80.055}
+[attach] battle x04 V16_37: skipped 0; rcs hp 154 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 11 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0; gun hp 9 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 8 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[attach] battle x07 H10_23: skipped 0; rcs hp 220 ray 0 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x08 H8_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8264ac82daa84310bfee884f1c80abf3\godot-profile-1f1787dc89454cefb5a029abd90b6d67
+GPU: released solo claim 8b97086a-ae41-43ff-a696-74272e7ac8e2

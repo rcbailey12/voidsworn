@@ -1,0 +1,61 @@
+[Sun 11/22/2026  3:59:08.80] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T09:59:09Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026  3:59:09.96] ready: GPU label 1528
+relay to: board/pc-out-opus1558a with this attempt folder at out_20261122_035908_26260/ in its tree, then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+verified 033cfafb60df908ce5b8a75bfe7a6747d97c68486f254a382da30f999c8a6cb9 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 226978f9ab40d06ed0d021cd53ec2df139c6d6fcb807d6db43b9493ceeb73174 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1 (tools_live version 142ea5895b0d)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 3e967d818e1dd3b31029370f85474dff5c7cbec6 C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026  3:59:49.26] step new import start
+[Sun 11/22/2026  4:13:52.31] step new import ok
+[Sun 11/22/2026  4:13:52.32] step new ft hegemony_3 1 start
+[Sun 11/22/2026  4:15:21.33] step new ft hegemony_3 1 ok
+[Sun 11/22/2026  4:15:21.35] step new ft hegemony_3 2 start
+[Sun 11/22/2026  4:16:49.83] step new ft hegemony_3 2 ok
+[Sun 11/22/2026  4:16:49.84] step new ft corsair_7 1 start
+[Sun 11/22/2026  4:19:57.20] step new ft corsair_7 1 ok
+[Sun 11/22/2026  4:19:57.22] step new ft corsair_7 2 start
+[Sun 11/22/2026  4:23:05.06] step new ft corsair_7 2 ok
+[Sun 11/22/2026  4:23:05.07] step new shots corsair_7_0 start
+[Sun 11/22/2026  4:29:09.78] step new shots corsair_7_0 ok
+[Sun 11/22/2026  4:29:09.79] step new shots corsair_7_40 start
+[Sun 11/22/2026  4:35:13.07] step new shots corsair_7_40 ok
+checkout old 1a000813476a855163b5cd76af627198097a405b C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260\old are the same fleet as the first checkout
+[Sun 11/22/2026  4:35:51.05] step old import start
+[Sun 11/22/2026  4:50:01.52] step old import ok
+[Sun 11/22/2026  4:50:01.54] step old ft hegemony_3 1 start
+[Sun 11/22/2026  4:51:30.38] step old ft hegemony_3 1 ok
+[Sun 11/22/2026  4:51:30.39] step old ft hegemony_3 2 start
+[Sun 11/22/2026  4:52:58.36] step old ft hegemony_3 2 ok
+[Sun 11/22/2026  4:52:58.37] step old ft corsair_7 1 start
+[Sun 11/22/2026  4:56:05.42] step old ft corsair_7 1 ok
+[Sun 11/22/2026  4:56:05.43] step old ft corsair_7 2 start
+[Sun 11/22/2026  4:59:12.43] step old ft corsair_7 2 ok
+[Sun 11/22/2026  4:59:12.44] step old shots corsair_7_0 start
+[Sun 11/22/2026  5:05:15.90] step old shots corsair_7_0 ok
+[Sun 11/22/2026  5:05:15.91] step old shots corsair_7_40 start
+[Sun 11/22/2026  5:11:18.11] step old shots corsair_7_40 ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026  5:11:18.61
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1558a\out_20261122_035908_26260 (results not relayed yet: board/pc-out-opus1558a:out_20261122_035908_26260: branch board/pc-out-opus1558a (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 181.4 GB free
