@@ -69,7 +69,7 @@ fs.writeFileSync(script, [
   'Write-Output "free-exists $(Test-Path -LiteralPath $env:M1396_CLEAN)"',
 ].join('\r\n'));
 const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], {
-  encoding: 'utf8', env: { ...process.env, M1396_CO: co, M1396_MIRROR: mirror, M1396_CLEAN: clean, PC_MIRROR_LOCK_WAIT_SECONDS: '1', PC_RUNNER_TEST: '' }, timeout: 120000,
+  encoding: 'utf8', env: { ...process.env, M1396_CO: co, M1396_MIRROR: mirror, M1396_CLEAN: clean, USERPROFILE: tmp, PC_MIRROR_LOCK_WAIT_SECONDS: '1', PC_RUNNER_TEST: '' }, timeout: 120000,
 });
 const out = (r.stdout || '') + (r.stderr || '');
 assert.equal(r.status, 0, out);

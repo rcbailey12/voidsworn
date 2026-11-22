@@ -538,9 +538,13 @@ function Write-JanitorResume($path, [string[]]$lines) {
 function Get-Rotated($items, [string[]]$names, $start) {
   # One ordering for the walk and the lookup (ordinal, case blind), and an exact name wins (review of PR 1592: Sort-Object
   # and an ordinal lookup disagreed on opus1211_run6 and opus12110).
-  $all = [object[]]@($items).Clone(); $keys = [string[]]@($names).Clone()
-  if (-not $all.Count) { return @() }
-  [Array]::Sort($keys, $all, [StringComparer]::OrdinalIgnoreCase)
+  # Sorted as positions: given an object[] of folders, PowerShell can pick the generic Array.Sort and sort a converted copy,
+  # leaving the folders in their old order beside sorted names (CI on 311fd83c).
+  $items = @($items); $keys = [string[]]@($names).Clone()
+  if (-not $items.Count) { return @() }
+  $order = [int[]](0..($items.Count - 1))
+  [Array]::Sort($keys, $order, [StringComparer]::OrdinalIgnoreCase)
+  $all = @(foreach ($i in $order) { $items[$i] })
   if (-not $start) { return $all }
   $at = -1
   for ($i = 0; $i -lt $keys.Count; $i++) { if ([string]::Equals($keys[$i], $start, [StringComparison]::OrdinalIgnoreCase)) { $at = $i; break } }
