@@ -4,7 +4,7 @@ extends Node
 # runs of the same commit give the same pictures and a change shows only where it lands.
 #
 #   godot --path godot --fixed-fps 60 --disable-vsync --resolution 1920x1080 res://bench/look_bench.tscn -- --out DIR
-#         [--part all|moments|fleet] [--only id1,id2] [--commit SHA] [--allow-blocks] [--no-warm]
+#         [--part all|moments|fleet] [--only id1,id2] [--commit SHA] [--allow-blocks] [--no-warm] [--fleet-cams 170,110]
 # --allow-blocks is for a cloud smoke run of the script only (no hulls there): it draws the blocks instead of stopping.
 # --sound (issue 1238): the game's own death sounds play (audio/sfx.gd and audio/death_audio.gd, as the battle wires them)
 # and the bench picture is shown in the window, so Godot's --write-movie FILE.avi records a clip with picture and sound.
@@ -456,6 +456,14 @@ func _crop(img: Image, size: Vector2i, cell: Vector2i) -> Image:
 # ---------------------------------------------------------------- fleet: all 36 hulls at the battle camera
 
 func _fleet_part() -> void:
+	var fleet_cams: Array = [170]
+	if args.has("fleet-cams"):
+		fleet_cams = []
+		for c in str(args["fleet-cams"]).split(",", false):
+			if c.is_valid_int() and int(c) >= 26:
+				fleet_cams.append(int(c))
+		if fleet_cams.is_empty():
+			fleet_cams = [170]
 	var codes: Array = []
 	for key in HT.AI_HULLS:
 		codes.append([str(key), str(HT.AI_HULLS[key])])
@@ -481,17 +489,22 @@ func _fleet_part() -> void:
 				sv = _ship("A", parts[0], parts[1], Vector3.ZERO, 0)
 			if sv == null:
 				return
-			_cam(Vector3.ZERO, 170.0)
-			for k in 8:
-				await _step()
-			var img := _grab()
-			if img == null:
-				_warn("empty frame for fleet %s %s" % [sky[0], fc[1]])
-				continue
-			var name := "%02d_%s.png" % [n, fc[1]]
-			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
-			report["stills"].append({"part": "fleet", "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name], "code": fc[1],
-				"what": fc[0], "length": float(sv.L), "step": steps})
+			# issue 1679: --fleet-cams 170,110,60 adds stills at more camera radii. Camera 170 keeps its file names and part
+			# "fleet" (the sheet maker's 1 to 1 sheets); any other radius is part "fleet_cam", named __c<radius>, cropped to
+			# the same framing at true pixels (the cell grows as 170 / radius), so the stock sheets never see it.
+			for cr in fleet_cams:
+				_cam(Vector3.ZERO, float(cr))
+				for k in 8:
+					await _step()
+				var img := _grab()
+				if img == null:
+					_warn("empty frame for fleet %s %s c%d" % [sky[0], fc[1], cr])
+					continue
+				var name := "%02d_%s.png" % [n, fc[1]] if cr == 170 else "%02d_%s__c%d.png" % [n, fc[1], cr]
+				var cs := FLEET_CELL if cr == 170 else Vector2i(mini(W, roundi(FLEET_CELL.x * 170.0 / cr)), mini(H, roundi(FLEET_CELL.y * 170.0 / cr)))
+				preload("res://tools/picture_provenance.gd").save_png(_crop(img, cs, cs), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+				report["stills"].append({"part": "fleet" if cr == 170 else "fleet_cam", "cam": cr, "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name],
+					"code": fc[1], "what": fc[0], "length": float(sv.L), "step": steps})
 			n += 1
 		_log("fleet %s: %d hulls" % [sky[0], n])
 	_clear()
