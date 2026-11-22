@@ -46,6 +46,12 @@ const CASES = [
     u.mp = 4; u.turnsLeft = 2; u.postFire = true; u.postMp = 2; u.pivotUsed = true;
     await E('rotateUnit')(u, 1); await E('rotateUnit')(u, 1);
     return [u.postMp === 0 && E('postFireMp')(u) === 0, 'postMp ' + u.postMp + ', postFireMp ' + E('postFireMp')(u)]; }],
+  ['R396: a tree free turn (Cut and Turn) still turns a fired ship with no post-fire move left', async () => {
+    const { P } = fresh(['penitent'], 'hegemony', ['h_picket']); const u = P[0];
+    u.mp = 4; u.turnsLeft = 2; u.postFire = true; u.postMp = 0; u.treeFreeTurn = 1; const f0 = u.facing;
+    const can = E('canRotate')(u); await E('rotateUnit')(u, 1);
+    return [can === true && u.facing !== f0 && u.treeFreeTurn === 0 && u.postMp === 0 && u.mp === 4 && E('canRotate')(u) === false,
+      'canRotate ' + can + ', facing ' + f0 + ' to ' + u.facing + ', token ' + u.treeFreeTurn + ', postMp ' + u.postMp + ', mp ' + u.mp]; }],
   ['R396: no ram after firing (non-Glasswright)', () => {
     const { P, E: En } = fresh(['penitent'], 'hegemony', ['h_picket']); const u = P[0], t = En[0];
     u.q = 5; u.r = 5; u.facing = 0; t.q = 8; t.r = 5; u.mp = 4;
@@ -133,6 +139,15 @@ const CASES = [
     const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0, sys: null };
     await E('landVolley')(u, w, t, { quad: E('shieldQuad')(t, u), shBefore: t.shp || 0, shots: [true], called: null, res });
     return [far.hp === hp0, 'ship 7 hexes away lost ' + (hp0 - far.hp)]; }],
+  ['16: the corona splash counts over the ship it hit, not in the target\'s hull number', async () => {
+    const { B, P, E: En } = fresh(['penitent'], 'hegemony', ['h_picket', 'h_picket']); const u = P[0], t = En[0], nb = En[1];
+    u.q = 5; u.r = 5; u.facing = 0; t.q = 8; t.r = 5; nb.q = 9; nb.r = 5; const th0 = t.hp, n0 = nb.hp + (nb.shp || 0);
+    const w = wpn('doom', 'F'); u.weapons = [w];
+    B.tree = [{ k: 'arcsWarm', key: 't1560:arcsWarm', n: .25 }]; B.volleyMul = { side: 'player', m: 1 };
+    const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0, sys: null };
+    await E('landVolley')(u, w, t, { quad: E('shieldQuad')(t, u), shBefore: t.shp || 0, shots: [true], called: null, res });
+    const nLost = n0 - nb.hp - (nb.shp || 0);
+    return [E('hdist')(t, nb) === 1 && nLost > 0 && res.hull === th0 - t.hp, 'target lost ' + (th0 - t.hp) + ', res.hull ' + res.hull + ', neighbour lost ' + nLost]; }],
   ['17: Full ahead opens again on the next turn', () => {
     const { P } = fresh(['penitent'], 'hegemony', ['h_picket']); const u = P[0];
     u.moved = true; E('startSideTurn')('player');

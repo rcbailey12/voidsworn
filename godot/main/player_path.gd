@@ -191,14 +191,28 @@ func _campaign_step(host: Node) -> bool:
 				_fail("planned route %s is not an offered battle after Battle %d" % [planned, battle_number])
 				return false
 		_event("route_stop", {"id": id, "planned": planned, "offered": offered})
+		# Issue 1448: on a fresh profile the sector map is still behind its loading cover here (its planet bakes queue
+		# behind the title's), and a jump pressed then is dropped (map3d.fly_to refuses while loading), so every Windows
+		# recording on a fresh profile failed at "jump to 0-0 did not open". A player waits for the cover; so does this.
+		if not await _map_ready(ui):
+			return false
 		ui.pick_route(id)
 		await _pause(1.0)
-		ui._jump()
+		var jumped := _frame()
+		var jb = ui.get("_jump_btn")
+		if jb is BaseButton and is_instance_valid(jb) and jb.is_visible_in_tree() and not jb.disabled:
+			jb.pressed.emit()   # the Jump button, with its cue (issue 1448)
+		else:
+			ui._jump()
 		# Normal map mode animates the ship's jump before handing over to the campaign.
 		for i in 45:
 			if host.in_battle or c.modal_d != null:
+				_event("jump_open", {"id": id, "frames": _frame() - jumped})
 				return true
 			await _pause(0.2)
+		var m = ui.get("map3d")
+		if m != null:   # the map's state, for the failure below (its reason text stays the one run.ps1 retries on)
+			_event("jump_stuck", {"id": id, "loading": m.get("loading"), "flying": m.get("_flying"), "picked": ui.get("picked")})
 		_fail("jump to %s did not open" % id)
 		return false
 	if page == "end":
@@ -210,8 +224,25 @@ func _campaign_step(host: Node) -> bool:
 		return false
 	_event("campaign_choice", {"page": page, "action": choice[0], "choice": choice[1]})
 	await _pause(1.0)
-	ui._campaign_action(str(choice[0]), str(choice[1]))
+	# Issue 1448: press the button a player would, so the recording carries its cue; the action itself is the fallback.
+	if not press_act(host, str(choice[0]), str(choice[1])):
+		_event("choice_unpressed", {"action": choice[0], "choice": choice[1]})
+		ui._campaign_action(str(choice[0]), str(choice[1]))
 	return true
+
+
+# The visible, enabled button tagged with this campaign action (campaign_ui.press_tag); true once it is pressed.
+static func press_act(root: Node, act: String, arg: String) -> bool:
+	if root == null:
+		return false
+	for n in root.find_children("*", "Control", true, false):
+		if str(n.get_meta("press_act", "")) != act or str(n.get_meta("press_arg", "")) != arg:
+			continue
+		if n.is_queued_for_deletion() or not n.is_visible_in_tree() or bool(n.get("disabled")) or not n.has_signal("pressed"):
+			continue
+		n.emit_signal("pressed")
+		return true
+	return false
 
 
 func _offered(c, on: Array) -> Array:
@@ -226,6 +257,23 @@ func _offered(c, on: Array) -> Array:
 
 # The planned stop when it is an offered battle; otherwise the best offered battle: Battle 3 must meet the sector's
 # own enemy, a plain battle before an elite, then a rout (the fight the scripted player plays best). "" when none fits.
+# Waits (game time, at most map_wait_s) until the 3D sector map has finished loading; logs how long it waited.
+var map_wait_s := 120
+func _map_ready(ui) -> bool:
+	var m = ui.get("map3d")
+	if m == null or not is_instance_valid(m) or not m.visible or not bool(m.get("loading")):
+		return true
+	var start := _frame()
+	while bool(m.get("loading")):
+		if _frame() - start > map_wait_s * FPS:
+			_fail("the sector map was still loading after %d s" % map_wait_s)
+			return false
+		await get_tree().process_frame
+	_event("map_ready", {"waited_frames": _frame() - start})
+	await _pause(0.5)
+	return true
+
+
 func _pick_stop(c, offered: Array, planned: String) -> String:
 	var fits := func(n: Dictionary) -> bool:
 		return n.type in BATTLE_TYPES and not n.nemesis and (battle_number < 2 or n.fac == route.sector_enemy)

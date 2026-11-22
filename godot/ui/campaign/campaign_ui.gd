@@ -82,6 +82,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(func(): _rescale(); _dirty = true)
 	_rescale()
 	map_quality = _load_map_quality()
+	Kit.watch_sound(self)   # issue 1448: every button and choice on every campaign screen and dialog plays the ui cues
 
 const MAP_PREFS := "user://campaign_map.json"
 func _load_map_quality() -> String:   # the map's own toggle wins; otherwise the game's Graphics setting (Low -> low)
@@ -272,8 +273,9 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
-	Kit.wire_sound(b, "back" if act in BACK_ACTS else ("primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
+	Kit.wire_sound(b, cue_role(act, "primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
@@ -294,8 +296,9 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	b.custom_minimum_size = Vector2(ceil(tw) + px(24) + px(28), px(46))
 	GS.finish_sheen(b, k)
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
-	Kit.wire_sound(b, "primary")
+	Kit.wire_sound(b, cue_role(act, "primary"))
 	return b
 # A footer row: the other buttons on the left of the finishing action, the finishing action last, at the right edge.
 func foot(buttons: Array) -> HBoxContainer:
@@ -332,7 +335,9 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	b.add_child(row)
 	var aa = found[1]
 	b.set_meta("act", act); b.set_meta("arg", aa)   # its key for keeping focus across a re-render (_focus_key)
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, cue_role(act, "quiet"))
 	return b
 func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
@@ -635,7 +640,9 @@ func kbtn(text: String, act: String, arg = "", role: String = "quiet", size: flo
 	var b = Kit.link(text, k, Callable(), size) if role == "link" else Kit.button(text, k, role, Callable(), size)
 	b.disabled = found[2] == 0
 	var aa = found[1]
+	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, cue_role(act, role))
 	return b
 func _music():
 	var m = get_node_or_null("/root/Main")
@@ -1336,6 +1343,7 @@ func _jump_button() -> Button:
 	for sig in [b.mouse_entered, b.mouse_exited, b.focus_entered, b.focus_exited]: sig.connect(paint)
 	b.disabled = cur.is_empty() or _find(_acts, "enterNode", picked).is_empty() or _find(_acts, "enterNode", picked)[2] == 0
 	b.pressed.connect(_jump); _jump_btn = b
+	Kit.wire_sound(b, "primary")
 	return b
 func route_num(id: String) -> int:   # the number a next jump wears in the list and on the map (0: not a next jump)
 	for r in _routes:
@@ -2491,6 +2499,20 @@ func _well_text(v: VBoxContainer) -> void:
 # Back button runs. The flagship aspect page has no back action yet (phase 4 adds one to both twins), so Esc does nothing
 # there until then.
 const BACK_ACTS := ["title", "backToSetup"]
+# Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
+# (cues.json ui_reward) in place of the plain confirm.
+const REWARD_ACTS := ["takeMod", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+# Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
+# calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
+static func press_tag(b: Control, act: String, arg) -> void:
+	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
+func cue_role(act: String, fallback: String) -> String:
+	if act in REWARD_ACTS: return "reward"
+	if act in BACK_ACTS: return "back"
+	return fallback
+# The cue for a key that did a screen's job (issue 1448): Esc sounds like Back, Enter like the finishing action.
+func _key_cue(e: InputEventKey) -> void:
+	Kit.play("ui_cancel" if e.keycode == KEY_ESCAPE else ("ui_confirm" if e.keycode in [KEY_ENTER, KEY_KP_ENTER] else "ui_click"))
 const ESC_BACK := {"admiral": [["title", ""]], "aspect": [["backToSetup", ""]], "legacy": [["title", ""]], "help": [["title", ""]], "lineage": [["progTab", "mastery"]]}
 func esc_back() -> bool:
 	if C == null or C.modal_d != null: return false
@@ -2506,7 +2528,7 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
 	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
-		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
+		if fleet_manifest.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it
 		if _overlay != "":
 			if e.keycode == KEY_ESCAPE: _close_overlay(); get_viewport().set_input_as_handled()
@@ -2514,19 +2536,21 @@ func _unhandled_input(e: InputEvent) -> void:
 		var rn = e.keycode - KEY_1
 		if rn < 0 or rn >= 9: rn = e.keycode - KEY_KP_1
 		if rn >= 0 and rn < 9 and rn < _routes.size():
+			if str(_routes[rn]["id"]) != picked: Kit.play(Kit.HOVER_CUE)
 			pick_route(str(_routes[rn]["id"])); get_viewport().set_input_as_handled(); return
 		if e.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+			if picked != "": Kit.play("ui_confirm")
 			_jump(); get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
-		if debrief.handle_key(e): get_viewport().set_input_as_handled(); return
+		if debrief.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
 		var acts = C.modal_d["acts"]
 		if e.keycode == KEY_ESCAPE:
 			for a in acts:
 				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo"):
-					C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
+					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
 		if n >= 0 and n < 9:
 			var on = acts.filter(func(a): return a[2] == 1)
 			if n < on.size():
-				C.act(on[n][0], on[n][1]); get_viewport().set_input_as_handled()
+				Kit.play(Kit.press_cue(cue_role(str(on[n][0]), "quiet"))); C.act(on[n][0], on[n][1]); get_viewport().set_input_as_handled()

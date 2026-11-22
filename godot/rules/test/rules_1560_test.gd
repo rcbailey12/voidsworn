@@ -38,6 +38,7 @@ func _init() -> void:
 	var cases := [
 		["R396: a Sunward ship that has fired cannot turn in place", c_r396_turn],
 		["R396: a Glasswright turn after firing spends its post-fire move", c_r396_fade],
+		["R396: a tree free turn (Cut and Turn) still turns a fired ship with no post-fire move left", c_r396_token],
 		["R396: no ram after firing (non-Glasswright)", c_r396_ram],
 		["1: a hit never heals a shieldless ship (damage taken stays at least 5%)", c_1],
 		["2: a torpedo rear hit gives the real ship its Cut and Turn free turn", c_2],
@@ -54,10 +55,13 @@ func _init() -> void:
 		["13: a turn in place does not give back the free dive (Vell T2a)", c_13],
 		["15: no ram after firing, from the move overlay either", c_15],
 		["16: the corona splash hits only a ship next to the target", c_16],
+		["16: the corona splash counts over the ship it hit, not in the target's hull number", c_16_attrib],
 		["17: Full ahead opens again on the next turn", c_17],
 		["18: the Garrison ally never turns a loss into a retreat", c_18_garrison],
 		["18: the Chorus free pivot is offered with no movement left", c_18_pivot],
 		["18 (Godot): a move to a hex the ship cannot reach is refused", c_18_move],
+		["18 (Godot): a stale path to a still-reachable hex walks the legal path and pays its cost", c_18_stale_path],
+		["18 (Godot): the same path with a stale cost pays today's cost", c_18_stale_cost],
 		["18 (Godot): the volley preview never reads a miss as a routed hit", c_18_preview_route],
 		["18 (Godot): the torpedo preview adds a Nemesis torpedo weakness", c_18_preview_nem],
 	]
@@ -79,6 +83,12 @@ func c_r396_fade() -> Array:
 	u["mp"] = 4; u["turnsLeft"] = 2; u["postFire"] = true; u["postMp"] = 2; u["pivotUsed"] = true
 	R.rotateUnit(u, 1); R.rotateUnit(u, 1)
 	return [R.z0(u.get("postMp")) == 0 and R.postFireMp(u) == 0, "postMp " + str(u.get("postMp")) + ", postFireMp " + str(R.postFireMp(u))]
+func c_r396_token() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
+	u["mp"] = 4; u["turnsLeft"] = 2; u["postFire"] = true; u["postMp"] = 0; u["treeFreeTurn"] = 1; var f0 = int(u["facing"])
+	var can: bool = R.canRotate(u); R.rotateUnit(u, 1)
+	var ok: bool = can and int(u["facing"]) != f0 and R.z0(u.get("treeFreeTurn")) == 0 and R.z0(u.get("postMp")) == 0 and int(u["mp"]) == 4 and R.canRotate(u) == false
+	return [ok, "canRotate " + str(can) + ", facing " + str(f0) + " to " + str(u["facing"]) + ", token " + str(u.get("treeFreeTurn")) + ", postMp " + str(u.get("postMp")) + ", mp " + str(u["mp"])]
 func c_r396_ram() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]; var t = E[0]
 	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 8; t["r"] = 5; u["mp"] = 4
@@ -177,6 +187,16 @@ func c_16() -> Array:
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
 	R.landVolley(u, w, t, {"quad": R.shieldQuad(t, u), "shBefore": R.z0(t.get("shp")), "shots": [true], "called": null, "res": res})
 	return [far["hp"] == hp0, "ship 7 hexes away lost " + str(hp0 - far["hp"])]
+func c_16_attrib() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket", "h_picket"]); var u = P[0]; var t = E[0]; var nb = E[1]
+	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 8; t["r"] = 5; nb["q"] = 9; nb["r"] = 5
+	var th0 = float(t["hp"]); var n0 = float(nb["hp"]) + float(R.z0(nb.get("shp")))
+	var w = wpn("doom", "F"); u["weapons"] = [w]
+	B["tree"] = [{"k": "arcsWarm", "key": "t1560:arcsWarm", "n": 0.25}]; B["volleyMul"] = {"side": "player", "m": 1}
+	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
+	R.landVolley(u, w, t, {"quad": R.shieldQuad(t, u), "shBefore": R.z0(t.get("shp")), "shots": [true], "called": null, "res": res})
+	var nLost = n0 - float(nb["hp"]) - float(R.z0(nb.get("shp")))
+	return [int(R.hdist(t, nb)) == 1 and nLost > 0 and near(res.hull, th0 - float(t["hp"])), "target lost " + str(th0 - float(t["hp"])) + ", res.hull " + str(res.hull) + ", neighbour lost " + str(nLost)]
 func c_17() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
 	u["moved"] = true; R.startSideTurn("player")
@@ -199,6 +219,26 @@ func c_18_move() -> Array:
 	var st = {"q": q0 + 9, "r": r0, "f": 0, "t": 0, "cost": 1, "path": [{"q": q0 + 9, "r": r0, "f": 0}]}
 	var moved = api.move(u["id"], st)
 	return [moved == false and u["q"] == q0, "move accepted " + str(moved) + ", now at q " + str(u["q"])]
+func c_18_stale_path() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
+	api.phase = "player"; u["mp"] = 4; u["activated"] = false
+	var real = null
+	for s in R.computeReach(u, true).states:
+		if float(s.cost) == 1.0 and int(s.t) == 0 and not (int(s.q) == int(u["q"]) and int(s.r) == int(u["r"])): real = s; break
+	if real == null: return [false, "no one-step state"]
+	var st = {"q": real.q, "r": real.r, "f": real.f, "t": 0, "cost": 3, "path": [{"q": int(u["q"]) + 1, "r": int(u["r"]) + 2, "f": 0}, {"q": real.q, "r": real.r, "f": real.f}]}
+	var moved = api.move(u["id"], st)
+	return [moved and int(u["q"]) == int(real.q) and int(u["r"]) == int(real.r) and int(u["mp"]) == 3, "moved " + str(moved) + ", at " + str(u["q"]) + "," + str(u["r"]) + ", mp " + str(u["mp"])]
+func c_18_stale_cost() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
+	api.phase = "player"; u["mp"] = 4; u["activated"] = false
+	var real = null
+	for s in R.computeReach(u, true).states:
+		if float(s.cost) == 1.0 and int(s.t) == 0 and not (int(s.q) == int(u["q"]) and int(s.r) == int(u["r"])): real = s; break
+	if real == null: return [false, "no one-step state"]
+	var st = real.duplicate(true); st["cost"] = 3
+	var moved = api.move(u["id"], st)
+	return [moved and int(u["q"]) == int(real.q) and int(u["mp"]) == 3, "moved " + str(moved) + ", mp " + str(u["mp"])]
 func _preview_shield(t, pool: float) -> float:
 	var u = P[0]
 	t["shp"] = pool; t["route"] = [0, 0, 0, 0]; R.syncShields(t)
