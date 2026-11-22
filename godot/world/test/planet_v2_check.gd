@@ -172,6 +172,29 @@ func _run() -> void:
 	_check(_code(late[0]) == PL.BOARD_SURFACE, "a frozen planet still swapped to R01 after the cover lifted")
 	(late[0] as Node).queue_free()
 	(late[1] as Node).queue_free()
+	# 2c. VS_PLANET_REMIX=0 (R01 switched off, Astra via Ryan item 4): rocky and barren boards keep the procedural
+	# stand-in in their own palette, and the loading cover still lifts at once
+	OS.set_environment("VS_PLANET_REMIX", "0")
+	_check(not PL.rocky_available(), "VS_PLANET_REMIX=0 does not switch R01 off")
+	for sv in [20, 24]:   # looks 0 (rocky) and 5 (barren)
+		var off := StubRules.new()
+		off.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+		off.w = {"seed": sv}
+		var ob: Node3D = BOARD.new()
+		root.add_child(ob)
+		ob.build(off)
+		var t0 := Time.get_ticks_msec()
+		await ob.wait_planet()
+		var om: MeshInstance3D = ob.planet_node
+		var mat := om.material_override as ShaderMaterial
+		_check(_code(om) == PL.BOARD_SURFACE, "VS_PLANET_REMIX=0 seed %d: no procedural fallback surface" % sv)
+		_check(mat != null and (mat.get_shader_parameter("col_a") as Vector3).distance_to(mat.get_shader_parameter("col_b")) > 0.02,
+			"VS_PLANET_REMIX=0 seed %d: the fallback is one flat colour" % sv)
+		_check(not bool(om.get_meta("planet_frozen", false)) and Time.get_ticks_msec() - t0 < 5000,
+			"VS_PLANET_REMIX=0 seed %d: the cover waited for maps that will never come" % sv)
+		ob.queue_free()
+		await process_frame
+	OS.unset_environment("VS_PLANET_REMIX")
 	# 3. the remix differs per battle
 	for k in [0, 5]:
 		var a := float(turns.get("%d|3" % k, 0.0))
