@@ -592,6 +592,38 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   r = run('dropjobs', path.dirname(tombAt));
   assert(!fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`finished an earlier removal`), 'the live sweep finishes a recorded tomb with no checkout left beside it: ' + r.out);
   assert(fs.existsSync(path.join(tombAt, 'out_new', 'result.txt')), 'results stay');
+  // Issue 1695: an attempt relayed before PR 1644 under another branch name and folder. relayfind looks through the
+  // relay branches for a folder holding all its result files byte for byte and writes only that as relay_branch.txt;
+  // a folder holding one file but not the other proves nothing; it removes nothing itself.
+  const legacy = job1535('opus1695a');
+  write(path.join(legacy, 'out_new', 'log.txt'), 'opus1695a log\n');
+  const decoyDir = path.join(tmp, 'decoy1695', 'out_new');
+  write(path.join(decoyDir, 'result.txt'), 'opus1695a result\n');
+  write(path.join(decoyDir, 'log.txt'), 'another log\n');
+  relay([[decoyDir, 'other/out_new']], 'board/pc-out-1695decoy');
+  relay([[path.join(legacy, 'out_new'), 'opus1695a/out_1/out_new']], 'board/pc-out-1695old');
+  for (const b of ['board/pc-out-1695decoy', 'board/pc-out-1695old']) git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', `+refs/heads/${b}:refs/heads/${b}`]);
+  const branchFile = path.join(legacy, 'relay_branch.txt');
+  r = run('relayfind', 'all', 'dry');
+  assert.equal(r.status, 0, r.out);
+  assert(r.out.includes(`relay place would be written: ${branchFile} = board/pc-out-1695old opus1695a/out_1`) && !fs.existsSync(branchFile) && fs.existsSync(path.join(legacy, 'new')), 'dry names the proving folder and writes nothing: ' + r.out);
+  r = run('relayfind', legacy);
+  assert.equal(r.status, 0, r.out);
+  assert(r.out.includes(`relay place written: ${branchFile} = board/pc-out-1695old opus1695a/out_1`) && fs.readFileSync(branchFile, 'utf8') === 'board/pc-out-1695old opus1695a/out_1\r\n' && fs.existsSync(path.join(legacy, 'new')), 'live writes only relay_branch.txt: ' + r.out);
+  r = run('relayfind', legacy);
+  assert(/relay place already proven: \S+ \(board\/pc-out-1695old opus1695a\/out_1, from relay_branch\.txt\)/.test(r.out), 'a second run finds it proven: ' + r.out);
+  r = run('dropcheckouts', legacy);
+  assert(!fs.existsSync(path.join(legacy, 'new')) && /from relay_branch\.txt|results relayed: 2 of 2 result file\(s\) are on board\/pc-out-1695old under opus1695a\/out_1/.test(r.out), 'the drop then proves it there itself: ' + r.out);
+  // a folder holding the searched file (log.txt, the first by name) but not the other proves nothing; nothing is written
+  const decoyOnly = job1535('opus1695b');
+  write(path.join(decoyOnly, 'out_new', 'log.txt'), 'another log\n');
+  r = run('relayfind', decoyOnly);
+  assert(/relay place not found: \S+ \(own place: .*closest board\/pc-out-1695decoy other: out_new\/result\.txt differs on the relay/.test(r.out) && !fs.existsSync(path.join(decoyOnly, 'relay_branch.txt')), 'a folder missing one file is not written: ' + r.out);
+  // an attempt with its own relay_branch.txt that does not prove is left alone
+  write(path.join(decoyOnly, 'relay_branch.txt'), 'board/pc-out-opus1695b out_1\r\n');
+  r = run('relayfind', decoyOnly);
+  assert(/relay place left alone: \S+ has its own relay_branch\.txt, which does not prove/.test(r.out) && fs.readFileSync(path.join(decoyOnly, 'relay_branch.txt'), 'utf8') === 'board/pc-out-opus1695b out_1\r\n', 'its own file stays: ' + r.out);
+  assert.notEqual(run('relayfind', legacy, 'now').status, 0, 'relayfind takes only dry');
 }
 // A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
 // locked past the retries leaves <name>.removing, which the next run finishes. A read-only folder stands in for the lock.

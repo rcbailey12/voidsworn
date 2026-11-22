@@ -79,6 +79,12 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   low-speed limit, not a hard one). The janitor's relay sweep covers anything later. `dropwait <attempt> dry` looks
   once and runs the dry proof: no lock, lease, log, fetch or removal. `OJ_NO_DROPWAIT=1` skips the waiter (issue
   1396; Nov 22, with a new job name every night no later attempt cleared the last one: 20 checkouts, about 8 GB each).
+- Attempts relayed before that under another branch name or folder (board/pc-out-1547c and so on) name no place the
+  proof finds. `opus_job_head.ps1 relayfind <attempt>|all [dry]` looks through every `board/pc-out-*` branch in the
+  shared mirror for the folder that holds all of a passed attempt's result files byte for byte, and writes only that,
+  as a new `relay_branch.txt` in the attempt (never over its own receipt or branch file). It removes nothing: the waiter
+  and the janitor's relay sweep still prove the bytes under the mirror lock before any drop. dry writes and fetches
+  nothing (issue 1695). A job that was never relayed is not found and keeps its checkouts.
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
   folders and kept checkouts) holds the mirror writers' lock `repo-mirror.git.lock` from its last proof through the
   delete, so no lane's fetch or prune can drop a ref the proof read in between (issue 1396, Artoo on PR 1592). A lane
