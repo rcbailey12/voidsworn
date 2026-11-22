@@ -10,7 +10,8 @@ extends SceneTree
 #            the rules would pick (edgeHex) among it; the strip goes when the warning is not up.
 # Rules untouched: the test sets rules state directly (route, an event) only to stage each case.
 # Prints PASS or FAIL lines; exit 0 when all pass. Pictures: -- --shots DIR (needs a window: xvfb-run with opengl3 in the
-# cloud), one per item at camera 170 with its code name on it, labelled a cloud direction check.
+# cloud, where the hulls are placeholders and the writer refuses the picture; the PC job has the built hulls), one per item
+# at camera 170 with its code name on it, stamped with the capture stage.
 # Run: godot --headless --path godot --script res://scenes/battle/test/battle_reads_1446_check.gd
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const Prov = preload("res://tools/picture_provenance.gd")
@@ -62,13 +63,13 @@ func _shot(code: String, what: String, at: Vector3) -> void:
 	b.cam.t = at
 	b.cam.r = 170.0
 	b.cam.snap()
-	label.text = "%s  %s  c170  cloud direction check" % [code, what]
+	label.text = "%s  %s  c170  %s" % [code, what, Prov.capture_stage()]
 	await _frames(12)
 	await RenderingServer.frame_post_draw
 	var img: Image = root.get_texture().get_image()
 	if img.get_height() > 720:
 		img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
-	var err: int = Prov.save_png(img, shots.path_join(code + ".png"), "cloud direction check")
+	var err: int = Prov.save_png(img, shots.path_join(code + ".png"), Prov.capture_stage())
 	_check(err == OK, "shot %s saved with its stamp (error %d)" % [code, err])
 
 
