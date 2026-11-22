@@ -260,6 +260,23 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	return mat
 
 
+# Issue 1235: a live ship's wear on its damage surface (fx_ship._set_wear): mottled darker plating, dimmer lights and soot
+# patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
+const WEAR_WEATHER := 0.45   # fx_weather at full wear
+const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
+static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
+	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
+	mat.set_shader_parameter("fx_power", 1.0 - WEAR_POWER * wear)
+	var n := mini(patches.size(), 8)
+	mat.set_shader_parameter("fx_scorch_count", n)
+	if n > 0:
+		var arr: Array = patches.slice(0, 8)
+		while arr.size() < 8:
+			arr.append(Vector4.ZERO)
+		mat.set_shader_parameter("fx_scorch", arr)
+	mat.set_shader_parameter("fx_scorch_heat", 0.0)
+
+
 static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
 	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))

@@ -102,6 +102,6 @@ func _run() -> void:
 		for i in 3:
 			fx.step(1.0 / 60.0)
 			await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s.png" % [out, sh[0]])
+		preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s.png" % [out, sh[0]], preload("res://tools/picture_provenance.gd").capture_stage())
 		print("wrote ", sh[0])
 	PG.finish(0)

@@ -151,7 +151,7 @@ func _review_sheet(proof: Array[Dictionary], dir: String) -> bool:
 
 class Sheet extends Node2D:
 	const FACTIONS := {"voidsworn": "Sunward Crusade", "corsair": "Ashfall Hullbreakers", "ithar": "Glasswrights",
-		"deathless": "Eclipse", "chorus": "Chorus", "hegemony": "Hegemony Navy"}
+		"deathless": "Eclipse", "chorus": "Chorus", "hegemony": "Meridian Directorate"}
 	var entries: Array[Dictionary] = []
 
 	func _draw() -> void:

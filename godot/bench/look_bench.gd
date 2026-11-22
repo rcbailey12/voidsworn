@@ -489,7 +489,7 @@ func _fleet_part() -> void:
 				_warn("empty frame for fleet %s %s" % [sky[0], fc[1]])
 				continue
 			var name := "%02d_%s.png" % [n, fc[1]]
-			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name))
+			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 			report["stills"].append({"part": "fleet", "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name], "code": fc[1],
 				"what": fc[0], "length": float(sv.L), "step": steps})
 			n += 1
@@ -607,6 +607,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
+	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
+	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
+	# and then set its hull state ("sync_t": a unit view, as the game's sync sends), for worn-ship rows; "do": "hold"
+	# then shows the ship as it stands. A commit without these keys ignores them.
+	for pv in row.get("pre", []):
+		var ph: Array = _hits(1, false, false)
+		if (pv as Array).size() > 2:
+			ph[0]["section"] = str(pv[2])
+		fx.volley("A", str(pv[0]), "T", {"weapon_id": str(pv[1]), "shots": [true], "hits": ph})
+		for k in 45:
+			await _step()
+	if row.get("sync_t") is Dictionary:
+		fx.sync_ship("T", row["sync_t"])
+		for k in 30:
+			await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -702,7 +717,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name))
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])

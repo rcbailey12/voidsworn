@@ -291,7 +291,7 @@ func _still_run() -> void:
 			var fimg := get_viewport().get_texture().get_image()
 			if fimg != null and not fimg.is_empty():
 				fimg.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
-				preload("res://tools/picture_provenance.gd").save_jpg(fimg, out.path_join("film_%03d.jpg" % st), 0.9)
+				preload("res://tools/picture_provenance.gd").save_jpg(fimg, out.path_join("film_%03d.jpg" % st), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 		if st in shots:
 			await _shot("still_%03d_wide.png" % st)
 			if close_t != Vector3.INF and film <= 0:
@@ -410,7 +410,7 @@ func _flash_run() -> void:
 		if i in shot_steps:
 			var p := out.path_join("flash_%03d.png" % i)
 			if img != null and not img.is_empty():
-				preload("res://tools/picture_provenance.gd").save_png(img, p)
+				preload("res://tools/picture_provenance.gd").save_png(img, p, preload("res://tools/picture_provenance.gd").capture_stage())
 	# DS9: the capital death's counted flashes and the secondaries' timing from the same log.
 	var deaths_at: Array = []
 	for k in fx.flash_log:
@@ -984,7 +984,7 @@ func _shot(name: String) -> void:
 	await _post()
 	var img := get_viewport().get_texture().get_image()
 	if img != null and not img.is_empty():
-		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 
 
 func _count(n: Node, acc: Dictionary) -> void:

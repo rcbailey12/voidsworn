@@ -61,7 +61,7 @@ func _strings(x, out: Array) -> void:
 # ---------------------------------------------------------------- 1. data
 
 func t_data() -> void:
-	for p in ["res://story/data/voices.json", "res://story/data/titles.json", "res://story/data/medals.json", "res://story/outlines.md"]:
+	for p in ["res://story/data/voices.json", "res://story/data/situations.json", "res://story/data/titles.json", "res://story/data/medals.json", "res://story/outlines.md"]:
 		var t := _read(p)
 		ok(t != "", "data: %s loads" % p)
 		ok(not t.contains("\u2014") and not t.contains("\u2013"), "data: %s has no em or en dashes" % p)
@@ -96,6 +96,11 @@ func t_data() -> void:
 			if str(F.get("memory", {}).get(k, "")) == "":
 				rl_missing.append("%s.memory.%s" % [f, k])
 			n_lines += 1
+		var vsf: Dictionary = F.get("vs_faction", {})
+		for pf in facs:
+			if str(vsf.get(pf, "")) == "":
+				rl_missing.append("%s.vs_faction.%s" % [f, pf])
+			n_lines += 1
 		var pp: Dictionary = F.get("personality", {})
 		var dd: Dictionary = F.get("deed", {})
 		if pp.size() != 4 or dd.size() != 4 or pp.keys() != dd.keys():
@@ -109,6 +114,18 @@ func t_data() -> void:
 				n_lines += 1
 	ok(rl_missing.is_empty(), "data: Nemesis pools complete for all six factions (%d lines) %s" % [n_lines, str(rl_missing.slice(0, 6))])
 	ok(not _read("res://story/data/rival_lines.json").contains("\u2014"), "data: rival_lines.json has no em dashes")
+	var SIT = JSON.parse_string(_read("res://story/data/situations.json"))
+	var sit_ok: bool = SIT is Dictionary
+	var sit_strs: Array = []
+	for cat in ["by_enemy", "by_objective", "outcome", "events", "by_cond"]:
+		var cd: Dictionary = SIT.get(cat, {}) if SIT is Dictionary else {}
+		for f in facs:
+			sit_ok = sit_ok and cd.has(f) and cd[f] is Dictionary and not cd[f].is_empty()
+		_strings(cd, sit_strs)
+	var sit_longest := 0
+	for s in sit_strs:
+		sit_longest = maxi(sit_longest, s.split(" ", false).size())
+	ok(sit_ok and sit_longest <= 22, "data: situations.json covers all six factions and stays short (longest %d words)" % sit_longest)
 	var T = JSON.parse_string(_read("res://story/data/titles.json"))
 	var n_ok := true
 	for t in T["titles"] + [T["fallback"]]:
@@ -158,7 +175,7 @@ func t_titles() -> void:
 		if str(t["id"]) != str(cs[1]):
 			bad.append("%s got %s" % [cs[1], t["id"]])
 	ok(bad.is_empty(), "titles: %d hand-made runs earn the expected title %s" % [cases.size(), str(bad)])
-	ok(c.title_for(_L({"kind": {"sq": 40, "battery": 30}}), "corsair")["name"] == "the Packmaster", "titles: faction wording (Hullbreaker carriers are the Packmaster)")
+	ok(c.title_for(_L({"kind": {"sq": 40, "battery": 30}}), "corsair")["name"] == "the Swarm-Boss", "titles: faction wording (Hullbreaker carriers are the Swarm-Boss)")
 
 
 # ---------------------------------------------------------------- 3. career
@@ -193,8 +210,8 @@ func t_career() -> void:
 	c.record_battle(run, _B("battle", true, 0, 2, us), "win")
 	ok(c.P["medals"].has("unbroken"), "career: Unbroken for sector II cleared without a loss")
 	var row: Dictionary = c.record_run_end(run, true, "Warlord Grax Ironmaw")
-	ok(str(row.get("title", "")) == "brawler" and str(row.get("title_name", "")) == "the Render", "career: run title (got %s %s)" % [row.get("title"), row.get("title_name")])
-	ok(c.P["medals"].has("victor") and c.P["medals"].has("heat_victor"), "career: victor and heat medals")
+	ok(str(row.get("title", "")) == "brawler" and str(row.get("title_name", "")) == "the Hull-Ripper", "career: run title (got %s %s)" % [row.get("title"), row.get("title_name")])
+	ok(c.P["medals"].has("victor") and c.P["medals"].has("heat_victor"), "career: victor and threat medals")
 	ok(int(c.P["admirals"]["grax"]["runs"]) == 1 and int(c.P["admirals"]["grax"]["wins"]) == 1 and c.P["admirals"]["grax"]["flagships"] == ["Rust Bucket"], "career: admiral record")
 	ok(int(c.P["totals"]["kills"]) == 17 and int(c.P["totals"]["lost"]) == 3 and int(c.P["totals"]["battles"]) == 4, "career: totals (kills %s, lost %s)" % [c.P["totals"]["kills"], c.P["totals"]["lost"]])
 	c.record_run_end(run, true)
@@ -228,7 +245,7 @@ func t_career() -> void:
 
 func t_voice() -> void:
 	var v = Voice.new()
-	var view := {"units": [{"id": "a", "side": "player", "flagship": true, "hp": 100, "maxHp": 100, "name": "Oathkeeper"}, {"id": "b", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"},
+	var view := {"units": [{"id": "a", "side": "player", "flagship": true, "hp": 100, "maxHp": 100, "name": "Cold Watch"}, {"id": "b", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"},
 		{"id": "x", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"}, {"id": "y", "side": "enemy", "hp": 40, "maxHp": 40, "name": "Picket"}]}
 	v.setup(view, {"admiral": "vex", "admiral_name": "Admiral Roderic Vex", "fac": "voidsworn", "kind": "boss", "enemy_fac": "hegemony", "sector": 1, "seed": 3, "nem": null})
 	var op: Array = v.opening()
@@ -241,8 +258,23 @@ func t_voice() -> void:
 	lines += v.on_event({"t": "death", "unit": "x"})
 	var ms: Array = lines.map(func(l): return l["moment"])
 	ok(ms == ["flag_hurt", "lost", "command", "boss_down", "kill_flag"], "voice: big moments speak once each, in order %s" % str(ms))
-	ok(str(lines[0]["text"]).contains("Oathkeeper"), "voice: {flagship} filled in")
-	ok(v.closing(true).ends_with("\"The line held. It always holds.\""), "voice: closing line")
+	ok(str(lines[0]["text"]).contains("Cold Watch"), "voice: {flagship} filled in")
+	var Vjson = JSON.parse_string(_read("res://story/data/voices.json"))
+	var vex_wins = Vjson["admirals"]["vex"]["win"]
+	var close_txt: String = v.closing(true)
+	var win_ok := false
+	for w in (vex_wins if vex_wins is Array else [vex_wins]):
+		win_ok = win_ok or close_txt.ends_with("\"" + str(w) + "\"")
+	ok(win_ok, "voice: closing line")
+	# anti-repeat shuffle bag: 4 consecutive start calls under one run_key return 4 distinct lines
+	var bag_seen := {}
+	var mem := {}
+	for bi in 4:
+		var bv = Voice.new()
+		bv.bind_memory(mem)
+		bv.setup(view, {"admiral": "vex", "admiral_name": "Admiral Roderic Vex", "fac": "voidsworn", "kind": "battle", "enemy_fac": "", "sector": 1, "seed": 100 + bi, "run_key": "test_bag", "nem": null})
+		bag_seen[bv.adm_text("start")] = true
+	ok(bag_seen.size() == 4, "voice: anti-repeat shuffle bag cycles all 4 start lines before repeating (got %d)" % bag_seen.size())
 	var vn = Voice.new()
 	vn.setup(view, {"admiral": "kassar", "admiral_name": "First Admiral Ilsa Kassar", "fac": "hegemony", "kind": "elite", "enemy_fac": "deathless", "sector": 3, "seed": 1,
 		"nem": {"name": "Halvane", "title": "High Nadir", "epithet": "of the Late Copy", "fac": "deathless"}})
@@ -313,6 +345,52 @@ func t_voice() -> void:
 	var close: String = rv.closing(win)
 	print("      s1: %d events, %d voice lines, result %s: %s" % [n_ev, got.size(), str(api.view().get("over")), str(got.map(func(l): return l["moment"]))])
 	ok(api.phase == "over" and got.size() >= 1 and close != "", "voice: a real battle plays through with admiral lines (%d)" % got.size())
+	t_voice_live()
+
+
+# Issue 1551: the voice reads the real player flagship (pflag), live roster state, and treats an Intercept exit as no retreat.
+func t_voice_live() -> void:
+	var B := {"cfg": {"fac": "hegemony", "kind": "", "obj": "intercept"}, "seed": 5, "units": [
+		{"id": "p1", "side": "player", "pflag": true, "hp": 80, "maxHp": 100, "name": "Cold Watch"},
+		{"id": "p2", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"},
+		{"id": "e1", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"},
+		{"id": "e2", "side": "enemy", "transport": true, "hp": 40, "maxHp": 40, "name": "Hauler"},
+		{"id": "e3", "side": "enemy", "hp": 0, "maxHp": 100, "dead": true, "name": "Bonewright"}]}
+	var R := {"RUN": {"admiral": "vex", "fac": "voidsworn", "sector": 1, "t0": 7, "flagUid": "s1", "fleet": [{"uid": "s1", "name": "Cold Watch"}]}, "B": B, "ADMIRALS": {}, "FACTIONS": {}}
+	var view := {"units": [{"id": "p1", "side": "player", "flagship": false, "hp": 80, "maxHp": 100, "name": "Cold Watch"},
+		{"id": "p2", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"}, {"id": "e1", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"},
+		{"id": "e2", "side": "enemy", "hp": 40, "maxHp": 40, "name": "Hauler"}, {"id": "e3", "side": "enemy", "hp": 0, "maxHp": 100, "name": "Bonewright"}]}
+	var v = Voice.new()
+	v.setup_from_rules(R, view)
+	ok(v.flag_id == "p1" and str(v.info.get("flagship_name")) == "Cold Watch", "voice live: player flagship read from pflag (%s, %s)" % [v.flag_id, str(v.info.get("flagship_name"))])
+	ok(v._fill("Cover {flagship}!") == "Cover Cold Watch!", "voice live: {flagship} fills with the run flagship name")
+	var v0 = Voice.new()
+	v0.setup({"units": []}, {"admiral": "vex", "fac": "voidsworn", "flagship_name": ""})
+	ok(v0._fill("Cover {flagship}!") == "", "voice live: a line with an empty {flagship} slot is skipped")
+	# roster drift: a reinforcement joins, a risen hull comes back at the rules hp, a ram reads the real outcome
+	B["units"].append({"id": "g1", "side": "player", "reinf": true, "hp": 30, "maxHp": 30, "name": "Garrison Picket"})
+	v.on_event({"t": "log", "text": "A friendly ship jumps in."})
+	ok(v.units.has("g1") and v._player_alive_count() == 3, "voice live: a mid-battle reinforcement joins the roster (alive %d)" % v._player_alive_count())
+	B["units"][4]["dead"] = false; B["units"][4]["hp"] = 35
+	v.on_event({"t": "risen", "unit": "e3"})
+	ok(is_equal_approx(float(v.units["e3"]["hp"]), 35.0), "voice live: risen hull takes the rules hp (%s)" % str(v.units["e3"]["hp"]))
+	v.on_event({"t": "ram", "unit": "p1", "target": "e1", "dmg": 999})
+	ok(float(v.units["e1"]["hp"]) == 200.0, "voice live: ram reads the real outcome, not the estimate (%s)" % str(v.units["e1"]["hp"]))
+	B["units"][1]["hp"] = 12   # a player revival or repair shows up too
+	v.on_event({"t": "round", "round": 2})
+	ok(float(v.units["p2"]["hp"]) == 12.0, "voice live: player hp follows the rules")
+	# Intercept transport getting through: no coward taunt. Fresh voices for both cases (issue 1575 review): the voice
+	# above has spent part of its taunt budget, so an empty answer there would not prove the exit rule.
+	B["units"][3]["dead"] = true
+	var vx = Voice.new()
+	vx.setup_from_rules(R, view)
+	ok(vx.sit_spoken == 0, "voice live: the exit check starts with an unspent taunt budget")
+	var fl: Array = vx.on_event({"t": "fled", "unit": "e2", "why": "exit"})
+	ok(fl.is_empty() and not vx.said.has("sit_enemy_flee"), "voice live: an Intercept exit speaks no retreat taunt")
+	var vr = Voice.new()
+	vr.setup_from_rules(R, view)
+	var rt: Array = vr.on_event({"t": "fled", "unit": "e2", "why": "escape"})
+	ok(rt.size() == 1 and vr.said.has("sit_enemy_flee"), "voice live: a real retreat from a fresh voice does speak the taunt (%d lines)" % rt.size())
 
 
 # ---------------------------------------------------------------- 7. arc plumbing (tokens, conditions, variants)
@@ -329,7 +407,9 @@ func t_arc() -> void:
 	ok(a.load_arc("voidsworn", "res://story/test/fixture_arc.json"), "arc: fixture loads")
 	var ctx := {"nem": she, "flags": {}, "seed": 3, "seen": {"arc_voidsworn_1B": 1}, "first_lost": "", "arcs_finished": 0}
 	var b1: Dictionary = a.render(1, ctx)
-	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. She left an inventory of what was taken, and when she will return for the rest.") and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
+	var RL_arc = JSON.parse_string(_read("res://story/data/rival_lines.json"))
+	var exp_deed: String = T.fill(str(RL_arc["hegemony"]["deed"]["methodical"]), {"nem": she})
+	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. " + exp_deed) and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
 	ok(b1["o"][0]["fl"].get("fx_keep") == 1 and b1["o"][1]["fl"].get("greed") == 1 and b1["o"][1]["fl"].get("fx_sell") == 1, "arc: an option's story flag rides in fl (the event system stores it)")
 	var seen := {"arc_voidsworn_1A": 2, "arc_voidsworn_1B": 0}
 	ctx["seen"] = seen
@@ -337,10 +417,10 @@ func t_arc() -> void:
 	ctx["prior_loss"] = true
 	ok(str(a.render(1, ctx)["b"]).contains("PRIOR-LOSS"), "arc: prior-loss line on beat 1")
 	ctx["flags"] = {"fx_keep": 1}
-	ctx["first_lost"] = "Oathkeeper"
+	ctx["first_lost"] = "Cold Watch"
 	var b2: Dictionary = a.render(2, ctx)
 	var txt := str(b2["b"])
-	ok(txt.contains("KEEP-LINE") and txt.contains("LOST-LINE Oathkeeper") and not txt.contains("SELL-LINE") and not txt.contains("THIRD-COND"), "arc: conditional lines, at most two per card: %s" % txt)
+	ok(txt.contains("KEEP-LINE") and txt.contains("LOST-LINE Cold Watch") and not txt.contains("SELL-LINE") and not txt.contains("THIRD-COND"), "arc: conditional lines, at most two per card: %s" % txt)
 	ok(txt.contains("Rear admiral Petra Lindqvist: \""), "arc: beat 2 carries his line")
 	var ks: Array = b2["o"].map(func(o): return o["k"])
 	ok(ks == ["x", "blue"] and b2["o"][1].has("need"), "arc: hidden option stays hidden, blue keeps its need %s" % str(ks))
@@ -349,9 +429,9 @@ func t_arc() -> void:
 	ok(ks.has("hidden"), "arc: an option shows when its condition holds")
 	ctx["nem"] = {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony"}
 	var b3: Dictionary = a.render(3, ctx)
-	ok(str(b3["b"]).contains("You left people behind for a bonus"), "arc: beat 3 hail follows the run's lean (ruthless)")
+	ok(str(b3["b"]).contains("Even the Registry considers your record excessive"), "arc: beat 3 hail follows the run's lean (ruthless)")
 	ctx["nem"] = {"name": "Grul Hook", "title": "Warlord", "fac": "corsair", "beaten": 1}
-	ok(str(a.render(3, ctx)["b"]).contains("I kept your dents as trophies"), "arc: beat 3 hail when he remembers you")
+	ok(str(a.render(3, ctx)["b"]).contains("come add another trophy to my bow"), "arc: beat 3 hail when he remembers you")
 	ok(a.cond("flag:fx_keep|flag:fx_sell", {"flags": {"fx_sell": 1}}) and not a.cond("flag:fx_keep|flag:zz", {"flags": {"fx_sell": 1}}) and a.cond("!flag:zz&flag:fx_sell|flag:q", {"flags": {"fx_sell": 1}}), "arc: conditions with & and |")
 	ok(a.ending(true, ctx) == "WIN. WIN-SELL" and a.ending(false, {"flags": {"fx_keep": 1}}) == "LOSS. LOSS-KEEP", "arc: endings follow the choices")
 	ctx["arcs_finished"] = 2

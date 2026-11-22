@@ -71,7 +71,7 @@ func _clip(name: String, secs: float) -> void:
 		var img := get_viewport().get_texture().get_image()
 		if img.get_width() > 1280:
 			img.resize(1280, int(1280.0 * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
-		preload("res://tools/picture_provenance.gd").save_jpg(img, d.path_join("%04d.jpg" % i), 0.82)
+		preload("res://tools/picture_provenance.gd").save_jpg(img, d.path_join("%04d.jpg" % i), 0.82, preload("res://tools/picture_provenance.gd").capture_stage())
 
 
 var wing_runs := 0

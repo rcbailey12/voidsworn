@@ -121,7 +121,7 @@ func _run() -> void:
 	cam.look_at_from_position(sv.to_global(h.c + Vector3(0.0, 0.75, 0.6).normalized() * 170.0), sv.to_global(h.c))
 	for i in 3:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/clean_tac.png" % out)
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/clean_tac.png" % out, preload("res://tools/picture_provenance.gd").capture_stage())
 	var L: float = h.L
 	var total_ms := 0.0
 	# one mark at a time on the clean hull (each one's own cost, and nothing evicted by the section budget): a close-up
@@ -175,7 +175,7 @@ func _run() -> void:
 				cam.look_at_from_position(sv.to_global(eye), sv.to_global(E.c))
 				for i in 3:
 					await RenderingServer.frame_post_draw
-				preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s.png" % [out, nm])
+				preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s.png" % [out, nm], preload("res://tools/picture_provenance.gd").capture_stage())
 				print("wrote ", nm)
 				if true:
 					# the battle camera's distance, looking at the ship from the mark's side and from above (r8: a second
@@ -187,7 +187,7 @@ func _run() -> void:
 					cam.look_at_from_position(sv.to_global(h.c + vd * 170.0), sv.to_global(h.c))
 					for i in 3:
 						await RenderingServer.frame_post_draw
-					preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s_%s.png" % [out, nm.replace("_cooled", ""), "tac" if pass_i == 1 else "tacf"])
+					preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s_%s.png" % [out, nm.replace("_cooled", ""), "tac" if pass_i == 1 else "tacf"], preload("res://tools/picture_provenance.gd").capture_stage())
 	print("MARKS_COST total %.1f ms for %d marks one at a time; hull tris %d" % [total_ms, LOOKS.size(), h.tri_count])
 	if only != "":
 		PG.finish(0)
@@ -207,10 +207,10 @@ func _run() -> void:
 	cam.look_at_from_position(sv.to_global(h.c + Vector3(-0.15 * L, 0.55 * L, 0.75 * L)), sv.to_global(h.c))
 	for i in 3:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/all_overview.png" % out)
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/all_overview.png" % out, preload("res://tools/picture_provenance.gd").capture_stage())
 	cam.fov = 45.0
 	cam.look_at_from_position(sv.to_global(h.c + Vector3(-0.3, 0.75, 0.6).normalized() * 170.0), sv.to_global(h.c))
 	for i in 3:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/all_tac.png" % out)
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/all_tac.png" % out, preload("res://tools/picture_provenance.gd").capture_stage())
 	PG.finish(0)

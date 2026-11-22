@@ -10,7 +10,7 @@ globalThis.heatTest = () => {
   META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; runOpt.heat = [];
   ok.equal(heatUnlocked(), false, 'a fresh profile has Heat closed');
   ok.ok(!runOptionsHtml().includes('data-act="optHeat"'), 'a fresh profile sees no Heat control');
-  ok.ok(runOptionsHtml().includes('Lose a run to unlock Heat'), 'the locked card says how Heat opens');
+  ok.ok(runOptionsHtml().includes('Lose a run to unlock Threat'), 'the locked card says how Heat opens');
 
   newRun('vaelen', 'ithar'); RUN.stats.battles = 0; endRun(false);
   ok.equal(META.stats.losses, 1, 'a lost run is recorded');

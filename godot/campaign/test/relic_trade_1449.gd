@@ -178,7 +178,7 @@ func _page(must: String, code: String, scales: String) -> bool:
 		if img.get_height() > 720:
 			img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
 		var f := code + ("_larger" if sc > 1.0 else "_normal") + ".png"
-		if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(f)) != OK:
+		if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(f), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 			_fail("could not write " + f); return false
 		print("Saved ", f)
 	UiScale.set_player(1.0); ui._rescale()

@@ -124,7 +124,7 @@ job has finished. Why: a merged change left existing profiles with Heat closed (
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
 Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
-stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+stage (sheet built, paint proof, installed in game, cloud direction check for a cloud, software or placeholder render (issue 1567), Ryan accepted); a stale picture is never shown as current, and if the
 picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
 compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
 says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
@@ -287,6 +287,7 @@ Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mos
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
@@ -384,7 +385,7 @@ every process of that launch has exited, links as links, never a job's own profi
 Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
 a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
 janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
-Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access, and the picture
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access (only inside the job's own `voidsworn-run-*` scratch; any other folder keeps Python's private one, Artoo after PR 1537), and the picture
 provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
 private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21; the PC proof board/pc-out-1535 showed that private list alone is the cause, with no elevation involved). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
