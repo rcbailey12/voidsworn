@@ -1297,6 +1297,9 @@ func _play_batch(bt: Dictionary) -> void:
 			for g in grp:
 				if g["t"] == "hit":
 					music_hits += 1
+			_voice_event(e)
+			for g in grp:
+				_voice_event(g)
 			await _play_fire(e, grp)
 			_tip_completed(e)
 			if enemy:
@@ -1383,11 +1386,18 @@ func _who(id) -> String:
 var voice = null   # story hook: godot/story/battle_voice.gd (null when the story folder is missing)
 
 
+# story hook: every rules event reaches battle voice exactly once, including a volley's fire and its grouped hits,
+# which _play_batch plays through _play_fire and never hands to _play_event (Artoo on PR 1552, issue 1551)
+func _voice_event(e: Dictionary) -> void:
+	if voice == null:
+		return
+	for l in voice.on_event(e):
+		hud.add_log(l["text"], l["kind"])
+		recording_cue.emit("voice", l["text"])
+
+
 func _play_event(e: Dictionary, batch_view := {}) -> void:
-	if voice != null:   # story hook
-		for l in voice.on_event(e):
-			hud.add_log(l["text"], l["kind"])
-			recording_cue.emit("voice", l["text"])
+	_voice_event(e)
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
