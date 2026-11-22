@@ -1,0 +1,39 @@
+start ithar_GA1 I16_11 board/pin-1415i Sat 11/21/2026 22:23:09.37 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ * [new branch]          opus/issue-1581      -> opus/issue-1581
+ * [new ref]             refs/pull/1591/head  -> refs/pull/1591/head
+ * [new ref]             refs/pull/1591/merge -> refs/pull/1591/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GA1\repo
+commit=752bfcba5f1715b52d11a7d9557b505cb78c9d21
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+import exit 0 
+1_concept_in start 22:28:43.49 
+1_concept_in exit 0 at 22:28:46.96 
+2_shape_ref start 22:28:46.96 
+2_shape_ref exit 0 at 22:28:47.81 
+3_trace_hull start 22:28:47.81 
+3_trace_hull exit 0 at 22:30:23.27 
+4_parts_kit start 22:30:23.27 
+4_parts_kit exit 0 at 22:31:18.52 
+5_paint_bake start 22:31:18.52 
+5_paint_bake exit 0 at 22:35:23.70 
+6_lod start 22:35:23.71 
+6_lod exit 0 at 22:36:41.77 
+7_export start 22:36:41.77 
+7_export exit 0 at 22:39:19.58 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GA1\repo\godot\assets\ships\I16_11\I16_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GA1\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 361.9 GB free
+done PASS Sat 11/21/2026 22:40:02.54 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-907de46959624db58e782ba8a933acdc

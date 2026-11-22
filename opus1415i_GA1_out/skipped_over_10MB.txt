@@ -1,0 +1,2 @@
+recipe\export\I16_11\I16_11.glb 15.3 MB
+recipe\export\I16_11\_gltf_source\I16_11.bin 15.2 MB

@@ -1,0 +1,123 @@
+{
+ "cell": "GA1",
+ "route": "build sheet ithar_GA1 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 100.1,
+ "geometry_seconds": 5.2,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 49,
+  "part_objects": 41,
+  "glow_objects": 19,
+  "interior_objects": 20,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 10.3,
+  "bake_H_albedo_s": 8.4,
+  "bake_H_orm_s": 8.4,
+  "bake_H_emission_s": 8.4,
+  "bake_H_normal_s": 7.9,
+  "zones_H": [
+   "gw_mosaic",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "bake_P_masks_s": 10.3,
+  "bake_P_albedo_s": 6.2,
+  "bake_P_orm_s": 6.5,
+  "bake_P_normal_s": 10.3,
+  "zones_P": [
+   "gw_lance",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "glow_materials": [
+   "ithar_glow_gw_beam",
+   "ithar_glow_gw_drive",
+   "ithar_glow_gw_drive_core",
+   "ithar_glow_gw_drive_cut",
+   "ithar_glow_gw_gem_amber",
+   "ithar_glow_gw_gem_green",
+   "ithar_glow_gw_gem_violet",
+   "ithar_glow_gw_light",
+   "ithar_glow_gw_tip"
+  ],
+  "inside_materials": [
+   "ithar_inside_gw_in_amber",
+   "ithar_inside_gw_in_frame",
+   "ithar_inside_gw_in_green",
+   "ithar_inside_gw_in_violet"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.2527,
+    "area": 2.53421,
+    "texels_per_unit2": 1673234.4
+   },
+   "parts": {
+    "uv_share": 0.4677,
+    "area": 0.30663,
+    "texels_per_unit2": 25588273.7
+   }
+  },
+  "stack_seconds": 91.8
+ },
+ "density": {
+  "paint_flags": [
+   "gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "part: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "engine: tris_per_unit2 58276.6 is 0.46 of the hull's 125564.9",
+   "engine: edges_per_unit2 1821.1 is 0.08 of the hull's 23032.4"
+  ],
+  "hull": {
+   "area": 2.53421,
+   "triangles": 318208,
+   "tris_per_unit2": 125564.9,
+   "edges_per_unit2": 23032.4,
+   "texels_per_unit2": 1673234.4,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 62.03,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "ithar_GA1",
+  "game_ship": "i_carrier",
+  "variant": "",
+  "model_length": 16.95345,
+  "scale": 0.05898504695398206,
+  "length_world": 16.5,
+  "t_lines": [
+   -0.32147,
+   -0.24479,
+   0.1799
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 2,
+  "guns": 2,
+  "engines": 1,
+  "bays": 2,
+  "points": 10,
+  "turrets": [
+   "O1_turret"
+  ],
+  "interior_objects": 20,
+  "slots": [
+   "0 pulsar F",
+   "1 turret T"
+  ]
+ },
+ "triangles": 376388,
+ "objects": 109,
+ "surfaces": 11,
+ "draw_calls_merged": 11
+}
