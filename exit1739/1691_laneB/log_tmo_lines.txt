@@ -1,0 +1,26 @@
+2252: - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
+2254:   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+2331: 90:- LATEST (09:45 UTC Nov 22): hourly lane check. MERGED 1627 (1484 Chorus biomass; 1484 closed), 1637 (R402 faction hit damage, landed in docs/playbooks/deaths_and_hits.md; concept sheet first), 1583 (1394 acid melt, 1394D PASS; 1394 open for Ryan's look), 1592 (1396 janitor widening; DRY3 and DRY4 on 88aef74a clean, 15 removals about 16 GB), 1639 (1235 wound reference rows), 1630 (1625 review). Live janitor OPUS1396_LIVE held for Ryan's own yes (C: 216 GB, no pressure). New: 1633 first-death probe (PR 1634 CI shard 2 timeout on death_cost_check, thread fixing), 1636 Neon build-variety review delivered as PR 1640, R402. 1591 main merged at 7777291c, green. 1536D replaced 1536C (Artoo sightline fix). GPU line: 1581B running, then 1558A, 1437A, 1235RC, LOAD19, 1446, 1480, 1587B, 1536D, 1633 probe (solo), 1235WD. Codex idle until 1530 at 16:45 UTC; OpenAI lane idle (ledger $56.16 of $59.45).
+2424: - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
+2426:   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+9024:     timeout-minutes: 25
+9920: # Prints one line per failed file, then "load all: N scripts, M scenes, F failed"; exit code 1 when F > 0.
+9976: 161:  const count = positive('PARITY_WORKERS', 4), seconds = positive('PARITY_TIMEOUT_SECONDS', 1200);
+10029:     let child, timeout = false, error;
+10032:         // start /b launches Godot separately; /wait keeps its exit code and lifetime attached to the worker.
+10044:     const timer = setTimeout(() => {
+10045:       timeout = true;
+10057:       clearTimeout(timer); fs.closeSync(fd); resolve({ code, signal, timeout, error });
+10115: global.addEventListener = () => {}; global.requestAnimationFrame = () => 0; global.innerWidth = 1600; global.innerHeight = 900; global.setTimeout = f => { Promise.resolve().then(() => { try { f(); } catch (e) {} }); return 0; }; global.clearTimeout = () => {}; global.setInterval = () => 0; global.clearInterval = () => {};
+10130:   derive, applyOutcome, genSector, canFitModule, ACT, rollBoonOffer, boonStep, boonReroll, boonRerollOk, boonOfferCan, rndSeed, META, needMet, eventFlags, verbFree, FAC_VERBS,
+10151:   const a = !T.canFitModule(w, 'crystal') && T.canFitModule(p, 'crystal') && T.canFitModule(c, 'hangar') && !T.canFitModule(p, 'hangar') && T.canFitModule(w, 'prow') && !T.canFitModule(w, 'nope');
+11879: const run = (...a) => { const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(ROOT, 'tools', 'pc', 'relay_push.ps1'), ...a], { env, encoding: 'utf8', timeout: 120000 }); return { status: r.status, out: `${r.stdout}\n${r.stderr}` }; };
+12030: PASS: detail_check_tests (7.00 s) | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+12202: PASS: run_all_checks_live_tests (3.84 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+12253: PASS: workflow_config_tests (0.17 s) | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout
+12321: PASS stage 5 bake exit code stops the stage
+12324: PASS stage 5 render pass 2 exit code stops the stage
+12326: PASS stage 5 render pass 3 exit code stops the stage
+12379: detail_check_tests | PASS | 7.00 | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+12431: run_all_checks_live_tests | PASS | 3.84 | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+12448: workflow_config_tests | PASS | 0.17 | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout

@@ -1,0 +1,40 @@
+9672: -		var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0}
+9680: +	var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0,
+9724: -	var round_line := "sector %d %-6s win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+9725: +	var round_line := "sector %d %-6s col %d  player %-9s  win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+9729:  		totals.rounds / count, JSM.jsround(totals.hull / count * 100), totals.lost / count, totals.timeouts,
+9872: $env:TMO_OWN_COPY='"'1'
+9987:                                 capture_output=True, text=True, timeout=30)
+10044:             result = subprocess.run([*editor, *args], env=env, capture_output=True, text=True, timeout=60)
+10056:                                     env=env, capture_output=True, text=True, timeout=60)
+10078:         return subprocess.run(command, env=env, capture_output=True, text=True, timeout=30)
+10203:     stdout, stderr = process.communicate(input, timeout=timeout)
+10206:     stdout, stderr = self._communicate(input, endtime, timeout)
+10209:     raise TimeoutExpired(self.args, orig_timeout)
+10210: subprocess.TimeoutExpired: Command '['C:\\Users\\rcbai\\Downloads\\voidsworn_test\\godot\\Godot_v4.7.2-stable_win64_console.exe', '--headless', '--path', 'C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-dd4765e47c8f42378264f9f669ab8938\\picture889-f576aa0bcb89ee56\\archive build\\godot', '--', 'C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-dd4765e47c8f42378264f9f669ab8938\\picture889-f576aa0bcb89ee56\\no build info']' timed out after 30 seconds
+10706: const run = (...a) => { const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(ROOT, 'tools', 'pc', 'relay_push.ps1'), ...a], { env, encoding: 'utf8', timeout: 120000 }); return { status: r.status, out: `${r.stdout}\n${r.stderr}` }; };
+10742:   const runB = (...a) => { const x = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(ROOT, 'tools', 'pc', 'relay_push.ps1'), ...a], { env: benv, encoding: 'utf8', timeout: 120000 }); return { status: x.status, out: `${x.stdout}\n${x.stderr}` }; };
+10821:       stdio: ['ignore', fd, fd], windowsHide: true, timeout: 60000,
+10857: assert(/call "%TP%tmo\.bat" 1800 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
+10859: assert(/call "%T%tmo\.bat" %CHECK_CAP% "%NODE%" contrib\\opus\\tools\\run_all_checks\.js/.test(work));
+10860: assert(/call "%TP%tmo\.bat" 1500 "%COMSPEC%" \/c tools\\pc\\parity\.bat/.test(codex));
+10862: console.log('PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s');
+10880:       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
+10884:     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
+10892:   const rank = c => (c.timeout > 300 ? 0 : c.fast ? 2 : 1);
+10931: The updated ability check now exercises `PFACTION` and the boss filter through the simulator?s campaign path, and it passes through the Godot test registry. The standing suite has reported failures in separate Windows fixtures, including a Python alias and a picture-provenance timeout. I?m waiting for the remaining check results.
+11073: -		var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0}
+11081: +	var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0,
+11125: -	var round_line := "sector %d %-6s win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+11126: +	var round_line := "sector %d %-6s col %d  player %-9s  win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+11130:  		totals.rounds / count, JSM.jsround(totals.hull / count * 100), totals.lost / count, totals.timeouts,
+11658: PASS: detail_check_tests (6.66 s) | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+11763: PASS every Godot and Python step runs through tools_live tmo.bat
+11830: PASS: run_all_checks_live_tests (12.26 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+11881: PASS: workflow_config_tests (0.14 s) | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout
+11915: PASS stage 5 bake exit code stops the stage
+11917: PASS stage 5 render pass 3 exit code stops the stage
+11919: PASS stage 5 render pass 2 exit code stops the stage
+11973: detail_check_tests | PASS | 6.66 | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+12025: run_all_checks_live_tests | PASS | 12.26 | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+12042: workflow_config_tests | PASS | 0.14 | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout

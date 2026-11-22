@@ -1,0 +1,4 @@
+603: # Codex job: issue #1488, "Workflow fixes: permissions, 906 in STANDING, auto_pr timeout and REST, branch exclusions, em dash extensions (GH-06)"
+617: - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
+619:   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+642: Audit GH-06. permissions block on checks.yml; add issue 906 to STANDING; auto_pr timeout and REST calls instead of gh pr (GraphQL); checks.yml branch exclusions match auto_pr (add !muse/wip-* and !neon/**-partial); main_commit_lint uses the compare API with no full checkout; check_em_dashes.js also covers .gdshader, .tres, .toml, .cmd.

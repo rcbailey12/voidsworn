@@ -1,0 +1,446 @@
+Running auto_pr_body_tests (limit 300 s)...
+PASS: auto_pr_body_tests (13.58 s) | PASS auto_pr_body_tests: create and edit bound long bodies and refreshes keep the Board Refs directive
+Running b1_tests (limit 300 s)...
+PASS: b1_tests (0.18 s) | PASS: exit 0
+Running b3_tests (limit 300 s)...
+PASS: b3_tests (0.22 s) | PASS: exit 0
+Running b4_tests (limit 300 s)...
+PASS: b4_tests (0.80 s) | PASS: exit 0
+Running backlog_tests (limit 300 s)...
+PASS: backlog_tests (0.21 s) | PASS: exit 0
+Running build_manifest_tests (limit 300 s)...
+PASS: build_manifest_tests (0.19 s) | PASS build_manifest_tests: 32 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_C12, chorus_C13, chorus_C14, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, hegemony_O2, hegemony_O3, ithar_CD5, ithar_GA1, ithar_GL1, ithar_GP1, ithar_GS1, voidsworn_S10, voidsworn_S11, voidsworn_S8, voidsworn_S9, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+Running campaign_saves_1556_tests (limit 300 s)...
+PASS: campaign_saves_1556_tests (0.12 s) | PASS: exit 0
+Running campaign_start_test (limit 300 s)...
+PASS: campaign_start_test (0.19 s) | PASS: exit 0
+Running capstone_mastery_tests (limit 300 s)...
+PASS: capstone_mastery_tests (0.10 s) | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+Running check_em_dashes_tests (limit 300 s)...
+PASS: check_em_dashes_tests (0.59 s) | PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell, workflow, shader, resource, toml and cmd paths
+Running checks_truth_tests (limit 300 s)...
+PASS: checks_truth_tests (0.06 s) | PASS: the checks runner result words behave as issue 358 requires
+Running chorus_biomass_1484_tests (limit 300 s)...
+PASS: chorus_biomass_1484_tests (0.10 s) | PASS: exit 0
+Running chorus_eat_core_tests (limit 300 s)...
+PASS: chorus_eat_core_tests (0.09 s) | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+Running cinder_prizes_tests (limit 300 s)...
+PASS: cinder_prizes_tests (0.13 s) | PASS: exit 0
+Running core_sync_tests (limit 300 s)...
+PASS: core_sync_tests (0.11 s) | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+Running detail_check_tests (limit 300 s)...
+PASS: detail_check_tests (5.05 s) | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+Running doc_check_tests (limit 300 s)...
+PASS: doc_check_tests (0.30 s) | PASS: 213 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 123 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 289) or latest record, and the two stale entry-document claims stay gone
+Running eclipse_violet_1641_tests (limit 300 s)...
+PASS: eclipse_violet_1641_tests (0.10 s) | PASS: exit 0
+Running effect_caps_tests (limit 300 s)...
+PASS: effect_caps_tests (0.08 s) | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+Running env_reconcile_tests (limit 300 s)...
+PASS: env_reconcile_tests (0.06 s) | PASS: exit 0
+Running event_fight_retreat_1628_tests (limit 300 s)...
+PASS: event_fight_retreat_1628_tests (0.09 s) | PASS: exit 0
+Running fleet_list_tests (limit 300 s)...
+PASS: fleet_list_tests (0.08 s) | PASS: 10 fleet list checks; 36 ship slots, 27 in the new build format, every old hull has a job or a keep reason
+Running free_exit_tests (limit 300 s)...
+PASS: free_exit_tests (0.20 s) | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+Running fx_death_spawn_tests (limit 300 s)...
+PASS: fx_death_spawn_tests (1.39 s) | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+Running fx_late_shader_tests (limit 300 s)...
+PASS: fx_late_shader_tests (1.19 s) | PASS: the late shader behaviour check passed
+Running gen_open_work_tests (limit 300 s)...
+PASS: gen_open_work_tests (0.13 s) | PASS: 13 open work generator tests (offline)
+Running godot_profile_tests (limit 300 s)...
+PASS: godot_profile_tests (11.03 s) | PASS: fresh owned profiles for wrapped Godot starts, removed when the process ends (links never followed, keep on request), explicit opt-in, and staged export templates
+Running godot_shard_tests (limit 300 s)...
+PASS: godot_shard_tests (15.00 s) | PASS godot_shard_tests: 185 headless checks, each in exactly one of 1, 2, 3 and 5 shards; 3 shards planned at 375, 375, 375 s
+Running gpu_slots_tests (limit 300 s)...
+PASS: gpu_slots_tests (61.02 s) | PASS GPU slot checks (24 groups)
+Running gpu_statics_tests (limit 300 s)...
+PASS: gpu_statics_tests (0.36 s) | PASS: 27 GPU-holding statics in 15 listed scripts are cleared at quit (25 tagged not GPU)
+Running hardpoint_contract_tests (limit 300 s)...
+PASS: hardpoint_contract_tests (0.22 s) | PASS the hard point contract tables and standing gate behave
+Running heat_tests (limit 300 s)...
+PASS: heat_tests (0.12 s) | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+Running helper_clone_tests (limit 300 s)...
+PASS: helper_clone_tests (0.06 s) | PASS helper clone: static contract
+Running inheritance_tests (limit 300 s)...
+PASS: inheritance_tests (0.12 s) | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+Running ion_pulse_ai_tests (limit 300 s)...
+PASS: ion_pulse_ai_tests (0.17 s) | PASS: exit 0
+Running ion_tests (limit 300 s)...
+PASS: ion_tests (0.14 s) | PASS: exit 0
+Running late_campaign_1384_tests (limit 300 s)...
+PASS: late_campaign_1384_tests (0.11 s) | PASS: exit 0
+Running late_stock_1290_tests (limit 300 s)...
+PASS: late_stock_1290_tests (0.10 s) | PASS: exit 0
+Running lineage_tests (limit 300 s)...
+PASS: lineage_tests (0.13 s) | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+Running main_commit_lint_tests (limit 300 s)...
+PASS: main_commit_lint_tests (0.07 s) | PASS main_commit_lint_tests: REST compare, STANDING 256 and 906 from auto_pr.yml, closing words caught
+Running memory_lint_tests (limit 300 s)...
+PASS: memory_lint_tests (0.11 s) | PASS: 189 cited ruling ids all have a contrib/opus/FINDINGS.md row; 131 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 16 LATEST lines (target 15 or fewer)
+Running mirror_cache_1396_tests (limit 300 s)...
+PASS: mirror_cache_1396_tests (5.72 s) | PASS mirror_cache_1396_tests: the reused mirror commit list ends when a ref is pruned, so a commit only the pruned ref held keeps its checkout, and a live removal waits for the mirror writers' lock
+Running montecarlo_bot_tests (limit 300 s)...
+PASS: montecarlo_bot_tests (23.72 s) | PASS: the Monte Carlo bot plays a seeded run for each of 6 factions without errors
+Running nem_unknown_key_tests (limit 300 s)...
+PASS: nem_unknown_key_tests (0.10 s) | PASS nem_unknown_key_tests: 0 failure(s)
+Running nemesis_121_tests (limit 300 s)...
+PASS: nemesis_121_tests (0.13 s) | PASS: exit 0
+Running nemesis_122_tests (limit 300 s)...
+PASS: nemesis_122_tests (0.12 s) | PASS: exit 0
+Running nemesis_395_tests (limit 300 s)...
+PASS: nemesis_395_tests (0.18 s) | PASS: exit 0
+Running nemesis_clash_tests (limit 300 s)...
+PASS: nemesis_clash_tests (0.26 s) | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+Running nemesis_teach_tests (limit 300 s)...
+PASS: nemesis_teach_tests (0.11 s) | PASS: exit 0
+Running opus_job_head_tests (limit 300 s)...
+PASS: opus_job_head_tests (0.07 s) | PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts
+Running paint_lint_tests (limit 300 s)...
+PASS: paint_lint_tests (0.21 s) | PASS paint_lint: colour, welded islands, adjacency and a planted loose box
+Running paint_sheet_camera_tests (limit 300 s)...
+PASS: paint_sheet_camera_tests (0.42 s) | PASS paint sheet camera: 27 saved cameras and clip edge cases
+Running parity_cleanup_tests (limit 300 s)...
+PASS: parity_cleanup_tests (0.08 s) | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+Running pc_jobs_1194_tests (limit 300 s)...
+PASS: pc_jobs_1194_tests (12.23 s) | PASS PC jobs 1194 checks (14 groups)
+Running picture_provenance_tests (limit 300 s)...
+FAIL: picture_provenance_tests (40.46 s) | FAIL picture provenance self-test; artifacts kept for diagnosis in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\picture889-ecabadb66c39508a
+
+FAIL picture_provenance_tests (first 15 output lines):
+PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer
+PASS stage sweep: every shared writer call names its stage (no default claims installed in game)
+PASS consecutive Review saves keep only their own input and revision
+PASS refused save without new or explicitly reused inputs
+PASS refused unsupported output format
+PASS cached inputs survive reuse, composite inputs deduplicate, retries retain inputs and copies stay separate
+PASS real build-sheet publisher isolates every copy and retains both composite input revisions
+PASS PNG has a visible stamp, full revision, UTC date, and exact restored alpha/pixels
+PASS JPEG, WebP and every animated GIF frame carry verifiable strips
+PASS composites preserve both input revisions and cached pictures are never relabelled
+PASS real look-bench moments, overviews and fleet skies isolate inputs while retaining reused captures
+PASS real look-bench sheets retain both revisions and compare original pixels with zero label noise
+PASS refused unstamped sheet input
+PASS refused unstamped PR picture
+PASS refused PC picture link
+Running prune_relay_branches_tests (limit 300 s)...
+PASS: prune_relay_branches_tests (7.97 s) | PASS: prune_relay_branches lists only stale relay and pin branches, a dry run deletes nothing, live deletes only unmoved listed branches that still pass every keep rule
+Running publish_ship_tests (limit 300 s)...
+FAIL: publish_ship_tests (16.35 s) | FAIL: exit 1
+
+FAIL publish_ship_tests (first 15 output lines):
+PASS CRLF line ends
+PASS every failure reaches the guard before the next command
+PASS receipt before any change; old files kept and the undo written before the install; sealed after it; restore on a failed install; cache build locked
+PASS every Godot and Python step runs through tools_live tmo.bat
+PASS nothing is deleted, by the job or by its undo
+PASS every way out ends in all done PASS or all done FAILED
+PASS the shots step uses tools_live's stamp tool and the Blender python
+PASS Ryan's real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail
+node:assert:90
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: publish_ship_selftest.py failed:
+Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+
+Running pysite_1535_tests (limit 300 s)...
+FAIL: pysite_1535_tests (0.42 s) | FAIL: exit 1
+
+FAIL pysite_1535_tests (first 15 output lines):
+node:assert:90
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+null !== 0
+
+    at Object.<anonymous> (C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo\contrib\opus\tools\pysite_1535_tests.js:54:10)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+Running r1_tests (limit 300 s)...
+PASS: r1_tests (84.04 s) | PASS: exit 0
+Running relay_push_tests (limit 300 s)...
+FAIL: relay_push_tests (2.58 s) | FAIL: exit 1
+
+FAIL relay_push_tests (first 15 output lines):
+node:assert:90
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: tree: 
+    at Object.<anonymous> (C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo\contrib\opus\tools\relay_push_tests.js:34:10)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  generatedMessage: false,
+Running relic_trade_1449_tests (limit 300 s)...
+PASS: relic_trade_1449_tests (0.09 s) | PASS: exit 0
+Running report_paths_tests (limit 300 s)...
+PASS: report_paths_tests (2.65 s) | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+Running reporting_238_tests (limit 300 s)...
+PASS: reporting_238_tests (0.28 s) | PASS MP8 danger bands
+Running retreat_nemesis_1480_tests (limit 300 s)...
+PASS: retreat_nemesis_1480_tests (0.08 s) | PASS: exit 0
+Running rules_1479_tests (limit 300 s)...
+PASS: rules_1479_tests (0.10 s) | PASS: exit 0
+Running rules_1481_tests (limit 300 s)...
+PASS: rules_1481_tests (0.09 s) | PASS: exit 0
+Running rules_1560_tests (limit 300 s)...
+PASS: rules_1560_tests (0.12 s) | PASS: exit 0
+Running run_all_checks_live_tests (limit 300 s)...
+PASS: run_all_checks_live_tests (3.25 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+Running runner_cleanup_tests (limit 300 s)...
+PASS: runner_cleanup_tests (154.82 s) | PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit
+Running runner_job_tests (limit 300 s)...
+PASS: runner_job_tests (51.60 s) | PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it
+Running runner_stall_tests (limit 300 s)...
+PASS: runner_stall_tests (45.14 s) | PASS runner stall checks (21 groups)
+Running salvage_stdin_tests (limit 300 s)...
+PASS: salvage_stdin_tests (1.98 s) | PASS salvage stdin: git gets BOM-free UTF-8 under a BOM page (65001) and a legacy page (437), non-ASCII included
+Running saved_campaign_update_tests (limit 300 s)...
+FAIL: saved_campaign_update_tests (0.34 s) | FAIL Godot campaign runs exited null (see C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\saved-campaign-NmxEcx\voidsworn-campaign-9KsS1d/campaign_godot.log)
+
+FAIL saved_campaign_update_tests (first 15 output lines):
+node:internal/assert/utils:281
+    throw err;
+    ^
+
+AssertionError [ERR_ASSERTION]: Campaign check (Godot only, against the saved results): seeds 1 to 1; run folder C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\saved-campaign-NmxEcx\voidsworn-campaign-9KsS1d
+  FAIL Godot campaign runs exited null (see C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\saved-campaign-NmxEcx\voidsworn-campaign-9KsS1d/campaign_godot.log)
+  FAIL Godot Nemesis scenarios exited null (see C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\saved-campaign-NmxEcx\voidsworn-campaign-9KsS1d/nem_godot.log)
+  FAIL c1.jsonl: Godot wrote nothing
+  FAIL nem.txt: Godot wrote nothing
+FAIL: not updated; 4 problem(s)
+
+    at Object.<anonymous> (C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo\contrib\opus\tools\saved_campaign_update_tests.js:26:3)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+Running scratch_done_tests (limit 300 s)...
+PASS: scratch_done_tests (4.78 s) | PASS scratch_done: PASS removes the owned scratch without following links, FAILED keeps the newest per job, never touches unowned, busy or outside folders
+Running shadow_xp_tests (limit 300 s)...
+PASS: shadow_xp_tests (0.09 s) | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+Running shield_pool_tests (limit 300 s)...
+PASS: shield_pool_tests (0.15 s) | PASS: exit 0
+Running ship_article_1551_tests (limit 300 s)...
+PASS: ship_article_1551_tests (0.06 s) | PASS: exit 0
+Running ship_job_tests (limit 300 s)...
+PASS: ship_job_tests (4.28 s) | PASS ship job checks (12 groups)
+Running skills_mirror_tests (limit 300 s)...
+PASS: skills_mirror_tests (0.09 s) | PASS: 22 skills; .claude/skills is an exact copy of .agents/skills; names match folders; copied skills carry LICENSE and SOURCE.md
+Running squadron_auto_tests (limit 300 s)...
+PASS: squadron_auto_tests (0.14 s) | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+Running story_beat3_tests (limit 300 s)...
+PASS: story_beat3_tests (0.29 s) | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+Running teaching_strip_1393_tests (limit 300 s)...
+PASS: teaching_strip_1393_tests (0.11 s) | PASS: exit 0
+Running ui_spec_tests (limit 300 s)...
+PASS: ui_spec_tests (0.26 s) | PASS: exit 0
+Running weapon_match_tests (limit 300 s)...
+PASS: weapon_match_tests (0.78 s) | PASS weapon match self-test (36 planted faults, 36 sheet ships in the table)
+Running workflow_config_tests (limit 300 s)...
+PASS: workflow_config_tests (0.06 s) | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout
+Running progression_telemetry_test (limit 300 s)...
+PASS: progression_telemetry_test (0.12 s) | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+Running tree_effects_test (limit 300 s)...
+PASS: tree_effects_test (121.29 s) | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+Running tree_handoff_test (limit 300 s)...
+PASS: tree_handoff_test (0.21 s) | PASS: real campaign picks reach the battle for all six factions (four skills each):
+Running tree_table_walk_test (limit 300 s)...
+PASS: tree_table_walk_test (1.11 s) | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+Running tree_last_rows_test (limit 300 s)...
+PASS: tree_last_rows_test (5.16 s) | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+Running oracle_copy_test (limit 300 s)...
+PASS: oracle_copy_test (0.08 s) | PASS: no oracle folders exist and both table files are present (they are the rules source since R405)
+Running smoke_safety_test (limit 300 s)...
+PASS: smoke_safety_test (6.27 s) | PASS map pace smoke safety (6 saved files held)
+Running spiral_test (limit 300 s)...
+PASS: spiral_test (0.08 s) | PASS: 6 spiral recovery checks
+Running commission_test (limit 300 s)...
+PASS: commission_test (0.18 s) | PASS: 7 commission checks
+Running runner_selftest (limit 600 s)...
+PASS: runner_selftest (131.23 s) | PASS runner687+722+860+985: 138 checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.
+Running g2_export_selftest (limit 300 s)...
+PASS: g2_export_selftest (20.48 s) | PASS: Play launches the promoted export in a path with spaces
+Running pause_all_selftest (limit 300 s)...
+PASS: pause_all_selftest (9.83 s) | PASS pause_all Windows fixture matrix
+Running lane_tools_refresh_selftest (limit 300 s)...
+PASS: lane_tools_refresh_selftest (3.62 s) | PASS: lane tools refresh keeps old tools, refuses busy lanes, rotates old copies safely and installs tools_live
+Running stage5_fail_selftest (limit 600 s)...
+FAIL: stage5_fail_selftest (17.59 s) | FAIL stage5_fail_selftest: Error: sheet paint views failed: ok
+
+FAIL stage5_fail_selftest (first 15 output lines):
+PASS stage 5 and bench 207 scripts carry the issue 873 failure checks
+PASS campaign parity, sweep and audio launchers search parent folders for the PC bundle
+Evidence: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\stage873 qc6Bk2
+PASS stage 5 missing Blender script stops the stage
+PASS stage 5 bake exit code stops the stage
+PASS stage 5 render pass 2 exit code stops the stage
+PASS stage 5 render pass 2 missing output stops the stage
+PASS stage 5 render pass 3 exit code stops the stage
+PASS stage 5 success case: all three render passes finish and the stage exits 0
+PASS stage 5 rejects zero-exit compile error: failed to compile
+PASS stage 5 rejects zero-exit compile error: out of SVM stack space
+PASS stage 5 rejects zero-exit compile error: shader compilation failed
+PASS stage 5 rejects zero-exit compile error: shader compilation error
+PASS stage 5 rejects zero-exit compile error: shader compile error
+PASS stage 5 rejects zero-exit compile error: error compiling
+Running nem_assign_enum (limit 300 s)...
+PASS: nem_assign_enum (0.80 s) | PASS: all issue 120 enumeration checks
+Running nem_direct_reads_report (limit 300 s)...
+PASS: nem_direct_reads_report (1.48 s) | PASS: report only, 201 direct save reads outside godot/campaign (main 12, render 13, scenes 46, story 55, tools 3, ui 67, world 5)
+Running naming_lint_game.test (limit 300 s)...
+PASS: naming_lint_game.test (0.44 s) | PASS: exit 0
+Running naming_lint_game (limit 300 s)...
+PASS: naming_lint_game (84.75 s) | PASS: naming lint within the baseline
+Running checks (limit 300 s)...
+PASS: checks (0.44 s) | PASS: within the pack baseline
+Running big_files (limit 300 s)...
+PASS: big_files (0.07 s) | PASS big_files self-test: 8 cases
+Running fast_selection_test (limit 300 s)...
+PASS: fast_selection_test (1.10 s) | PASS: --fast selects 75 of 113 rows using fast marks and gates
+Running fleet_invariants (limit 300 s)...
+PASS: fleet_invariants (0.81 s) | PASS: exit 0
+Running save_fuzz (limit 300 s)...
+PASS: save_fuzz (0.12 s) | PASS: exit 0
+Running softlock_sweep (limit 300 s)...
+PASS: softlock_sweep (31.62 s) | PASS: exit 0
+Running table_xref (limit 300 s)...
+PASS: table_xref (0.10 s) | PASS: exit 0
+Running findings_tests (limit 300 s)...
+KNOWN: findings_tests (2.08 s) | KNOWN: 6 listed failure(s): KIT-1, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+Running oracle_drift_guard (limit 300 s)...
+KNOWN: oracle_drift_guard (1.77 s) | KNOWN: 12 constant difference(s) within the baseline
+Running fixture_check (limit 300 s)...
+PASS: fixture_check (0.39 s) | PASS fixture corrupt2 pair
+
+check | result | seconds | detail
+--- | --- | --- | ---
+auto_pr_body_tests | PASS | 13.58 | PASS auto_pr_body_tests: create and edit bound long bodies and refreshes keep the Board Refs directive
+b1_tests | PASS | 0.18 | PASS: exit 0
+b3_tests | PASS | 0.22 | PASS: exit 0
+b4_tests | PASS | 0.80 | PASS: exit 0
+backlog_tests | PASS | 0.21 | PASS: exit 0
+build_manifest_tests | PASS | 0.19 | PASS build_manifest_tests: 32 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_C12, chorus_C13, chorus_C14, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, hegemony_O2, hegemony_O3, ithar_CD5, ithar_GA1, ithar_GL1, ithar_GP1, ithar_GS1, voidsworn_S10, voidsworn_S11, voidsworn_S8, voidsworn_S9, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+campaign_saves_1556_tests | PASS | 0.12 | PASS: exit 0
+campaign_start_test | PASS | 0.19 | PASS: exit 0
+capstone_mastery_tests | PASS | 0.10 | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+check_em_dashes_tests | PASS | 0.59 | PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell, workflow, shader, resource, toml and cmd paths
+checks_truth_tests | PASS | 0.06 | PASS: the checks runner result words behave as issue 358 requires
+chorus_biomass_1484_tests | PASS | 0.10 | PASS: exit 0
+chorus_eat_core_tests | PASS | 0.09 | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+cinder_prizes_tests | PASS | 0.13 | PASS: exit 0
+core_sync_tests | PASS | 0.11 | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+detail_check_tests | PASS | 5.05 | PASS a PC shot dirty only with the job's recorded install (its ship files, its manifest row, the watchdog hand-off) passes; a source edit, another tmo.bat, no record, another hull's row or files, or a mismatched manifest is refused by name; the real C14H shot, stamped before the dirty-file list, is refused saying so
+doc_check_tests | PASS | 0.30 | PASS: 213 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 123 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 289) or latest record, and the two stale entry-document claims stay gone
+eclipse_violet_1641_tests | PASS | 0.10 | PASS: exit 0
+effect_caps_tests | PASS | 0.08 | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+env_reconcile_tests | PASS | 0.06 | PASS: exit 0
+event_fight_retreat_1628_tests | PASS | 0.09 | PASS: exit 0
+fleet_list_tests | PASS | 0.08 | PASS: 10 fleet list checks; 36 ship slots, 27 in the new build format, every old hull has a job or a keep reason
+free_exit_tests | PASS | 0.20 | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+fx_death_spawn_tests | PASS | 1.39 | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+fx_late_shader_tests | PASS | 1.19 | PASS: the late shader behaviour check passed
+gen_open_work_tests | PASS | 0.13 | PASS: 13 open work generator tests (offline)
+godot_profile_tests | PASS | 11.03 | PASS: fresh owned profiles for wrapped Godot starts, removed when the process ends (links never followed, keep on request), explicit opt-in, and staged export templates
+godot_shard_tests | PASS | 15.00 | PASS godot_shard_tests: 185 headless checks, each in exactly one of 1, 2, 3 and 5 shards; 3 shards planned at 375, 375, 375 s
+gpu_slots_tests | PASS | 61.02 | PASS GPU slot checks (24 groups)
+gpu_statics_tests | PASS | 0.36 | PASS: 27 GPU-holding statics in 15 listed scripts are cleared at quit (25 tagged not GPU)
+hardpoint_contract_tests | PASS | 0.22 | PASS the hard point contract tables and standing gate behave
+heat_tests | PASS | 0.12 | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+helper_clone_tests | PASS | 0.06 | PASS helper clone: static contract
+inheritance_tests | PASS | 0.12 | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+ion_pulse_ai_tests | PASS | 0.17 | PASS: exit 0
+ion_tests | PASS | 0.14 | PASS: exit 0
+late_campaign_1384_tests | PASS | 0.11 | PASS: exit 0
+late_stock_1290_tests | PASS | 0.10 | PASS: exit 0
+lineage_tests | PASS | 0.13 | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+main_commit_lint_tests | PASS | 0.07 | PASS main_commit_lint_tests: REST compare, STANDING 256 and 906 from auto_pr.yml, closing words caught
+memory_lint_tests | PASS | 0.11 | PASS: 189 cited ruling ids all have a contrib/opus/FINDINGS.md row; 131 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 16 LATEST lines (target 15 or fewer)
+mirror_cache_1396_tests | PASS | 5.72 | PASS mirror_cache_1396_tests: the reused mirror commit list ends when a ref is pruned, so a commit only the pruned ref held keeps its checkout, and a live removal waits for the mirror writers' lock
+montecarlo_bot_tests | PASS | 23.72 | PASS: the Monte Carlo bot plays a seeded run for each of 6 factions without errors
+nem_unknown_key_tests | PASS | 0.10 | PASS nem_unknown_key_tests: 0 failure(s)
+nemesis_121_tests | PASS | 0.13 | PASS: exit 0
+nemesis_122_tests | PASS | 0.12 | PASS: exit 0
+nemesis_395_tests | PASS | 0.18 | PASS: exit 0
+nemesis_clash_tests | PASS | 0.26 | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+nemesis_teach_tests | PASS | 0.11 | PASS: exit 0
+opus_job_head_tests | PASS | 0.07 | PASS ps1: shared mirror lock, full pins, deletes only through the link-safe walk of its own checkouts
+paint_lint_tests | PASS | 0.21 | PASS paint_lint: colour, welded islands, adjacency and a planted loose box
+paint_sheet_camera_tests | PASS | 0.42 | PASS paint sheet camera: 27 saved cameras and clip edge cases
+parity_cleanup_tests | PASS | 0.08 | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+pc_jobs_1194_tests | PASS | 12.23 | PASS PC jobs 1194 checks (14 groups)
+picture_provenance_tests | FAIL | 40.46 | FAIL picture provenance self-test; artifacts kept for diagnosis in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\picture889-ecabadb66c39508a
+prune_relay_branches_tests | PASS | 7.97 | PASS: prune_relay_branches lists only stale relay and pin branches, a dry run deletes nothing, live deletes only unmoved listed branches that still pass every keep rule
+publish_ship_tests | FAIL | 16.35 | FAIL: exit 1
+pysite_1535_tests | FAIL | 0.42 | FAIL: exit 1
+r1_tests | PASS | 84.04 | PASS: exit 0
+relay_push_tests | FAIL | 2.58 | FAIL: exit 1
+relic_trade_1449_tests | PASS | 0.09 | PASS: exit 0
+report_paths_tests | PASS | 2.65 | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+reporting_238_tests | PASS | 0.28 | PASS MP8 danger bands
+retreat_nemesis_1480_tests | PASS | 0.08 | PASS: exit 0
+rules_1479_tests | PASS | 0.10 | PASS: exit 0
+rules_1481_tests | PASS | 0.09 | PASS: exit 0
+rules_1560_tests | PASS | 0.12 | PASS: exit 0
+run_all_checks_live_tests | PASS | 3.25 | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+runner_cleanup_tests | PASS | 154.82 | PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit
+runner_job_tests | PASS | 51.60 | PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it
+runner_stall_tests | PASS | 45.14 | PASS runner stall checks (21 groups)
+salvage_stdin_tests | PASS | 1.98 | PASS salvage stdin: git gets BOM-free UTF-8 under a BOM page (65001) and a legacy page (437), non-ASCII included
+saved_campaign_update_tests | FAIL | 0.34 | FAIL Godot campaign runs exited null (see C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4553d9e08474480a9f76e42bb41a8cbc\saved-campaign-NmxEcx\voidsworn-campaign-9KsS1d/campaign_godot.log)
+scratch_done_tests | PASS | 4.78 | PASS scratch_done: PASS removes the owned scratch without following links, FAILED keeps the newest per job, never touches unowned, busy or outside folders
+shadow_xp_tests | PASS | 0.09 | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+shield_pool_tests | PASS | 0.15 | PASS: exit 0
+ship_article_1551_tests | PASS | 0.06 | PASS: exit 0
+ship_job_tests | PASS | 4.28 | PASS ship job checks (12 groups)
+skills_mirror_tests | PASS | 0.09 | PASS: 22 skills; .claude/skills is an exact copy of .agents/skills; names match folders; copied skills carry LICENSE and SOURCE.md
+squadron_auto_tests | PASS | 0.14 | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+story_beat3_tests | PASS | 0.29 | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+teaching_strip_1393_tests | PASS | 0.11 | PASS: exit 0
+ui_spec_tests | PASS | 0.26 | PASS: exit 0
+weapon_match_tests | PASS | 0.78 | PASS weapon match self-test (36 planted faults, 36 sheet ships in the table)
+workflow_config_tests | PASS | 0.06 | PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout
+progression_telemetry_test | PASS | 0.12 | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+tree_effects_test | PASS | 121.29 | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+tree_handoff_test | PASS | 0.21 | PASS: real campaign picks reach the battle for all six factions (four skills each):
+tree_table_walk_test | PASS | 1.11 | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+tree_last_rows_test | PASS | 5.16 | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+oracle_copy_test | PASS | 0.08 | PASS: no oracle folders exist and both table files are present (they are the rules source since R405)
+smoke_safety_test | PASS | 6.27 | PASS map pace smoke safety (6 saved files held)
+spiral_test | PASS | 0.08 | PASS: 6 spiral recovery checks
+commission_test | PASS | 0.18 | PASS: 7 commission checks
+runner_selftest | PASS | 131.23 | PASS runner687+722+860+985: 138 checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.
+g2_export_selftest | PASS | 20.48 | PASS: Play launches the promoted export in a path with spaces
+pause_all_selftest | PASS | 9.83 | PASS pause_all Windows fixture matrix
+lane_tools_refresh_selftest | PASS | 3.62 | PASS: lane tools refresh keeps old tools, refuses busy lanes, rotates old copies safely and installs tools_live
+stage5_fail_selftest | FAIL | 17.59 | FAIL stage5_fail_selftest: Error: sheet paint views failed: ok
+nem_assign_enum | PASS | 0.80 | PASS: all issue 120 enumeration checks
+nem_direct_reads_report | PASS | 1.48 | PASS: report only, 201 direct save reads outside godot/campaign (main 12, render 13, scenes 46, story 55, tools 3, ui 67, world 5)
+naming_lint_game.test | PASS | 0.44 | PASS: exit 0
+naming_lint_game | PASS | 84.75 | PASS: naming lint within the baseline
+checks | PASS | 0.44 | PASS: within the pack baseline
+big_files | PASS | 0.07 | PASS big_files self-test: 8 cases
+fast_selection_test | PASS | 1.10 | PASS: --fast selects 75 of 113 rows using fast marks and gates
+fleet_invariants | PASS | 0.81 | PASS: exit 0
+save_fuzz | PASS | 0.12 | PASS: exit 0
+softlock_sweep | PASS | 31.62 | PASS: exit 0
+table_xref | PASS | 0.10 | PASS: exit 0
+findings_tests | KNOWN | 2.08 | KNOWN: 6 listed failure(s): KIT-1, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+oracle_drift_guard | KNOWN | 1.77 | KNOWN: 12 constant difference(s) within the baseline
+fixture_check | PASS | 0.39 | PASS fixture corrupt2 pair
+
+big files (warning only): none over 2 MB outside godot/ and assets/
