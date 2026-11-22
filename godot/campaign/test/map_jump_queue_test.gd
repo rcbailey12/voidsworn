@@ -111,6 +111,22 @@ func _run():
 	m._finish_flight()
 	check(m.ui.C.acts == [["enterNode", "b"]], "the confirmed pick B is entered")
 
+	# A map redraw while queued that drops B and auto-picks the first offered route (campaign_ui.gd _map) does not go through
+	# pick_route: the jump checks the confirmed stop itself, so nothing is entered and the label reads JUMP TO C.
+	reset.call(m)
+	m.ui.picked = "b"
+	m.loading = true
+	m.ui._jump()
+	m.ui.C.page["data"]["avail"] = ["c"]
+	m.ui.picked = "c"   # the redraw's auto-pick, set directly as _map does
+	m.loading = false
+	await process_frame
+	check(not m._flying, "a redraw auto-pick while queued starts no flight")
+	check(m.ui.C.acts.is_empty(), "a redraw auto-pick while queued enters neither C nor B")
+	check(not m._queued_jump and m._queued_id == "", "a redraw auto-pick clears the queue")
+	check(m.ui._jump_lbl.text == "JUMP TO C", "the label reads JUMP TO C after a redraw auto-pick")
+	m.ui.C.page["data"]["avail"] = ["b", "c"]
+
 	# A modal opened while queued drops the jump and puts the label back.
 	reset.call(m)
 	m.ui.picked = "b"
