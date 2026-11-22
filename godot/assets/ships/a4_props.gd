@@ -65,13 +65,14 @@ static func _collect(p: String) -> Resource:
 
 # Issue 1767 (World V2, R419, Ryan Nov 22 2026 "Option A"): station_T2 is the one station on every station cluster, the
 # teaching battle and the lone station blocker. T2 is authored in world units for the big 19-hex cluster (size 46, unit
-# scale, PR 977). A smaller cluster gets T2 scaled down so its widest reach around the centre stays inside `clearance`
-# (the cluster's own radius: the farthest cell centre plus one hex), so it never hangs over a playable hex. O1_37 is only
-# the fallback for a checkout with no T2 cache.
+# scale, PR 977, unchanged). A smaller cluster or a hole gets T2 scaled down until every mesh box of the installed model,
+# turned to the board's bearing and projected onto the board, lies inside the cluster's own hexes (Artoo on PR 1772: the
+# real footprint, not a circle round the corners), so it never hangs over a playable hex. O1_37 is only the fallback for
+# a checkout with no T2 cache.
 const T2_PATH := "res://gen/ships/station_T2.scn"
 const T2_DEBRIS_PATH := "res://gen/ships/station_T2_debris.scn"
 const T2_REACH := 60.8   # T2's horizontal reach from its centre at unit scale (bounds 99.2 x 70.2: production_checks.json)
-const T2_MIN_SCALE := 0.12
+const FIT_ANGLES := 720  # rays from the cluster centre used to measure its footprint
 # The biome's station kind (rules REGION_BIOME "station": rig, ring, spire). Hook for bespoke kits: when a kind's `scene` is
 # installed it replaces T2 for that kind with no board change; until then T2 stands in and the kind only sets a faint
 # work light in its colour (rig amber work lamps, ring the Directorate's own blue, spire pale cyan; never purple, R10.9).
@@ -81,24 +82,44 @@ const STATION_KINDS := {
 	"spire": {"scene": "res://gen/ships/station_spire.scn", "light": Color(0.78, 0.94, 1.0)},
 }
 const KIND_LIGHT_ENERGY := 0.6
-static var _reach := {}   # not GPU: scene path -> measured horizontal reach at unit scale
+static var _reach := {}    # not GPU: scene path -> measured horizontal reach at unit scale
+static var _outline := {}  # not GPU: scene path -> PackedVector2Array, its mesh boxes' corners and edge points (x, z)
 
 
-# T2's scale for a cluster: unit for the big cluster (the approved look), else fitted inside the cluster's clearance
-static func t2_scale(size: float, clearance: float, reach := T2_REACH) -> float:
-	if size >= LARGE_STATION_SIZE:
-		return 1.0
-	if clearance <= 0.0:
-		return clampf(size / LARGE_STATION_SIZE, T2_MIN_SCALE, 1.0)
-	return clampf(clearance / maxf(reach, 1.0), T2_MIN_SCALE, 1.0)
+# true when board point `p` (x, z) lies in a pointy-top hex of corner radius `hex_r` centred on any of `cells`
+static func in_cells(p: Vector2, cells: Array, hex_r: float) -> bool:
+	var a := hex_r * sqrt(3.0) / 2.0
+	for c in cells:
+		var v: Vector2 = p - (c as Vector2)
+		if absf(v.x) <= a + 1e-4 and absf(v.y) + absf(v.x) / sqrt(3.0) <= hex_r + 1e-4:
+			return true
+	return false
 
 
-# the horizontal reach of a scene's meshes from its origin (every mesh box corner), or `fallback` when it has no mesh
-static func horizontal_reach(root: Node3D, fallback := T2_REACH) -> float:
-	var best := 0.0
+# the footprint's distance from its centre along FIT_ANGLES rays (the cells round the centre are star-shaped from it)
+static func footprint_rays(cells: Array, hex_r: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	out.resize(FIT_ANGLES)
+	for i in FIT_ANGLES:
+		var d := Vector2.from_angle(TAU * float(i) / float(FIT_ANGLES))
+		var lo := 0.0
+		var hi := hex_r * 2.0 * (1.0 + float(cells.size()))
+		for _j in 24:
+			var mid := (lo + hi) * 0.5
+			if in_cells(d * mid, cells, hex_r):
+				lo = mid
+			else:
+				hi = mid
+		out[i] = lo
+	return out
+
+
+# corners and edge points of every mesh box of `root` at unit scale, projected onto the board (x, z)
+static func outline_points(root: Node3D) -> PackedVector2Array:
+	var out := PackedVector2Array()
 	for child in root.find_children("*", "MeshInstance3D", true, false):
 		var mi := child as MeshInstance3D
-		if mi.mesh == null:
+		if mi.mesh == null or mi.get_parent().name == "station_T2_debris":
 			continue
 		var xf := Transform3D.IDENTITY
 		var p: Node = mi
@@ -106,15 +127,44 @@ static func horizontal_reach(root: Node3D, fallback := T2_REACH) -> float:
 			xf = (p as Node3D).transform * xf if p is Node3D else xf
 			p = p.get_parent()
 		var bb := mi.get_aabb()
+		var corners: Array[Vector3] = []
 		for i in 8:
-			var v := xf * bb.get_endpoint(i)
-			best = maxf(best, Vector2(v.x, v.z).length())
-	return best if best > 0.0 else fallback
+			corners.append(xf * bb.get_endpoint(i))
+		for i in 8:
+			for j in range(i + 1, 8):
+				# box edges join corners that differ in one axis bit
+				if [1, 2, 4].has(i ^ j):
+					for t in 16:   # dense enough that an edge cannot cut across a cluster's notch between samples
+						var v: Vector3 = corners[i].lerp(corners[j], float(t) / 16.0)
+						out.append(Vector2(v.x, v.z))
+		out.append(Vector2(corners[7].x, corners[7].z))
+	return out
 
 
-# the painted station across a cluster of station hexes. `kind` is the biome's station kind, `with_debris` false for a lone
-# blocker hex (its torn pieces would drift over open hexes)
-static func station(size: float, debris_clearance := 0.0, kind := "", with_debris := true) -> Node3D:
+# the largest scale (at most 1) that keeps every outline point, turned by `bearing` about the vertical, inside the cells
+# (positions relative to the station's centre)
+static func fit_scale(points: PackedVector2Array, cells: Array, hex_r: float, bearing: float) -> float:
+	var rays := footprint_rays(cells, hex_r)
+	var k := 1.0
+	var basis := Basis.from_euler(Vector3(0, bearing, 0))
+	for p in points:
+		var v := basis * Vector3(p.x, 0, p.y)
+		var q := Vector2(v.x, v.z)
+		var r := q.length()
+		if r < 1e-4:
+			continue
+		var f := fposmod(q.angle() / TAU, 1.0) * FIT_ANGLES
+		var i0 := int(floor(f)) % FIT_ANGLES
+		var d := minf(rays[i0], rays[(i0 + 1) % FIT_ANGLES])
+		k = minf(k, d / r)
+	return k * 0.98   # a hair inside the edge
+
+
+# The painted station across a cluster of station hexes. `kind` is the biome's station kind, `with_debris` false for a lone
+# blocker hex (its torn pieces would drift over open hexes). `cells` are the cluster's hex centres relative to the station
+# centre (x, z), `hex_r` their corner radius and `bearing` the turn the caller will give it: when `cells` is set and the
+# cluster is smaller than the big station, T2 is fitted inside them.
+static func station(size: float, debris_clearance := 0.0, kind := "", with_debris := true, cells: Array = [], hex_r := 10.0, bearing := 0.0) -> Node3D:
 	var info: Dictionary = STATION_KINDS.get(kind, {})
 	var path := T2_PATH
 	if info.has("scene") and ResourceLoader.exists(str(info["scene"])):
@@ -124,8 +174,17 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		t2.set_meta("station_T2", true)
 		t2.set_meta("station_kind", kind)
 		if not _reach.has(path):
-			_reach[path] = horizontal_reach(t2)
-		var k := t2_scale(size, debris_clearance, float(_reach[path]))
+			_outline[path] = outline_points(t2)
+			var far := 0.0
+			for q in _outline[path]:
+				far = maxf(far, (q as Vector2).length())
+			_reach[path] = far if far > 0.0 else T2_REACH
+		var k := 1.0
+		if size < LARGE_STATION_SIZE:
+			if not cells.is_empty() and not (_outline[path] as PackedVector2Array).is_empty():
+				k = fit_scale(_outline[path], cells, hex_r, bearing)
+			else:
+				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
 		t2.set_meta("station_scale", k)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,

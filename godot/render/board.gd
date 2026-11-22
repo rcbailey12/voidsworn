@@ -897,7 +897,10 @@ func _terrain() -> void:
 			clearance = maxf(clearance, cen.distance_to(p) + HS)
 		var size := STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size()
 		var teaching: bool = cl.size() == 3 and VW.get("map", {}).get("stationR", 0) == 1
-		_station(cen, rng, size, teaching, clearance)
+		var rel: Array = []
+		for p in centres:
+			rel.append(Vector2(p.x - cen.x, p.z - cen.z))
+		_station(cen, rng, size, teaching, clearance, rel)
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -959,12 +962,13 @@ func station_kind() -> String:
 	return str(biome.get("station", "")) if biome is Dictionary else ""
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0) -> void:
+func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0, cells: Array = []) -> void:
 	# The painted station for this cluster size, with the original hull below as a fallback. issue 1767: station_T2 on
-	# every cluster, fitted inside the cluster's clearance (A4P.t2_scale), level and lifted in proportion.
-	var a4 := A4P.station(size, clearance, station_kind())
+	# every cluster, fitted inside the cluster's own hexes at its bearing (A4P.fit_scale), level and lifted in proportion.
+	# The bearing is drawn first (A4P draws nothing, so the board's random stream is as before).
+	var bearing := rng.randf() * 6.0
+	var a4 := A4P.station(size, clearance, station_kind(), true, cells, HS, bearing)
 	if a4 != null:
-		var bearing := rng.randf() * 6.0
 		var t2 := a4.has_meta("station_T2")
 		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
 		var k: float = a4.scale.x
@@ -994,7 +998,7 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 		m.ao_texture = (src as StandardMaterial3D).ao_texture
 		m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
 	mi.material_override = m
-	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
+	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, bearing, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
 	props.add_child(mi)
 
 
