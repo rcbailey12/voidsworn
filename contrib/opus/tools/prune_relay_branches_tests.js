@@ -27,7 +27,7 @@ try {
     git(['push', '-q', source, `HEAD:refs/heads/${name}`], work);
   };
   make('main', old);
-  for (const b of ['board/pc-out-stale', 'board/pin-stale', 'board/pin-queued', 'board/pin-keep', 'board/pin-pr', 'board/pc-out-opusbusy', 'board/pc-out-named', 'board/pin-keeplate', 'board/pc-out-queuelate']) make(b, old);
+  for (const b of ['board/pc-out-stale', 'board/pin-stale', 'board/pin-queued', 'board/pin-keep', 'board/pin-pr', 'board/pc-out-opusbusy', 'board/pc-out-named', 'board/pin-keeplate', 'board/pc-out-queuelate', 'board/pin-atprompt']) make(b, old);
   make('board/pin-fresh', new Date().toISOString());
   make('board/other-old', old);
   git(['clone', '-q', '--mirror', source, path.join(vt, 'repo-mirror.git')]);
@@ -40,12 +40,12 @@ try {
   const before = branches();
   let r = run();
   assert.equal(r.status, 0, r.out);
-  assert(/would delete 4 branch\(es\)/.test(r.out) && /Nothing was deleted/.test(r.out), 'dry run counts: ' + r.out);
+  assert(/would delete 5 branch\(es\)/.test(r.out) && /Nothing was deleted/.test(r.out), 'dry run counts: ' + r.out);
   assert.deepEqual(branches(), before, 'a dry run deletes nothing');
   const list = fs.readdirSync(path.join(vt, 'prune')).filter(f => /^prune_list_/.test(f));
   assert.equal(list.length, 1);
   const rows = fs.readFileSync(path.join(vt, 'prune', list[0]), 'utf8').trim().split(/\r?\n/).map(l => l.split(' ')[0]).sort();
-  assert.deepEqual(rows, ['board/pc-out-queuelate', 'board/pc-out-stale', 'board/pin-keeplate', 'board/pin-stale'], 'only the stale ones are listed: ' + rows);
+  assert.deepEqual(rows, ['board/pc-out-queuelate', 'board/pc-out-stale', 'board/pin-atprompt', 'board/pin-keeplate', 'board/pin-stale'], 'only the stale ones are listed: ' + rows);
   const log = fs.readFileSync(path.join(vt, 'prune', fs.readdirSync(path.join(vt, 'prune')).find(f => /^prune_dry_/.test(f))), 'utf8');
   for (const [b, why] of [['board/pin-queued', 'named by queued job'], ['board/pin-keep', 'in keep.txt'], ['board/pin-pr', 'open pull request'], ['board/pin-fresh', 'newer than 3 days'], ['board/pc-out-opusbusy', 'still holds a checkout'], ['board/pc-out-named', 'still holds a checkout']]) {
     assert(new RegExp(`keep ${b} \\(.*${why}`).test(log), `${b} kept (${why}): ` + log);
@@ -59,12 +59,16 @@ try {
   // Artoo on PR 1672: a keep.txt line or a queued job added after the dry run keeps an unmoved listed branch
   fs.appendFileSync(path.join(vt, 'prune', 'keep.txt'), 'board/pin-keeplate\r\n');
   write(path.join(vt, 'queue_c', 'job2.bat'), 'git fetch origin board/pc-out-queuelate\r\n');
+  // and a keep line added while the YES prompt waits (Artoo recheck on 6d45329b): live decides only after the prompt
+  env.PC_TEST_AT_PROMPT = 'board/pin-atprompt';
   r = run('live');
+  delete env.PC_TEST_AT_PROMPT;
   assert.equal(r.status, 0, r.out);
-  assert(/deleted 1 branch\(es\), kept 3/.test(r.out) && /kept \(moved or already gone since the dry run\): board\/pin-stale/.test(r.out), 'live: ' + r.out);
+  assert(/kept \(now protected: in keep\.txt\): board\/pin-atprompt/.test(r.out), 'a keep line added at the prompt holds: ' + r.out);
+  assert(/deleted 1 branch\(es\), kept 4/.test(r.out) && /kept \(moved or already gone since the dry run\): board\/pin-stale/.test(r.out), 'live: ' + r.out);
   assert(/kept \(now protected: in keep\.txt\): board\/pin-keeplate/.test(r.out) && /kept \(now protected: named by queued job queue_c.*\): board\/pc-out-queuelate/.test(r.out), 'live rechecks every keep rule: ' + r.out);
   const after = branches();
-  assert(!after.includes('board/pc-out-stale') && after.includes('board/pin-stale') && after.includes('board/pin-keep') && after.includes('board/pin-keeplate') && after.includes('board/pc-out-queuelate') && after.includes('board/pc-out-opusbusy') && after.includes('main'), 'after: ' + after);
+  assert(!after.includes('board/pc-out-stale') && after.includes('board/pin-stale') && after.includes('board/pin-keep') && after.includes('board/pin-keeplate') && after.includes('board/pin-atprompt') && after.includes('board/pc-out-queuelate') && after.includes('board/pc-out-opusbusy') && after.includes('main'), 'after: ' + after);
   assert(fs.existsSync(path.join(vt, 'opusbusy', 'out_1', 'new', 'x.txt')), 'nothing on the PC is touched');
   console.log('PASS: prune_relay_branches lists only stale relay and pin branches, a dry run deletes nothing, live deletes only unmoved listed branches that still pass every keep rule');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
