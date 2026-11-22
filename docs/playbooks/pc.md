@@ -33,7 +33,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   NEW arms measure one fleet). Set `OJ_NEED_HULLS` to the codes your fixtures draw and each must be a matching ship.
 - `tail`: hashes Ryan's options again (a change fails the job), then `job_wrap end`: `done PASS` or `done FAILED`,
   then `all done`, and exit 0 only on PASS. Then the checkout step (`opus_job_head.ps1 dropcheckouts <attempt>`) runs
-  for this attempt and the same job's earlier ones. An attempt's pinned checkouts (rebuildable from their pins, up to
+  for this attempt only (earlier attempts go through their own waiter or the janitor; review of PR 1644). An attempt's pinned checkouts (rebuildable from their pins, up to
   22 GB each) go only when its `done.txt` says PASS and a relay branch on origin holds every file of its `out_*` folders
   at `<tree folder>/out_<name>/<path>` with the same bytes. The head proves the relay itself (issue 1535, Nov 22): no
   session writes a receipt by hand. Where to look is, in order, an older `relay_receipt.txt` (`<board/pc-out branch> <tree
@@ -68,6 +68,19 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `OJ_KEEP_CHECKOUTS=1` skips the step at the tail. Known and accepted: clearing read-only on git packs also clears it on
   the mirror's hard-linked copies, the logged GB counts hard-linked bytes the mirror still holds, and an error
   mid-removal leaves a half-removed checkout behind.
+- The relay lands after a job's tail, so the tail also starts a hidden waiter (`opus_job_head.ps1 dropwait`, the
+  attempt in `OJ_DROPWAIT_ATTEMPT`, never on its command line; log `<job>\dropwait_<attempt>.txt`; a launch that fails
+  is logged as one in status.txt). For a passed attempt only, it asks origin (`git ls-remote`, no prompts, 120 s limit)
+  for the attempt's relay branch every 5 minutes. With the branch there it takes the job lease and the issue lock,
+  then the janitor's checks (the Board keep list, no running process naming the job folder, no PC pause), then the
+  same drop as `dropcheckouts`: the mirror writers' lock, a fresh relay proof (each result root a plain folder), any
+  recorded unfinished removal of a listed checkout at its listed pin, then each checkout with the checks repeated
+  right before its rename. Any refusal is tried again: at once when the branch moves, else after a wait that doubles
+  from 5 minutes to an hour. Nothing new starts after 12 hours, and the mirror lock wait ends there too; only a
+  removal already under way finishes, and a Git fetch inside the proof can still run past it (it has Git's
+  low-speed limit, not a hard one). The janitor's relay sweep covers anything later. `dropwait <attempt> dry` looks
+  once and runs the dry proof: no lock, lease, log, fetch or removal. `OJ_NO_DROPWAIT=1` skips the waiter (issue
+  1396; Nov 22, with a new job name every night no later attempt cleared the last one: 20 checkouts, about 8 GB each).
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
   folders and kept checkouts) holds the mirror writers' lock `repo-mirror.git.lock` from its last proof through the
   delete, so no lane's fetch or prune can drop a ref the proof read in between (issue 1396, Artoo on PR 1592). A lane
