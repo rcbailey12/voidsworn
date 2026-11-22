@@ -41,7 +41,8 @@ Sources: data.js, battle.js, campaign_run.js at main 2eef4dd5 (Nov 22); the Neon
 ## 3. Design rules for every new effect
 
 1. **It changes a decision**, not only a number: where to stand, what to shoot first, when to press the Command.
-2. **Both rule copies** (browser and Godot, R312), with parity scenarios and campaign parity.
+2. **Godot rules only** (R405, Nov 22 2026: the browser copy is retired), with new battle scenarios and the saved Godot results
+   updated in the same pull request (RULEBOOK 3.1). Balance numbers come from the Godot balance sim (issue 1656).
 3. **Fair across sides.** A faction ability changes for player and enemy alike, and the enemy AI learns to use it (Ryan,
    Nov 20). Relics, riders and mastery are the player's own.
 4. **Faction identity holds:** Glasswrights elite, never a swarm; Eclipse has no green; Chorus is the swarm and the
@@ -281,12 +282,12 @@ Eclipse text) in every Eclipse and Chorus fight today, and it gives a balance re
 | 4 | Relics and refits (B and C) | parity scenarios for the combat relics, campaign parity, MOD-3 and relic offer tests, sims (rounds, hull left, ships lost), quiet AI sim | about 3 runs + 1 review round |
 | 5 | Event chains (F, if picked) | campaign parity, event distribution test, queue save and load | about 2 runs |
 
-Each part is its own pull request, in both rule copies, with balance deltas reported.
+Each part is its own pull request, in the Godot rules (R405), with balance deltas reported from the Godot balance sim (issue 1656).
 
 Coverage checks on top of the scenarios (Artoo on PR 1635): the per-faction and per-engine parity scenarios exercise the
 shared path, not every row, so each part also ships a cheap exhaustive check.
 
-- **Key coverage:** every one of the 48 capstone keys has exactly one Mastery III row and a handler in both rule copies;
+- **Key coverage:** every one of the 48 capstone keys has exactly one Mastery III row and a handler in the Godot rules;
   every one of the 24 admirals has exactly one rider row, under the admiral who owns it, with a handler; every new relic
   and refit id has a handler and a text row. A missing, extra or misplaced key fails.
 - **Earn, save, respec, reload:** one fixture earns Mastery III, saves, respecs to the other capstone, reloads, and checks

@@ -106,7 +106,7 @@ jobs:
       - name: Run all standing checks
         run: node contrib/opus/tools/run_all_checks.js --jobs 4   # issue 1489: four rows at once, same table
   godot-parity:
-    name: Godot rules parity
+    name: Godot rules (saved results)
     needs: changes
     if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
@@ -131,20 +131,33 @@ jobs:
         uses: ./.github/actions/setup-godot
       # The Godot checks below each run even when an earlier one fails, so one red run shows every failure.
       # Each script prints PASS or FAIL and exits 1 on any FAIL, which fails this job and the PR (issue #264).
-      - name: Rules parity against the browser game
+      # Issue 1654 (R405, Ryan Nov 22 2026): the browser rules twin is retired. Godot is the only rules source; every battle,
+      # seeded campaign run and Nemesis scenario is compared byte for byte with the reviewed saved Godot results in the repo.
+      - name: Rules, every battle against the saved Godot results
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/rules/test/run_parity.sh
-      - name: Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)
+      - name: Saved results this branch changes compared with main
+        if: ${{ always() }}
+        run: node godot/rules/test/saved/diff_vs_main.js origin/main "$RUNNER_TEMP/saved_changes_vs_main.txt"
+      - name: Keep changed-battles evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: saved-godot-results
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/voidsworn-parity-*/changed-battles.txt
+            ${{ runner.temp }}/voidsworn-parity-*/saved_summary.json
+            ${{ runner.temp }}/voidsworn-parity-*/summary.json
+            ${{ runner.temp }}/saved_changes_vs_main.txt
+      - name: Campaign, 30 seeded runs and the Nemesis scenarios against the saved Godot results
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
-        run: sh godot/campaign/test/run_parity_campaign.sh 1 30
+        run: sh godot/campaign/test/run_campaign_checks.sh 1 30
       - name: Tree hand-off (campaign picks reach the battle)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: '"$GODOT" --headless --path godot --script res://campaign/test/tree_handoff_test.gd'
-      - name: Nemesis scenarios (JS game and Godot, record by record)
-        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
-        run: sh godot/campaign/test/run_nem_scenarios.sh
-  # Issue 979 (Path D, R312): Godot-only rules safety net beside parity: every battle with scoring caches on and off,
-  # byte for byte, plus the ruled numbers test. Uses no browser code. Its own job, so it adds no time to parity.
+  # Issue 979: Godot-only rules safety net: every battle with scoring caches on and off, byte for byte, plus the ruled
+  # numbers test. Its own job, so it adds no time to the saved-results job (kept as is after the twin's retirement, R405).
   rules-safety:
     name: Rules safety net (Godot only)
     needs: changes
