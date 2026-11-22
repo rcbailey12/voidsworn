@@ -1,0 +1,30 @@
+  63.2 GB  VT\board1119  [kept on purpose] tooling, live build, mirror or relay staging -> keep (relay staging in board1119 could go with Ryan's yes once pushed)
+  39.8 GB  VT\build  [kept on purpose] tooling, live build, mirror or relay staging -> keep (relay staging in board1119 could go with Ryan's yes once pushed)
+  35.0 GB  VT\opus1536d\out_20261122_074538_18227\old  [job checkout] in use by a running or queued job -> keep
+  35.0 GB  VT\opus1480\out_20261122_072454_23033\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1480) -> janitor safe rules (relayed PASS) or Ryan's yes
+  35.0 GB  VT\opus1536d\out_20261122_074538_18227\new  [job checkout] in use by a running or queued job -> keep
+  34.9 GB  VT\opus1434t\out_20261122_061335_30692\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1434t) -> needs Ryan's yes
+  34.9 GB  VT\opus1235rc\out_20261122_055156_28811\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1235rc) -> janitor safe rules (relayed PASS) or Ryan's yes
+  34.9 GB  VT\opus1446\out_20261122_070338_15918\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1446) -> janitor safe rules (relayed PASS) or Ryan's yes
+  32.3 GB  VT\opus1437a\out_20261122_051155_24105\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1437a) -> janitor safe rules (relayed PASS) or Ryan's yes
+  32.3 GB  VT\opus1437a\out_20261122_051155_24105\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1437a) -> janitor safe rules (relayed PASS) or Ryan's yes
+  32.3 GB  VT\opus1558a\out_20261122_035908_26260\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1558a) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.5 GB  VT\opus1581b\out_20261122_031800_27017\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1581b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.5 GB  VT\opus1558a\out_20261122_035908_26260\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1558a) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.3 GB  VT\opus1395b\out_20261122_021050_14445\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1395b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.3 GB  VT\opus1581b\out_20261122_031800_27017\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1581b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.3 GB  VT\opus1395b\out_20261122_021050_14445\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1395b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.3 GB  VT\opus1394meltd\out_20261122_024200_27017\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1394meltd) -> janitor safe rules (relayed PASS) or Ryan's yes
+  31.3 GB  VT\opus1394meltd\out_20261122_024200_27017\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1394meltd) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.7 GB  VT\opus1235w\out_20261121_224521_13803\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1235w) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.7 GB  VT\opus1235w\out_20261121_224521_13803\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1235w) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.7 GB  VT\opus1536b\out_20261121_234907_28847\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1536b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.7 GB  VT\opus1536b\out_20261121_234907_28847\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1536b) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.6 GB  VT\opus1394meltb\out_20261122_015450_14441\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1394meltb) -> needs Ryan's yes
+  30.6 GB  VT\opus1581a\out_20261122_011306_28847\old  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1581a) -> janitor safe rules (relayed PASS) or Ryan's yes
+  30.4 GB  VT\opus1581a\out_20261122_011306_28847\new  [job checkout] rebuildable checkout; attempt relayed (pcout_opus1581a) -> janitor safe rules (relayed PASS) or Ryan's yes
+---
+job checkouts total 971 GB logical (33 folders); relayed PASS ones 741 GB
+C free now 60.1 GB
+
+[exited with code 0]
