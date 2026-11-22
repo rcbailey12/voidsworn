@@ -440,7 +440,7 @@ function godotTurn(event) {
 }
 
 try {
-  const event = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^﻿/, ''));
+  const event = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
   const hook = process.argv[2];
   const reason = { pre: preTool, 'em-dash': emDash, godot: godotTurn }[hook](event);
   if (reason) block(reason);
