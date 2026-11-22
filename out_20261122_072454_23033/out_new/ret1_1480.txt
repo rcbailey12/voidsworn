@@ -1,0 +1,14 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1480)
+GPU: acquired shared claim 65ad31ee-be83-452a-b43d-6c0fb7052224
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-19d98b3cb3ac4a65a4923aed37bb4585\godot-profile-a6ba8e1a865c4533b29b6bee4c89e7ea
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+RET1_STATE {"fight":"1-0","fight_done":false,"from":"0-0","page":"map","pos":"0-0"}
+[world] baked 5a4e844505b27b23a0b657ec849d8f1defe4ebb2c4ac4d37a860412fb2c97519 4096x2048 in 8718 ms (worker)
+[world] baked 6126044223bfc99bee4d0fc7849e067e6afcd21d3fc68651b6a255fc8de3fd68 4096x2048 in 11590 ms (worker)
+[world] baked 2f729142b4e9cc0ea594016022e6f460d8989e69c8ca81d00598d87f74b5e77e 4096x2048 in 1314 ms (worker)
+shot RET-1_map_after_retreat
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-19d98b3cb3ac4a65a4923aed37bb4585\godot-profile-a6ba8e1a865c4533b29b6bee4c89e7ea
+GPU: released shared claim 65ad31ee-be83-452a-b43d-6c0fb7052224
