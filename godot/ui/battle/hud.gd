@@ -163,7 +163,8 @@ func _rebuild() -> void:
 		return
 	var keep := {
 		"banner": banner_lbl.text, "banner_col": banner_lbl.get_theme_color("font_color"), "banner_a": banner_lbl.modulate.a,
-		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a}
+		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a,
+		"tip": tip_text.text if tip != null and tip.visible else ""}
 	var fleet_page: int = ledger.fleet_page
 	var fleet_id: String = ledger._fleet_id
 	# N5 (#282): a rebuild while the menu is open keeps its keyboard row. Read the row before the menu is thrown away.
@@ -212,6 +213,10 @@ func _rebuild() -> void:
 	banner_lbl.text = keep["banner"]
 	banner_lbl.add_theme_color_override("font_color", keep["banner_col"])
 	banner_lbl.modulate.a = keep["banner_a"]
+	if banner_lbl.text != "":
+		_fit_banner()   # issue 1559 item 29: the banner keeps its fitted size at the new scale
+	if str(keep["tip"]) != "":
+		show_tip(str(keep["tip"]), get_viewport().get_mouse_position())   # and the hover tip that was up stays up
 	toast_lbl.text = keep["toast"]
 	toast_lbl.modulate.a = keep["toast_a"]
 	print("[hud] rebuilt for %d x %d (scale %.3f)" % [int(vs.x), int(vs.y), k])
@@ -639,7 +644,7 @@ func _build_banner() -> void:
 func banner(text: String, col := BONE, dur := 0.9) -> void:
 	banner_lbl.text = text.to_upper()
 	var c := col_of(col)
-	banner_lbl.add_theme_font_size_override("font_size", maxi(s(28), Brand.fit_size(banner_lbl.text, font_name, s(64), _column().y - _column().x - s(80))))
+	_fit_banner()
 	banner_lbl.add_theme_color_override("font_color", S_EMBER if c == S_EMBER else S_TEXT)
 	_banner_t = 0.0
 	_banner_dur = dur
@@ -650,6 +655,15 @@ func toast(text: String) -> void:
 	_toast_t = 2.6 if text != "" else 0.0
 	if text == "":
 		toast_lbl.modulate.a = 0.0
+	elif root != null:
+		# issue 1559 item 29: placed now, so a new toast never draws one frame at the old toast's spot
+		toast_lbl.modulate.a = maxf(toast_lbl.modulate.a, 0.01)
+		_layout()
+
+
+# the banner's size: as large as fits the clear part (kept across a HUD rebuild, issue 1559 item 29)
+func _fit_banner() -> void:
+	banner_lbl.add_theme_font_size_override("font_size", maxi(s(28), Brand.fit_size(banner_lbl.text, font_name, s(64), _column().y - _column().x - s(80))))
 
 
 func _build_tip() -> void:

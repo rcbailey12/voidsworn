@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1559 item 7 (menus audit): in a campaign dialog the number keys 1 to 9 pick its enabled actions in order, so every
+# Issue 1559 items 7 and 26 (menus audit): in a campaign dialog the number keys 1 to 9 pick its enabled actions in order, so every
 # one of those actions must show its key cap. The boon offer ran Reroll on 4 and Decline on 5 with no cap shown, and Decline
 # cannot be taken back. Opens the boon offer (as boon_fleet_test stages it) and checks, for each number key the dialog takes,
 # that a control in the dialog for that action carries a cap with that number. Then presses the Reroll key and checks it
@@ -103,8 +103,29 @@ func _run() -> void:
 	_ok(reroll_key >= 0, "Reroll is offered")
 	if reroll_key >= 0:
 		var before := JSON.stringify(c.modal_d["data"]["offer"])
-		await _key(KEY_1 + reroll_key)
+		await _key(KEY_KP_1 + reroll_key)   # item 26: the keypad's digits work in a dialog too
 		await _frames()
-		_ok(c.modal_d != null and str(c.modal_d.get("kind", "")) == "boon" and JSON.stringify(c.modal_d["data"]["offer"]) != before, "pressing Reroll's key rerolls the offer")
+		_ok(c.modal_d != null and str(c.modal_d.get("kind", "")) == "boon" and JSON.stringify(c.modal_d["data"]["offer"]) != before, "pressing Reroll's key (on the keypad) rerolls the offer")
+	# item 26: Esc on the relic pick goes Back to the event
+	var relics: Array = c.RELICS.keys().slice(0, 2)
+	c.RUN["relics"] = relics
+	c.cur_event = {"id": "t1559", "t": "A trade", "b": "A trader wants a piece of salvage.", "o": [{"l": "Trade", "s": "Give one piece.", "r": {"payRelic": true}}]}
+	c.relic_pick_modal(0)
+	await _frames()
+	_ok(c.modal_d != null and str(c.modal_d.get("kind", "")) == "relic_pick", "the relic pick is open")
+	await _key(KEY_ESCAPE)
+	await _frames()
+	_ok(c.modal_d != null and str(c.modal_d.get("kind", "")) == "event", "item 26: Esc on the relic pick goes Back to the event (%s)" % str(c.modal_d.get("kind", "") if c.modal_d != null else "none"))
+	# item 25: with the Dossier open, Jump on the rail still flies (it shuts the slide-over first)
+	c.modal_d = null
+	c.mapScreen()
+	await _frames()
+	ui._open_overlay("dossier")
+	await _frames()
+	var picked := str(ui.picked)
+	_ok(str(c.page.get("kind", "")) == "map" and picked != "" and str(c.RUN.get("pos", "")) != picked and ui._overlay == "dossier", "item 25: the map is up with the Dossier open and a route picked (%s)" % picked)
+	ui._jump()
+	await _frames()
+	_ok(ui._overlay == "" and str(c.RUN.get("pos", "")) == picked, "item 25: Jump with the Dossier open shuts it and goes to the pick (pos %s)" % str(c.RUN.get("pos", "")))
 	print("DIALOG_KEYCAPS fails=%d" % fails)
 	quit(1 if fails else 0)

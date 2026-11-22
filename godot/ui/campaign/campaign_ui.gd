@@ -1375,6 +1375,10 @@ func route_num(id: String) -> int:   # the number a next jump wears in the list 
 	return 0
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
+	# issue 1559 item 24: the fleet is already flying to its pick; a new pick would relight a route it is not taking
+	if map3d != null and bool(map3d.get("_flying")): return
+	# item 25: with the Dossier or the Map key open, a route on the rail still works: it shuts the slide-over first
+	if _overlay != "": _close_overlay()
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
 	# A new pick is only a selection: it cancels a Jump queued under the loading cover, so the player confirms again (issue 1448).
 	if map3d != null and map3d.has_method("cancel_queued_jump"): map3d.cancel_queued_jump()
@@ -1394,7 +1398,8 @@ func _rebuild_rail() -> void:
 		for r in _rows:
 			if r["id"] == restore: r["btn"].grab_focus()
 func _jump() -> void:
-	if picked == "" or C.modal_d != null or _overlay != "" or _find(_acts, "enterNode", picked).is_empty(): return
+	if picked == "" or C.modal_d != null or _find(_acts, "enterNode", picked).is_empty(): return
+	if _overlay != "": _close_overlay()   # issue 1559 item 25: Jump on the rail works with a slide-over open
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
 	else: C.act("enterNode", picked)
 # The Nemesis block: [control, its height at 1080]
@@ -2575,10 +2580,11 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d != null:
 		var acts = C.modal_d["acts"]
 		if e.keycode == KEY_ESCAPE:
-			for a in acts:
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo"):
+			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
+				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
+		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)
 		if n >= 0 and n < 9:
 			var on = acts.filter(func(a): return a[2] == 1)
 			if n < on.size():

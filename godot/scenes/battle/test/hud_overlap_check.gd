@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1559 items 10, 11, 12, 17, 19, 20 and 21 (menus audit): the battle HUD's parts do not cover each other or let
+# Issue 1559 items 10, 11, 12, 17, 19, 20, 21 and 29 (menus audit): the battle HUD's parts do not cover each other or let
 # clicks through. Test battle s1 in the real battle scene, at the player's turn:
 #   10: with a teaching tip card up, the full log's Close button is not under the tip card, and the open log draws over
 #       the terrain key;
@@ -8,7 +8,8 @@ extends SceneTree
 #   17: a long toast wraps inside the clear part at Larger instead of running off the screen;
 #   19: the tip card hides under the end card and during a cut-in, and comes back after;
 #   20: a click on the corner words ("Round N", the objective) is the HUD's, not the board's: it plans and picks nothing;
-#   21: the Controls page names Backspace (take back a move) and Z (the grid).
+#   21: the Controls page names Backspace (take back a move) and Z (the grid);
+#   29: a HUD rebuild keeps the banner's fitted size, and a new toast starts at its own spot.
 # Prints PASS or FAIL lines; exit 0 when all pass. Pictures: -- --hud-shots DIR (needs a window: xvfb-run with opengl3 in
 # the cloud; the 3D board is covered by a plain sheet, so they show the HUD layout only).
 # Run: godot --headless --path godot --script res://scenes/battle/test/hud_overlap_check.gd
@@ -159,10 +160,14 @@ func _run() -> void:
 		await process_frame
 	_check(hud.banner_lbl.modulate.a > 0.0 and not hud.toast_lbl.get_global_rect().intersects(hud.banner_lbl.get_global_rect()), "item 11: the toast sits clear of the big banner (%s vs %s)" % [str(hud.toast_lbl.get_global_rect()), str(hud.banner_lbl.get_global_rect())])
 	await _shot("banner_and_toast")
-	# 17: Larger
+	# 17: Larger (and 29: a rebuild keeps the banner's fitted size)
+	hud.banner("Victory", Color.WHITE, 3.0)
+	await _frames(2)
 	UiScale.set_player(1.3)
 	hud._rebuild()
 	await _frames(4)
+	var bfs: int = hud.banner_lbl.get_theme_font_size("font_size")
+	_check(bfs > hud.s(46), "item 29: after a UI scale rebuild the banner keeps its fitted size (%d)" % bfs)
 	hud.toast("Reinforcements: Ashfall Breaker, Ashfall Breaker, Ashfall Cutter, Ashfall Cutter, Ashfall Hulk, Ashfall Hulk, Ashfall Tender and two wings of strike craft join the enemy line.")
 	for i in 6:
 		await process_frame
@@ -175,6 +180,11 @@ func _run() -> void:
 			clear = false
 	_check(clear and tr.size.y > 40, "item 17: a long toast wraps, stays on screen and clear of the corner words at Larger (%s)" % str(tr))
 	await _shot("long_toast_larger")
+	# 29: a new toast is placed when it is fired, not one frame later at the old toast's spot
+	hud.toast("Short.")
+	var p0: Vector2 = hud.toast_lbl.position
+	await _frames(2)
+	_check(p0.distance_to(hud.toast_lbl.position) < 2.0, "item 29: a new toast starts at its own spot (%s then %s)" % [str(p0), str(hud.toast_lbl.position)])
 	UiScale.set_player(1.0)
 	hud._rebuild()
 	await _frames(3)
