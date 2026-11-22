@@ -71,6 +71,12 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   Its FINDINGS row says "landed in <repo path>" or "one-off job decision"; the memory lint fails it otherwise (R291).
 - Commits say "Refs #N", never a GitHub closing word before an issue number; use `gh api` REST, never GraphQL (RULEBOOK 2.5).
 
+## Agent skills (issue 1658)
+
+Skills for every seat live in `.agents/skills/` (copied to `.claude/skills/` by `node contrib/opus/tools/sync_skills.js`);
+read `.agents/skills/README.md` first, its house notes win over the skill text. Issue tracker: `docs/agents/issue-tracker.md`.
+Domain words: `GLOSSARY.md`; decisions are RULEBOOK rules and FINDINGS rows, never ADRs (`docs/agents/domain.md`).
+
 ## If you are not the main agent: work in your own folder (RULEBOOK 2.12)
 
 - Put everything you make in `contrib/<your-agent-name>/`. Do not edit files outside it: no game source, no tools, no docs, no

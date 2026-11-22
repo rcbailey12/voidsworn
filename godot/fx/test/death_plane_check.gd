@@ -157,8 +157,13 @@ func _risen_takes_wreck() -> void:
 	_check(fx.dstate.wrecks.is_empty() and not battle.wrecked.has("risen"), "rise removes both wreck records")
 	for piece in pieces:
 		_check(not is_instance_valid(piece), "rise frees the old wreck piece")
-	_check(mesh.mesh == live_mesh and mesh.visible and not sv.dead and mesh.material_overlay == null and mesh.get_surface_override_material(0) == paint,
-		"rise shows the live surface paint without the death overlay")
+	# issue 1587 (Neon on PR 1631): the risen ship comes back at 35% hull, so it may wear its live paint through its own
+	# fresh damage surface (built from that paint, never the death's power-down material)
+	var s2 = fx.ship("risen")
+	var mat0 := mesh.get_surface_override_material(0)
+	var worn: bool = s2 != null and s2 != s and not s2.dead and s2._damage_surfaces.values().any(func(en): return en.size() > 1 and en[1] == mat0)
+	_check(mesh.mesh == live_mesh and mesh.visible and not sv.dead and mesh.material_overlay == null and (mat0 == paint or worn),
+		"rise shows the live surface paint without the death overlay (%s)" % ("its own wear surface" if worn else "the paint"))
 	_check(mesh.transform.is_equal_approx(rest) and sv.hull.basis.is_equal_approx(sv.hull_basis), "rise restores the fitted hull pose")
 	_check(is_equal_approx(fx.ship("risen").section_fraction[1], 0.35), "new FX ship uses the risen health")
 	var flashes: int = fx.flash_log.size()
