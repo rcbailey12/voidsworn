@@ -1,0 +1,10 @@
+OPUS1394M_WAIT.bat waiting for OPUS1536B exit in opus1536b_wait.txt Sat 11/21/2026 22:13:43.21 
+swapped out while only waiting 22:32:20: replaced by OPUS1394M_WAIT2.bat (same trigger, plus waits for C: 75 GB free; Board Nov 22 04:31 UTC)
+OPUS1394M_WAIT2.bat waiting for OPUS1536B exit in opus1536b_wait.txt Sat 11/21/2026 22:32:20.98 
+held while only waiting 22:52:21: OPUS1394M_WAIT2.bat stopped for the 1415I publish (PUBLISH_1122B.bat restarts it as OPUS1394M_WAIT3.bat after the publish; Board Nov 22 04:55 UTC)
+OPUS1394M_WAIT3.bat waiting for OPUS1536B exit in opus1536b_wait.txt Sat 11/21/2026 23:49:05.58 
+OPUS1394A_MELT start  0:35:05.65 
+OPUS1394A_MELT exit 0 at  1:12:21.28 
+run folder out_20261122_003506_28847
+result: done PASS
+all done Sun 11/22/2026  1:12:21.66 
