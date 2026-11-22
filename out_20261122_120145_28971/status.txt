@@ -1,0 +1,56 @@
+[Sun 11/22/2026 12:01:45.65] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T18:01:47Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026 12:01:47.77] ready: GPU label 1587
+relay to: tools\pc\relay_push.bat opus1587d "C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971" (voidsworn-relay branch pc-out-opus1587d, folder out_20261122_120145_28971/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+verified 8d24b6a43964bb5110c00fa143dc5c323e369d2a1879c63ec826d493e38f65f3 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified a8dd73b87663dc628764bcd00fe129458d767c2948a7f42bdee92d8d23595321 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1 (tools_live version 8f04dc972f9a)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 868fb05f22d6aea118dd43a917abd802afbab829 C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026 12:02:45.86] step new import start
+[Sun 11/22/2026 12:23:20.23] step new import ok
+[Sun 11/22/2026 12:23:20.24] step new bench start
+[Sun 11/22/2026 12:32:18.42] step new bench ok
+[Sun 11/22/2026 12:32:18.76] step new ft hegemony_3 1 start
+[Sun 11/22/2026 12:34:14.27] step new ft hegemony_3 1 ok
+[Sun 11/22/2026 12:34:14.28] step new ft hegemony_3 2 start
+[Sun 11/22/2026 12:36:02.46] step new ft hegemony_3 2 ok
+[Sun 11/22/2026 12:36:02.47] step new ft corsair_7 1 start
+[Sun 11/22/2026 12:39:59.03] step new ft corsair_7 1 ok
+[Sun 11/22/2026 12:40:06.31] step new ft corsair_7 2 start
+[Sun 11/22/2026 12:44:29.24] step new ft corsair_7 2 ok
+checkout old 0bd4643f3cc274f02febf865a20c83c6b7b7a5da C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\old are the same fleet as the first checkout
+[Sun 11/22/2026 12:46:19.28] step old import start
+[Sun 11/22/2026 13:16:22.70] step old import exit 124
+FAILED: old import
+[Sun 11/22/2026 13:16:23.11] skipped old bench: an earlier step failed
+FAILED: old bench did not finish (see C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\out_old\bench_log.txt)
+[Sun 11/22/2026 13:16:24.62] skipped old ft hegemony_3 1: an earlier step failed
+[Sun 11/22/2026 13:16:25.03] skipped old ft hegemony_3 2: an earlier step failed
+[Sun 11/22/2026 13:16:25.52] skipped old ft corsair_7 1: an earlier step failed
+[Sun 11/22/2026 13:16:25.89] skipped old ft corsair_7 2: an earlier step failed
+note: tools_live moved from 8f04dc972f9a to 1bf30b74c032 during the job; every step stayed on 8f04dc972f9a
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: old import, old bench did not finish (see C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971\out_old\bench_log.txt)
+all done Sun 11/22/2026 13:16:30.11
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1587d\out_20261122_120145_28971 failed (the janitor handles old failures)
+disk: checkouts freed 0.0 GB in all, C: 260.6 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt

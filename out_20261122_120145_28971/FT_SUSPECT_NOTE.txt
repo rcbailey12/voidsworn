@@ -1,0 +1,1 @@
+Board, Nov 22 18:41 UTC: WOUNDS4 (opus1587d, run out_20261122_120145_28971) frame-time steps from 18:35 UTC on are SUSPECT: Codex 1732 Blender (picket_cpu_paint.py, -t 12, from 18:37 UTC) and Codex parity batches on lanes B and C (8 headless Godots, from 18:35 UTC) ran at the same time. A frame-time-only rerun (same pins) is to be queued solo behind the 1732 hold.

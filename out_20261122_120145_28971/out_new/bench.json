@@ -1,0 +1,609 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "c494af2c0a5d1a4817c76e977e9027e1b08193c2b8e1e2aa7b9ca0a08d0b74d7",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "91ebddedadadebb54f62f47104e94af0e76377ca12e7780fc6be2c465b2a9fa8",
+ "parts": {
+  "0": {
+   "start_frame": 9000
+  },
+  "2": {
+   "start_frame": 9900
+  },
+  "3": {
+   "start_frame": 15300
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 9120
+  }
+ },
+ "pipelines_compiled": 2338,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 4800,
+     "t": 0.1
+    },
+    {
+     "step": 4830,
+     "t": 0.6
+    },
+    {
+     "step": 4865,
+     "t": 1.1053
+    },
+    {
+     "step": 4949,
+     "t": 2.5053
+    },
+    {
+     "step": 5039,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_void_wounded__c170.png",
+   "id": "lw_void_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 5283,
+     "t": 0.1
+    },
+    {
+     "step": 5313,
+     "t": 0.6
+    },
+    {
+     "step": 5348,
+     "t": 1.1053
+    },
+    {
+     "step": 5432,
+     "t": 2.5053
+    },
+    {
+     "step": 5522,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_void_wounded__c26.png",
+   "id": "lw_void_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 5766,
+     "t": 0.1
+    },
+    {
+     "step": 5796,
+     "t": 0.6
+    },
+    {
+     "step": 5831,
+     "t": 1.1053
+    },
+    {
+     "step": 5915,
+     "t": 2.5053
+    },
+    {
+     "step": 6005,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_itha_wounded__c170.png",
+   "id": "lw_itha_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 6249,
+     "t": 0.1
+    },
+    {
+     "step": 6279,
+     "t": 0.6
+    },
+    {
+     "step": 6314,
+     "t": 1.1053
+    },
+    {
+     "step": 6398,
+     "t": 2.5053
+    },
+    {
+     "step": 6488,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_itha_wounded__c26.png",
+   "id": "lw_itha_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 6732,
+     "t": 0.1
+    },
+    {
+     "step": 6762,
+     "t": 0.6
+    },
+    {
+     "step": 6797,
+     "t": 1.1053
+    },
+    {
+     "step": 6881,
+     "t": 2.5053
+    },
+    {
+     "step": 6971,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_chor_wounded__c170.png",
+   "id": "lw_chor_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 7215,
+     "t": 0.1
+    },
+    {
+     "step": 7245,
+     "t": 0.6
+    },
+    {
+     "step": 7280,
+     "t": 1.1053
+    },
+    {
+     "step": 7364,
+     "t": 2.5053
+    },
+    {
+     "step": 7454,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_chor_wounded__c26.png",
+   "id": "lw_chor_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 7698,
+     "t": 0.1
+    },
+    {
+     "step": 7728,
+     "t": 0.6
+    },
+    {
+     "step": 7763,
+     "t": 1.1053
+    },
+    {
+     "step": 7847,
+     "t": 2.5053
+    },
+    {
+     "step": 7937,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_hege_wounded__c170.png",
+   "id": "lw_hege_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 8181,
+     "t": 0.1
+    },
+    {
+     "step": 8211,
+     "t": 0.6
+    },
+    {
+     "step": 8246,
+     "t": 1.1053
+    },
+    {
+     "step": 8330,
+     "t": 2.5053
+    },
+    {
+     "step": 8420,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_hege_wounded__c26.png",
+   "id": "lw_hege_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 8664,
+     "t": 0.1
+    },
+    {
+     "step": 8694,
+     "t": 0.6
+    },
+    {
+     "step": 8729,
+     "t": 1.1053
+    },
+    {
+     "step": 8813,
+     "t": 2.5053
+    },
+    {
+     "step": 8903,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_cors_wounded__c170.png",
+   "id": "lw_cors_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 9147,
+     "t": 0.1
+    },
+    {
+     "step": 9177,
+     "t": 0.6
+    },
+    {
+     "step": 9212,
+     "t": 1.1053
+    },
+    {
+     "step": 9296,
+     "t": 2.5053
+    },
+    {
+     "step": 9386,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_cors_wounded__c26.png",
+   "id": "lw_cors_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 9630,
+     "t": 0.1
+    },
+    {
+     "step": 9660,
+     "t": 0.6
+    },
+    {
+     "step": 9695,
+     "t": 1.1053
+    },
+    {
+     "step": 9779,
+     "t": 2.5053
+    },
+    {
+     "step": 9869,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_deat_wounded__c170.png",
+   "id": "lw_deat_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 10113,
+     "t": 0.1
+    },
+    {
+     "step": 10143,
+     "t": 0.6
+    },
+    {
+     "step": 10178,
+     "t": 1.1053
+    },
+    {
+     "step": 10262,
+     "t": 2.5053
+    },
+    {
+     "step": 10352,
+     "t": 4.0053
+    }
+   ],
+   "file": "moments/lw_deat_wounded__c26.png",
+   "id": "lw_deat_wounded",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 10593,
+     "t": 0.05
+    },
+    {
+     "step": 10605,
+     "t": 0.25
+    },
+    {
+     "step": 10625,
+     "t": 0.5054
+    },
+    {
+     "step": 10649,
+     "t": 0.9053
+    },
+    {
+     "step": 10679,
+     "t": 1.4053
+    }
+   ],
+   "file": "moments/lw_void_blowout__c170.png",
+   "id": "lw_void_blowout",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 10920,
+     "t": 0.05
+    },
+    {
+     "step": 10932,
+     "t": 0.25
+    },
+    {
+     "step": 10952,
+     "t": 0.5054
+    },
+    {
+     "step": 10976,
+     "t": 0.9053
+    },
+    {
+     "step": 11006,
+     "t": 1.4053
+    }
+   ],
+   "file": "moments/lw_void_blowout__c26.png",
+   "id": "lw_void_blowout",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 11247,
+     "t": 0.05
+    },
+    {
+     "step": 11259,
+     "t": 0.25
+    },
+    {
+     "step": 11279,
+     "t": 0.5054
+    },
+    {
+     "step": 11303,
+     "t": 0.9053
+    },
+    {
+     "step": 11333,
+     "t": 1.4053
+    }
+   ],
+   "file": "moments/lw_hege_blowout__c170.png",
+   "id": "lw_hege_blowout",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 11574,
+     "t": 0.05
+    },
+    {
+     "step": 11586,
+     "t": 0.25
+    },
+    {
+     "step": 11606,
+     "t": 0.5054
+    },
+    {
+     "step": 11630,
+     "t": 0.9053
+    },
+    {
+     "step": 11660,
+     "t": 1.4053
+    }
+   ],
+   "file": "moments/lw_hege_blowout__c26.png",
+   "id": "lw_hege_blowout",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 11920,
+     "t": 0.3667
+    },
+    {
+     "step": 11929,
+     "t": 0.5167
+    },
+    {
+     "step": 11941,
+     "t": 0.7167
+    },
+    {
+     "step": 11970,
+     "t": 1.1219
+    }
+   ],
+   "file": "moments/lw_ion_crawl__c170.png",
+   "id": "lw_ion_crawl",
+   "impacts": [
+    0.31655098862946
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 12230,
+     "t": 0.3667
+    },
+    {
+     "step": 12239,
+     "t": 0.5167
+    },
+    {
+     "step": 12251,
+     "t": 0.7167
+    },
+    {
+     "step": 12280,
+     "t": 1.1219
+    }
+   ],
+   "file": "moments/lw_ion_crawl__c26.png",
+   "id": "lw_ion_crawl",
+   "impacts": [
+    0.31655098862946
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 12404,
+     "t": 0.85
+    },
+    {
+     "step": 12494,
+     "t": 2.35
+    },
+    {
+     "step": 12614,
+     "t": 4.35
+    },
+    {
+     "step": 12794,
+     "t": 7.35
+    },
+    {
+     "step": 12974,
+     "t": 10.35
+    }
+   ],
+   "file": "moments/lw_lance_cool__c170.png",
+   "id": "lw_lance_cool",
+   "impacts": [
+    0.341130172014237
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 13098,
+     "t": 0.85
+    },
+    {
+     "step": 13188,
+     "t": 2.35
+    },
+    {
+     "step": 13308,
+     "t": 4.35
+    },
+    {
+     "step": 13488,
+     "t": 7.35
+    },
+    {
+     "step": 13668,
+     "t": 10.35
+    }
+   ],
+   "file": "moments/lw_lance_cool__c26.png",
+   "id": "lw_lance_cool",
+   "impacts": [
+    0.341130172014237
+   ],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}
