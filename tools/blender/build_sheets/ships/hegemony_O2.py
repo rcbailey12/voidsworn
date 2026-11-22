@@ -256,6 +256,19 @@ def build(K):
         for i, x in enumerate((1.17, -1.17)):
             K.vent('V%d%s' % (i + 4, sn), (x, side * 1.35, 0.62), (0, 0, 1), 0.2, 0.55, slats=5, inv='vents', note='hold louvre on the rail deck: the holds\' air plant')
     K.hatch('H1', (4.55, 0.0, deck_z(4.55, 0) + 0.012), (0, 0, 1), 0.4, 0.3, inv='hatches', note='deck hatch over the bridge')
+    # round 2 (Ryan, Nov 21: "make sure the level of detail is on both so they don't look like clay"): the broad forward deck
+    # and the flanks get the working fittings a Registry hull carries, in the even Navy order (paired, on the module grid)
+    for side in (1, -1):
+        sn = 'p' if side > 0 else 's'
+        for i, x in enumerate((3.4, 2.82)):
+            K.hatchbox('B%d%s' % (i + 1, sn), (x, side * 0.55, deck_z(x, 0.55)), 0.32, 0.46, 0.08, inv='deck_boxes',
+                       note='framed deck box: the crew deck\'s air plant and stores lift')
+        for i, x in enumerate((3.9, 3.0)):
+            K.hatch('H2%d%s' % (i, sn), (x, side * 1.0, deck_z(x, 1.0) + 0.006), (0, 0, 1), 0.2, 0.16, inv='hatches',
+                    note='small deck access plate over the crew deck')
+        for i, x in enumerate((1.4, 0.5, -0.5, -1.8)):
+            K.hatch('H3%d%s' % (i, sn), (x, side * (st_at(x)[1] + 0.004), -0.2), (0, side, 0), 0.22, 0.13, inv='hatches', up=(0, 0, 1),
+                    note='flank access plate on the band line')
     K.hatch('H2', (-3.4, 0.0, deck_z(-3.4, 0)), (0, 0, 1), 0.4, 0.3, inv='hatches', note='deck hatch over the engine room')
     K.hatch('H3', (0.0, 0.0, belly_z(0.0) - 0.06), (0, 0, -1), 0.5, 0.4, inv='hatches', note='belly hatch on the armour step: the lower hold')
 
