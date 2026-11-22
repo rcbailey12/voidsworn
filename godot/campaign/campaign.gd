@@ -846,9 +846,18 @@ func buyClassTrack(cls) -> bool:
 	var c = classTrackCost(cls)
 	if float(RUN["credits"]) < c: return false
 	RUN["credits"] = float(RUN["credits"]) - c; changeFleet(_track_up.bind(cls)); return true
+# Issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]),
+# and a later gain on the same hull pays that back first, so taking a hull refit off and on again never adds hull.
+# Twin: core.js changeShip.
 func changeShip(ship: Dictionary, fn: Callable) -> void:
 	var before = derive(ship)["maxHp"]; fn.call(ship); var after = derive(ship)["maxHp"]
-	ship["hp"] = clampv(float(ship["hp"]) + (after - before), 1, after)
+	var hp = float(ship["hp"]) + (after - before)
+	var ow = ship.get("hpOwed")
+	if ow is Array:
+		ship.erase("hpOwed")
+		if after > before and float(ship["hp"]) == float(ow[1]): hp -= min(float(ow[0]), float(after - before))
+	if hp < 1: ship["hpOwed"] = [1 - hp, 1]
+	ship["hp"] = clampv(hp, 1, after)
 func changeFleet(fn: Callable) -> void:
 	var b = []
 	for s in RUN["fleet"]: b.append(derive(s)["maxHp"])
@@ -1825,7 +1834,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 func completeNode(checkpoint := true) -> void:
 	var n = findNode(RUN.get("curNode")) if RUN.get("curNode") != null else null
 	if n != null: n["done"] = true
-	RUN["curNode"] = null
+	RUN["curNode"] = null; RUN.erase("inYard")
 	if checkpoint: saveRun()
 func _nodes() -> Array:
 	var out = []
@@ -1938,7 +1947,7 @@ func _resume_node() -> bool:
 		if n["type"] != "event" or not jt(n.get("nemEvent")):
 			_open_stop(n)
 			return true
-	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
+	if n["type"] == "shipyard" and (saved_in_yard or RUN.get("inYard") == n["id"]):   # issue 1556: inYard is the twins' own mark   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
 		shipyardScreen(n)
 		return true
 	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: a Nemesis meeting at a rest stop resumes as the fight
@@ -1949,7 +1958,7 @@ func _resume_node() -> bool:
 		repairStopScreen(n)
 		return true
 	if n["type"] == "event" and not RUN["seenEvents"].is_empty():
-		var id = n.get("nemEvent", RUN["seenEvents"].back())
+		var id = n.get("evId", n.get("nemEvent", RUN["seenEvents"].back()))   # issue 1556: the event drawn on entry
 		for e in EVENTS:
 			if e["id"] != id: continue
 			var ev = _event_for_faction(e)
@@ -1984,6 +1993,7 @@ func fleetScreen(back) -> void:
 	for s in RUN["fleet"]: shipCardActs(acts, s, true)
 	show_page("fleet", {"back": back}, acts)
 	RUN["_fleetBack"] = back
+	saveRun()   # issue 1556: a refit fitted or taken off survives a window close (twin: campaign_run.js fleetScreen)
 func _fleet_back() -> void: fleetScreen(RUN.get("_fleetBack"))   # undefined in the JS when the fleet screen was never opened this session
 func _push_mod(sh, m) -> void: sh["mods"].append(m)
 func ACT_equip(arg: String) -> void:   # R1 (MOD-3, Codex PR #1): only a well-formed index and a fit that can do something
@@ -1998,7 +2008,9 @@ func ACT_equip(arg: String) -> void:   # R1 (MOD-3, Codex PR #1): only a well-fo
 func _pop_mod(sh, i, got: Array) -> void:
 	if i < sh["mods"].size(): got.append(sh["mods"].pop_at(i))
 func ACT_unequip(arg: String) -> void:
-	var p = arg.split(":"); var s = _ship(p[0])
+	var p = arg.split(":")
+	if p.size() != 2 or not p[1].is_valid_int(): return   # issue 1556: only a well-formed uid:index
+	var s = _ship(p[0])
 	if s == null: return
 	var got = []
 	changeShip(s, _pop_mod.bind(int(p[1]), got))
@@ -2130,6 +2142,7 @@ func shipyardScreen(n) -> void:
 	for cls in fleetClasses():
 		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
+	RUN["inYard"] = n["id"]; saveRun()   # issue 1556: every stock roll, buy, sale, repair and refit is on disk at once (twin: campaign_run.js)
 # a class as players see it (data.js clsName, lore round 8 row 4.0): cls stays the lookup key
 func clsName(c) -> String: return str(TB.get("CLS_NAME", {}).get(str(c), str(c)))
 func fleetClasses() -> Array:
@@ -2143,7 +2156,11 @@ func ACT_buyTrack(cls: String) -> void:
 	tel("shop", {"k": "track", "id": cls, "lv": classTrack(cls)})
 	toast(clsName(cls) + " refit level " + numstr(classTrack(cls)) + ": every " + clsName(cls).to_lower() + " gains."); shipyardScreen(yard_node)
 func ACT_buyHull(h: String) -> void:
-	var t = HULLS[h]; var st = yard_node["stock"]; var cap = st["cap"] if st.get("cap") is Array else []
+	if yard_node == null or not HULLS.has(h): return
+	var st = yard_node["stock"]; var cap = st["cap"] if st.get("cap") is Array else []
+	var t = HULLS[h]
+	if not st["hulls"].has(h) and not cap.has(h): return   # issue 1556: only a hull this yard sells
+	if not cap.has(h) and jt(t.get("unique")) and RUN["fleet"].any(func(s): return s["tpl"] == h): return   # one of a unique hull, as the button says
 	var captured = cap.has(h); var cost = capturedHullPrice(t) if captured else jsround(float(t["cost"]) * priceMult())
 	if hullFunds() < cost or fleetCP() + float(t["cp"]) > float(RUN["cpCap"]): return
 	hullPay(cost)
@@ -2151,13 +2168,18 @@ func ACT_buyHull(h: String) -> void:
 	var s = newShip(h); if captured: s["ripped"] = true
 	RUN["fleet"].append(s); toast(ship_with_article(s["name"], true) + " joins the fleet."); shipyardScreen(yard_node)
 func ACT_buyMod(a: String) -> void:
-	var i = int(a); var st = yard_node["stock"]; var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
+	if yard_node == null or not str(a).is_valid_int(): return
+	var i = int(a); var st = yard_node["stock"]
+	if i < 0 or i >= st["mods"].size(): return   # issue 1556: bounds first
+	var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
 	if _has_num(st["sold"], i) or float(RUN["credits"]) < cost: return
 	RUN["credits"] = float(RUN["credits"]) - cost
 	tel("shop", {"k": "mod", "id": m, "cost": cost})
 	st["sold"].append(i); RUN["inventory"].append(m); toast(modName(m) + " is in the hold. Fit it from Refits."); shipyardScreen(yard_node)
 func ACT_repair(uid: String) -> void:
-	var s = _ship(uid); var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var c = ceil(miss / 2.0 * priceMult())
+	var s = _ship(uid)
+	if s == null: return   # issue 1556
+	var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var c = ceil(miss / 2.0 * priceMult())
 	if hullFunds() < c: return
 	hullPay(c); s["hp"] = d["maxHp"]; shipyardScreen(yard_node)
 func ACT_repairAll() -> void:
@@ -2172,7 +2194,9 @@ func _mk_up(sh) -> void: sh["mk"] = float(sh["mk"]) + 1
 func _mk_up3(sh) -> void:
 	if float(sh["mk"]) < 3: sh["mk"] = float(sh["mk"]) + 1
 func ACT_upgradeMk(uid: String) -> void:
-	var s = _ship(uid); var c = mkCost(s)
+	var s = _ship(uid)
+	if s == null: return   # issue 1556
+	var c = mkCost(s)
 	if float(s["mk"]) >= 3 or hullFunds() < c: return
 	hullPay(c)
 	tel("shop", {"k": "mk", "id": s["tpl"], "cost": c})
@@ -2294,10 +2318,17 @@ func _event_for_faction(ev: Dictionary) -> Dictionary:
 	if jt(ev.get("v")) and jt(ev["v"].get(RUN["fac"])): out.merge(ev["v"][RUN["fac"]], true)
 	return out
 func eventScreen(n) -> void:
-	var event := nextEvent()
-	if n != null and jt(n.get("nemCleared")):
-		n["nemEvent"] = event["id"]
-		saveRun()
+	# issue 1556: the event drawn on entry stays on the node and on disk, so a reload shows the same event (twin: campaign_run.js)
+	var event = null
+	var want = (n.get("evId") if jt(n.get("evId")) else n.get("nemEvent")) if n != null else null
+	if jt(want):
+		for e in EVENTS:
+			if e["id"] == want: event = e; break
+	if event == null:
+		event = nextEvent()
+		if n != null: n["evId"] = event["id"]
+	if n != null and jt(n.get("nemCleared")): n["nemEvent"] = event["id"]
+	if n != null: saveRun()
 	show_event(_event_for_faction(event))
 func show_event(ev: Dictionary) -> void:
 	cur_event = ev

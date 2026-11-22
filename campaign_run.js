@@ -114,9 +114,9 @@ function openStop(n){
 }
 function resumeServiceStop(){
   const n=RUN.pos&&findNode(RUN.pos);
-  if(n&&!n.done&&RUN.curNode===n.id&&(n.nemCleared||(['drydock','field'].includes(n.type)&&!nemNodeIs(n)))) openStop(n);
+  if(n&&!n.done&&RUN.curNode===n.id&&(n.nemCleared||(['drydock','field'].includes(n.type)&&!nemNodeIs(n))||(n.type==='shipyard'&&RUN.inYard===n.id)||(n.type==='event'&&n.evId))) openStop(n); // issue 1556: a save inside a yard or an event reopens it
 }
-function completeNode(){ const n=findNode(RUN.curNode); if(n) n.done=true; RUN.curNode=null; saveRun(); }
+function completeNode(){ const n=findNode(RUN.curNode); if(n) n.done=true; RUN.curNode=null; delete RUN.inYard; saveRun(); }
 
 // ---------- fleet management ----------
 function shipCard(s, opts={}){
@@ -149,12 +149,13 @@ function fleetScreen(back){
     <div class="cards">${RUN.fleet.map(s=>shipCard(s,{refit:true})).join('')}</div>
   </div></div>`);
   RUN._fleetBack=back;
+  saveRun(); // issue 1556: a refit fitted or taken off survives a window close (twin: campaign.gd fleetScreen)
 }
 ACT.fleetScreen=()=>fleetScreen('map');
 ACT.backMap=()=>{ saveRun(); mapScreen(); };
 ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false; // R1 (MOD-3, Codex PR #1)
   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
-ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+ACT.unequip=arg=>{ if(typeof arg!=='string'||arg.split(':').length!==2||!/^-?[0-9]+$/.test(arg.split(':')[1])) return; /* issue 1556 */ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
 ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
 function promoteModal(uid, after){
   const s=RUN.fleet.find(x=>x.uid===uid); if(!s||!s.cap.pending){ after(); return; }
@@ -252,16 +253,17 @@ function shipyardScreen(n){
     <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
     <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(clsName(cls))} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
   </div></div>`);
+  RUN.inYard=n.id; saveRun(); // issue 1556: every stock roll, buy, sale, repair and refit is on disk at once (twin: campaign.gd shipyardScreen)
 }
 ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',id:cls,lv:classTrack(cls)}); }catch(e){} toast(`${clsName(cls)} refit level ${classTrack(cls)}: every ${clsName(cls).toLowerCase()} gains.`); shipyardScreen(yardNode); };
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
-ACT.buyHull=h=>{ const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h), cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(hullFunds()<cost||fleetCP()+t.cp>RUN.cpCap) return; hullPay(cost); try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
-ACT.buyMod=i=>{ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
-ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(hullFunds()<c) return; hullPay(c); s.hp=d.maxHp; shipyardScreen(yardNode); };
+ACT.buyHull=h=>{ if(!yardNode||!HULLS[h]) return; const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h); if(!st.hulls.includes(h)&&!captured) return; if(!captured&&t.unique&&RUN.fleet.some(s=>s.tpl===h)) return; /* issue 1556: only a hull this yard sells, one of a unique hull */ const cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(hullFunds()<cost||fleetCP()+t.cp>RUN.cpCap) return; hullPay(cost); try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
+ACT.buyMod=i=>{ if(!yardNode||!/^(0|[1-9][0-9]*)$/.test(String(i))||+i>=yardNode.stock.mods.length) return; /* issue 1556: bounds first */ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
+ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; const d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(hullFunds()<c) return; hullPay(c); s.hp=d.maxHp; shipyardScreen(yardNode); };
 ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(hullFunds()<c) return; hullPay(c); RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
-ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
+ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; const c=mkCost(s); if(s.mk>=3||hullFunds()<c) return; hullPay(c); try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
 ACT.sellShip=uid=>{ if(RUN.fleet.length<=1) return; const s=RUN.fleet.find(x=>x.uid===uid);
   modal(`<h2>Decommission the ${esc(s.name)}?</h2><p class="muted">Its captain retires and its refits return to the hold. You receive ${sellValue(s)} ${hullWord()}.${s.regrown?' A regrown ship has nothing to strip until it has fought.':''}</p><div class="row"><button class="primary danger" data-act="sellConfirm" data-arg="${uid}">Decommission</button><button data-act="closeModal">Keep it</button></div>`); };
 ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); hullPay(-sellValue(s)); RUN.fleet.splice(i,1); changeFleet(ensureFlagship); closeModal(); shipyardScreen(yardNode); }; // issue 1384: selling the flagship hands the Aspect on at once
@@ -312,13 +314,16 @@ function nextEvent(){ RUN.seenEvents=RUN.seenEvents||[]; const fits=e=>!(e.not&&
 function eventOptOk(o){ const cost=o.r&&o.r.cost; return (!cost||RUN.credits>=cost)&&needMet(o.need); }
 function eventScreen(n){
   let ev;
+  // issue 1556: the event drawn on entry stays on the node and on disk, so a reload shows the same event (twin: campaign.gd eventScreen)
+  const want=n?(n.evId||n.nemEvent):null; if(want) ev=EVENTS.find(e=>e.id===want);
+  if(!ev){ ev=nextEvent(); if(n) n.evId=ev.id; }
+  if(n&&n.nemCleared) n.nemEvent=ev.id;
+  if(n) saveRun();
   if(n&&n.nemCleared){
-    ev=EVENTS.find(e=>e.id===n.nemEvent);
-    if(!ev){ ev=nextEvent(); n.nemEvent=ev.id; saveRun(); }
     const choices=(ev.v&&ev.v[RUN.fac]&&ev.v[RUN.fac].o)||ev.o;
     const fight=choices.find((o,i)=>RUN.flags[ev.id]===(o.k||String(i))&&o.r&&o.r.fight);
     if(fight){ battleScreen({kind:'elite',fac:fight.r.fight,col:n.col+1,node:n.id,eventRelic:true}); return; }
-  }else ev=nextEvent();
+  }
   curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
   mapScreen(); eventModal();
 }
