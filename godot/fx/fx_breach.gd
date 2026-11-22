@@ -125,6 +125,7 @@ class Ent:
 	var ldir := Vector3.ZERO
 	var part_i := 0
 	var grow := 1.0
+	var hatch_k := 1.0   # issue 1547: this boarding hatch's width factor (fx.gd BOARD "hatch"), kept for regrades
 	var section_damage := 1.0
 	var hit_origin := Vector3.ZERO
 	var hit_normal := Vector3.UP
@@ -1824,7 +1825,7 @@ static func clear_nodes(s) -> void:
 
 # The mark a hit leaves, by look and weight, at a hull point (ship frame). dir: the shot's direction (ship frame).
 # Returns the entries to add (a gauss slug makes two: the entry and the spalled exit).
-static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: Vector3, seed_v: float, faction := "", grow := 1.0, section_damage := 1.0) -> Array:
+static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: Vector3, seed_v: float, faction := "", grow := 1.0, section_damage := 1.0, hatch_k := 1.0) -> Array:
 	# Issue 1235 (Neon audit F1.1): the size used to fall to 12% on a healthy section (0.12 + 0.88 d^0.9), so a first
 	# torpedo on a fresh ship left a sub-pixel crater at the battle camera and only popped to size when the next sync
 	# regraded it. A mark is now at least MARK_FLOOR of its full size and still grows with the section's damage.
@@ -1879,7 +1880,9 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			# the rammer's own bow folds too, a smaller crumple
 			out.append(dent(p, n, L * 0.06 * g, L * 0.012 * g, seed_v, S_RAM))
 		"board":
-			out.append(cluster(p, n, L * 0.012 * g, 5, L * 0.003, 0.0, seed_v, S_HATCH))
+			# issue 1547: hatch_k widens the hatch it was made with (fx.gd BOARD); each mark
+			# keeps its own (Ent.hatch_k), so a regrade rebuilds it at the width it had
+			out.append(cluster(p, n, L * 0.012 * g * hatch_k, 5, L * 0.003 * hatch_k, 0.0, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
 		# below stage 4 (section damage under 0.8) a crater never reaches the stage 4 hole's size
@@ -1900,6 +1903,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		e.ldir = dir
 		e.part_i = j
 		e.grow = g
+		e.hatch_k = hatch_k
 		e.section_damage = section_damage
 		e.hit_origin = p
 		e.hit_normal = n
