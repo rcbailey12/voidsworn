@@ -346,7 +346,13 @@ each slot like a board lane's, and accepts a runner-managed sparse copy under th
 checkout per run and picture folders in code jobs drove up disk use (issue 1186).
 
 
-Helper PC jobs (`opus_job_head.bat`) remove their own pinned checkouts once the attempt passed and every result file is
+Helper PC jobs from the template (`OJ_SLOTS=1`, issue 1659) reset one of three warm slots under `voidsworn_test\slots`
+(slot_gpu_1, slot_gpu_2, slot_cpu: reused `clone --local` copies of the mirror, the import cache kept) to their pin instead
+of making a checkout per attempt; the last job's unproven leftovers are saved into its own attempt before each reset, a
+slot whose leftovers cannot be saved is set aside with `hold.txt` for the Board, and the reset deletes only inside `slots`
+(docs/playbooks/pc.md). Why: a fresh checkout cost about 10 GB real per attempt (ships copy plus import cache), measured
+on the Nov 22 deletes; Ryan approved the warm slots on Nov 22 (studio ops upgrade, Wave 2.1). Set: Ryan, Nov 22.
+Older bats without it keep their own pinned checkouts, which they remove once the attempt passed and every result file is
 on a relay branch: the Board runs the job head's checkout step right after each relay, and the same job's later tails
 repeat it. A file the job left in a checkout that is not a proven rebuildable leftover is saved into the job's own
 `out_<name>\checkout_leftovers` first (at most 200 MB, read back by SHA-256); more, a staged change, a stash or a local

@@ -14,6 +14,9 @@ rem                                   PC_KEEP_GODOT_PROFILE cleared, issue 1228)
 rem                                   board_look.cfg. Sets OJ_OUT (the attempt folder), OJ_ST (its status.txt), JW, JW_GODOT.
 rem   checkout <name> <40-hex sha>    a fresh checkout of that exact commit in OJ_OUT\<name> from the shared mirror; HEAD
 rem                                   must equal the pin. Sets OJ_REPO.
+rem   (OJ_SLOTS=1, issue 1659: checkout resets a warm slot under voidsworn_test\slots to the pin instead of a fresh
+rem                                   checkout; OJ_SLOT_KIND gpu (default) or cpu; the slot is held from the first
+rem                                   checkout to the tail; side files go to OJ_OUT\<name>_ships_*.txt. Sets OJ_REPO.)
 rem   ships                           copies built hulls from LB_SHIPS (default build\godot) into OJ_REPO: gen whole with
 rem                                   /E (gen\manifest.json must arrive), assets\ships with /E /XC /XN /XO /XF
 rem                                   manifest.json README.md a4_props.gd *.uid /XD test previews; robocopy 8 or more fails,
@@ -45,6 +48,7 @@ set "OJ_PS=%~dp0opus_job_head.ps1"
 set "OJ_JOB=%~2"
 set "OJ_OUT="
 set "OJ_REPO="
+set "OJ_SIDE="
 echo %OJ_JOB%| findstr /r /x "[A-Za-z0-9_-][A-Za-z0-9_-]*" > nul
 if errorlevel 1 (echo opus_job_head: job name not accepted: "%OJ_JOB%" & exit /b 2)
 rem The head itself must be the installed main copy, so every job runs the same reviewed steps.
@@ -104,9 +108,21 @@ rem ------------------------------------------------------------------ checkout 
 if not defined OJ_OUT (echo opus_job_head: checkout before init & exit /b 2)
 if defined JW_STOP (>> "%OJ_ST%" echo skipped checkout %~2: an earlier step failed & exit /b 1)
 set "OJ_REPO="
+set "OJ_SIDE="
+if "%OJ_SLOTS%"=="1" goto oj_checkout_slot
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" checkout "%OJ_OUT%" "%~2" "%~3" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "checkout %~2 %~3" & exit /b 1)
 set "OJ_REPO=%OJ_OUT%\%~2"
+set "OJ_SIDE=%OJ_REPO%"
+exit /b 0
+rem Issue 1659: OJ_SLOTS=1 resets a warm slot (voidsworn_test\slots, OJ_SLOT_KIND gpu or cpu) to the pin instead. The
+rem ships step's side files go to the attempt as <name>_ships_*.txt, since the slot is shared between jobs.
+:oj_checkout_slot
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" slot "%OJ_OUT%" "%~2" "%~3" >> "%OJ_ST%" 2>&1
+if errorlevel 1 (call "%JW%" fail "slot checkout %~2 %~3" & exit /b 1)
+if not exist "%OJ_OUT%\slot_repo.txt" (call "%JW%" fail "slot checkout %~2 wrote no slot_repo.txt" & exit /b 1)
+set /p OJ_REPO=<"%OJ_OUT%\slot_repo.txt"
+set "OJ_SIDE=%OJ_OUT%\%~2"
 exit /b 0
 
 rem ------------------------------------------------------------------ ships
@@ -121,27 +137,27 @@ rem The tail's checkout removal proves each copied ship file unchanged against t
 rem gen is untracked and copied whole with no skip flags, so the source always wins (as get_ship_files.bat does): its
 rem manifest.json is what the game reads to find the built hulls. The /XF list is for assets\ships only, where
 rem manifest.json is the tracked checksum list (RUN1262C dropped gen\manifest.json and every hull drew as a placeholder).
-robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_gen.txt" 2>&1
-if errorlevel 8 (call "%JW%" fail "ships copy gen, see %OJ_REPO%_ships_gen.txt" & exit /b 1)
+robocopy "%LB_SHIPS%\gen" "%OJ_REPO%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_SIDE%_ships_gen.txt" 2>&1
+if errorlevel 8 (call "%JW%" fail "ships copy gen, see %OJ_SIDE%_ships_gen.txt" & exit /b 1)
 if not exist "%OJ_REPO%\godot\gen\manifest.json" (call "%JW%" fail "no gen\manifest.json after the ships copy; every hull would draw as a placeholder" & exit /b 1)
-if exist "%LB_SHIPS%\assets\ships" robocopy "%LB_SHIPS%\assets\ships" "%OJ_REPO%\godot\assets\ships" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_REPO%_ships_assets.txt" 2>&1
-if errorlevel 8 (call "%JW%" fail "ships copy assets, see %OJ_REPO%_ships_assets.txt" & exit /b 1)
+if exist "%LB_SHIPS%\assets\ships" robocopy "%LB_SHIPS%\assets\ships" "%OJ_REPO%\godot\assets\ships" /E /XC /XN /XO /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OJ_SIDE%_ships_assets.txt" 2>&1
+if errorlevel 8 (call "%JW%" fail "ships copy assets, see %OJ_SIDE%_ships_assets.txt" & exit /b 1)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" tracked "%OJ_REPO%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "tracked files changed by the ships copy in %OJ_REPO%" & exit /b 1)
 rem The two copies are separate passes, so a ship published in between would pair a new glb with an old cache
 rem (Artoo, PR 1324). Every copied ship must match its cache stamp; the measured hulls go to <repo>_ships_identity.txt.
 rem OJ_NEED_HULLS (optional, codes split by spaces) names the hulls the job's fixtures draw; each must be a matching ship.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%" >> "%OJ_ST%" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shipcheck "%OJ_REPO%" "%OJ_SIDE%_ships_identity.txt" "%OJ_NEED_HULLS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 (call "%JW%" fail "ships do not match their cache in %OJ_REPO%, see %OJ_ST%" & exit /b 1)
 rem Issue 1497: the hashes of what was copied, so the tail can prove these files unchanged even after a publish moves
 rem build\godot on during the job. A record that cannot be written only means the tail proves less; it never fails the job.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied.txt" "%LB_SHIPS%" >> "%OJ_ST%" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" shiprecord "%OJ_REPO%" "%OJ_SIDE%_ships_copied.txt" "%LB_SHIPS%" >> "%OJ_ST%" 2>&1
 if errorlevel 1 >> "%OJ_ST%" echo note: the ships copy record could not be written; the tail proves copies against build\godot only
 rem Every checkout in one job must measure the same fleet: a publish between two checkouts (OLD and NEW arms) would
 rem give each a self-consistent but different set of hulls (Artoo, PR 1324). The first checkout's identity is the
 rem reference; any later one that differs fails the job.
-if not exist "%OJ_OUT%\ships_identity_first.txt" (copy /y "%OJ_REPO%_ships_identity.txt" "%OJ_OUT%\ships_identity_first.txt" > nul & exit /b 0)
-fc /b "%OJ_OUT%\ships_identity_first.txt" "%OJ_REPO%_ships_identity.txt" > nul 2>&1
+if not exist "%OJ_OUT%\ships_identity_first.txt" (copy /y "%OJ_SIDE%_ships_identity.txt" "%OJ_OUT%\ships_identity_first.txt" > nul & exit /b 0)
+fc /b "%OJ_OUT%\ships_identity_first.txt" "%OJ_SIDE%_ships_identity.txt" > nul 2>&1
 if errorlevel 1 (call "%JW%" fail "the hulls in %OJ_REPO% differ from the first checkout's (a ship was published between them), see %OJ_OUT%\ships_identity_first.txt" & exit /b 1)
 >> "%OJ_ST%" echo ships in %OJ_REPO% are the same fleet as the first checkout
 exit /b 0
@@ -173,9 +189,12 @@ rem here. OJ_KEEP_CHECKOUTS=1 skips the step (logged).
 rem It runs after job_wrap end has written the done line, so a slow or stuck step can never delay or lose the result.
 set "OJ_DROP=1"
 if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
+rem Issue 1659: a slot job has no checkout of its own to remove; its slot is let go after the result is written.
+if "%OJ_SLOTS%"=="1" set "OJ_DROP="
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
 if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+if "%OJ_SLOTS%"=="1" powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" slotrelease "%OJ_OUT%" >> "%OJ_ST%" 2>&1
 rem Issue 1396 (Board, Nov 22; review of PR 1644): the relay lands after this tail, so a hidden waiter (dropwait) asks
 rem origin for the relay branch every 5 minutes for up to 12 hours, then takes the job lease and issue lock, runs the
 rem janitor's checks and the same proof and drop for this attempt only. The attempt goes in OJ_DROPWAIT_ATTEMPT, not on

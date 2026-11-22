@@ -23,7 +23,16 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `tmo.bat` and `run_timeout.ps1` in `status.txt` (fail closed when either is missing); the watchdog's throwaway Godot
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
-  `repo-mirror.git`; HEAD must equal the pin.
+  `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (the template's default since issue 1659, Ryan Nov 22) it
+  resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
+  each one reused `clone --local` of the mirror. The first checkout takes a free slot (waits up to `OJ_SLOT_WAIT_MINUTES`,
+  360) and a hidden holder keeps its lease until the tail lets it go or the job's cmd ends. Before each reset, anything
+  the last job left there that is not proven rebuildable is saved into that job's `out_<name>\slot_leftovers`; when it
+  cannot be (over 200 MB, a staged change, a nested repo) the slot gets `hold.txt` and is skipped until the Board has
+  looked and removed it. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only `godot\.godot`
+  and `*.import` sidecars warm; it deletes only inside `slots`. The ships step then copies into the slot as below (its
+  side files go to `<attempt>\<name>_ships_*.txt`), so a publish during a job changes nothing under it. A slot job has no
+  checkout of its own for the tail to remove. Codex lanes move onto the slots later, after a Windows log of two slot jobs.
 - `ships`: built hulls from `build\godot`: `gen` whole with plain `/E`, no skip flags, so the source wins (its
   `manifest.json` is how the game finds the hulls, and the job fails without it), `assets\ships` with `/E /XC /XN /XO /XF
   manifest.json README.md a4_props.gd *.uid /XD test previews`; robocopy 8 or more fails; then any tracked file that
