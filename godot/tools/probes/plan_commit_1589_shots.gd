@@ -73,9 +73,8 @@ func _save(code: String, frames: Array) -> void:
 		sheet.blit_rect(frames[i], Rect2i(0, 0, w, h), Vector2i((i % 2) * w, (i / 2) * h))
 	if sheet.get_height() > 720:
 		sheet.resize(int(sheet.get_width() * 720.0 / sheet.get_height()), 720, Image.INTERPOLATE_LANCZOS)
-	var pp = preload("res://tools/picture_provenance.gd")
 	var p := out.path_join("%s.jpg" % code)
-	pp.save_jpg(sheet, p, 0.9, pp.capture_stage())
+	preload("res://tools/picture_provenance.gd").save_jpg(sheet, p, 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[plan-1589-shots] ", p)
 
 
