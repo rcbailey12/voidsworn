@@ -4,6 +4,7 @@ const Campaign = preload("res://campaign/campaign.gd")
 const UI = preload("res://ui/campaign/campaign_ui.gd")
 const GS = preload("res://ui/theme/glass_shell.gd")
 const JSM = preload("res://rules/jsm.gd")
+const UiScale = preload("res://ui/ui_scale.gd")
 var failures := 0
 var C
 var ui
@@ -156,6 +157,17 @@ func run() -> void:
 				key(entry[0]); await frames(); await capture(entry[1]); key(KEY_ESCAPE); await frames()
 		if shots != "":
 			check(ui.debrief.ship_portrait == null or ui.debrief.ship_portrait.installed, state + ": capture uses installed model")
+	# Issue 1559 item 3: at the player's Large and Larger UI scale, and in a 4:3 window, every line and action of the page
+	# stays on screen and nothing overlaps (it ran off the bottom at Larger and lost width in 4:3)
+	for case in [[1.15, Vector2i(1920, 1080), "large"], [1.3, Vector2i(1920, 1080), "larger"], [1.0, Vector2i(1440, 1080), "four_three"], [1.3, Vector2i(1440, 1080), "four_three_larger"]]:
+		UiScale.set_player(case[0]); root.size = case[1]
+		if shots != "": DisplayServer.window_set_size(case[1])
+		await frames(); ui._rescale(); fixture("loss"); ui.render(); await frames()
+		readability("loss_" + str(case[2]))
+		await capture("loss_" + str(case[2]))
+	UiScale.set_player(1.0); root.size = Vector2i(1920, 1080)
+	if shots != "": DisplayServer.window_set_size(Vector2i(1920, 1080))
+	await frames(); ui._rescale(); fixture("loss"); ui.render(); await frames()
 	# Exercise every moved item through the actual keys and buttons.
 	for code in [KEY_S, KEY_L, KEY_R, KEY_B, KEY_A, KEY_F]:
 		var before_open = C.save_text(); key(code); await frames()

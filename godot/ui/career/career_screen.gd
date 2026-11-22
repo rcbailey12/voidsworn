@@ -20,6 +20,7 @@ const BLOOD := BONE
 const TABS := [["records", "Records"], ["medals", "Medals"], ["titles", "Titles"], ["history", "History"], ["chronicle", "Chronicle"]]
 const ROMAN := ["0", "I", "II", "III", "IV", "V"]
 const Crest := preload("res://ui/career/crest.gd")
+const ModalFocus := preload("res://ui/theme/modal_focus.gd")   # issue 1559
 const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: the shared ui cues (watch_sound)
 
 var story = null
@@ -174,6 +175,9 @@ func open(st) -> void:
 	body.add_theme_constant_override("separation", px(12))
 	sc.add_child(body)
 	render()
+	# issue 1559 items 4, 14, 15: Career is modal for the keyboard. Focus starts on Close, stays inside (the title menu
+	# or the Progression tab behind cannot take Enter), and goes back to what had it when Career closes.
+	ModalFocus.attach(self, close)
 
 
 func set_tab(t: String) -> void:
@@ -531,6 +535,7 @@ func _close() -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
+		if ModalFocus.covered(self): return   # a dialog opened over Career has the keys
 		var key := (e as InputEventKey).keycode
 		if key == KEY_ESCAPE:
 			get_viewport().set_input_as_handled()
