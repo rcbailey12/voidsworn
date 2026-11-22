@@ -61,6 +61,7 @@ func _init() -> void:
 		["18: the Chorus free pivot is offered with no movement left", c_18_pivot],
 		["18 (Godot): a move to a hex the ship cannot reach is refused", c_18_move],
 		["18 (Godot): a stale path to a still-reachable hex walks the legal path and pays its cost", c_18_stale_path],
+		["18 (Godot): the same path with a stale cost pays today's cost", c_18_stale_cost],
 		["18 (Godot): the volley preview never reads a miss as a routed hit", c_18_preview_route],
 		["18 (Godot): the torpedo preview adds a Nemesis torpedo weakness", c_18_preview_nem],
 	]
@@ -228,6 +229,16 @@ func c_18_stale_path() -> Array:
 	var st = {"q": real.q, "r": real.r, "f": real.f, "t": 0, "cost": 3, "path": [{"q": int(u["q"]) + 1, "r": int(u["r"]) + 2, "f": 0}, {"q": real.q, "r": real.r, "f": real.f}]}
 	var moved = api.move(u["id"], st)
 	return [moved and int(u["q"]) == int(real.q) and int(u["r"]) == int(real.r) and int(u["mp"]) == 3, "moved " + str(moved) + ", at " + str(u["q"]) + "," + str(u["r"]) + ", mp " + str(u["mp"])]
+func c_18_stale_cost() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
+	api.phase = "player"; u["mp"] = 4; u["activated"] = false
+	var real = null
+	for s in R.computeReach(u, true).states:
+		if float(s.cost) == 1.0 and int(s.t) == 0 and not (int(s.q) == int(u["q"]) and int(s.r) == int(u["r"])): real = s; break
+	if real == null: return [false, "no one-step state"]
+	var st = real.duplicate(true); st["cost"] = 3
+	var moved = api.move(u["id"], st)
+	return [moved and int(u["q"]) == int(real.q) and int(u["mp"]) == 3, "moved " + str(moved) + ", mp " + str(u["mp"])]
 func _preview_shield(t, pool: float) -> float:
 	var u = P[0]
 	t["shp"] = pool; t["route"] = [0, 0, 0, 0]; R.syncShields(t)
