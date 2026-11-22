@@ -918,8 +918,9 @@ func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float
 
 
 func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
-	var codes := ["H8_23", "V15_37", "C14s_23", "D20_23"]
-	var code: String = codes[rng.randi() % codes.size()]
+	# issue 1767 (R419): all six factions' derelicts, mostly the factions in this battle, so a Chorus or Glasswright
+	# graveyard shows their own dead. One draw, as before, so the rest of the board's props do not shift.
+	var code := A4P.pick_hulk(rng.randi(), _battle_factions())
 	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
 	var a4 := A4P.hulk(code)
 	if a4 != null:
@@ -943,18 +944,36 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	BV.fit_hulk(mi, c)
 
 
+# the factions with ships in this battle (both sides), for the hulk draw
+func _battle_factions() -> Array:
+	var out: Array = []
+	for u in VW.get("units", []):
+		if u is Dictionary and u.get("fac") != null and not out.has(str(u["fac"])):
+			out.append(str(u["fac"]))
+	return out
+
+
+# the biome's station kind (rules REGION_BIOME: rig, ring or spire), "" when the battle rolled none
+func station_kind() -> String:
+	var biome = WI.get("biome")
+	return str(biome.get("station", "")) if biome is Dictionary else ""
+
+
 func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0) -> void:
-	# The painted station for this cluster size, with the original hull below as a fallback.
-	var a4 := A4P.station(size, clearance)
+	# The painted station for this cluster size, with the original hull below as a fallback. issue 1767: station_T2 on
+	# every cluster, fitted inside the cluster's clearance (A4P.t2_scale), level and lifted in proportion.
+	var a4 := A4P.station(size, clearance, station_kind())
 	if a4 != null:
 		var bearing := rng.randf() * 6.0
-		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)
-		var offset := Vector3(0, 3, 0)
-		if teaching:
+		var t2 := a4.has_meta("station_T2")
+		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
+		var k: float = a4.scale.x
+		var offset := Vector3(0, 3, 0) * k
+		if teaching and not t2:
 			# Bank O1_37 into the triangular cluster at full scale and lift its low edge above the grid.
 			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)
 			offset = Vector3(2.0, 13.0, 1.5)
-		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
+		a4.transform = Transform3D(Basis.from_euler(attitude).scaled(Vector3.ONE * k), c + offset)
 		props.add_child(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"
