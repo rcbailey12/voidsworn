@@ -228,7 +228,6 @@ func _ready() -> void:
 		movement = str(args["movement"])
 	if args.has("reduce-motion"):
 		reduce_motion = true
-	ShipView.calm = reduce_motion
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
@@ -851,6 +850,7 @@ func _make_view(u: Dictionary) -> void:
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
+	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 	_register_fx_ship(u, sv)
 
@@ -1322,7 +1322,8 @@ func _play_batch(bt: Dictionary) -> void:
 				if e2["t"] in ["move", "activation", "undo", "round"]:
 					break
 				if e2["t"] == "fire" and str(e2.get("unit", "")) == str(e["unit"]):
-					move_aim[str(e["unit"])] = str(e2["target"])
+					move_aim[str(e["unit"])] = {"target": str(e2["target"]), "slot": int(e2["weapon"]) if e2.get("weapon") != null else -1,
+						"wid": str(e2.get("weapon_id", "")), "n": maxi((e2.get("shots", []) as Array).size(), 1)}
 					break
 		await _play_event(e, bt["view"])
 		_tip_completed(e)
@@ -1803,7 +1804,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		# rests at each corner to turn); NF_POINT and NF_TRAIL, which overlapped the turns with the burn, are gone
 		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed, "thrusters": jets_only,
 			"nose_first": not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("nose_first", false))}
-		ShipView.calm = reduce_motion
+		sv.calm = reduce_motion
 		sv.play_glide(gsteps, per * MOVE_CRUISE * (_slide_pace(sk) if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, gopts)
 		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
@@ -1819,18 +1820,28 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	# issue 1581 item 5: Burn and fire. The guns that will fire when the hull settles start turning toward the target
 	# while it brakes, so the opening volley leaves on the beat the hull stops (the fire still follows the move: RULEBOOK
 	# 7.9, nothing moves after it fires)
-	var pre_aim := str(move_aim.get(str(id), ""))
+	# OpenAI review F1/F3: the volley's own mounts and aim point, started at the last brake or earlier when the slowest of
+	# those turrets needs more time than is left in the move, so they bear when the hull settles
+	var pa: Dictionary = move_aim.get(str(id), {})
 	move_aim.erase(str(id))
-	var aimed: bool = pre_aim == "" or not cin or gfx == null or not gfx.has_method("pre_aim")
+	var aimed: bool = pa.is_empty() or not cin or gfx == null or not gfx.has_method("pre_aim") or not sv.glide
+	var xf_end := Transform3D.IDENTITY
+	var aim_need := 0.0
+	var aim_at := 1.0
+	if not aimed:
+		var fin: Array = sv._gl_pose(1.0)
+		var par: Node3D = sv.get_parent_node_3d()
+		xf_end = Transform3D(Basis(Vector3.UP, float(fin[1])), fin[0] as Vector3)
+		if par != null:
+			xf_end = par.global_transform * xf_end
+		aim_need = float(gfx.pre_aim(str(id), str(pa["target"]), xf_end, int(pa["slot"]), str(pa["wid"]), int(pa["n"]), false))
+		aim_at = _pre_aim_at(sv)
 	while sv.burning() and not sv.dead:
-		if not aimed and sv.glide and float(sv.gl_p) >= _pre_aim_at(sv):
+		# seconds left in the move as it plays now (a hurried move runs faster)
+		var left := (1.0 - float(sv.gl_p)) * float(sv.path_dur) * float(sv.speed_k)
+		if not aimed and (float(sv.gl_p) >= aim_at or left <= aim_need + 0.25):
 			aimed = true
-			var fin: Array = sv._gl_pose(1.0)
-			var par: Node3D = sv.get_parent_node_3d()
-			var xf_end := Transform3D(Basis(Vector3.UP, float(fin[1])), fin[0] as Vector3)
-			if par != null:
-				xf_end = par.global_transform * xf_end
-			gfx.pre_aim(str(id), _pos(pre_aim) + Vector3(0, 1.2, 0), xf_end)
+			gfx.pre_aim(str(id), str(pa["target"]), xf_end, int(pa["slot"]), str(pa["wid"]), int(pa["n"]))
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
@@ -2259,6 +2270,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var fires: Array = r.get("fires", [])
 		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
 		var fire0 := float(fires.min()) if not fires.is_empty() else -1.0
+		if fire0 >= 0.0:
+			shot_at[str(a_id)] = float(gfx.now) + fire0   # issue 1581: the first muzzle of this volley, on the effect clock
 		if fam in ["lance", "ion"]:
 			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
 				sfx.lance(false, fac, from, -1.0, _at_fx, fires)
@@ -2558,7 +2571,8 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 # at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
 # ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
 const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
-var move_aim := {}            # issue 1581: unit id -> the target its next volley fires at, for a Burn and fire's guns
+var move_aim := {}            # issue 1581: unit id -> its next volley's target, slot, weapon id and shots (Burn and fire)
+var shot_at := {}             # issue 1581: unit id -> effect-clock time of its last volley's first muzzle (captures read it)
 var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
@@ -4864,7 +4878,9 @@ func _toggle_opt(k: String) -> void:
 			option_changed.emit("reduce_flashing", reduce_flashing)
 		"motion":
 			reduce_motion = not reduce_motion
-			ShipView.calm = reduce_motion   # issue 1581: no idle drift, bob or trim nod with Reduce motion
+			for vv in views.values():   # issue 1581: no idle drift, bob or trim nod with Reduce motion
+				if is_instance_valid(vv):
+					vv.calm = reduce_motion
 			option_changed.emit("reduce_motion", reduce_motion)
 		"uiscale":
 			var i := 0

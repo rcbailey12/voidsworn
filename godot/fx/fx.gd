@@ -1645,23 +1645,26 @@ func set_engine(id: String, level: float) -> void:
 		(ships[id] as SHIP).engine_level = level
 
 
-# Issue 1581 (Burn and fire): before a volley that follows a move, the battle asks the guns to start turning while the hull
-# still brakes. Every turret that will reach the target from the hull's end pose (xf_end: the ship root's world transform
-# when it settles) takes its aim now, so when the volley's own aim comes it is already there and the first shot leaves
-# without waiting for the swing. Fixed guns have nothing to do. Returns how many turrets turned.
-func pre_aim(id: String, target_world: Vector3, xf_end: Transform3D) -> int:
-	if not ships.has(id):
-		return 0
+# Issue 1581 (Burn and fire): before a volley that follows a move, the battle asks the guns that volley will use to start
+# turning while the hull still brakes, so the first shot leaves without waiting for the swing. The mounts are the
+# volley's own pick (fx_hull.gun_turrets: slot, weapon id, shot count) and the aim point is the volley's (the target
+# hull's centre), from the attacker's settled pose xf_end (the ship root's world transform when it stops). commit false
+# only measures: the seconds the slowest of those turrets needs to bear (the battle starts the swing that early).
+# Fixed guns have nothing to do (0). The volley itself still aims, waits for any turret not yet there, and releases.
+func pre_aim(id: String, target_id: String, xf_end: Transform3D, slot: int, weapon_id: String, n: int, commit := true) -> float:
+	if not ships.has(id) or not ships.has(target_id):
+		return 0.0
 	var sh = ships[id]
+	var tg = ships[target_id]
 	if sh.dead or sh.hull == null or (sh.hull.turrets as Array).is_empty():
-		return 0
-	var tl: Vector3 = (xf_end * sh.hull_motion()).affine_inverse() * target_world
-	var n := 0
-	for k in (sh.hull.turrets as Array).size():
-		if sh.hull.turret_reaches(k, tl):
+		return 0.0
+	var tl: Vector3 = xf_end.affine_inverse() * tg.to_world(tg.hull.c)
+	var need := 0.0
+	for k in sh.hull.gun_turrets(slot, weapon_id, tl, n):
+		need = maxf(need, sh.hull.turret_need(k, tl, now))
+		if commit:
 			sh.hull.turret_aim(k, tl, now)
-			n += 1
-	return n
+	return need
 
 
 func sync_ship(id: String, u: Dictionary) -> void:

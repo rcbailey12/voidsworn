@@ -902,7 +902,9 @@ var gl_vypk := 0.0            # this move's hardest vertical push (for the lift 
 var nod := 0.0                # the trim nod now (radians, about the beam; laid on the hull node, never the root)
 var elev := 0.0               # issue 1581: a boarding ship's height trim toward its target (eased; world units)
 var elev_target := 0.0
-static var calm := false      # Reduce motion: no idle drift or bob, no nod, half the ignition beat (battle sets it)
+var calm := false             # Reduce motion: no idle drift or bob, no nod, half the ignition beat (the battle sets it per
+                              # view; a campaign map view keeps false, its own policy, OpenAI review F6)
+var _ign_t := -1.0            # issue 1581: seconds since this move's ignition beat began (-1 before it), a timed flash
 var jet_count := 0            # puffs fired by this ship (frame cost evidence)
 const MASS_MAX := 1.4         # the size scale runs past 1 for the biggest hulls (issue 505 item 5; battle.gd MOVE_SK_MAX)
 const GL_TR := [1.0, 1.75]    # units to build cruise speed from rest, escort and battleship (extended past 1 by mass)
@@ -1142,6 +1144,7 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	jet_turn = 0.0
 	jet_lift = 0.0
 	drive_cold = false
+	_ign_t = -1.0
 	# this flight's peaks, so the drive and the jets read the push as a share of the hardest push in the move
 	gl_vpk = 0.0
 	gl_apk = 0.0
@@ -1476,14 +1479,23 @@ func _glide_thrusters(d: Array, dts: float) -> void:
 	var on_nose := 0.0 if (backing or gl_thr_only) else smoothstep(0.86, 0.96, align)
 	var burn := clampf(fwd, 0.0, 1.0) * on_nose
 	var tm := gl_p * gl_T
-	var igniting := gl_ign_u > 0.0 and tm < gl_tm0 and tm > gl_tm0 - gl_ign_u
+	# the ignition beat: the nozzles flare before the hull moves (the motion starts at gl_tm0). A timed flash, started on
+	# the first frame that reaches its window and played for its own length, so no frame rate or hurry can step over it
+	# (OpenAI review F5)
+	var ign_s := gl_ign_u / maxf(gl_T, 1e-4) * path_dur
+	if gl_ign_u > 0.0 and _ign_t < 0.0 and tm > gl_tm0 - gl_ign_u:
+		_ign_t = 0.0
+	elif _ign_t >= 0.0:
+		_ign_t += dts
+	var igniting := _ign_t >= 0.0 and _ign_t < maxf(ign_s, 0.06)
 	if igniting:
-		# the ignition beat: the nozzles flare before the hull moves (the motion starts at gl_tm0)
-		burn = maxf(burn, 0.85 * smoothstep(gl_tm0 - gl_ign_u, gl_tm0 - gl_ign_u * 0.35, tm))
+		burn = maxf(burn, 0.85 * smoothstep(0.0, 0.65 * maxf(ign_s, 0.06), _ign_t + dts))
 	var braking := fwd < -0.08 and not backing
 	# the coast glow follows the forward part of the speed: a ship sliding sideways, backing or braking is not coasting
 	# on its drive (issue 1581: braking cuts the drive cold, so no bright core or trail lingers while the retros fire)
-	var coast := 0.0 if (braking or gl_thr_only) else GL_COAST * smoothstep(0.0, 0.3, maxf(v_fwd, 0.0)) * on_nose
+	# (OpenAI review F9: the coast glow reads the velocity's direction, not the push's, which is undefined at cruise)
+	var v_align := v.dot(bow) / maxf(v.length(), 1e-5)
+	var coast := 0.0 if (braking or gl_thr_only or backing) else GL_COAST * smoothstep(0.0, 0.3, maxf(v_fwd, 0.0)) * smoothstep(0.86, 0.96, v_align)
 	var want := maxf(burn, coast)
 	thrust = lerpf(thrust, want, 1.0 - exp(-dts * (8.0 if want > thrust else (14.0 if braking else 5.0))))
 	drive_cold = want <= 0.0 and thrust < 0.08 and not igniting
@@ -1517,7 +1529,10 @@ func _glide_thrusters(d: Array, dts: float) -> void:
 func _emit_jet(kind: String, f: Callable) -> void:
 	if float(_puff_cd.get(kind, 0.0)) > 0.0:
 		return
-	_puff_cd[kind] = lerpf(0.07, 0.1, clampf(mass / MASS_MAX, 0.0, 1.0))
+	# keep the fraction of the interval this frame overshot, so the stream's rate does not depend on the frame rate
+	# (OpenAI review F5); a jet that was idle starts fresh
+	var iv := lerpf(0.07, 0.1, clampf(mass / MASS_MAX, 0.0, 1.0))
+	_puff_cd[kind] = maxf(float(_puff_cd.get(kind, 0.0)), -iv) + iv
 	f.call()
 
 

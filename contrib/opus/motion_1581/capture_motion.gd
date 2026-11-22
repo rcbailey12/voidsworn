@@ -281,6 +281,9 @@ func _moves() -> Array:
 			battle._cmd(func(): return battle.api.move(sid, state))
 		var move_end := -1.0
 		var fire_t := -1.0
+		var move_end_fx := -1.0
+		var shot_fx := -1.0
+		var fx_start: float = float(battle.gfx.now) if battle.gfx != null else 0.0
 		var gsh = battle.gfx.ships.get(sid) if battle.gfx != null and "ships" in battle.gfx else null
 		var n := 0
 		var saved := 0
@@ -294,8 +297,15 @@ func _moves() -> Array:
 			if move_end < 0.0 and battle.game_t - start > 0.2 and not sv.burning():
 				move_end = battle.game_t - start
 			var fired := int(battle.fired_in_act.get(sid, 0))
+			# OpenAI review F2: the first shot is the volley's first muzzle on the effect clock (battle.shot_at), not the
+			# volley's start; the move's end is read on the same clock
+			var fxn: float = float(battle.gfx.now) if battle.gfx != null else 0.0
+			if move_end >= 0.0 and move_end_fx < 0.0:
+				move_end_fx = fxn
 			if fire_t < 0.0 and fired > 0:
 				fire_t = battle.game_t - start
+			if shot_fx < 0.0 and "shot_at" in battle and (battle.shot_at as Dictionary).has(sid) and float(battle.shot_at[sid]) > fx_start:
+				shot_fx = float(battle.shot_at[sid])
 			var tys := []
 			var trail := 0
 			var eng := [0.0, 0.0]
@@ -319,7 +329,9 @@ func _moves() -> Array:
 			n += 1
 		for k in 30:
 			await process_frame
-		result.append({"move_end": move_end, "fire_t": fire_t, "fire_target": fire_tid, "user_speed": battle.user_speed, "movement": battle.movement, "cls": cls, "kind": kind, "id": id, "path": best.path, "final_facing": best.f, "q": best.q, "r": best.r, "cam_r": battle.cam.r, "telemetry": tel})
+		if kind == "burn_fire" and shot_fx < 0.0 and "shot_at" in battle and not allow_placeholder:
+			save_errors.append("%s burn_fire: no shot left the muzzle" % cls)
+		result.append({"shot_after_stop_s": (shot_fx - move_end_fx) if (shot_fx >= 0.0 and move_end_fx >= 0.0) else null, "move_end": move_end, "fire_t": fire_t, "fire_target": fire_tid, "user_speed": battle.user_speed, "movement": battle.movement, "cls": cls, "kind": kind, "id": id, "path": best.path, "final_facing": best.f, "q": best.q, "r": best.r, "cam_r": battle.cam.r, "telemetry": tel})
 		battle._cmd(func(): battle.api.end_activation(sid); return true)
 		while battle.busy:
 			await process_frame

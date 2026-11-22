@@ -12,7 +12,11 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   - a one-hex slide is flown on thrusters, slower than a one-hex burn by the slide pace (battle.gd _slide_pace);
 #   - issue 1581 (no skid): on a run flown on the main engine, while the hull moves at more than a quarter of its peak
 #     speed its nose is within 5 degrees of its course (turn, then burn, then turn), and a move flown on thrusters never
-#     lights the main drive (the battle is told it is cold the whole way).
+#     lights the main drive (the battle is told it is cold the whole way);
+#   - issue 1581, OpenAI review F5/F8/F9: every route above is flown again at 30 and 144 frames a second, and a hurried
+#     one-hex and four-hex run at 30 (the in-flight hurry), with the same checks; an engine-flown move lights its
+#     ignition flash before the hull moves at every rate; a straight run never reads cold while it cruises (the drive
+#     state ShipView hands the battle, which feeds fx ENGINE_COLD from it).
 # Prints, per class and route, the move time and the time to reach speed.
 #   godot --headless --path godot --script res://scenes/battle/test/nose_first_check.gd
 const MOVE_HEX := [560.0, 860.0]
@@ -47,6 +51,11 @@ func _init() -> void:
 		sk = clampf(sk if sk <= 1.0 else 1.0 + (sk - 1.0) * 0.5, 0.0, 1.4)
 		var line := "%-11s" % c[0]
 		var rows := {}
+		for fps in [30.0, 144.0]:
+			for name2 in ROUTES:
+				_check("%s@%d" % [c[0], int(fps)], name2, _fly(c, sk, name2, 1.0 / fps))
+		for name3 in ["ahead1", "straight4"]:
+			_check("%s@30 hurried" % c[0], name3, _fly(c, sk, name3, 1.0 / 30.0, 0.18))
 		for name in ROUTES:
 			var r := _fly(c, sk, name)
 			rows[name] = r
@@ -89,7 +98,7 @@ func _path(name: String) -> Array:
 	return out
 
 
-func _fly(c: Array, sk: float, name: String) -> Dictionary:
+func _fly(c: Array, sk: float, name: String, dt := 1.0 / 60.0, hurry := 1.0) -> Dictionary:
 	var sv = SV.new()
 	sv.set_process(false)
 	root.add_child(sv)
@@ -113,7 +122,7 @@ func _fly(c: Array, sk: float, name: String) -> Dictionary:
 	var gopts := {"mass": sk, "cap": 7.0, "thrusters": jets_only,
 		"nose_first": not steps.is_empty() and bool((steps[-1] as Dictionary).get("nose_first", false))}
 	sv.play_glide(steps, per * B.MOVE_CRUISE * (B._slide_pace(sk) if jets_only else 1.0) / 1000.0, gopts)
-	var dt := 1.0 / 60.0
+	sv.speed_k = hurry
 	var t := 0.0
 	var tel: Array = []
 	var prev_yaw := 0.0
@@ -127,7 +136,7 @@ func _fly(c: Array, sk: float, name: String) -> Dictionary:
 		var pos: Vector3 = sv.position
 		var mv := Vector2(pos.x - prev_pos.x, pos.z - prev_pos.z)
 		var to_end: float = Vector2(pos.x - (hexes[-1] as Vector3).x, pos.z - (hexes[-1] as Vector3).z).length() if not hexes.is_empty() else 0.0
-		tel.append({"t": t, "to_end": to_end, "v": mv.length() / dt, "dir": mv, "yaw": float(sv.cur_yaw), "yr": rad_to_deg(absf(float(sv.cur_yaw) - prev_yaw)) / dt, "roll": sv.rotation.x, "thrust": float(sv.thrust), "cold": bool(sv.drive_cold)})
+		tel.append({"t": t, "to_end": to_end, "v": mv.length() / dt, "dir": mv, "yaw": float(sv.cur_yaw), "yr": rad_to_deg(absf(float(sv.cur_yaw) - prev_yaw)) / dt, "roll": sv.rotation.x, "thrust": float(sv.thrust), "cold": bool(sv.drive_cold), "retro": float(sv.jet_retro)})
 		for k in hexes.size():
 			near[k] = minf(float(near[k]), Vector2(pos.x - (hexes[k] as Vector3).x, pos.z - (hexes[k] as Vector3).z).length())
 		prev_yaw = float(sv.cur_yaw)
@@ -183,6 +192,28 @@ func _check(cls: String, name: String, r: Dictionary) -> void:
 	r["skid"] = skid
 	if skid > 5.0:
 		fails.append("%s: the hull skids %.1f degrees off its nose under way (issue 1581: under 5)" % [tag, skid])
+	# ignition flash before the hull moves on an engine-flown move whose first push is ahead (the turn routes light it
+	# after their opening turn; a straight back-off and the slides have none)
+	if not bool(r["jets_only"]) and name in ["straight4", "ahead1", "run_final", "dogleg"]:
+		# (hurried, the whole beat can fall inside one frame: then it must light on the first moving frame at the latest)
+		var lit := false
+		var lit_first := false
+		for x in r["tel"]:
+			if float(x.v) > 1e-3:
+				lit_first = float(x.thrust) > 0.3
+				break
+			lit = lit or float(x.thrust) > 0.3
+		lit = lit or (cls.ends_with("hurried") and lit_first)
+		if not lit:
+			fails.append("%s: no ignition flash before the hull moves" % tag)
+	if name == "straight4":
+		var tl: Array = r["tel"]
+		for i in range(1, tl.size() - 1):
+			var x: Dictionary = tl[i]
+			# at cruise: near peak speed with no retro jet (braking turns the drive cold by design)
+			if float(x.v) > 0.9 * float(r["vpk"]) and float(x.retro) < 0.05 and bool(x.cold):
+				fails.append("%s: the drive reads cold while cruising" % tag)
+				break
 	if bool(r["jets_only"]):
 		for x in r["tel"]:
 			if float(x.thrust) > 0.02:
