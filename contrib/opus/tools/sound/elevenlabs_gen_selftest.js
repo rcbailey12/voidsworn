@@ -5,7 +5,7 @@
 const http = require('http'), fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const MOCK_KEY = 'mock_key_123', REAL = 'real_key_must_not_leave';
 const calls = [];
-let used = 0, failStems = false, fail500 = false;
+let used = 0, failStems = false, fail500 = false, truncate = false;
 const srv = http.createServer((q, r) => {
   q.on('data', () => {}); q.on('end', () => {
     const route = q.url.split('?')[0];
@@ -15,6 +15,7 @@ const srv = http.createServer((q, r) => {
     if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'creator', character_count: used, character_limit: 121000 })); }
     if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
     if (fail500) { r.writeHead(500); return r.end('boom'); }
+    if (truncate) { used += 200; r.writeHead(200, { 'request-id': 'trunc', 'character-cost': '40', 'content-length': '5000' }); r.write(Buffer.alloc(10)); return setTimeout(() => r.socket.destroy(), 20); }
     used += route === '/v1/sound-generation' ? 200 : route === '/v1/music' ? 900 : 300;
     r.writeHead(200, { 'request-id': 'req' + calls.length, 'character-cost': '40' }); r.end(Buffer.alloc(64, calls.length % 250));
   });
@@ -65,6 +66,9 @@ srv.listen(0, '127.0.0.1', async () => {
 
   fs.unlinkSync(path.join(out, 'manifest.jsonl'));
   r = await run(['--base', base, '--dry'], mock);
+  ck(/0 still to make/.test(r.out) && /RECONCILE a_t1\.mp3/.test(r.out), 'paid outputs without manifest rows are held for reconciliation, not paid again');
+  fs.unlinkSync(path.join(out, 'receipts.jsonl'));
+  r = await run(['--base', base, '--dry'], mock);
   ck(/4 still to make/.test(r.out), 'files without manifest rows are not done');
 
   fs.rmSync(out, { recursive: true });
@@ -77,6 +81,29 @@ srv.listen(0, '127.0.0.1', async () => {
   r = await run(['--base', base], mock);
   ck(count('/v1/sound-generation') === sfxBefore + 1 && /STOP: an answer was lost or the server failed/.test(r.out), '5xx not retried');
   fail500 = false;
+
+  // Artoo on PR 1590: an accepted call whose body is lost, or whose file cannot be saved, is recorded and never paid again.
+  fs.rmSync(out, { recursive: true });
+  truncate = true;
+  let sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(count('/v1/sound-generation') === sfxN + 1 && /STOP: an answer was lost/.test(r.out) && /INCOMPLETE/.test(r.out), 'truncated body stops the run: ' + r.out);
+  let rc = fs.readFileSync(path.join(out, 'receipts.jsonl'), 'utf8');
+  ck(/"state":"accepted_no_body"/.test(rc) && /"charged":40/.test(rc), 'truncated body leaves a charged receipt');
+  truncate = false;
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(count('/v1/sound-generation') === sfxN + 1 && /RECONCILE a_t1\.mp3/.test(r.out) && /made a_t2\.mp3/.test(r.out), 'rerun skips the receipted take and makes only the other');
+
+  fs.rmSync(out, { recursive: true });
+  fs.mkdirSync(path.join(out, 'a_t1.mp3.part'), { recursive: true });
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  rc = fs.readFileSync(path.join(out, 'receipts.jsonl'), 'utf8');
+  ck(count('/v1/sound-generation') === sfxN + 1 && /accepted but could not save/.test(r.out) && /"state":"accepted_save_failed"/.test(rc), 'save failure stops and is receipted');
+  sfxN = count('/v1/sound-generation');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(count('/v1/sound-generation') === sfxN + 1 && /RECONCILE a_t1\.mp3/.test(r.out), 'save failure is not paid again on rerun');
 
   ck(calls.filter(c => c.route !== '/v1/redirect').every(c => c.key === MOCK_KEY), 'the real key never reached the server');
   ck(!/real_key_must_not_leave/.test(r.out), 'real key not printed');

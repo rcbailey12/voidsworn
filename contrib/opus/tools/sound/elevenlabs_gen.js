@@ -14,7 +14,7 @@
 // any missing step, including stems for a song already saved. PASS needs every file AND its manifest row.
 // Spending (finding 3): the real ceiling is the credit cap Ryan sets on the key at elevenlabs.io. --max-credits is a
 // second stop: it uses the account's own used-credit count (GET /v1/user/subscription) after every paid call, and the
-// published estimate (200 per sound effect, 900 per music minute; stem cost unpublished) only if that read fails.
+// published estimate (40 credits a second per sound effect, 900 per music minute; stem cost unpublished) only if that read fails.
 // A paid call is never retried after an error that could mean it ran (5xx, timeout); only 429 (not run) is retried.
 // API facts (docs read Nov 22 2026): POST /v1/sound-generation, POST /v1/music, POST /v1/music/stem-separation (zip),
 // header xi-api-key. Issue 1585 (Neon pre-flight on PR 1577): defaults are eleven_text_to_sound_v3 and music_v2
@@ -112,8 +112,16 @@ async function post(base, key, route, body, form) {
       const cost = {};
       for (const [k, v] of r.headers) if (/cost|character|credit/i.test(k)) cost[k] = v;
       const n = Number(r.headers.get('character-cost'));
-      return { buf: Buffer.from(await r.arrayBuffer()), req: r.headers.get('request-id') || r.headers.get('x-request-id') || '',
-        cost, charged: Number.isFinite(n) && r.headers.has('character-cost') ? n : null };
+      const meta = { req: r.headers.get('request-id') || r.headers.get('x-request-id') || '', cost,
+        charged: Number.isFinite(n) && r.headers.has('character-cost') ? n : null };
+      let buf;
+      try { buf = Buffer.from(await r.arrayBuffer()); } catch (e) {
+        // Artoo on PR 1590: the call was accepted (and likely charged) but the body was lost.
+        const err = new Error('accepted but the audio body was lost on ' + route + ' (' + e.name + ')');
+        err.ambiguous = true; err.accepted = meta;
+        throw err;
+      }
+      return Object.assign({ buf }, meta);
     }
     const text = (await r.text()).slice(0, 400);
     if (r.status === 429 && attempt < 4) { await new Promise(s => setTimeout(s, 10000 * attempt)); continue; }
@@ -152,6 +160,19 @@ function save(out, name, buf) {
 }
 
 // A step is done only when its file exists and its manifest row matches the file's size.
+// Receipts (Artoo on PR 1590): every accepted paid response is written to receipts.jsonl BEFORE its audio is saved. A
+// step with a receipt but no finished output is never paid for again by a rerun: it is reported for reconciliation
+// (check the account history, then delete its receipt line to allow one new attempt).
+function readReceipts(file) {
+  const m = new Map();
+  if (!fs.existsSync(file)) return m;
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    try { const r = JSON.parse(line); m.set(r.file, r); } catch (e) { /* torn line */ }
+  }
+  return m;
+}
+
 function done(out, rows, s) {
   const f = path.join(out, s.file);
   const r = rows.get(s.file);
@@ -165,7 +186,11 @@ async function main() {
   fs.mkdirSync(a.out, { recursive: true });
   const manifest = path.join(a.out, 'manifest.jsonl');
   let rows = readManifest(manifest);
-  const todo = steps.filter(s => !done(a.out, rows, s));
+  const receiptsFile = path.join(a.out, 'receipts.jsonl');
+  const receipts = readReceipts(receiptsFile);
+  const blocked = steps.filter(s => !done(a.out, rows, s) && receipts.has(s.file));
+  for (const s of blocked) console.log(`RECONCILE ${s.file}: a paid call was accepted (${receipts.get(s.file).state}) but no output was finished; not paying again`);
+  const todo = steps.filter(s => !done(a.out, rows, s) && !receipts.has(s.file));
   const est = todo.reduce((n, s) => n + s.credits, 0);
   console.log(`list ${path.basename(a.list)}: ${steps.length} steps, ${todo.length} still to make, estimate ${est} credits ` +
     `(stems priced at their song's cost; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
@@ -202,8 +227,17 @@ async function main() {
         form.append('file', new Blob([fs.readFileSync(songFile)], { type: 'audio/mpeg' }), s.song);
         res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
-      save(a.out, s.file, res.buf);
-      estSpent += res.charged ?? s.credits; made++;
+      estSpent += res.charged ?? s.credits;
+      fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted', charged: res.charged, estimate: s.credits,
+        request_id: res.req, at: new Date().toISOString() }) + '\n');
+      try { save(a.out, s.file, res.buf); } catch (e) {
+        fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted_save_failed', charged: res.charged,
+          request_id: res.req, at: new Date().toISOString() }) + '\n');
+        const err = new Error('accepted but could not save ' + s.file + ': ' + e.message);
+        err.ambiguous = true;
+        throw err;
+      }
+      made++;
       const rec = { id: it.id, take: s.t, step: s.step, file: s.file, kind: it.kind, cue: it.cue || null, group: it.group || null,
         params, bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, cost_headers: res.cost, charged: res.charged,
         estimate: s.credits, started,
@@ -213,6 +247,11 @@ async function main() {
       console.log(`made ${s.file}`);
     } catch (e) {
       failed++;
+      if (e.accepted) {
+        estSpent += e.accepted.charged ?? s.credits;
+        fs.appendFileSync(receiptsFile, JSON.stringify({ file: s.file, state: 'accepted_no_body', charged: e.accepted.charged,
+          request_id: e.accepted.req, at: new Date().toISOString() }) + '\n');
+      }
       console.log(`FAILED ${s.file}: ${redact(e.message)}`);
       if (e.status === 401 || e.status === 402 || e.status === 403) { stopped = 'key or plan problem'; break; }
       if (e.ambiguous) { stopped = 'an answer was lost or the server failed; check the balance before rerunning'; break; }
