@@ -1,0 +1,10 @@
+OPUS1536B_WAIT.bat waiting for OPUS1235_WEAR exit in opus1235w_wait.txt Sat 11/21/2026 22:02:42.34 
+swapped out while only waiting 22:32:19: replaced by OPUS1536B_WAIT2.bat (same trigger, plus waits for C: 75 GB free; Board Nov 22 04:31 UTC)
+OPUS1536B_WAIT2.bat waiting for OPUS1235_WEAR exit in opus1235w_wait.txt Sat 11/21/2026 22:32:19.71 
+held while only waiting 22:52:19: OPUS1536B_WAIT2.bat stopped for the 1415I publish (PUBLISH_1122B.bat restarts it as OPUS1536B_WAIT3.bat after the publish; Board Nov 22 04:55 UTC)
+OPUS1536B_WAIT3.bat waiting for OPUS1235_WEAR exit in opus1235w_wait.txt Sat 11/21/2026 23:49:05.52 
+OPUS1536B start 23:49:06.27 
+OPUS1536B exit 0 at  0:34:34.67 
+run folder out_20261121_234907_28847
+result: done PASS
+all done Sun 11/22/2026  0:34:35.10 

@@ -1,0 +1,57 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1536)
+GPU: acquired solo claim 7ab1a1bd-e785-44f5-88df-b42b7bc17fc1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-47a8b1770df94ae8940ec00f07b37459\godot-profile-45c11947c2134c77b93c6cb7c0140905
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 439 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.979, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked abaaf701621910be25a8d5147b9286cd74c78331fee8f175cb1b6657b3afb1cd 4096x2048 in 9975 ms (worker)
+[world] baked 83f1b8e03a7def72347106af7885a69d9bad2f6e26e0f2e003cb56349ce6f87d 4096x2048 in 12144 ms (worker)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 12585 ms (worker)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 13001 ms (worker)
+[world] baked 189c9af073c7a3c1065eff60928b1dd476f71a5a7cfea73357e275790e6b65e3 4096x2048 in 1886 ms (worker)
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 1790 ms (worker)
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 1686 ms (worker)
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/01_start.png
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/03_attack_tip.png
+[attach] hp_rcs missing on H7_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/05_fire_1.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/06_fire_2.png
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/07_fire_3.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/08_fire_4.png
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on V15_37: no authored point fits this request; using the surface ray
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H7_23: no authored point fits this request; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536b\out_20261121_234907_28847\out_old\hold_open/09_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[14.5,15.6,10.0,9.4,6.8,4.9],"enemy_s_max":15.59,"enemy_s_mean":10.22,"movement":"cinematic","per_round_by_kind":{"ability":0.04,"activation":0.1,"aiEnd":0.13,"death":0.19,"fire":1.18,"hit":0.01,"move":8.14,"ram":0.23,"round":0.2},"rounds":6},"pipeline_compiles_in_play":21,"result":"loss","round":7,"secs":154.809}
+[attach] battle x04 V16_37: skipped 0; rcs hp 604 ray 0 centre 0 skip 0; core hp 3 ray 0 centre 0 skip 0; gun hp 20 ray 1 centre 0 skip 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 248 ray 0 centre 0 skip 0; gun hp 3 ray 1 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 136 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 154 centre 0 skip 0; gun hp 8 ray 1 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 208 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x09 H8_23: skipped 0; rcs hp 0 ray 230 centre 0 skip 0; gun hp 14 ray 0 centre 0 skip 0
+[attach] battle x010 H8_23: skipped 0; rcs hp 0 ray 438 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 138 centre 0 skip 0; gun hp 2 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-47a8b1770df94ae8940ec00f07b37459\godot-profile-45c11947c2134c77b93c6cb7c0140905
+GPU: released solo claim 7ab1a1bd-e785-44f5-88df-b42b7bc17fc1
