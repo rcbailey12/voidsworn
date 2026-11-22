@@ -1,98 +1,46 @@
-Saved manifest before: c89541392e4431393427be745cfcc28ecbf9d587a854a4bcb0e07ec45066da7a
-Saved manifest after: 0bbfadbe6e4a5e2f8e5b2f62a1eefe9010854360b2caa7cf9a80239def947aa4
+Saved manifest before: 375fa502f0695f353afb52fb4b6ca0b29e1ebf4be67da97bcabcaaf9ce91a0e6
+Saved manifest after: 19b5b624266a63f7c1c747f7861440f9ff3df05083032ff9c0c24844a969cff3
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_lensaloft
-  turn 53, round 3, after round; unit x09 (player bomber)
-  state.units[6].activated: false -> true
-  later changed records: 1; total records: 55 -> 55
-FAIL battle t_burnflaw
-  turn 32, round 2, after command player; unit none (battle state)
-  state.b.log[24]: {"c":"s","m":"The enemy fleet breaks and flees."} -> <missing>
-  later changed records: 1; total records: 34 -> 34
-FAIL battle t_longlight
-  turn 37, round 3, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 38 -> 39
-FAIL battle t_twoimages
-  turn 68, round 5, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 69 -> 70
-FAIL battle t_refraction
-  turn 54, round 4, after end activation; unit x04 (player i_wisp)
-  state.units[1].activated: false -> true
-  later changed records: 7; total records: 55 -> 62
-FAIL battle t_mirrorturns
-  turn 49, round 4, after end activation; unit x03 (player i_wisp)
-  state.units[0].activated: false -> true
-  later changed records: 16; total records: 50 -> 66
-FAIL battle t_falsehulls
-  turn 61, round 4, after end activation; unit x04 (player i_wisp)
-  state.units[1].activated: false -> true
-  later changed records: 10; total records: 62 -> 72
-FAIL battle t_rechargelit
-  turn 23, round 2, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 24 -> 25
-FAIL battle t_hardlight
-  turn 69, round 5, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 70 -> 71
-FAIL battle t_wardglass
-  turn 53, round 4, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 17; total records: 54 -> 71
-FAIL battle t_deployread
-  turn 20, round 2, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 21 -> 22
-FAIL battle t_flagshiplens
-  turn 35, round 3, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 36 -> 37
-FAIL battle t_firstlight
-  turn 54, round 4, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 11; total records: 55 -> 66
-FAIL battle t7a_onelens
-  turn 36, round 2, after fire x05; unit x05 (player i_song)
-  state.units[1].postFire: false -> true
-  later changed records: 5; total records: 38 -> 42
-FAIL battle t7a_lighttogether
-  turn 29, round 2, after command player; unit x06 (player i_song)
-  state.units[2].treeAimPlus: <missing> -> 0
-  later changed records: 1; total records: 31 -> 31
-FAIL battle t7a_sunlens
-  turn 35, round 2, after fire x04; unit x04 (player i_song)
-  state.units[0].postFire: false -> true
-  later changed records: 5; total records: 37 -> 41
-FAIL battle t7a_mirroraside
-  turn 65, round 5, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 66 -> 67
-FAIL battle t7a_splitthree
-  turn 52, round 4, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 11; total records: 53 -> 64
-FAIL battle t7a_fleetelsewhere
-  turn 62, round 4, after end activation; unit x04 (player i_wisp)
-  state.units[1].activated: false -> true
-  later changed records: 9; total records: 63 -> 72
-FAIL battle t7a_weakside
-  turn 35, round 3, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 36 -> 37
-FAIL battle t7a_prismsface
-  turn 36, round 3, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 37 -> 38
-FAIL battle t7a_lensrotates
-  turn 37, round 3, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 38 -> 39
-FAIL battle t7a_facetlit
-  turn 23, round 2, after end activation; unit x03 (player i_song)
-  state.units[0].activated: false -> true
-  later changed records: 1; total records: 24 -> 25
-FAIL: saved Godot results; 288 battles checked, 23 changed, 0 other files changed, 23 failures; 11.772 s
+FAIL battle s7
+  turn 0, round 1, after tick player; unit x016 (enemy h_interdictor)
+  state.units[11].ab: "evasive" -> "ionpulse"
+  later changed records: 375; total records: 376 -> 370
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 6 -> 5
+  later changed records: 469; total records: 381 -> 470
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x019 (enemy h_interdictor)
+  state.units[12].ab: "evasive" -> "ionpulse"
+  later changed records: 594; total records: 595 -> 551
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 3 -> 2
+  later changed records: 179; total records: 135 -> 180
+FAIL battle s34
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 0 -> 3
+  later changed records: 253; total records: 141 -> 254
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: -1 -> 0
+  later changed records: 272; total records: 206 -> 273
+FAIL battle s37
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: -4 -> -1
+  later changed records: 295; total records: 296 -> 291
+FAIL battle s38
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 10 -> 6
+  later changed records: 272; total records: 151 -> 273
+FAIL battle s41
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 6 -> 7
+  later changed records: 275; total records: 276 -> 255
+FAIL battle s1480
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 214; total records: 194 -> 215
+FAIL: saved Godot results; 289 battles checked, 10 changed, 0 other files changed, 10 failures; 16.833 s
