@@ -38,5 +38,5 @@ Chorus now spend their biomass at the shop and buy far more from the late market
 
 Rebuild: on each tree run `FAC=chorus node tools/late_run_1484/sim_1484.js <tree> veteran 240 1 <out.json>` (and
 `standard`), then `node tools/late_run_1484/summarize_1484.js Veteran <before> <after> Standard <before> <after>`. The sim
-stubs `torpThreat` to 0: the Muse bot still calls the function issue 1379 removed, which ended every sim_1178 run at its first
-battle since Nov 20.
+runs the Muse bot as fixed in issue 1632: before that fix the bot still called the function issue 1379 removed, which ended every sim_1178 run at its first
+battle since Nov 20. The table above was measured before the issue 1632 driver fixes, with a torpThreat stub; both arms had 0 run errors.

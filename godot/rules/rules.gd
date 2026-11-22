@@ -53,6 +53,10 @@ func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a tem
 func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
 func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
 func pp(u) -> String: return "p" if u["side"] == "player" else "e"
+# Eclipse has no green anywhere (Ryan, Nov 21; issue 1641): battle.js eclCol. Eclipse violet is the sRGB form of
+# fx/faction_looks.json deathless.weapon (linear 0.72, 0.55, 1.0); every other faction keeps the green.
+const ECL_VIOLET := "#ddc4ff"
+func eclCol(u) -> String: return ECL_VIOLET if u != null and String(u.get("fac", "")) == "deathless" else "#7dff9b"
 # A floating callout over a ship (battle.js fxText): presentation only, never touches rules state
 func flt(u, text: String, color: String, dy = null) -> void:
 	if u != null: emit({"t": "float", "unit": u.get("id"), "text": text, "color": color, "dy": dy})
@@ -2189,7 +2193,7 @@ func legionRise(u, quiet = false) -> bool:
 	u["risen"] = B["round"]; fstat("deathless", "revive")
 	emit({"t": "risen", "unit": u["id"], "q": int(u["q"]), "r": int(u["r"])})
 	if not quiet:
-		logm(String(u["name"]) + " reassembles from its wreck with " + ns(u["hp"]) + " hull. It cannot fire this round.", pp(u)); flt(u, "Reassembled", "#7dff9b", -30)
+		logm(String(u["name"]) + " reassembles from its wreck with " + ns(u["hp"]) + " hull. It cannot fire this round.", pp(u)); flt(u, "Reassembled", eclCol(u), -30)
 	return true
 func legionTurn(side) -> Array:
 	if B == null or jt(B.get("over")): return []
@@ -3976,7 +3980,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); flt(t, "Restarts", "#7dff9b", -30); logm("Second ignition. " + String(t["name"]) + " restarts at 25% hull.", "s"); return
 	var legion = legionCan(t)
 	if not legion and jt(t.get("reanimate")) and not jt(t.get("reanimated")) and not jt(t.get("pyre")) and not (t.get("fac") == "deathless" and jt(t.get("t")) and jt(t["t"].get("reanimate"))) and rnd() < (0.2 if t["side"] == "enemy" else 0.35):
-		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Rebuilding", "#7dff9b", -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
+		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Rebuilding", eclCol(t), -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
 	t["dead"] = true; t["hp"] = 0
 	if by != null and by["side"] == "player" and t["side"] == "enemy":   # Razormaw T2b, Matriarch capstone 2: the kill is recorded
 		if not jt(by.get("isSq")) and treeSkill("scentDark") != null and cmdActive("player", "surge"): by["treeScent"] = {"r": B["round"], "from": t["id"]}
@@ -3987,7 +3991,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		treeFx(by, "trophyStandard", "the trophy standard turns the fleet")   # Hullbreakers shared C1b
 	if legion:
 		t["reanimated"] = true; t["riseAt"] = B["round"] + 1; B["legion"][t["side"]]["used"] = B["legion"][t["side"]]["used"] + 1
-		logm(String(t["name"]) + " falls, but its wreck is already reassembling. It rises next round.", pp(t)); flt(t, "Reassembling: rises next round", "#7dff9b", -30)
+		logm(String(t["name"]) + " falls, but its wreck is already reassembling. It rises next round.", pp(t)); flt(t, "Reassembling: rises next round", eclCol(t), -30)
 	syncLose(t); chorusFeed(t, by)
 	var rfK = treeSkill("rollingFire")
 	if rfK != null and t["side"] == "enemy" and by != null and by["side"] == "player" and not jt(by.get("isSq")) and inSync(by) and B.get("tr") != null and not jt(B["tr"].get("rollingUsed")):
@@ -6571,7 +6575,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "focus":
 		u["focus"] = true; flt(u, "Focus fire", "#f0b35a", -24)
 	if a == "phase":
-		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Phase shift", "#7dff9b", -24)
+		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Phase shift", eclCol(u), -24)
 	if a == "frenzy":
 		u["focus"] = true; flt(u, "Blood frenzy", "#ff8fe0", -24)
 	if a == "overburn":
@@ -6584,7 +6588,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 			if not jt(x.get("isSq")) and hdist(x, u) <= 3 and x["hp"] < x["maxHp"]: ts.append(x)
 		JSM.ssort(ts, func(p, q): return float(p["hp"]) / p["maxHp"] - float(q["hp"]) / q["maxHp"])
 		if ts.size() > 0:
-			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h; flt(t, "+" + ns(h) + " hull", "#7dff9b", -24)
+			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h; flt(t, "+" + ns(h) + " hull", eclCol(t), -24)
 			logm(String(u["name"]) + " rebuilds " + ("its own hull" if is_same(t, u) else String(t["name"])) + " for " + ns(h) + ".", pp(u))
 	if a == "ionpulse":
 		var nf = 0

@@ -606,6 +606,10 @@ const FAC_RULES={
   corsair:{n:'Close in',d:'Boarding crews have extra strength, and rocket pods fire salvos that point defense can thin. Hullbreakers cannot field lance weapons.'},
   voidsworn:{n:'Line of battle',d:`Side guns hit harder after moving at least 2 hexes, and Brace covers one adjacent ally facing the same way. Carrier base prices have a ${Math.round((FAC_PRICE.voidsworn.Carrier-1)*100)}% premium before rounding.`}};
 // telemetry for the sims: per-faction counters in B.fstat (never read by rules)
+// Eclipse has no green anywhere (Ryan, Nov 21; issue 1641): its revive, reclaim and phase callouts use Eclipse violet, the sRGB form of
+// godot/fx/faction_looks.json deathless.weapon (linear 0.72, 0.55, 1.0). Every other faction keeps the green.
+const ECL_VIOLET='#ddc4ff';
+function eclCol(u){ return u&&u.fac==='deathless'?ECL_VIOLET:'#7dff9b'; }
 function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
 // Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
 // objective flagship, or the biggest Hegemony hull. Set once at battle start; when it dies or is captured, sync is lost for that side.
@@ -651,7 +655,7 @@ function legionRiseHex(u){ const occ=occMap(), ok=h=>onBoard(h.q,h.r)&&!blocks(t
 function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; if(!quiet) log(`${u.name} cannot find room to reassemble and stays dark.`,'x'); return false; }
   u.q=h.q; u.r=h.r; u.dead=false; u.riseAt=null; u.hp=Math.max(1,Math.round(u.maxHp*LEGION_HP)); u.st={fire:0,shieldOff:0,engine:0}; u.shredded=0;
   if(u.sec) for(const k of Object.keys(u.sec)){ repairSection(u,k,LEGION_HP); u.sec[k].hp=Math.max(1,Math.round(u.sec[k].max*LEGION_HP)); }
-  u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled','#7dff9b',-30); }catch(e){} } return true; }
+  u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled',eclCol(u),-30); }catch(e){} } return true; }
 function legionTurn(side){ if(!B||B.over) return []; const out=[]; let stuck=false; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled){ if(legionRise(u)) out.push(u); else stuck=true; } if(stuck) checkEnd(); /* issue 1479: a wreck with no room stays dark, so the fight it kept open can end now */ return out; }
 // issue 1479: capitals reassembling (Eclipse legion) that rise next round; the end checks count them as present
 function riserCP(side){ return B.units.filter(u=>u.dead&&u.side===side&&u.riseAt!=null&&!u.fled&&!u.isSq).reduce((a,u)=>a+(u.t.cp||1),0); }
@@ -1299,11 +1303,11 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   if(t.fx.lastStand && !t.usedLastStand){ t.usedLastStand=true; t.hp=1; if(typeof fxText==='function') fxText(t,'Last stand','#f0b35a',-30); log(`${t.name} refuses to die! (Last stand)`,'s'); return; }
   if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); if(typeof fxText==='function') fxText(t,'Restarts','#7dff9b',-30); log(`Second ignition. ${t.name} restarts at 25% hull.`,'s'); return; }
   const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
-  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
+  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding',eclCol(t),-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
   { if(by&&by.side==='player'&&t.side==='enemy'){ if(!by.isSq&&treeSkill('scentDark')&&cmdActive('player','surge')) by.treeScent={r:B.round,from:t.id}; if(by.isSq&&by.extra&&treeSkill('broodNoStop')) by.treeNoStopKill={r:B.round,id:t.id}; } } // Razormaw T2b, Matriarch capstone 2: the kill is recorded
   { const ts=treeSkill('trophyStandard'); if(ts&&by&&by.side==='player'&&by.pflag&&t.side==='enemy'){ for(const x of alive('player')) if(!x.isSq&&!x.dead) x.treeFreeTurn=1; treeFx(by,'trophyStandard','the trophy standard turns the fleet'); } } // Hullbreakers shared C1b
-  if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
+  if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round',eclCol(t),-30); }catch(e){} }
   syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
   { const rf=treeSkill('rollingFire'); if(rf&&t.side==='enemy'&&by&&by.side==='player'&&!by.isSq&&inSync(by)&&B.tr&&!B.tr.rollingUsed){ B.tr.rollingUsed=1;
     const cand=alive('player').filter(x=>x!==by&&!x.isSq&&!x.dead&&inSync(x)&&!x.weapons.some(w=>w.fired)); let bu=null,bt=null,bi=-1,bs=-1e18;
@@ -2127,11 +2131,11 @@ async function useAbility(u,arg){
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; if(typeof fxText==='function') fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } if(typeof fxText==='function') fxText(u,'Tubes loaded','#f0b35a',-24); }
   if(a==='focus'){ u.focus=true; if(typeof fxText==='function') fxText(u,'Focus fire','#f0b35a',-24); }
-  if(a==='phase'){ u.evBuff=25; /* v45: was 22, strictly weaker than Evasive Burn; now level (Deathless is already the strongest faction, so parity rather than a buff) */ u.mp+=2; if(typeof fxText==='function') fxText(u,'Phase shift','#7dff9b',-24); }
+  if(a==='phase'){ u.evBuff=25; /* v45: was 22, strictly weaker than Evasive Burn; now level (Deathless is already the strongest faction, so parity rather than a buff) */ u.mp+=2; if(typeof fxText==='function') fxText(u,'Phase shift',eclCol(u),-24); }
   if(a==='frenzy'){ u.focus=true; if(typeof fxText==='function') fxText(u,'Blood frenzy','#ff8fe0',-24); }
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; if(typeof fxText==='function') fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; if(typeof fxText==='function') fxText(u,'+'+h+' hull','#8ff0a0',-24); }
-  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
+  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull',eclCol(t),-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
   if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); let nf=0; for(const t of foes){ if(t.shMax>0){ const was=t.shp||0; t.shp=Math.floor(was*.5); syncShields(t); shieldClamp(t); if(t.shp<was) nf++; } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+nf+' enemy ship'+(nf===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
   if(a==='blink'){ const h=blinkTo; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ u.shp=u.shMax; syncShields(u); if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }
