@@ -1583,6 +1583,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_float(e["target"], "Captured", Color("#ffb23e"), -30)
 			elif res == "overrun":
 				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
+			elif res == "scuttle":   # R383 (issue 1479): the Nemesis flagship, a hunt target or a convoy transport is destroyed, never captured
+				_log("Boarding parties from %s overrun %s and scuttle it." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
 				_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
 			# issue 1524 (fx/API.md 11): the approved boarding breach (pried hatch, venting gas, light from inside, then a
@@ -3476,8 +3478,10 @@ func _board_odds_text(id: String, b: Dictionary) -> String:
 	var crew := int(_z0(ru.get("crew"))) if ru != null else 0
 	var loss := mini(int(b["loss"]), maxi(0, crew - 1))
 	var cap := int(b["chance"])
-	var cap_t := ("[color=#7dff9b]capture likely[/color]" if bool(b["capture"]) else "[color=#ffd27a]capture possible[/color]") if cap > 0 else "[color=#a7b09d]no capture: a raid only[/color]"
-	return "[b]%s[/b]: [color=#ffb23e]%d%% capture chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, cap_t, int(b["kill"]), loss, crew]
+	var tr = api.unit(str(b["target"]))
+	var word := "scuttle" if (tr != null and api.R.boardScuttles(tr)) else "capture"   # R383 (issue 1479): these are destroyed, never taken
+	var cap_t := ("[color=#7dff9b]%s likely[/color]" % word if bool(b["capture"]) else "[color=#ffd27a]%s possible[/color]" % word) if cap > 0 else "[color=#a7b09d]no %s: a raid only[/color]" % word
+	return "[b]%s[/b]: [color=#ffb23e]%d%% %s chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, word, cap_t, int(b["kill"]), loss, crew]
 
 
 func _board_tip(id: String, tid: String) -> String:

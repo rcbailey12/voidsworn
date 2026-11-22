@@ -2183,9 +2183,12 @@ func legionRise(u, quiet = false) -> bool:
 	return true
 func legionTurn(side) -> Array:
 	if B == null or jt(B.get("over")): return []
-	var out = []
+	var out = []; var stuck := false
 	for u in B["units"].duplicate():
-		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and B["round"] >= u["riseAt"] and not jt(u.get("fled")) and legionRise(u): out.append(u)
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and B["round"] >= u["riseAt"] and not jt(u.get("fled")):
+			if legionRise(u): out.append(u)
+			else: stuck = true
+	if stuck: checkEnd()   # issue 1479: a wreck with no room stays dark, so the fight it kept open can end now
 	return out
 func torpSalvo(w, u) -> bool: return w != null and w.get("k") == "torp" and not (u != null and jt(u.get("isSq")))   # R364: torpedoes fire now
 func torpGhost(u, sure) -> Dictionary:
@@ -3870,6 +3873,10 @@ func boardOdds(u, t) -> Dictionary:
 	var d: float = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5)
 	var p = captureChance(u, t)
 	return {"kill": JSM.jsround(a * 0.38), "loss": JSM.jsround(d * 0.3), "chance": p, "capture": p >= 50}
+# R383 (issue 1479): the enemy ships a boarding never captures; overrunning one destroys it (kills, loot and objectives
+# read it as destroyed, and the hull never joins your fleet). Twin: battle.js boardScuttles.
+func boardScuttles(t) -> bool:
+	return t != null and t["side"] == "enemy" and not jt(t.get("captured")) and (jt(t.get("nemFlag")) or jt(t.get("flagship")) or jt(t.get("transport")))
 func boardUnit(u, t) -> bool:
 	if not JSM.has_same(boardTargets(u), t): return false
 	undoSpend()
@@ -3884,8 +3891,14 @@ func boardUnit(u, t) -> bool:
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct")) + treeRailBonus(u)) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
 	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
-	var outcome = "overrun" if (t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))) else ("capture" if t["crew"] <= 0 else "raid")
+	var holds: bool = t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))
+	var scuttle: bool = t["crew"] <= 0 and not holds and boardScuttles(t)
+	var outcome = "overrun" if holds else ("scuttle" if scuttle else ("capture" if t["crew"] <= 0 else "raid"))
 	emit({"t": "board", "unit": u["id"], "target": t["id"], "result": outcome, "kill": kill, "loss": loss})
+	if scuttle:   # R383 (issue 1479): overrunning the Nemesis flagship, a hunt or flagship target or a convoy transport destroys it
+		flt(t, "Scuttled", "#f0b35a", -30)
+		logm("Boarding parties from " + String(u["name"]) + " overrun " + String(t["name"]) + " and scuttle it.", pp(u))
+		t["killCause"] = "dark"; t["hp"] = 0; killUnit(t, u); checkEnd(); return true
 	if t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured")):
 		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); var s1 = systemDamage(t); var s2 = systemDamage(t)
 		flt(t, "Holds the bridge", "#f0b35a", -30)
@@ -3895,6 +3908,8 @@ func boardUnit(u, t) -> bool:
 	if t["crew"] <= 0:
 		if jt(B.get("usage")) and u["side"] == "player": B["usage"]["cap"] = z0(B["usage"].get("cap")) + 1
 		if jt(t.get("anchor")): syncLose(t)
+		for x in B["units"]:
+			if jt(x.get("isSq")) and x.get("parent") == t["id"] and x["side"] == t["side"]: x["parent"] = null   # issue 1479: its old side's wings lose their carrier
 		t["side"] = u["side"]; t["crew"] = max(3, JSM.jsround(t["crewMax"] * 0.4)); t["captured"] = true; t["activated"] = true; t["mp"] = 0; t["turnsLeft"] = 0; t["braced"] = false
 		for w in t["weapons"]: w["fired"] = true
 		gainResolve(u["side"], 2); flt(t, "Captured", "#f0b35a", -30); logm("Boarding parties from " + String(u["name"]) + " take " + String(t["name"]) + ". It now fights for " + ("you" if u["side"] == "player" else "the enemy") + ".", pp(u))
@@ -4247,13 +4262,19 @@ func checkEnd() -> void:
 	if B != null and not was and jt(B.get("over")) and B["over"] == "win":
 		for u in B["units"]:
 			if jt(u.get("dead")) and u["side"] == "player" and u.get("riseAt") != null and not jt(u.get("fled")): legionRise(u, true)
+# Issue 1479: capitals reassembling (Eclipse legion) that rise next round; the end checks count them as present
+func risers(side) -> int:
+	var n := 0
+	for u in B["units"]:
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and not jt(u.get("fled")) and not jt(u.get("isSq")): n += 1
+	return n
 func _has_reserve(side) -> bool:
 	for u in B["units"]:
 		if u["side"] == side and not jt(u.get("dead")) and jt(u.get("treeOff")): return true
 	return false
 func checkEndRules() -> void:
 	if jt(B.get("over")): return
-	if caps("enemy").size() == 0:
+	if caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
 		B["over"] = "win"; return
 	var o = B.get("obj")
 	if o != null and o.type == "break":
@@ -4263,9 +4284,9 @@ func checkEndRules() -> void:
 		o["out"] = out
 		if out >= o.need:
 			B["over"] = "win"; logm(ns(out) + " ship" + ("s" if out > 1 else "") + " broke through. The fleet jumps clear.", "s"); return
-		if out > 0 and caps("player").size() + out < o.need:
+		if out > 0 and caps("player").size() + risers("player") + out < o.need:
 			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
-	if caps("player").size() == 0 and not _has_reserve("player"):
+	if caps("player").size() == 0 and risers("player") == 0 and not _has_reserve("player"):
 		B["over"] = "loss"; return
 	if o != null and o.type == "intercept":
 		var kill = 0; var esc = 0
