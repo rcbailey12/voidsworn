@@ -13,6 +13,11 @@ const BATTLE := preload("res://scenes/battle/battle.gd")
 
 class Probe extends "res://scenes/battle/battle.gd":
 	var hit_floats := 0
+	var landed: Array = []   # the volley's hits as they land: [index, the break already played]
+
+	func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
+		super._land_hit(t_id, h, k, land)
+		landed.append([k, bool(land.get("downs_played", false))])
 
 	func _float_hit(id, sh: float, hull: float, crit) -> void:
 		hit_floats += 1
@@ -103,6 +108,37 @@ func _run() -> void:
 	_check(float(d["hp"]) == hp1 - 18.0 and b.hit_floats == f0, "a quiet hit ticks the plate with no second number (hp %s, floats %d)" % [str(d["hp"]), b.hit_floats - f0])
 	await b._play_event({"t": "hit", "unit": a, "target": t, "quad": 0, "section": "mid", "shield": 0, "hull": 3, "crit": false})
 	_check(b.hit_floats == f0 + 1, "an ordinary hit still floats its number")
+
+	# issue 1481 review (Artoo at 42cb9ca0): a real fireWeapon stream where the first shot takes the generator while shield
+	# is left. Its section loss, break, callout and log line sit between the two hits; the whole volley plays as one, the
+	# break on hit 1, both hits on their own impacts.
+	var R = api.R
+	foe["hp"] = 99999; foe["maxHp"] = 99999; foe["ev"] = 0; foe["armor"] = 0
+	foe["shp"] = float(foe["shMax"]); R.syncShields(foe); foe["sec"]["mid"]["hp"] = 1; foe["sec"]["mid"]["broken"] = false; foe["_calledSec"] = "mid"
+	var w = R.mkWeapon("battery", "F", {}); w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; w["shots"] = 2; w["pierce"] = 0.5
+	me["weapons"].append(w); me["aim"] = 300; me["dead"] = false   # appended: the scene's view keeps its own weapon list
+	R.events_on = true; R.events.clear()
+	R.fireWeapon(me, me["weapons"].size() - 1, foe)
+	var evs: Array = R.events.duplicate()
+	var fi := -1
+	for i in evs.size():
+		if evs[i]["t"] == "fire": fi = i; break
+	var types := evs.map(func(x): return x["t"])
+	if fi < 0:
+		_check(false, "the volley fired (%s)" % str(types))
+	else:
+		var je := BATTLE.volley_end(evs, fi)
+		var grp2: Array = evs.slice(fi + 1, je)
+		var nh := grp2.filter(func(x): return x["t"] == "hit").size()
+		var nd := grp2.filter(func(x): return x["t"] == "shield_down").size()
+		var hits2: Array = grp2.filter(func(x): return x["t"] == "hit")
+		var bk := BATTLE.section_break_hit(grp2, BATTLE.shield_break_hit(hits2))
+		var mid_first := types.find("section_down") >= 0 and types.find("section_down") < types.rfind("hit")
+		_check(mid_first and nh == 2 and nd == 1 and bk == 0, "a real generator loss on shot 1 of 2 keeps both hits and the break in one volley, break on hit 1 (events %s, hits %d, breaks %d, break hit %d)" % [str(types), nh, nd, bk])
+		b.landed = []
+		await b._play_fire(evs[fi], grp2)
+		await b.wait(3000.0)
+		_check(b.landed.size() == 2 and b.landed[0] == [0, true], "both hits land on their own impacts, the break with hit 1 (%s)" % str(b.landed))
 	b.free()
 	_done()
 

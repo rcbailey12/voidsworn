@@ -1286,11 +1286,8 @@ func _play_batch(bt: Dictionary) -> void:
 		if e["t"] == "activation" and str(e.get("side", "")) == "player" and _is_wing(e["unit"]) and not args.has("wings-apart"):
 			await _wings_together(evs, i, pre)
 		if e["t"] == "fire":
-			var grp: Array = []
-			var j := i + 1
-			while j < evs.size() and evs[j]["t"] in ["hit", "system", "shield_down", "burning", "section_down"] and str(evs[j].get("target", evs[j].get("unit"))) == str(e["target"]):
-				grp.append(evs[j])
-				j += 1
+			var j := volley_end(evs, i)
+			var grp: Array = evs.slice(i + 1, j)
 			var tf := game_t
 			# issue 1448 (Artoo): a volley's hits are grouped here and never reach _play_event, so they are counted for the
 			# music now, in batch order, before any delayed impact can land after the next round's reset
@@ -2284,6 +2281,11 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	for g in grp:
 		if g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
+		elif g["t"] == "log":
+			hud.add_log(str(g.get("text", "")), str(g.get("kind", "")) if g.get("kind") != null else "")
+		elif g["t"] == "float":
+			var gdy = g.get("dy")
+			_float(g.get("unit"), str(g.get("text", "")), Color(str(g.get("color", "#d0a64b"))), float(gdy) if gdy != null else 0.0)
 		elif g["t"] == "section_down":   # issue 1481 review: the section loss rides in its volley now, so its log line plays here
 			var sec := str(g["section"])
 			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
@@ -2313,6 +2315,31 @@ static func hit_arrivals(shots: Array, impacts: Array, n_hits: int) -> Array:
 # hit is absorbed: the last hit with shield damage is the one that broke it (the last hit when none was absorbed).
 # Issue 1481 review: a generator lost mid-volley (section_down, then shield_down, then more hits) breaks the shield on
 # the hit that destroyed it, not on the last hit the shield absorbed. Otherwise the usual pick stands.
+# Issue 1481 review: the notes a mid-volley section loss sends between two hits (its callout over the target, its log line)
+# The volley a fire event at i carries: its hits, systems, fires, section losses and breaks on the target, and the notes a
+# section loss sends between two of its hits (issue 1481 review: so the later hits keep their own impacts). Returns the
+# index after the last one.
+static func volley_end(evs: Array, i: int) -> int:
+	var tgt := str(evs[i]["target"])
+	var j := i + 1
+	while j < evs.size():
+		if evs[j]["t"] in ["hit", "system", "shield_down", "burning", "section_down"] and str(evs[j].get("target", evs[j].get("unit"))) == tgt:
+			j += 1
+			continue
+		var k := j
+		while k < evs.size() and volley_note(evs[k], tgt):
+			k += 1
+		if k > j and k < evs.size() and evs[k]["t"] in ["hit", "shield_down"] and str(evs[k].get("target", evs[k].get("unit"))) == tgt:
+			j = k
+			continue
+		break
+	return j
+
+
+static func volley_note(g: Dictionary, target) -> bool:
+	return g["t"] == "log" or (g["t"] == "float" and str(g.get("unit")) == str(target))
+
+
 static func section_break_hit(grp: Array, k: int) -> int:
 	var seen := 0
 	var after_sec := false
