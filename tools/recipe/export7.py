@@ -25,9 +25,7 @@
 # required point is missing (including the breach count for the hull's class and faction) or a hard point is off the mesh.
 # The export also writes manifest_entry.json for this ship: the point counts, class, band and files, ready to merge into
 # godot/assets/ships/manifest.json.
-# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=N] [unbaked=1]
-#   maps: by default the R411 band rule (hardpoints.map_size: 4096 flagships and battleships, 2048 escorts, 1024 strike
-#   craft, issue 1680); maps=N overrides it for a test or a hand run and the log says so.
+# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=2048] [unbaked=1]
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
 import os, sys, json, math, struct, hashlib, shutil, time, random
@@ -42,7 +40,7 @@ sys.path.insert(0, SHARED)
 import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
-UNBAKED = kw.get('unbaked') == '1'
+MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
 if not UNBAKED:
     from PIL import Image
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
@@ -63,12 +61,6 @@ import gamedata
 try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the game's data.js
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
-if 'maps' in kw:
-    MAPS = int(kw['maps']); MAPS_WHY = 'maps=%d given on the command line' % MAPS
-else:
-    MAPS = HP_CONTRACT.map_size(CLS, ship.get('length_world'))
-    MAPS_WHY = 'R411 band rule: %s, length %s' % (CLS, ship.get('length_world') or HP_CONTRACT.CLASS_LENGTH.get(CLS))
-print('[export7] maps %d (%s)' % (MAPS, MAPS_WHY), flush=True)
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
 WING = CLS == 'Squadron'
 if WING:

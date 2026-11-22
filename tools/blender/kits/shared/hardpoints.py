@@ -86,28 +86,6 @@ BAND = {
 
 SECTIONS = ('prow', 'mid', 'eng')
 
-# R411 (Ryan, Nov 22 2026; RULEBOOK 5.18 item 1, issue 1680): stage 7 exports maps by the ship's length band. Class lengths
-# are godot/render/hull_table.gd CLS_LEN (the game's own); beacon and station have no CLS_LEN row, so they sit in the band of
-# the class they draw beside (the relay at escort size, the station at capital size). A ship json's length_world wins.
-CLASS_LENGTH = {
-    'Squadron': 1.6, 'Frigate': 6.5, 'Destroyer': 9.5, 'transport': 11.0, 'Cruiser': 14.5, 'Carrier': 16.5,
-    'Battleship': 21.0, 'Battle-barge': 26.0, 'Ark': 26.0, 'Dreadnought': 27.0, 'Bio-titan': 28.0, 'Tomb-ark': 28.0,
-    'Super-dreadnought': 31.0, 'beacon': 9.5, 'station': 31.0,
-}
-MAP_BANDS = ((21.0, 4096), (6.5, 2048), (0.0, 1024))   # length at least, map size; a length between bands takes the lower one
-
-
-def map_size(cls, length=None):
-    """the stage 7 map size for a hull: 4096 at length 21 and up, 2048 from 6.5, else 1024 (strike craft)"""
-    if length is None:
-        if cls not in CLASS_LENGTH:
-            raise ValueError(f'unknown hull class {cls!r}: add it to CLASS_LENGTH in hardpoints.py (never a silent default)')
-        length = CLASS_LENGTH[cls]
-    length = float(length)
-    return next(size for low, size in MAP_BANDS if length >= low)
-
-
-
 
 def faction_key(name):
     """the data.js fac value for any name the ship json or a sheet uses (an unknown name is returned in lower case)"""
