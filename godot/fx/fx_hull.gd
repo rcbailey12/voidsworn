@@ -265,9 +265,13 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 # patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
 const WEAR_WEATHER := 0.45   # fx_weather at full wear
 const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
-static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
+static func set_power(mat: ShaderMaterial, wear: float, dip: float) -> void:
+	mat.set_shader_parameter("fx_power", (1.0 - WEAR_POWER * wear) * (1.0 - dip))
+
+
+static func set_wear(mat: ShaderMaterial, wear: float, patches: Array, dip := 0.0) -> void:
 	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
-	mat.set_shader_parameter("fx_power", 1.0 - WEAR_POWER * wear)
+	set_power(mat, wear, dip)
 	var n := mini(patches.size(), 8)
 	mat.set_shader_parameter("fx_scorch_count", n)
 	if n > 0:
@@ -1292,6 +1296,7 @@ const TURN_RATE := 150.0     # degrees a second: a traverse's average rate (ease
 const TURN_MIN := 0.3        # seconds: the shortest traverse, so even a small correction eases in and out
 const TURN_MAX := 2.4        # seconds: the longest (the far way round a blocked sector), so TURN_RATE holds; a tuning value
 const TURN_ACC := 900.0      # degrees a second squared: the most a traverse speeds up or slows down (no lurch); a tuning value
+const BARREL_KICK_T := 0.19  # seconds from shot to the barrel returning to battery
 const TURN_HOLD := 0.9       # seconds a turret holds its aim after its last shot before it trains back to rest
 const CLEAR_STEP := 2.0      # degrees between the barrel clearance samples at analyse
 var turrets: Array = []      # {node, name, id, rest (its local transform), xf (root frame at rest), lo, hi, ymin, ymax, full, segs, ...}
@@ -1643,6 +1648,67 @@ func _seg_at(k: int, t: float) -> Dictionary:
 	return {}
 
 
+# Move the authored barrel assembly and its muzzle sockets under the fixed turning ring.
+# sockets false (the light kick of a gun without its own recoil) leaves the muzzle sockets still, so the next shot still
+# leaves from the turned muzzle; the heavy kick moves them with the barrels.
+func turret_fire(k: int, t: float, travel: float, sockets := true) -> void:
+	var tt: Dictionary = turrets[k]
+	if not tt.has("kick_parts"):
+		var muzzle := _first_muzzle(k)
+		var axis: Vector3 = muzzle.get("lf", Vector3.FORWARD)
+		var world_scale := ((tt["xf"] as Transform3D).basis * axis).length()
+		tt["kick_axis"] = -axis / maxf(world_scale, 0.001)
+		tt["kicks"] = []
+		var parts := []
+		var n: Node3D = tt["node"]
+		for child in n.get_children():
+			if child is Node3D and (child.name == String(n.name) + "_turn" or String(child.name).begins_with("hp_w")):
+				parts.append([child, child.position])
+		if not parts.any(func(pt: Array) -> bool: return not String((pt[0] as Node).name).begins_with("hp_w")):
+			# Neon on PR 1699: a turret whose barrel mesh has another name (no "<turret>_turn" child) still kicks: its
+			# visible mesh children with its muzzle sockets, or the turret node itself when it is the mesh (from its rest
+			# position, so the per-frame yaw pose is untouched)
+			var meshes_n := 0
+			for child in n.get_children():
+				if child is MeshInstance3D and (child as MeshInstance3D).visible:
+					parts.append([child, child.position])
+					meshes_n += 1
+			if meshes_n == 0 and n is MeshInstance3D:
+				parts = [[n, (tt["rest"] as Transform3D).origin, true]]   # its sockets ride along as its children
+		tt["kick_parts"] = parts
+	(tt["kicks"] as Array).append(Vector3(t, travel, 1.0 if sockets else 0.0))
+
+
+func _turret_kick(tt: Dictionary, t: float) -> void:
+	var kicks: Array = tt["kicks"]
+	var travel := 0.0
+	var sock_travel := 0.0
+	for i in range(kicks.size() - 1, -1, -1):
+		var pulse: Vector3 = kicks[i]
+		var age := t - pulse.x
+		if age >= BARREL_KICK_T:
+			kicks.remove_at(i)
+		elif age >= 0.0:
+			var stroke := smoothstep(0.0, 0.035, age) * (1.0 - smoothstep(0.035, BARREL_KICK_T, age))
+			travel = maxf(travel, pulse.y * stroke)
+			if pulse.z > 0.0:
+				sock_travel = maxf(sock_travel, pulse.y * stroke)
+	if travel == 0.0 and not bool(tt.get("kicking", false)):
+		return
+	tt["kicking"] = travel > 0.0
+	var offset: Vector3 = (tt["kick_axis"] as Vector3) * travel
+	var sock_offset: Vector3 = (tt["kick_axis"] as Vector3) * sock_travel
+	for part: Array in tt["kick_parts"]:
+		if is_instance_valid(part[0]):
+			var nd := part[0] as Node3D
+			if String(nd.name).begins_with("hp_w"):
+				nd.position = (part[1] as Vector3) + sock_offset
+			elif part.size() > 2:   # the turret node itself: its stroke along its own (turned) axis, from its rest point
+				nd.position = (part[1] as Vector3) + nd.basis * offset
+			else:
+				nd.position = (part[1] as Vector3) + offset
+
+
 # Every frame (fx_ship.update): put each turret's node at its pose for the effect clock and drop finished segments.
 func turret_step(t: float) -> void:
 	turret_clock = t
@@ -1667,6 +1733,8 @@ func turret_step(t: float) -> void:
 		if droop != 0.0:
 			bs = bs * Basis(Vector3.RIGHT, deg_to_rad(-droop))
 		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(bs, Vector3.ZERO)
+		if tt.has("kicks"):
+			_turret_kick(tt, t)   # issue 1690 (Wave 1A): the barrel kick, on top of 1587's jam sag
 
 
 # Issue 1587: a wounded section's turret freezes a little off its aim and sags (view only; the rules never see it). jam_turret

@@ -10,6 +10,7 @@ standing check `skills_mirror_tests.js` fails when the two differ. Edit here, th
 | Skill | From | Use |
 | --- | --- | --- |
 | playtest-and-balance, screenshot-verdict, ship-kit | this repo | rules and balance checks, picture checks, ship builds |
+| independent-audit | this repo (Neon, Nov 22 2026) | pre-merge audit for any Godot FX, rendering, ship import, audio or battle-feel PR (RULEBOOK 3.13) |
 | grill-with-docs, grilling, domain-modeling | mattpocock/skills (MIT) | interview a plan; keep GLOSSARY.md current |
 | wait-what | mattpocock/skills | "say that again, simpler" |
 | improve-codebase-architecture, codebase-design | mattpocock/skills | find deepening refactors (run now and then on godot/ and tools/pc/) |
@@ -35,6 +36,8 @@ Ryan's word: Claude-Code-Game-Studios, gd-agentic-skills --all, the full obra/su
   an artifact instead of opening a browser.
 - **Reviews**: the built-in `/code-review` stays the default code review seat (R406); pocock-code-review adds the
   spec axis when an issue brief exists.
+- **independent-audit** runs in every Opus, Codex and Muse review of a Godot FX, rendering, ship import, audio or
+  battle-feel PR, before merge and before its GPU capture (RULEBOOK 3.13).
 - **godot-verify** is the habit behind the CI rule that a Godot check greps for `SCRIPT ERROR` instead of trusting exit
   code 0. Run Godot as `godot --headless --path godot ...` from the repo root.
 - No em dashes in anything written for this repo (the vendored skill files are copied unchanged).

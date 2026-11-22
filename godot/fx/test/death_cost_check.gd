@@ -12,7 +12,11 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # Times are printed, not checked (CI machines vary; the PC capture, GPU solo, R293, is the verdict). Checked: every main
 # wreck piece carries the reach its cut's worker measured (so the draw-in reads no faces on the main thread), and that
 # number matches the old face read within 0.1 percent (so the wreck settles exactly where it did). Run:
-#   godot --headless --path godot --script res://fx/test/death_cost_check.gd [-- path/to/ship.glb]
+#   godot --headless --path godot --script res://fx/test/death_cost_check.gd [-- path/to/ship.glb] [--warm]
+# Issue 1633: --warm runs the battle's own load warm-up (fx.warmup, as battle.gd _warmup calls it) before the kill, so the
+# first death is measured as a real battle pays it. Every run prints the render pipelines compiled per frame after the kill
+# (DEATH_COST pipelines), split into what fx.step compiles and what the draw compiles, plus the kill call itself: the first-use
+# cost a cold kill pays on the engine side.
 const FX := preload("res://fx/fx.gd")
 const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
@@ -28,7 +32,8 @@ func _init() -> void:
 
 func _load_ship(world: Node3D) -> Node3D:
 	var args := OS.get_cmdline_user_args()
-	var path: String = args[0] if not args.is_empty() else (INSTALLED if FileAccess.file_exists(INSTALLED) else FIXTURE)
+	var named: Array = Array(args).filter(func(a): return not str(a).begins_with("--"))
+	var path: String = named[0] if not named.is_empty() else (INSTALLED if FileAccess.file_exists(INSTALLED) else FIXTURE)
 	var bytes := FileAccess.get_file_as_bytes(path)
 	if path.ends_with(".gz"): bytes = bytes.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
 	var doc := GLTFDocument.new()
@@ -47,6 +52,16 @@ func check(ok: bool, why: String) -> void:
 	if not ok:
 		failures += 1
 		push_error(why)
+
+
+# render pipelines compiled so far, all kinds (a first-use stall shows here, not in fx.step)
+func _pipes() -> int:
+	var n := 0
+	for k in [RenderingServer.RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS, RenderingServer.RENDERING_INFO_PIPELINE_COMPILATIONS_MESH,
+			RenderingServer.RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE, RenderingServer.RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW,
+			RenderingServer.RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION]:
+		n += int(RenderingServer.get_rendering_info(k))
+	return n
 
 
 func _ms(t0: int) -> float:
@@ -87,31 +102,47 @@ func _run() -> void:
 	print("DEATH_COST precompute ready_ms=%.1f frames=%d cut_ms=%.1f hulls_and_reach_ms=%.2f reach_only_ms=%.2f (old code: -1, it has neither timer)" % [
 		_ms(c0), ready_frames, float(job.get("cut_usec", -1000)) / 1000.0, float(job.get("hulls_usec", -1000)) / 1000.0, float(reach_usec) / 1000.0])
 	fx.anchor_wreck("a16", ship.global_position, 14.0)
+	var warm := OS.get_cmdline_user_args().has("--warm")
+	if warm:
+		var w0 := Time.get_ticks_usec()
+		await fx.warmup(cam)
+		print("DEATH_COST warmup ms=%.1f pipelines=%d (the battle's load warm-up, issue 1633)" % [_ms(w0), _pipes()])
+	print("DEATH_COST mode %s renderer=%s" % ["warm" if warm else "cold", RenderingServer.get_current_rendering_method()])
 	for i in 10:
 		fx.step(1.0 / 60.0)
 		await process_frame
+	var pipes0 := _pipes()
+	var headless := DisplayServer.get_name() == "headless"
 	# the kill, then 12 s of effect time at 60 a second
 	var t0 := Time.get_ticks_usec()
 	var t_fx: float = fx.now
 	fx.death("a16", "big")
 	var kill_ms := _ms(t0)
+	var kill_pipes := _pipes() - pipes0   # compiled inside the kill call itself (Ryan, Nov 22: sample before the step too)
 	var frames: Array = []
 	for i in 60 * 12:
 		var f0 := Time.get_ticks_usec()
+		var pp0 := _pipes()   # before fx.step: what the step itself compiles, split from what the draw compiles
 		fx.prof_take()
 		fx.step(1.0 / 60.0)
 		var step_ms := _ms(f0)
 		if step_ms > 12.0: print("DEATH_COST hitch at %.2fs step %.1f ms, fx parts (usec): %s" % [fx.now - t_fx, step_ms, str(fx.prof_take())])
+		var pp := _pipes()
 		await process_frame
-		frames.append([_ms(f0), step_ms, fx.now - t_fx])
+		if not headless: await RenderingServer.frame_post_draw   # headless never draws, so this signal never comes (CI)
+		frames.append([_ms(f0), step_ms, fx.now - t_fx, _pipes() - pp0, pp - pp0])
 	var hitches: Array = []
+	var pipe_frames: Array = []
 	for f in frames:
 		if float(f[0]) > 12.0: hitches.append("%.2fs %.1f" % [f[2], f[0]])
+		if int(f[3]) > 0: pipe_frames.append("%.2fs %d (step %d, draw %d; %.1f ms)" % [f[2], f[3], f[4], int(f[3]) - int(f[4]), f[0]])
+	print("DEATH_COST pipelines in the kill call: %d" % kill_pipes)
+	print("DEATH_COST pipelines after the kill: %d in all; frames that compiled any: %s" % [_pipes() - pipes0, ", ".join(pipe_frames) if not pipe_frames.is_empty() else "none"])
 	print("DEATH_COST hitches over 12 ms (time after the kill, ms): %s" % (", ".join(hitches) if not hitches.is_empty() else "none"))
 	frames.sort_custom(func(a, b): return a[0] > b[0])
 	var worst: Array = []
 	for f in frames.slice(0, 6):
-		worst.append("%.1f (step %.1f) at %.2fs" % [f[0], f[1], f[2]])
+		worst.append("%.1f (step %.1f, pipelines %d: step %d, draw %d) at %.2fs" % [f[0], f[1], f[3], f[4], int(f[3]) - int(f[4]), f[2]])
 	print("DEATH_COST frames kill_call_ms=%.1f worst=%s" % [kill_ms, ", ".join(worst)])
 	# _measure_reach, piece by piece, as the leash reads it (one piece a frame): the old face read against the worker's
 	# number (reach_pre, issue 1395), which must agree with it
