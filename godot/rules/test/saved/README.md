@@ -1,8 +1,13 @@
 # Saved Godot results
 
-Issue 990, Path D step 3. Parity still compares every battle against the browser.
-This second gate compares Godot with the results accepted in the repo. A mistake
-in both rules copies can pass parity and still fail here, by battle name.
+Issue 990, Path D step 3. Since issue 1654 (R405, Nov 22 2026) the browser rules
+twin is retired and this is the rules gate: `run_parity.sh` runs Godot alone and
+compares every battle, the PRNG draws, the math verdict and the threat maps with
+the results accepted in the repo. The math inputs come from the saved `math.txt`.
+`RULES_TWIN=browser` still runs the old comparison with the frozen browser files,
+for history only. Read "browser parity" below as that historical mode; an update
+needs no browser check in the default mode. The campaign has its own saved
+results: `godot/campaign/test/saved/`, checked by `run_campaign_checks.sh`.
 
 Double-click `tools/pc/saved_results.bat`, or call it with `nopause` from a watcher.
 It runs fresh parity and this check using the same Godot batch records. It prints

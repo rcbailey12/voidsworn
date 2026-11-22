@@ -1,4 +1,4 @@
-// ======================= CAMPAIGN IN 3D =======================
+// ======================= CAMPAIGN IN 3D ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 const appEl=document.getElementById('app');
 let AI_LEVEL='standard'; // B1 onboarding fix 1 (F25): a fresh profile starts on Standard; main3d.js keeps Veteran for anyone who already played
 // global error reporter: a calm notice instead of silent failure, logged for review

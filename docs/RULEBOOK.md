@@ -119,7 +119,7 @@ the Board's diff review while Muse is idle, with the check still asked for. Set:
 Board (R162). Ids: agents-13, claude-04, R132c, R162b.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
-both rule twins, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
+the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
@@ -267,17 +267,22 @@ apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
 
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
-campaign files) are a live reference copy: every rules change goes into both until Ryan approves their retirement.** The browser
-game and pages ship nothing. Parity runs in full on every push, never skipped and never cut (no skip rule), made faster by
-running battles in parallel workers (issue 978), and a Godot-only safety net runs beside it (issue 979, then saved Godot
-results with a changed-battles review on rules PRs, piloted for whether its review cost is worth it). Ten rules PRs is a
-progress checkpoint, not approval to retire parity. The browser rules stay until the replacement data home, a Godot balance
-simulator, the ported tests and the PC tools work and are verified; retirement is then a separate recommendation to Ryan.
-Why: "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24); "Let's go with Path D ... Don't implement
-the skip rule or reduce coverage ... Keep the browser rules until the replacement data, balance simulator, relevant tests and
-tools are working and verified, and bring me a separate retirement recommendation then." (R312). The old "frozen" wording was
-wrong: every new rule since went into both copies (round 2 review, Nov 17). Set: Ryan. Ids: R32, R33a, agents-02, R312.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
+rules (data.js, core.js, battle.js and the campaign files at the repo root) are retired: frozen history that no rules change
+touches and the game never reads. A rules or campaign change edits the Godot files and the table files
+(`godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`; reseal their checksums with
+`godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
+runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
+net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
+issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
+because the ship pipeline still reads it. The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
+retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
+of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
+under which every rules change went into both copies; at retirement both copies matched on all 289 battles and 30 campaign
+runs (issue 1654). "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a,
+agents-02, R312, R405.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
@@ -741,7 +746,7 @@ the default with a brisk option.** Why: "I don't want to sacrifice the feel of t
 (R50, R64); option Board (R50d). Ids: R50b, R50d, R64a, movespec-06.
 
 7.4 **Movement playback never changes rules results.** A LOOK change keeps the route, end hex and facing; a RULE change (route
-or facing) needs Ryan's own ruling and touches both rule twins. Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
+or facing) needs Ryan's own ruling and touches the Godot rules (R405). Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
 
 7.5 **No roll into turns.** Why: nothing in space leans a ship; the audit reversed the earlier bank (movement_audit_code.md).
 Set: Board, Nov 11. Id: movespec-04 (the 4 degree bank, retired).

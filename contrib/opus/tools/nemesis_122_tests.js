@@ -118,7 +118,7 @@ check('the panel data has no earlier hunters in sector 1, and a migrated single-
   const R = forced(['ithar', 'corsair', 'hegemony']); const D1 = T.nemPanelData();
   const N = R.nems.ithar; R.nems = {}; R.nemAssign = undefined; R.sector = 2; R.nem = N; delete R.nemEscapes; T.nemActive(); const D2 = T.nemPanelData();
   return D1.earlier.length === 0 && D1.back === '' && D2.fac === 'ithar' && D2.earlier.length === 0 && D2.back === '' && !priorOf(T.nemPanel()); });
-// 122-6: the promised scenario blocks exist in both twins (run_nem_scenarios.sh compares them line by line)
+// 122-6: the promised scenario blocks exist in both copies (the Godot output is checked against its saved results, issue 1654)
 check('122-6 the once-per-sector and telemetry scenario blocks exist in nem_scenarios.js and nem_scenarios.gd', () => {
   const js = fs.readFileSync(path.join(ROOT, 'godot/campaign/test/node/nem_scenarios.js'), 'utf8'), gd = fs.readFileSync(path.join(ROOT, 'godot/campaign/test/nem_scenarios.gd'), 'utf8');
   const marks = ['(121-1, 121-2)', '(122-1)', '(122-2)', '(122-3)', '(122-9)', '(122-4, 122-5)'];
