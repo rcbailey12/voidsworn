@@ -56,12 +56,12 @@ try {
   const at3 = path.join(vt, 'opus1657', 'out_20261122_160000_3'); write(path.join(at3, 'status.txt'), 'status\n');
   fs.symlinkSync(harmless, path.join(at3, 'out_link'), 'junction');
   r = run('opus1657', at3);
-  assert(r.status !== 0 && /a link in the results: .*out_link/.test(r.out), 'an out_* link is refused: ' + r.out);
+  assert(r.status !== 0 && /a link in the results:[\s\S]*out_link/.test(r.out), 'an out_* link is refused: ' + r.out);
   fs.mkdirSync(path.join(harmless, 'out_20261122_170000_4', 'out_new'), { recursive: true });
   write(path.join(harmless, 'out_20261122_170000_4', 'out_new', 'shot.png'), 'x');
   fs.symlinkSync(harmless, path.join(vt, 'linkedjob'), 'junction');
   r = run('opus1657', path.join(vt, 'linkedjob', 'out_20261122_170000_4'));
-  assert(r.status !== 0 && /a link on the way to the attempt: .*linkedjob/.test(r.out), 'an attempt under a link is refused: ' + r.out);
+  assert(r.status !== 0 && /a link on the way to the attempt:[\s\S]*linkedjob/.test(r.out), 'an attempt under a link is refused: ' + r.out);
   assert.equal(git(['--git-dir', relaySource, 'rev-parse', 'refs/heads/pc-out-opus1657']), before, 'a refusal sends nothing');
   console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing, links refused');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
