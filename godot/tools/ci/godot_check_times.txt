@@ -114,6 +114,7 @@ post_win_modal_count_test 4
 quit_route_check 3
 relic_trade_1449 3
 retreat_nemesis_1480 3
+event_fight_retreat_1628 2
 round_save_disk_test 3
 round_save_entry_test 10
 round_save_stress 36

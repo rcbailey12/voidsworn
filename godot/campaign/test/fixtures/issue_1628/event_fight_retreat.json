@@ -1,0 +1,14 @@
+{
+  "note": "issue 1628: after a retreat from a fight that an event choice started (R381 keeps the stop on the map), entering the event stop again goes straight back to that fight, with no second pick. Each case builds a fresh run (admiral vex, Sunward Crusade, run seed 1628), turns the first stop into the event, opens it, picks the option, retreats and enters again. Read by contrib/opus/tools/event_fight_retreat_1628_tests.js (browser twin) and godot/campaign/test/event_fight_retreat_1628.gd (Godot twin); both must give the expected result. The fight case fails on main.",
+  "fac": "voidsworn",
+  "admiral": "vex",
+  "seed": 1628,
+  "cases": [
+    {
+      "name": "the Moon event's fight choice, retreated from, waits as the same fight",
+      "event": "moon",
+      "pick": 0,
+      "expect": { "firstFight": "chorus", "evFight": "0", "againFight": "chorus", "againModal": false }
+    }
+  ]
+}
