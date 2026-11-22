@@ -1,10 +1,30 @@
-Saved manifest before: 10126a8ae9afe10268d9072f5c14c0f5fa4190f383a1f0e823bd0619e5ad03d6
-Saved manifest after: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
+Saved manifest before: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
+Saved manifest after: ca22922b184b35af6a8ce568b1184bfa68a57ad0516586e9f644ea8f0e43d310
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle r1653_coolant
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 170; total records: 174 -> 165
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 11.932 s
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].facing: 5 -> 0
+  later changed records: 109; total records: 102 -> 110
+FAIL battle t_breathbite
+  turn 0, round 1, after tick player; unit x06 (player b_razor)
+  state.units[0].name: "Shrieker" -> "Shrieking Coil"
+  later changed records: 142; total records: 125 -> 143
+FAIL battle t7b_ecl_archive
+  turn 44, round 3, after move x04; unit x06 (player d_scythe)
+  state.units[2].hp: 56 -> 37
+  later changed records: 49; total records: 90 -> 94
+FAIL battle t7b_ecl_triage
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].name: "Cold Memory" -> "Noon Kept"
+  later changed records: 93; total records: 94 -> 91
+FAIL battle t7b_ecl_targetarchived
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].facing: 4 -> 0
+  later changed records: 40; total records: 31 -> 41
+FAIL battle t529_scent
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].name: "Sour Gut" -> "Tidehunger"
+  later changed records: 53; total records: 49 -> 54
+FAIL: saved Godot results; 354 battles checked, 6 changed, 0 other files changed, 6 failures; 35.281 s
