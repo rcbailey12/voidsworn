@@ -545,7 +545,8 @@ hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audi
 automated anti-drift checks (export, Godot world, exterior and palette, sound pack) are added and kept green; (6) AAA ship
 exterior lighting, per-faction micro-detail, PBR separation and Godot 4.7 engine hygiene (#1777, #1778, #1779, #1780:
 default-on Space PBR reflection IBL and per-faction `ao_light_affect`, zoom-tracked crisp contact shadows without `LookRim`
-plastic glare, true BC5/RGTC ship normal compression, native per-faction PBR channels and six faction tiling micro-detail
+plastic glare, BC5/RGTC ship normal compression kept and guarded by `godot/render/test/ship_look_v2_check.gd` (already
+true BC5: Godot 4.7 writes RGTC_RG from `COMPRESS_S3TC` with the normal source), native per-faction PBR channels and six faction tiling micro-detail
 normal/roughness maps, true paint-vs-metal separation, massive-scale cues, a hard export ban on lossy `.jpg` normal and ORM
 maps, battle 3D LUT + kill-cam DoF + selective SSR/CompositorEffect benchmark, plus cached `.gdshader` PSOs, BC7 world VRAM
 compression, FSR 2.2 AA option and empty volumetric fog gating). A fix for one faction is made at the shared root for all

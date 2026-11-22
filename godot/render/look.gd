@@ -199,7 +199,7 @@ static func _detail_layer(m: BaseMaterial3D, faction: String) -> void:
 	if maps.is_empty():
 		return
 	var grain := maps[0] as Texture2D
-	var a := float(maps[2])
+	var a := float(maps[2])   # make_detail_maps.py writes one constant alpha per grain map, so one pixel reads it
 	m.detail_enabled = true
 	m.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
 	m.detail_uv_layer = BaseMaterial3D.DETAIL_UV_2
@@ -213,6 +213,25 @@ static func _detail_layer(m: BaseMaterial3D, faction: String) -> void:
 		m.normal_enabled = true   # no baked normal map: Godot's flat default sits under the detail
 	m.normal_scale = m.normal_scale / maxf(1.0 - a, 0.2)
 	m.set_meta("look_detail", faction)
+
+
+# Issue 1777: the hull material for one fitted scale. ShipView's look cache shares one material per glb material and
+# faction, but two ships from one glb can be fitted at different lengths, and the grain scale lives on the material; so
+# each fitted scale gets its own copy (cached, so ships of one size still share). A material with no detail layer is
+# returned as it is. The Board audit of PR 1786 found the clash.
+static var _fit_cache := {}   # not GPU: "material id|k" -> material
+static func fitted(m: Material, k: float) -> Material:
+	var b := m as BaseMaterial3D
+	if b == null or not b.detail_enabled or not b.has_meta("look_detail"):
+		return m
+	var key := "%d|%.3f" % [m.get_instance_id(), absf(k)]
+	if not _fit_cache.has(key):
+		var c := b.duplicate() as BaseMaterial3D
+		for meta in b.get_meta_list():
+			c.set_meta(meta, b.get_meta(meta))
+		detail_fit(c, k)
+		_fit_cache[key] = c
+	return _fit_cache[key]
 
 
 # Issue 1777: after ShipView fits a hull (scale k from object space to game units), keep the grain the same size in game

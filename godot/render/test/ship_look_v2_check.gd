@@ -153,6 +153,16 @@ func _run() -> void:
 	LOOK.tune = {}
 	check(not _hull("ithar").refraction_enabled, "ithar: refraction stays off until measured on the PC")
 	check(_hull("ithar").clearcoat_enabled and _hull("deathless").clearcoat_enabled, "ithar and deathless: clearcoat")
+	# 8. two hulls from one glb fitted at different lengths get their own grain scale (ShipView look cache, Board audit)
+	var shared := _hull("corsair")
+	var f1 := LOOK.fitted(shared, 1.5) as BaseMaterial3D
+	var f2 := LOOK.fitted(shared, 3.0) as BaseMaterial3D
+	check(f1 != f2 and LOOK.fitted(shared, 1.5) == f1, "one copy per fitted scale, shared within a scale")
+	check(f1.uv2_scale.is_equal_approx(Vector3.ONE * float(LOOK.V2["tiles"]) * 1.5) and f2.uv2_scale.is_equal_approx(Vector3.ONE * float(LOOK.V2["tiles"]) * 3.0),
+		"each copy keeps its own grain scale")
+	check(f1.get_meta("look_hull", "") == "corsair" and f1.has_meta("look_detail"), "copies keep the hull marks (rim light, detail)")
+	var plain := StandardMaterial3D.new()
+	check(LOOK.fitted(plain, 2.0) == plain, "a material with no detail layer is left as it is")
 	var none := _hull("not_a_faction")
 	check(not none.detail_enabled, "unknown faction: no layer, no error")
 	LOOK.v2_force = -1

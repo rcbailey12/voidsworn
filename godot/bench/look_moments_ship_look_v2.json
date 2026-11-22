@@ -1,0 +1,587 @@
+{
+ "about": "Issue 1777 Ship Look V2: the newest ship of each faction, intact and after three hits, held, at the battle camera (170) and the closest (26). Run twice on one commit: VS_SHIP_LOOK_V2=0 then =1. Same ships and hits as look_moments_wounds_ref.json.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "sl2_V16_37",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Sunward Vigil V16_37: intact, held",
+   "do": "hold",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_V16_37",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Sunward Vigil V16_37: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2_H10_23",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Directorate H10_23: intact, held",
+   "do": "hold",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_H10_23",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Directorate H10_23: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2_C15s_23",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Hullbreaker C15s_23: intact, held",
+   "do": "hold",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_C15s_23",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Hullbreaker C15s_23: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2_B21_11",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Chorus B21_11: intact, held",
+   "do": "hold",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_B21_11",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Chorus B21_11: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2_I15_11",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Glasswright I15_11: intact, held",
+   "do": "hold",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_I15_11",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Glasswright I15_11: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2_D21_23",
+   "group": "Ship Look V2 (issue 1777): intact",
+   "label": "Eclipse D21_23: intact, held",
+   "do": "hold",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "sl2d_D21_23",
+   "group": "Ship Look V2 (issue 1777): damaged",
+   "label": "Eclipse D21_23: three hits, hull at 50%",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  }
+ ]
+}

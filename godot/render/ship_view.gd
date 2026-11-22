@@ -210,7 +210,7 @@ func _detail_fit(k: float) -> void:
 		for i in mi.get_surface_override_material_count():
 			var mat := mi.get_surface_override_material(i)
 			if mat != null:
-				LOOK.detail_fit(mat, k)
+				mi.set_surface_override_material(i, LOOK.fitted(mat, k))   # its own copy per fitted scale (Board audit, PR 1786)
 
 
 func _collect(n: Node) -> void:
