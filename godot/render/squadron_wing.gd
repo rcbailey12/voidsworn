@@ -76,7 +76,13 @@ void fragment() {
 }
 """
 
+# issue 1434 (Artoo on PR 1445): setup's main-thread time by stage in microseconds (load, instance, finish, copies), copied
+# into ShipView.stage_us for the load bench
+var stage_us := {}
+
+
 func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0) -> void:
+	stage_us = {}
 	faction = fac
 	length = size
 	phase = seed_value
@@ -92,8 +98,13 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	trail_mat.set_shader_parameter("life", trail_life)
 	if count <= 0:
 		return
+	var t_make := Time.get_ticks_usec()
 	var lead := _make_craft(fac, kind)
+	var t_fin := Time.get_ticks_usec()
 	finish(lead, fac)
+	stage_us["wing_finish"] = Time.get_ticks_usec() - t_fin
+	stage_us["wing_make"] = t_fin - t_make
+	var t_copies := Time.get_ticks_usec()
 	for i in count:
 		var n: Node3D = lead if i == 0 else lead.duplicate()
 		add_child(n)
@@ -109,6 +120,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		add_child(ribbon)
 		ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "hist": []})
+	stage_us["wing_copies"] = Time.get_ticks_usec() - t_copies
 	fit_formation()
 	_patrol_blend = patrol_target
 	step(0.0)
@@ -179,10 +191,14 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 	var path := ship_cache_dir.path_join(code + ".scn")
 	if code.is_empty() or not ResourceLoader.exists(path, "PackedScene"):
 		return CRAFT.make(fac, kind)
+	var t_load := Time.get_ticks_usec()
 	_model_scene = ResourceLoader.load(path, "PackedScene") as PackedScene
+	stage_us["wing_load"] = Time.get_ticks_usec() - t_load
 	if _model_scene == null:
 		return CRAFT.make(fac, kind)
+	var t_inst := Time.get_ticks_usec()
 	var model := _model_scene.instantiate()
+	stage_us["wing_inst"] = Time.get_ticks_usec() - t_inst
 	if not model is Node3D:
 		model.free()
 		return CRAFT.make(fac, kind)

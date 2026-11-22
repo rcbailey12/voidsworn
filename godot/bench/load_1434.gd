@@ -55,8 +55,20 @@ var _pre_us := 0
 var _draw_us := 0
 
 
+# the node whose hull-prep step a frame row names: read at frame_pre_draw, the step the draw that follows belongs to
+# (Artoo on PR 1445: a label read after the frame could already name the next step)
+var _watch: Node = null
+var _draw_step := ""
+
+
 func _on_pre_draw() -> void:
 	_pre_us = Time.get_ticks_usec()
+	if _watch != null and is_instance_valid(_watch):
+		var fx = _watch.get("gfx")
+		if fx != null and is_instance_valid(fx) and str(fx.get("prep_step")) != "" and fx.get("prep_step") != null:
+			var st := str(fx.get("prep_step"))
+			if not _draw_step.contains(st):
+				_draw_step = st if _draw_step == "" else _draw_step + " + " + st
 
 
 func _on_post_draw() -> void:
@@ -72,13 +84,14 @@ func _take_draw() -> float:
 
 
 # the three biggest named effects costs since the last frame, "prep:shield 210 ms, ..." ("-" when none)
-static func _fx_work(node) -> String:
+func _fx_work(node) -> String:
 	if node == null or not is_instance_valid(node):
 		return "-"
 	var fx = node.get("gfx")
 	if fx == null or not is_instance_valid(fx) or not fx.has_method("prof_take"):
 		return "-"
-	var step := str(fx.get("prep_step")) if fx.get("prep_step") != null else ""
+	var step := _draw_step
+	_draw_step = ""
 	var p: Dictionary = fx.prof_take()
 	var keys := p.keys()
 	keys.sort_custom(func(x, y): return int(p[x]) > int(p[y]))
@@ -87,7 +100,7 @@ static func _fx_work(node) -> String:
 		if int(p[k]) >= 1000:
 			out.append("%s %d ms" % [str(k), int(p[k]) / 1000])
 	var said := ", ".join(out) if not out.is_empty() else "-"
-	return said + (" (hull prep at: %s)" % step if step != "" else "")
+	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "")
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
@@ -151,6 +164,8 @@ func _battle(tag: String, args: Dictionary) -> void:
 	b.tips_off = true
 	var t0 := Time.get_ticks_usec()
 	root.add_child(b)
+	_watch = b
+	_draw_step = ""
 	var ready_ms := (Time.get_ticks_usec() - t0) / 1000
 	var worst := 0
 	# [ms, phase before -> phase after, render cpu ms, gpu ms, pipelines compiled, world bakes pending] per frame under
@@ -260,6 +275,7 @@ func _title() -> void:
 			click_t = Time.get_ticks_msec()
 			_click(link.get_global_rect().get_center())
 		var sc0 = m.showcase
+		_watch = sc0
 		var ph0: String = sc0.load_phase if sc0 != null and is_instance_valid(sc0) else "none"
 		var ws0: int = BAKER.work_stage
 		await process_frame

@@ -291,6 +291,7 @@ func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			hull.patrol_limit = HT.HEX_S * sqrt(3.0) * 0.5
 			hull.patrol_target = 1.0
 		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
+		stage_us = (hull.stage_us as Dictionary).duplicate()   # issue 1434: the wing's load, instance and finish times
 		_collect(hull)
 		_ring()
 		position = world_pos
