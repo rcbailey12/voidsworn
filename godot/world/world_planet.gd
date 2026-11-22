@@ -28,9 +28,11 @@ const BOARD_LOOKS := {
 	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.03, "glint": 1.0},
 	3: {"bake": 5, "flat": Vector3(0.74, 0.74, 0.74), "a": Vector3(0.86, 0.89, 0.92), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.7},
 	4: {"bake": 3, "flat": Vector3(0.3, 0.19, 0.12), "a": Vector3(0.56, 0.33, 0.19), "b": Vector3(0.075, 0.065, 0.062), "c": Vector3(0.8, 0.58, 0.38), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37)},
-	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.82, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)]},
+	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)]},
 }
 const BOARD_SIZE := Vector2i(4096, 2048)
+# R01 longitudes (u) whose equator band is clean of remix swirls, judged on the colour map (issue 1765)
+const R01_CLEAN := [[0.05, 0.28]]
 
 
 # Dresses the board's planet sphere and its air shell for one battle. Waits for the maps (the battle's loading cover is
@@ -59,7 +61,13 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	if not planet.is_inside_tree(): return
 	if int(L["bake"]) < 0:
 		var tints: Array = L["tints"]
-		var opts := {"turn": r.randf() * TAU, "tilt": r.randf_range(-0.5, 0.5), "tint": tints[r.randi() % tints.size()],
+		# the battle camera looks down on the planet's cap: tip the data's equator up toward it, so the cap never shows
+		# the smeared poles, and centre it on R01's cleanest longitudes (the remix left swirled, stretched patches
+		# over most other longitudes); turned and leaned a little differently every battle. With this tilt
+		# the cap's centre sits at u = 1 - turn / TAU.
+		var windows: Array = R01_CLEAN[r.randi() % R01_CLEAN.size()]
+		var u := r.randf_range(float(windows[0]), float(windows[1]))
+		var opts := {"turn": TAU * (1.0 - u), "tilt": PI * 0.5 + r.randf_range(-0.25, 0.25), "tint": tints[r.randi() % tints.size()],
 			"clouds": bool(L["clouds"]), "atmo": L["atmo"], "atmo_k": float(L["atmo_k"]), "seed": r.randf() * 50.0,
 			"desat": float(L.get("desat", 0.0))}
 		await install_rocky(planet, air, sun_position, opts)
@@ -266,7 +274,7 @@ void fragment() {
 	vec3 toward_light = r01_remix(normalize(normalize(local_direction) + normalize(local_light)*0.012));
 	float shadow = shadow_strength > 0.0 ? r01_cloud(surface_data,r01_spin(toward_light,TIME*cloud_rate),lod) : 0.0;
 	vec3 albedo = r01_sample(colour_map,d,lod).rgb;
-	albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.55, 0.15))) * 1.08, remix_desat);
+	albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.55, 0.15))) * 1.5, remix_desat);
 	// mineral provinces: broad patches of the battle's tint, so a turned face also reads as a new world
 	float prov = smoothstep(0.35, 0.75, wvn3(d * 2.3 + remix_seed));
 	albedo *= mix(vec3(1.0), remix_tint, 0.55 + 0.45 * prov);
