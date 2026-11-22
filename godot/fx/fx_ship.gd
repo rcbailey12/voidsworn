@@ -1468,12 +1468,9 @@ func end_brownout() -> void:
 
 # ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
 
-# Neon's damage audit F1.2: as hull HP falls the whole ship looks worn, not only its breach anchors. hull_wear (0 above
-# WEAR_FROM of max HP, 1 at WEAR_FULL) drives, through HULL.set_wear, the damage shader's own uniforms (fx_hull.gd DAMAGE_UNIFORMS): fx_weather
-# darkens and mottles the plating, fx_power dims the hull's lights and glowing panels, and fx_scorch lays soot patches
-# where the ship was actually hit (wear_patches). The scorch heat stays 0 on a live ship, so no faction gets orange
-# embers from this (the faction's own wound colour stays on its marks and holes). Below LIST_FROM of max HP the hull
-# lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit: the view only, the rules never see it.
+# hull_wear (0 above WEAR_FROM of max HP, 1 at WEAR_FULL) dims every hull's lights through fx_power.
+# fx_weather darkening and the soot patches at the hit sites apply only to metal (R402). Below LIST_FROM of max HP,
+# every hull lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit.
 const WEAR_FROM := 0.8
 const WEAR_FULL := 0.2
 const LIST_FROM := 0.35
@@ -1541,7 +1538,7 @@ func _apply_wear() -> void:
 const WEAR_PATCHES_SEC := 3
 func wear_patches() -> Array:
 	var out: Array = []
-	if hull_wear <= 0.0 or hull == null:
+	if hull_wear <= 0.0 or hull == null or HULL.target_substance(faction) != "metal":
 		return out
 	var L: float = hull.L
 	var secs := [0, 1, 2]
@@ -2086,7 +2083,10 @@ func damage_surface(fx, mi: MeshInstance3D, si: int, src: Material) -> ShaderMat
 	var key := [mi.get_instance_id(), si]
 	var entry: Array = _damage_surfaces.get(key, [])
 	if entry.is_empty() or entry[0] != template:
-		entry = [template, template.duplicate()]
+		var surface := template.duplicate() as ShaderMaterial
+		# The breach rebuild also applies wear, so the gate travels with the ship's own surface.
+		surface.set_meta("fx_metal_wear", HULL.target_substance(faction) == "metal")
+		entry = [template, surface]
 		_damage_surfaces[key] = entry
 	return entry[1]
 
