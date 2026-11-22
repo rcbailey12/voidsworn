@@ -550,6 +550,16 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   r = waitRun(q, 'dropwait', tombed);
   assert(fs.existsSync(path.join(tombed, 'new.removing')) && /does not name the listed pin, left alone/.test(r.out), 'a tomb record must name the listed pin: ' + r.out);
   write(path.join(tombed, 'removing.txt'), `new.removing ${two}\r\n`);
+  // Artoo on PR 1644 at cb55a261: the final checks run before a tomb goes too. A keep entry added while the waiter waits
+  // for the mirror lock (after its first checks passed) keeps the tomb.
+  const mirrorHolder = path.join(tmp, 'mirror1644.ps1'), mirrorReady = path.join(tmp, 'mirror1644.ready');
+  write(mirrorHolder, '$h = [IO.File]::Open($env:LOCK1644, "OpenOrCreate", "ReadWrite", "None")\n[IO.File]::WriteAllText($env:READY1644, "held")\nStart-Sleep -Seconds 10\n$h.Dispose()\n');
+  const lateKeep = spawnSync('bash', ['-c', '"$1" -NoProfile -ExecutionPolicy Bypass -File "$2" & n=0; while [ ! -f "$3" ] && [ $n -lt 300 ]; do sleep 0.1; n=$((n+1)); done; [ -f "$3" ] || exit 9; "$1" -NoProfile -ExecutionPolicy Bypass -File "$4" dropwait "$5" & w=$!; sleep 5; printf "# Board\\r\\n%s\\r\\n" "$5" > "$6"; wait $w',
+    'x', shell, mirrorHolder, mirrorReady, path.join(jobs, 'opus_job_head.ps1'), tombed, path.join(vt, 'janitor_keep.txt')], { env: { ...env, ...q, OJ_DROPWAIT_SECONDS: '20', LOCK1644: path.join(vt, 'repo-mirror.git') + '.lock', READY1644: mirrorReady }, encoding: 'utf8', timeout: 90000 });
+  const lateOut = `${lateKeep.stdout}\n${lateKeep.stderr}`;
+  fs.rmSync(path.join(vt, 'janitor_keep.txt'), { force: true });
+  assert.equal(lateKeep.status, 0, lateOut);
+  assert(fs.existsSync(path.join(tombed, 'new.removing')) && /earlier removal still unfinished: \S+ \(held back: on the Board keep list/.test(lateOut) && !/finished an earlier removal/.test(lateOut), 'a keep entry added during the mirror wait keeps the tomb: ' + lateOut);
   r = waitRun(q, 'dropwait', tombed);
   assert(!fs.existsSync(path.join(tombed, 'new.removing')) && /finished an earlier removal/.test(r.out), 'with the right bytes on the relay the tomb is finished: ' + r.out);
   assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');

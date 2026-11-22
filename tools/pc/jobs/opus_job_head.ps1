@@ -318,6 +318,8 @@ function Complete-Removing($folder, [string[]]$names, $pins = $null) {
       $headFile = Join-Path (Join-Path $tomb '.git') 'HEAD'
       if ((Test-Path -LiteralPath $headFile -PathType Leaf) -and ([IO.File]::ReadAllText($headFile)).Trim() -ne $commit) { throw "its HEAD is not the recorded commit $commit" }
       if (Test-Paused) { throw 'the Board PC pause is active' }
+      # The waiter's own checks once more, right before the tomb goes, as for a fresh checkout (Artoo on PR 1644).
+      if ($script:beforeRemove) { & $script:beforeRemove }
       $gone = Remove-LinkSafeTree $tomb
       Set-RemovingRecord $record "$name.removing"
       $bytes += $gone
