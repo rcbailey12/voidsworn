@@ -2279,6 +2279,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
 		_embers(fx, last, n, T + dur, k, 5, "lance", col * 0.28)
+		_ion_crawl(fx, Tg, p, n, T, col, k)
 	# the tail when the beam lifts: the contact glow fades over a third of a second
 	fx.spr(last + n * 0.2 * k, T + dur, 0.33, col, 2.6, 1.6 * k, 1.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.4)
 	_gas_cloud(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75), 3, 2.2, "lance", 0.28, 7, (n + run * 0.7).normalized())
@@ -2287,6 +2288,33 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	# Doom lights only the struck plating. The existing mark cools into a scar.
 	fx.light(p+n*0.6*k if lk == "doom" else p+n*2.0*k,T,dur+0.15,6.5,col,1,4.5*k if lk == "doom" else 0.0)
 	fx.shake(T,0.1,p)
+
+
+# Issue 1587: an ion hull hit crawls. 2 or 3 short (0.4 s) lightning threads jump from the contact across nearby plating
+# (each lands on the hull where a ray finds it), and the struck ship's lights brown out for half a second (power_dip).
+static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: float) -> void:
+	var hot: Color = col.lerp(Color.WHITE, 0.35)
+	var reach: float = clampf(Tg.hull.L * 0.12, 1.2, 5.0) if Tg != null else 2.0
+	var inv: Transform3D = Tg.xf().affine_inverse() if Tg != null else Transform3D.IDENTITY
+	for j in 2 + (1 if fx.rng.randf() < 0.5 else 0):
+		var tang: Vector3 = fx.rdir()
+		tang = (tang - n * tang.dot(n)).normalized()
+		if tang.length() < 0.1:
+			tang = n.cross(Vector3.UP).normalized()
+		var q: Vector3 = p + tang * reach * fx.rng.randf_range(0.5, 1.0)
+		if Tg != null:
+			var ln: Vector3 = (inv.basis * n).normalized()
+			var hit: Dictionary = Tg.hull.ray(inv * q + ln * Tg.hull.W, -ln)
+			if not hit.is_empty() and Tg.to_world(hit["p"]).distance_to(q) < reach:
+				q = Tg.to_world(hit["p"])
+		var d: Vector3 = q - p
+		if d.length() < 0.05:
+			continue
+		var at := T + 0.05 + j * 0.11
+		fx.rib(p + n * 0.1 * k, d.normalized(), d.length(), at, 0.4, hot, 1.3, 0.10 * k, 0.03 * k, 6)
+		fx.spr(q + n * 0.1 * k, at + 0.05, 0.25, col, 1.6, 0.5 * k, 0.9 * k, 13)
+	if Tg != null and Tg.has_method("power_dip"):
+		fx.later(T, func() -> void: Tg.power_dip(fx, 0.5))
 
 
 # The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over
