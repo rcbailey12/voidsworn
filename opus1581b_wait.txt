@@ -1,0 +1,8 @@
+OPUS1581B_WAIT.bat waiting for OPUS1394C_MELT exit in opus1394meltc_wait.txt Sun 11/22/2026  2:23:07.73 
+swapped out while only waiting 02:26:59: replaced by OPUS1581B_WAIT2.bat (now waits for OPUS1394D_MELT exit; Board Nov 22 08:31 UTC)
+OPUS1581B_WAIT2.bat waiting for OPUS1394D_MELT exit in opus1394meltd_wait.txt Sun 11/22/2026  2:26:59.90 
+OPUS1581B start  3:17:59.63 
+OPUS1581B exit 0 at  3:58:10.01 
+run folder out_20261122_031800_27017
+result: done PASS
+all done Sun 11/22/2026  3:58:10.40 

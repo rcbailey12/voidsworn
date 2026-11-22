@@ -1,0 +1,36 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1581)
+GPU: acquired solo claim 5a0e3c59-36a5-46e2-ad3e-f4c120363967
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-60fb0b6064ff4b9083772340043da006\godot-profile-3ed6721c9e3346b18cf7fbb2573d0795
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+MOTION_ARGS ["--out", "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1581b\\out_20261122_031800_27017\\out_old\\back", "--kind", "back", "--every", "2"] env kind 'back' env out 'C:\Users\rcbai\Downloads\voidsworn_test\opus1581b\out_20261122_031800_27017\out_old\back'
+[sfx] 71 cues, 67 clip sets, loaded in 313 ms
+[hud] rebuilt for 1280 x 720 (scale 0.667)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.534, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[world] baked 86bb3a4d6ddbb832050fe9e24934c5558b4a40b77f094df6c301129de8062ed0 4096x2048 in 8672 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[world] baked 909a23afaf970f4d26f665ce6b869b7ba0563f7093dc41d7b2a80f630202a2ac 4096x2048 in 11065 ms (worker)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 11487 ms (worker)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 11905 ms (worker)
+[world] baked 7a2f7a987cdee691d8604bba9605297ae2fa1774734b3da63663a5397af62e38 4096x2048 in 2102 ms (worker)
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 2028 ms (worker)
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 1995 ms (worker)
+MOTION_DONE back frames 76
+[attach] battle x04 V14_23: skipped 0; rcs hp 36 ray 0 centre 0 skip 0
+[attach] battle x05 V16_37: skipped 0; rcs hp 58 ray 0 centre 0 skip 0
+[attach] battle x06 V1b_r_23: skipped 0; rcs hp 8 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 40 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-60fb0b6064ff4b9083772340043da006\godot-profile-3ed6721c9e3346b18cf7fbb2573d0795
+GPU: released solo claim 5a0e3c59-36a5-46e2-ad3e-f4c120363967
