@@ -364,13 +364,17 @@ func _build_world() -> void:
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
-	var vp := get_viewport()
+	apply_quality_to(get_viewport(), q, _jt(args.get("taa", false)))
+
+
+static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
 	vp.msaa_3d = LOOK.msaa_for_quality(q)
-	if q == "low":
-		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+	# issue 1437 (item 8): the whole AA state every time (the viewport is the game's own, shared by every later screen
+	# and battle), so Low then Max no longer leaves FXAA on
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" else Viewport.SCREEN_SPACE_AA_DISABLED
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	# Temporal AA (settings, off by default as in the browser): Max and High only
-	vp.use_taa = _jt(args.get("taa", false)) and q != "low"
+	vp.use_taa = taa and q != "low"
 
 
 func _post_quality(q: String) -> void:
@@ -1583,6 +1587,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_float(e["target"], "Captured", Color("#ffb23e"), -30)
 			elif res == "overrun":
 				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
+			elif res == "scuttle":   # R383 (issue 1479): the Nemesis flagship, a hunt target or a convoy transport is destroyed, never captured
+				_log("Boarding parties from %s overrun %s and scuttle it." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
 				_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
 			# issue 1524 (fx/API.md 11): the approved boarding breach (pried hatch, venting gas, light from inside, then a
@@ -3413,9 +3419,13 @@ static func _hex_d(aq: int, ar: int, bq: int, br: int) -> int:
 
 # Ram is two presses: the first (X or the Ram button) arms it and shows the run, the target, the damage and the recoil;
 # the second (X or the button again, Enter, or a click on the rammed ship) commits. Esc or Cancel drops it.
+static var _bb_re: RegEx = null   # not GPU: a compiled text pattern, built once (issue 1437 item 9)
+
+
 static func _strip_bb(t: String) -> String:
-	var re := RegEx.create_from_string("\\[/?[a-z]+(=[^\\]]*)?\\]")
-	return re.sub(t, "", true)
+	if _bb_re == null:
+		_bb_re = RegEx.create_from_string("\\[/?[a-z]+(=[^\\]]*)?\\]")
+	return _bb_re.sub(t, "", true)
 
 
 func _ram_press() -> void:
@@ -3476,8 +3486,10 @@ func _board_odds_text(id: String, b: Dictionary) -> String:
 	var crew := int(_z0(ru.get("crew"))) if ru != null else 0
 	var loss := mini(int(b["loss"]), maxi(0, crew - 1))
 	var cap := int(b["chance"])
-	var cap_t := ("[color=#7dff9b]capture likely[/color]" if bool(b["capture"]) else "[color=#ffd27a]capture possible[/color]") if cap > 0 else "[color=#a7b09d]no capture: a raid only[/color]"
-	return "[b]%s[/b]: [color=#ffb23e]%d%% capture chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, cap_t, int(b["kill"]), loss, crew]
+	var tr = api.unit(str(b["target"]))
+	var word := "scuttle" if (tr != null and api.R.boardScuttles(tr)) else "capture"   # R383 (issue 1479): these are destroyed, never taken
+	var cap_t := ("[color=#7dff9b]%s likely[/color]" % word if bool(b["capture"]) else "[color=#ffd27a]%s possible[/color]" % word) if cap > 0 else "[color=#a7b09d]no %s: a raid only[/color]" % word
+	return "[b]%s[/b]: [color=#ffb23e]%d%% %s chance[/color], %s. Kills about %d defenders; you lose about %d of %d crew." % [_name(b["target"]), cap, word, cap_t, int(b["kill"]), loss, crew]
 
 
 func _board_tip(id: String, tid: String) -> String:
@@ -5550,9 +5562,15 @@ func _process(dt: float) -> void:
 		if bool(round_save_cb.call()):
 			round_on_disk = round_saved
 	var vs := get_viewport().get_visible_rect().size
+	# issue 1437 (item 9): with the HUD hidden or behind the title (showcase) no plate shows, so the plate, priority and
+	# declutter work is skipped; the gold ring still breathes
+	var plates_on := not showcase and hud != null and hud.visible
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
+		if not plates_on:
+			_breathe_ring(sv, not u.is_empty() and str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player")
+			continue
 		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
 		if u.is_empty() or sv.dead or not sv.visible or (not cine_saved.is_empty() and not aimed):
@@ -5573,13 +5591,24 @@ func _process(dt: float) -> void:
 			px["odds"] = _tgt_plate[str(id)]["odds"]
 			px["ghost"] = _tgt_plate[str(id)]["ghost"]
 		hud.set_plate(str(id), sp, on, str(u["name"]), u["side"] == "player", u["flagship"], float(d["hp"]), float(u["maxHp"]), shs, float(u["shMax"]) * 4.0, is_up, px)
-		# the gold ring under the ship that is up breathes, so the eye finds it; a reinforcement's ring flashes on arrival
-		if sv.ring != null:
-			if is_up:
-				var k := 1.0 + 0.07 * sin(game_t * 4.0)
-				sv.ring.scale = Vector3(k, 1.0, k)
-			elif sv.ring.scale.x != 1.0:
-				sv.ring.scale = Vector3.ONE
+		_breathe_ring(sv, is_up)
+	if plates_on:
+		_declutter()
+	_float_step(dt)
+
+
+# the gold ring under the ship that is up breathes, so the eye finds it; a reinforcement's ring flashes on arrival
+func _breathe_ring(sv, is_up: bool) -> void:
+	if sv.ring == null:
+		return
+	if is_up:
+		var k := 1.0 + 0.07 * sin(game_t * 4.0)
+		sv.ring.scale = Vector3(k, 1.0, k)
+	elif sv.ring.scale.x != 1.0:
+		sv.ring.scale = Vector3.ONE
+
+
+func _declutter() -> void:
 	# F1: names never pile up. The ship that is up and the target keep theirs, then the ship under the mouse and the enemy
 	# acting now, then the flagship; any other name that would overlap one already shown is hidden (hover shows it).
 	var prio := {}
@@ -5600,6 +5629,10 @@ func _process(dt: float) -> void:
 	if not aim.is_empty():
 		prio[str(aim["t"])] = 3
 	hud.declutter_plates(prio)
+
+
+# floating numbers, the bot's turn and its trace: every frame, plates or not
+func _float_step(dt: float) -> void:
 	for i in range(floats.size() - 1, -1, -1):
 		var f: Dictionary = floats[i]
 		f.t += dt

@@ -120,6 +120,11 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	vpc = SubViewportContainer.new(); vpc.stretch = true; vpc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); vpc.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(vpc)
 	vp = SubViewport.new(); vp.own_world_3d = true; vpc.add_child(vp)
+	# issue 1437: the player's Render scale (main.gd _apply_display) covers this full-screen view too
+	vp.add_to_group("player_3d_viewport")
+	var rs := float(Engine.get_meta("render_scale", 1.0))
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	vp.scaling_3d_scale = rs
 	env = Environment.new()
 	env.background_mode = Environment.BG_COLOR; env.background_color = Color(0.004, 0.006, 0.012)
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES; env.tonemap_exposure = 1.0; env.tonemap_white = 6.0
@@ -846,8 +851,21 @@ func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where t
 	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
+# issue 1437 (Astra W1): the host hides its whole UI for a battle, which leaves this Control's own `visible` true, so
+# the map kept flying, drifting, blinking and patrolling behind combat. Its SubViewport already stops drawing then.
+func map_live() -> bool:
+	return is_visible_in_tree() and _C() != null and _C().RUN != null and root3 != null
+
 func _process(delta: float) -> void:
-	if not visible or _C() == null or _C().RUN == null or root3 == null: return
+	var live := map_live()
+	# the arrival camera move is a tween, which runs on its own: hold it while the map is hidden and go on from there
+	if _arrival_tween != null and _arrival_tween.is_valid():
+		if live and not _arrival_tween.is_running(): _arrival_tween.play()
+		elif not live and _arrival_tween.is_running(): _arrival_tween.pause()
+	if live: _live_frame(delta)
+
+
+func _live_frame(delta: float) -> void:   # everything the map animates, only while it shows
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))

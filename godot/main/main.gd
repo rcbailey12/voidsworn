@@ -18,7 +18,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -248,12 +248,31 @@ func _apply_settings() -> void:
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
+	if player_launch():
+		_apply_display()
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
 	_settings_to_ui_sound()
+
+
+# Issue 1437 (item 8): Render scale, Frame cap and V-Sync, in Display. The defaults are today's game (full scale, no cap,
+# V-Sync on as project.godot sets it); any new default is Ryan's pick after a rendered comparison. Bot, capture and
+# player-path runs never read them, so timing jobs stay uncapped and recordings stay on the player defaults.
+func _apply_display() -> void:
+	var rs := clampf(float(settings.get("render_scale", 1.0)), 0.5, 1.0)
+	# the battle draws in the game's own viewport; the sector map draws in its own full-screen one (map3d.gd), which
+	# reads the same value when it is built. Small portraits and podiums stay at full scale.
+	Engine.set_meta("render_scale", rs)
+	apply_render_scale(get_viewport(), rs)
+	for vp in get_tree().get_nodes_in_group("player_3d_viewport"):
+		apply_render_scale(vp, rs)
+	Engine.max_fps = maxi(0, int(settings.get("fps_cap", 0)))
+	var vs := DisplayServer.VSYNC_ENABLED if bool(settings.get("vsync", true)) else DisplayServer.VSYNC_DISABLED
+	if DisplayServer.window_get_vsync_mode() != vs:
+		DisplayServer.window_set_vsync_mode(vs)
 
 
 # issue 1559 item 23: a volume slider being dragged sets only the volumes, every step; the file is written (and the rest of
@@ -264,6 +283,18 @@ func apply_volumes() -> void:
 	if battle != null and is_instance_valid(battle) and battle.sfx != null:
 		battle.sfx.set_volume(float(settings["volume"]))
 	_settings_to_ui_sound()
+
+
+static func apply_render_scale(vp: Viewport, rs: float) -> void:
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	vp.scaling_3d_scale = rs
+
+
+# Issue 1437 (review on PR 1607): the player's Render scale, Frame cap and V-Sync apply only to a plain launch, the way
+# the player starts the game. Any command-line job flag (bot runs, a quick battle, a scenario, every capture or timing
+# flag, a player path recording) keeps the engine defaults, so measurements never pick up the player's display settings.
+func player_launch() -> bool:
+	return args.is_empty() and player_path == null and not bot_mode and DisplayServer.get_name() != "headless"
 
 
 func _settings_to_ui_sound() -> void:
@@ -307,7 +338,7 @@ func show_title() -> void:
 	title.main = self
 	add_child(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
-	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
+	if _showcase_wanted():
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
@@ -365,7 +396,7 @@ static func next_showcase_fac() -> String:
 
 
 func _start_showcase() -> void:
-	if quitting or title == null or not is_instance_valid(title) or showcase != null:
+	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
@@ -390,6 +421,37 @@ func _start_showcase() -> void:
 		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[title] shot saved ", args["title-shot"])
 		quit_clean(0)
+
+
+# Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
+# setting (Low has none), so what shows is what the setting gives
+var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
+
+
+func restart_showcase() -> void:
+	_showcase_gen += 1
+	if showcase != null and is_instance_valid(showcase):
+		showcase.queue_free()
+	showcase = null
+	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
+		title.cover_showcase()
+	if _showcase_wanted():
+		_arm_rebuild(_showcase_gen)
+
+
+func _arm_rebuild(gen: int) -> void:
+	get_tree().create_timer(0.3).timeout.connect(_rebuild_due.bind(gen))
+
+
+# a quicker press (say on to Low) since this was asked for wins: only the newest request, still wanted, builds
+func _rebuild_due(gen: int) -> void:
+	if gen == _showcase_gen and _showcase_wanted():
+		_start_showcase()
+
+
+# the title's battle backdrop: not in bot or headless runs, never on Low (Low has none), not with --no-showcase
+func _showcase_wanted() -> bool:
+	return not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase")
 
 
 func _clear() -> void:
