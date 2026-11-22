@@ -3347,7 +3347,7 @@ static func _hex_d(aq: int, ar: int, bq: int, br: int) -> int:
 
 # Ram is two presses: the first (X or the Ram button) arms it and shows the run, the target, the damage and the recoil;
 # the second (X or the button again, Enter, or a click on the rammed ship) commits. Esc or Cancel drops it.
-static var _bb_re: RegEx = null   # issue 1437 (item 9): compiled once
+static var _bb_re: RegEx = null   # not GPU: a compiled text pattern, built once (issue 1437 item 9)
 
 
 static func _strip_bb(t: String) -> String:

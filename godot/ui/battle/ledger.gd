@@ -75,8 +75,8 @@ func px(v: float) -> float:
 	return roundf(v * k)
 
 
-static var _tag_re: RegEx = null   # issue 1437 (item 9): compiled once, not on every call
-static var _key_re: RegEx = null
+static var _tag_re: RegEx = null   # not GPU: compiled text patterns, built once (issue 1437 item 9)
+static var _key_re: RegEx = null   # not GPU: a compiled text pattern
 
 
 static func plain(bb: String) -> String:
