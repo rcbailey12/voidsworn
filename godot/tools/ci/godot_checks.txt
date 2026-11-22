@@ -83,7 +83,7 @@ headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs 
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
 headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory; result stings end on hand-off
-headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
+headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes; issue 1448: campaign map, fleet, shipyard, reward and Career buttons play ui cues, ui_reward and ui_boss, one end sound, music shots and hex-distance close
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
 headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
@@ -206,3 +206,4 @@ headless|ui/campaign/test/hull_text_test.gd|-|-|issue 932: a hull figure reads a
 headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels and press sounds, title Settings and Credits Esc, UI scale focus, Settings fits Larger, toast, font credits, campaign Esc back paths and faction music preview
 headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
+headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")
