@@ -8,7 +8,7 @@
 the record is stale, then runs death_seam_check.gd on DIR/C19_51_unbaked.glb.gz). --check --quiet-stale exits 3, not 1,
 when the record is only stale, so CI can tell "rebake" from a broken record.
 
-The first record line, file list and data.js extract also feed death_seam_check.gd.
+The first record line, file list and Godot hull extract also feed death_seam_check.gd.
 The last line pins the exact gzip bytes used by the CI fixture check.
 """
 import argparse
@@ -40,6 +40,7 @@ FILES = (
 )
 OUT = REPO / 'godot/fx/test/fixtures/C19_51_unbaked.sheet.txt'
 FIXTURE = OUT.with_name('C19_51_unbaked.glb.gz')
+# Keep the record label read by death_seam_check.gd for older fixtures.
 EXTRACT_MARK = '# data.js entry %s: the fields the build reads (tools/recipe/gamedata.py), sorted keys, JSON'
 
 

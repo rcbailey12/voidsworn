@@ -1,78 +1,74 @@
-# Ship recipe: read a ship's weapon list from the game's own data.js (plain Python; used by export7.py inside Blender and by
-# check_export.py outside it), so hard point names always follow the rules file and never a copy of it.
-import os, re
-HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
-# Objective props are no data.js ship (issue 1413): the game flies any roster hull as an intercept transport with its weapons
-# cleared (battle.js intercept: u.transport, u.weapons=[]) and draws it with the obj|transport mesh, and the relay beacon is a
-# fixed prop (godot/render/hull_table.gd AI_HULLS obj|transport, obj|beacon). Their sheets name these ids as game_ship; the
-# classes are the hard point table's 'transport' and 'beacon' (tools/blender/kits/shared/hardpoints.py).
+# Ship recipe: read ship slots and attributes from the Godot rules tables.
+# This module runs both inside Blender and in the plain Python export checks.
+import json
+import os
+import struct
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+TABLES = os.path.join(HERE, '..', '..', 'godot', 'rules', 'data', 'tables.json')
+
+# The intercept transport and relay beacon use objective meshes, without roster weapon slots
+# (issue 1413, godot/render/hull_table.gd AI_HULLS obj|transport and obj|beacon).
 OBJECTIVES = {
     'obj_transport': {'cls': 'transport', 'fac': 'hegemony', 'w': []},
     'obj_beacon': {'cls': 'beacon', 'fac': 'hegemony', 'w': []},
 }
 
 
-def _block(ship_id, data_js=None):
-    """the text of the ship's own object in data.js, from its id to the closing brace of that entry"""
-    src = open(data_js or os.path.join(REPO, 'data.js'), encoding='utf-8').read()
-    m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(ship_id) + r'\s*:\s*\{', src)
-    if not m:
-        raise ValueError(f'ship {ship_id} is not in data.js')
-    end = src.find('}', m.end())
-    if end < 0:
-        raise ValueError(f'ship {ship_id} has no closing brace in data.js')
-    return src[m.end():end]
+def _table(name, tables_json):
+    with open(tables_json or TABLES, encoding='utf-8') as source:
+        table = json.load(source).get('tables', {}).get(name)
+    if not isinstance(table, dict):
+        raise ValueError(f'the Godot rules tables have no {name} table')
+    return table
 
 
-def weapons(ship_id, data_js=None):
-    """[(weapon kind, arc), ...] in slot order for the ship with this id in data.js; raises ValueError when it cannot be read"""
-    if ship_id in OBJECTIVES:
-        return list(OBJECTIVES[ship_id]['w'])
-    body = _block(ship_id, data_js)
-    w = re.search(r'(?<![A-Za-z0-9_])w\s*:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\s*\]', body)
-    if not w:
-        raise ValueError(f'ship {ship_id} has no weapon list in data.js')
-    out = re.findall(r"\[\s*'([A-Za-z0-9_]+)'\s*,\s*'([FTPS])'\s*\]", w.group(1))
-    if not out or len(out) != w.group(1).count('['):
-        raise ValueError(f'could not read every weapon of {ship_id} in data.js')
-    return out
+def _ship(hulls, ship_id):
+    ship = hulls.get(ship_id)
+    if not isinstance(ship, dict):
+        raise ValueError(f'ship {ship_id} is not in the Godot HULLS table')
+    return ship
 
 
-def ship_attr(ship_id, key, data_js=None, default=None, _seen=None):
-    """a simple value from the ship's data.js entry (cls, fac, hangar and the like); default when the key is not there"""
+def weapons(ship_id, tables_json=None):
+    """Return (weapon id, arc) pairs in the ship's Godot slot order."""
+    ship = OBJECTIVES.get(ship_id)
+    if ship is None:
+        ship = _ship(_table('HULLS', tables_json), ship_id)
+    slots = ship.get('w')
+    if not isinstance(slots, list) or any(
+        not isinstance(slot, list) or len(slot) != 2
+        or not isinstance(slot[0], str) or not slot[0] or slot[1] not in ('F', 'T', 'P', 'S')
+        for slot in slots
+    ):
+        raise ValueError(f'ship {ship_id} has an invalid weapon list in the Godot HULLS table')
+    return [tuple(slot) for slot in slots]
+
+
+def ship_attr(ship_id, key, tables_json=None, default=None):
+    """Return an attribute from the hull, following its base for missing keys."""
     if ship_id in OBJECTIVES:
         return OBJECTIVES[ship_id].get(key, default)
-    body = _block(ship_id, data_js)
-    seen = set(_seen or ())
-    if ship_id in seen:
-        raise ValueError(f'cyclic data.js base chain at {ship_id}')
-    seen.add(ship_id)
-    m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(key) + r'\s*:\s*(?:\'([^\']*)\'|"([^"]*)"|([0-9.]+)|(true|false))', body)
-    if not m:
-        base = re.search(r"(?<![A-Za-z0-9_])base\s*:\s*'([^']*)'", body)
-        if key != 'base' and base:
-            return ship_attr(base.group(1), key, data_js, default, seen)
-        return default
-    v = m.group(1) if m.group(1) is not None else m.group(2) if m.group(2) is not None else m.group(3) if m.group(3) is not None else m.group(4)
-    if v in ('true', 'false'):
-        return v == 'true'
-    try:
-        return float(v) if '.' in v else int(v)
-    except ValueError:
-        return v
+    hulls = _table('HULLS', tables_json)
+    seen = set()
+    while True:
+        if ship_id in seen:
+            raise ValueError(f'cyclic Godot HULLS base chain at {ship_id}')
+        seen.add(ship_id)
+        ship = _ship(hulls, ship_id)
+        if key in ship:
+            value = ship[key]
+            if isinstance(value, str) and value.startswith('#d:'):
+                return struct.unpack('>d', bytes.fromhex(value[3:]))[0]
+            return value
+        ship_id = ship.get('base')
+        if not ship_id:
+            return default
 
 
 def weapon_stats(weapon_id, tables_json=None):
-    """{'k': weapon kind, 'shots': shots per volley, 'n': name} of one weapon in the Godot rules table W (issue 676, R241:
-    the weapon-match check reads what each weapon is and how many shots its volley fires). Since R405 (issue 1654) it reads
-    godot/rules/data/tables.json, the only rules source, not the frozen data.js; raises ValueError when absent."""
-    import json
-    path = tables_json or os.path.join(REPO, 'godot', 'rules', 'data', 'tables.json')
-    with open(path, encoding='utf-8') as f:
-        table = json.load(f).get('tables', {}).get('W')
-    if not isinstance(table, dict):
-        raise ValueError('the Godot rules table has no weapon table W')
-    w = table.get(weapon_id)
+    """Return the kind, shots per volley and name from the Godot W table."""
+    w = _table('W', tables_json).get(weapon_id)
     if not isinstance(w, dict):
         raise ValueError(f'weapon {weapon_id} is not in the Godot weapon table W')
     if not isinstance(w.get('k'), str) or not isinstance(w.get('shots'), int):

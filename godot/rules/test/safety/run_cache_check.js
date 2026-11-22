@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const { generate } = require('../node/sweep_gen.js');
 
 function options(args) {
   const o = { godot: process.env.GODOT || 'godot', project: path.resolve(__dirname, '../../..'),
@@ -12,7 +13,12 @@ function options(args) {
     const key = args[i];
     if (key === '--cache-only') o.numbers = false;
     else if (key === '--numbers-only') o.cache = false;
-    else if (['--godot', '--project', '--scenarios', '--workers', '--timeout', '--out'].includes(key)) {
+    else if (key === '--sweep') {
+      const count = Number(args[++i]), seed = Number(args[++i]);
+      if (!Number.isSafeInteger(count) || count < 1 || !Number.isInteger(seed) || seed < 1 || seed > 0xffffffff)
+        throw Error('--sweep needs a positive count and a seed from 1 to 4294967295');
+      o.sweep = [count, seed];
+    } else if (['--godot', '--project', '--scenarios', '--workers', '--timeout', '--out'].includes(key)) {
       if (!args[i + 1] || args[i + 1].startsWith('--')) throw Error('missing value for ' + key);
       o[key.slice(2)] = args[++i];
     } else throw Error('unknown option ' + key);
@@ -22,11 +28,13 @@ function options(args) {
     if (!Number.isSafeInteger(o[k]) || o[k] < 1) throw Error(k + ' must be a positive integer');
   }
   if (!o.cache && !o.numbers) throw Error('choose at least one check');
+  if (o.sweep && (!o.cache || o.scenarios)) throw Error('--sweep requires the cache check and replaces --scenarios');
   o.project = path.resolve(o.project);
-  o.scenarios = path.resolve(o.scenarios || path.join(o.project, 'rules/test/scenarios.json'));
   fs.mkdirSync(path.resolve(o.out), { recursive: true });
   // Always a fresh directory. Old records can never make a crashed run pass.
   o.out = fs.mkdtempSync(path.join(path.resolve(o.out), 'rules-safety-'));
+  o.scenarios = o.sweep ? path.join(o.out, 'sweep.json') :
+    path.resolve(o.scenarios || path.join(o.project, 'rules/test/scenarios.json'));
   return o;
 }
 
@@ -94,6 +102,10 @@ function readRecord(file) {
 }
 
 async function cacheCheck(o) {
+  if (o.sweep) {
+    const tables = JSON.parse(fs.readFileSync(path.join(o.project, 'rules/data/tables.json'), 'utf8')).tables;
+    fs.writeFileSync(o.scenarios, JSON.stringify(generate(...o.sweep, tables), null, 1));
+  }
   const scenarios = JSON.parse(fs.readFileSync(o.scenarios, 'utf8'));
   if (!scenarios || Array.isArray(scenarios) || typeof scenarios !== 'object')
     throw Error('scenarios must be a nonempty object');
