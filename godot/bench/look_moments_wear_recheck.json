@@ -1,0 +1,351 @@
+{
+ "about": "Issue 1235 recheck (Artoo on PR 1570): the merged build (main 7539aa9a, with the 1570 review fixes and the 1549 boarding look). Shield rows: shield hits first, then hull hits, hull at 22%, then one more shield hit; the list must lean to the hull-hit side and stay. Boarding rows: a boarding breach, two hull hits, hull at 22%; wear and soot must sit with the breach, amber not orange. Camera 170 and 26.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "rc_V16_37_shield_hull",
+   "group": "issue 1235 recheck",
+   "label": "V16_37: two shield hits, three hull hits, 22% hull, then a shield hit",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "pre": [
+    [
+     "battery",
+     "battery",
+     "mid",
+     "shield"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow",
+     "shield"
+    ],
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     6,
+     6,
+     6,
+     6
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ],
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "shield",
+   "shots": 1
+  },
+  {
+   "id": "rc_I15_11_shield_hull",
+   "group": "issue 1235 recheck",
+   "label": "I15_11: two shield hits, three hull hits, 22% hull, then a shield hit",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "pre": [
+    [
+     "battery",
+     "battery",
+     "mid",
+     "shield"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow",
+     "shield"
+    ],
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     6,
+     6,
+     6,
+     6
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ],
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "shield",
+   "shots": 1
+  },
+  {
+   "id": "rc_V16_37_board_wear",
+   "group": "issue 1235 recheck",
+   "label": "V16_37: boarded, two hull hits, 22% hull",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "board"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "rc_B21_11_board_wear",
+   "group": "issue 1235 recheck",
+   "label": "B21_11: boarded, two hull hits, 22% hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "board"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ],
+   "tgt_at": [
+    34,
+    -30
+   ]
+  }
+ ]
+}

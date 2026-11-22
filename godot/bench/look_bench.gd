@@ -611,8 +611,15 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
 	# and then set its hull state ("sync_t": a unit view, as the game's sync sends), for worn-ship rows; "do": "hold"
 	# then shows the ship as it stands. A commit without these keys ignores them.
+	# Issue 1235 recheck (Artoo on PR 1570): a pre entry may hit the shield ([kind, weapon, section, "shield"]) or be a
+	# boarding party (["board"], the game's fx.board), for the list-side and boarding-then-wear rows.
 	for pv in row.get("pre", []):
-		var ph: Array = _hits(1, false, false)
+		if str(pv[0]) == "board":
+			fx.board("A", "T")
+			for k in 90:
+				await _step()
+			continue
+		var ph: Array = _hits(1, (pv as Array).size() > 3 and str(pv[3]) == "shield", false)
 		if (pv as Array).size() > 2:
 			ph[0]["section"] = str(pv[2])
 		fx.volley("A", str(pv[0]), "T", {"weapon_id": str(pv[1]), "shots": [true], "hits": ph})

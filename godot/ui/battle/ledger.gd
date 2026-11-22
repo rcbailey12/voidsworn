@@ -924,8 +924,14 @@ func dark_at(p: Vector2) -> float:
 
 func _has_point(p: Vector2) -> bool:
 	ensure_layout()
-	# Only interactive areas and the shelf/log take input. The corner veils are cosmetic.
-	return sheet_r.has_point(p) or log_r.has_point(p) or hit_at(p) >= 0
+	# Only interactive areas, the shelf/log and the corner words take input (issue 1559 item 20: a click on "Round N", the
+	# objective or the foe's name planned a move on the board under it). The veils' soft edges past the words are cosmetic.
+	if sheet_r.has_point(p) or log_r.has_point(p) or hit_at(p) >= 0:
+		return true
+	for b in blockers:
+		if b.has_point(p):
+			return true
+	return false
 
 
 func hit_at(p: Vector2) -> int:

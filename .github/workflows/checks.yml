@@ -104,7 +104,7 @@ jobs:
       - name: No em dashes in changed text files (house rule)
         run: node contrib/opus/tools/check_em_dashes.js
       - name: Run all standing checks
-        run: node contrib/opus/tools/run_all_checks.js
+        run: node contrib/opus/tools/run_all_checks.js --jobs 4   # issue 1489: four rows at once, same table
   godot-parity:
     name: Godot rules parity
     needs: changes
@@ -171,20 +171,28 @@ jobs:
       - name: Run Godot-only rules safety net
         run: sh godot/rules/test/safety/run_cache_check.sh
   # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
-  # Its own job, so it runs beside the parity job and has its own 40 minute limit. Ship files (godot/gen) are never on
+  # Its own job, so it runs beside the parity job and has its own 25 minute limit per shard. Ship files (godot/gen) are never on
   # GitHub: ships are placeholder blocks.
   # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
   # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
   # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
-  # time limit: load 120 s, import 300 s, the list 1080 s (780 s until the list outgrew it, PR 1329) and the bot battle 360 s, 31 minutes in all (the A16 seam has its own job, issue 1174)
-  # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 40 minute limit
+  # time limit: load 120 s, import 300 s, the shard's part of the list 600 s (the whole list had 1080 s in one job before
+  # issue 1430) and the bot battle 360 s (shard 1 only), 23 minutes in all (the A16 seam has its own job, issue 1174)
+  # before setup and the Godot download, so a shard can still be cut off (shown as "cancelled") by the 25 minute limit
   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
+  # Three shards in parallel (issue 1430): run_checks.sh gives every headless check to exactly one shard, balanced by
+  # godot/tools/ci/godot_check_times.txt; shard 1 also proves the list is whole and plays the bot battle. "All checks"
+  # reads the three as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
   godot-game:
-    name: Godot game checks
+    name: Godot game checks (${{ matrix.shard }} of 3)
     needs: changes
     if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     env:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
@@ -227,20 +235,24 @@ jobs:
         id: import
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         uses: ./.github/actions/godot-import
-      # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script).
-      # run_checks.sh keeps the whole list inside a 1080 s budget; a check the budget never reached counts as failed.
-      - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
+      # (b) this shard's headless checks named in godot/tools/ci/godot_checks.txt (shard 1 also proves the list names every
+      # test script). Each shard has a 600 s budget (about 310 s each on Nov 22 2026); a check the budget never reached
+      # counts as failed.
+      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 3)
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+        env:
+          SHARD: ${{ matrix.shard }}/3
+          GODOT_CHECKS_BUDGET: 600
         run: |
           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
-          { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "### Godot checks from the list (shard $SHARD)"; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit $code
       # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
       # battle scene. Fails on any script error and on any "unknown event" line. Seeds 359, 360 and 361 rotate on UTC
       # Mondays, with the week and seed in the summary for replay (issue 732). No retry. The driver stops itself at the
       # first script error and at 300 s; the 360 s limit here is the backstop.
       - name: Bot battle from a real campaign start (weekly seed rotation)
-        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.load.outcome == 'success' && matrix.shard == 1 }}
         run: |
           now=$(date -u +%s)
           week=$(date -u -d "@$now" +%G-W%V)

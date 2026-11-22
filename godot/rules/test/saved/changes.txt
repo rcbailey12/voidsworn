@@ -1,1138 +1,130 @@
-Saved manifest before: b575700885f19de590ee7461a881acf4b3031f10370c3bfe79afbb457e111073
-Saved manifest after: db0ac8b629ed6a3bdc0db80bb5a9f8b00c805f2eac93d7a8506797ce950e00da
+Saved manifest before: db0ac8b629ed6a3bdc0db80bb5a9f8b00c805f2eac93d7a8506797ce950e00da
+Saved manifest after: 1375a54f6f01b1a11eb64b519e9edb12db9e15f7004e4af8306c15f316f0803d
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s1
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 169; total records: 170 -> 170
-FAIL battle s2
-  turn 0, round 1, after tick player; unit x011 (enemy h_picket)
-  state.units[6].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 158; total records: 159 -> 159
-FAIL battle s3
-  turn 29, round 2, after end activation; unit none (battle state)
-  state.b.log[7].m: "Hullbreaker raider: midships destroyed. Broadsides and shield generator gone." -> "Hullbreaker raider: core destroyed. Flank guns and shield generator gone."
-  later changed records: 88; total records: 118 -> 118
-FAIL battle s4
-  turn 0, round 1, after tick player; unit x011 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 271; total records: 272 -> 272
-FAIL battle s5
-  turn 0, round 1, after tick player; unit x011 (player cathedral)
-  state.units[0].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 322; total records: 323 -> 323
-FAIL battle s6
-  turn 18, round 1, after end activation; unit none (battle state)
-  state.b.log[7].m: "Hullbreaker gutship: prow destroyed. Forward weapons silenced." -> "Hullbreaker gutship: fore destroyed. Forward weapons silenced."
-  later changed records: 179; total records: 198 -> 198
-FAIL battle s7
-  turn 0, round 1, after tick player; unit x016 (enemy h_picket)
-  state.units[11].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 375; total records: 376 -> 376
-FAIL battle s8
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 128; total records: 129 -> 129
-FAIL battle s9
-  turn 0, round 1, after tick player; unit x05 (player ascendant)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 380; total records: 381 -> 381
-FAIL battle s10
-  turn 0, round 1, after tick player; unit x08 (player warden)
-  state.units[3].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 267; total records: 268 -> 268
-FAIL battle s11
-  turn 0, round 1, after tick player; unit x09 (enemy h_vanguard)
-  state.units[4].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 130; total records: 131 -> 131
 FAIL battle s12
-  turn 44, round 1, after fire x013; unit none (battle state)
-  state.b.log[22].m: "Black Anvil: prow destroyed. Forward weapons silenced." -> "Black Anvil: fore destroyed. Forward weapons silenced."
-  later changed records: 131; total records: 176 -> 176
-FAIL battle s13
-  turn 37, round 2, after round; unit none (battle state)
-  state.b.log[6].m: "Chorus drone-spawn: prow destroyed. Forward weapons silenced." -> "Chorus drone-spawn: fore destroyed. Forward weapons silenced."
-  later changed records: 209; total records: 247 -> 247
-FAIL battle s14
-  turn 0, round 1, after tick player; unit x08 (player warden)
-  state.units[3].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 133; total records: 134 -> 134
-FAIL battle s15
-  turn 6, round 1, after end activation; unit none (battle state)
-  state.b.log[2].m: "Eclipse mote: prow destroyed. Forward weapons silenced." -> "Eclipse mote: fore destroyed. Forward weapons silenced."
-  later changed records: 174; total records: 181 -> 181
-FAIL battle s16
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 271; total records: 272 -> 272
+  turn 44, round 1, after fire x013; unit x08 (player warden)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 1; total records: 176 -> 176
 FAIL battle s17
-  turn 27, round 1, after fire x09; unit none (battle state)
-  state.b.log[13].m: "Debt of Vesper: prow destroyed. Forward weapons silenced." -> "Debt of Vesper: fore destroyed. Forward weapons silenced."
-  later changed records: 70; total records: 98 -> 98
+  turn 73, round 3, after end activation; unit x08 (enemy c_reaver)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 11; total records: 98 -> 98
 FAIL battle s18
-  turn 0, round 1, after tick player; unit x09 (enemy h_vanguard)
-  state.units[4].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 273; total records: 274 -> 274
-FAIL battle s19
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 172; total records: 173 -> 173
-FAIL battle s20
-  turn 0, round 1, after tick player; unit x04 (player harrow)
-  state.units[0].name: "Oathkeeper" -> "Cold Watch"
-  later changed records: 62; total records: 63 -> 63
+  turn 56, round 2, after end activation; unit x010 (enemy h_interdictor)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 4; total records: 274 -> 274
 FAIL battle s21
-  turn 0, round 1, after tick player; unit x07 (player harrow)
-  state.units[2].name: "Oathkeeper" -> "Cold Watch"
-  later changed records: 182; total records: 183 -> 183
-FAIL battle s22
-  turn 23, round 2, after move x05; unit none (battle state)
-  state.b.log[9].m: "Hullbreaker raider: midships destroyed. Broadsides and shield generator gone." -> "Hullbreaker raider: core destroyed. Flank guns and shield generator gone."
-  later changed records: 86; total records: 110 -> 110
+  turn 76, round 3, after fire x05; unit x012 (enemy h_picket)
+  state.units[7].route[0]: 1 -> 0
+  later changed records: 7; total records: 183 -> 183
 FAIL battle s23
-  turn 0, round 1, after tick player; unit x014 (player cathedral)
-  state.units[3].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 655; total records: 656 -> 656
-FAIL battle s24
-  turn 0, round 1, after tick player; unit x09 (player reliquary)
-  state.units[2].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 594; total records: 595 -> 595
+  turn 622, round 10, after fire x013; unit x025 (enemy h_interdictor)
+  state.units[14].route[3]: 1 -> 0
+  later changed records: 20; total records: 656 -> 656
 FAIL battle s25
-  turn 0, round 1, after tick player; unit x013 (enemy h_picket)
-  state.units[7].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 333; total records: 334 -> 334
-FAIL battle s26
-  turn 0, round 1, after tick player; unit x06 (player h_vanguard)
-  state.units[0].name: "HNS Comptroller" -> "MDV Comptroller"
-  later changed records: 190; total records: 191 -> 191
-FAIL battle s27
-  turn 16, round 1, after fire x07; unit none (battle state)
-  state.b.log[4].m: "Chorus drone-spawn: prow destroyed. Forward weapons silenced." -> "Chorus drone-spawn: fore destroyed. Forward weapons silenced."
-  later changed records: 223; total records: 240 -> 240
-FAIL battle s28
-  turn 15, round 1, after end activation; unit none (battle state)
-  state.b.log[4].m: "Eclipse mote: prow destroyed. Forward weapons silenced." -> "Eclipse mote: fore destroyed. Forward weapons silenced."
-  later changed records: 229; total records: 245 -> 245
-FAIL battle s29
-  turn 0, round 1, after tick player; unit x06 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 162; total records: 163 -> 163
+  turn 229, round 4, after order x011; unit x09 (player c_reaver)
+  state.units[3].route[1]: 1 -> 0
+  later changed records: 22; total records: 334 -> 334
 FAIL battle s30
-  turn 0, round 1, after tick player; unit none (battle state)
-  state.b.log[0].m: "Hive-lord Skrell commands this fleet: your Nemesis. He has adapted: membrane bloom, fin clusters, tasting pores." -> "Hive-lord Skrell commands this fleet: your Nemesis. He has adapted: thickened membrane, fin clusters, tasting pores."
-  later changed records: 310; total records: 311 -> 311
-FAIL battle s31
-  turn 0, round 1, after tick player; unit x011 (enemy h_vanguard)
-  state.units[5].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 164; total records: 165 -> 165
-FAIL battle s32
-  turn 16, round 1, after end activation; unit none (battle state)
-  state.b.log[5].m: "Hullbreaker raider: midships destroyed. Broadsides and shield generator gone." -> "Hullbreaker raider: core destroyed. Flank guns and shield generator gone."
-  later changed records: 99; total records: 116 -> 116
-FAIL battle s33
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 134; total records: 135 -> 135
-FAIL battle s34
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 140; total records: 141 -> 141
-FAIL battle s35
-  turn 0, round 1, after tick player; unit x06 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 214; total records: 215 -> 215
+  turn 106, round 2, after fire x015; unit x010 (player warden)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 204; total records: 311 -> 311
 FAIL battle s36
-  turn 0, round 1, after tick player; unit x07 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 205; total records: 206 -> 206
+  turn 156, round 4, after fire x08; unit x020 (enemy i_song)
+  state.units[9].route[0]: 1 -> 0
+  later changed records: 23; total records: 206 -> 206
 FAIL battle s37
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 295; total records: 296 -> 296
-FAIL battle s38
-  turn 0, round 1, after tick player; unit x06 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 150; total records: 151 -> 151
-FAIL battle s39
-  turn 0, round 1, after tick player; unit x07 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 430; total records: 431 -> 431
-FAIL battle s40
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 305; total records: 306 -> 306
-FAIL battle s41
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 275; total records: 276 -> 276
-FAIL battle s42
-  turn 0, round 1, after tick player; unit x05 (player h_vanguard)
-  state.units[0].name: "HNS Steadfast" -> "MDV Steadfast"
-  later changed records: 173; total records: 174 -> 174
-FAIL battle s43
-  turn 36, round 1, after activation x09; unit none (battle state)
-  state.b.log[7].m: "Shrieker: prow destroyed. Forward weapons silenced." -> "Shrieker: fore destroyed. Forward weapons silenced."
-  later changed records: 125; total records: 162 -> 162
-FAIL battle s44
-  turn 15, round 1, after fire x05; unit none (battle state)
-  state.b.log[7].m: "Eclipse flare: prow destroyed. Forward weapons silenced." -> "Eclipse flare: fore destroyed. Forward weapons silenced."
-  later changed records: 111; total records: 127 -> 127
-FAIL battle s45
-  turn 62, round 2, after death x08; unit none (battle state)
-  state.b.log[23].m: "Glasswright lancet: midships destroyed. Broadsides and shield generator gone." -> "Glasswright lancet: core destroyed. Flank guns and shield generator gone."
-  later changed records: 66; total records: 129 -> 129
-FAIL battle s46
-  turn 0, round 1, after tick player; unit x05 (player cathedral)
-  state.units[1].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 208; total records: 209 -> 209
-FAIL battle s47
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 2 ships on the scanners." -> "Contact: Meridian Directorate. 2 ships on the scanners."
-  later changed records: 49; total records: 51 -> 51
-FAIL battle s48
-  turn 41, round 2, after order x013; unit none (battle state)
-  state.b.log[9].m: "Chorus drone-spawn: prow destroyed. Forward weapons silenced." -> "Chorus drone-spawn: fore destroyed. Forward weapons silenced."
-  later changed records: 102; total records: 144 -> 144
+  turn 179, round 5, after fire x07; unit x09 (enemy harrow)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 116; total records: 296 -> 296
 FAIL battle s49
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 196; total records: 197 -> 197
-FAIL battle s50
-  turn 21, round 2, after command player; unit none (battle state)
-  state.b.log[9].m: "Hullbreaker gutship: prow destroyed. Forward weapons silenced." -> "Hullbreaker gutship: fore destroyed. Forward weapons silenced."
-  later changed records: 79; total records: 101 -> 101
-FAIL battle s51
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 137; total records: 138 -> 138
-FAIL battle s52
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Arbiter" -> "MDV Arbiter"
-  later changed records: 156; total records: 157 -> 157
-FAIL battle s53
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 86; total records: 87 -> 87
-FAIL battle s54
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 55; total records: 56 -> 56
-FAIL battle s55
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 180; total records: 181 -> 181
-FAIL battle s56
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 197; total records: 198 -> 198
-FAIL battle s57
-  turn 0, round 1, after tick player; unit x011 (enemy h_picket)
-  state.units[6].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 71; total records: 72 -> 72
-FAIL battle t_casttwice
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 89; total records: 99 -> 99
-FAIL battle t_flakskip
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 96; total records: 106 -> 106
-FAIL battle t_lensaloft
-  turn 34, round 2, after fire x03; unit none (battle state)
-  state.b.log[10].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 20; total records: 55 -> 55
-FAIL battle t_longfocus
-  turn 29, round 2, after fire x04; unit none (battle state)
-  state.b.log[15].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 9; total records: 39 -> 39
-FAIL battle t_recordedangle
-  turn 21, round 2, after fire x04; unit none (battle state)
-  state.b.log[4].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 33; total records: 55 -> 55
-FAIL battle t_burnflaw
-  turn 26, round 2, after fire x04; unit none (battle state)
-  state.b.log[15].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 7; total records: 34 -> 34
-FAIL battle t_longlight
-  turn 19, round 2, after move x03; unit none (battle state)
-  state.b.log[7].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 18; total records: 38 -> 38
-FAIL battle t_flawforever
-  turn 21, round 2, after fire x04; unit none (battle state)
-  state.b.log[4].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 27; total records: 49 -> 49
-FAIL battle t_twoimages
-  turn 35, round 3, after fire x03; unit none (battle state)
-  state.b.log[13].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 33; total records: 69 -> 69
-FAIL battle t_angles
-  turn 8, round 1, after nova x07; unit none (battle state)
-  state.b.log[3].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 69; total records: 78 -> 78
-FAIL battle t_rechargelit
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[8].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 3; total records: 24 -> 24
-FAIL battle t_glasscorrected
-  turn 8, round 1, after nova x05; unit none (battle state)
-  state.b.log[2].m: "The Iron Mandate fires its nova cannon." -> "The Iron Mandate fires its spinal cannon."
-  later changed records: 103; total records: 112 -> 112
-FAIL battle t_hardlight
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[7].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 49; total records: 70 -> 70
-FAIL battle t_wardglass
-  turn 21, round 2, after end activation; unit none (battle state)
-  state.b.log[8].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 32; total records: 54 -> 54
-FAIL battle t_deployread
-  turn 12, round 1, after end activation; unit none (battle state)
-  state.b.log[4].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 8; total records: 21 -> 21
-FAIL battle t_castcorrected
-  turn 18, round 2, after fire x03; unit none (battle state)
-  state.b.log[5].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 13; total records: 32 -> 32
-FAIL battle t_flagshiplens
-  turn 18, round 2, after fire x03; unit none (battle state)
-  state.b.log[7].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 17; total records: 36 -> 36
-FAIL battle t_firstlight
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[6].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 34; total records: 55 -> 55
-FAIL battle t_heldaccount
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 41; total records: 42 -> 42
-FAIL battle t_namedledger
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 56; total records: 58 -> 58
-FAIL battle t_inheritedaim
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 83; total records: 85 -> 85
-FAIL battle t_everygun
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 79; total records: 81 -> 81
-FAIL battle t_sworndeploy
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 39; total records: 40 -> 40
-FAIL battle t_debtsreserve
-  turn 0, round 1, after tick player; unit x03 (player penitent)
-  state.units[0].name: "Oathkeeper" -> "Cold Watch"
-  later changed records: 27; total records: 28 -> 28
+  turn 26, round 2, after fire x03; unit x05 (enemy h_picket)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 165; total records: 197 -> 197
 FAIL battle t_flagshipLedger
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 32; total records: 34 -> 34
-FAIL battle t_standardreroll
-  turn 0, round 1, after tick player; unit x03 (enemy h_picket)
-  state.units[1].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 52; total records: 53 -> 53
-FAIL battle t_preyname
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 54; total records: 55 -> 55
-FAIL battle t_salvotwohands
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 62; total records: 63 -> 63
+  turn 23, round 2, after fire x04; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 2; total records: 34 -> 34
 FAIL battle t_debthunts
-  turn 0, round 1, after tick player; unit x04 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 52; total records: 53 -> 53
-FAIL battle t_twosalvos
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 62; total records: 63 -> 63
-FAIL battle t_namedprey
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 61; total records: 62 -> 62
-FAIL battle t_escortname
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 35; total records: 37 -> 37
-FAIL battle t_firstwave
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 44; total records: 46 -> 46
-FAIL battle t_wingreserve
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 58; total records: 60 -> 60
-FAIL battle t_generation
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 27; total records: 29 -> 29
-FAIL battle t_wingsdebt
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 88; total records: 89 -> 89
-FAIL battle t_rollwings
-  turn 0, round 1, after tick player; unit x04 (player penitent)
-  state.units[1].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 79; total records: 80 -> 80
+  turn 41, round 4, after fire x02; unit x03 (enemy h_interdictor)
+  state.units[1].route[0]: 1 -> 0
+  later changed records: 5; total records: 53 -> 53
 FAIL battle t_oathwings
-  turn 49, round 2, after fire x04; unit none (battle state)
-  state.b.log[20].m: "Hullbreaker gutship: prow destroyed. Forward weapons silenced." -> "Hullbreaker gutship: fore destroyed. Forward weapons silenced."
-  later changed records: 22; total records: 72 -> 72
+  turn 55, round 2, after activation x06; unit x03 (player reliquary)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 5; total records: 72 -> 72
 FAIL battle t_holdcounted
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 39; total records: 40 -> 40
+  turn 23, round 2, after fire x04; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 2; total records: 40 -> 40
 FAIL battle t_oathstillness
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 40; total records: 41 -> 41
-FAIL battle t_unpaid
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 122; total records: 123 -> 123
-FAIL battle t_wallanswers
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 83; total records: 85 -> 85
-FAIL battle t_irontestament
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 44; total records: 45 -> 45
-FAIL battle t_ecl_restoreninth
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 82; total records: 83 -> 83
-FAIL battle t_ecl_restoredbeyond
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 132; total records: 133 -> 133
-FAIL battle t_ecl_copiescontribute
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 69; total records: 70 -> 70
-FAIL battle t_ecl_tenthframe
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 116; total records: 117 -> 117
-FAIL battle t_ecl_earliercopy
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 84; total records: 85 -> 85
-FAIL battle t_ecl_arcswarm
-  turn 43, round 2, after fire x05; unit none (battle state)
-  state.b.log[21].m: "Hullbreaker raider: prow destroyed. Forward weapons silenced." -> "Hullbreaker raider: fore destroyed. Forward weapons silenced."
-  later changed records: 17; total records: 61 -> 61
-FAIL battle t_ecl_noonchoice
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 75; total records: 76 -> 76
-FAIL battle t_ecl_copyfires
-  turn 0, round 1, after tick player; unit x09 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 112; total records: 113 -> 113
-FAIL battle t_ecl_coronashadow
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 55; total records: 56 -> 56
-FAIL battle t_ecl_everyframe
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 53; total records: 54 -> 54
-FAIL battle t_ecl_noonrepeat
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 68; total records: 69 -> 69
-FAIL battle t_ecl_onesuncopy
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 64; total records: 65 -> 65
-FAIL battle t_ecl_copiedbehind
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 74; total records: 75 -> 75
-FAIL battle t_ecl_unseenarchive
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 57; total records: 58 -> 58
+  turn 32, round 3, after fire x03; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 8; total records: 41 -> 41
 FAIL battle t_ecl_uncopiedtarget
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 68; total records: 69 -> 69
-FAIL battle t_ecl_iterationkill
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 114; total records: 115 -> 115
-FAIL battle t_ecl_silentarchive
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 74; total records: 75 -> 75
-FAIL battle t_ecl_outshadow
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t_ecl_longcopy
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 66; total records: 67 -> 67
-FAIL battle t_ecl_platesshadow
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 88; total records: 89 -> 89
-FAIL battle t_ecl_twicerestored
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 103; total records: 104 -> 104
-FAIL battle t_ecl_layersshift
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 74; total records: 75 -> 75
-FAIL battle t_ecl_nolayer
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 104; total records: 105 -> 105
-FAIL battle t_ecl_stillness
-  turn 0, round 1, after tick player; unit x09 (enemy h_vanguard)
-  state.units[4].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 149; total records: 150 -> 150
-FAIL battle t_ecl_tenthousand
-  turn 0, round 1, after tick player; unit x09 (enemy h_vanguard)
-  state.units[4].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 164; total records: 165 -> 165
-FAIL battle t_ecl_restoredfleet
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 108; total records: 109 -> 109
-FAIL battle t_ecl_iterationswap
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 49; total records: 50 -> 50
-FAIL battle t_ecl_flagshipindex
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 64; total records: 65 -> 65
-FAIL battle t_ecl_framezero
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 119; total records: 120 -> 120
-FAIL battle t_choosebrood
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 51; total records: 53 -> 53
-FAIL battle t_sporetide
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 33; total records: 35 -> 35
-FAIL battle t_everythroat
-  turn 0, round 1, after tick player; unit x04 (player b_drone)
-  state.units[1].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 48; total records: 49 -> 49
-FAIL battle t_secondthroat
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 99; total records: 101 -> 101
-FAIL battle t_rundown
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 76; total records: 78 -> 78
-FAIL battle t_razorprey
-  turn 0, round 1, after tick player; unit x04 (player b_spitter)
-  state.units[1].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 93; total records: 94 -> 94
-FAIL battle t_frenzyfeeds
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 121; total records: 122 -> 122
-FAIL battle t_breathbite
-  turn 0, round 1, after tick player; unit x012 (enemy h_picket)
-  state.units[6].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 138; total records: 139 -> 139
-FAIL battle t_throatred
-  turn 0, round 1, after tick player; unit x06 (player b_drone)
-  state.units[2].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 66; total records: 67 -> 67
-FAIL battle t_preyeverymouth
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 106; total records: 108 -> 108
-FAIL battle t_growhurts
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 102; total records: 104 -> 104
-FAIL battle t_skinthick
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 66; total records: 68 -> 68
-FAIL battle t_fleshknit
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 52; total records: 54 -> 54
-FAIL battle t_refuseholes
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 97; total records: 99 -> 99
-FAIL battle t_tideend
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 41; total records: 43 -> 43
-FAIL battle t_tornback
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 132; total records: 134 -> 134
-FAIL battle t_acidbeforeaim
-  turn 0, round 1, after tick player; unit x07 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 61; total records: 62 -> 62
+  turn 52, round 3, after fire x05; unit x09 (enemy h_picket)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 16; total records: 69 -> 69
 FAIL battle t_throatspits
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 139; total records: 141 -> 141
-FAIL battle t_burnstays
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 83; total records: 85 -> 85
-FAIL battle t_acidseams
-  turn 0, round 1, after tick player; unit x07 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 47; total records: 48 -> 48
-FAIL battle t_manymouths
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 71; total records: 73 -> 73
-FAIL battle t_volleygrows
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 87; total records: 89 -> 89
-FAIL battle t_mouthdeep
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 84; total records: 86 -> 86
-FAIL battle t_broodreserve
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[1].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 39; total records: 41 -> 41
-FAIL battle t_firstthroat
-  turn 0, round 1, after tick player; unit x03 (player b_razor)
-  state.units[0].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 60; total records: 61 -> 61
-FAIL battle t_throatdeep
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 31; total records: 32 -> 32
+  turn 135, round 9, after end activation; unit x03 (enemy h_dominion)
+  state.units[1].route[3]: 1 -> 0
+  later changed records: 5; total records: 141 -> 141
 FAIL battle t_hb_runbigger
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 33; total records: 34 -> 34
-FAIL battle t_hb_railboarding
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 81; total records: 82 -> 82
-FAIL battle t_hb_packcloses
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 45; total records: 46 -> 46
+  turn 24, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 9; total records: 34 -> 34
 FAIL battle t_hb_rushrail
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 79; total records: 80 -> 80
-FAIL battle t_hb_allscars
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 61; total records: 62 -> 62
+  turn 26, round 2, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 53; total records: 80 -> 80
 FAIL battle t_hb_mawopens
-  turn 0, round 1, after tick player; unit x07 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 53; total records: 54 -> 54
-FAIL battle t_hb_burncarry
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 71; total records: 72 -> 72
-FAIL battle t_hb_warlordrun
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 55; total records: 56 -> 56
+  turn 24, round 2, after fire x04; unit x07 (enemy h_picket)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 29; total records: 54 -> 54
 FAIL battle t_hb_knifeback
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 39; total records: 40 -> 40
-FAIL battle t_hb_darktorps
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t_hb_cutturn
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 69; total records: 70 -> 70
-FAIL battle t_hb_secondknife
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 73; total records: 75 -> 75
+  turn 24, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 15; total records: 40 -> 40
 FAIL battle t_hb_smilecut
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 36; total records: 37 -> 37
-FAIL battle t_hb_everyknife
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 42; total records: 44 -> 44
-FAIL battle t_hb_darkknives
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 65; total records: 67 -> 67
-FAIL battle t_hb_cutfeeds
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 73; total records: 75 -> 75
-FAIL battle t_hb_patchedwing
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 55; total records: 57 -> 57
-FAIL battle t_hb_hulkmore
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 29; total records: 31 -> 31
-FAIL battle t_hb_retasked
-  turn 0, round 1, after tick player; unit x06 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 86; total records: 87 -> 87
-FAIL battle t_hb_wreckline
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 26; total records: 28 -> 28
-FAIL battle t_hb_wholeyard
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 56; total records: 58 -> 58
-FAIL battle t_hb_screaming
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 113; total records: 115 -> 115
-FAIL battle t_hb_swarmscrap
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 64; total records: 66 -> 66
-FAIL battle t_hb_privatewing
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 58; total records: 60 -> 60
-FAIL battle t_hb_weldmatters
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 114; total records: 116 -> 116
-FAIL battle t_hb_patchguns
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 153; total records: 155 -> 155
-FAIL battle t_hb_scrapfront
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 142; total records: 144 -> 144
-FAIL battle t_hb_weldedfight
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 104; total records: 106 -> 106
-FAIL battle t_hb_doublebolted
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 146; total records: 148 -> 148
-FAIL battle t_hb_packbites
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 133; total records: 135 -> 135
-FAIL battle t_hb_weldedwhole
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 104; total records: 106 -> 106
-FAIL battle t_hb_nothingbroken
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 90; total records: 92 -> 92
+  turn 26, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 10; total records: 37 -> 37
 FAIL battle t_hb_preyscent
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 54; total records: 55 -> 55
-FAIL battle t_hb_loosepack
-  turn 0, round 1, after tick player; unit x04 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 29; total records: 30 -> 30
-FAIL battle t_hb_firstscar
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 46; total records: 48 -> 48
+  turn 43, round 3, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 11; total records: 55 -> 55
 FAIL battle t_hb_trophystandard
-  turn 0, round 1, after tick player; unit x03 (enemy h_picket)
-  state.units[1].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 34; total records: 35 -> 35
-FAIL battle t_heg_widenet
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Steadfast" -> "MDV Steadfast"
-  later changed records: 70; total records: 71 -> 71
-FAIL battle t_heg_secondvolley
-  turn 0, round 1, after tick player; unit x04 (player h_dominion)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 120; total records: 121 -> 121
-FAIL battle t_heg_sharedsolution
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Sovereign" -> "MDV Quorum"
-  later changed records: 62; total records: 63 -> 63
-FAIL battle t_heg_colddrill
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Comptroller" -> "MDV Comptroller"
-  later changed records: 68; total records: 69 -> 69
-FAIL battle t_heg_rollingfire
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Punctual" -> "MDV Punctual"
-  later changed records: 76; total records: 77 -> 77
-FAIL battle t_heg_irontempo
-  turn 0, round 1, after tick player; unit x04 (player h_picket)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 192; total records: 193 -> 193
-FAIL battle t_heg_livingrelay
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Tyrant" -> "MDV Variance"
-  later changed records: 68; total records: 69 -> 69
-FAIL battle t_heg_onevoice
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Projection" -> "MDV Projection"
-  later changed records: 66; total records: 67 -> 67
-FAIL battle t_heg_formation
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 62; total records: 63 -> 63
-FAIL battle t_heg_drill
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t_heg_beacon
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Comptroller" -> "MDV Comptroller"
-  later changed records: 42; total records: 43 -> 43
-FAIL battle t_heg_stdforward
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 42; total records: 43 -> 43
-FAIL battle t_heg_filedtriplicate
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Allocation" -> "MDV Allocation"
-  later changed records: 55; total records: 56 -> 56
-FAIL battle t_heg_strikebook
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Forecast" -> "MDV Forecast"
-  later changed records: 82; total records: 83 -> 83
-FAIL battle t_heg_crossfire
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Consensus" -> "MDV Consensus"
-  later changed records: 66; total records: 67 -> 67
-FAIL battle t_heg_filedbefore
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Ascendancy" -> "MDV Ascendancy"
-  later changed records: 121; total records: 122 -> 122
-FAIL battle t_heg_totalinterdiction
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 113; total records: 114 -> 114
-FAIL battle t_heg_sevenbreach
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 116; total records: 117 -> 117
-FAIL battle t_heg_permanentfile
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Consensus" -> "MDV Consensus"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t_heg_oneorder
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Projection" -> "MDV Projection"
-  later changed records: 72; total records: 73 -> 73
-FAIL battle t_heg_cruisers
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Resolute" -> "MDV Resolute"
-  later changed records: 74; total records: 75 -> 75
-FAIL battle t_heg_launchorder
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Resolute" -> "MDV Azimuth"
-  later changed records: 50; total records: 51 -> 51
-FAIL battle t_heg_secondwave
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Resolute" -> "MDV Resolute"
-  later changed records: 69; total records: 70 -> 70
-FAIL battle t_heg_rehearsed
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 96; total records: 97 -> 97
-FAIL battle t_heg_fullgroup
-  turn 0, round 1, after tick player; unit x02 (player h_dominion)
-  state.units[0].name: "HNS Projection" -> "MDV Projection"
-  later changed records: 118; total records: 119 -> 119
-FAIL battle t_heg_escorts
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Arbiter" -> "MDV Arbiter"
-  later changed records: 90; total records: 91 -> 91
-FAIL battle t_heg_onetarget
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 43; total records: 44 -> 44
-FAIL battle t_heg_standinggroup
-  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 72; total records: 73 -> 73
-FAIL battle t_heg_columnstraight
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Resolute" -> "MDV Azimuth"
-  later changed records: 124; total records: 125 -> 125
-FAIL battle t_heg_overflow
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Optimal" -> "MDV Optimal"
-  later changed records: 129; total records: 130 -> 130
-FAIL battle t_heg_bell
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Allocation" -> "MDV Allocation"
-  later changed records: 133; total records: 134 -> 134
-FAIL battle t_heg_rotation
-  turn 0, round 1, after tick player; unit x06 (player h_dominion)
-  state.units[0].name: "HNS Resolute" -> "MDV Resolute"
-  later changed records: 144; total records: 145 -> 145
-FAIL battle t_heg_columnendures
-  turn 0, round 1, after tick player; unit x05 (player h_picket)
-  state.units[0].name: "HNS Relentless" -> "MDV Relentless"
-  later changed records: 97; total records: 98 -> 98
-FAIL battle t_heg_filedarmor
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Dominator" -> "MDV Precedent"
-  later changed records: 135; total records: 136 -> 136
-FAIL battle t_heg_standardcovers
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Tyrant" -> "MDV Variance"
-  later changed records: 124; total records: 125 -> 125
-FAIL battle t_heg_flagshipstandard
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].name: "HNS Allocation" -> "MDV Allocation"
-  later changed records: 135; total records: 136 -> 136
-FAIL battle t7a_flightpaths
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 79; total records: 89 -> 89
-FAIL battle t7a_replay
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 100; total records: 110 -> 110
-FAIL battle t7a_starlings
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 85; total records: 95 -> 95
-FAIL battle t7a_flightcast
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 84; total records: 94 -> 94
-FAIL battle t7a_forgeahead
-  turn 9, round 1, after nova x05; unit none (battle state)
-  state.b.log[1].m: "The Unsetting fires its nova cannon." -> "The Unsetting fires its spinal cannon."
-  later changed records: 93; total records: 103 -> 103
-FAIL battle t7a_onelens
-  turn 17, round 1, after fire x05; unit none (battle state)
-  state.b.log[9].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 20; total records: 38 -> 38
-FAIL battle t7a_lighttogether
-  turn 25, round 2, after fire x04; unit none (battle state)
-  state.b.log[12].m: "Eclipse zenith: midships destroyed. Broadsides and shield generator gone." -> "Eclipse zenith: core destroyed. Flank guns and shield generator gone."
-  later changed records: 5; total records: 31 -> 31
-FAIL battle t7a_sunlens
-  turn 17, round 1, after fire x05; unit none (battle state)
-  state.b.log[9].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 19; total records: 37 -> 37
-FAIL battle t7a_mirroraside
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[6].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 45; total records: 66 -> 66
-FAIL battle t7a_splitthree
-  turn 21, round 2, after end activation; unit none (battle state)
-  state.b.log[8].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 31; total records: 53 -> 53
-FAIL battle t7a_fleetelsewhere
-  turn 35, round 3, after fire x03; unit none (battle state)
-  state.b.log[13].m: "Eclipse zenith: prow destroyed. Forward weapons silenced." -> "Eclipse zenith: fore destroyed. Forward weapons silenced."
-  later changed records: 27; total records: 63 -> 63
-FAIL battle t7a_weakside
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[7].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 15; total records: 36 -> 36
-FAIL battle t7a_facetlit
-  turn 20, round 2, after fire x03; unit none (battle state)
-  state.b.log[7].m: "Mote sentinel: prow destroyed. Forward weapons silenced." -> "Mote sentinel: fore destroyed. Forward weapons silenced."
-  later changed records: 3; total records: 24 -> 24
-FAIL battle t7a_ledgerarcs
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 33; total records: 34 -> 34
-FAIL battle t7a_debtdue
-  turn 0, round 1, after tick player; unit x03 (player penitent)
-  state.units[0].name: "Oathkeeper" -> "Cold Watch"
-  later changed records: 50; total records: 51 -> 51
+  turn 14, round 2, after fire x02; unit x03 (enemy h_picket)
+  state.units[1].route[0]: 1 -> 0
+  later changed records: 11; total records: 35 -> 35
 FAIL battle t7a_grandledger
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 56; total records: 57 -> 57
-FAIL battle t7a_lastaccount
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 44; total records: 45 -> 45
-FAIL battle t7a_torpfirst
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 63; total records: 64 -> 64
-FAIL battle t7a_rearreckoning
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 35; total records: 36 -> 36
-FAIL battle t7a_salvoend
-  turn 0, round 1, after tick player; unit x05 (enemy h_vanguard)
-  state.units[2].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 76; total records: 77 -> 77
-FAIL battle t7a_accountsplits
-  turn 0, round 1, after tick player; unit x06 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 98; total records: 99 -> 99
+  turn 24, round 2, after fire x04; unit x06 (enemy h_picket)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 6; total records: 57 -> 57
 FAIL battle t7a_screensshift
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 46; total records: 47 -> 47
-FAIL battle t7a_wallearly
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 40; total records: 41 -> 41
-FAIL battle t7a_wallmoves
-  turn 0, round 1, after tick player; unit x03 (player cathedral)
-  state.units[0].weapons[0].n: "Heavy sear broadside" -> "Heavy sear flank battery"
-  later changed records: 46; total records: 47 -> 47
-FAIL battle t7b_ecl_formation_a
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 96; total records: 97 -> 97
+  turn 32, round 3, after fire x03; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 9; total records: 47 -> 47
 FAIL battle t7b_ecl_formation_b
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 87; total records: 88 -> 88
-FAIL battle t7b_ecl_formation_c
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 100; total records: 101 -> 101
-FAIL battle t7b_ecl_formation_d
-  turn 0, round 1, after tick player; unit x010 (enemy h_picket)
-  state.units[5].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 68; total records: 69 -> 69
-FAIL battle t7b_ecl_shadow
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 92; total records: 93 -> 93
-FAIL battle t7b_ecl_wall
-  turn 0, round 1, after tick player; unit x07 (enemy h_vanguard)
-  state.units[3].name: "Vanguard cruiser" -> "Vector cruiser"
-  later changed records: 119; total records: 120 -> 120
+  turn 57, round 3, after fire x06; unit x011 (enemy h_picket)
+  state.units[6].route[0]: 1 -> 0
+  later changed records: 30; total records: 88 -> 88
 FAIL battle t7b_ecl_archive
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 106; total records: 107 -> 107
-FAIL battle t7b_ecl_iterfire
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 87; total records: 88 -> 88
-FAIL battle t7b_ecl_triage
-  turn 10, round 1, after end activation; unit none (battle state)
-  state.b.log[2].m: "Chorus drone-spawn: prow destroyed. Forward weapons silenced." -> "Chorus drone-spawn: fore destroyed. Forward weapons silenced."
-  later changed records: 99; total records: 110 -> 110
-FAIL battle t7b_ch_broodsplits
-  turn 0, round 1, after tick player; unit x03 (player b_brood)
-  state.units[0].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 60; total records: 61 -> 61
-FAIL battle t7b_ch_nine
-  turn 0, round 1, after tick player; unit x06 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 58; total records: 59 -> 59
-FAIL battle t7b_ch_teeth
-  turn 0, round 1, after tick player; unit x03 (player b_razor)
-  state.units[0].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 96; total records: 97 -> 97
-FAIL battle t7b_ch_tideearly
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 2 ships on the scanners." -> "Contact: Meridian Directorate. 2 ships on the scanners."
-  later changed records: 97; total records: 99 -> 99
-FAIL battle t7b_ch_growth
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 107; total records: 109 -> 109
-FAIL battle t7b_ch_spat
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 2 ships on the scanners." -> "Contact: Meridian Directorate. 2 ships on the scanners."
-  later changed records: 82; total records: 84 -> 84
-FAIL battle t7b_ecl_targetarchived
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 30; total records: 31 -> 31
-FAIL battle t529_roles_strike
-  turn 0, round 1, after tick player; unit x06 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t529_roles_screen
-  turn 0, round 1, after tick player; unit x06 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 75; total records: 76 -> 76
-FAIL battle t529_roles_mend
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[1].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 80; total records: 82 -> 82
+  turn 36, round 2, after death x06; unit x09 (enemy h_picket)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 4; total records: 107 -> 107
 FAIL battle t529_roles_change
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 88; total records: 89 -> 89
-FAIL battle t529_spawned
-  turn 0, round 1, after tick player; unit x04 (player b_drone)
-  state.units[1].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 67; total records: 68 -> 68
-FAIL battle t529_nostop
-  turn 0, round 1, after tick player; unit x07 (enemy h_picket)
-  state.units[3].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 98; total records: 99 -> 99
+  turn 27, round 2, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 61; total records: 89 -> 89
 FAIL battle t529_scent
-  turn 0, round 1, after tick player; unit x05 (player b_razor)
-  state.units[1].name: "Gnawing Bloom" -> "Gnawing Cyst"
-  later changed records: 52; total records: 53 -> 53
-FAIL battle t529_may_debt_no
-  turn 0, round 1, after tick player; unit x05 (enemy h_picket)
-  state.units[2].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 44; total records: 45 -> 45
-FAIL battle t529_may_grow_no
-  turn 1, round 1, after start; unit none (battle state)
-  state.b.log[0].m: "Contact: Hegemony Navy. 1 ship on the scanners." -> "Contact: Meridian Directorate. 1 ship on the scanners."
-  later changed records: 97; total records: 99 -> 99
-FAIL battle s983_station_defend
-  turn 0, round 1, after tick player; unit x06 (player harrow)
-  state.units[1].name: "Judgement Bell" -> "Judgment Bell"
-  later changed records: 123; total records: 124 -> 124
+  turn 39, round 2, after fire x06; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 7; total records: 53 -> 53
 FAIL battle s983_station_plain
-  turn 12, round 1, after fire x05; unit none (battle state)
-  state.b.log[4].m: "Hullbreaker raider: prow destroyed. Forward weapons silenced." -> "Hullbreaker raider: fore destroyed. Forward weapons silenced."
-  later changed records: 74; total records: 87 -> 87
-FAIL battle s983_teaching_station_defend
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 66; total records: 67 -> 67
-FAIL battle s1450_undo
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 277; total records: 278 -> 278
-FAIL battle s1450_undo_chorus
-  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
-  state.units[4].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 156; total records: 157 -> 157
-FAIL battle s1450_undo_classic
-  turn 0, round 1, after tick player; unit x07 (player harrow)
-  state.units[2].name: "Oathkeeper" -> "Cold Watch"
-  later changed records: 348; total records: 349 -> 349
-FAIL battle s1447_ion_pulse
-  turn 0, round 1, after tick player; unit x011 (enemy h_picket)
-  state.units[6].name: "Hegemony picket" -> "Directorate picket"
-  later changed records: 156; total records: 157 -> 157
-FAIL: saved Godot results; 288 battles checked, 283 changed, 0 other files changed, 283 failures; 23.629 s
+  turn 12, round 1, after fire x05; unit x09 (enemy c_raider)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 18; total records: 87 -> 87
+FAIL: saved Godot results; 288 battles checked, 31 changed, 0 other files changed, 31 failures; 13.607 s
