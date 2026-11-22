@@ -1,0 +1,50 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1236)
+GPU: acquired shared claim 99502501-4463-4322-94b0-8d41fe3ba7d2
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9d9e7a19062f4c38aa2a6e46cd910ada\godot-profile-fd580094ae5f47f0a6dede4378ff07e8
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 60 FPS...
+[sfx] 72 cues, 67 clip sets, loaded in 3373 ms
+[look_bench] sound on: death cues play and the picture shows in the window (for --write-movie)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 33550d59fe13150cc3c09ae057ed88cf32821da6ee502918d827d332e136c6a6 4096x2048 in 5043 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7916 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 8348 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 8759 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2013 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2027 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 1927 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (O1) on I15_11: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on B16_23: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on B16_23: arc -180 to 180, trains all round
+[turret] turret_2 (G3) on B16_23: arc -180 to 180, trains all round
+[turret] turret_3 (T1) on B16_23: arc -180 to 180, trains all round
+[look_bench] warm pass done
+[look_bench] wk_hege_cruiser at 170: 7 cells
+[look_bench] wk_hege_cruiser at 60: 7 cells
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+run_timeout: STOPPING new bench (C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe): CEILING at 1800.012 s
+run_timeout: new bench kill verified: all 12 processes gone (root PID 39576)
+run_timeout: TIMEOUT new bench (C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe): CEILING at 1800.012 s (ceiling 1800 s). Child logs: C:\Users\rcbai\AppData\Local\Temp\runner-step-fe282674f600463b8a2f9eed2039c116
+GPU: released shared claim 99502501-4463-4322-94b0-8d41fe3ba7d2

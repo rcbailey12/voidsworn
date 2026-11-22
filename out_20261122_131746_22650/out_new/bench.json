@@ -1,0 +1,100 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "1418816d7659c6d6d48232d012136909bc28c2356d06ad74bfe9b9829f7960fa",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "moments_sha256": "91ebddedadadebb54f62f47104e94af0e76377ca12e7780fc6be2c465b2a9fa8",
+ "parts": {
+  "0": {
+   "start_frame": 900
+  },
+  "2": {
+   "start_frame": 1800
+  },
+  "3": {
+   "start_frame": 6300
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 1020
+  }
+ },
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 4081,
+     "t": 1.35
+    },
+    {
+     "step": 4143,
+     "t": 2.3833
+    },
+    {
+     "step": 4191,
+     "t": 3.1833
+    },
+    {
+     "step": 4239,
+     "t": 3.9833
+    },
+    {
+     "step": 4293,
+     "t": 4.8833
+    },
+    {
+     "step": 4383,
+     "t": 6.3833
+    },
+    {
+     "step": 4563,
+     "t": 9.3833
+    }
+   ],
+   "file": "moments/wk_hege_cruiser__c170.png",
+   "id": "wk_hege_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 4717,
+     "t": 1.35
+    },
+    {
+     "step": 4779,
+     "t": 2.3833
+    },
+    {
+     "step": 4827,
+     "t": 3.1833
+    },
+    {
+     "step": 4875,
+     "t": 3.9833
+    },
+    {
+     "step": 4929,
+     "t": 4.8833
+    },
+    {
+     "step": 5019,
+     "t": 6.3833
+    },
+    {
+     "step": 5199,
+     "t": 9.3833
+    }
+   ],
+   "file": "moments/wk_hege_cruiser__c60.png",
+   "id": "wk_hege_cruiser",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}
