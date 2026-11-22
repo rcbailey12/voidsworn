@@ -444,9 +444,9 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
   }
 }
 
-# Issue 1396 (Board, Nov 22: the first dry run ran 1 h 47 min without finishing). Each run has a time cap
-# (PC_JANITOR_CAP_SECONDS, 2700 s): the TEMP folders get the first half, the job folders the rest. A run that reaches its
-# cap stops before the next folder, which only keeps things, and says where it stopped; a live run writes that name to
+# Issue 1396 (Board, Nov 22: the first dry run ran 1 h 47 min without finishing). Each run has a time budget checked
+# between folders, not a hard timeout (PC_JANITOR_CAP_SECONDS, 2700 s): the TEMP folders get the first half, the job
+# folders the rest. A run past its budget starts no new folder, which only keeps things, and says where it stopped; a live run writes that name to
 # janitor_resume.txt so the next run starts there and wraps around, and every folder is reached in turn. A dry run reads
 # the file and never writes it. Folders that take 10 s or more get a "folder time" line.
 function Read-JanitorResume($path) {

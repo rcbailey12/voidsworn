@@ -451,16 +451,24 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   $superseded = @($script:cleanupSuperseded)
   $local = @(Read-CleanupGit @('-C',$repo,'rev-list','--parents','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
-  # The janitor reads the mirror's commits once per run (issue 1396: a dry run over every job checkout took hours). A
-  # copy read earlier in the run can only lack newer commits, so it can only keep more, never remove more.
-  if ($script:cacheMirrorCommits -and $script:mirrorCommitCache -and $script:mirrorCommitCache.Mirror -eq $mirror) {
+  # The janitor reuses the mirror's commit list within a run (issue 1396: a dry run over every job checkout took hours),
+  # but only while the mirror's refs are exactly as they were when it was read: a fetch or prune in between (the relay
+  # sweep's child, another runner) moves or drops refs, and then the list is read again (Artoo on PR 1592).
+  $refSnapshot = $null
+  if ($script:cacheMirrorCommits) {
+    $refLines = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)'))
+    if ($gitExit -ne 0) { throw 'mirror refs not verified' }
+    $refSnapshot = $refLines -join "`n"
+  }
+  if ($refSnapshot -and $script:mirrorCommitCache -and $script:mirrorCommitCache.Mirror -eq $mirror -and
+      $script:mirrorCommitCache.Refs -ceq $refSnapshot) {
     $pushed = $script:mirrorCommitCache.Set
   } else {
     $remote = @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--all'))
     if ($gitExit -ne 0 -or -not $remote.Count) { throw 'fetched history not verified' }
     $pushed = New-Object 'Collections.Generic.HashSet[string]'
     foreach ($id in $remote) { $null = $pushed.Add($id) }
-    if ($script:cacheMirrorCommits) { $script:mirrorCommitCache = @{ Mirror = $mirror; Set = $pushed } }
+    if ($refSnapshot) { $script:mirrorCommitCache = @{ Mirror = $mirror; Refs = $refSnapshot; Set = $pushed } }
   }
   $onlyLocal = foreach ($line in $local) {
     $id = ($line -split ' ', 2)[0]
