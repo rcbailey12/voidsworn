@@ -2017,6 +2017,13 @@
       "archive": "s1447_ion_pulse.jsonl.br",
       "records": 157,
       "scenario_sha256": "d8e8b0535c6088ab05d7567acd31c64949b6f231268bc37895c08b3b07a33379"
+    },
+    "s1480": {
+      "sha256": "b1fc173bb025c510c4a3bdd609421280d83d9a1f425ab95a9c31df680f3f0e58",
+      "bytes": 7703915,
+      "archive": "s1480.jsonl.br",
+      "records": 194,
+      "scenario_sha256": "a5753b16829aa7b4c936bad7043a83fb61db4cb5398b8e9fa4a186c066a481fd"
     }
   },
   "files": {
