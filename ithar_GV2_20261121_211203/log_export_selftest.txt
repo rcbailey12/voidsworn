@@ -1,0 +1,10 @@
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 0 (guns T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_guns_T_0 is 0.0640 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w0_guns_T_0 rests aimed backward (x -1.00)
+ok   no_socket: the check failed as it must | hp_w0_guns_T_0 has no extras.socket
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   turret_merged: the check failed as it must | turret G1 is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+PASS the export check fails when it should

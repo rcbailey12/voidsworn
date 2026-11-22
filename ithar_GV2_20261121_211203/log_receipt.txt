@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_GV2 ithar_GV2 commit 746d8d7c9a27a155575727e9e4c018b7ba6ebd66, glb 7d7f4291b02e9bbfb57f0fac913233f568035080bf5939ddb90f1eaa4658c4b8, 8 listed and 8 checked files
+SHIP=ithar_GV2

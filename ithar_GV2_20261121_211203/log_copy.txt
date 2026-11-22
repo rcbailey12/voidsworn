@@ -1,0 +1,52 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Saturday, November 21, 2026 9:12:06 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\out\recipe\export\ithar_GV2\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\ithar_GV2_20261121_211203\export\ithar_GV2\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\out\recipe\export\ithar_GV2\
+	    New File  		      28	export_status.txt100%  
+	    New File  		   1.0 m	ithar_GV2.glb 23%   46%   69%   93%  100%  
+	    New File  		   1.0 m	ithar_GV2_base.jpg 23%   46%   69%   92%  100%  
+	    New File  		    1909	ithar_GV2_check.json100%  
+	    New File  		  448994	ithar_GV2_emission.jpg 29%   58%   87%  100%  
+	    New File  		    5231	ithar_GV2_export.json100%  
+	    New File  		   4.2 m	ithar_GV2_normal.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+	    New File  		   4.1 m	ithar_GV2_orm.png 12%   24%   36%   48%   60%   72%   84%   96%  100%  
+	    New File  		  212055	ithar_GV2_parts_base.jpg 61%  100%  
+	    New File  		   1.8 m	ithar_GV2_parts_normal.png 13%   27%   40%   54%   68%   81%   95%  100%  
+	    New File  		   1.8 m	ithar_GV2_parts_orm.png 13%   27%   41%   54%   68%   82%   95%  100%  
+	    New File  		    1489	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\opus1373gv2n\out\recipe\export\ithar_GV2\_gltf_source\
+	    New File  		   2.1 m	GV2_hull_albedo.png 23%   46%   70%   93%  100%  
+	    New File  		   1.2 m	GV2_hull_emission.png 19%   38%   58%   77%   97%  100%  
+	    New File  		   4.2 m	GV2_hull_normal.png 11%   23%   35%   47%   59%   71%   83%   95%  100%  
+	    New File  		   4.1 m	GV2_hull_orm.png 12%   24%   36%   48%   60%   72%   84%   96%  100%  
+	    New File  		  164621	GV2_parts_albedo.png 79%  100%  
+	    New File  		   1.8 m	GV2_parts_normal.png 13%   27%   40%   54%   68%   81%   95%  100%  
+	    New File  		   1.8 m	GV2_parts_orm.png 13%   27%   41%   54%   68%   82%   95%  100%  
+	    New File  		   1.0 m	ithar_GV2.bin 23%   47%   70%   94%  100%  
+	    New File  		   14589	ithar_GV2.gltf100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   31.49 m   31.49 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           768079186 Bytes/sec.
+   Speed :           43949.843 MegaBytes/min.
+   Ended : Saturday, November 21, 2026 9:12:06 PM
+

@@ -1,0 +1,6 @@
+publishes start Sat 11/21/2026 21:12:02.90 
+PUBLISH 1373N GV2 start 21:12:02.90 
+PUBLISH 1373N GV2 exit 0 at 21:13:13.51 
+PUBLISH 1373N GW4 start 21:13:13.51 
+PUBLISH 1373N GW4 exit 0 at 21:14:32.50 
+publishes all done 21:14:32.50 

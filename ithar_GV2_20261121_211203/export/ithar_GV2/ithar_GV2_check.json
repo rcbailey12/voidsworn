@@ -1,0 +1,123 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "29370 triangles (810 on part surfaces), box x -0.500 to 0.500, y -0.139 to 0.152, z -0.158 to 0.159",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 1 written (turret_0 G1); marked by the kit: ['G1']"
+ ],
+ "cls": "Squadron",
+ "faction": "ithar",
+ "expected_breach": 0,
+ "required": {
+  "weapon_slots": 1,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "rcs": 0,
+  "board": 0
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_guns_T_0"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "core": 1,
+  "engine": 1,
+  "gun": 1
+ },
+ "maps": [
+  "ithar_GV2_emission.jpg",
+  "ithar_GV2_normal.png",
+  "ithar_GV2_orm.png",
+  "ithar_GV2_base.jpg",
+  "ithar_GV2_parts_normal.png",
+  "ithar_GV2_parts_orm.png",
+  "ithar_GV2_parts_base.jpg"
+ ],
+ "tolerance": 0.011999999642372132,
+ "tolerance_of_length": 0.012,
+ "ship_length": 0.9999999701976776,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_core",
+   "p": [
+    0.1,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.3139,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_guns_T_0",
+   "p": [
+    0.2159,
+    0.1455,
+    -0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0019
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "G1",
+   "socket": "G1",
+   "p": [
+    0.1999,
+    0.1415,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w0_guns_T_0"
+   ],
+   "off_mesh": 0.0
+  }
+ ]
+}
