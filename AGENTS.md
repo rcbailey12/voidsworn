@@ -1,7 +1,7 @@
 # Voidsworn: rules for any AI agent (Claude or another model)
 
 **The game.** Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 game in
-`godot/`, played on Ryan's Windows PC only; the browser rules are a live reference copy: every rules change goes into both until Ryan approves their retirement (RULEBOOK 3.1, R312).
+`godot/`, played on Ryan's Windows PC only. Godot is the only rules source: the browser rules files at the repo root are retired, frozen history, and CI checks Godot against its own saved results (RULEBOOK 3.1, R405, Nov 22 2026).
 The owner is Ryan. He is not a coder: he judges work by pictures. Faction ids never change; their display names do
 (contrib/opus/compute/rename_map_final.md): `voidsworn` = Sunward Crusade, `corsair` = Ashfall Hullbreakers, `ithar` = the
 Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Meridian Directorate.

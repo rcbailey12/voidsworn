@@ -125,7 +125,7 @@ the Board's diff review while Muse is idle, with the check still asked for. Set:
 Board (R162). Ids: agents-13, claude-04, R132c, R162b.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
-both rule twins, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
+the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
@@ -247,8 +247,8 @@ quote per finding, OBSERVED or INFERRED. Findings come ranked, most important fi
 review-01, review-02, review-03.
 
 2.12 **Outside agents work in contrib/<agent>/; Muse may deliver low-code fixes (text, data, tests, tools, docs) as pull
-requests, and a rules or data change is made the same way in the Godot port.** Why: "keep muse cooking" (R81); the twins must
-not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
+requests; a rules or data change is made in Godot only (3.1).** Why: "keep muse cooking" (R81); Godot is the only rules
+source since R405 (the browser twin is retired). Set: Ryan, Nov 2 (R81); Ryan, Nov 22 (R405). Ids: R81, agents-15, muse-06.
 
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
@@ -279,17 +279,23 @@ Set: Ryan, Nov 22 (R406).
 
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
-campaign files) are a live reference copy: every rules change goes into both until Ryan approves their retirement.** The browser
-game and pages ship nothing. Parity runs in full on every push, never skipped and never cut (no skip rule), made faster by
-running battles in parallel workers (issue 978), and a Godot-only safety net runs beside it (issue 979, then saved Godot
-results with a changed-battles review on rules PRs, piloted for whether its review cost is worth it). Ten rules PRs is a
-progress checkpoint, not approval to retire parity. The browser rules stay until the replacement data home, a Godot balance
-simulator, the ported tests and the PC tools work and are verified; retirement is then a separate recommendation to Ryan.
-Why: "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24); "Let's go with Path D ... Don't implement
-the skip rule or reduce coverage ... Keep the browser rules until the replacement data, balance simulator, relevant tests and
-tools are working and verified, and bring me a separate retirement recommendation then." (R312). The old "frozen" wording was
-wrong: every new rule since went into both copies (round 2 review, Nov 17). Set: Ryan. Ids: R32, R33a, agents-02, R312.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
+rules (data.js, core.js, battle.js and the campaign files at the repo root) are retired: frozen history that no rules change
+touches and the game never reads. A rules or campaign change edits the Godot files and the table files
+(`godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`; reseal their checksums with
+`godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
+runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
+net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
+issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
+because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
+`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
+retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
+of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
+under which every rules change went into both copies; at retirement both copies matched on all 289 battles and 30 campaign
+runs (issue 1654). "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a,
+agents-02, R312, R405.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
@@ -681,6 +687,20 @@ gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never slic
 of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
 issue 600). Ids: ships-2c.
 
+5.18 **The ship detail standard: textures by size, AO and LODs on import, one authored look, full hard points.** For every
+ship from now on: (1) stage 7 exports maps by the ship's length band, flagships and battleships (length 21 and up) at 4096
+(stage 5 already bakes 4096), cruisers, carriers, destroyers and frigates (6.5 to 16.5) at 2048, strike craft (1.6) at 1024
+(issue 1680); (2) every hull gets a calibrated `ao_light_affect` (never Godot's default 0.0; per faction in look.gd READ, 0.35
+to 0.55, Glasswrights 0.2) and automatic Godot mesh LODs on import (issues 1678, 1679); (3) each faction's paint stack moves
+to `authored_look = 1`, calibrated to the one battle light rig, the next time that faction is baked or repainted, and its
+look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it; (4) every new destroyer and larger carries
+`hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
+Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
+39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
+far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
+stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
@@ -776,7 +796,7 @@ the default with a brisk option.** Why: "I don't want to sacrifice the feel of t
 (R50, R64); option Board (R50d). Ids: R50b, R50d, R64a, movespec-06.
 
 7.4 **Movement playback never changes rules results.** A LOOK change keeps the route, end hex and facing; a RULE change (route
-or facing) needs Ryan's own ruling and touches both rule twins. Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
+or facing) needs Ryan's own ruling and touches the Godot rules (R405). Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
 
 7.5 **No roll into turns.** Why: nothing in space leans a ship; the audit reversed the earlier bank (movement_audit_code.md).
 Set: Board, Nov 11. Id: movespec-04 (the 4 degree bank, retired).
@@ -1001,8 +1021,10 @@ A push that changes only .md files and pictures under docs/, contrib/ or the rep
 standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
-12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
-drifted (R155). Set: Board. Id: R155b.
+12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
+the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
+until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).

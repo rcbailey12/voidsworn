@@ -1,4 +1,4 @@
-// ======================= BATTLE LOGIC =======================
+// ======================= BATTLE LOGIC ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 const BW=30, BH=22; // v47: a bigger canvas; each battle's arena (strip, square or round) is cut out of it
 const CX=(BW-26)>>1; // shifts the old fixed columns (built for a 26-wide board) onto the middle of the canvas
 let ARENA={kind:'strip',mT:3,mB:3,mL:1,mR:1};
