@@ -641,8 +641,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		if n <= 0:
 			n = WEAP.default_shots(WEAP.look_of(kind, wid, str(att[0])))
 		var shots := []
+		# issue 1690: a row may make its last shots miss ("misses": m), for the pass-by and the miss fade
+		var misses := int(row.get("misses", 0))
 		for i in n:
-			shots.append(true)
+			shots.append(i < n - misses)
 		var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots, "slot": int(row.get("slot", -1)),
 			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
 		impacts = res.get("impacts", [])
