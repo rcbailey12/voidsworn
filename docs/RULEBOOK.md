@@ -940,7 +940,8 @@ Set: Ryan (R381, issue 1480).
 
 11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
 Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
-issue 1484).
+issue 1484). How: biomass pays when it covers the price, otherwise credits, one purse per purchase; a Chorus run still earns
+credits (repair stipends, ransoms, scrap, declined protocols), so biomass only would strand them (Board reading, Nov 22, PR 1627).
 
 11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
 kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
