@@ -415,6 +415,22 @@ EMISSIVE_STRENGTH = 2.1          # the atlas holds emission / this (8-bit maps c
 #                                  (warming round: 1.6 to 2.1 with the mosaic at 3.4, so the atlas clips no more and the game
 #                                  panels glow about a third brighter)
 CELLS_PER_LENGTH = 109.0         # LOOK mosaic cell_scale (4.2 per world unit) on a 26-unit Ark, as in the review
+# Strike craft (issue 1373, Nov 21): at 109 cells per length a 1.6-unit craft's cells fall to a few texels of its 1024 atlas,
+# so the W4b bomber's wide lobes read as pastel noise, not stained glass. Craft take fewer, bigger cells (scene length <= 1.6).
+CRAFT_CELLS_PER_LENGTH = 45.0
+# Ryan Nov 21 6:18 PM CT (issue 1373, GV2/GW4 in game): "a little more saturation ... just a bit, nothing crazy"; 8:29 PM CT:
+# "Maybe do the same on the big ships too". Every Glasswright hull, craft and capitals alike: the marble reads pale at game
+# range, so the stone colours get a gentle push (once, in the shared mosaic).
+SATURATION = 1.25
+
+
+def cells_per_length():
+    try:
+        import bpy
+        length = float(bpy.context.scene.get('r209_length_world', 0))
+    except Exception:
+        length = 0.0
+    return CRAFT_CELLS_PER_LENGTH if 0 < length <= 1.6 + 1e-6 else CELLS_PER_LENGTH
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0032, bump_strength=1.0)
 # Surface relief heights (issue 1517, Nov 21: the PC's 1415E atlases measured normal relief 0.2 deg against the 3.5 floor)
 RELIEF = dict(pearl_scale=1.0, pearl_ripple=0.6, silver_line=0.3, tilt=0.6, came=1.0, hammer_scale=1.5, hammer=0.8, silver_scale=2.0, silver_twist=0.8,
@@ -466,7 +482,7 @@ def surface_layers(c, zone, tiles):
         rough = _m(nt, 'SUBTRACT', L['game_roughness'], _m(nt, 'MULTIPLY', line, 0.04))
         # Surface relief (issue 1517 floors, Nov 21): a fine poured ripple running with the strands, so the pearl is never a
         # flat clay sheen; the silver lines stand proud of it
-        rip = node(nt, 'ShaderNodeTexNoise'); rip.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['pearl_scale']
+        rip = node(nt, 'ShaderNodeTexNoise'); rip.inputs['Scale'].default_value = cells_per_length() * RELIEF['pearl_scale']
         rip.inputs['Detail'].default_value = 4.0; rip.inputs['Roughness'].default_value = 0.6
         nt.links.new(c.pos, rip.inputs['Vector'])
         h = _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4))
@@ -477,7 +493,7 @@ def surface_layers(c, zone, tiles):
     if zone in ('gw_silver', 'cd5_silver'):
         L = LOOK['silver']
         # relief (issue 1517): drawn silver wire, finely twisted, never a smooth tube
-        tw = node(nt, 'ShaderNodeTexNoise'); tw.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['silver_scale']
+        tw = node(nt, 'ShaderNodeTexNoise'); tw.inputs['Scale'].default_value = cells_per_length() * RELIEF['silver_scale']
         tw.inputs['Detail'].default_value = 2.0; nt.links.new(c.pos, tw.inputs['Vector'])
         return (mixc(nt, L['base'], L['base'], 0.0), math_(nt, 'MULTIPLY', tw.outputs['Fac'], RELIEF['silver_twist']),
                 math_(nt, 'ADD', L['game_roughness'], math_(nt, 'MULTIPLY', _spread(nt, tw.outputs['Fac']), RELIEF['silver_rough'])),
@@ -486,18 +502,21 @@ def surface_layers(c, zone, tiles):
         L = LOOK['mosaic']
         tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']
         glow = _attr(nt, 'gw_glow').outputs['Fac']
-        cells = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); cells.inputs['Scale'].default_value = CELLS_PER_LENGTH
+        cells = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); cells.inputs['Scale'].default_value = cells_per_length()
         edges = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D', feature='DISTANCE_TO_EDGE')
-        edges.inputs['Scale'].default_value = CELLS_PER_LENGTH
+        edges.inputs['Scale'].default_value = cells_per_length()
         nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
         tint = tile_swap(nt, tint, cells.outputs['Color'], glow)
+        if SATURATION != 1.0:
+            hs = node(nt, 'ShaderNodeHueSaturation'); hs.inputs['Saturation'].default_value = SATURATION
+            nt.links.new(tint, hs.inputs['Color']); tint = hs.outputs['Color']
         sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
         bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
         bright.inputs[3].default_value = L['cell_lo']; bright.inputs[4].default_value = L['cell_hi']
         lead = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(edges.outputs['Distance'], lead.inputs[0])
         lead.inputs[1].default_value = L['lead'] * 0.5; lead.inputs[2].default_value = L['lead']
         inner = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', bright.outputs[0], lead.outputs[0]), glow)
-        sp = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); sp.inputs['Scale'].default_value = CELLS_PER_LENGTH * 3.1
+        sp = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); sp.inputs['Scale'].default_value = cells_per_length() * 3.1
         nt.links.new(c.pos, sp.inputs['Vector'])
         sps = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(sp.outputs['Color'], sps.inputs[0])
         spark = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(sps.outputs[1], spark.inputs[0])
@@ -509,7 +528,7 @@ def surface_layers(c, zone, tiles):
         metal = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
         # Surface relief (issue 1517 floors, Nov 21): raised leading between the stones, each stone tilted its own way, and
         # hammered glass in every stone, so the panels catch the light like real stained glass, never a flat print
-        ham = node(nt, 'ShaderNodeTexNoise'); ham.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['hammer_scale']
+        ham = node(nt, 'ShaderNodeTexNoise'); ham.inputs['Scale'].default_value = cells_per_length() * RELIEF['hammer_scale']
         ham.inputs['Detail'].default_value = 3.0; ham.inputs['Roughness'].default_value = 0.55
         nt.links.new(c.pos, ham.inputs['Vector'])
         came = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
