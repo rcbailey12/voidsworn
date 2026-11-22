@@ -1288,11 +1288,8 @@ func _play_batch(bt: Dictionary) -> void:
 		if e["t"] == "activation" and str(e.get("side", "")) == "player" and _is_wing(e["unit"]) and not args.has("wings-apart"):
 			await _wings_together(evs, i, pre)
 		if e["t"] == "fire":
-			var grp: Array = []
-			var j := i + 1
-			while j < evs.size() and evs[j]["t"] in ["hit", "system", "shield_down", "burning"] and str(evs[j].get("target", evs[j].get("unit"))) == str(e["target"]):
-				grp.append(evs[j])
-				j += 1
+			var j := volley_end(evs, i)
+			var grp: Array = evs.slice(i + 1, j)
 			var tf := game_t
 			# issue 1448 (Artoo): a volley's hits are grouped here and never reach _play_event, so they are counted for the
 			# music now, in batch order, before any delayed impact can land after the next round's reset
@@ -1492,12 +1489,14 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			music_hits += 1
 			if e.get("target") != null:
 				_impact(e["target"], e, Color(1, 0.6, 0.3))
-				_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
+				if e.get("float", true):   # issue 1481: counter-fire, ram shockwave and reactor hits already float their boon number
+					_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
 			await wait(160.0)
 		"shield_down":
 			var d: Dictionary = disp.get(e["unit"], {})
-			if d.has("sh"):
-				d["sh"][int(e["quad"])] = 0
+			if d.get("sh") is Array:
+				for qi in range((d["sh"] as Array).size()):
+					d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(e["unit"]), true)
 			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
@@ -1569,6 +1568,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var d: Dictionary = disp.get(e["target"], {})
 			if d.has("hp"):
 				d["hp"] = float(d["hp"]) - float(e["dmg"])
+			if e.get("sh") is Array and d.has("sh"):
+				d["sh"] = (e["sh"] as Array).duplicate()   # issue 1481: the ram's soak shows on the shield readout too
 			var d2: Dictionary = disp.get(e["unit"], {})
 			if d2.has("hp"):
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
@@ -2150,6 +2151,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var land := {"t_id": str(t_id), "numbers": true, "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
 		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
 		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
+	land["break_k"] = section_break_hit(grp, int(land["break_k"]))
 	for g in grp:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
@@ -2284,6 +2286,14 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	for g in grp:
 		if g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
+		elif g["t"] == "log":
+			hud.add_log(str(g.get("text", "")), str(g.get("kind", "")) if g.get("kind") != null else "")
+		elif g["t"] == "float":
+			var gdy = g.get("dy")
+			_float(g.get("unit"), str(g.get("text", "")), Color(str(g.get("color", "#d0a64b"))), float(gdy) if gdy != null else 0.0)
+		elif g["t"] == "section_down":   # issue 1481 review: the section loss rides in its volley now, so its log line plays here
+			var sec := str(g["section"])
+			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
 	await wait(80.0)
 	if cined:
 		await wait(900.0)
@@ -2308,6 +2318,45 @@ static func hit_arrivals(shots: Array, impacts: Array, n_hits: int) -> Array:
 
 # Issue 1211: the hit that empties the shield. The rules drain one pool (R246) hit by hit, so once it is empty no later
 # hit is absorbed: the last hit with shield damage is the one that broke it (the last hit when none was absorbed).
+# Issue 1481 review: a generator lost mid-volley (section_down, then shield_down, then more hits) breaks the shield on
+# the hit that destroyed it, not on the last hit the shield absorbed. Otherwise the usual pick stands.
+# Issue 1481 review: the notes a mid-volley section loss sends between two hits (its callout over the target, its log line)
+# The volley a fire event at i carries: its hits, systems, fires, section losses and breaks on the target, and the notes a
+# section loss sends between two of its hits (issue 1481 review: so the later hits keep their own impacts). Returns the
+# index after the last one.
+static func volley_end(evs: Array, i: int) -> int:
+	var tgt := str(evs[i]["target"])
+	var j := i + 1
+	while j < evs.size():
+		if evs[j]["t"] in ["hit", "system", "shield_down", "burning", "section_down"] and str(evs[j].get("target", evs[j].get("unit"))) == tgt:
+			j += 1
+			continue
+		var k := j
+		while k < evs.size() and volley_note(evs[k], tgt):
+			k += 1
+		if k > j and k < evs.size() and evs[k]["t"] in ["hit", "shield_down"] and str(evs[k].get("target", evs[k].get("unit"))) == tgt:
+			j = k
+			continue
+		break
+	return j
+
+
+static func volley_note(g: Dictionary, target) -> bool:
+	return g["t"] == "log" or (g["t"] == "float" and str(g.get("unit")) == str(target))
+
+
+static func section_break_hit(grp: Array, k: int) -> int:
+	var seen := 0
+	for i in grp.size():
+		var g: Dictionary = grp[i]
+		if g["t"] == "hit":
+			seen += 1
+		elif g["t"] == "section_down" and str(g.get("section")) == "mid" and seen > 0 and i + 1 < grp.size() \
+				and grp[i + 1]["t"] == "shield_down" and str(grp[i + 1].get("unit")) == str(g.get("unit")):
+			return seen - 1   # only the break the generator loss itself sent (Artoo at 458f09e8: a prow or engine loss is not one)
+	return k
+
+
 static func shield_break_hit(hits: Array) -> int:
 	var k := hits.size() - 1
 	for i in hits.size():
@@ -2393,8 +2442,9 @@ func _shield_downs(land: Dictionary) -> void:
 	land["downs_played"] = true
 	for g in land["downs"]:
 		var d: Dictionary = disp.get(g["unit"], {})
-		if d.has("sh"):
-			d["sh"][int(g["quad"])] = 0
+		if d.get("sh") is Array:
+			for qi in range((d["sh"] as Array).size()):
+				d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 		var sf = land.get("sh_f")
 		if str(g["unit"]) == str(land.get("t_id", "")) and sf is Dictionary and is_instance_valid((sf as Dictionary)["lbl"]):
 			# one label, two lines: "Shields down" over the volley's shield count, never a second label on top of it
@@ -2647,6 +2697,19 @@ func _play_death(e: Dictionary) -> void:
 
 # ---------------------------------------------------------------- end of battle
 
+# The end banner's [ships of yours lost, enemy ships destroyed]. Issue 1481: wings are not ships (the campaign card
+# skips them too), and a ship that fled is not lost.
+static func end_tally(view: Dictionary) -> Array:
+	var lost := 0
+	var killed := 0
+	for u in view.get("units", []):
+		if u["dead"] and not u["fled"] and not u.get("squadron", false):
+			if u["side"] == "player":
+				lost += 1
+			else:
+				killed += 1
+	return [lost, killed]
+
 # One end sound (issue 1448): the music's fanfare, or the synth sting only when the music cannot play one (music off,
 # volume at zero or no track). Both used to start in the same moment. Returns which one played: "music" or "sting".
 func _end_sound(win: bool) -> String:
@@ -2674,14 +2737,9 @@ func _end_flow() -> void:
 	await get_tree().create_timer(1.2).timeout
 	if _stale(g):
 		return
-	var lost := 0
-	var killed := 0
-	for u in V["units"]:
-		if u["dead"] and not u["fled"]:
-			if u["side"] == "player":
-				lost += 1
-			else:
-				killed += 1
+	var tally := end_tally(V)
+	var lost: int = tally[0]
+	var killed: int = tally[1]
 	result = {"result": outcome, "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
 		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
@@ -4594,7 +4652,7 @@ func _on_action(name: String, arg) -> void:
 			var rep := {"version": ProjectSettings.get_setting("application/config/version", "dev"), "round": V.get("round"), "phase": api.phase if api != null else "",
 				"seed": api.world_info().get("seed") if api != null and api.has_method("world_info") else null, "errors": errors, "log": lines.slice(maxi(0, lines.size() - 60))}
 			DisplayServer.clipboard_set(JSON.stringify(rep, "  "))
-			hud.toast("Diagnostic report copied to clipboard.")
+			hud.toast("Problem report copied to the clipboard. Paste it wherever you report bugs.")
 		"opt":
 			_toggle_opt(str(arg))
 		"to_title":
