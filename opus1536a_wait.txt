@@ -1,0 +1,6 @@
+OPUS1536A_WAIT.bat waiting for OPUS1121R_DEATHS exit in opus1121motr_wait.txt Sat 11/21/2026 18:35:10.41 
+OPUS1536A start 20:31:10.22 
+OPUS1536A exit 0 at 21:32:01.65 
+run folder out_20261121_203110_108
+result: done PASS
+all done Sat 11/21/2026 21:32:02.09 

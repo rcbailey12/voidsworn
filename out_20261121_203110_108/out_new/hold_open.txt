@@ -1,0 +1,123 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1536)
+GPU: acquired solo claim 807763ae-7a7d-4b53-b457-c9b53041025c
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2684fbdd7c1b41b588d2d0cc05bf9ae5\godot-profile-b643cab2a75f46f0ae3bfadd79daaefe
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 238 ms
+[sfx] 71 cues, 67 clip sets, loaded in 2327 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.979, target 4.4; visual tuning (R191)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked abaaf701621910be25a8d5147b9286cd74c78331fee8f175cb1b6657b3afb1cd 4096x2048 in 9713 ms (worker)
+[world] baked 83f1b8e03a7def72347106af7885a69d9bad2f6e26e0f2e003cb56349ce6f87d 4096x2048 in 11841 ms (worker)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 12279 ms (worker)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 12685 ms (worker)
+[world] baked 189c9af073c7a3c1065eff60928b1dd476f71a5a7cfea73357e275790e6b65e3 4096x2048 in 1876 ms (worker)
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 1824 ms (worker)
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 1777 ms (worker)
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/01_start.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/03_attack_tip.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/04_threat_topdown.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/05_fire_1.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/07_fire_3.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/08_fire_4.png
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H7_23: no authored point fits this request; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on V15_37: no authored point fits this request; using the surface ray
+[attach] scorch on V15_37: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] battle x04 V16_37: skipped 0; rcs hp 484 ray 0 centre 0 skip 0; core hp 3 ray 0 centre 0 skip 0; gun hp 23 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 2 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 330 ray 0 centre 0 skip 0; gun hp 8 ray 1 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 162 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 126 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 196 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x09 H8_23: skipped 0; rcs hp 0 ray 202 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x010 H8_23: skipped 0; rcs hp 0 ray 338 centre 0 skip 0; gun hp 11 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x011 H7_23: skipped 0; rcs hp 0 ray 208 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[main] battle to title: leave frame 186.7 ms, first title frame 1231.1 ms after the leave
+[title-layout] window 2560x1377 title 87px text 779 wide, fits, playtest line on screen, menu on screen (bottom 1042), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[fx] late shader: mat SPRITE #define SOFT frame 19606 172305.9 ms
+[fx] late shader: mat STREAK frame 19606 172407.7 ms
+[fx] late shader: mat RING frame 19606 172475.3 ms
+[fx] late shader: mat RIBBON frame 19606 172523.4 ms
+[fx] late shader: mat ECLIPSE_ARC frame 19606 172580.6 ms
+[fx] late shader: mat NULL_SLUG frame 19606 172623.8 ms
+[fx] late shader: mat SHARD frame 19606 172655.9 ms
+[fx] late shader: hit fragments frame 19606 172781.0 ms
+[fx] late shader: mat DISTORT frame 19606 172913.1 ms
+[fx] late shader: death debris body frame 19606 172950.9 ms
+[fx] late shader: mat TEAR frame 19606 173069.8 ms
+[fx] late shader: death strain tear frame 19606 173100.4 ms
+[sfx] 71 cues, 67 clip sets, loaded in 329 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.272, target 4.4; visual tuning (R191)
+[fx] late shader: mat TRAIL frame 19608 176691.1 ms
+[fx] late shader: mat SHIELD frame 19608 176818.5 ms
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[fx] late shader: exterior frame 19686 180696.7 ms
+[fx] late shader: damage 444838022 frame 19686 180816.9 ms
+[fx] late shader: death piece slag frame 19686 182118.7 ms
+[world] baked 8535d65354ab2455c5503f32fc07c76967f1b5989532cadbdb6f70f942c3b6ab 4096x2048 in 16415 ms (worker)
+[world] baked 04d852f40f8af7c0af9c537e5142ce27f0b06f711794c9dcbef2bc75e87e6cac 4096x2048 in 19460 ms (worker)
+[world] baked fbed59e2a91b2f524971597231167c3f127dff726d0a64e9ff0cffadebac87dd 1024x512 in 19835 ms (worker)
+[world] baked 0447013b47e77871db26a9d6efbe36864b7fa1be3474e1cf1ed63112478b75c7 4096x2048 in 1661 ms (worker)
+[world] baked d0071e05c7f692f8bcf81629beb26924250fd7ecef78a90ff0ddb146362c5960 1024x512 in 1633 ms (worker)
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/01_start.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/03_attack_tip.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/05_fire_1.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/07_fire_3.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/08_fire_4.png
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C14s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[attach] flare on V16_37: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1536a\out_20261121_203110_108\out_new\hold_open/09_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[21.4,17.4,11.9,10.7,8.5],"enemy_s_max":21.4,"enemy_s_mean":13.97,"movement":"cinematic","per_round_by_kind":{"ability":0.14,"activation":0.11,"aiEnd":0.15,"death":0.06,"fire":2.05,"move":11.24,"order":0.02,"round":0.19},"rounds":5},"pipeline_compiles_in_play":22,"result":"win","round":6,"secs":199.904}
+[main] quit (menu) at 373607 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 852 ray 0 centre 0 skip 0; core hp 3 ray 0 centre 0 skip 0; gun hp 32 ray 0 centre 0 skip 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 324 ray 0 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 282 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 197 ray 131 centre 0 skip 0; gun hp 18 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x08 C14s_23: skipped 0; rcs hp 216 ray 226 centre 0 skip 0; gun hp 33 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x09 C13s_23: skipped 0; rcs hp 88 ray 62 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0
+[attach] battle x010 C14s_23: skipped 0; rcs hp 221 ray 129 centre 0 skip 0; gun hp 33 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x011 C13s_23: skipped 0; rcs hp 144 ray 50 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 137 ms, statics and fx drain 71 ms, engine exit from 373815 ms
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2684fbdd7c1b41b588d2d0cc05bf9ae5\godot-profile-b643cab2a75f46f0ae3bfadd79daaefe
+GPU: released solo claim 807763ae-7a7d-4b53-b457-c9b53041025c
