@@ -66,9 +66,7 @@ glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R24
 
 6.13 **Plasma is light blue.** Why: his call on the damage marks reference (R46). Set: Ryan, Oct 26. Ids: R46a, lore-04.
 
-6.14 **Normal hits mark the hull (scorch, wounds, scars); a hull opens into a real break only when a section is nearly gone or
-on death.** 20 percent of a section's hull is the starting value, judged by eye. Why: cut-out holes on every hit "looked like
-hollow cardboard" (Nov 1 playtest). Set: Ryan (R80, R216).
+6.14 **On authored-interior hulls, heavy hits and mid-battle section damage (starting around Stage 2, ~55% section HP) open real 3D armor cutouts into the ship's built interiors; light grazes and healthy armor take surface marks only; legacy hollow hulls keep the 20 percent section HP guard.** Every cutout is geometry-checked against the hull mesh (so nothing floats off-ship or cuts into empty space on thin rings), lights its exposed authored decks, frames, organs or light cores in the faction's own material, ties visible damage to real lost capabilities (exact disabled weapon slots, tiered engine nozzle loss, shield generator burnout), and hands those same faction interiors seamlessly into ship destruction (issue 1741, `contrib/opus/plans/cohesive_damage_v2.md`). Why: the Nov 1 20 percent cap existed only because old shells "looked like hollow cardboard"; keeping it hid the authored interiors built under R209 and R215, while flat 2D paint-overs looked like floating portals ("hit damage isn't even close... there's a reason we did the interior work on the ships", Ryan Nov 22). Set: Ryan (R80, R216, updated by R416).
 
 6.15 **Section damage tint may show on small ships if it reads at camera 170**; the hits pass tries it by eye on frigates (the
 old ban had no reason and is retired). Set: Ryan (R80, retired R216).

@@ -262,12 +262,34 @@ Three upgrades run through all of them:
    fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
    (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
    degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
-   Faction hit damage (R402, Ryan Nov 22): wounds, scars and wear read as each faction's own material, for all six
-   factions in one build, on every hull of the faction, player and enemy. Glasswrights take cracks in the same glass,
-   behaving like glass (straight-running fractures that catch light, never bent or warped metal), plus a few missing
-   panes with white light inside; never a black hole. Soot and the wear darkening above stay on metal ships only and
-   are dropped for glass (Glasswrights) and flesh (the Chorus). A painted concept sheet of all six goes to Ryan before
-   the build; the build issue opens after he approves it.
+   Faction hit damage and cohesive ship-to-destruction wounds (R402, expanded by R416, Ryan Nov 22): wounds, scars, wear,
+   interiors, capability losses and deaths follow one singular cohesive pipeline from ship build through destruction
+   (issue 1741, `contrib/opus/plans/cohesive_damage_v2.md`), reading from one shared faction profile in `faction_looks.json`
+   (`wound_kind` 0 to 5: Sunward, Directorate, Hullbreakers, Chorus, Glasswrights, Eclipse). The 2D painted concept sheet
+   (`opus1235wd`) was rejected ("it almost looks like a random portal... there's a reason we did the interior work on the
+   ships"): visual review uses real 3D in-engine look-bench captures behind `VS_WOUNDS_V2=1` (camera 170 and camera 26,
+   1 hit, 50% hull, 20% hull, capability loss and death transition) instead of 2D paint-overs. Six rules govern the build:
+   (a) **Real mid-battle cutouts into authored interiors (RULEBOOK 6.14):** light grazes and healthy armor take surface marks
+   only; heavy hits on weakened sections and Stage 2+ section wear (~55% section HP) cut real 3D openings through outer
+   plating and `_inside_skin` with thick faction-shaped rims, exposing the modeled decks, bulkheads, organs and light cores
+   (legacy hollow hulls keep the 20% guard). (b) **Unified breach-lit and wreck interior shader plus cavity lights:** authored
+   interiors stay dark behind closed seams, lift into moody structural contrast with crisp faction accents inside open breach
+   mouths (lit by 1 to 2 pooled `s._hole_lights` per wounded ship), and transition smoothly into dying and settled wrecks
+   without universal matte-black `wreck_interior` soot on glass or flesh. (c) **Geometry-locked placement:** 8-ray perimeter
+   footprint validation clamps radius or nudges cuts onto solid hull, converts thin exterior structures (such as Eclipse ring
+   arcs) into edge-shear or plate delamination instead of floating holes, gates overlays by normal alignment and tight depth
+   slabs, and clears turrets and bay doors on all marks. (d) **Six distinct faction material failures:** Sunward forged iron
+   over ember galleries; Directorate rectilinear panel shear over pale-grey/white corridors and pulsing blue strips (zero
+   orange); Hullbreakers ripped patchwork over rusted girders and dirty red-amber glow; Chorus splintered chitin over muddy
+   olive-umber hide, ivory bone hoops and pulsing yellow-green bile sacs (zero magenta, zero soot); Glasswrights straight-edged
+   crystalline fracture facets and popped mosaic panes over braided light cores glowing white-gold (zero soot, zero black
+   holes, zero radial sine webs); Eclipse stepped obsidian shade delamination with thin cold violet-white rim bleed over dark
+   archive vaults or truss ribs (zero neon grids, zero green). (e) **Capability-loss coupling:** disabled weapon slots
+   (`weapons[i].off > 0`) jam and smoke the exact authored turret or casemate mounts of that slot; engine damage steps across
+   real engine nozzles (fixing the `fx_ship.gd` soot leak onto non-Hullbreaker drives); midship shield generator loss adds
+   failed-emitter crackles; live wisps and blowouts vent from the real open breach mouths. (f) **Folded Wave 2A marks:**
+   distinct `prism`, `star` and `nlance` hull marks (#1692 item d) live directly inside Wounds V2 (#1741). Soot and wear
+   darkening stay on metal ships only and are dropped for glass (Glasswrights) and flesh (the Chorus).
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)

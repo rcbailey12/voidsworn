@@ -436,7 +436,15 @@ we don't run into the issues of before with just empty looking husks". What he w
 - Every hull has real thickness and those insides, sized to read at the battle camera when a piece breaks away: decks, frames,
   machinery shapes, lit or burning spaces; never flat caps or a hollow shell. Chorus: flesh, bone and organs. Glasswrights:
   layered glass and light.
-- Hits, wounds, breaks and deaths use the insides where they exist.
+- Hits, wounds, breaks and deaths use the insides where they exist (RULEBOOK 6.14, R416; `contrib/opus/plans/cohesive_damage_v2.md`).
+  To keep the whole chain from ship build through weapons, hit wounds, capability losses and destruction singular and cohesive:
+  (1) when a faction's paint stack (`tools/blender/kits/<faction>/stack.py`) is next rebaked (#1422 Eclipse, #1681 Navy, #1684
+  Hullbreakers, and Sunward's next update), raise `INSIDE_TINT` from 0.18 toward 0.55 so baked rooms retain faction material
+  contrast through live breaches and wrecks while staying dark behind closed seams, and flip Eclipse `CORE_RGB` to violet
+  (#1422, zero green inside); runtime Wounds V2 (#1741) lifts existing installed ships immediately without waiting on rebakes;
+  (2) keep weapon hard points (`hp_w<slot>_*`), turning turret nodes (`turret_*`), engine nozzles (`hp_eng_*`) and bay doors
+  (`door_*`) accurately tagged by slot and section, because live capability-loss damage reads those exact nodes when weapons,
+  engines or shield generators go offline.
 
 ## 3. Steps
 
