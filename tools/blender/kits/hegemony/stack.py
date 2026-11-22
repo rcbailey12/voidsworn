@@ -135,6 +135,8 @@ LAYERS = dict(
     band_seam=3.0, band_dark=.96, band_ao=.35, band_grime=.40,
     cavity_pow=1.6, wear_lo=.26, wear_hi=.52,
     scuff=.24, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
+    colour_grain=.15, colour_grain_scale=180.0,                           # issue 1413: fine paint tone, kept modest (Board)
+    parts_patchwork=1.0, parts_grid='small', panel_seam=1.0, seam_roughness=.35,         # issue 1413 round 4: big flat fittings carry the small plate grid
     rivets=0, rivet_pitch=.016, rivet_band=(.0012, .0040),               # hegemony.md 1: flush fasteners, no rivet lines
     trim_size=dict(), trim_aspect=dict(),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # never rust (every zone's rust is 0)
@@ -150,8 +152,8 @@ LAYERS = dict(
 LEGACY_FINISH_ZONE = 'hgrey'  # Existing A4 atlas supplies its own paint colours and seams.
 LEGACY_ALBEDO_BLEND = .45     # A4 already has painted shadows. Keep the second pass light enough for adjacent fittings.
 _Z = dict(
-    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.35),
-    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.35),
+    hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=1.0),   # issue 1413 round 3: .35 to .70, the plating seams read (Ryan, Nov 21: no clay)
+    hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.48, metal=.48, wear=1.05, grid='small', grid_seam=1.0),
     hgrey2=dict(rust=0, grime=.52, patchwork=1.0, rough=.54, metal=.30, wear=.30, grid='small', grid_seam=.60),
     htrim=dict(rust=0, grime=.22, patchwork=1.0, rough=.25, metal=.62, wear=1.32, grid=None, handling_wear=.45),
     hmetal=dict(rust=0, grime=.20, patchwork=0, rough=.20, metal=.72, wear=1.23, handling_wear=.65),
@@ -280,13 +282,18 @@ def panel_nodes(c, col, amount, families=None, cells=None):
         return cid.outputs[0], seam
 
     kind = z.get('grid', 'small')
+    if kind is not None and any(m.node_tree == nt and m.name.endswith('_P') for m in bpy.data.materials):
+        kind = L.get('parts_grid', kind)   # issue 1413 round 4: fittings are small, so their plates are the small module
     seam = None
     panels = node(nt, 'ShaderNodeAttribute', attribute_type='GEOMETRY', attribute_name='ps_authored_panels').outputs['Fac']
     unplated = math_(nt, 'SUBTRACT', 1, panels)
     if kind is not None:
         size = L['patch_big'] if kind == 'big' else L['patch_small']
         _, gseam = grid(size, 11.0 if kind == 'big' else 37.0)
-        seam = math_(nt, 'MULTIPLY', gseam, math_(nt, 'MULTIPLY', unplated, z.get('grid_seam', 1.0)))
+        # issue 1413 round 4 (Ryan, Nov 21: "so they don't look like clay"): the authored panel slabs carry the same straight
+        # grid's seams (panel_seam of the plating's strength), so a slab bigger than one module reads as plates (R243's order)
+        cover = math_(nt, 'ADD', unplated, math_(nt, 'MULTIPLY', panels, L.get('panel_seam', 0.0)))
+        seam = math_(nt, 'MULTIPLY', gseam, math_(nt, 'MULTIPLY', cover, z.get('grid_seam', 1.0)))
         island = c.geo.outputs['Random Per Island']
         shade = math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, island), L['plate_tone_range'])
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', shade, panels)))

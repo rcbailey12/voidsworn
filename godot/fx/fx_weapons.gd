@@ -2341,6 +2341,10 @@ static func launch(fx, cid: String, sid: String) -> void:
 	C.set_meta("launches", int(C.get_meta("launches", 0)) + 1)
 	if bay.is_empty():
 		return
+	# issue 1543: the mouth's flesh door eases open before the first craft leaves (T + 0.3), holds while the six leave, and
+	# shuts once the last is clear of the lip
+	if bay.has("bay"):
+		C.hull.door_cycle(int(bay["bay"]), T, T + 0.3 + 5 * 0.25 + 0.35)
 	var from: Vector3 = C.to_world(bay["p"])
 	var to: Vector3 = S.to_world(S.hull.core) if S != null else from + C.dir_world(Vector3(1, 0, 0)) * 20.0
 	var eng: Color = C.fac["engine"]

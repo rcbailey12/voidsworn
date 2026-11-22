@@ -65,6 +65,19 @@ const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthe
 const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
 	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
 static var board_k := 1.0   # issue 1547: the boarding hatch's width factor (fx.gd BOARD_LOOKS "hatch")
+# Issue 1235 (F1.1): the smallest a weapon mark gets on a healthy section, as a share of its full (broken-section) size
+const MARK_FLOOR := 0.7
+# Issue 1235 (F1.2): a stage 4 breach hole's radius as a share of the ship's length (was 0.032: 5 to 16 px at camera 170)
+const STAGE4_HOLE_L := 0.048
+# Issue 1235 (Board review): a weapon crater on a section short of stage 4 stays clearly smaller than the stage 4 hole,
+# so the first hit and the worst state never read as the same size (a weight 4 torpedo on a fresh section: 0.029)
+const CRATER_MAX_L := STAGE4_HOLE_L * 0.6
+
+
+static func mark_scale(section_damage: float) -> float:
+	return MARK_FLOOR + (1.0 - MARK_FLOOR) * pow(clampf(section_damage, 0.0, 1.0), 0.9)
+
+
 const HALO_MAX_L := 0.16   # ... but never wider than this share of the ship's length (a frigate is not one big scorch; r8 0.12 to 0.16 so frigate hits carry at 170 units)
 
 
@@ -1550,6 +1563,15 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 
 # ---------------------------------------------------------------- ship side: gather, rebuild, apply
 
+static func is_turret_mesh(s, mi: Node) -> bool:
+	var hull = s.hull
+	if hull == null or not ("_turret_of" in hull):
+		return false
+	if (hull._turret_of as Dictionary).has(mi.get_instance_id()):
+		return true
+	return hull._turret_above(mi, s.root) >= 0
+
+
 static func gather(s) -> Array:
 	var out: Array = []
 	# (F3: a ship whose node was freed before its first rebuild came round has nothing to gather)
@@ -1562,6 +1584,10 @@ static func gather(s) -> Array:
 			continue
 		var mi := m as MeshInstance3D
 		if mi == null or not (mi.mesh is ArrayMesh) or not mi.is_inside_tree():
+			continue
+		# issue 1235 (F3.4): never a turret's turning mesh; a scar baked in its pose of the moment hung in the air
+		# once the turret trained back (fx_ship picks its damage reference mesh the same way)
+		if is_turret_mesh(s, mi):
 			continue
 		var am: ArrayMesh = mi.mesh
 		if am.get_blend_shape_count() > 0:
@@ -1655,9 +1681,12 @@ static func apply(fx, s, job: Dictionary) -> void:
 		var ks: Array = by_mi[mi]
 		var sd0: Dictionary = orig[ks[0]]
 		# the damage overlay copies the full-detail triangles: an imported hull drawn at a lower automatic LOD would cover
-		# it (r6: ion burns and flak pocks, which leave the mesh itself unchanged, vanished on the 8K hulls), so a damaged
-		# hull always draws its full detail (the rebuilt meshes carry no LODs anyway)
-		(mi as MeshInstance3D).lod_bias = 128.0
+		# it (r6: ion burns and flak pocks, which leave the mesh itself unchanged, vanished on the 8K hulls), so a mesh
+		# that carries damage draws its full detail (the rebuilt meshes carry no LODs anyway). Issue 1235 (F1.5): only
+		# the meshes a damage entry reaches; every other mesh of the ship keeps its own LOD for the rest of the battle.
+		if not mi.has_meta("fx_lod0"):
+			mi.set_meta("fx_lod0", mi.lod_bias)
+		mi.lod_bias = 128.0 if _reaches(sd0["aabb"], job["ents"]) else float(mi.get_meta("fx_lod0"))
 		var am = meshes.get(int(sd0["mid"]))
 		if am == null:
 			if mi.mesh != sd0["mesh"]:
@@ -1703,6 +1732,16 @@ static func apply(fx, s, job: Dictionary) -> void:
 	# Issue 1232 (Neon's death audit F8.2): every rebuild also made an empty sprite batch, an empty spark batch, their two
 	# materials and a node to hold them; nothing ever filled them, so they are gone.
 	fx.pend("ba_nodes", t_b)
+
+
+# Does any damage entry (its widest reach: cut, overlay, halo, slot length) touch this box (both in the hull frame)?
+static func _reaches(aabb: AABB, ents: Array) -> bool:
+	for x in ents:
+		var e: Ent = x
+		var r: float = maxf(maxf(e.R, e.ov), e.halo) + e.hl
+		if aabb.grow(r).has_point(e.c):
+			return true
+	return false
 
 
 # The actual surface material owns discard and burnt back faces. Overlays cannot
@@ -1787,7 +1826,10 @@ static func clear_nodes(s) -> void:
 # The mark a hit leaves, by look and weight, at a hull point (ship frame). dir: the shot's direction (ship frame).
 # Returns the entries to add (a gauss slug makes two: the entry and the spalled exit).
 static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: Vector3, seed_v: float, faction := "", grow := 1.0, section_damage := 1.0) -> Array:
-	var L: float = hull.L * (0.12 + 0.88 * pow(clampf(section_damage, 0.0, 1.0), 0.9))
+	# Issue 1235 (Neon audit F1.1): the size used to fall to 12% on a healthy section (0.12 + 0.88 d^0.9), so a first
+	# torpedo on a fresh ship left a sub-pixel crater at the battle camera and only popped to size when the next sync
+	# regraded it. A mark is now at least MARK_FLOOR of its full size and still grows with the section's damage.
+	var L: float = hull.L * mark_scale(section_damage)
 	var out: Array = []
 	var wk: float = [0.7, 0.85, 1.0, 1.25, 1.5][clampi(w, 0, 4)]
 	var g := grow
@@ -1827,6 +1869,9 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 				out.append(crater(far["p"], far["n"], L * 0.011 * wk, L * 0.004, seed_v + 0.5, S_GAUSS_OUT))
 		"torp", "star":
 			out.append(crater(p, n, L * 0.04 * wk * g, L * 0.012 * wk, seed_v, S_BLAST))
+		"bombs":
+			# issue 1235 (F1.4): a bomber run left no mark; a shallow blast crater with a wide soot halo
+			out.append(crater(p, n, L * 0.03 * wk * g, L * 0.008 * wk, seed_v, S_BLAST))
 		"rockets":
 			out.append(crater(p, n, L * 0.022 * wk * g, L * 0.012 * wk, seed_v, S_SHELL))
 		"ram":
@@ -1839,12 +1884,16 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			out.append(cluster(p, n, L * 0.012 * g * board_k, 5, L * 0.003 * board_k, 0.0, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
+		# below stage 4 (section damage under 0.8) a crater never reaches the stage 4 hole's size
+		if e.kind == K_CRATER and section_damage < 0.8 and e.R > hull.L * CRATER_MAX_L:
+			var k: float = hull.L * CRATER_MAX_L / e.R
+			e.R *= k; e.depth *= k; e.ov *= k; e.inf2 *= k * k; e.tess *= k; e.treach *= k
 		e.wound_kind = {"chorus": 1, "ithar": 2, "deathless": 3}.get(faction, 0)
 		if faction == "chorus" and e.kind == K_HOLE:
 			e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
 		# Every weapon leaves a sealed surface mark, even at stage 4.
 		# the halo that makes it read at battle distance: at least HALO_MIN world units, grows with the weapon's weight
-		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), L * HALO_MAX_L)
+		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), hull.L * HALO_MAX_L)
 		if hm > 0.0:
 			e.halo = maxf(hm, e.ov * 0.9)
 			e.ov = maxf(e.ov, e.halo * (1.15 if e.kind != K_SLOT else 0.9))  # the halo's noisy rim reaches 1.15 halo

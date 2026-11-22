@@ -3,7 +3,8 @@
   publish_ship.py receipt JOB CODE COMMIT GLB_SHA RECORD.json
       Refuses unless JOB/out/result.txt is a ship_job receipt for CODE built at exactly COMMIT that passed: one "start SHIP
       CODE ..." first line, exactly one "commit=COMMIT" line, a "done PASS" line and no "done FAILED" line, and a tail of
-      "all done" or "all done" then "pin ok COMMIT" (the pinned wrappers). The collected export JOB/out/recipe/export/CODE
+      "all done" or "all done" then "pin ok COMMIT" (the pinned wrappers); scratch_done.ps1's "job scratch ..." and
+      "older failed scratch ..." lines after "all done" are set aside first. The collected export JOB/out/recipe/export/CODE
       must hold every file its CODE_export.json lists with that sha256, its glb must be exactly GLB_SHA, and every file the job
       checked (the clone's installed JOB/repo/godot/assets/ships/CODE, Godot's .import and .uid files aside) must be byte for
       byte the export's. JOB/out/recipe/log_detail.txt must hold one surface-detail verdict, a PASS or a dated opt-out
@@ -97,6 +98,9 @@ def detail_pass(log):
     return verdicts[0]
 
 
+SCRATCH_REPORT = ('job scratch ', 'older failed scratch ')
+
+
 def receipt(job, code, commit, glb_sha, record):
     job = Path(job)
     if not re.fullmatch(r'[0-9a-f]{40}', commit):
@@ -117,6 +121,11 @@ def receipt(job, code, commit, glb_sha, record):
         raise ValueError(f'{res} commit lines {commits} are not exactly [{commit}]')
     if any(l.startswith('done FAILED') for l in lines):
         raise ValueError(f'{res} has a done FAILED line')
+    # (issue 1535/1537) ship_job's scratch_done.ps1 writes its own report after "all done"; those lines say nothing about
+    # the build, so they are set aside before the tail is read. Only lines after the last "all done" are dropped.
+    if 'all done' in lines:
+        cut = len(lines) - 1 - lines[::-1].index('all done')
+        lines = lines[:cut + 1] + [l for l in lines[cut + 1:] if not l.startswith(SCRATCH_REPORT)]
     if len(lines) >= 2 and lines[-1] == 'all done':
         before_end = lines[-2]
     elif len(lines) >= 3 and lines[-2] == 'all done' and lines[-1] == 'pin ok ' + commit:

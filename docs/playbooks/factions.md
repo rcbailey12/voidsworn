@@ -176,6 +176,12 @@ ships catch, store and release light.
 - **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
   mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
   the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
+  The colours run together as marbled veins that cross the gaps and wander along the hull, and about a quarter of the
+  tiles take another palette colour, so no gap or panel reads as one colour (Ryan Nov 21, after look test C still showed
+  "rectangle after rectangle of same color"; look test D, issue 1415; tools/blender/kits/ithar/parts.py MIX 'marble' and
+  stack.py TILE_SWAP). Never one colour per block or per streak. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
+  red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
+  violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES).
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -248,7 +254,11 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random yellow circles on the pods ... looks odd", Nov 21:
   "the same weird yellow circle or patch on the sacs"). Gland vents are real openings: the knoll's crown is cut away under
   the puckered lip and a matte dark bore runs down into it (kit `parts.spinal` style 'gland', zone 'pit'; Ryan Nov 21: "no actual
-  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome.
+  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome. An organ whose bore runs down into the body (C14's launch mouths) cuts the hull and any
+  band open under it, and keeps the inside rooms clear of the bore (`K.open_hull` with depth, after the armour and rooms; Ryan Nov 21: "There are no actual holes, it's just caps"). A launch
+  mouth carries a lobed flesh door, shut between launches, plain flesh, opening from the middle (`launch_mouth(door=6)`, issue
+  1543; Ryan Nov 21: "Closer and plain flesh"); the lobes are their own hinged nodes and the game opens them on launch
+  (docs/ship_pipeline/HARDPOINTS.md "Doors").
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
   the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.

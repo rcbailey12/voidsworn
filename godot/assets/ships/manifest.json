@@ -218,32 +218,32 @@
    "turrets": 1,
    "files": {
     "B22_11.glb": {
-     "bytes": 18580540,
-     "sha256": "ea4731103e4f12f0248f68d2a09c16a7dc9d89fd41de1baa1999c417c5934d07"
+     "bytes": 18655896,
+     "sha256": "aa5160198f8503a54f89b524f1ebe5e17154ea6ca1473e88a63c1860bd23e77b"
     },
     "B22_11_base.jpg": {
-     "bytes": 922766,
-     "sha256": "8f6ba5b1afe4e96e37543daa9d79696419ede0c59ce37bf22cf8bd12c724e32b"
+     "bytes": 921017,
+     "sha256": "6de86ef20617c64b10ed70732f18c166bbb1a0ccfcf979de465d285c4e1a64b5"
     },
     "B22_11_normal.png": {
-     "bytes": 6785651,
-     "sha256": "410d55b7242ee86525aa5d6f1a693d654b16d9dd9405d632b6db5245920d968c"
+     "bytes": 6680193,
+     "sha256": "5e34fbf5f538eb74a9f4be3885d7bb3e6310d854f873d8cc6bd9944481b74d9c"
     },
     "B22_11_orm.png": {
-     "bytes": 5467204,
-     "sha256": "0fbf563cadd06fc74d880c726ad36651ef52c18aacb12bc484e7830456bdc8fe"
+     "bytes": 5388851,
+     "sha256": "8ca0480fe267d0cbacf589c4148afcb35533a07dea4f5c73da5ca3133d3a5d67"
     },
     "B22_11_parts_base.jpg": {
-     "bytes": 1047578,
-     "sha256": "41cfb1aede88177bc64080976a16a5c17b67e0e15a50aed87796f9109d7c0d5c"
+     "bytes": 1074493,
+     "sha256": "36675fd78f6da200034a8776b1c17ef623557a165db6307076096d9d62fcae10"
     },
     "B22_11_parts_normal.png": {
-     "bytes": 6286931,
-     "sha256": "3c36d4009d250e3c5aae542d8a39bfab869b591c6cb9e85405103fb518131e35"
+     "bytes": 6237319,
+     "sha256": "a72e5a86a07e97f95b1dafeb8473ee323369e037ee4a77c47015e12276c64608"
     },
     "B22_11_parts_orm.png": {
-     "bytes": 6060336,
-     "sha256": "e4d259e9896944ddc98744d8c19217af9a7ffb160156e2ed24b2c0ac45d768c7"
+     "bytes": 6121977,
+     "sha256": "1aca309ee4aa00b3e74b8d3720e12908ddf81ff5712749bd381e8d1df01e054f"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B22_11\\"
@@ -776,36 +776,36 @@
    "turrets": 4,
    "files": {
     "H10_23.glb": {
-     "bytes": 6245408,
-     "sha256": "eecfd62be4106e118fd623aa41bc2f83d8dacc4e566f5ad4a3465591c9dcd747"
+     "bytes": 6245404,
+     "sha256": "7b04efd4b3bcded22a9d744cf1b1d08f1861cb243f681f7f0882c1315f1e8f09"
     },
     "H10_23_base.jpg": {
-     "bytes": 1417311,
-     "sha256": "e16426fc1faad88043aa45ac7e446ed8cb73347fc0e374f07264ad5da25f1bd8"
+     "bytes": 1560686,
+     "sha256": "0f7e0348e3daf8bb90c94f6666dddf67c96d4dde51a0159430927f9032df592b"
     },
     "H10_23_glow_emission.jpg": {
-     "bytes": 596229,
-     "sha256": "ca3b6f865d8538302d89156ea96d5cb025178d8ce634ca45703f93a6ca53fb52"
+     "bytes": 599093,
+     "sha256": "7b5124ee4ac48a246fee1703844449d5620f14a64977faff599c1b6d667a399a"
     },
-    "H10_23_normal.jpg": {
-     "bytes": 463808,
-     "sha256": "f779a007812b946a7a3597bd7b312aa3fec39780406f61138e3b2ac6df33d1d0"
+    "H10_23_normal.png": {
+     "bytes": 4426508,
+     "sha256": "90211e01fa0c5c094bf86f7b5734c861f8a1022d168a447ccb3608bd100e832c"
     },
-    "H10_23_orm.jpg": {
-     "bytes": 1702676,
-     "sha256": "4b78a1d3110cedb6f53702de40904430db88a9f3bd460f05d2af9ea245fd355f"
+    "H10_23_orm.png": {
+     "bytes": 6645485,
+     "sha256": "af492bfb6e0e561a22a64d7b402770ba6c20765518c630305b8464849ffce957"
     },
     "H10_23_parts_base.jpg": {
-     "bytes": 939070,
-     "sha256": "8ffeacc7b7a218fec0043dafc81b70b162e9a0ca0ff96a3ea9fac86fabe99613"
+     "bytes": 1080983,
+     "sha256": "bcd0bcb46cc8fd94be8f312054940380d31ec66c5d0bcea54ed1211cec3ef99f"
     },
-    "H10_23_parts_normal.jpg": {
-     "bytes": 435095,
-     "sha256": "e3fe57f99332b2440724986ad88efb9f1546758a36403566a302b96171b25b01"
+    "H10_23_parts_normal.png": {
+     "bytes": 4505516,
+     "sha256": "af81638f4f281324e6a89135b328b8368ebe0cf40e8704de8d39e447b2610cd9"
     },
-    "H10_23_parts_orm.jpg": {
-     "bytes": 1257585,
-     "sha256": "73508134f14dda8527f08d6c59d83f61d66eaad21e2c23fa4950615885c60525"
+    "H10_23_parts_orm.png": {
+     "bytes": 5425789,
+     "sha256": "85b1de3119596e047e39a94d805bd6ce5bb1190359922ab47675571ddc7703b7"
     }
    },
    "pc_path": "godot/assets/ships/H10_23/"
@@ -1008,197 +1008,217 @@
    "damage_preview": "previews/H9_23_damage.jpg"
   },
   "I11_37": {
-   "name": "Glasswright lancet",
+   "name": "Glasswright lancet GL1",
    "faction": "ithar",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "i_blade",
    "length_world": 9.5,
    "hardpoints": {
-    "gun": 2,
+    "gun": 4,
     "engine": 1,
-    "breach": 6,
-    "core": 1
+    "breach": 2,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 2,
+   "turrets": 0,
    "files": {
     "I11_37.glb": {
-     "bytes": 1383028,
-     "sha256": "e95e0d32c5468a1d1907cba117ad8a6022120877027a5b15e838c12d2856095e"
+     "bytes": 9882632,
+     "sha256": "df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d"
     },
     "I11_37_base.jpg": {
-     "bytes": 1091404,
-     "sha256": "90e3f788c0c5af9b36db5574a329a39fc0bd650c5d9b6b823e12e62145a06c30"
+     "bytes": 1356762,
+     "sha256": "f4ae296713317b589b9b0d02f155e04a2bef2d5b69d425a7c1bfb803f53afd3e"
     },
-    "I11_37_damage.glb": {
-     "bytes": 8664432,
-     "sha256": "c3e19f6f6dd485353d63551444a58de3e603c7609239f8e77f6b1dc0debeab6d"
+    "I11_37_emission.jpg": {
+     "bytes": 651960,
+     "sha256": "36dfe782709e376f56e2f1b3cdfb9c7cc318ff65c6f9433212708e55a034eb0d"
     },
-    "I11_37_emissive.jpg": {
-     "bytes": 966321,
-     "sha256": "7f762a2b96c50e16cc36cd78baafea51c3748af742acbe613ad6fb5284707568"
+    "I11_37_normal.png": {
+     "bytes": 4752934,
+     "sha256": "0279aff5dab75c9501beca50168f84b2efb87e9e2149fb8a197a8c68b7334d59"
     },
-    "I11_37_normal.jpg": {
-     "bytes": 160553,
-     "sha256": "d360928b4f4d6df1216adcad624e4175c75dc576007addaecdacb6174eec240b"
+    "I11_37_orm.png": {
+     "bytes": 4928621,
+     "sha256": "3049a347b2f6176ddf386ab36340f86d918f91d27cc23b2452bb874e591dadee"
     },
-    "I11_37_orm.jpg": {
-     "bytes": 1473448,
-     "sha256": "8fcce615407901cb6ebd6c36efe26b6dfcefaa108aa5408af5d73ffc9af60575"
+    "I11_37_parts_base.jpg": {
+     "bytes": 951454,
+     "sha256": "7384181d30494ded0469870954baf453f3d16ca4dcfb74152fe3b176898c1f3f"
     },
-    "I11_37_wreck.glb": {
-     "bytes": 956168,
-     "sha256": "5ce99ddad5d3844cb66f4a00b7f19751ecf98e71e847eb0a15527231b76d4702"
+    "I11_37_parts_normal.png": {
+     "bytes": 6057024,
+     "sha256": "a057ab7b69a24996b20c429b00cf03a17d7cd0b596198b667028c54dd4977ab2"
+    },
+    "I11_37_parts_orm.png": {
+     "bytes": 4980458,
+     "sha256": "b7f94135ecff836821b81b72d93853c236b99242ea4f059cb0beaa4fcfbed7c4"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I11_37\\",
-   "preview": "previews/I11_37.jpg",
-   "damage_preview": "previews/I11_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I11_37\\"
   },
   "I14_23": {
-   "name": "Glasswright sliver",
+   "name": "Glasswright sliver GS1",
    "faction": "ithar",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "i_wisp",
    "length_world": 6.5,
-   "hardpoints": {
-    "gun": 1,
-    "engine": 2,
-    "breach": 3,
-    "core": 1
-   },
-   "breaches": 3,
-   "skins": 7,
-   "files": {
-    "I14_23.glb": {
-     "bytes": 2753708,
-     "sha256": "5de7094f46f12b05bea987d12b19c2e11f8cd32a815a00d24cd58c9db554f11d"
-    },
-    "I14_23_base.jpg": {
-     "bytes": 1061346,
-     "sha256": "f16a6f03198b67afa8138061f94e36ebb9869c162ec59a7129f127f3d5af18bf"
-    },
-    "I14_23_damage.glb": {
-     "bytes": 12048896,
-     "sha256": "3b7e43bc0b8116e9b0368b038c466ebec68365ed9f52a7b1fbbd899694497425"
-    },
-    "I14_23_emissive.jpg": {
-     "bytes": 1086212,
-     "sha256": "38977fd2a94da7dca20df53ebca14c6e27c939a4ca04d1f966f91a40aacb7413"
-    },
-    "I14_23_normal.jpg": {
-     "bytes": 367111,
-     "sha256": "bf277803ffbb86e416aee931cddfdf6639775de15f19017b56379ffdb06004bc"
-    },
-    "I14_23_orm.jpg": {
-     "bytes": 1508790,
-     "sha256": "2723ab5f4be892fbb8144d1ee0c25e5f52d025a86d0779d340661afa65e7e691"
-    },
-    "I14_23_wreck.glb": {
-     "bytes": 1481312,
-     "sha256": "de3637c23f5b877fd6c6b4bce23fb11e73769421f5947bac75d285c229d2decb"
-    }
-   },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I14_23\\",
-   "preview": "previews/I14_23.jpg",
-   "damage_preview": "previews/I14_23_damage.jpg"
-  },
-  "I15_11": {
-   "name": "Glasswright prism",
-   "faction": "ithar",
-   "cls": "Cruiser",
-   "band": "M",
-   "length_world": 14.5,
    "hardpoints": {
     "gun": 3,
     "engine": 1,
-    "breach": 6,
-    "core": 1
+    "breach": 1,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 1,
+   "turrets": 0,
    "files": {
-    "I15_11.glb": {
-     "bytes": 1309768,
-     "sha256": "3f4de68770555af91686b6b240d51f3538efa56041bfa018669bed3f2f21cb72"
+    "I14_23.glb": {
+     "bytes": 7875604,
+     "sha256": "6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb"
     },
-    "I15_11_base.jpg": {
-     "bytes": 1046838,
-     "sha256": "f4051f18511637d66e58265072f3ed4fd57d3b826b8f14a71dda9e1a46a5746a"
+    "I14_23_base.jpg": {
+     "bytes": 1298615,
+     "sha256": "86c162e1ed86bfe4017b27ad1198b0a5d426ce71e861ff5b1141428cfe68ee59"
     },
-    "I15_11_damage.glb": {
-     "bytes": 8680672,
-     "sha256": "484eb5c8d78491bb0a799655064066ae8afea162da5ec9acdde82b5bae523b4b"
+    "I14_23_emission.jpg": {
+     "bytes": 594033,
+     "sha256": "34f40d9212e46350e399b289ce1b293a10a109c467daffdff672f3fe1b9e2591"
     },
-    "I15_11_emissive.jpg": {
-     "bytes": 565928,
-     "sha256": "5308f5545f21d1478ca248832baa03ab5fc4046b9d1e6648d446b37dc26c41de"
+    "I14_23_normal.png": {
+     "bytes": 4910234,
+     "sha256": "067d21b45e6047315ff7e2358df4b1997d4de7983c549d04b8b73ee5982ac346"
     },
-    "I15_11_normal.jpg": {
-     "bytes": 158726,
-     "sha256": "1f918ba9152790abab0eaad170a8f4b4d3183f959c6cb0aa05a5b93952221a6c"
+    "I14_23_orm.png": {
+     "bytes": 5024485,
+     "sha256": "588c085c23a6b88c2ee0eba0f4bfedba670e41d40a77d4e637b044e789341080"
     },
-    "I15_11_orm.jpg": {
-     "bytes": 1325860,
-     "sha256": "5a05cda7542bc7b6fa95fd86012d82bc953ebe892ebe106a944ef0ee9dbc0cd1"
+    "I14_23_parts_base.jpg": {
+     "bytes": 686458,
+     "sha256": "6f2c4813850cd65060c06808bd6bcab2f610040e4ed9f43c79e133b00cf447c1"
     },
-    "I15_11_wreck.glb": {
-     "bytes": 874688,
-     "sha256": "a0efbe2e23529b17d648d1e63bddfa744c9bbd6cad6f0943ec9424227886744a"
+    "I14_23_parts_normal.png": {
+     "bytes": 5191744,
+     "sha256": "5d32139783a93c45a47f4e5ac2bfe1854b0f92d295f39eac5797a700e26b7216"
+    },
+    "I14_23_parts_orm.png": {
+     "bytes": 3915447,
+     "sha256": "1ddc5f19a014e998fb91d032f7144b47041b8a549080608f5d87a35c815c95e6"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I15_11\\",
-   "preview": "previews/I15_11.jpg",
-   "damage_preview": "previews/I15_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I14_23\\"
+  },
+  "I15_11": {
+   "name": "Glasswright prism GP1",
+   "faction": "ithar",
+   "cls": "Cruiser",
+   "band": "M",
+   "game_ship": "i_song",
+   "length_world": 14.5,
+   "hardpoints": {
+    "gun": 3,
+    "engine": 2,
+    "breach": 3,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
+   },
+   "breaches": 3,
+   "turrets": 1,
+   "files": {
+    "I15_11.glb": {
+     "bytes": 16864876,
+     "sha256": "cdb9a54726119a5d7b06afaed44078764e0c26f60bc25eaa482356c00406c173"
+    },
+    "I15_11_base.jpg": {
+     "bytes": 1570541,
+     "sha256": "ecbbdb7fbe6868b032401c205837b14936c9cba3327006b83154483867b0cae0"
+    },
+    "I15_11_emission.jpg": {
+     "bytes": 799602,
+     "sha256": "799218233f5755becba231dc4d8a50022a3a94f86b6665e0f2796b89f8817018"
+    },
+    "I15_11_normal.png": {
+     "bytes": 6082531,
+     "sha256": "90da1b238ea31eb2935cfd6f978d05449330324b560b17856bee862bf605775a"
+    },
+    "I15_11_orm.png": {
+     "bytes": 6133331,
+     "sha256": "fe6fea13047733ac5c1cf33cb28a2b032551f7512031efa1bb9c1363df97afde"
+    },
+    "I15_11_parts_base.jpg": {
+     "bytes": 912124,
+     "sha256": "65407bc48655b03d71f68511f56dca63bc2a6e55914029401b49962abe0a2b16"
+    },
+    "I15_11_parts_normal.png": {
+     "bytes": 5574940,
+     "sha256": "f05865af9ccd07a165bfc1985eb3710e253f55b462f970c6af0561bad8b193d8"
+    },
+    "I15_11_parts_orm.png": {
+     "bytes": 4634899,
+     "sha256": "cc8c17d8ec2330a3d601fe3c1088f37cbf4353bd6eeff19b8d66248edf4c1b77"
+    }
+   },
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I15_11\\"
   },
   "I16_11": {
-   "name": "Glasswright aperture",
+   "name": "Glasswright aperture GA1",
    "faction": "ithar",
    "cls": "Carrier",
    "band": "L",
+   "game_ship": "i_carrier",
    "length_world": 16.5,
    "hardpoints": {
     "gun": 2,
-    "bay": 2,
     "engine": 1,
-    "breach": 8,
-    "core": 1
+    "bay": 2,
+    "breach": 5,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 5,
+   "turrets": 1,
    "files": {
     "I16_11.glb": {
-     "bytes": 4587880,
-     "sha256": "f395c36a43ac0a3fcd85e16daa34aa11605672eec8b52737e4c1e2e0ad9f65b8"
+     "bytes": 15996116,
+     "sha256": "8efcd98f9af249a687fcd4b859304906032ec6545b7f0acdc10f95d58f6d77fc"
     },
     "I16_11_base.jpg": {
-     "bytes": 3174034,
-     "sha256": "a3407ce3dd23009be911428e7bce471246d896f6fac1f8d94f8644e1fb29debe"
+     "bytes": 1908802,
+     "sha256": "c5dd13fef43a68064e3f1f435ccb43a87f566a8e8df763658ab4cbfe1cc54290"
     },
-    "I16_11_damage.glb": {
-     "bytes": 13659348,
-     "sha256": "ac62d036830bc5ecd4fef1fb08f3ae1f24bc06b6f008900a6c6a339fc43ab48b"
+    "I16_11_emission.jpg": {
+     "bytes": 698397,
+     "sha256": "4c56601bf0d8c0cfd085c460a506e0d7fa6f7fea19475ff278590f1d213ffdea"
     },
-    "I16_11_emissive.jpg": {
-     "bytes": 1356934,
-     "sha256": "2fa3e198c52ba75da9773733d635c9e53a49c83f38882996f62462afc2243dfb"
+    "I16_11_normal.png": {
+     "bytes": 6355564,
+     "sha256": "6b26a5f3d3878cea20b498d74088acf9d66f64646c43d2d3b6d0255477538161"
     },
-    "I16_11_normal.jpg": {
-     "bytes": 1607425,
-     "sha256": "98faaab641d390bcadce8a2ac0690865e64486413ab676893e5964452e39fe2e"
+    "I16_11_orm.png": {
+     "bytes": 6928649,
+     "sha256": "4adb198488b9465828b1e41284a5d258adc8a5e4f04b8a4586c1f6470e0ec025"
     },
-    "I16_11_orm.jpg": {
-     "bytes": 1549702,
-     "sha256": "8c3e1061a6c3dc5cd8b15ebc15cbc077ef6bf0603f297f0500f7334c27e04d22"
+    "I16_11_parts_base.jpg": {
+     "bytes": 993049,
+     "sha256": "08cb53add49cf3e78de4b70e6e38a8ba63e06e9176eeab2b9e4b01a888bc962e"
     },
-    "I16_11_wreck.glb": {
-     "bytes": 2797692,
-     "sha256": "3a20e457ee2ee6268b5a752ddf363b04f6e2790698c9110c5cbed82e2b5693ce"
+    "I16_11_parts_normal.png": {
+     "bytes": 6124544,
+     "sha256": "34abefca1f837c7f9b8781f306bf4a905345f15cda7b6e766b73c0ea9bd7297f"
+    },
+    "I16_11_parts_orm.png": {
+     "bytes": 5270450,
+     "sha256": "044c72e36d3965a32ae47743b1505c517a2ae48e744c63132797cadb50ec4d20"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I16_11\\",
-   "preview": "previews/I16_11.jpg",
-   "damage_preview": "previews/I16_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I16_11\\"
   },
   "I8_37": {
    "name": "The Unfinished",
@@ -1299,97 +1319,104 @@
    "damage_preview": "previews/O1_37_damage.jpg"
   },
   "O2_37": {
-   "name": "Convoy transport",
+   "name": "Convoy transport (Hegemony Navy objective)",
    "faction": "hegemony",
    "cls": "transport",
    "band": "M",
-   "length_world": 11,
+   "game_ship": "obj_transport",
+   "length_world": 11.0,
    "hardpoints": {
-    "engine": 2,
-    "breach": 6,
-    "core": 1
+    "engine": 4,
+    "breach": 4,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 4,
+   "turrets": 0,
    "files": {
     "O2_37.glb": {
-     "bytes": 5315840,
-     "sha256": "089b5fcd89fd9f28e5cdab3e04d932e32398c78860ee4ed3fc788425c48f0196"
+     "bytes": 3276716,
+     "sha256": "559e638717ebe771c3603f79cbb5175bda12ddc67f5b8d4a66701a0c3400e854"
     },
     "O2_37_base.jpg": {
-     "bytes": 1240724,
-     "sha256": "f615d95b0ab3cca4e6a157f75875896f7e8f8fe6979ed57bfcbbfe6b70b13b11"
+     "bytes": 1098116,
+     "sha256": "41846fb426deaaf4f369f5eee5d68b55a150e7a00ca1d24a28559571a3d2dcc4"
     },
-    "O2_37_damage.glb": {
-     "bytes": 22590176,
-     "sha256": "99c6452d126187d21b8bd861b049351ae87d0483a452744a5309ed4481dc8386"
+    "O2_37_glow_emission.jpg": {
+     "bytes": 349202,
+     "sha256": "516bab53a535f1309222bdc5ef2ae7274d508e4e07789d3f7436d232a8d8e9e9"
     },
-    "O2_37_emissive.jpg": {
-     "bytes": 144058,
-     "sha256": "4e72452aa6d050d26110f758b6a40d55864b8543bea74841f96a8548432da007"
+    "O2_37_normal.png": {
+     "bytes": 4792589,
+     "sha256": "76487fc5236f310f959185dc032e1c9ee010715ebc942cfb82b090ad27a71acc"
     },
-    "O2_37_normal.jpg": {
-     "bytes": 2638391,
-     "sha256": "3ebbfea89847ddc5422cd04fdbcfc7d735b498196e430b1ed4ea37291bc7aa11"
+    "O2_37_orm.png": {
+     "bytes": 5088942,
+     "sha256": "ab98cf36d54341c978359b883d70961b830ec418d3fbc6e7fee3e838c56f2a5d"
     },
-    "O2_37_orm.jpg": {
-     "bytes": 1745701,
-     "sha256": "8ae3a4adefd7488c780d288d13ee8f3d194ca8004657ad6592ec11b2d91105f3"
+    "O2_37_parts_base.jpg": {
+     "bytes": 1079039,
+     "sha256": "6f3465d71e24ae14910fdbebc0260054f14cf5074c2a68bc4bb7d3a6b5bad15e"
     },
-    "O2_37_wreck.glb": {
-     "bytes": 2990800,
-     "sha256": "6f3a3a2e67bf5acd83b4a76b28741f76b139edfc4df15b71cc199660b1772c7e"
+    "O2_37_parts_normal.png": {
+     "bytes": 4786999,
+     "sha256": "f0f35aba723261da7dd025861195edd88acaf414a6b05d7169db6a13d6b1b8ce"
+    },
+    "O2_37_parts_orm.png": {
+     "bytes": 5288515,
+     "sha256": "bae9a84cb45909df1bf39c9130f3b123e3fbad25b479fcae41105a7f02a1e8d2"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\O2_37\\",
-   "preview": "previews/O2_37.jpg",
-   "damage_preview": "previews/O2_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\O2_37\\"
   },
   "O3_11": {
-   "name": "Relay beacon",
+   "name": "Relay beacon (Hegemony Navy objective)",
    "faction": "hegemony",
    "cls": "beacon",
    "band": "S",
-   "length_world": 6,
+   "game_ship": "obj_beacon",
+   "length_world": 7.5,
    "hardpoints": {
-    "breach": 4,
     "core": 1
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 0,
+   "turrets": 0,
    "files": {
     "O3_11.glb": {
-     "bytes": 2823916,
-     "sha256": "db4b343ec4c58e55fbcaa28f75a999c1e08c90fc75adc83da8a8dc1198b4d48f"
+     "bytes": 1156108,
+     "sha256": "8ff62d4b73ac244074c0d463f7759674807099639ba84ae08a5201656bec5a85"
     },
     "O3_11_base.jpg": {
-     "bytes": 977518,
-     "sha256": "b8d63e60d729541f76ae53f0d34a1ddfd50886f24007ee3d38cb073583ff54f4"
+     "bytes": 872075,
+     "sha256": "dabe78c20f0ae5e16910899d7383ea56f995ee6486122f45ae2e77308ad98cdb"
     },
-    "O3_11_damage.glb": {
-     "bytes": 7639660,
-     "sha256": "14ae3a0b05f0bb5b78784df53850ef628497a10a2b8dc7f60cd09011f4a192e9"
+    "O3_11_glow_emission.jpg": {
+     "bytes": 354339,
+     "sha256": "56660831dab44fda681065c2c6914b51fa681c7647d048e0ab5000744d8986a0"
     },
-    "O3_11_emissive.jpg": {
-     "bytes": 145069,
-     "sha256": "5706a337f34c687f9c6632a939907c69fd7e1429dcc2a47500c7767ece925754"
+    "O3_11_normal.png": {
+     "bytes": 3799920,
+     "sha256": "c355a29cf5b4812103c1896eee413ba103874e77d1f8d9ad7a2cf092219d54ee"
     },
-    "O3_11_normal.jpg": {
-     "bytes": 2708288,
-     "sha256": "0d3448ebe901424de2f162e7327d833de6a2d9440b0ac48211894a162758189d"
+    "O3_11_orm.png": {
+     "bytes": 3879181,
+     "sha256": "54fc1b2c510d38329d1756959a72e9aff4611292e0ebf9edf78331593d1fca97"
     },
-    "O3_11_orm.jpg": {
-     "bytes": 1671120,
-     "sha256": "68f70aed444d245f12d5958541c7117c9ea76a8f952dbe09a5bc011762f51b16"
+    "O3_11_parts_base.jpg": {
+     "bytes": 1057927,
+     "sha256": "f8f31ff0eb321fd3a5810c128e3879e74d16a526bb2ad09f02bf30e6f592e0df"
     },
-    "O3_11_wreck.glb": {
-     "bytes": 1466820,
-     "sha256": "3872821b732f5e9a1e44fe0cd01c912f4b0cb1f0e6ac8c36b38cbefddcce5fff"
+    "O3_11_parts_normal.png": {
+     "bytes": 4844284,
+     "sha256": "3965e08b8cafbd206ca9338e4f94f27cfee1f9353b8a8ed408203a53f4c5de02"
+    },
+    "O3_11_parts_orm.png": {
+     "bytes": 5080646,
+     "sha256": "5b93ec2f966303cbb16a3d16862357996477e2a1add5eb49e716c395c7930560"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\O3_11\\",
-   "preview": "previews/O3_11.jpg",
-   "damage_preview": "previews/O3_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\O3_11\\"
   },
   "S1_51": {
    "name": "Fighter wing",
@@ -2165,32 +2192,32 @@
      "sha256": "0c5aba0895a748a0c24a50947512adce361f9ea2fa0059e96c50be196b2d6470"
     },
     "hegemony_HB1_base.jpg": {
-     "bytes": 1235704,
-     "sha256": "90eb8af7b65be83be0bb83b063223d4551090dbe86bcfb7b933b5a4945a6674e"
+     "bytes": 1493372,
+     "sha256": "a2fad3774610eaf9446e8fbdeae5f251c2c14b97c793ffac2b3909c5a9f7c7d9"
     },
     "hegemony_HB1_glow_emission.jpg": {
      "bytes": 152856,
      "sha256": "8e716da2320ecc4936d3e52e7af198533167fad3a9725c2f1878855cccf25bf1"
     },
     "hegemony_HB1_normal.png": {
-     "bytes": 4524157,
-     "sha256": "d5cb64cd1fed0c62536bacb4b4cfab0f90c0c8efc98629da177f0337eef0dded"
+     "bytes": 4834199,
+     "sha256": "3b1bf79383e667249092cdeb8030db55cb05abd153b3640102a39fbbb28eb5b8"
     },
     "hegemony_HB1_orm.png": {
-     "bytes": 6307791,
-     "sha256": "2c613b5464b2a657c4817275074bb4589e6f1b7e9492c8a6888088213c5d8c19"
+     "bytes": 6434252,
+     "sha256": "df649ae42c6f22a97e42ff17b07630049ea8ed1687d356aabf85690836b829cb"
     },
     "hegemony_HB1_parts_base.jpg": {
-     "bytes": 350225,
-     "sha256": "a290588688f5ee0171b222ef82247d2f2f3ff05c6334c9dd6bdb353420a3efe5"
+     "bytes": 523089,
+     "sha256": "d33019a6d5da52921e846c64343e4dde15006639a5018d9a04cfcf0161a635b1"
     },
     "hegemony_HB1_parts_normal.png": {
-     "bytes": 3657766,
-     "sha256": "612793f4a4c592ee4747b85b7f6c8f9c4bb50a624da837a2353d5ccc48ed4b31"
+     "bytes": 3675628,
+     "sha256": "91040dd8021dd84ceac2b92fc18d0592621288441c8df597caa98293a06abdfc"
     },
     "hegemony_HB1_parts_orm.png": {
-     "bytes": 3180638,
-     "sha256": "1455bd7b5bbf0e681d0b2b2875e0fe310f8a6d709b945c7d4b927a9b73bb6adf"
+     "bytes": 3197489,
+     "sha256": "6f9a63d605b5a2ae4acd948f3e3d03b82b4b00d054fbbe0525e9a47135e32e9b"
     }
    },
    "pc_path": "godot/assets/ships/hegemony_HB1/",

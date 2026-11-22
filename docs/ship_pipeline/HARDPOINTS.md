@@ -179,6 +179,27 @@ against the hull and every part that does not turn); the traverse is eased (an a
 arrives and leaves the turned muzzle; after its last shot the turret holds 0.9 s and trains back to rest. The rules never see it
 (RULEBOOK 7.4). A hull with no turret node keeps fixed guns: the 36 A4 hulls and the round 7 export of C15s_23.
 
+## Doors (issue 1543)
+
+Ryan (Nov 21 2026): a launch mouth has a flesh door "in sections with the opening spreading from the middle", closed between
+launches, plain flesh. The kit builds each lobe as a 'door' piece of its organ (tools/blender/kits/chorus/parts.py
+`door_lobes`, `launch_mouth(door=N)`); the build kit writes each lobe as its own object `<organ>_door_<k>` with its hinge, turning
+axis, the door's centre and the way out (kit.py `emit`), and the sheet names the bay it opens for (`door_bay`). Stage 7 writes:
+
+- `door_<n>`: at the mouth's centre, +Y out of the mouth; extras `kind` door, `id` (the organ), `bay` (the hp_bay_<i> it opens
+  for), `lobes`, `open_deg` (-100: each lobe folds down into the bore against its wall).
+- `door_<n>_lobe_<k>` under it: at the lobe's hinge, -Z toward the door's centre, +Y out, +X the hinge line; a turn of `open_deg`
+  about its local +X opens it. Its mesh `door_<n>_lobe_<k>_mesh` hangs under it in its frame. The lobes are not in the ship mesh.
+
+The export fits the move from the build's frame to the export's (every lobe vertex, least squares) and dies when it does not fit
+or when a hinge line is not the node's +X. Its report lists the doors and their triangles (`doors`, `door_triangles`).
+
+In the game (godot/fx/fx_hull.gd "doors"): `launch()` (fx_weapons.gd) opens the door of the bay a squadron leaves from: the
+lobes ease open over 0.28 s (shut before the first craft leaves at 0.3 s), hold while the squadron leaves, then ease shut over
+0.5 s; a second launch while it is open joins the open window. The pose is a pure function of the effect clock and the rules
+never see it (RULEBOOK 7.4). The check: `godot/render/test/door_check.gd -- SHIP.glb` (every door tied to a bay, shut at rest,
+only the launching bay's door opens, fully open while craft leave, no lobe rising past its shut height, smooth, shut after).
+
 ## The shield surface (for P3-22)
 
 The shield job (P3-22, issue 371) needs a surface it can hug to the hull, not a sphere. The recipe names it as an output so

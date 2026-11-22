@@ -754,7 +754,10 @@ Board's advice (R193). Set: Ryan (R64, R193). Ids: R64c, feel-02.
 7.8 **Strike craft move like small agile craft (quick turns, short burns), still never jerky.** Why: small craft should feel
 quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 
-## 8. Battle sound
+7.9 **Firing ends a non-Glasswright ship's movement for that activation: no move, turn in place or ram after it fires.**
+Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
+movement or a free turn after firing (Fleet Elsewhere, The Wall Moves, Cut and Turn) still work through that same budget. Why:
+Ryan, "Agree no" (issue 1560 item 14). Set: Ryan, Nov 22 (R396). Code: canRotate and ramInfo in both rules twins.
 
 8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
 rising whooshes or stock explosions; weight in the low and low-mid with a soft top. Why: "The sounds that I've heard from the

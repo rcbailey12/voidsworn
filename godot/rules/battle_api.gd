@@ -333,9 +333,17 @@ func move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
 	var r = _i_move(id, state, opts); _leave(true); return r
+# issue 1560: a move is applied only if its end (hex and facing) is still reachable now at no more than its cost, so a stale
+# state (worked out before a turn, or before another ship moved) can never end on a taken hex or spend the wrong movement
+func _reachable(u, state: Dictionary) -> bool:
+	if state.get("q") == null or state.get("r") == null or state.get("f") == null or state.get("cost") == null: return false
+	for s in R.computeReach(u, true).states:
+		if int(s.q) == int(state.q) and int(s.r) == int(state.r) and int(s.f) == int(state.f) and float(s.cost) <= float(state.cost) + 1e-9: return true
+	return false
 func _i_move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
+	if not _reachable(u, state): return false
 	R.B["busy"] = true
 	var lf = opts.get("late_fire")
 	if lf != null:

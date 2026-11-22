@@ -39,18 +39,24 @@ CONCEPT = dict(
     violet=[(210, 138, 222), (155, 71, 151), (104, 29, 85)],
     green=[(172, 200, 92), (109, 137, 51), (66, 90, 17)],
 )
-PALETTE = ('amber', 'violet', 'green')
-WEIGHTS = (55, 27, 18)
+# Ryan Nov 21 1:45 PM CT (1415G sheets): "tone down red and amber with a bit more blue and green and purple". Amber drops
+# from 55 to 32 and turns golden rather than red; a sapphire blue joins the palette.
+PALETTE = ('amber', 'violet', 'green', 'blue')
+WEIGHTS = (32, 26, 22, 20)
 
 # The glowing panel colour (PANEL; GLOW below is the bake's list of glowing stone zones): the concept's bright tone pushed to
 # full saturation (the panel glows, so it carries its own light). Round 5: emerald, not lime.
-PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10))
+PANEL = dict(amber=(0.90, 0.32, 0.02), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10), blue=(0.04, 0.28, 1.0))
 # Round 5 (outside read, Nov 19: "flat orange, purple and lime gravel"): each panel is lit from behind, so its colour runs
 # from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
+# Stored light, the seafoam of the faction's data glow #9fffd2 (issue 1415: the fleet hulls' cleft, star torpedo, hangar floor).
+LIGHT = (0.35, 1.0, 0.64)
+BEAM = (1.0, 0.97, 0.92)          # the lance's white beam core
 # Warming round (issue 1282, Ryan Nov 20: "put it in, then warm it up"): deep tones lifted so the panel edges glow too.
-TONES = dict(amber=((0.50, 0.06, 0.0), (1.0, 0.42, 0.02)),
+TONES = dict(amber=((0.46, 0.12, 0.0), (1.0, 0.58, 0.10)),      # Nov 21: golden, less red
              violet=((0.18, 0.01, 0.45), (0.66, 0.14, 1.0)),
-             green=((0.01, 0.24, 0.04), (0.24, 0.82, 0.06)))
+             green=((0.01, 0.24, 0.04), (0.24, 0.82, 0.06)),
+             blue=((0.01, 0.05, 0.38), (0.12, 0.48, 1.0)))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
@@ -222,6 +228,41 @@ def silver(name='gw_silver'):
     return m
 
 
+# Ryan Nov 21: the colours intermixed, "either as the individual tiles or more as streaks among others". The core's
+# marbled colour field (parts.MIX 'marble') gives the veins; on top, about a third of the tiles take another palette
+# colour of their own, so neighbouring tiles mix inside every vein (as the Nov 16 picks' stained glass does).
+TILE_SWAP = 0.26
+
+
+def tile_swap(nt, tint, cell_colour, glow):
+    """tint (colour socket) with TILE_SWAP of the cells recoloured: the cell's own random picks whether it swaps (red) and
+    to which palette colour (green), graded deep to hot by glow like the core. Returns a colour socket."""
+    N, Ln = nt.nodes, nt.links
+    sep = N.new('ShaderNodeSeparateColor'); Ln.new(cell_colour, sep.inputs[0])
+    ramps = []
+    for which in (0, 1):
+        rp = N.new('ShaderNodeValToRGB'); rp.color_ramp.interpolation = 'CONSTANT'
+        els = rp.color_ramp.elements
+        cols = [TONES[c][which] for c in PALETTE]
+        tot = float(sum(WEIGHTS))
+        els[0].position = 0.0; els[0].color = tuple(cols[0]) + (1,)
+        els[1].position = WEIGHTS[0] / tot; els[1].color = tuple(cols[1]) + (1,)
+        acc = WEIGHTS[0] + WEIGHTS[1]
+        for c, w in zip(cols[2:], WEIGHTS[2:]):          # any number of palette colours
+            e = els.new(acc / tot); e.color = tuple(c) + (1,); acc += w
+        Ln.new(sep.outputs[1], rp.inputs['Fac']); ramps.append(rp)
+    gp = N.new('ShaderNodeMath'); gp.operation = 'POWER'; gp.inputs[1].default_value = 1.5
+    Ln.new(glow, gp.inputs[0])
+    other = N.new('ShaderNodeMix'); other.data_type = 'RGBA'
+    Ln.new(gp.outputs[0], other.inputs['Factor']); Ln.new(ramps[0].outputs['Color'], other.inputs['A'])
+    Ln.new(ramps[1].outputs['Color'], other.inputs['B'])
+    pick = N.new('ShaderNodeMath'); pick.operation = 'LESS_THAN'; pick.inputs[1].default_value = TILE_SWAP
+    Ln.new(sep.outputs[0], pick.inputs[0])
+    out = N.new('ShaderNodeMix'); out.data_type = 'RGBA'
+    Ln.new(pick.outputs[0], out.inputs['Factor']); Ln.new(tint, out.inputs['A']); Ln.new(other.outputs['Result'], out.inputs['B'])
+    return out.outputs['Result']
+
+
 def mosaic(name='gw_mosaic'):
     """glowing stained-glass cells: tint and glow from the core's gw_tint / gw_glow attributes; dark leading between cells;
     each cell its own brightness and facet tilt; rare sparkles. Opaque."""
@@ -251,6 +292,7 @@ def mosaic(name='gw_mosaic'):
     k2 = N.new('ShaderNodeMath'); k2.operation = 'MULTIPLY'
     Ln.new(k.outputs[0], k2.inputs[0]); Ln.new(glow.outputs['Fac'], k2.inputs[1])
     col = N.new('ShaderNodeMix'); col.data_type = 'RGBA'; col.blend_type = 'MULTIPLY'; col.inputs['Factor'].default_value = 1.0
+    tint = type('T', (), {'outputs': {'Color': tile_swap(nt, tint.outputs['Color'], cells.outputs['Color'], glow.outputs['Fac'])}})()
     Ln.new(tint.outputs['Color'], col.inputs['A'])
     # base colour: the tint, darkened on the leading
     dark = N.new('ShaderNodeMix'); dark.data_type = 'RGBA'
@@ -352,6 +394,10 @@ def setup(kit):
         'gw_drive': gem('gw_drive', (0.62, 0.42, 1.0), 0.45),
         'gw_drive_cut': gem('gw_drive_cut', (0.78, 0.62, 1.0), 0.25, metallic=0.4, cut=True),
         'gw_drive_core': gem('gw_drive_core', (0.80, 0.62, 1.0), 0.9),   # warming round: dimmer, violet, not white
+        # stored light (the data glow #9fffd2): a star torpedo's body, a hangar lens floor (issue 1415)
+        'gw_light': gem('gw_light', LIGHT, 1.4),
+        # the lance's beam core (faction sheet: the prism lance is stored light let out, a white core with a rainbow fringe)
+        'gw_beam': gem('gw_beam', BEAM, 2.6),
     }
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
@@ -369,7 +415,10 @@ EMISSIVE_STRENGTH = 2.1          # the atlas holds emission / this (8-bit maps c
 #                                  (warming round: 1.6 to 2.1 with the mosaic at 3.4, so the atlas clips no more and the game
 #                                  panels glow about a third brighter)
 CELLS_PER_LENGTH = 109.0         # LOOK mosaic cell_scale (4.2 per world unit) on a 26-unit Ark, as in the review
-LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0004, bump_strength=.30)
+LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0032, bump_strength=1.0)
+# Surface relief heights (issue 1517, Nov 21: the PC's 1415E atlases measured normal relief 0.2 deg against the 3.5 floor)
+RELIEF = dict(pearl_scale=1.0, pearl_ripple=0.6, silver_line=0.3, tilt=0.6, came=1.0, hammer_scale=1.5, hammer=0.8, silver_scale=2.0, silver_twist=0.8,
+              lead_rough=0.45, glass_rough=0.30, pearl_rough=0.50, silver_rough=0.50)
 ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance')}
 ZONES.update({z: {} for z in ('cd5_frame', 'cd5_amber', 'cd5_violet', 'cd5_green', 'cd5_clear', 'cd5_silver')})
 FALLBACK = 'gw_pearl'
@@ -379,12 +428,22 @@ GLOW = {
     'gw_gem_green': (PANEL['green'], LOOK['gem']['emission']),
     'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 0.7), 'gw_drive_core': ((0.80, 0.62, 1.0), 0.9),
     'gw_tip': (LOOK['tip']['base'], 4.0),
+    'gw_light': (LIGHT, 1.4),
+    'gw_beam': (BEAM, 2.6),
 }
 
 
 def _attr(nt, name):
     from paint3 import node
     return node(nt, 'ShaderNodeAttribute', attribute_name=name)
+
+
+def _spread(nt, fac):
+    """a noise value stretched to -0.5..0.5 round its middle (Blender noise mostly sits between 0.3 and 0.7)"""
+    from paint3 import node
+    r = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(fac, r.inputs[0])
+    r.inputs[1].default_value = 0.3; r.inputs[2].default_value = 0.7; r.inputs[3].default_value = -0.5; r.inputs[4].default_value = 0.5
+    return r.outputs[0]
 
 
 def surface_layers(c, zone, tiles):
@@ -405,10 +464,24 @@ def surface_layers(c, zone, tiles):
         # Warming round (issue 1282): the game map is rougher than the review. Godot has no clear coat, so at 0.08 the key
         # light made tiny glints hot enough to bloom into a white halo at camera 170 (PC run W1C, shot q).
         rough = _m(nt, 'SUBTRACT', L['game_roughness'], _m(nt, 'MULTIPLY', line, 0.04))
-        return col, _m(nt, 'MULTIPLY', _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4)), 0.3), rough, metal
+        # Surface relief (issue 1517 floors, Nov 21): a fine poured ripple running with the strands, so the pearl is never a
+        # flat clay sheen; the silver lines stand proud of it
+        rip = node(nt, 'ShaderNodeTexNoise'); rip.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['pearl_scale']
+        rip.inputs['Detail'].default_value = 4.0; rip.inputs['Roughness'].default_value = 0.6
+        nt.links.new(c.pos, rip.inputs['Vector'])
+        h = _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4))
+        h = _m(nt, 'ADD', _m(nt, 'MULTIPLY', h, 0.3), _m(nt, 'MULTIPLY', rip.outputs['Fac'], RELIEF['pearl_ripple']))
+        h = _m(nt, 'ADD', h, _m(nt, 'MULTIPLY', line, RELIEF['silver_line']))
+        rough = _m(nt, 'ADD', rough, _m(nt, 'MULTIPLY', _spread(nt, rip.outputs['Fac']), RELIEF['pearl_rough']))   # mean unchanged
+        return col, h, rough, metal
     if zone in ('gw_silver', 'cd5_silver'):
         L = LOOK['silver']
-        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['game_roughness'], 0.0), L['metallic']
+        # relief (issue 1517): drawn silver wire, finely twisted, never a smooth tube
+        tw = node(nt, 'ShaderNodeTexNoise'); tw.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['silver_scale']
+        tw.inputs['Detail'].default_value = 2.0; nt.links.new(c.pos, tw.inputs['Vector'])
+        return (mixc(nt, L['base'], L['base'], 0.0), math_(nt, 'MULTIPLY', tw.outputs['Fac'], RELIEF['silver_twist']),
+                math_(nt, 'ADD', L['game_roughness'], math_(nt, 'MULTIPLY', _spread(nt, tw.outputs['Fac']), RELIEF['silver_rough'])),
+                L['metallic'])
     if zone == 'gw_mosaic':
         L = LOOK['mosaic']
         tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']
@@ -417,6 +490,7 @@ def surface_layers(c, zone, tiles):
         edges = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D', feature='DISTANCE_TO_EDGE')
         edges.inputs['Scale'].default_value = CELLS_PER_LENGTH
         nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
+        tint = tile_swap(nt, tint, cells.outputs['Color'], glow)
         sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
         bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
         bright.inputs[3].default_value = L['cell_lo']; bright.inputs[4].default_value = L['cell_hi']
@@ -433,7 +507,18 @@ def surface_layers(c, zone, tiles):
         body = mulc(nt, tint, L['body'])
         col = mixc(nt, L['lead_rgb'], body, lead.outputs[0])      # dark leading between the cells
         metal = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
-        return col, math_(nt, 'MULTIPLY', sep.outputs[1], 0.6), math_(nt, 'ADD', L['roughness'], 0.0), metal, emission
+        # Surface relief (issue 1517 floors, Nov 21): raised leading between the stones, each stone tilted its own way, and
+        # hammered glass in every stone, so the panels catch the light like real stained glass, never a flat print
+        ham = node(nt, 'ShaderNodeTexNoise'); ham.inputs['Scale'].default_value = CELLS_PER_LENGTH * RELIEF['hammer_scale']
+        ham.inputs['Detail'].default_value = 3.0; ham.inputs['Roughness'].default_value = 0.55
+        nt.links.new(c.pos, ham.inputs['Vector'])
+        came = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
+        h = math_(nt, 'ADD', math_(nt, 'MULTIPLY', sep.outputs[1], RELIEF['tilt']), math_(nt, 'MULTIPLY', came, RELIEF['came']))
+        h = math_(nt, 'ADD', h, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ham.outputs['Fac'], lead.outputs[0]), RELIEF['hammer']))
+        # the leading is matte; each stone keeps its own sheen, some glossier, some frosted (roughness spread, issue 1517)
+        rough = math_(nt, 'ADD', L['roughness'], math_(nt, 'ADD', math_(nt, 'MULTIPLY', came, RELIEF['lead_rough']),
+                                                     math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', sep.outputs[2], 0.5), RELIEF['glass_rough'])))
+        return col, h, rough, metal, emission
     # inside zones (break-up only) and anything unlisted: a dim pearl-grey glass
     return mixc(nt, (0.35, 0.36, 0.40), (0.35, 0.36, 0.40), 0.0), zero, math_(nt, 'ADD', 0.3, 0.0), 0.2
 

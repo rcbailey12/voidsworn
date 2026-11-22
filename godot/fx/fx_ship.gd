@@ -170,7 +170,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# why marks came and went between runs)
 	for m in meshes:
 		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -366,6 +366,8 @@ func update(fx, dt: float) -> void:
 		return
 	if not hull.turrets.is_empty():
 		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+	if not hull.doors.is_empty():
+		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
@@ -1444,8 +1446,85 @@ func _anchor(i: int, kind: String) -> Dictionary:
 						break
 		if h.is_empty():
 			return {}
+		if kind in ["a", "b"]:
+			h = _off_turrets(h, hull.L * BREACH.STAGE4_HOLE_L, i)
+			if h.is_empty():
+				_anchors[key] = {}   # no clear plating: this anchor opens nothing (kept, so it is not searched again)
+				return {}
 		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
 	return _anchors[key]
+
+
+# Issue 1235 (Board review of PR 1245): turret meshes take no baked damage (they turn), so a stage 4 hole opened under a
+# turret's foot would leave the whole turret standing over the hole. A breach anchor inside any turret's footprint (its
+# meshes' box seen from above, at rest, plus the hole's radius) is moved: first to points round the footprints it is in,
+# cast back onto the plating, then to other plating samples of its section; every candidate is checked against EVERY
+# footprint (Artoo, PR 1245: two seats side by side could push it from one into the other). If no clear spot is found
+# the section opens no hole there ({}), never one under a turret.
+func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
+	if _clear_of_turrets(h["p"], R):
+		return h
+	var nn: Vector3 = h["n"]
+	var p0: Vector3 = h["p"]
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		var rad: float = float(f[1]) + R * 1.15
+		if Vector2(p0.x - c.x, p0.z - c.z).length() >= rad:
+			continue
+		var d0 := Vector3(p0.x - c.x, 0.0, p0.z - c.z)
+		var a0 := atan2(d0.z, d0.x) if d0.length() > 1e-3 else 0.0
+		for k in 16:
+			var an := a0 + (k + 1) / 2 * (TAU / 16.0) * (1.0 if k % 2 == 0 else -1.0)
+			for grow in [1.0, 1.5, 2.2]:
+				var q := Vector3(c.x + cos(an) * rad * grow, p0.y, c.z + sin(an) * rad * grow)
+				var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
+				if not hit.is_empty() and _clear_of_turrets(hit["p"], R):
+					return {"p": hit["p"], "n": hit["n"]}
+	if sec >= 0:
+		for t in 48:
+			var c2: Dictionary = hull.random_sample(sec, 0.0)
+			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_of_turrets(c2["p"], R):
+				return {"p": c2["p"], "n": c2["n"]}
+	return {}
+
+
+func _clear_of_turrets(p: Vector3, R: float) -> bool:
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		if Vector2(p.x - c.x, p.z - c.z).length() < float(f[1]) + R * 1.15 - 1e-4:
+			return false
+	return true
+
+
+var _feet: Array = []
+var _feet_done := false
+
+
+# Each turret's footprint at rest in the ship frame: [centre, radius], from its meshes' boxes.
+func turret_feet() -> Array:
+	if _feet_done:
+		return _feet
+	_feet_done = true
+	if hull == null or not ("turrets" in hull) or not is_instance_valid(root):
+		return _feet
+	var inv: Transform3D = root.global_transform.affine_inverse()
+	for t in hull.turrets:
+		var node = t.get("node")
+		if not is_instance_valid(node):
+			continue
+		var box := AABB()
+		var any := false
+		for m in (node as Node).find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var b: AABB = (inv * mi.global_transform) * mi.mesh.get_aabb()
+			box = b if not any else box.merge(b)
+			any = true
+		if any:
+			var cen := box.get_center()
+			_feet.append([cen, 0.5 * Vector2(box.size.x, box.size.z).length()])
+	return _feet
 
 
 func _t0(a: Dictionary, st: int, fx) -> float:
@@ -1500,7 +1579,7 @@ func _plan(fx, i: int, st: int) -> Array:
 		patch.heat = 0.0
 		out.append(patch)
 	if st < 4 or fx.compat: return out
-	var e = BREACH.hole(hull, a.p, a.n, L * 0.032, 1.0, 0.14, sd)
+	var e = BREACH.hole(hull, a.p, a.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.14, sd)
 	e.t0 = _t0(a, st, fx)
 	e.sec = i
 	if faction == "chorus":
@@ -1509,11 +1588,45 @@ func _plan(fx, i: int, st: int) -> Array:
 	if weight >= 2:
 		var bt = _anchor(i, "b")
 		if bt.is_empty(): return out
-		var eb = BREACH.hole(hull, bt.p, bt.n, L * 0.032, 1.0, 0.12, sd + 2.1)
+		var eb = BREACH.hole(hull, bt.p, bt.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.12, sd + 2.1)
 		eb.t0 = _t0(bt, st, fx)
 		eb.sec = i
 		out.append(eb)
 	return out
+
+
+# The weapon marks drawn now: per section at most [2, 2, 3, 4, 4][stage] (all of them on a repaired, scarred section).
+# Issue 1235 (Neon audit F1.3): the cap kept the OLDEST marks, so after two early grazes a later torpedo was stored,
+# rebuilt for, and never drawn. Heavy marks (blast, ion, ram, a weight 3+ weapon) come first, then the newest; the
+# kept marks are returned in their stored order, so the rebuilt geometry does not reshuffle.
+func visible_marks(fx) -> Array:
+	var pick := {}
+	for sec in 3:
+		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[sec]]) * fx.cap_k))
+		if _scar_stage[sec] > stage[sec]:
+			cap = 1 << 20
+		var idx: Array = []
+		for j in _marks.size():
+			if _marks[j].sec == sec:
+				idx.append(j)
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			var ha := _heavy_mark(_marks[a])
+			var hb := _heavy_mark(_marks[b])
+			if ha != hb:
+				return ha
+			return a > b)
+		for k in mini(cap, idx.size()):
+			pick[idx[k]] = true
+	var out: Array = []
+	for j in _marks.size():
+		# a mark with no hull section (one placed by hand, not through add_mark) is never capped
+		if pick.has(j) or int(_marks[j].sec) < 0 or int(_marks[j].sec) > 2:
+			out.append(_marks[j])
+	return out
+
+
+static func _heavy_mark(e) -> bool:
+	return e.style in [BREACH.S_BLAST, BREACH.S_ION, BREACH.S_RAM] or int(e.wt) >= 3
 
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
@@ -1526,12 +1639,7 @@ func _dmg_request(fx) -> void:
 	var ents: Array = []
 	for i in 3:
 		ents.append_array(_ents[i])
-	for e in _marks:
-		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[e.sec]]) * fx.cap_k))
-		var used := 0
-		for x in ents:
-			if x.look != "" and x.sec == e.sec: used += 1
-		if used < cap or _scar_stage[e.sec] > stage[e.sec]: ents.append(e)
+	ents.append_array(visible_marks(fx))
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:
@@ -1962,7 +2070,9 @@ func _regrade_marks(fx) -> void:
 	var updated: Array = []
 	for e in _marks:
 		var damage: float = 1.0 - section_fraction[e.sec]
-		if absf(e.section_damage - damage) > 0.025:
+		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
+		# the sync right after a volley does not rebuild the hull a second time for a few percent
+		if absf(BREACH.mark_scale(e.section_damage) - BREACH.mark_scale(damage)) > 0.05:
 			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
 			if e.part_i < entries.size():
 				var replacement = entries[e.part_i]

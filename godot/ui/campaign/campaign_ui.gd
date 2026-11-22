@@ -1320,7 +1320,7 @@ func _jump_button() -> Button:
 	var jb = GS.sheet_jump_boxes(k)
 	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, jb["hover" if st == "focus" else st])
 	var h = row0(12); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); h.offset_left = px(16); h.offset_right = -px(16)
-	var text = "JUMP TO " + str(cur.get("name", "")).to_upper(); var fs = 34.0
+	var text = "JUMPING WHEN READY" if map3d != null and map3d._queued_jump else "JUMP TO " + str(cur.get("name", "")).to_upper(); var fs = 34.0
 	while fs > 28 and GS.sheet_name().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(fs)).x > px(COL_W - COL_PAD * 2 - 132): fs -= 1
 	var lw = tl(text, fs, 56, GS.MAP_EMBER, GS.sheet_name(), true); _jump_lbl = lw.get_meta("label"); h.add_child(lw)
 	var key = tl("Enter", 19, 56, GS.MAP_EMBER, GS.sheet_body()); h.add_child(key)
@@ -1344,6 +1344,8 @@ func route_num(id: String) -> int:   # the number a next jump wears in the list 
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
+	# A new pick is only a selection: it cancels a Jump queued under the loading cover, so the player confirms again (issue 1448).
+	if map3d != null and map3d.has_method("cancel_queued_jump"): map3d.cancel_queued_jump()
 	picked = id; _show_pick()
 func _show_pick() -> void:
 	if not _rail_pending and is_instance_valid(_rail_host):
