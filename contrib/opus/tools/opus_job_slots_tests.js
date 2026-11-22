@@ -55,8 +55,12 @@ function run(extra, ...args) {
   return { status: r.status, out: flat };
 }
 const waitFor = (test, ms) => { const end = Date.now() + ms; while (Date.now() < end) { if (test()) return true; spawnSync('sleep', ['0.2']); } return test(); };
+const gone = pid => { try { process.kill(pid, 0); } catch { return true; } return !windows && /^State:\s+Z/m.test((() => { try { return fs.readFileSync(`/proc/${pid}/status`, 'utf8'); } catch { return 'State: Z'; } })()); };
 const attempt = (job, n) => { const a = path.join(vt, job, `out_20261122_18000${n}_1`); fs.mkdirSync(a, { recursive: true }); return a; };
 const slot = n => path.join(vt, 'slots', n);
+// a stand-in job process: a background process of a shell that has ended (a killed one may stay unreaped; the head
+// counts that as ended)
+const sleeper = () => Number(spawnSync('sh', ['-c', 'sleep 120 >/dev/null 2>&1 & echo $!'], { encoding: 'utf8' }).stdout.trim());
 const holders = n => fs.existsSync(slot(n)) ? fs.readdirSync(slot(n)).filter(f => /^holder_[0-9a-f]{32}\.txt$/.test(f)) : [];
 try {
   const work = path.join(tmp, 'work');
@@ -155,8 +159,8 @@ try {
   fs.rmSync(path.join(slot('slot_gpu_2'), 'hold.txt'));
   git(['checkout', '-q', '--detach', one], repo2);
   write(path.join(repo1, 'godot', 'big_result.bin'), 'x'.repeat(4096));
-  const aM = attempt('opus1659m', 8);
-  r = run({ PC_TEST_LEFTOVER_CAP: '100' }, 'slot', aM, 'new', two);
+  const aM = attempt('opus1659m', 8), jobM = sleeper();
+  r = run({ PC_TEST_LEFTOVER_CAP: '100', PC_TEST_SLOT_OWNER_PID: String(jobM) }, 'slot', aM, 'new', two);
   assert(r.status === 0 && /slot held: the last job's leftovers/.test(r.out) && /slot slot_gpu_2 taken/.test(r.out), 'moves on to the next free slot: ' + r.out);
   assert(fs.existsSync(path.join(slot('slot_gpu_1'), 'hold.txt')) && fs.existsSync(path.join(repo1, 'godot', 'big_result.bin')), 'the held slot is kept as it is');
   assert.equal(git(['rev-parse', 'HEAD'], repo2), two);
@@ -166,7 +170,7 @@ try {
   const tokM = fs.readFileSync(path.join(aM, 'slot.txt'), 'utf8').trim().split('|')[1];
   const markM = path.join(slot('slot_gpu_2'), `holder_${tokM}.txt`);
   const holderPid = Number(fs.readFileSync(markM, 'utf8').trim().split(' ')[1]);
-  process.kill(holderPid, 'SIGKILL');
+  process.kill(holderPid, 'SIGKILL'); process.kill(jobM, 'SIGKILL');
   assert(fs.existsSync(markM), 'the stopped holder left its marker');
   const aN = attempt('opus1659n', 9);
   assert(waitFor(() => run({}, 'slot', aN, 'new', one).status === 0, 15000), 'a new job takes the freed slot');
@@ -179,8 +183,8 @@ try {
 
   // a holder that dies while its job is mid-reset (Artoo on PR 1728): a claimant that gets the lease waits on the slot's
   // reset lock, the dying job's reset fails at its last check, and the claimant's reset runs after it
-  const aP = attempt('opus1659p', 10), aQ = attempt('opus1659q', 11);
-  r = run({}, 'slot', aP, 'new', one);
+  const aP = attempt('opus1659p', 10), aQ = attempt('opus1659q', 11), jobP = sleeper();
+  r = run({ PC_TEST_SLOT_OWNER_PID: String(jobP) }, 'slot', aP, 'new', one);
   assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out), r.out);
   const rcP = path.join(tmp, 'p_rc.txt'), outP = path.join(tmp, 'p_out.txt');
   const quote = s => `'${s.replace(/'/g, `'\\''`)}'`;
@@ -188,6 +192,8 @@ try {
   const tokP = fs.readFileSync(path.join(aP, 'slot.txt'), 'utf8').trim().split('|')[1];
   assert(waitFor(() => fs.existsSync(path.join(slot('slot_gpu_2'), 'test_reset_in_flight')), 20000), 'the reset is in flight, holding its lock');
   process.kill(Number(fs.readFileSync(path.join(slot('slot_gpu_2'), `holder_${tokP}.txt`), 'utf8').trim().split(' ')[1]), 'SIGKILL');
+  process.kill(jobP, 'SIGKILL');   // the whole job went down mid-reset
+  assert(waitFor(() => gone(jobP), 10000), 'the dead job has ended');
   const startQ = Date.now();
   r = run({}, 'slot', aQ, 'new', one);
   assert(waitFor(() => fs.existsSync(rcP), 20000), 'the first reset ends');
@@ -196,6 +202,23 @@ try {
   assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out) && Date.now() - startQ >= 3000, 'the claimant waited for the reset lock: ' + r.out);
   assert.equal(git(['rev-parse', 'HEAD'], repo2), one, "the claimant's pin, applied after the dying reset");
   run({}, 'slotrelease', aQ);
+
+  // Artoo on PR 1728: the holder dies after the checkout returned while the job still runs (copying ships, Godot); no
+  // claimant may take the slot until the job's own process has ended
+  const aR = attempt('opus1659r', 12), aS = attempt('opus1659s', 13), jobR = sleeper();
+  r = run({ PC_TEST_SLOT_OWNER_PID: String(jobR) }, 'slot', aR, 'new', two);
+  assert(r.status === 0 && /slot slot_gpu_2 taken/.test(r.out), r.out);
+  const tokR = fs.readFileSync(path.join(aR, 'slot.txt'), 'utf8').trim().split('|')[1];
+  process.kill(Number(fs.readFileSync(path.join(slot('slot_gpu_2'), `holder_${tokR}.txt`), 'utf8').trim().split(' ')[1]), 'SIGKILL');
+  spawnSync('sleep', ['1']);
+  r = run({}, 'slot', aS, 'new', one);
+  assert(r.status !== 0 && /no free gpu slot/.test(r.out), 'the job still runs, so its slot is not free: ' + r.out);
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), two, "the running job's checkout is untouched");
+  process.kill(jobR, 'SIGKILL');
+  assert(waitFor(() => gone(jobR), 10000), 'the dead job has ended');
+  assert(waitFor(() => run({}, 'slot', aS, 'new', one).status === 0, 15000), 'once the job has ended the slot is taken');
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), one);
+  run({}, 'slotrelease', aS);
 
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {

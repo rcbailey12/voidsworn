@@ -853,6 +853,8 @@ function Get-OwnerProcess {
   return [int](Get-CimInstance Win32_Process -Filter "ProcessId=$PID").ParentProcessId
 }
 function Get-ProcStart($id) {
+  # tests (Linux): a killed process nobody has reaped yet still lists; it has ended all the same
+  if ($unix -and (Test-Path -LiteralPath "/proc/$id/status") -and ([IO.File]::ReadAllText("/proc/$id/status") -match '(?m)^State:\s+Z')) { return [long]0 }
   try { return (Get-Process -Id $id -ErrorAction Stop).StartTime.ToUniversalTime().Ticks } catch { return [long]0 }
 }
 function Test-SameProcess($id, $start) {
@@ -1118,14 +1120,27 @@ switch ($Action) {
     $lease = $null
     try { $lease = [IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None') }
     catch { [IO.File]::WriteAllText($ready, "busy`r`n"); exit 1 }
+    # Artoo on PR 1728: the lease alone is not the job. A holder can die while its job still copies ships or runs Godot in
+    # the slot, so the slot stays the last job's until that job's own process has ended or its tail let the slot go.
+    $prev = Join-Path $dir 'owner.txt'
+    if (Test-Path -LiteralPath $prev -PathType Leaf) {
+      $txt = [IO.File]::ReadAllText($prev)
+      if ($txt -notmatch '(?m)^released' -and $txt -match '(?m)^job process ([0-9]+) ([0-9]+)\r?$' -and (Test-SameProcess ([int]$Matches[1]) ([long]$Matches[2]))) {
+        $lease.Dispose(); [IO.File]::WriteAllText($ready, "busy: the last job's process $($Matches[1]) still runs`r`n"); exit 1
+      }
+    }
+    $released = $false
     try {
       # markers of earlier holders are stale now that this one holds the lease
       foreach ($old in @(Get-ChildItem -LiteralPath $dir -Force -File | Where-Object { $_.Name -match '\A(holder|release)_[0-9a-f]{32}(\.txt|\.err)?\z' -and $_.Name -notlike "*$token*" })) { [IO.File]::Delete($old.FullName) }
-      [IO.File]::WriteAllText((Join-Path $dir 'owner.txt'), "attempt $env:OJ_SLOT_ATTEMPT`r`ntoken $token`r`njob process $owner`r`nholder $PID`r`nsince $([DateTime]::UtcNow.ToString('o'))`r`n")
+      [IO.File]::WriteAllText((Join-Path $dir 'owner.txt'), "attempt $env:OJ_SLOT_ATTEMPT`r`ntoken $token`r`njob process $owner $ownerStart`r`nholder $PID`r`nsince $([DateTime]::UtcNow.ToString('o'))`r`n")
       [IO.File]::WriteAllText($ready, "held $PID $(Get-ProcStart $PID)`r`n")
       $end = [DateTime]::UtcNow.AddHours(48)
       while ([DateTime]::UtcNow -lt $end -and -not (Test-Path -LiteralPath $release) -and (Test-SameProcess $owner $ownerStart)) { Start-Sleep -Milliseconds 1000 }
+      $released = Test-Path -LiteralPath $release
     } finally {
+      # the tail's release frees the slot even while the job's cmd still runs its last lines
+      if ($released) { [IO.File]::AppendAllText((Join-Path $dir 'owner.txt'), "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
       foreach ($f in @($ready, $release, (Join-Path $dir "holder_$token.err"))) { if (Test-Path -LiteralPath $f) { [IO.File]::Delete($f) } }
       $lease.Dispose()
     }
