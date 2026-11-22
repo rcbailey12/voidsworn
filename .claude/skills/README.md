@@ -21,7 +21,7 @@ standing check `skills_mirror_tests.js` fails when the two differ. Edit here, th
 | godot-4-api-pitfalls, godot-control-layout, godot-signals, godot-scene-organization, godot-verify | ziva-sh/godot-skills (MIT) | Godot 4 code, UI layout, signals, scenes, and checking from the command line |
 
 Ryan named the first nine Pocock skills and the five Godot skills. grilling, domain-modeling, codebase-design and
-writing-for-agents came with them because the named ones call them and do nothing without them. Not installed, by
+writing-for-agents were pulled in as dependencies, because the named ones call them and do nothing without them. Not installed, by
 Ryan's word: Claude-Code-Game-Studios, gd-agentic-skills --all, the full obra/superpowers, godot-tilemaplayer.
 
 ## House notes (these win over the skill text)
