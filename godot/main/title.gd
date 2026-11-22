@@ -544,7 +544,9 @@ func _toggle(t: String, key: String) -> Control:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
-		main.save_settings())
+		main.save_settings()
+		if key == "taa" and main.has_method("restart_showcase"):
+			main.restart_showcase())
 	return Kit.row(t, b, k, _ctrl_w)
 
 
@@ -566,6 +568,8 @@ func _choice(t: String, key: String, opts: Array) -> Control:
 		main.settings[key] = opts[(i + 1) % opts.size()][0]
 		b.text = label_of.call()
 		main.save_settings()
+		if key == "quality" and main.has_method("restart_showcase"):
+			main.restart_showcase()   # issue 1437: the battle behind the menu takes the new Graphics at once
 		if key == "ui_scale":
 			_settings_focus = key   # the rebuilt panel puts focus back on this row, not on Sound
 			_rebuild())
@@ -664,6 +668,18 @@ func _report() -> void:
 	line += ", %d of %d menu buttons take keyboard focus, focus on %s" % [nfocus, nbuttons, ("\"" + (fo as Button).text + "\"") if fo is Button else "nothing"]
 	ok = ok and nfocus == nbuttons and fo != null
 	print(line + (" PASS" if ok else " FAIL"))
+
+
+# Issue 1437 (review on PR 1607): the showcase was rebuilt for a new Graphics or TAA setting, or removed for Low: the sky
+# picture comes back until the new battle is in
+func cover_showcase() -> void:
+	if _reveal_tw != null and _reveal_tw.is_valid():
+		_reveal_tw.kill()
+	_revealed = false
+	if _bg != null and is_instance_valid(_bg):
+		_bg.modulate.a = 1.0
+	if _shade != null and is_instance_valid(_shade):
+		_shade.color.a = SHADE_SKY
 
 
 func reveal_showcase() -> void:

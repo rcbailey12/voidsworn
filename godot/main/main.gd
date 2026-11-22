@@ -248,7 +248,7 @@ func _apply_settings() -> void:
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
-	if not bot_mode and not capture and not player_path_window and DisplayServer.get_name() != "headless":
+	if player_launch():
 		_apply_display()
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
@@ -263,8 +263,12 @@ func _apply_settings() -> void:
 # player-path runs never read them, so timing jobs stay uncapped and recordings stay on the player defaults.
 func _apply_display() -> void:
 	var rs := clampf(float(settings.get("render_scale", 1.0)), 0.5, 1.0)
-	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
-	get_viewport().scaling_3d_scale = rs
+	# the battle draws in the game's own viewport; the sector map draws in its own full-screen one (map3d.gd), which
+	# reads the same value when it is built. Small portraits and podiums stay at full scale.
+	Engine.set_meta("render_scale", rs)
+	apply_render_scale(get_viewport(), rs)
+	for vp in get_tree().get_nodes_in_group("player_3d_viewport"):
+		apply_render_scale(vp, rs)
 	Engine.max_fps = maxi(0, int(settings.get("fps_cap", 0)))
 	var vs := DisplayServer.VSYNC_ENABLED if bool(settings.get("vsync", true)) else DisplayServer.VSYNC_DISABLED
 	if DisplayServer.window_get_vsync_mode() != vs:
@@ -279,6 +283,18 @@ func apply_volumes() -> void:
 	if battle != null and is_instance_valid(battle) and battle.sfx != null:
 		battle.sfx.set_volume(float(settings["volume"]))
 	_settings_to_ui_sound()
+
+
+static func apply_render_scale(vp: Viewport, rs: float) -> void:
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	vp.scaling_3d_scale = rs
+
+
+# Issue 1437 (review on PR 1607): the player's Render scale, Frame cap and V-Sync apply only to a plain launch, the way
+# the player starts the game. Any command-line job flag (bot runs, a quick battle, a scenario, every capture or timing
+# flag, a player path recording) keeps the engine defaults, so measurements never pick up the player's display settings.
+func player_launch() -> bool:
+	return args.is_empty() and player_path == null and not bot_mode and DisplayServer.get_name() != "headless"
 
 
 func _settings_to_ui_sound() -> void:
@@ -405,6 +421,18 @@ func _start_showcase() -> void:
 		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[title] shot saved ", args["title-shot"])
 		quit_clean(0)
+
+
+# Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
+# setting (Low has none), so what shows is what the setting gives
+func restart_showcase() -> void:
+	if showcase != null and is_instance_valid(showcase):
+		showcase.queue_free()
+	showcase = null
+	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
+		title.cover_showcase()
+	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
+		get_tree().create_timer(0.3).timeout.connect(_start_showcase)
 
 
 func _clear() -> void:
