@@ -50,5 +50,18 @@ try {
   assert.notEqual(run('opus1657', outside).status, 0, 'a folder outside voidsworn_test is refused');
   assert.notEqual(run('bad name', at).status, 0, 'a bad job name is refused');
   assert.notEqual(run('opus1657', at, 'live').status, 0, 'only dry is a mode');
-  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing');
+  // Artoo on PR 1672: a link as an out_* folder, or on the way to the attempt, is refused before anything is read
+  const before = git(['--git-dir', relaySource, 'rev-parse', 'refs/heads/pc-out-opus1657']);
+  const harmless = path.join(tmp, 'harmless'); write(path.join(harmless, 'note.txt'), 'outside the attempt');
+  const at3 = path.join(vt, 'opus1657', 'out_20261122_160000_3'); write(path.join(at3, 'status.txt'), 'status\n');
+  fs.symlinkSync(harmless, path.join(at3, 'out_link'), 'junction');
+  r = run('opus1657', at3);
+  assert(r.status !== 0 && /a link in the results: .*out_link/.test(r.out), 'an out_* link is refused: ' + r.out);
+  fs.mkdirSync(path.join(harmless, 'out_20261122_170000_4', 'out_new'), { recursive: true });
+  write(path.join(harmless, 'out_20261122_170000_4', 'out_new', 'shot.png'), 'x');
+  fs.symlinkSync(harmless, path.join(vt, 'linkedjob'), 'junction');
+  r = run('opus1657', path.join(vt, 'linkedjob', 'out_20261122_170000_4'));
+  assert(r.status !== 0 && /a link on the way to the attempt: .*linkedjob/.test(r.out), 'an attempt under a link is refused: ' + r.out);
+  assert.equal(git(['--git-dir', relaySource, 'rev-parse', 'refs/heads/pc-out-opus1657']), before, 'a refusal sends nothing');
+  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing, links refused');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

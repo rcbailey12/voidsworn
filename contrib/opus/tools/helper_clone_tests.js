@@ -121,7 +121,7 @@ try {
     write(path.join(out, 'result.txt'), 'started\nPASS\nall done\n');
     r = release();
     assert.notEqual(r.status, 0);
-    assert.match(r.out, /out files are not on a board\/pc-out relay branch; nothing removed/);
+    assert.match(r.out, /out files are not on a relay branch \(board\/pc-out or the relay repo\); nothing removed/);
     assert.equal(read(cloneShip), 'build v3', 'nothing removed before the relay');
     const relay = path.join(tmp, 'relay');
     git(['init', '-q', '-b', 'board/pc-out-fixture', relay]);

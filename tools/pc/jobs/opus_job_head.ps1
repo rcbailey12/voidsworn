@@ -95,17 +95,10 @@ function Lock-RelayMirror {
 function Update-RelayMirror {
   # The relay repo's own mirror: made on first use, fetched under its own lock. Never touches the shared repo mirror.
   if (-not $relaySource) { return }
-  if ($script:relayLock) {
-    if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD'))) { return }
-    if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
-    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-    return
-  }
-  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
-  while (-not $lock) {
-    try { $lock = [IO.File]::Open($relayMirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
-    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'relay repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
-  }
+  # A removal already holds the lock ($script:relayLock): make and fetch the mirror under it (the first relay proof of a
+  # PC happens inside a removal, so the mirror must be made there too). Otherwise take the lock for this fetch only.
+  $lock = $null
+  if (-not $script:relayLock) { $lock = Lock-RelayMirror }
   try {
     if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD'))) {
       Run-Git init -q --bare $relayMirror | Out-Null
@@ -113,7 +106,7 @@ function Update-RelayMirror {
     }
     if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
     Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-  } finally { $lock.Dispose() }
+  } finally { if ($lock) { $lock.Dispose() } }
 }
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
 function Run-Git {

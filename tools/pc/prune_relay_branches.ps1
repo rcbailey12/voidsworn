@@ -2,8 +2,9 @@
 # (rcbailey12/voidsworn: 22.66 GB and 701 branches on Nov 22, 316 pc-out and 133 pin). Results now go to the private
 # relay repo (relay_push.ps1), so these branches only bloat the code repo.
 #   prune_relay_branches.ps1            dry run (the default): writes the list it would delete, deletes nothing
-#   prune_relay_branches.ps1 live       deletes exactly the branches in the newest dry-run list, each only if it is
-#                                       still at the commit the list names; asks Ryan to type YES first
+#   prune_relay_branches.ps1 live       deletes only branches in the newest dry-run list that are still at the commit the
+#                                       list names AND still pass every keep rule below, checked again now; asks Ryan
+#                                       to type YES first
 # A branch is KEPT when any of these holds:
 #   1. it is named in voidsworn_test\prune\keep.txt (one branch per line; the Board writes the queued pins there);
 #   2. a queued job names it (any file directly in a voidsworn_test\queue* folder);
@@ -42,31 +43,7 @@ foreach ($l in @(Run-Git ls-remote $source 'refs/heads/board/pc-out-*' 'refs/hea
 }
 Say ("{0}: {1} board/pc-out and board/pin branches on GitHub" -f $stamp, $remote.Count)
 
-if ($live) {
-  $lists = @(Get-ChildItem -LiteralPath $home1657 -Filter 'prune_list_*.txt' | Sort-Object Name)
-  if (-not $lists.Count) { throw 'no dry-run list yet: run PRUNE_RELAY_BRANCHES_DRY.bat first' }
-  $list = $lists[-1]
-  $rows = @(foreach ($l in [IO.File]::ReadAllLines($list.FullName)) { if ($l -match '\A(board/(?:pc-out|pin)-[A-Za-z0-9._-]+) ([0-9a-f]{40})\z') { @{ Name = $Matches[1]; Sha = $Matches[2] } } })
-  Say "list: $($list.Name), $($rows.Count) branch(es)"
-  if (-not $rows.Count) { Say 'nothing to delete'; exit 0 }
-  if (-not $test) {
-    $answer = Read-Host "Delete these $($rows.Count) branches from GitHub? Type YES to go ahead"
-    if ($answer -cne 'YES') { Say 'not confirmed: nothing deleted'; exit 1 }
-  }
-  $done = 0; $kept = 0
-  foreach ($r in $rows) {
-    if ($remote[$r.Name] -ne $r.Sha) { Say "kept (moved or already gone since the dry run): $($r.Name)"; $kept++; continue }
-    # only if GitHub still has it at the listed commit (a lease, so a branch a job pushed again since stays)
-    $ErrorActionPreference = 'Continue'
-    $o = & $gitExe push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
-    $ok = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
-    if ($ok) { $done++; Add-Content -LiteralPath $log -Value "deleted $($r.Name) $($r.Sha)" } else { $kept++; Say "kept (GitHub refused: $($o -join ' ')): $($r.Name)" }
-  }
-  Say "deleted $done branch(es), kept $kept; the list and this log are in $home1657"
-  exit 0
-}
-
-# Dry run: decide each branch.
+# Decide each branch from the PC's state now (the dry run writes this; the live run checks it again before each delete).
 $keep = @{}
 $keepFile = Join-Path $home1657 'keep.txt'
 if (Test-Path -LiteralPath $keepFile) { foreach ($l in [IO.File]::ReadAllLines($keepFile)) { $t = $l.Trim(); if ($t) { $keep[$t] = 'in keep.txt' } } }
@@ -130,6 +107,36 @@ foreach ($name in ($remote.Keys | Sort-Object)) {
   if ($now - $d.At -lt $days * 86400) { $why[$name] = "newer than $days days"; continue }
   $prune += "$name $sha"
 }
+
+if ($live) {
+  $nowPrune = $prune
+  $lists = @(Get-ChildItem -LiteralPath $home1657 -Filter 'prune_list_*.txt' | Sort-Object Name)
+  if (-not $lists.Count) { throw 'no dry-run list yet: run PRUNE_RELAY_BRANCHES_DRY.bat first' }
+  $list = $lists[-1]
+  $rows = @(foreach ($l in [IO.File]::ReadAllLines($list.FullName)) { if ($l -match '\A(board/(?:pc-out|pin)-[A-Za-z0-9._-]+) ([0-9a-f]{40})\z') { @{ Name = $Matches[1]; Sha = $Matches[2] } } })
+  Say "list: $($list.Name), $($rows.Count) branch(es)"
+  if (-not $rows.Count) { Say 'nothing to delete'; exit 0 }
+  if (-not $test) {
+    $answer = Read-Host "Delete these $($rows.Count) branches from GitHub? Type YES to go ahead"
+    if ($answer -cne 'YES') { Say 'not confirmed: nothing deleted'; exit 1 }
+  }
+  $done = 0; $kept = 0
+  foreach ($r in $rows) {
+    if ($remote[$r.Name] -ne $r.Sha) { Say "kept (moved or already gone since the dry run): $($r.Name)"; $kept++; continue }
+    # every protection again, as it stands now (Artoo on PR 1672): a keep.txt line, a queued job, an open PR or a checkout
+    # added since the dry run keeps the branch even though its commit did not move
+    if ($why[$r.Name]) { Say "kept (now protected: $($why[$r.Name])): $($r.Name)"; $kept++; continue }
+    if ($nowPrune -notcontains "$($r.Name) $($r.Sha)") { Say "kept (no longer on a fresh dry-run list): $($r.Name)"; $kept++; continue }
+    # only if GitHub still has it at the listed commit (a lease, so a branch a job pushed again since stays)
+    $ErrorActionPreference = 'Continue'
+    $o = & $gitExe push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
+    $ok = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
+    if ($ok) { $done++; Add-Content -LiteralPath $log -Value "deleted $($r.Name) $($r.Sha)" } else { $kept++; Say "kept (GitHub refused: $($o -join ' ')): $($r.Name)" }
+  }
+  Say "deleted $done branch(es), kept $kept; the list and this log are in $home1657"
+  exit 0
+}
+
 $listFile = Join-Path $home1657 "prune_list_$stamp.txt"
 [IO.File]::WriteAllLines($listFile, [string[]]$prune)
 foreach ($k in ($why.Keys | Sort-Object)) { Add-Content -LiteralPath $log -Value "keep $k ($($why[$k]))" }

@@ -37,6 +37,14 @@ $at = Get-Item -LiteralPath $Attempt -Force
 if (-not $at.PSIsContainer -or ($at.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "not a plain folder: $Attempt" }
 $full = $at.FullName.TrimEnd('\', '/')
 if (-not $full.StartsWith($vt + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw "the attempt must be inside $vt" }
+# No link anywhere from voidsworn_test down to the attempt (Artoo on PR 1672): an ancestor junction would make the
+# lexical inside-check above meaningless.
+$walk = $at.Parent
+while ($walk -and $walk.FullName.TrimEnd('\', '/').Length -gt $vt.Length) {
+  if ($walk.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link on the way to the attempt: $($walk.FullName)" }
+  $walk = $walk.Parent
+}
+if ((Get-Item -LiteralPath $vt -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "voidsworn_test itself is a link: $vt" }
 $leaf = $at.Name
 if ($leaf -notmatch '\A[A-Za-z0-9._-]+\z' -or $leaf -eq '..') { throw "not an attempt folder name: $leaf" }
 $branch = "pc-out-$Job"
@@ -47,6 +55,8 @@ foreach ($e in @($at.EnumerateFiles())) {
   if ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
 }
 foreach ($d in @($at.EnumerateDirectories('out_*'))) {
+  # each out_* folder is checked before the walk enters it, like every folder below it
+  if ($d.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($d.FullName)" }
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'; $pending.Push($d)
   while ($pending.Count) {
     foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {

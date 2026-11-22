@@ -416,7 +416,8 @@ as before, now from `relay/pc-out-<job>` (relay_branch.txt) or an older board/pc
 pushed to the main repo. Stale board/pc-out-* and board/pin-* branches go only through `tools\pc\PRUNE_RELAY_BRANCHES_DRY.bat`
 (lists, deletes nothing) and then `PRUNE_RELAY_BRANCHES_LIVE.bat` after Ryan's own yes on that list; a branch still named by
 a queued job, in `voidsworn_test\prune\keep.txt`, under 3 days old, used by an open PR or still needed to prove a PC job's
-relay is kept. Why: the main repo was 22.66 GB with 701 branches, 316 board/pc-out and 133 board/pin (Nov 22); Ryan picked
+relay is kept, and the live run checks every one of those again just before each delete, so a keep line or queued job
+added after the dry run still keeps an unmoved branch. Why: the main repo was 22.66 GB with 701 branches, 316 board/pc-out and 133 board/pin (Nov 22); Ryan picked
 "Private GitHub relay repo" (Nov 22 2026, 12:14 UTC, decision card in thread "Upgrade studio ops and PC harness"), and approved
 the plan: "Route binary PC outputs ... to a disposable private relay repo (`rcbailey12/voidsworn-relay`, wiped monthly) ...
 Ship a safe double-click Windows `.bat` script (dry-run default first) ... to prune the 447 stale `board/pc-out-*` and
