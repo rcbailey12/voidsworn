@@ -327,18 +327,44 @@ static func hulk(code: String) -> Node3D:
 	return n
 
 
-# the burnt copy of one hull material for a faction's derelict
+# R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk's base albedo sits between 0.04 and 0.30
+# linear luminance; the Chorus and Glasswright burns keep their hue and are only scaled into that band
+const HULK_BAND := Vector2(0.04, 0.30)
+
+
+static func linear_luma(c: Color) -> float:
+	var l := c.srgb_to_linear()
+	return 0.2126 * l.r + 0.7152 * l.g + 0.0722 * l.b
+
+
+# scale a colour's value (same hue and alpha) so its linear luminance lies inside HULK_BAND
+static func into_band(c: Color) -> Color:
+	var y := linear_luma(c)
+	if y <= 1e-5:
+		return c
+	var want := clampf(y, HULK_BAND.x, HULK_BAND.y)
+	if is_equal_approx(want, y):
+		return c
+	var l := c.srgb_to_linear()
+	var k := want / y
+	var out := Color(minf(l.r * k, 1.0), minf(l.g * k, 1.0), minf(l.b * k, 1.0), 1.0).linear_to_srgb()
+	out.a = c.a
+	return out
+
+
+# the burnt copy of one hull material for a faction's derelict (R420 Law 3 hulk column: no soot on Glasswright glass or
+# Chorus chitin; the metal soot is a warm grey, never green, so Eclipse hulks carry no green)
 static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var b := src.duplicate() as BaseMaterial3D
 	b.emission_enabled = false
 	match fac:
 		"chorus":
 			var c := src.albedo_color
-			b.albedo_color = Color(c.r * 0.5, c.g * 0.45, c.b * 0.45, c.a)   # dried chitin, its own hue, a touch warmer
+			b.albedo_color = into_band(Color(c.r * 0.5, c.g * 0.45, c.b * 0.45, c.a))   # dried chitin, its own hue, a touch warmer
 			b.roughness = minf(1.0, src.roughness * 1.1)
 		"ithar":
 			var g := src.albedo_color
-			b.albedo_color = Color(g.r * 0.6, g.g * 0.6, g.b * 0.62, g.a)    # dead crystal: darker, same hue, alpha and gloss
+			b.albedo_color = into_band(Color(g.r * 0.6, g.g * 0.6, g.b * 0.62, g.a))    # dead crystal: darker, same hue, alpha and gloss
 		_:
 			b.albedo_color = Color(0.32, 0.29, 0.27)  # soot over the paint; the paint's own pattern still shows
 			b.roughness = minf(1.0, b.roughness * 1.2)
