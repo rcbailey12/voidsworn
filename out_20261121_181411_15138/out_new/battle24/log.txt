@@ -1,0 +1,107 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+GPU: waiting for solo claim, weight 1 (1439)
+GPU: acquired solo claim 2f6b210f-795e-42ef-921a-3e5d029266bd
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-45e2237ec64f45f8aab450ea1bc740fa\godot-profile-fdb85f56917d4fdd8a3855c232547308
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 28 ms
+[sfx] 71 cues, 67 clip sets, loaded in 331 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 7.059, target 4.4; visual tuning (R191)
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on hegemony|fighter: arc -180 to 180, trains all round
+[world] baked c884a9e2201a51173f5f2bb9a5ef7b8d29cb05a7fe1ee98ac5a09bc08131a69a 4096x2048 in 13229 ms (worker)
+[world] baked 9365c2f8c48dbf1989956acf0d300cf492beb5efdf576a7af02ba8a24fdc670a 4096x2048 in 15630 ms (worker)
+[world] baked cf6ed33160b6675e7307f28b0e4543e9b21790f48742d411e70121b630d90596 1024x512 in 16069 ms (worker)
+[world] baked 3ccb01efd6eeabfe7346385e6cda8ecd8ed0b8c3b542858c1a019cc63843a88c 1024x512 in 16481 ms (worker)
+[world] baked 9de514380dac396a39b7cdb3c646f73873ac2d871f67a85160bf45bc9abbbfc1 4096x2048 in 1964 ms (worker)
+[world] baked 90f3632eb0ff5d7d9d9601b2fb978a8986b48dfc8c610adc589957ccd183944c 1024x512 in 1830 ms (worker)
+[world] baked 521126be7fa01e9a9aab89b3260cbc7c03a4cbddde5f0e383aef817f98b44a7d 1024x512 in 1801 ms (worker)
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on corsair|bomber; using the surface ray
+[attach] hp_rcs missing on corsair|bomber; using the surface ray
+[attach] hp_breach on H7_23: no authored point fits this request; using the surface ray
+[attach] scorch on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on C15s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on C15s_23: no authored point fits this request; using the surface ray
+[attach] scorch on H10_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on H10_23: no authored point fits this request; using the surface ray
+[attach] scorch on C16s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on C16s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] scorch on C16s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C16s_23: no authored point fits this request; using the surface ray
+[attach] battle x06 C16s_23: skipped 0; rcs hp 406 ray 376 centre 0 skip 0; bay hp 5 ray 0 centre 0 skip 0; gun hp 24 ray 0 centre 0 skip 0; breach hp 3 ray 1 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x07 C16s_23: skipped 0; rcs hp 359 ray 281 centre 0 skip 0; bay hp 4 ray 0 centre 0 skip 0; gun hp 24 ray 0 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 4 centre 0 skip 0
+[attach] battle x08 C15s_23: skipped 0; rcs hp 257 ray 213 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; gun hp 9 ray 12 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 256 ray 154 centre 0 skip 0; gun hp 30 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x010 C13s_23: skipped 0; rcs hp 215 ray 129 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 20 ray 0 centre 0 skip 0
+[attach] battle x011 H10_23: skipped 0; rcs hp 588 ray 0 centre 0 skip 0; gun hp 29 ray 0 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x012 H8_23: skipped 0; rcs hp 0 ray 448 centre 0 skip 0; gun hp 15 ray 6 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x013 H7_23: skipped 0; rcs hp 0 ray 60 centre 0 skip 0; gun hp 6 ray 0 centre 0 skip 0
+[attach] battle x014 H7_23: skipped 0; rcs hp 0 ray 216 centre 0 skip 0; gun hp 13 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x015 H7_23: skipped 0; rcs hp 0 ray 256 centre 0 skip 0; gun hp 25 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x016 H8_23: skipped 0; rcs hp 0 ray 330 centre 0 skip 0; gun hp 15 ray 12 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x017 H8_23: skipped 0; rcs hp 0 ray 188 centre 0 skip 0; gun hp 3 ray 12 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 4 centre 0 skip 0
+[attach] battle x018 H7_23: skipped 0; rcs hp 0 ray 152 centre 0 skip 0; gun hp 14 ray 0 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 5 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x019 H8_23: skipped 0; rcs hp 0 ray 436 centre 0 skip 0; gun hp 12 ray 18 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x022 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x023 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x024 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x025 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x026 corsair|bomber: skipped 0; gun hp 4 ray 0 centre 0 skip 0
+[attach] battle x027 hegemony|fighter: skipped 0; gun hp 15 ray 0 centre 0 skip 0
+[attach] battle x028 hegemony|fighter: skipped 0; gun hp 15 ray 0 centre 0 skip 0
+[attach] battle x029 hegemony|fighter: skipped 0; gun hp 12 ray 0 centre 0 skip 0
+[attach] battle x030 corsair|bomber: skipped 0; rcs hp 0 ray 12 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0
+[attach] battle x031 corsair|bomber: skipped 0; rcs hp 0 ray 12 centre 0 skip 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x032 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x034 H7_23: skipped 0; rcs hp 0 ray 116 centre 0 skip 0; gun hp 4 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x035 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x037 corsair|bomber: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[perf-1439] done: quick battle returned to the title
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-45e2237ec64f45f8aab450ea1bc740fa\godot-profile-fdb85f56917d4fdd8a3855c232547308
+GPU: released solo claim 2f6b210f-795e-42ef-921a-3e5d029266bd

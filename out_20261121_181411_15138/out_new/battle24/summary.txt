@@ -1,0 +1,15 @@
+Run: C:\Users\rcbai\Downloads\voidsworn_test\opus1439\out_20261121_181411_15138\out_new\battle24
+Note: quick battle returned to the title  Battles reached: 0  Frames: 44651
+Adapter: NVIDIA GeForce RTX 5080  Viewport: (2560.0, 1440.0)  Quality: max  Fullscreen: True
+First drawn title: 346,534 ms after engine start; 347,775 ms after the bat launched the exe
+Battle 1 playable (cover lifted): 33,999 ms after engine start
+Windows GPU memory: game process 32628, 127 samples read, 1 unavailable, 128 from other processes ignored
+
+stage            seconds  worst ms  >100ms  compiles   vram MB    tex MB    buf MB   win ded   win shr
+load1               29.3     5,688      21       505     2,332     1,752       315     2,536       393
+battle1_open        10.0       290       2         5     2,351     1,757       309     2,536       385
+battle1            299.5       316      43        22     2,837     1,757       796     3,048       385
+title                0.0         0       0         0     2,841     1,759       797       n/a       n/a
+
+compiles = pipeline compilations during the stage (canvas, mesh, surface, draw, specialization); vram/tex/buf = Godot's
+monitors (peak); win ded/shr = Windows dedicated and shared GPU memory for the game process (peak, 1 s samples).

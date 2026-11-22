@@ -1,0 +1,14 @@
+SELFTEST OK
+Run: C:\Users\rcbai\AppData\Local\Temp\perf1439-selftest-29c90dcc802447039dcfa829a792e25e
+Note: fixture  Battles reached: 1  Frames: 3
+Adapter: fixture  Viewport: (3840, 2160)  Quality: max  Fullscreen: True
+First drawn title: 900 ms after engine start; 900 ms after the bat launched the exe
+Battle 1 playable (cover lifted): 5,000 ms after engine start
+Windows GPU memory: game process 4242, 2 samples read, 1 unavailable, 2 from other processes ignored
+
+stage            seconds  worst ms  >100ms  compiles   vram MB    tex MB    buf MB   win ded   win shr
+title                3.0       121       1         7     1,200       800       300     1,500       130
+
+compiles = pipeline compilations during the stage (canvas, mesh, surface, draw, specialization); vram/tex/buf = Godot's
+monitors (peak); win ded/shr = Windows dedicated and shared GPU memory for the game process (peak, 1 s samples).
+
