@@ -1,0 +1,69 @@
+{
+  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_dirty": true,
+  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_dirty_files": {
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "bow.jpg",
+  "date": "2026-11-22T17:25:25Z",
+  "sources": [
+    {
+      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_dirty": true,
+      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_dirty_files": {
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "bow.png",
+      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_dirty": true,
+      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "stage": "sheet built",
+      "date": "2026-11-22T17:25:22Z",
+      "image_sha256": "c4e4e46ae5aa4f511a54d1ca3067cc63831b2d139aca00cb21f53d7af9778c63",
+      "sources": [
+        {
+          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_dirty": true,
+          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_dirty_files": {
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    446,
+    282,
+    495
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "4469b181c85939d505524d5aaf6a08db5c87ccb8467353c2c5d85ba454c591f3"
+  ],
+  "stamp_template_sha256": "b7d986ff5a0623c082b4f8f59684423c296bdb7fabd5f2477a65e0b90a5b72d4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "0d361f8de62f37f37e1175c3cb802e86805eece398bd5cb7c11caa6f9d927a5a"
+}
