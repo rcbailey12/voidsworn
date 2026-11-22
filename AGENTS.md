@@ -88,7 +88,9 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
 - Anything Ryan runs himself is a double-click `.bat` file (Windows 10, PowerShell 5.1, no Python of his own).
 - Before anything bigger than a quick fix, ask 3 to 5 plain multiple-choice scope questions in one batch.
 - Questions for Ryan go to him in your own chat, never as GitHub tags or comments; message him only when something lands or
-  needs him.
+  needs him. Non-urgent picks wait for the Morning or Evening Pick Sheet (RULEBOOK 1.8, R408).
+- No paid OpenAI API review where Artoo or Claude code review covers the PR (2.18, R406); no GPU capture on a PR before green
+  checks and a passed review (3.12, R407).
 - Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
   what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
   stays code only, and gpu_go.txt still wins.
