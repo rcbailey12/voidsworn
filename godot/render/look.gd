@@ -168,6 +168,13 @@ const DETAIL_FACTIONS := ["voidsworn", "hegemony", "corsair", "chorus", "ithar",
 static var _detail := {}   # faction -> [grain texture, normal texture]
 
 
+# Issue 1204: the detail maps and fitted hull materials are GPU resources held in statics; dropped before quit
+# (render/static_caches.gd).
+static func clear_static() -> void:
+	_detail.clear()
+	_fit_cache.clear()
+
+
 static func v2_of(key: String):
 	var t: Dictionary = tune.get("v2", {})
 	return t.get(key, V2[key])
@@ -223,7 +230,7 @@ static func _detail_layer(m: BaseMaterial3D, faction: String) -> void:
 # faction, but two ships from one glb can be fitted at different lengths, and the grain scale lives on the material; so
 # each fitted scale gets its own copy (cached, so ships of one size still share). A material with no detail layer is
 # returned as it is. The Board audit of PR 1786 found the clash.
-static var _fit_cache := {}   # not GPU: "material id|k" -> material
+static var _fit_cache := {}   # "material id|k" -> material (cleared in clear_static)
 static func fitted(m: Material, k: float) -> Material:
 	var b := m as BaseMaterial3D
 	if b == null or not b.detail_enabled or not b.has_meta("look_detail"):
