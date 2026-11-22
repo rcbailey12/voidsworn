@@ -97,6 +97,13 @@ var disp := {}             # id -> {hp, sh} as drawn (changes as hits land)
 var regen_unlocks := {}    # id -> number of lock expiries played, so a late hit cannot restore an expired lock
 var views := {}            # id -> ShipView
 var wrecked := {}
+# issue 1586: a kill the rules call "big" after a ram, or "dark" after a boarding scuttle, plays its own death look ("ram",
+# "board"); the view picks it from the event that came before, so the rules and battle.js keep their killCause (R312)
+# Only the deaths of the action that set a mark take its look: any next action clears the marks (Artoo on PR 1666: a ram
+# both ships survived must not turn a later torpedo kill into a ram death). The marks are read once from the whole batch
+# when it starts (view_causes), so no playback branch (the grouped volley path skips _play_event) can miss an action.
+var _view_cause := {}      # dying unit id -> "ram" | "board", for the batch being played
+const VIEW_CAUSE_ACTIONS := ["fire", "move", "ram", "board", "ability", "blink", "activation", "command", "order", "tick", "round", "wing", "pulled", "burning"]
 var board: Node3D
 var cam: Camera3D
 var hud: CanvasLayer
@@ -1265,6 +1272,7 @@ var _deaths_left := 0         # issue 1238: death events still to play in this b
 
 func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
+	_view_cause = view_causes(evs)
 	var enemy := false
 	dying.clear()
 	_deaths_left = 0
@@ -2743,6 +2751,54 @@ func _kill_skip() -> void:
 	_kill_let_go()
 
 
+# issue 1586: walks a batch's events in order. A ram marks both ships, a boarding scuttle its target, each with the two
+# ships of that action. A death of a marked ship takes the mark only when the death's killer ("by") is one of those two.
+# A new turn (activation, round, tick, command, order) ends every mark; any other action ends the marks of the ships that
+# act in it, so a ram both ships survived cannot colour a later kill by one of them. Actions by other ships (a Rolling
+# Fire shot or a Brood Tithe wing that the kill itself sets off before its death event: Codex review of PR 1666) leave
+# the marks alone. Returns dying unit id -> "ram" | "board".
+const VIEW_CAUSE_TURN := ["activation", "round", "tick", "command", "order"]
+static func view_causes(evs: Array) -> Dictionary:
+	var marks := {}   # unit id -> [look, [the two ships]]
+	var out := {}
+	for e in evs:
+		var kind := str(e.get("t", ""))
+		var who := str(e.get("unit", ""))
+		if kind in VIEW_CAUSE_TURN:
+			marks.clear()
+		elif kind in VIEW_CAUSE_ACTIONS:
+			for id in marks.keys():
+				if who in (marks[id][1] as Array):
+					marks.erase(id)
+		var pair := [who, str(e.get("target", ""))]
+		if kind == "ram":
+			marks[pair[1]] = ["ram", pair]
+			marks[pair[0]] = ["ram_prow", pair]   # the rammer: its crush is at its own prow
+		elif kind == "board" and str(e.get("result", "")) == "scuttle":
+			marks[pair[1]] = ["board", pair]
+		elif kind == "death" and marks.has(who):
+			var m: Array = marks[who]
+			var by := str(e.get("by", "")) if e.get("by") != null else ""
+			if by == "" or by in (m[1] as Array):
+				out[who] = m[0]
+			marks.erase(who)
+	return out
+
+
+# issue 1586: the death look for a kill: "ram" for a ram kill the rules call "big", "board" for a scuttle they call "dark"
+func view_cause(cause: String, id: String) -> String:
+	var v := str(_view_cause.get(id, ""))
+	_view_cause.erase(id)
+	if v.begins_with("ram") and cause == "big":
+		if v == "ram_prow" and gfx != null and gfx.has_method("ship"):
+			var fs = gfx.ship(id)
+			if fs != null: fs.set_meta("death_ram_prow", true)   # fx_death_beats._ram puts the crush at the prow
+		return "ram"
+	if v == "board" and cause == "dark":
+		return "board"
+	return cause
+
+
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
@@ -2752,7 +2808,7 @@ func _play_death(e: Dictionary) -> void:
 		_kill_frame(id)
 		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
-	var cause := str(e.get("cause", "blast"))
+	var cause := view_cause(str(e.get("cause", "blast")), str(id))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
 	_log("%s %s." % [_name(id), "is shot down" if sq else "is destroyed"], "e" if friend else "p")
@@ -2797,7 +2853,7 @@ func _play_death(e: Dictionary) -> void:
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
 	# The fallback has no staged run. Dark/hulk outcomes still never get a boom.
-	if cause in ["dark", "hulk"]:
+	if cause in ["dark", "hulk", "board"]:
 		sfx.play("hulk_vent", {"pos": p})
 	else:
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
@@ -5447,6 +5503,7 @@ func _refresh_ui() -> void:
 	hud.set_target(_target_info())
 	# F1: the activation card (the ship that is up and how to finish it) and the phase strip
 	hud.set_card(_card_info() if mine and not busy and not bot and not showcase else {})
+	hud.set_playing(busy and not ended and api.phase != "over")   # issue 1708: the sheet steps aside while a scene plays
 	if showcase or bot or ended or api.phase == "over":
 		hud.set_phase("", "")
 	elif mine and not busy:

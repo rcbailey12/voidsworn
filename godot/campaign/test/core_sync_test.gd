@@ -1,5 +1,8 @@
+# Optional second argument saves UI shots.
+# Saved from contrib/opus/tools/core_sync_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://campaign/test/core_sync_cases.json.
 extends SceneTree
-# Run with browser fixtures from core_sync_tests.js. Optional second arg saves UI shots.
+# Optional second argument saves UI shots.
 const Campaign = preload("res://campaign/campaign.gd")
 const UI = preload("res://ui/campaign/campaign_ui.gd")
 const JSM = preload("res://rules/jsm.gd")
@@ -59,5 +62,5 @@ func _run() -> void:
 		check(notices == f["notices"], f["name"] + ": exact announcement parity")
 		if shots and f["name"] in ["tier 4", "duo tiers", "past full sync"]:
 			await shot(args[1], "core_sync_debrief_" + str(f["name"]).replace(" ", "_"))
-	print("PASS: core sync announcements and inheritance match browser fixtures." if failures == 0 else "FAIL: %d checks" % failures)
+	print("PASS: core sync announcements and inheritance match the saved cases." if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)

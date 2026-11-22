@@ -132,15 +132,16 @@ func _run() -> void:
 			"%s: a healthy ship has no sick nozzle, no jammed turret and steady power" % faction)
 		check(s.hull.turret_section(0) == HULL.SEC_PROW and s.hull.turret_section(1) == HULL.SEC_MID,
 			"%s: the stand-in has a prow turret and a mid turret" % faction)
-		# Neon on PR 1631: an ion hit on a fresh hull (no breach yet, so no damage surfaces) still browns it out
+		# Neon on PR 1631: an ion hit on a fresh hull (no breach yet, so no damage surfaces) still browns it out; since
+		# PR 1699 (Neon item c) the hit's own brownout (hit_power) is the one path
 		check(s._damage_surfaces.is_empty(), "%s: a fresh hull has no damage surfaces yet" % faction)
-		s.power_dip(fx, 0.5)
+		s.hit_power(fx, true, 0.62, 0.5)
 		fx.step(0.05)
 		var dip_lo := 1.0
 		for key in s._damage_surfaces:
 			var fl = (s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_flick")
 			if fl != null: dip_lo = minf(dip_lo, float(fl))
-		check(not s._damage_surfaces.is_empty() and dip_lo < 0.5, "%s: an ion dip on a fresh hull dims its lights (%d surfaces, fx_flick %.2f)" % [faction, s._damage_surfaces.size(), dip_lo])
+		check(not s._damage_surfaces.is_empty() and dip_lo < 0.6, "%s: an ion dip on a fresh hull dims its lights (%d surfaces, fx_flick %.2f)" % [faction, s._damage_surfaces.size(), dip_lo])
 		settle(1.0)
 		var nodes0: int = _emitters(s)
 

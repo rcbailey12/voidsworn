@@ -4,7 +4,7 @@ rem From the baked ship (stage 5) and the ship json, with no hand steps, this wr
 rem Downloads\voidsworn_test\recipe\SHIP\export\CODE\ : CODE.glb (one ship node with a child node per hard point: hp_w per weapon
 rem muzzle, hp_eng, hp_bay, hp_breach, hp_core, hp_rcs, hp_board) and the 2048 map set (export7.py), plus manifest_entry.json
 rem with the point counts. Then it reads the glb back and checks it (check_export.py): FAIL when a required point is missing
-rem (a weapon slot of the ship's data.js weapon list, an engine, a hangar mouth, the core, the braking and boarding origins), or
+rem (a weapon slot of the ship's Godot weapon list, an engine, a hangar mouth, the core, the braking and boarding origins), or
 rem the breach count for the ship's class and faction does not match the one table (tools/blender/kits/shared/hardpoints.py),
 rem or a hard point is off the mesh; see docs/ship_pipeline/HARDPOINTS.md. The standing checks (outline per third, inner edges,
 rem second camera, paint sides, blink sheet, licences, light sizes) must also pass before anything is written.

@@ -85,7 +85,7 @@ func _save(code: String, frames: Array) -> void:
 
 
 func _tag(code: String, what: String) -> void:
-	label.text = "%s   %s   (1589 r2, %s)" % [code, what, stage]
+	label.text = "%s   %s   (1589 r3 + 1708, %s)" % [code, what, stage]
 
 
 func _strip(code: String, what: String, at: Array) -> Array:

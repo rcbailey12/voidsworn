@@ -18,11 +18,11 @@
 #                             number, each in one compartment               compartment) and r209_l_line (the first, or [])
 #   part kinds                each part's objects: part_kind and machine    unchanged: the stage 4 audit reads machine (R226)
 #                             (the faction kit's MACHINES)
-#   gun and launcher mounts   kit fit records (muzzles, barrel aim, bore,  scene r209_hp muzzles (slot = the data.js index of the
+#   gun and launcher mounts   kit fit records (muzzles, barrel aim, bore,  scene r209_hp muzzles (slot = the Godot index of the
 #                             mount normal, slot letter and weapon)         sheet's weapon and arc; a pair listed twice is dealt
 #                                                                           in build order, slot_map) and r209_guns (aim, normal)
 #   turrets                   pivot empties <id>_turret, turning meshes     unchanged hierarchy; the pivot's slot letter becomes
-#                             as children (R219)                            the data.js slot index
+#                             as children (R219)                            the Godot slot index
 #   engines                   K.engine: the bell exit centre and radius     scene r209_hp engines (aft, the open bell's centre)
 #   core, breach, rcs,        K.point rows (bay with its launch dir)        scene r209_points (export7 uses them instead of
 #   board, bay                                                              placing its own), r209_hp bays
@@ -53,20 +53,20 @@ def _bbox(objs):
 
 
 def slot_map(weapons, mounts):
-    """the data.js slot of every sheet gun and launcher, mounts = [(id, arc letter, weapon)] in the sheet's build order.
+    """the Godot slot of every sheet gun and launcher, mounts = [(id, arc letter, weapon)] in the sheet's build order.
     A weapon and arc that name one slot give it to every mount of that pair (a battery of several guns fires as one slot).
-    A pair that data.js lists more than once (issue 618: Eclipse d_boss and d_harvester carry 'gauss T' twice) deals its
+    A pair that Godot lists more than once (issue 618: Eclipse d_boss and d_harvester carry 'gauss T' twice) deals its
     mounts over those slots in build order, the first mounts to the first slot, so each slot gets its own guns; fewer mounts
-    than slots is refused by name. A pair data.js does not list is refused by name."""
+    than slots is refused by name. A pair Godot does not list is refused by name."""
     out = {}; groups = {}
     for fid, letter, weapon in mounts:
         groups.setdefault((weapon, letter), []).append(fid)
     for (weapon, letter), fids in groups.items():
         hits = [i for i, (wk, arc) in enumerate(weapons) if wk == weapon and arc == letter]
         if not hits:
-            raise ContractError(f'{fids[0]}: weapon {weapon!r} arc {letter!r} names 0 slots of the data.js list {weapons}')
+            raise ContractError(f'{fids[0]}: weapon {weapon!r} arc {letter!r} names 0 slots of the Godot list {weapons}')
         if len(fids) < len(hits):
-            raise ContractError(f'{", ".join(fids)}: weapon {weapon!r} arc {letter!r} names {len(hits)} slots of the data.js list {weapons} '
+            raise ContractError(f'{", ".join(fids)}: weapon {weapon!r} arc {letter!r} names {len(hits)} slots of the Godot list {weapons} '
                                 f'but the sheet mounts only {len(fids)}')
         for k, fid in enumerate(fids):
             out[fid] = hits[k * len(hits) // len(fids)]
@@ -99,7 +99,7 @@ def to_recipe(K, ship):
     import gamedata
     sc = bpy.context.scene
     game = ship.get('game_ship')
-    if not game: raise ContractError('the ship json has no game_ship (the data.js id)')
+    if not game: raise ContractError('the ship json has no game_ship (the Godot id)')
     if K.game_ship and K.game_ship != game:
         raise ContractError(f'the built sheet is {K.game_ship}, but the recipe names {game}: rebuild the selected variant')
     if K.variant and ship.get('game_code') != game:
@@ -107,7 +107,7 @@ def to_recipe(K, ship):
     weapons = gamedata.weapons(game); hangar = int(gamedata.ship_attr(game, 'hangar', default=0) or 0)
     feats = {f['id']: f for f in K.features}
     slots = slot_map(weapons, [(fd['id'], fd['slot'], feats.get(fd['id'], {}).get('weapon')) for fd in K.fitdata if fd['kind'] in ('gun', 'launcher')])
-    # the weapon-match check (issue 676, R241): every visible weapon is a data.js weapon, tied, aimed, turning and split as the
+    # the weapon-match check (issue 676, R241): every visible weapon is a Godot weapon, tied, aimed, turning and split as the
     # game fires it. Run on the sheet's own units, before the scene is scaled; a ship that fails it does not reach stage 4.
     if HERE not in sys.path: sys.path.insert(0, HERE)
     import weapon_match
@@ -189,7 +189,7 @@ def to_recipe(K, ship):
     if not hp['engines'] and not placed: raise ContractError('the sheet has no engine')
     sc['r209_hp'] = json.dumps(hp); sc['r209_guns'] = json.dumps(guns); sc['r209_points'] = json.dumps(pts)
 
-    # turret pivots: the data.js slot index in place of the sheet's arc letter
+    # turret pivots: the Godot slot index in place of the sheet's arc letter
     pivots = [o for o in sc.objects if o.type == 'EMPTY' and o.get('turret')]
     for pv in pivots:
         fid = pv.name[:-len('_turret')] if pv.name.endswith('_turret') else pv.name

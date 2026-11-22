@@ -858,6 +858,7 @@ static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k:
 #   4. the turn: the flight leaves along the tube's own line and bends onto the target with only a low lift, never a
 #      climb. A deck tube that points up is tipped toward the target so the round does not stand on its tail.
 const LAUNCH_EJECT := {"torp": 0.7, "rockets": 0.14, "star": 0.22}   # torp: a long slow slide so it plainly leaves the hull (Ryan, Nov 21)
+const LAUNCH_MAX_RISE := 0.34   # issue 1713: sine of the steepest slide out of a deck tube (about 20 degrees)
 const LAUNCH_PUSH := {"torp": 3.5, "rockets": 1.4, "star": 1.6}   # push-out length, in round lengths (pk)
 # Ryan, Nov 21 ("the size of the torpedoes looks odd ... too large"): the round itself is drawn smaller than its old size
 # against the ships. Its trail, flashes and shoot-down follow the smaller body; the push-out distance does not shrink.
@@ -873,6 +874,10 @@ static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
 		d = (d - flat * d.dot(flat) * 1.2).normalized()   # never back toward the firing ship's own far side
 	if d.y > 0.55:
 		d = (d + flat * 1.1).normalized()                  # a deck tube: tipped toward the target
+	if d.y > LAUNCH_MAX_RISE:   # issue 1713: a deck tube slides out low, about 20 degrees up at most, never a climb
+		var h := Vector3(d.x, 0.0, d.z)
+		h = h.normalized() if h.length() > 1e-4 else flat
+		d = (h * sqrt(1.0 - LAUNCH_MAX_RISE * LAUNCH_MAX_RISE) + Vector3.UP * LAUNCH_MAX_RISE).normalized()
 	return d
 
 
@@ -911,8 +916,13 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 			var side_old = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
 			mid = from.lerp(to, 0.45) + side_old + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
 		else:
-			var side = fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
-			mid = e0 + ed * lead + side + Vector3(0, minf(1.5 * k, dist * 0.04), 0)
+			# Issue 1713 (Ryan, Nov 22: "torpedoes all seem to go up and then down ... I'd think we'd keep it flat"): the middle
+			# point sits on the straight line from ignition to the target, with sideways scatter only, so the round levels off
+			# at ignition and flies flat instead of carrying the tube's climb a third of the way and diving.
+			var side: Vector3 = fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k * spread
+			side.y = 0.0
+			var reach := maxf(e0.distance_to(to), 0.001)
+			mid = e0.lerp(to, clampf(lead / reach, 0.0, 0.9)) + side
 		var end = to + (fx.rdir() * 0.6 * (k if old else rk) if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
