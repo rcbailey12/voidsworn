@@ -52,7 +52,7 @@ func _shot(name: String) -> void:
 	if shots == "":
 		return
 	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png(shots.path_join("I1559_" + name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("I1559_" + name + ".png"))
 	print("shot I1559_" + name)
 
 

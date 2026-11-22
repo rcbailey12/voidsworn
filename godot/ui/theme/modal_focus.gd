@@ -13,6 +13,11 @@ extends Node
 
 static var _stack: Array[int] = []   # instance ids of the open traps, newest last
 
+
+# the static stack goes at exit with the other statics (tools/ci gpu_statics: every script static gets a clear)
+static func clear_static() -> void:
+	_stack.clear()
+
 var panel: Control
 var first: Control = null
 var _prev: WeakRef = null
