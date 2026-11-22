@@ -1,0 +1,10 @@
+OPUS1633B_WAIT.bat waiting for OPUS1235WD exit in opus1235wd_wait.txt Sun 11/22/2026  7:33:05.50 
+swapped out while only waiting 07:44:57: replaced by OPUS1633B_WAIT2.bat (now waits for OPUS1446B exit; Board Nov 22 13:44 UTC)
+OPUS1633B_WAIT2.bat waiting for OPUS1446B exit in opus1446b_wait.txt Sun 11/22/2026  7:44:57.72 
+swapped out while only waiting 10:15:30: replaced by OPUS1633B_WAIT3.bat (now waits for OPUS1589D exit; Board Nov 22 16:15 UTC)
+OPUS1633B_WAIT3.bat waiting for OPUS1589D exit in opus1589d_wait.txt Sun 11/22/2026 10:15:30.89 
+OPUS1633_PROBE2 start 10:40:36.76 
+OPUS1633_PROBE2 exit 0 at 10:58:45.96 
+run folder out_20261122_104037_20512
+result: done PASS
+all done Sun 11/22/2026 10:58:46.38 

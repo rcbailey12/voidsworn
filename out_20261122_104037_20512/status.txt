@@ -1,0 +1,40 @@
+[Sun 11/22/2026 10:40:38.02] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T16:40:39Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026 10:40:39.16] ready: GPU label 1633
+relay to: tools\pc\relay_push.bat opus1633b "C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512" (voidsworn-relay branch pc-out-opus1633b, folder out_20261122_104037_20512/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+verified 8d24b6a43964bb5110c00fa143dc5c323e369d2a1879c63ec826d493e38f65f3 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.bat
+verified a8dd73b87663dc628764bcd00fe129458d767c2948a7f42bdee92d8d23595321 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1 (tools_live version 8f04dc972f9a)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\8f04dc972f9a\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new df387cd67770c118b86a35794ceb752232455d28 C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026 10:41:24.86] step new import start
+[Sun 11/22/2026 10:57:38.82] step new import ok
+[Sun 11/22/2026 10:57:38.83] step new death warm1 start
+[Sun 11/22/2026 10:57:54.92] step new death warm1 ok
+[Sun 11/22/2026 10:57:54.94] step new death cold1 start
+[Sun 11/22/2026 10:58:05.22] step new death cold1 ok
+[Sun 11/22/2026 10:58:05.25] step new death warm2 start
+[Sun 11/22/2026 10:58:19.24] step new death warm2 ok
+[Sun 11/22/2026 10:58:19.27] step new death cold2 start
+[Sun 11/22/2026 10:58:29.77] step new death cold2 ok
+[Sun 11/22/2026 10:58:29.79] step new death warm3 start
+[Sun 11/22/2026 10:58:43.55] step new death warm3 ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026 10:58:44.05
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1633b\out_20261122_104037_20512 (results not relayed yet: relay/pc-out-opus1633b:out_20261122_104037_20512: branch relay/pc-out-opus1633b (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 334.4 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt
