@@ -1,5 +1,5 @@
 {
- "about": "Issue 1236 wrecks (Ryan, Nov 22: big ships shrink after their death and it looks bad; picks: ends crumble away, keep the biggest piece and let it poke out). Each big death anchored to a hex (rest radius 8, as the game), shown to 8 s after the split at camera 170 and 60. Run with --moments res://bench/look_moments_1236.json on main plus this bench key (before: the wreck shrinks) and work/issue-1236-crumble plus it (after). With --sound and --write-movie the run is also a clip.",
+ "about": "Issue 1236 wrecks (Ryan, Nov 22: big ships shrink after their death and it looks bad; picks: ends crumble away, keep the biggest piece and let it poke out). Each big death anchored to a hex (rest radius 8, as the game), shown to 8 s after the split at camera 170 and 60. Run with --moments res://bench/look_moments_1236.json on main plus this bench key (before: the wreck shrinks) and work/issue-1236-crumble plus it (after). With --sound and --write-movie the run is also a clip. WRECK2: the dreadnought row first, and the bench logs each death call, a heartbeat a second and a cut that keeps the clock waiting.",
  "cameras": [
   170,
   60
@@ -20,16 +20,16 @@
  },
  "rows": [
   {
-   "id": "wk_hege_cruiser",
+   "id": "wk_hege_super",
    "group": "issue 1236 wreck in its hex",
-   "label": "Navy cruiser death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "label": "Navy dreadnought death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
    "att": [
     "voidsworn",
     "Cruiser"
    ],
    "tgt": [
     "hegemony",
-    "Cruiser"
+    "Super-dreadnought"
    ],
    "do": "death",
    "cause": "blast",
@@ -74,16 +74,16 @@
    ]
   },
   {
-   "id": "wk_hege_super",
+   "id": "wk_hege_cruiser",
    "group": "issue 1236 wreck in its hex",
-   "label": "Navy dreadnought death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
+   "label": "Navy cruiser death in its hex: the wreck settles (before: shrinks to fit; after: real size, the rest crumble)",
    "att": [
     "voidsworn",
     "Cruiser"
    ],
    "tgt": [
     "hegemony",
-    "Super-dreadnought"
+    "Cruiser"
    ],
    "do": "death",
    "cause": "blast",
