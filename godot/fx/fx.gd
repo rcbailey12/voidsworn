@@ -192,7 +192,24 @@ func _enter_tree() -> void:
 	closed = false
 
 
+# issue 1434: the warm-up's root while it fills out of the tree, and its meshes waiting to enter (Artoo on PR 1445: a
+# battle closed mid warm-up must not leave them orphaned, the coroutine may never resume)
+var _warm_off_tree: Node = null
+var _warm_parked: Array = []   # [mesh, its parent]
+
+
+func _free_warm_parked() -> void:
+	for pk in _warm_parked:
+		if is_instance_valid(pk[0]) and not (pk[0] as Node).is_inside_tree():
+			(pk[0] as Node).free()
+	_warm_parked = []
+	if is_instance_valid(_warm_off_tree) and not _warm_off_tree.is_inside_tree():
+		_warm_off_tree.free()
+	_warm_off_tree = null
+
+
 func _exit_tree() -> void:
+	_free_warm_parked()
 	_set_physics_awake(true)   # the world can outlive this fx (look bench battles share the root world)
 	# Issue 1435: leaving a battle no longer waits here for the death cut, shield and damage jobs (5.7 to 6.5 s on the
 	# caller with one A16 cut out). The jobs still running are retired with their inputs held and reaped over the
@@ -2116,9 +2133,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	if warmup_batch > 0:
 		# issue 1434 (LOAD20, cloud trace: 64 warm meshes entering the scene in one frame compiled 173 pipelines in one
 		# draw, hidden or not): the warm root stays out of the tree while it fills, and its meshes enter a few a frame
-		# below. If the effects leave the tree first, the unattached root goes with them.
-		tree_exiting.connect(func() -> void:
-			if is_instance_valid(tmp) and not (tmp as Node).is_inside_tree(): (tmp as Node).free(), CONNECT_ONE_SHOT)
+		# below. Until they are all in, _exit_tree frees whatever is still out of the tree (_free_warm_parked).
+		_warm_off_tree = tmp
 	else:
 		add_child(tmp)
 	var box = BoxMesh.new()
@@ -2265,8 +2281,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 					(b as RigidBody3D).linear_velocity = Vector3.ZERO
 					(b as RigidBody3D).angular_velocity = Vector3.ZERO
 					(b as RigidBody3D).sleeping = true)
-	WEAP.warm_craft_trail(self, tmp)
-	dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
+	if warmup_batch <= 0:
+		WEAP.warm_craft_trail(self, tmp)
+		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
 	# Issue 1434 (PC run 1: cover frames of 2 to 9 s): every warm mesh drew its first frame together, so all their
 	# pipelines compiled in one frame. They now appear WARM_BATCH at a time, a frame apart, and all of them stay up for
 	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).
@@ -2277,7 +2294,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		# all of them stay up for the closing frames as before. Only the outermost meshes move (a nested one travels
 		# with its parent); Artoo on PR 1445: nested ones under a plain Node3D (issue 1528's munition bodies) are
 		# outermost meshes too. Outside the load cover, warmup_batch 0 keeps the old one-frame reveal.
-		var parked: Array = []   # [mesh, its parent]
+		var parked: Array = _warm_parked   # [mesh, its parent]
 		for wc in tmp.find_children("*", "GeometryInstance3D", true, false):
 			var up: Node = wc.get_parent()
 			var nested := false
@@ -2291,14 +2308,16 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		for pk in parked:
 			(pk[1] as Node).remove_child(pk[0])
 		add_child(tmp)
+		_warm_off_tree = null
+		# these two read the warm root's place in the world, so they come once it is in the tree (a few meshes)
+		WEAP.warm_craft_trail(self, tmp)
+		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
 		for i in parked.size():
 			if is_instance_valid(parked[i][0]) and is_instance_valid(parked[i][1]):
 				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
-		for pk in parked:   # a parent gone meanwhile left its mesh out of the tree: free it here
-			if is_instance_valid(pk[0]) and not (pk[0] as Node).is_inside_tree():
-				(pk[0] as Node).free()
+		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	warmed = true
