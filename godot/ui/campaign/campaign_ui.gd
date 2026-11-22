@@ -973,8 +973,15 @@ func _podium() -> Control:
 	host.add_child(stage)
 	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
-	podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
-	podium.setup(C, f, accent, _reduce_motion())
+	# issue 1559 item 27: a pick re-renders the page; the same flagship keeps its live podium (no reload hitch, and the
+	# turning ship carries on from where it was instead of snapping back to its start angle)
+	var pkey = str(f.get("uid", "")) + "|" + str(f["tpl"]) + "|" + accent.to_html() + "|" + str(_reduce_motion())
+	if podium != null and is_instance_valid(podium) and not podium.is_queued_for_deletion() and str(podium.get_meta("podium_key", "")) == pkey:
+		if podium.get_parent() != null: podium.get_parent().remove_child(podium)
+		stage.add_child(podium); podium.offset_bottom = -px(120)
+	else:
+		podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
+		podium.setup(C, f, accent, _reduce_motion()); podium.set_meta("podium_key", pkey)
 	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
 	plate.add_child(Kit.section("Your flagship", k))

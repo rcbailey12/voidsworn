@@ -19,6 +19,14 @@ const StoryScript = preload("res://story/story.gd")
 var fails := 0
 
 
+class FakeStory extends RefCounted:
+	var C = null
+	func flagship_name() -> String:
+		return "Long Watch"
+	func rename_flagship(_n: String) -> void:
+		pass
+
+
 func _init() -> void:
 	_run.call_deferred()
 
@@ -69,6 +77,7 @@ func _panel(name: String) -> VBoxContainer:
 
 
 func _run() -> void:
+	root.size = Vector2i(1920, 1080)   # the design screen (headless starts at 64 x 64)
 	var host := Control.new()
 	host.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(host)
@@ -128,10 +137,46 @@ func _run() -> void:
 		_check(_in(career), "Career: a title rebuild that grabs its first button is put back inside (item 15)")
 		var story: Node = career.story
 		_check(story.open_career() == career, "Career: a second open gives the open Career (item 14)")
+		# item 28: a window resize lays Career out again at the new scale, on the same tab, keyboard on the same control
+		career.set_tab("medals")
+		var tab_b: Control = career.find_child("medals", true, false)
+		if tab_b != null:
+			tab_b.grab_focus()
+		await _frames()
+		var k0: float = career.k
+		root.size = Vector2i(1280, 720)
+		await create_timer(0.4).timeout
+		await _frames()
+		var fo := _focus()
+		_check(absf(career.k - k0) > 0.01 and career.tab == "medals" and fo != null and _in(career) and str(fo.name) == "medals",
+			"Career: a resize lays it out at the new scale on the same tab, keyboard on the same tab button (item 28; k %.2f to %.2f, focus %s)" % [k0, career.k, str(fo.name) if fo else "none"])
+		var close2: Control = career.find_child("Close", true, false)
+		_check(close2 != null and close2.custom_minimum_size.x < 288.0 * k0 - 1.0, "Career: its Close button shrank with the window (item 28)")
+		root.size = Vector2i(1920, 1080)
+		await create_timer(0.4).timeout
+		await _frames()
+		_check(_in(career), "Career: the keyboard is still inside after resizing back")
 		await _key(KEY_ESCAPE)
 		await _frames()
 		_check(not is_instance_valid(career) or career.is_queued_for_deletion(), "Career: Esc closes it")
 		_check(_focus() == title_btn, "Career: the title button has the keyboard again")
+	# item 28: the rename dialog keeps the name typed so far through a resize, laid out at the new scale
+	var rn = load("res://ui/career/rename_dialog.gd").new()
+	host.add_child(rn)
+	rn.open(FakeStory.new())
+	await _frames()
+	rn.edit.text = "Half typed"
+	rn.edit.caret_column = 4
+	var rk0: float = rn.k
+	root.size = Vector2i(1280, 720)
+	await create_timer(0.4).timeout
+	await _frames()
+	_check(absf(rn.k - rk0) > 0.01 and rn.edit.text == "Half typed" and rn.edit.caret_column == 4 and _focus() == rn.edit,
+		"rename: a resize lays it out at the new scale and keeps the typed name, caret and keyboard (item 28)")
+	root.size = Vector2i(1920, 1080)
+	await create_timer(0.4).timeout
+	rn._close()
+	await _frames()
 	# 4 and 5: the campaign pages
 	var C = Campaign.new()
 	var err = C.load_tables()

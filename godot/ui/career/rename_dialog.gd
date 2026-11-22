@@ -41,8 +41,50 @@ func _sb(bg: Color, border: Color, bw := 1, rad := 4, pad := 10.0) -> StyleBoxFl
 	return s
 
 
+var _trap: Node = null
+var _relayout_t := -1.0
+
+
 func open(st) -> void:
 	story = st
+	_build(story.flagship_name())
+	edit.grab_focus.call_deferred()
+	edit.select_all.call_deferred()
+	# issue 1559 item 22: modal for the keyboard (Tab cannot reach the intro or fleet buttons behind the dim)
+	_trap = load("res://ui/theme/modal_focus.gd").attach(self, edit)
+	get_viewport().size_changed.connect(_on_resize)
+
+
+func _on_resize() -> void:
+	_relayout_t = 0.12
+
+
+# issue 1559 item 28: a window resize lays the dialog out again at the new scale, keeping the name typed so far
+func _process(dt: float) -> void:
+	if _relayout_t < 0.0:
+		return
+	_relayout_t -= dt
+	if _relayout_t <= 0.0:
+		_relayout_t = -1.0
+		relayout()
+
+
+func relayout() -> void:
+	if absf(load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size) - k) < 0.004:
+		return
+	var typed := edit.text
+	var caret := edit.caret_column
+	for c in get_children():   # the keyboard trap is an internal child and stays
+		remove_child(c)
+		c.queue_free()
+	_build(typed)
+	edit.caret_column = caret
+	if _trap != null and is_instance_valid(_trap):
+		_trap.set("first", edit)
+	edit.grab_focus()   # the dialog's one field keeps the keyboard (on_edit or not: the buttons it had were rebuilt)
+
+
+func _build(name_text: String) -> void:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -92,7 +134,7 @@ func open(st) -> void:
 	p.add_theme_color_override("font_color", BONE2)
 	v.add_child(p)
 	edit = LineEdit.new()
-	edit.text = story.flagship_name()
+	edit.text = name_text
 	edit.max_length = 28
 	edit.select_all_on_focus = true
 	edit.add_theme_font_override("font", semi)
@@ -112,10 +154,6 @@ func open(st) -> void:
 	Kit.wire_sound(save, "primary")
 	row.add_child(save)
 	v.add_child(row)
-	edit.grab_focus.call_deferred()
-	edit.select_all.call_deferred()
-	# issue 1559 item 22: modal for the keyboard (Tab cannot reach the intro or fleet buttons behind the dim)
-	load("res://ui/theme/modal_focus.gd").attach(self, edit)
 
 
 func _btn(txt: String, cb: Callable, f: Font, primary: bool) -> Button:
