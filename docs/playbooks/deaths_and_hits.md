@@ -153,6 +153,19 @@ A single-frame spark and a puff, under 40 px, no wreck. Twenty of them dying mus
 | Burn-out (dark) | Lights and engines die; one vent of gas. | No break: a whole cold hulk drifts. No fire at all. |
 | The dead star (tidal) | The hull stretches toward the well. | Pieces stream toward the star in a curve. |
 
+### A wreck that blocks its hex (issue 1236; Ryan, Nov 22)
+
+A dead cruiser or capital leaves a rules wreck that blocks its hex, and its pieces settle in that hex. Nothing ever
+shrinks: Ryan saw the old fit (the whole wreck scaled down 1.5 s after the break) and called it bad. Since Nov 22:
+
+- The biggest piece stays at its real size, centred on its hex. On a cruiser or dreadnought it is wider than a hex and
+  pokes into the neighbours (about a quarter hex on a cruiser, half on a dreadnought); the wreck still blocks only its
+  own hex (Ryan's pick, "keep it, let it poke out").
+- Every other piece stays only if it can rest inside the hex at its real size without lying over a kept piece. The rest
+  crumble one after another from 1.5 s after the break: they break into embers and the faction's own shards (glass,
+  bile flecks, cold Eclipse shards, hot metal; never brass sparks on the Chorus, Glasswrights or Eclipse) and are gone
+  (Ryan's pick, "ends crumble away"). Code: fx_death.gd `_plan_crumble` and `_crumble`.
+
 ## How each faction dies
 
 The flash core stays white or near white for everyone, so a death always reads as a death. The faction colours the rim, the

@@ -7,11 +7,13 @@ extends SceneTree
 #     the edge mesh (the hex marker the grid shows, Z) was rebuilt with it, and the death is anchored in the effects;
 #   something of the wreck is on the board: its own pieces, or the burnt hulk the board lays when a death left none;
 #   no death piece leaves its hex: no main piece, fragment or thrown plate is farther out than the hex's rest radius
-#     (radius times WRECK_LEASH_K) or where it was born; the main pieces rest inside the rest radius, and the settled
-#     wreck is drawn together for a hull longer than the hex (Ryan's option 1).
+#     (radius times WRECK_LEASH_K) or where it was born; the main pieces rest inside the rest radius. Nothing shrinks
+#     (Ryan, Nov 22, "ends crumble away"): pieces that cannot rest in the hex crumble, and the biggest piece is kept at
+#     real size, centred on the hex.
 #   (Artoo) a piece's limit is read where it was made, before its first move: a hand-made piece born inside and thrown
 #     out stays inside, one born past the radius on purpose is drawn back;
-#   the settled wreck's real hull sits inside its hex's six edges (at most PAST_MAX past one);
+#   every kept piece but the biggest sits inside its hex's six edges (at most PAST_MAX past one); the biggest, wider
+#     than a hex on a cruiser or dreadnought, rests centred;
 #   a death that left no pieces gets the burnt hulk the map's own wrecks use, in its hex.
 # Prints each wreck's farthest piece in hex radii. With "-- shot <png>" on a windowed run (the PC), also saves the
 # top-down c170 picture at +8 s, 720 px tall, with its code name on it.
@@ -122,10 +124,26 @@ func _play(quality: String) -> void:
 		var main_far := 0.0
 		var reach := 0.0
 		var past := -INF   # the farthest any hull point sits past one of the hex's six edges (negative: inside)
-		for nd in DEATH.leashed_nodes(battle.gfx, id, true):
+		# Ryan, Nov 22 ("ends crumble away"): nothing shrinks; the biggest piece is kept at real size and centred, so it
+		# alone may reach past the edges; every other kept piece rests inside them
+		var mains: Array = DEATH.leashed_nodes(battle.gfx, id, true)
+		var big_nd: Node3D = null
+		for nd in mains:
+			if big_nd == null or DEATH.leash_half(nd) > DEATH.leash_half(big_nd): big_nd = nd
+		var shrunk := 0
+		for nd in mains:
+			for mi in (nd as Node).find_children("*", "MeshInstance3D", true, false):
+				if absf((mi as MeshInstance3D).transform.basis.get_scale().x - 1.0) > 0.01: shrunk += 1
+		_check(shrunk == 0, "%s %s: no wreck piece is shrunk (%d meshes scaled)" % [quality, id, shrunk])
+		if big_nd != null:
+			var boff: Vector3 = DEATH.leash_centre(big_nd) - c
+			boff.y = 0.0
+			_check(boff.length() <= radius * 0.15, "%s %s: the biggest piece rests centred on its hex (%.2f off)" % [quality, id, boff.length()])
+		for nd in mains:
 			var off: Vector3 = DEATH.leash_centre(nd) - c
 			off.y = 0.0
 			main_far = maxf(main_far, off.length())
+			if nd == big_nd: continue
 			for mi in (nd as Node).find_children("*", "MeshInstance3D", true, false):
 				if (mi as MeshInstance3D).mesh == null: continue
 				# the real geometry, not its box: a tumbled long piece's box runs well past its corners
@@ -137,12 +155,13 @@ func _play(quality: String) -> void:
 						var a := deg_to_rad(60.0 * e)
 						past = maxf(past, q.x * cos(a) + q.z * sin(a) - apothem)
 		_check(main_far <= radius * 1.05, "%s %s: main pieces rest within the hex (%.2f, rest radius %.2f)" % [quality, id, main_far, radius])
-		_check(past <= PAST_MAX, "%s %s: the settled wreck stays inside its hex's six edges (%.2f units past one)" % [quality, id, past])
-		var drawn := 1.0
+		_check(past <= PAST_MAX, "%s %s: every kept piece but the biggest stays inside its hex's six edges (%.2f units past one)" % [quality, id, past])
+		var crumbled := 0
 		for w in battle.gfx.dstate["wrecks"]:
-			if w["id"] == id: drawn = float(w.get("leash_s", 1.0))
-		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii past_edge=%.2f units drawn_to=%.2f hull_laid=%s" % [
-			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, past, drawn, str(hull_laid)])
+			if w["id"] == id: crumbled = int(w.get("crumbled", 0))
+		var big_reach: float = DEATH.leash_half(big_nd) / board.HS if big_nd != null else 0.0
+		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii (biggest piece %.2f) past_edge=%.2f units crumbled=%d hull_laid=%s" % [
+			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, big_reach, past, crumbled, str(hull_laid)])
 	if quality == "low" and not want.is_empty():
 		# a death that left no pieces (the cold-kill fallback PR 1231 found): the board lays the burnt hulk in the hex
 		var id: String = want.keys()[0]
