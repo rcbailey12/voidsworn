@@ -1,0 +1,3 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+SKIP pysite run: folder modes are POSIX only (Linux CI runs this part)
+PASS pysite 1535: job bats load it, mkdtemp makes inheritable folders inside job scratch only, the picture selftest cleans up after a PASS
