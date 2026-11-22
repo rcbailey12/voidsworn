@@ -1803,6 +1803,8 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 				# mouth looks into it (no cost before the first opening)
 				if not wv.is_empty() and int(mouths.get("count", 0)) > 0:
 					mi.set_surface_override_material(si, _interior_v2(s, mi, si, frame, mouths, wv))
+				elif si < mi.get_surface_override_material_count() and mi.get_surface_override_material(si) != null and (mi.get_meta("fx_interior_v2", {}) as Dictionary).values().has(mi.get_surface_override_material(si)):
+					mi.set_surface_override_material(si, null)   # every mouth closed (repair, revive): the built interior goes dark again
 				continue
 			if fx == null:
 				mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
@@ -2170,6 +2172,31 @@ static func open_mouths(s) -> Array:
 		var e: Ent = x
 		if e.has_cut() and not e.thin_shear:
 			out.append({"c": e.c, "n": e.n, "R": e.R})
+	return out
+
+
+# The V2 cutout caps over the final entry list a rebuild draws (Artoo on PR 1755: the stage path and the hit path each
+# checked their own list, so their sum could pass the caps): in list order (the stage cutouts first, then the marks the
+# cap keeps), a V2 cutout past V2_HOLES_SHIP on the ship or V2_HOLES_SEC in its section is left out. Every other entry
+# stays. With V2 off no entry has v2 >= 0, so the list comes back unchanged.
+static func cap_holes(ents: Array) -> Array:
+	var out: Array = []
+	var total := 0
+	var per := {}
+	for x in ents:
+		var e: Ent = x
+		if e.has_cut() and e.v2 >= 0:
+			if total >= V2_HOLES_SHIP or int(per.get(e.sec, 0)) >= V2_HOLES_SEC:
+				# past the caps: a sealed dent where it would have opened, never nothing (audit, PR 1755)
+				var d := crater(e.c, e.n, e.R * 0.6, e.R * 0.12, e.seed_v, S_DENT)
+				d.v2 = e.v2
+				d.sec = e.sec
+				d.t0 = e.t0
+				out.append(d)
+				continue
+			total += 1
+			per[e.sec] = int(per.get(e.sec, 0)) + 1
+		out.append(e)
 	return out
 
 

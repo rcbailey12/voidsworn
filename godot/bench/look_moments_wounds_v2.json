@@ -1,5 +1,5 @@
 {
- "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera.",
+ "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 50% hull with lost capabilities (w2e_: weapon slot 0 off beside a healthy slot 1, engine hit, shield generator out; Milestone 3 on the combined head), 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera.",
  "cameras": [
   170,
   26
@@ -111,6 +111,90 @@
       "max": 100
      }
     }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2e_V16_37",
+   "label": "V16_37 Sunward Vigil: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
    },
    "windows": [
     [
@@ -378,6 +462,90 @@
     34,
     -30
    ],
+   "id": "w2e_H10_23",
+   "label": "H10_23 Directorate Dominion: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
    "id": "w2c_H10_23",
    "label": "H10_23 Directorate Dominion: three hits, hull at 20%",
    "do": "hold",
@@ -597,6 +765,90 @@
       "max": 100
      }
     }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2e_C15s_23",
+   "label": "C15s_23 Hullbreaker Wrecker: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
    },
    "windows": [
     [
@@ -864,6 +1116,90 @@
     34,
     -30
    ],
+   "id": "w2e_B21_11",
+   "label": "B21_11 Chorus Bladeback: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
    "id": "w2c_B21_11",
    "label": "B21_11 Chorus Bladeback: three hits, hull at 20%",
    "do": "hold",
@@ -1107,6 +1443,90 @@
     34,
     -30
    ],
+   "id": "w2e_I15_11",
+   "label": "I15_11 Glasswright Prism: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
    "id": "w2c_I15_11",
    "label": "I15_11 Glasswright Prism: three hits, hull at 20%",
    "do": "hold",
@@ -1326,6 +1746,90 @@
       "max": 100
      }
     }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2e_D21_23",
+   "label": "D21_23 Eclipse Zenith: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    },
+    "weapons": [
+     {
+      "i": 0,
+      "id": "gun",
+      "arc": "F",
+      "off": 1
+     },
+     {
+      "i": 1,
+      "id": "gun",
+      "arc": "T",
+      "off": 0
+     }
+    ],
+    "engHit": true,
+    "shieldOff": true
    },
    "windows": [
     [

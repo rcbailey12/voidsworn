@@ -251,6 +251,20 @@ func _run() -> void:
 				per[clampi(e.sec, 0, 2)] += 1
 		check(per[0] + per[1] + per[2] <= BREACH.V2_HOLES_SHIP and per.max() <= BREACH.V2_HOLES_SEC, "%s: cutouts capped (%s per section)" % [faction, str(per)])
 		check(_lights(s).size() <= BREACH.INSIDE_LIGHTS, "%s: still at most %d inside lights" % [faction, BREACH.INSIDE_LIGHTS])
+		# Artoo on PR 1755: impact cutouts first, then a stage rise: the caps hold over what the rebuild draws
+		var s2 = _ship(faction, true)
+		s2.sync(fx, _state(70, 70, 70))
+		flush(s2)
+		for j in 6:
+			s2.add_mark(fx, "torp", 3, Vector3(-9.0 + j * 3.4, 2.5, -1.0 + (j % 2) * 2.0), Vector3.UP, Vector3.DOWN)
+		flush(s2)
+		s2.sync(fx, _state(8, 8, 8))
+		flush(s2)
+		var per2 := [0, 0, 0]
+		for e in s2._dmg_job.get("ents", []):
+			if e.has_cut() and e.v2 >= 0:
+				per2[clampi(e.sec, 0, 2)] += 1
+		check(per2[0] + per2[1] + per2[2] <= BREACH.V2_HOLES_SHIP and per2.max() <= BREACH.V2_HOLES_SEC, "%s: hits then a stage rise still keep the caps in what is drawn (%s)" % [faction, str(per2)])
 	var sl = _ship("voidsworn", false)
 	sl.sync(fx, _state(100, 30, 100))
 	flush(sl)
@@ -298,7 +312,20 @@ func _run() -> void:
 		var c: Array = dl[key]
 		green = green or (float(c[1]) > float(c[0]) and float(c[1]) > float(c[2]))
 	check(not green, "eclipse: no green in its wound colours")
-	check(not SH.MARK.contains("vec3(0.06, 0.012, 0.07)") or SH.MARK.contains("if (wound_v2 >= 0 && style != 16"), "chorus: the old magenta flesh tint is replaced when V2 is on")
+	# the Chorus V2 branches in MARK, HOLE and INTERIOR use no magenta colour literal (red and blue both over 0.2, green
+	# well under both) (audit on PR 1755: the old check could not fail)
+	var mag_lits: Array = []
+	var re := RegEx.create_from_string("vec3\\(([0-9.]+), ([0-9.]+), ([0-9.]+)\\)")
+	for code in [SH.MARK, SH.HOLE, SH.INTERIOR]:
+		var at: int = (code as String).find("wound_v2 == 3")
+		while at >= 0:
+			var chunk: String = (code as String).substr(at, 900)
+			for m in re.search_all(chunk):
+				var r0 := float(m.get_string(1)); var g0 := float(m.get_string(2)); var b0 := float(m.get_string(3))
+				if r0 > 0.2 and b0 > 0.2 and g0 < 0.6 * minf(r0, b0):
+					mag_lits.append(m.get_string())
+			at = (code as String).find("wound_v2 == 3", at + 1)
+	check(mag_lits.is_empty(), "chorus: no magenta colour in its V2 shader branches %s" % str(mag_lits))
 
 	# 6. the folded 1692 (d) marks
 	var mp: Array = BREACH.marks_for(hl, "prism", 2, Vector3(0, 2.5, 0), Vector3.UP, Vector3.DOWN, 1.0, "voidsworn")
@@ -311,7 +338,30 @@ func _run() -> void:
 		n_ok = n_ok and e.style == BREACH.S_NLANCE and e.kind == BREACH.K_SLOT
 	check(n_ok, "null lance leaves three parallel cuts (S_NLANCE)")
 
-	# 8. live to wreck
+	# 8. live to wreck, through the game's own death (audit on PR 1755: fx_death threads the faction and length)
+	fx.death_story = true
+	for faction in ["chorus", "ithar"]:
+		var sd = _ship(faction, true)
+		sd.sync(fx, _state(20, 15, 20))
+		flush(sd)
+		fx.death(sd.id, "blast")
+		var found := 0
+		for k in 240:
+			fx.step(0.05)
+			for w in fx.dstate.get("wrecks", []):
+				if w["id"] != sd.id: continue
+				for nd in w["nodes"]:
+					if not is_instance_valid(nd): continue
+					for mi in (nd as Node3D).find_children("*", "MeshInstance3D", true, false):
+						var m: Mesh = (mi as MeshInstance3D).mesh
+						for j in (m.get_surface_count() if m != null else 0):
+							var sm = m.surface_get_material(j)
+							if sm is ShaderMaterial and (sm as ShaderMaterial).shader.code == SH.INTERIOR and float(sm.get_shader_parameter("fx_wreck")) == 1.0:
+								found += 1
+			if found > 0:
+				break
+		check(found > 0, "%s: the wreck pieces from a real death carry the faction interior shader (%d surfaces)" % [faction, found])
+	# 8b. the cache helper alone
 	var src := StandardMaterial3D.new()
 	src.set_meta("fx_authored_interior", true)
 	for faction in ["ithar", "chorus"]:

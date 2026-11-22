@@ -1680,7 +1680,14 @@ void fragment() {
 		if (dress > 0.9) { em += v2_interior_accent * (0.9 + 0.3 * flick(0.7 + n2 * 0.3, scene_t, seed)); base *= 0.5; }
 		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
 		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
-		if (style == 1) { float cool = exp(-age / 3.0); em += heatRamp(cool) * cool * 2.0 * (1.0 - smoothstep(0.3, 2.5, dist)) * (metalk ? 1.0 : 0.3); }
+		if (style == 1) {
+			// a fresh lance burn-through: the ember ramp only on Sunward and Hullbreaker steel; Directorate burns
+			// blue-white, the other factions glow in their own accent (audit, PR 1755: no orange on them)
+			float cool = exp(-age / 3.0);
+			float m = cool * (1.0 - smoothstep(0.3, 2.5, dist));
+			vec3 hc = (wound_v2 == 0 || wound_v2 == 2) ? heatRamp(cool) : (wound_v2 == 1 ? mix(vec3(0.35, 0.6, 1.0), vec3(0.9, 0.95, 1.0), cool) : v2_interior_accent);
+			em += hc * m * (metalk ? 2.0 : 0.6);
+		}
 	} else {
 	if (part > 0.95) { em += glow * 0.025; base *= 0.6 + n2 * 0.4; }
 	if (part > 0.4 && part < 0.9) { em += glow * 0.07; }

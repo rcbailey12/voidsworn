@@ -1946,6 +1946,12 @@ func _plan(fx, i: int, st: int) -> Array:
 				eb2.sec = i
 				if not eb2.has_cut() or _clear_spot(eb2.c, eb2.R):
 					out.append(eb2)
+		if scar == 4 and st < 4:
+			var patch2 = BREACH.surface(a.p, a.n, L * 0.07, sd, BREACH.S_PATCH)
+			patch2.t0 = _patch_time[i]
+			patch2.sec = i
+			patch2.heat = 0.0
+			out.append(patch2)
 		return out
 	if not fx.compat and grade >= 2 and st < 4 and not (scar == 4 and st < 4):
 		var R: float = L * (0.05 if grade == 2 else 0.06)
@@ -2028,6 +2034,7 @@ func _dmg_request(fx) -> void:
 	for i in 3:
 		ents.append_array(_ents[i])
 	ents.append_array(visible_marks(fx))
+	ents = BREACH.cap_holes(ents)
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:

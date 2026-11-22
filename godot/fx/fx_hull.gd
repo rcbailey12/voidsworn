@@ -364,7 +364,7 @@ for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
 	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
 	float R = max(fx_mouths[i].w, 0.0001);
-	fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, length(fx_hull_p - fx_mouths[i].xyz)));
+	if (fx_v2 >= 0) { fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, length(fx_hull_p - fx_mouths[i].xyz))); }
 	if (h < -fx_axes[i].w || h > R * 0.8) { continue; }
 	// R416 4.2: only plating facing along the cut (or straight against it: the inner liner) is cut, never a wall at
 	// right angles or a face standing above the hole
@@ -399,6 +399,7 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 		float fibre = pow(abs(sin(section.x * 6.0 + sin(section.y * 3.0))), 8.0);
 		structure = mix(vec3(0.018, 0.003, 0.009), vec3(0.042, 0.009, 0.017), fibre);
 		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
+		if (fx_v2 == 3) { structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre); structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7); }   // R416: umber, never magenta
 	}
 	EMISSION = max(EMISSION, structure);
 	if (fx_v2 >= 0 && fx_near > 0.0) {

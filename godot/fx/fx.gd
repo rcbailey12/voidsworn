@@ -1453,7 +1453,7 @@ func dark_interior(source: Material) -> Material:
 func wreck_interior(source: Material, faction := "", L := 1.0) -> Material:
 	if source == null: return source
 	if faction != "" and BREACH.v2_on():
-		var key := [source, faction]
+		var key := [source, faction, snappedf(L, 0.01)]
 		if not _wreck_interiors.has(key):
 			_wreck_interiors[key] = HULL.interior_material_v2(source, Transform3D.IDENTITY, {}, BREACH.wound_of(faction), L, 1.0)
 		return _wreck_interiors[key]
