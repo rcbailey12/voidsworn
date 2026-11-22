@@ -164,7 +164,7 @@ battle rewards. See [the seeded check and picture list](../shots/after_win_1177/
 ### Late market and faction purses (issue 1178, R335)
 
 Sector 3 shipyards add a Late market: two relics (picked from the run's useful, unowned relics without touching the random
-stream; never the Smuggler's ledger, the logbook or the Scrap rig, which cannot earn back 120 that late, LATE_SHOP.skip, issue 1290) and one Command expansion (+1 command point, at most two a run), all paid in credits. Paid repair prices never
+stream; never the Smuggler's ledger, the logbook or the Scrap rig, which cannot earn back 120 that late, LATE_SHOP.skip, issue 1290) and one Command expansion (+1 command point, at most two a run), paid in credits (a Chorus run pays biomass first, issue 1484). Paid repair prices never
 change (Oct 29 ruling). Three factions show their own money on the shipyard, the map purse and the victory card:
 
 - Chorus: hull work (repairs, new hulls, Marks) is paid in biomass, earned flat per win like credits plus 8 per kill, at

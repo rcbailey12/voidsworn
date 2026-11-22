@@ -231,7 +231,8 @@ function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eaten
 function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
 // issue 1178 (R335, the 1085 sim pick): the Chorus pay for hull work (repairs, new hulls, Marks) in biomass, earned flat per win
-// plus 2 per kill (at most 12 a battle); credits still buy refits, class refits, events and the late market. Every other faction: credits.
+// plus BIO_KILL per kill; refits, class refits, rerolls and the late market take biomass first, then credits (shopKey, issue 1484);
+// events take credits. Every other faction: credits.
 function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
 function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }

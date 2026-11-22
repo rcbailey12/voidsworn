@@ -110,8 +110,10 @@ if(typeof lateShopOffers==='function'){
     if(i>=0||!R||R.rerolled||typeof boonReroll!=='function'||rw.k!=='boon') return i;
     const c=boonRerollCost(); if(mc84Best()-c>=100) mc84Rec('reroll').opp++;
     if(mc84Purse('reroll',c)-c<100) return i;
+    // the live offer comes from boonStep, which hands an eaten core's offer to another patron; the reroll button carries that patron
+    const bp=(RUN.eatenCore&&RUN.eatenCore===rw.p)?((RUN.patrons||[]).find(q=>q!==rw.p)||rw.p):rw.p;
     const old=(R.boonOffer||offer).map(o=>o.id).join();
-    if(mc84Do('reroll',()=>boonReroll(rw.p,rw.min||0),()=>RUN.reward&&RUN.reward.rerolled&&(RUN.reward.boonOffer||[]).map(o=>o.id).join()!==old)){
+    if(mc84Do('reroll',()=>boonReroll(bp,rw.min||0),()=>RUN.reward&&RUN.reward.rerolled&&(RUN.reward.boonOffer||[]).map(o=>o.id).join()!==old)){
       const nw=RUN.reward.boonOffer||[]; offer.length=0; for(const o of nw) offer.push(o); i=_pick(offer); }
     return i; };
 }

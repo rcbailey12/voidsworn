@@ -49,7 +49,7 @@ headless|campaign/test/relic_trade_1449.gd|-|-|issue 1449: relic trades pick whi
 headless|campaign/test/shipyard_repair_text_test.gd|-|-|issue 1551: the shipyard repair line reads credits and a fresh lieutenant for a normal faction, biomass and a fresh spawn-mind for the Chorus
 headless|scenes/battle/test/volley_voice_check.gd|-|-|issue 1551: a volley's fire and grouped hits reach battle voice exactly once, and a grouped enemy volley leaving the player flagship below 40% says the flag_hurt line
 headless|campaign/test/late_fixes_1384.gd|-|-|issue 1384: selling the flagship hands it on, a regrown Eclipse ship never sells above its regrow cost, ascendant and captured hulls carry the Crusade shop discount, an eaten core is remapped in beat 3 and boonStep
-headless|campaign/test/chorus_biomass_1484.gd|-|-|issue 1484: Chorus biomass buys refits, class refit tracks, protocol rerolls and the late market; credits alone do not; the Crusade still pay credits
+headless|campaign/test/chorus_biomass_1484.gd|-|-|issue 1484: Chorus biomass buys refits, class refit tracks, protocol rerolls and the late market when it covers the price, credits pay when it is short, a short purse is never split, the Crusade pay credits
 headless|campaign/test/chorus_biomass_1484_shots.gd|-|-|issue 1484: the Sector 3 Chorus shipyard (CHO-1, CHO-2) builds with biomass on refit, class refit and late market buttons
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
