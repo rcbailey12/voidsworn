@@ -144,6 +144,23 @@ func _run() -> void:
 		await _key(code)
 	await _frames(3)
 	_check(_state() == before, "order keys do nothing while the menu is open")
+	# held WASD and arrows move the menu's focus, never the camera behind it (Artoo on PR 1601)
+	var cam_t: Vector3 = b.cam.t
+	for code in [KEY_D, KEY_RIGHT]:
+		var hold := InputEventKey.new()
+		hold.keycode = code
+		hold.physical_keycode = code
+		hold.pressed = true
+		Input.parse_input_event(hold)
+	await _frames(20)
+	for code in [KEY_D, KEY_RIGHT]:
+		var up := InputEventKey.new()
+		up.keycode = code
+		up.physical_keycode = code
+		up.pressed = false
+		Input.parse_input_event(up)
+	await _frames(2)
+	_check(b.cam.t.distance_to(cam_t) < 0.001, "held pan keys do not move the camera while the menu is open")
 	_check(b.hud.menu != null and _focus_inside(), "the menu is still open with the keyboard inside it")
 	# a click on the enemy ship's spot on the board, outside the menu
 	var vs: Vector2 = root.get_visible_rect().size

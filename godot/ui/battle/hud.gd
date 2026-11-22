@@ -514,7 +514,7 @@ func _build_log() -> void:
 	log_panel.anchor_right = 1.0
 	log_panel.anchor_top = 1.0
 	log_panel.anchor_bottom = 1.0
-	log_panel.visible = log_open
+	log_panel.visible = log_open and not bool(_last.get("letterbox", false))
 	root.add_child(log_panel)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(8))
@@ -560,7 +560,7 @@ func _log_bar() -> void:
 
 func toggle_log() -> void:
 	log_open = not log_open
-	log_panel.visible = log_open
+	log_panel.visible = log_open and not bool(_last.get("letterbox", false))
 	if log_open:
 		# issue 1559 item 10: the open log draws over the terrain key, and _layout puts the tip card beside it, so its Close
 		# button is never under either
@@ -1321,6 +1321,10 @@ func letterbox(on: bool) -> void:
 		if c != null:
 			c.modulate.a = 0.0 if on else 1.0
 			c.mouse_filter = Control.MOUSE_FILTER_IGNORE if on else Control.MOUSE_FILTER_STOP
+	# the open full log's own Close and scroll bar would still take clicks under a transparent parent: it steps out of the
+	# cut-in whole and comes back open (Artoo on PR 1601)
+	if log_panel != null:
+		log_panel.visible = log_open and not on
 	if on and tip != null:
 		tip.visible = false
 		dtip.visible = false

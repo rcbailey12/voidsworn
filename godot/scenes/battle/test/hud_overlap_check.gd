@@ -141,9 +141,13 @@ func _run() -> void:
 	hud.hide_end()
 	await _frames(2)
 	_check(hud.tipcard.visible, "item 19: the tip card comes back when the end card goes")
+	hud.toggle_log()   # the full log open under the cut-in (Artoo on PR 1601)
+	await _frames(3)
+	var log_close: Vector2 = close.get_global_rect().get_center() if close != null else Vector2.ZERO
 	hud.letterbox(true)
 	await _frames(2)
 	_check(not hud.tipcard.visible, "item 19: the tip card hides during a cut-in")
+	_check(not hud.log_panel.is_visible_in_tree() and not hud.over_ui(log_close), "item 12: an open full log steps out of the cut-in, so its Close takes no click")
 	# 12
 	var sheet_pt: Vector2 = hud.ledger.sheet_r.get_center()
 	_check(hud.ledger.mouse_filter == Control.MOUSE_FILTER_IGNORE and hud.log_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE \
@@ -152,6 +156,8 @@ func _run() -> void:
 	hud.letterbox(false)
 	await _frames(2)
 	_check(hud.tipcard.visible and hud.ledger.mouse_filter == Control.MOUSE_FILTER_STOP and hud.over_ui(sheet_pt), "item 12 and 19: after the cut-in the sheet takes the mouse and the tip card is back")
+	_check(hud.log_open and hud.log_panel.is_visible_in_tree() and hud.over_ui(log_close), "item 12: after the cut-in the full log is back open")
+	hud.toggle_log()
 	hud.hide_tipcard()
 	# 11
 	hud.banner("Reinforcements", Color.WHITE, 1.6)
