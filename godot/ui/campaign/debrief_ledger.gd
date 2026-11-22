@@ -85,7 +85,7 @@ func meter(rect: Rect2, value: float, total: float, ticks: Array = []) -> Contro
 func _build() -> void:
 	var w = width - 144.0; var left = (w - 80.0) * 0.5; var right = 72.0 + left + 80.0
 	var first = not d["victory"] and not d["abandoned"] and int(C.META["stats"].get("losses", 0)) == 1
-	if first: words("THE FIRST CRUSADE FALLS. THE CHALK REMEMBERS." if R["fac"] == "voidsworn" else "THE FIRST RUN ENDS. THE NEXT INHERITS.", Rect2(72, 20, w, 25), 17)
+	if first: words("FIRST EXPEDITION LOST. THE LESSONS STAY." if R["fac"] == "voidsworn" else "FIRST RUN COMPLETE. KNOWLEDGE CARRIES FORWARD.", Rect2(72, 20, w, 25), 17)
 	var title = str(C.WIN_TITLE.get(R["fac"], "Victory")) if d["victory"] else ("Run abandoned" if d["abandoned"] else "The fleet is lost")
 	var h = heading(title, Rect2(72, 46, w, 112), 84)
 	var context = ui._story_text() + "\nVictories so far: " + str(C.META["stats"].get("wins", 0)) + ".\nWon with: "
@@ -191,7 +191,7 @@ func _build_renown(w: float) -> void:
 		words("ALL WITHIN REACH" if not target.is_empty() else "ALL OWNED", Rect2(72 + w * 0.76, 663, w * 0.24, 32), 17, GS.TEXT3)
 	var reward_lines = [detail, str(next.get("n", "")), str(aff[1]) + " rewards newly within reach."]
 	for item in receipt["affordable"]: reward_lines.append(str(item["n"]) + ": " + C.numstr(item["cost"]) + " renown")
-	if float(cy["hl"]) > 0: reward_lines.append("Heat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".")
+	if float(cy["hl"]) > 0: reward_lines.append("Threat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".")
 	if float(cy["ren"]) == 0: reward_lines.append("No renown earned this run.")
 	bar.tooltip_text = "\n".join(PackedStringArray(reward_lines)) + "\nSpend renown P; full receipt B; view hull rewards V."
 	earned.tooltip_text += "\n" + bar.tooltip_text
@@ -212,7 +212,7 @@ func _build_admiral(w: float) -> void:
 	link("View admiral line   A", Rect2(176, 849, w - 104, 32), func(): open_detail("lineage"))
 
 func _build_heirs(x: float, w: float) -> void:
-	heading("Heir to the line", Rect2(x, 507, w, 41))
+	heading("Priority training", Rect2(x, 507, w, 41))
 	var ids = C.shadowAdmirals(R["fac"], R["admiral"])
 	var current = str(C.META["heirs"].get(R["fac"], "")); var cw = (w - 32) / maxf(1, ids.size())
 	var group = ButtonGroup.new()
@@ -235,22 +235,22 @@ func _build_heirs(x: float, w: float) -> void:
 		words(shadow, Rect2(cx + 16, 790, cw - 32, 29), 17, GS.TEXT2, GS.num())
 		var tip = ranked + ". Total " + C.numstr(line["xp"]) + " shadow XP. " + ("Fully mastered." if line["next"] == null else C.numstr(line["remaining"]) + " XP to next level.") + "\nDouble earnings for this line when named."
 		for row in receipt["shadow"]:
-			if row["id"] == id: tip += "\n+" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP this run (Level " + C.numstr(row["level"]) + ")." + (" Heir: double rate." if float(row["rate"]) == 0.5 else "")
-		if id == current: tip += "\nCurrent heir. Confirming this card keeps the current heir."
+			if row["id"] == id: tip += "\n+" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP this run (Level " + C.numstr(row["level"]) + ")." + (" Priority: double rate." if float(row["rate"]) == 0.5 else "")
+		if id == current: tip += "\nActive focus. Confirming keeps this admiral on double shadow XP."
 		card.tooltip_text = tip
 		if id == current:
-			var current_label = words("CURRENT HEIR", Rect2(cx + 8, 550, cw - 16, 25), 17, GS.TEXT3)
+			var current_label = words("ACTIVE FOCUS", Rect2(cx + 8, 550, cw - 16, 25), 17, GS.TEXT3)
 			current_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if ids.is_empty(): words("No benched admirals to name. Confirm to continue.", Rect2(x, 570, w, 90), 20)
 	var note = "Named: " + str(C.ADMIRALS[ui._end_heir_pick]["n"]) if ui._end_confirmed and ui._end_heir_pick != "" else "Whoever is named earns double for this line."
-	if current == "" and not ui._end_confirmed: note = "No heir named. Confirm the selected line to continue."
+	if current == "" and not ui._end_confirmed: note = "No priority admiral set. Confirm selection to continue."
 	words(note, Rect2(x, 823, w, 26), 17)
 	primary = Button.new(); primary.name = "ConfirmHeir"; primary.set_meta("end_primary", true)
 	for state in ["normal", "hover", "pressed", "disabled"]: primary.add_theme_stylebox_override(state, GS.sheet_jump_boxes(k)[state])
 	primary.add_theme_stylebox_override("focus", GS.ledger_focus(k))
 	primary.add_theme_color_override("font_color", GS.TEXT); primary.add_theme_color_override("font_hover_color", GS.ON_EMBER)
 	_at(primary, Rect2(x, 851, w, 56))
-	var label = "CONFIRM HEIR" if not ui._end_confirmed else ("PLAY AS " + str(C.FACTIONS[d["next"]]["n"]).to_upper() if d["next"] != null else "PICK THE NEXT FACTION")
+	var label = "CONFIRM PRIORITY" if not ui._end_confirmed else ("PLAY AS " + str(C.FACTIONS[d["next"]]["n"]).to_upper() if d["next"] != null else "PICK THE NEXT FACTION")
 	var action_words = words(label, Rect2(22, 0, w - 130, 56), 20, GS.TEXT, GS.sheet_medium(), primary)
 	var key_words = words("Enter", Rect2(w - 90, 0, 74, 56), 17, GS.TEXT2, GS.num(), primary)
 	action_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; key_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -315,7 +315,7 @@ func _build_fleet(w: float, right: float) -> void:
 	var pick = link("Pick a faction", Rect2(nx, 1033, 140, 32), func(): ui._campaign_action("newRunScreen"))
 	var title = link("Title screen", Rect2(nx + 160, 1033, 130, 32), func(): ui._campaign_action("title"))
 	for exit in [pick, title]:
-		exit.disabled = not ui._end_confirmed; exit.tooltip_text = "Confirm the heir first." if exit.disabled else ""; exits.append(exit)
+		exit.disabled = not ui._end_confirmed; exit.tooltip_text = "Confirm priority training first." if exit.disabled else ""; exits.append(exit)
 
 func open_detail(which: String) -> void:
 	if is_instance_valid(overlay): overlay.queue_free()

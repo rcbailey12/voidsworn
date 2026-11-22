@@ -1166,13 +1166,17 @@ func hide_tipcard() -> void:
 # issue 1559 item 13: the card holds the keyboard through the shared trap (ui/theme/modal_focus.gd), so a menu opened over
 # it (Esc) hands focus back to the card when it closes and Enter or Space work again. While another overlay is open (Esc
 # pressed inside the 0.75 s beat) the card waits; hide_menu calls this again at once.
-func _grab_end_focus(first: Button) -> void:
-	if endcard == null or not is_instance_valid(endcard) or not is_instance_valid(first) or not first.is_visible_in_tree():
+# Issue 1482: the timers hold a weak reference, never the button itself: an end card closed (or a battle left) inside the
+# beat frees the button, and a lambda that captured it logs "Lambda capture at index 0 was freed" when it fires.
+func _grab_end_focus(first_ref: WeakRef) -> void:
+	var first = first_ref.get_ref()
+	if not is_inside_tree() or endcard == null or not is_instance_valid(endcard) or not is_instance_valid(first) \
+		or not (first as Button).is_visible_in_tree():
 		return
 	if endcard.get_node_or_null("modal_focus") != null:
 		return   # already holds it
 	if ModalFocus.any_open():
-		get_tree().create_timer(0.25).timeout.connect(func() -> void: _grab_end_focus(first), CONNECT_ONE_SHOT)
+		get_tree().create_timer(0.25).timeout.connect(_grab_end_focus.bind(first_ref), CONNECT_ONE_SHOT)
 		return
 	ModalFocus.attach(endcard, first)
 
@@ -1221,7 +1225,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	# press Continue the moment the card appears (the battle's own 0.5 s guard on Space, battle.gd _on_key)
 	var first := row.get_child(0) as Button
 	_end_first = first
-	get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first), CONNECT_ONE_SHOT)
+	get_tree().create_timer(0.75).timeout.connect(_grab_end_focus.bind(weakref(first)), CONNECT_ONE_SHOT)
 
 
 # the in-battle menu (Esc with nothing to cancel, or Menu on the sheet): items are [text, action, arg]. body, when given,
@@ -1380,7 +1384,7 @@ func hide_menu() -> void:
 		menu_block.queue_free()
 	menu_block = null
 	if endcard != null and is_instance_valid(endcard) and _end_first != null and is_instance_valid(_end_first):
-		_grab_end_focus.call_deferred(_end_first)
+		_grab_end_focus.call_deferred(weakref(_end_first))
 
 
 func hide_end() -> void:

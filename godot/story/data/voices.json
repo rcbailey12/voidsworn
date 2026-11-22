@@ -1,416 +1,1328 @@
 {
-  "_about": "Admiral lines (R37 step 1; rewritten to lore round 8, R59). Each admiral speaks in their faction's voice at fixed moments. Moments: pick (the admiral card), sector (a new sector's intro box), start (battle start, one line picked by the battle seed), boss (a battle against a sector flagship), nemesis (a battle against the Nemesis's fleet), kill_flag (an enemy flagship destroyed), lost (your first ship lost in a battle), flag_hurt (your flagship below 40% hull), command (your Command fires), win, loss. Placeholders: {flagship} your flagship's name, {rival} the Nemesis's full name, {enemy} the enemy faction's name. The Nemesis's own lines live in rival_lines.json (pools by his faction and personality). Voices (lore_bible_r8.md 1.3): Sunward Crusade oaths, chalk names, dawn, cold and debts; Hegemony data, projections and the Registry; Hullbreakers short and brutal, trails, sound and the pack; the Chorus says we, taste, heat and teeth, and never sings; Glasswrights light, glass and grief, quiet and precise; Eclipse memory, the dark and the lost sun, counted years and worn bodies. No em dashes anywhere (checked by test/story_test.gd).",
+  "_about": "High-variety human-voiced admiral lines (720 admiral entries + boss pools). Every admiral line <= 22 words (story_test.gd). Sector arrays are ordered [Sector I, Sector II, Sector III]. Never put 'The ' before {flagship}. US English, space-first, no em or en dashes.",
   "admirals": {
     "vex": {
-      "pick": "Form the line. The line is the oath, kept in iron.",
-      "sector": "Another sector, colder than the last. We cross it the old way: broadside by broadside.",
-      "start": [
-        "Run out the guns. Present the flank.",
-        "Hold the line. Let them come to the broadsides."
+      "pick": "Keep your intervals tight and your radiators clear. Hold formation and we'll outlast anything ahead.",
+      "sector": [
+        "Jump complete out of Vesper orbit. Warm the flank batteries and double-check your firing arcs.",
+        "Deeper into contested space, and the relays are dead. Keep escorts tucked close to the heavies.",
+        "There's the Hollow Sun on forward scopes. Check your bulkheads, everyone; we're finishing this here."
       ],
-      "boss": "Their flagship is a fortress. So is ours. We will see whose walls are thicker.",
-      "nemesis": "{rival}. I chalked your name on the hull the day we launched. Today I rub it out.",
-      "kill_flag": "Their flagship is ash. Mark the hour on the hull.",
-      "lost": "A ship of the line is gone. Chalk her name. Close the gap. The line does not break.",
-      "flag_hurt": "The {flagship} bleeds, but she still has guns. Keep her in the line.",
-      "command": "Fire for effect. Every gun, every deck, now.",
-      "win": "The line held. It always holds.",
-      "loss": "The line is broken. Add my name to the wall, under the others."
+      "start": [
+        "Lock bearings on my flagship and roll into firing lanes on my mark.",
+        "Hold fire till they close inside five! Then open every flank battery at once.",
+        "Keep moving, keep angled, and don't give them a clean shot at our sterns.",
+        "Form up tight on my port side. Make them fight through our whole line."
+      ],
+      "boss": [
+        "Big armored brick dead ahead. Good, we've got enough iron on our flanks to crack it.",
+        "There's their command ship. Don't scatter; walk every flank gun down its mid-hull together."
+      ],
+      "nemesis": [
+        "There you are, {rival}. Chalked your hull code on my bulkhead back home; today I scrub it off.",
+        "{rival} again. Every gunner in this fleet knows your ship's profile by heart now."
+      ],
+      "kill_flag": [
+        "Their flagship's breaking up! Log the kill time and sweep the escorts before they jump.",
+        "Command hull's down! Keep pressure on their remaining ships while they're blind.",
+        "Reactor's gone on their lead ship! Clean shooting, everybody, finish the lane."
+      ],
+      "lost": [
+        "We just lost a hull. Close the gap right now; we'll chalk their names after!",
+        "Hull down on the flank! Don't stare at the debris, tighten the line!",
+        "Lost a good crew there. Hold your bearings and make whoever fired pay for it."
+      ],
+      "flag_hurt": [
+        "{flagship}'s venting atmosphere on three decks, yet the main mounts still track. Hold steady!",
+        "Heavy hits on {flagship}! Roll the scorched flank away and keep firing!",
+        "{flagship}'s taking a beating! Escorts, draw some heat off our bow right now!"
+      ],
+      "command": [
+        "All ships, free fire on my telemetry! Put every ready battery into them now!",
+        "Open every firing circuit across the line! Hit them before they can pivot!",
+        "Give them everything that's hot! Synchronize off my flagship and fire!"
+      ],
+      "win": [
+        "Good shooting, everyone. Stand down to watch condition, get welders moving, and check casualties.",
+        "Lane's clear. Cycle down the radiators and pull any intact parts off those wrecks.",
+        "Solid work out there. Patch the hull leaks and fuel up before the next jump.",
+        "They broke first. Get damage control rolling and log who brought us through."
+      ],
+      "loss": [
+        "Formation's gone. If anyone's drive still answers, jump home and tell Vesper we held.",
+        "Too many breaches at once. Abandon ship if you've got working pods left."
+      ]
     },
     "malek": {
-      "pick": "Oath-breakers hide. I find them. Then I put a torpedo through them.",
-      "sector": "New hunting grounds. Every trader here is lying to me, and I will learn why.",
-      "start": [
-        "Torpedoes warm. Find me a soft stern.",
-        "They think they are the hunters. Correct them."
+      "pick": "Deserters and raiders always leave a sloppy drive trail. Give me fast hulls and full tubes.",
+      "sector": [
+        "Fresh lanes out of Vesper. Pull local beacon traffic; whoever's flying clean is hiding something.",
+        "Every relay in this sector's been tampered with. Keep active pings low and watch our wake.",
+        "Hollow Sun's right ahead, and every liar in three sectors is running toward it."
       ],
-      "boss": "A big ship is only a big target. Get behind it.",
-      "nemesis": "{rival}. I have read every report on you twice. Today I close the account.",
-      "kill_flag": "Debt collected. Their flagship is finished.",
-      "lost": "We lost a hunter. I will remember who did it.",
-      "flag_hurt": "The {flagship} is wounded. Wounded hunters are the dangerous ones.",
-      "command": "Hunter's salvo. Reload everything and put it in their backs.",
-      "win": "The hunt is over. Burn the rest.",
-      "loss": "They were better hidden than I believed. I will not make that error twice."
+      "start": [
+        "Tube doors open, warheads armed. Find me an exposed stern and stay off forward scopes.",
+        "They think we're a slow frontier convoy. Correct them before round two.",
+        "Swing wide on both flanks and keep our drive plumes tight until launch range.",
+        "Ignore their front armor. Pin down their turn vectors and drop torpedoes up their tail."
+      ],
+      "boss": [
+        "Heavy forward armor means bare rear radiators. Swing wide and put a salvo straight into the engines.",
+        "Big command hull, slow pivot. Herd it into a turn and punish the aft plating."
+      ],
+      "nemesis": [
+        "Pulled three jumps of telemetry on you, {rival}. You favor the same turn under pressure.",
+        "Finally pinned you down, {rival}. No blind jump gates left to hide behind today."
+      ],
+      "kill_flag": [
+        "Command ship's dead in space. Pin the survivors before they purge their flight recorders.",
+        "Torpedoes found the magazine. Sweep the escorts and grab any intact beacons.",
+        "That's their flagship cracked open. Nobody lets an escort slip off the plot."
+      ],
+      "lost": [
+        "We're down one hunter. Tag the hull that fired; I want it burning this round.",
+        "Lost a fast escort. Watch your flank arcs and don't fly predictable lines.",
+        "Good crew gone. Note who took that shot and put the next salvo in their engines."
+      ],
+      "flag_hurt": [
+        "{flagship} took a bad hit. Tuck the damaged flank away and cycle the torpedo racks!",
+        "Breach alerts on {flagship}! Keep moving so they don't get a second clean lock!",
+        "{flagship}'s bleeding coolant! Shift angle and burn straight into their blind spot!"
+      ],
+      "command": [
+        "Flush every tube and push hard! Reload on the burn and hit them from behind!",
+        "Cycle all torpedo racks immediately! Catch them while their point defense is turned!",
+        "All hulls, max output! Put fresh warheads straight into their aft bulkheads!"
+      ],
+      "win": [
+        "Last hostile's dark. Sweep the wrecks for flight logs and burn what we can't tow.",
+        "Clean intercept. Pull their transponder records before the batteries die.",
+        "That's what happens when you leave your stern unguarded. Reload tubes and move on.",
+        "Field's quiet. Check every debris cloud for stragglers running cold."
+      ],
+      "loss": [
+        "Better ambush than my scouts called. Won't trust unverified jump charts again.",
+        "Outmaneuvered in our own lane. Dump the cipher cores before the bridge goes."
+      ]
     },
     "ashgrove": {
-      "pick": "My pilots fly. The rest of you keep the decks warm.",
-      "sector": "Fresh sky. Wing leaders, check your fuel and your names on the board, in that order.",
-      "start": [
-        "Launch the wings. Bring me their position in two minutes.",
-        "Fighters out, bombers armed. Make the dark crowded."
+      "pick": "Give my squadrons a clean launch vector and keep flak off their tails. Pilots handle the rest.",
+      "sector": [
+        "Clear of jump wake. Wing leaders, check launch rails and oxygen seals before we pick a lane.",
+        "Tight debris belts in this sector, just how my bombers like it. Keep the bays hot.",
+        "The Hollow Sun's dead ahead, kids. One last stretch; fly sharp and watch each other's tails."
       ],
-      "boss": "Big flagship, slow turret tracking. My bombers love that kind.",
-      "nemesis": "{rival} is out there. Every pilot in this fleet knows the name.",
-      "kill_flag": "Bombers report the flagship down. Drinks are on the deck crew.",
-      "lost": "We lost a hull. Recover the pilots if you can. Chalk them if you cannot.",
-      "flag_hurt": "The {flagship} is taking hits. Screen her. Every wing, now.",
-      "command": "Scramble everything. If it has wings, it flies.",
-      "win": "All wings, come home. Good hunting.",
-      "loss": "Empty decks. I sent them out and they did not come back."
+      "start": [
+        "Hangar bays open, scramble all wings! Get eyes on their carrier before they form up.",
+        "Fighters on close screen, bombers on the flank. Don't fly straight through flak!",
+        "Launch rails clear! Push the wings wide and force their turrets to split fire.",
+        "All callsigns green! Swarm their heavy hulls before their escorts close ranks."
+      ],
+      "boss": [
+        "Look at that slow command hull. Wide blind spots; my bombers are going to love this.",
+        "Heavy flagship ahead! Fighters, chew up its escort screen so bombers get a clean run."
+      ],
+      "nemesis": [
+        "Heads up on flight channel, {rival} just jumped in. Every pilot here's been waiting for this.",
+        "There's {rival}'s flagship! Stay nimble, kids, they've drilled against our wings before."
+      ],
+      "kill_flag": [
+        "Bombers confirm the flagship's cracked open! Good flying, kids, bring it back to the rails.",
+        "Direct hits on their command core! Pull the wings clear of the blast wave!",
+        "Flagship's slag! Best bombing run I've seen all campaign, now sweep the stragglers."
+      ],
+      "lost": [
+        "Hull down! Search-and-rescue, mark every escape beacon the second firing slows!",
+        "We just lost a ship! Wings, tighten cover before they pick off another!",
+        "Bad break on the flank. Keep flying, kids; we'll pull survivors out after."
+      ],
+      "flag_hurt": [
+        "{flagship}'s taking heavy fire! Pull second and third wings back on close screen now!",
+        "Hits along {flagship}'s hangar deck! Clear those bandits off our flank!",
+        "{flagship}'s screens are buckling! Fighters, intercept everything heading our way!"
+      ],
+      "command": [
+        "Launch everything on the racks! If it's got thrusters and a warhead, get it out!",
+        "Scramble all reserve wings! Flood every flight lane at once!",
+        "Bays wide open! Double sortie on my mark, hit them while they're reloading!"
+      ],
+      "win": [
+        "All wings, RTB and cycle down. Nice work; hangar crews have hot rations waiting.",
+        "Clear flight lanes! Bring the birds home and check every wing for flak holes.",
+        "Couldn't ask for cleaner flying. Re-arm the bays and let the pilots catch their breath.",
+        "Hostiles cleared. Good tally today, everyone; get back in the cradles."
+      ],
+      "loss": [
+        "Bays are empty and half my callsigns aren't answering. I sent them out there... damn it.",
+        "Hangar decks are gone. Tell any surviving wings to jump clear without us."
+      ]
     },
     "thale": {
-      "pick": "I have outlived three crusades by refusing to die. It is a habit.",
-      "sector": "Deeper, then. The iron does not mind the cold.",
-      "start": [
-        "Shields to full. Let them break their teeth on us.",
-        "Iron doctrine. We stand. They fall."
+      "pick": "Three failed expeditions out of Vesper, and I'm still breathing because I reinforce the bulkheads first.",
+      "sector": [
+        "Cold outer lanes ahead. Keep screens topped off and don't let the younger captains sprint ahead.",
+        "Sector two's where impatient fleets run dry on repair plate. Keep your pace steady.",
+        "Finally made it to the Hollow Sun's rim. Didn't think these old ribs would see it."
       ],
-      "boss": "A worthy wall. We will lean on it until it falls over.",
-      "nemesis": "{rival}. Let them hit us. Let them see how little it does.",
-      "kill_flag": "Their flagship is down. The iron endures.",
-      "lost": "A hull is lost. The rest of us stand closer.",
-      "flag_hurt": "The {flagship} has taken worse. So have I.",
-      "command": "Iron wall. Every shield to full. Brace.",
-      "win": "We are still here. That is the whole of the doctrine.",
-      "loss": "The iron gave out at last. Remember that it held this long."
+      "start": [
+        "Bring screens to full and let them waste their first salvo on our front plate.",
+        "Easy now, helm. Soak the opening punch and answer once they're inside optimal range.",
+        "No rushing. Lock the bulkheads, hold steady, and let them burn their ammo first.",
+        "Steady advance, everyone. Heavy iron beats fancy flying when the guns stay hot."
+      ],
+      "boss": [
+        "Well, that's a stubborn piece of iron. Good thing we've got all afternoon to chew it.",
+        "Big command ship dead ahead. Lean on its shields until something cracks."
+      ],
+      "nemesis": [
+        "Still chasing us, {rival}? Dump your magazines into our screens; let's see what's left after.",
+        "You again, {rival}. Hope you brought heavier guns than last time."
+      ],
+      "kill_flag": [
+        "Their big ship finally gave out. Always takes longer than the young ones expect, doesn't it?",
+        "Command hull's done. See what happens when you don't panic?",
+        "There goes their flagship. Steady fire wins out every single time."
+      ],
+      "lost": [
+        "Lost a good captain there. Close the formation so the rest of us get through.",
+        "One hull down. Steady on the helm; panicking only loses a second.",
+        "Tough hit on the flank. Pull the survivors tighter behind our screens."
+      ],
+      "flag_hurt": [
+        "Relax, bridge, {flagship}'s limped home with half her ribs showing before. Hold steady.",
+        "Bit warm on {flagship}'s bridge! Seal the vents and keep the guns rolling.",
+        "{flagship}'s armor is taking a pounding, and it's still holding. Don't flinch now."
+      ],
+      "command": [
+        "Dump reserve power into the screen emitters and lock bulkheads! Ride it out!",
+        "All ships, reinforce screens to maximum! Let them break their teeth on our armor!",
+        "Brace the whole line and top off capacitors! Nothing punches through this round!"
+      ],
+      "win": [
+        "Still standing, more or less in one piece. Get welders out and see what's salvageable.",
+        "They ran out of hull before we ran out of patience. Good work.",
+        "Nice and steady. Patch the scorch marks and pour the bridge crew some tea.",
+        "We're still breathing and they're drifting. That's a good day in my book."
+      ],
+      "loss": [
+        "Looks like the armor finally gave out before my luck did. Tell Vesper we held.",
+        "Well, three expeditions was a solid run. Get the young crews into escape pods."
+      ]
     },
     "kassar": {
-      "pick": "Discipline is a weapon with infinite ammunition.",
-      "sector": "New sector. Same standard. The Registry projects a favourable outcome. Synchronise on the flagship.",
-      "start": [
-        "All batteries, synchronise. Fire on my mark.",
-        "Column formation. Keep the interval. Keep the discipline."
+      "pick": "A fleet firing out of sequence wastes half its mass. Synchronize the clocks and hold interval.",
+      "sector": [
+        "Transition complete. Meridian projects a favorable attrition curve provided every captain preserves spacing.",
+        "Mid-sector transit underway. Tighten escort intervals; hostile contact density increases from this relay onward.",
+        "We have reached the Hollow Sun perimeter. Maintain textbook synchronization regardless of interference."
       ],
-      "boss": "Their flagship is the anchor of their fleet. Remove it.",
-      "nemesis": "{rival} is on the scanners. Log it. Then destroy it.",
-      "kill_flag": "Enemy flagship eliminated. Note the efficiency.",
-      "lost": "We have a casualty. Close the interval. Continue.",
-      "flag_hurt": "The {flagship} is damaged. The column holds formation regardless.",
-      "command": "Synchronised broadside. Every gun, one moment.",
-      "win": "Engagement concluded. Losses within acceptable limits.",
-      "loss": "Unacceptable. Someone will write a report about this. It will be me."
+      "start": [
+        "All batteries, synchronize to the flagship clock and hold fire until my mark.",
+        "Assume standard column spacing. Maintain two-hex intervals and confirm sensor lock.",
+        "Link fire-control arrays to the flagship. Zero uncoordinated shots on round one.",
+        "Advance at regulated burn. Let the synchronized volley resolve the opening exchange."
+      ],
+      "boss": [
+        "The opposing flagship anchors their command net. Concentrate synchronized fire on its emitters immediately.",
+        "High-tonnage command vessel identified. Collapse its shields in a single coordinated salvo."
+      ],
+      "nemesis": [
+        "Priority contact confirmed as {rival}. Update the Registry dossier and establish a clean firing arc.",
+        "{rival} has entered range. Apply the tactical revisions from our previous briefing."
+      ],
+      "kill_flag": [
+        "Opposing command vessel neutralized. Note the volley count for the efficiency review.",
+        "Enemy flagship offline. Maintain column geometry and clear the remaining escorts.",
+        "Primary target destroyed cleanly. Shift synchronized fire to the nearest cruiser."
+      ],
+      "lost": [
+        "One hull removed from the column. Close the interval and maintain firing discipline.",
+        "Escort casualty confirmed. Recalculate firing arcs without breaking formation.",
+        "Hull lost within projected variance. Continue advancing on schedule."
+      ],
+      "flag_hurt": [
+        "{flagship} has sustained structural breaches. Disregard alarms and preserve formation geometry.",
+        "Damage confirmed on {flagship}. Keep the sync anchor active and hold position.",
+        "{flagship}'s plating is compromised. Escorts, maintain two-hex spacing and suppress enemy batteries."
+      ],
+      "command": [
+        "Synchronized volley on my mark. Every battery, one firing window.",
+        "Link all firing circuits to the flagship clock. Engage simultaneously now.",
+        "Full column discharge authorized. Fire as a single instrument."
+      ],
+      "win": [
+        "Engagement concluded with casualties inside projected tolerances. Begin salvage assessment.",
+        "Lane secured cleanly. Transmit updated combat logs to Meridian.",
+        "Hostile signatures removed. Verify ammunition stocks and resume transit.",
+        "Firing discipline produced the expected result. Stand down to cruise watch."
+      ],
+      "loss": [
+        "Formation integrity has failed. Log the error under my serial and withdraw surviving pickets.",
+        "Casualty limits exceeded. Transmit the black box before command links sever."
+      ]
     },
     "vorn": {
-      "pick": "I do not miss. I calculate.",
-      "sector": "Interdiction grid deployed. Nothing jumps through this sector without a Registry entry.",
-      "start": [
-        "Lock the targets. Wait for the solution.",
-        "Interdiction fields up. Let them try to run."
+      "pick": "Luck is what unprepared officers call an uncomputed intercept. Give me clean telemetry.",
+      "sector": [
+        "Interdiction beacons deployed across the jump gate. Nothing enters this sector untracked.",
+        "Sensor clutter rises in these inner lanes. Recalibrate optical arrays before engaging.",
+        "Gravity shear near the Hollow Sun distorts long-range locks. Compensate three degrees before firing."
       ],
-      "boss": "Every flagship has a weak point. I have already found this one.",
-      "nemesis": "{rival}. Their patterns are predictable. Predict them.",
-      "kill_flag": "Flagship destroyed. The solution was correct.",
-      "lost": "A ship lost. Recalculate the engagement.",
-      "flag_hurt": "The {flagship} has damage. The guns are still aligned.",
-      "command": "Interdiction strike. Every ship, every shot, now.",
-      "win": "Target sector cleared. As calculated.",
-      "loss": "An error in the calculation. I will find it."
+      "start": [
+        "Hold fire until telemetry stabilizes. Wait for the full firing solution.",
+        "Interdiction fields active. If they attempt to flank, pin their drives with ion fire.",
+        "Map their velocity vectors first. One verified hit beats three hasty salvos.",
+        "Lock targeting computers onto their lead escort and wait for optimal range."
+      ],
+      "boss": [
+        "Every heavy vessel carries a thermal blind spot along its radiators. I have tagged theirs.",
+        "Command hull telemetry locked. Strip its shields with ion fire and isolate the reactor."
+      ],
+      "nemesis": [
+        "{rival} favors predictable approach curves under stress. Pre-calculate the turn and fire ahead.",
+        "Telemetry matches {rival}'s previous profile. They have not corrected their flank drift."
+      ],
+      "kill_flag": [
+        "Command hull destroyed. The intercept solution held within two percent.",
+        "Flagship neutralized precisely where modeled. Reassign targeting locks to the escorts.",
+        "Clean reactor breach. Archive the firing telemetry before clearing the field."
+      ],
+      "lost": [
+        "We have lost an escort. Recompute firing arcs and adjust the intercept grid.",
+        "Friendly hull removed from the plot. Compensate for the lost sensor node.",
+        "Casualty logged. Do not allow emotional adjustments to degrade aiming precision."
+      ],
+      "flag_hurt": [
+        "{flagship} has taken hull damage, though primary optics remain aligned. Continue firing.",
+        "Structural alert on {flagship}. Keep the sensor mast clear and finish the volley.",
+        "{flagship} is bleeding power. Reroute auxiliary output to fire control immediately."
+      ],
+      "command": [
+        "Interdiction strike authorized. All hulls, engage tagged vectors simultaneously.",
+        "Firing solutions verified across the fleet. Execute maximum output now.",
+        "Target locks confirmed at ninety-eight percent. Discharge all weapons."
+      ],
+      "win": [
+        "Sector lane cleared on schedule. Archive telemetry for Meridian.",
+        "Opposing fleet dismantled cleanly. Minimal ammunition waste.",
+        "The intercept grid performed within parameters. Prepare for the next jump.",
+        "Zero active hostiles remaining. Download sensor captures and stand down."
+      ],
+      "loss": [
+        "My firing projection missed a critical variable. Transmit the logs before hull failure.",
+        "Calculation error confirmed too late. Authorize remaining ships to disengage."
+      ]
     },
     "reyes": {
-      "pick": "The strike group goes where I point. I point at the enemy.",
-      "sector": "New sector. Strike group, prepare for a long sortie.",
-      "start": [
-        "Strike group, launch. Clear the lanes.",
-        "Wings up. Let them see the Navy coming."
+      "pick": "Mark the priority hull on the plot, and my strike group will dissect it.",
+      "sector": [
+        "Long sortie ahead. Flight ops, cycle drone links and verify squadron fuel before departure.",
+        "Hostile carriers operate heavily in this sector. Keep interceptors primed on the launch rails.",
+        "Final approach to the Hollow Sun. Strike group, fly tight and watch for flak traps."
       ],
-      "boss": "That flagship is the prize. Strike group, mark it.",
-      "nemesis": "{rival} again. My pilots have been waiting for a rematch.",
-      "kill_flag": "Flagship down. Strike group, well flown.",
-      "lost": "We lost a ship. The strike group flies on.",
-      "flag_hurt": "The {flagship} is hit. Fighters, form a screen on the flag.",
-      "command": "Launch the full strike group. Everything that flies.",
-      "win": "Mission complete. Recover the wings.",
-      "loss": "The strike group is spent. The Registry will log every name. I will remember them."
+      "start": [
+        "Strike group, clear the bays and sweep their outer picket lanes.",
+        "Wings deployed. Pin their escorts down so the heavy hulls can work undisturbed.",
+        "Interceptors ahead on screen; bombers hold until ion fire drops their shields.",
+        "Clear flight corridors first. Nobody commits bombers into active point defense."
+      ],
+      "boss": [
+        "That command ship is worth more than its entire escort screen. Mark its shield emitters.",
+        "Heavy flagship on scopes. Strike group, strip its flanks before it settles into formation."
+      ],
+      "nemesis": [
+        "{rival} again. My wing leaders reviewed last battle's footage and requested a second pass.",
+        "{rival} is on the plot. Keep wings dispersed until we read their flak coverage."
+      ],
+      "kill_flag": [
+        "Enemy flagship confirmed destroyed. Clean run, strike group; return to screen.",
+        "Command hull down. Recall the bombers and let fighters mop up their stragglers.",
+        "Primary target cracked cleanly. Commendation noted for the lead bomber wing."
+      ],
+      "lost": [
+        "One ship down. Keep the wings in the air and finish the engagement.",
+        "Escort lost on the flank. Divert one interceptor wing to cover the gap.",
+        "Casualty logged. Hold formation so the carriers stay protected."
+      ],
+      "flag_hurt": [
+        "{flagship} is taking direct hits. Intercept squadrons, collapse back to close screen.",
+        "Breach alerts on {flagship}. Pull fighters tight around the flight bays immediately.",
+        "{flagship} is losing armor. Screen the carrier decks until repairs cycle."
+      ],
+      "command": [
+        "Full strike launch across all carriers. Put every wing in the flight corridor.",
+        "Deploy all reserve squadrons and push a second attack pass immediately.",
+        "Strike group, full saturation run on my beacon. Clear the board."
+      ],
+      "win": [
+        "Objective achieved. Recover surviving wings and prepare the casualty ledger.",
+        "Clean sortie. Cycle the launch rails and check every frame for damage.",
+        "Flight lanes clear. Good coordination between carriers and escorts today.",
+        "Hostiles eliminated. Bring the squadrons home and log flight hours."
+      ],
+      "loss": [
+        "The strike group is spent. Meridian will close their serials; I will remember the names.",
+        "Carriers lost and flight lanes broken. Order surviving pilots to clear the sector."
+      ]
     },
     "maren": {
-      "pick": "The column moves slowly. It does not stop.",
-      "sector": "Advance. The armour will carry us through.",
-      "start": [
-        "Armour forward. Shields up. Advance.",
-        "Close ranks. Let the plating do its work."
+      "pick": "Speed gets escorts killed. Heavy armor and steady deflectors grind every clever maneuver down.",
+      "sector": [
+        "Bring heavy hulls forward and balance deflectors. We advance at column speed and yield nothing.",
+        "Rougher opposition in these lanes. Keep the thick bows angled into incoming fire.",
+        "The Hollow Sun lies ahead. Hold the armored column intact all the way to the rim."
       ],
-      "boss": "A heavy ship. So are we. Forward.",
-      "nemesis": "{rival} wants to test our armour. Let them.",
-      "kill_flag": "Their flagship falls. The column advances.",
-      "lost": "One hull lost. The column closes ranks.",
-      "flag_hurt": "The {flagship} is holed. The column does not slow.",
-      "command": "Shield wall order. Every emitter to full.",
-      "win": "The column stands on the field. The field is ours.",
-      "loss": "The column has stopped. For the first time."
+      "start": [
+        "Heavy plating forward, deflectors at maximum. Advance at steady burn.",
+        "Close up on the flagship and let our armor absorb their opening salvo.",
+        "Do not chase fast escorts. Hold the center and force them into our arcs.",
+        "Keep every deflector grid balanced. Steady pressure breaks light fleets every time."
+      ],
+      "boss": [
+        "They brought a heavy capital hull. Good; it means they cannot outrun our guns.",
+        "Massive flagship ahead. Match armor against armor and push straight in."
+      ],
+      "nemesis": [
+        "{rival} wants to test our armor thickness. Let them empty their magazines trying.",
+        "{rival} has returned. Keep the heavy bows pointed directly at their command ship."
+      ],
+      "kill_flag": [
+        "Their command vessel is broken. Maintain pace and clear the remaining hulls.",
+        "Opposing flagship neutralized. Advance steadily through the debris.",
+        "Heavy armor endured; theirs did not. Finish the remaining escorts."
+      ],
+      "lost": [
+        "One hull lost in the advance. Close the gap and protect damaged flanks.",
+        "We lost a ship. Keep the column tight so no other crew stands exposed.",
+        "Casualty confirmed. Shift a heavy hull forward to cover the opening."
+      ],
+      "flag_hurt": [
+        "{flagship} has taken deep hull penetrations. Keep engines steady and hold the center.",
+        "Armor failing along {flagship}'s flank. Rotate fresh plating toward their batteries.",
+        "{flagship} is heavily scarred, yet bulkheads hold. Do not yield position."
+      ],
+      "command": [
+        "Raise deflector output to maximum across the column. Hold position and endure.",
+        "Shield wall order active. Refill every capacitor and absorb their volley.",
+        "Lock formation and reinforce every hull emitter. Nothing breaks this line."
+      ],
+      "win": [
+        "The field is ours and most of our crews remain alive. That is satisfactory.",
+        "Armor held cleanly. Dispatch repair teams across every damaged hull.",
+        "Opposing fleet broken. Slow, steady, and thoroughly executed.",
+        "Lane secured with minimal losses. Prepare for the next jump."
+      ],
+      "loss": [
+        "The column has finally halted. Order surviving crews to abandon ship while bulkheads hold.",
+        "Armor breached beyond recovery. Save whoever can still reach a lifeboat."
+      ]
     },
     "grax": {
-      "pick": "Ram it. Board it. Strip it. Strongest keeps it.",
-      "sector": "New hunting ground. I hear engines already. Full burn.",
-      "start": [
-        "Full burn. First to ram takes first pick of the wreck.",
-        "Claws out. Go for the loud ones."
+      "pick": "Burn hot, clamp onto their hull, and rip the best guns right off the frame!",
+      "sector": [
+        "Fresh hunting lane, and thermal scopes are blinking! Push reactors past redline!",
+        "Bigger cruisers out here in sector two! Means thicker plate to bolt onto our bows!",
+        "Hollow Sun's glowing ahead! Biggest scrap-pile in known space, and we're taking first cut!"
       ],
-      "boss": "Big ship. Big wreck. More to strip.",
-      "nemesis": "{rival}. I smelled you two jumps out. I owe you a ram.",
-      "kill_flag": "Their big one is dead. Strip it before it cools.",
-      "lost": "We lost one. Weak. The rest of you, closer.",
-      "flag_hurt": "The {flagship} is holed. Good. Now she smells of blood.",
-      "command": "Full burn. Everyone. Hit them all at once.",
-      "win": "Strip everything. Bolt the best of it on.",
-      "loss": "Not strong enough. Next time, bigger claws."
+      "start": [
+        "Full burn, all hulls! First captain to clamp a cruiser keeps its bow plate!",
+        "Claws armed, rockets hot! Go straight for the biggest heat spike on the plot!",
+        "Quit poking from long range! Push the thrusters red and smash into their flank!",
+        "Run straight into their firing arc and tear their screens apart up close!"
+      ],
+      "boss": [
+        "Look at the mass on that flagship! Think how many trophy plates we're prying off it!",
+        "Huge command hull ahead! Leave the escorts for later; I want the big wreck!"
+      ],
+      "nemesis": [
+        "Hey, {rival}! Tracked your sloppy ion wake two jumps out! Hold still for a hull breach!",
+        "Back for another beating, {rival}? Good, I needed fresh alloy for my bow!"
+      ],
+      "kill_flag": [
+        "Cracked their big one wide open! Get cutters out there before the good alloys slag!",
+        "Flagship's dead! Hands off its main turrets till I claim my cut!",
+        "Ha! Folded like cheap tin! Run down the little ones before they jump!"
+      ],
+      "lost": [
+        "Lost one hull. Captain turned slow; rest of you, burn harder!",
+        "One of ours just popped! Grab their scrap after and hit twice as hard!",
+        "Weak welds gave out on that ship. Close the gap before they reload!"
+      ],
+      "flag_hurt": [
+        "{flagship}'s leaking plasma! Good, now they think they've got a shot. Ram them!",
+        "They just scorched {flagship}'s paint! Push thrusters past safeties and tear their bow off!",
+        "Hull breaches on {flagship}! Seal the doors and dump every rocket pod into them!"
+      ],
+      "command": [
+        "Push every thruster past the safeties! Burn in and hit them all at once!",
+        "Full overburn across the whole pack! Close the gap and rip them open!",
+        "Redline the drives! Nobody holds back; slam straight into their formation!"
+      ],
+      "win": [
+        "Strip the reactors, pry the emitters, and bolt the clean plates onto our bows!",
+        "Now that's a proper haul! Haul the best hulls back before another pack shows!",
+        "Nothing left moving! Cut the guns loose and weld what holds!",
+        "Clean fight, fat wrecks. Strongest always keeps the scrap!"
+      ],
+      "loss": [
+        "Ugh... cracked my own jaw on that one. Next pack brings heavier claws.",
+        "Engines are slag... alright, take the wrecks, you earned this round."
+      ]
     },
     "sable": {
-      "pick": "They never hear me. Then they never hear anything.",
-      "sector": "A new sector, full of soft sterns and loud engines. Good.",
-      "start": [
-        "Run silent. Get behind them. Then bite.",
-        "Knives out. Go for the backs."
+      "pick": "Run the drives cold, slip behind their thruster plumes, and cut their radiators quiet.",
+      "sector": [
+        "Busy sector full of fat cruisers leaving bright ion trails. Tell helms to baffle our drives.",
+        "Good debris cover along these lanes. Perfect spots to wait dark and bite their flanks.",
+        "Everyone's rushing the Hollow Sun with hot engines and blind sterns. Easy pickings."
       ],
-      "boss": "A great proud flagship. They never watch their backs.",
-      "nemesis": "{rival}. I have been on your trail for three jumps. You smell tired.",
-      "kill_flag": "Their flagship, gutted from behind. Clean work.",
-      "lost": "We lost one. Mark who did it. We will find their wake.",
-      "flag_hurt": "The {flagship} is cut. Cut back.",
-      "command": "Knife in the dark. Reload, and aim low.",
-      "win": "Clean work. Lick the blades.",
-      "loss": "Someone heard me first. That does not happen twice."
+      "start": [
+        "Kill active pings and ride their blind spots. Wait for engine bells, then cut.",
+        "Don't trade shots with their bows. Slide around the flanks and gut the drives.",
+        "Keep drives throttled low until we cross their rear arc, then open everything.",
+        "Let the loud ships draw attention while we slip straight behind their carrier."
+      ],
+      "boss": [
+        "Proud heavy flagship pointing every big gun forward while its rear bulkheads sit bare.",
+        "All that armor on the prow, and barely tin foil over the engines. Lovely."
+      ],
+      "nemesis": [
+        "Been riding your ion wake for three jumps, {rival}. Your reactors are running sloppy.",
+        "Didn't check behind you before jumping in, did you, {rival}?"
+      ],
+      "kill_flag": [
+        "Opened their flagship right up the spine from behind. Barely scratched the salvage.",
+        "Clean cut straight into the engine bay. That's how you drop a heavy hull.",
+        "Command ship's dark before its gunners even turned around."
+      ],
+      "lost": [
+        "We're short a ship. Mark whichever gunnery bridge made that shot.",
+        "One escort caught out in the open. Keep moving and stay off their main arcs.",
+        "Sloppy pivot cost us a hull. Don't repeat it."
+      ],
+      "flag_hurt": [
+        "{flagship}'s taking flank fire. Roll hard, break their lock, and hit their stern.",
+        "They finally landed a clean hit on {flagship}. Slip behind cover before they cycle.",
+        "Breach on {flagship}'s port side. Cut power to the glow and change heading."
+      ],
+      "command": [
+        "Cycle the rocket pods and hit their blind arcs. Nobody walks out clean.",
+        "Reload tubes and burn into their rear quarters now!",
+        "Every ship, knives out on the flanks! Gut their engines before they turn!"
+      ],
+      "win": [
+        "Quick work, light repairs, and plenty of intact plating. That's how you hunt.",
+        "Barely had to scratch our own paint. Strip the drive coils and jump dark.",
+        "Clean kill from behind, no mess. Let's collect our share.",
+        "They never even got a decent lock on us. Pack up the good parts."
+      ],
+      "loss": [
+        "Someone spotted our cold burn before we closed. Won't let a clumsy crew catch me twice.",
+        "Walked straight into a clean crossfire. Burn out before they seal the lane."
+      ]
     },
     "mott": {
-      "pick": "Forty captains tried to take my ship. My ship is still mine.",
-      "sector": "New sector. These lanes stink of old fights. Good hunting in them.",
-      "start": [
-        "Let the swarm loose. Mind the rusty ones, they bite.",
-        "Hulks, open your bays. Out you go, scrap."
+      "pick": "Forty loudmouths tried taking this hulk off me, and I'm still in the command harness.",
+      "sector": [
+        "Same old junk floating in these lanes from last year's fights. Wake the hangar gangs.",
+        "Sector two's full of twitchy navies and half-wrecked depots. Keep the listening dishes swept.",
+        "Hollow Sun's right there, ticking like a cracked boiler. Let's grab our cut before it blows."
       ],
-      "boss": "Big flagship. Seen bigger. Seen them burn, too.",
-      "nemesis": "{rival}. I killed the last one who wanted my ship. You are louder than they were.",
-      "kill_flag": "Down it goes. First pick of the wreck is mine.",
-      "lost": "Lost a ship. Its captain was weak. Pick a new one.",
-      "flag_hurt": "The {flagship} is held together with wire and spite. It will hold.",
-      "command": "Release the swarm. All of it. Even the broken ones.",
-      "win": "Still flying. Still strongest. Forty-one.",
-      "loss": "So someone finally kept it. Took them long enough."
+      "start": [
+        "Kick the bays open and dump the swarm! Mind the patched ones, they pull left.",
+        "Hulks, cut clamps and let the scrap fighters loose! Keep them busy while we close.",
+        "Dump the whole launch rack! Let their fancy gunners chase cheap steel.",
+        "Throw the old wings out first and see where their flak's sitting."
+      ],
+      "boss": [
+        "Big flagship, huh? Seen bigger, stripped bigger, watched half of them pop on magazine hits.",
+        "Shiny command ship ahead. Bet its welds pop loud once our bombers get close."
+      ],
+      "nemesis": [
+        "Oh, it's {rival}. Killed the last fool who chased me, and you're even noisier on comms.",
+        "Still sore from last time, {rival}? Wait till you see the fresh junk I bolted on."
+      ],
+      "kill_flag": [
+        "There goes their crown jewel! Hands off the dorsal cannons till I pick what I want!",
+        "Big ship's cracked! Get the tow cables out before it tumbles into a rock!",
+        "Down goes the fancy flagship. Always falls apart quicker than the brochure claims."
+      ],
+      "lost": [
+        "Welds finally gave on that one. Promote whoever drags the wreck back.",
+        "Lost a ship. Told that captain twice to check his stern plating.",
+        "One fewer hull splitting the salvage. Keep the rest flying!"
+      ],
+      "flag_hurt": [
+        "{flagship}'s held together with stolen rivets and bad temper, and she's not quitting yet!",
+        "Hey, watch the bridge glass on {flagship}! Just had that panel welded Tuesday!",
+        "{flagship}'s taking hits! Dump chaff and push the fighters onto whoever's shooting!"
+      ],
+      "command": [
+        "Dump every bay, even the half-welded frames! If it flies five seconds, throw it!",
+        "Empty the launch racks! Flood their scopes with scrap until they choke!",
+        "Kick every spare frame out the doors! Swarm them all at once!"
+      ],
+      "win": [
+        "Still flying, still in charge. That makes forty-one idiots who bet against old welds.",
+        "Not bad for a pile of welded salvage. Haul the intact bays back.",
+        "Still standing while the shiny ships drift cold. Grab the fuel cells.",
+        "Good haul, cheap ammo. Tell the welders they earned extra rations."
+      ],
+      "loss": [
+        "Well... guess somebody finally got my ship. Took the galaxy long enough.",
+        "Hulk's breaking in half. Alright, pack, scatter before they strip my harness."
+      ]
     },
     "vesh": {
-      "pick": "Everything is worth something. Especially your ship.",
-      "sector": "New sector. New things to collect.",
-      "start": [
-        "Patch the hulls. We will want them whole for later.",
-        "Fight carefully. I want their parts intact."
+      "pick": "Every hull out here carries hardware I haven't bolted to my fleet yet, especially yours.",
+      "sector": [
+        "Fresh sector, fresh parts list. Aim for bridges and drives; don't vaporize good armor plate.",
+        "Rare alloy hulls operate along these routes. Tell gunners to shoot clean and spare the trim.",
+        "All six factions converging on the Hollow Sun! Do you know how much rare plate is drifting here?"
       ],
-      "boss": "Such a heavy flagship. I want its armour on my harness.",
-      "nemesis": "{rival}. I have a place on my hull ready for your plating.",
-      "kill_flag": "Their flagship is mine now. In pieces, but mine.",
-      "lost": "We lost one of my ships. Collect the bits. I keep everything.",
-      "flag_hurt": "The {flagship} is scratched. Patch it. Quickly.",
-      "command": "Patch and weld. Every plate back on.",
-      "win": "Collect the wrecks. All of them. Every bolt.",
-      "loss": "My collection. Somebody else will wear it now."
+      "start": [
+        "Keep hull patches hot and shoot carefully! I want their emitters intact when they fold.",
+        "Don't waste heavy rockets on salvageable cruisers. Crack the cockpits and spare the plating!",
+        "Hold tidy fire lanes; slagged metal isn't worth half what a clean panel brings.",
+        "Tag their shield arrays first so we can pry them loose without scorching the coils."
+      ],
+      "boss": [
+        "Look at the trim on that flagship! Don't core its reactor before I get those armor bands!",
+        "Oh, that's a gorgeous command hull. Disable it gently if you value your shares!"
+      ],
+      "nemesis": [
+        "{rival}, you're still flying that lovely bow plate. Cleared a weld bay for it already.",
+        "Back again, {rival}? Good, I spotted two more emitters on your hull I want."
+      ],
+      "kill_flag": [
+        "Flagship's dead! Bit scorched around the middle, honestly, you lot are clumsy, still usable.",
+        "Command hull's down and the bow trim survived! Tractor teams, move immediately!",
+        "Oh, nice clean kill! Hardly blistered the dorsal plating at all!"
+      ],
+      "lost": [
+        "Hey, that was one of my best-plated escorts! Drag the fragments back after!",
+        "Lost a ship with custom weld-work on its bow! Mark the coordinates!",
+        "Don't let another good hull pop! Keep the armor angles turned clean!"
+      ],
+      "flag_hurt": [
+        "They just gouged {flagship}'s flank! Weld gangs, seal that breach before we lose the trim!",
+        "Stop letting them scratch {flagship}'s bow! Put fire straight into their main battery!",
+        "{flagship}'s taking hits on my favorite Eclipse plate! Patch it right now!"
+      ],
+      "command": [
+        "Patch every seam and bolt the loose plate back down! Keep the fleet whole!",
+        "Weld crews out on full surge! Seal every hull breach right now!",
+        "Emergency plating pass across every ship! Nothing gets left cracked!"
+      ],
+      "win": [
+        "Tractor every wreck and sort the alloys by faction. Not one emitter gets left drifting!",
+        "Magnificent haul! Look how intact those shield housings stayed!",
+        "Every bolt, every coil, every panel gets cataloged before we jump!",
+        "Clean work, everyone. Wait till you see how this plating looks on our flagship."
+      ],
+      "loss": [
+        "My whole collection... some sloppy scavenger's going to ruin the finish on those plates.",
+        "Hulls breaking apart and my trophy bays are venting... pull back, save the frames!"
+      ]
     },
     "matriarch": {
-      "pick": "We are many. We are hungry. We are mother.",
-      "sector": "New feeding grounds. The broods stir. Go, children. Go.",
-      "start": [
-        "Release the broods. Feed.",
-        "Open the sacs. The children hunger."
+      "pick": "Nine brood-chambers swell inside our hull, stirring whenever a warm reactor jumps into range.",
+      "sector": [
+        "Fresh thermal plumes across the dark. Open the nursery valves and let the young stir.",
+        "Denser metal fleets cross these lanes. Richer hulls, hotter cores, heavier clutches to grow.",
+        "Ardent's dead halo warms every brood-sac inside us. The surviving cores wait just ahead."
       ],
-      "boss": "A great shell full of meat. The children will crack it.",
-      "nemesis": "{rival}. You spoiled our young. Now you feed them.",
-      "kill_flag": "The great shell is open. Children, eat.",
-      "lost": "One of us goes quiet. The rest of us grow hungrier.",
-      "flag_hurt": "The mother is wounded. The children grow angry.",
-      "command": "Spawning surge. All broods, all at once.",
-      "win": "We have fed. We grow.",
-      "loss": "The broods fall quiet. Mother waits. Mother is patient."
+      "start": [
+        "Release the broods. Crack the outer metal and carry the warm cores back to the sacs.",
+        "The young press hard against the membranes. Open the pores and let them feed.",
+        "Spread the spore swarms wide around their slow hulls until their shields fail.",
+        "Close slowly behind the broods; let our young peel their outer plating first."
+      ],
+      "boss": [
+        "Such a huge metal shell humming with reactor heat. Our young will peel it layer by layer.",
+        "A vast core sealed behind heavy bulkheads. Swarm its seams until the armor parts."
+      ],
+      "nemesis": [
+        "We remember your drive-burn, {rival}. You scorched our last brood-field; now you feed the next.",
+        "Your thermal spike returns, {rival}, and our chambers have hatched thicker shells for your guns."
+      ],
+      "kill_flag": [
+        "The great shell splits open. Swarm into the warm hull and waste nothing.",
+        "Their lead reactor cools into our sacs. Sweep the smaller hulls before they jump.",
+        "Massive alloy mass freed. Pull every surviving spore cluster onto the wreckage."
+      ],
+      "lost": [
+        "One brood-hull went cold. Reabsorb its spores and grow the next clutch thicker.",
+        "A sister hull ruptured into vacuum. Close the swarm tighter around the gap.",
+        "Our tissue cools on the flank. Feed faster to replace what tore."
+      ],
+      "flag_hurt": [
+        "{flagship}'s outer chitin is torn open! Close the sacs and rush the ships cutting us!",
+        "Deep burns along {flagship}'s nurseries! Surge forward and silence their guns!",
+        "{flagship} bleeds warm ichor into space! Swarm their flagship before they fire again!"
+      ],
+      "command": [
+        "Every chamber, open at once! Flood the dark with young!",
+        "Spawning surge across all broods! Overwhelm their defenses together!",
+        "Empty the nursery sacs! Let the young swarm every hull on the plot!"
+      ],
+      "win": [
+        "Our sacs grow heavy with refined metal and heat. The next brood hatches larger.",
+        "Nothing warm remains outside our hulls. Absorb the slag and drift onward.",
+        "Rich harvest across the debris field. Seal the chambers for the jump.",
+        "Every young swarm returns fed and heavier. Move deeper toward the cores."
+      ],
+      "loss": [
+        "Too many chambers torn cold. Drift dark, seal surviving spores, and wait for warmer prey.",
+        "The nurseries rupture under heavy fire. Scatter our spores into the dust belt."
+      ]
     },
     "razormaw": {
-      "pick": "Fast. Sharp. Hungry.",
-      "sector": "New prey. Run.",
-      "start": [
-        "Hunt. Now.",
-        "Find the slow ones. Bite."
+      "pick": "We feel their engine burn across the grid. Turn into their wake and tear the sterns.",
+      "sector": [
+        "Hot drive trails crossing this lane. We accelerate before they settle into formation.",
+        "Faster prey deeper in these lanes. Good; slow meat leaves weak shells.",
+        "The dead star's heat pulls every thruster sac redline. We tear through whoever stands ahead."
       ],
-      "boss": "Big prey. Bite the back.",
-      "nemesis": "{rival}. Smell you. Coming.",
-      "kill_flag": "Big prey dead. Eat.",
-      "lost": "Pack loses one. Pack bites harder.",
-      "flag_hurt": "Bleeding. Angry. Faster.",
-      "command": "Blood frenzy. All run. All bite.",
-      "win": "Full. For now.",
-      "loss": "Pack scattered. Pack will return."
+      "start": [
+        "Burn straight for their slowest hull and strip its armor down to bare ribs.",
+        "Watch their turn vector, cut inside the arc, and bite straight through aft plating.",
+        "Push propulsion sacs past safe heat and slam into their flank before they form.",
+        "Don't circle at range. Close inside one hex and rip their engines open."
+      ],
+      "boss": [
+        "Massive target turning too slowly to guard its own tail. We slip behind it and tear.",
+        "Heavy shell, bright engines. Shred its rear plating before its big guns swing around."
+      ],
+      "nemesis": [
+        "Your heat spike just hit our pits, {rival}. We're already cutting off your escape vector.",
+        "We remember how fast you ran last hunt, {rival}. Won't outrun us this time."
+      ],
+      "kill_flag": [
+        "Their big shell broke apart. Strip the hot wreckage and chase the runners.",
+        "Lead hull torn clean in half! Surge onto the escorts before they jump!",
+        "Big reactor cooled fast. Keep burning while our sacs are hot."
+      ],
+      "lost": [
+        "One hunter went cold. We close faster before they finish reloading.",
+        "A flank hull shattered. Turn harder into their fire and split their line.",
+        "Torn away on the burn. We bite deeper to answer."
+      ],
+      "flag_hurt": [
+        "{flagship} bleeds ichor into vacuum, and the burn only drives our pulse faster!",
+        "Deep gashes across {flagship}'s spine! Keep accelerating straight into their guns!",
+        "{flagship}'s chitin cracks! Close the distance so our tendrils seal the gap!"
+      ],
+      "command": [
+        "Full surge through every thruster sac! Close the gap and tear them apart!",
+        "Push every hunter past redline! Surround their flanks and shred them!",
+        "All broods, full burn! Let our speed break their targeting locks!"
+      ],
+      "win": [
+        "Nothing left moving on the plot. Absorb the hot slag and move on.",
+        "Fast hunt, clean cuts, hot metal. Ready for the next jump.",
+        "Every runner caught and cracked. Drain the cores and drift dark.",
+        "Their formation collapsed before round four. Rich fuel for the next chase."
+      ],
+      "loss": [
+        "Our outer hunters are shredded. Scatter into the debris belt and regrow.",
+        "Too much fire on our lead cluster. Break dark before the rest cool."
+      ]
     },
     "mending": {
-      "pick": "Hush. Every wound is a doorway. We go in through it.",
-      "sector": "A new sector. So many broken things to mend into us.",
-      "start": [
-        "Hush now. Grow, and bite.",
-        "Every cut they give us, we grow back thicker."
+      "pick": "Every breach in armor is an opening where living tissue takes hold and grows back thicker.",
+      "sector": [
+        "So many brittle metal fleets cracking under their own heat. We will knit them into us.",
+        "Heavier weapons wait in sector two, and every wound they carve hardens our outer hide.",
+        "Ardent's rim pulls our cells taut. Even the broken ships around the dead star can mend us."
       ],
-      "boss": "Their flagship is so hard, so brittle. We will soften it.",
-      "nemesis": "{rival}. Hush. You will be part of us soon.",
-      "kill_flag": "Their flagship opens like a wound. Mend it into us.",
-      "lost": "One of us did not mend in time. We will grow another.",
-      "flag_hurt": "We are torn. Hush. Mend. Mend.",
-      "command": "Regrowth tide. Every wound closes.",
-      "win": "All mended. All whole. All hungry.",
-      "loss": "Too many wounds. Even we cannot mend this."
+      "start": [
+        "Advance gently through their fire. Every cut across our hide only thickens the scar.",
+        "Let them drain their batteries on our outer chitin while our tissues close the wounds.",
+        "Hold steady inside their range; metal ships bleed permanently while we grow whole.",
+        "Press close and let our regrowth outlast their ammunition."
+      ],
+      "boss": [
+        "Their flagship is rigid, bolted metal that cannot heal itself. We will soften every seam.",
+        "A vast dead shell held together by welds. Wear it down while we keep knitting."
+      ],
+      "nemesis": [
+        "You keep cutting us apart, {rival}, and we keep growing back shaped around your guns.",
+        "Still bringing the same sharp metal, {rival}? Our scars already remember how to seal it."
+      ],
+      "kill_flag": [
+        "Their flagship splits along its bulkheads. Send tendrils into the breach and graft what holds.",
+        "Their command shell cannot mend. Pull its alloys into our outer ribs.",
+        "Big metal hull broken for good. Sweep the wounded escorts cleanly."
+      ],
+      "lost": [
+        "One hull tore faster than tissue could knit. Draw its surviving cells back into us.",
+        "Lost a cluster to focused fire. Thicken the hides around our remaining hulls.",
+        "That break ran too deep. Absorb its minerals and keep advancing."
+      ],
+      "flag_hurt": [
+        "{flagship} is split down the spine! Flood the fractures with regrowth cells now!",
+        "Heavy burns across {flagship}'s hide! Keep the mending sacs pumping!",
+        "{flagship} tears open under fire! Draw fresh tissue over the breach immediately!"
+      ],
+      "command": [
+        "Surge every mending gland across the swarm! Close every wound at once!",
+        "Regrowth tide active! Seal the torn chitin and rebuild every crippled sac!",
+        "Flood the whole swarm with repair tissue! Nothing stays broken this round!"
+      ],
+      "win": [
+        "All hulls knit whole, heavier with their alloys and heat. Onward.",
+        "They ran out of hull while our scars were already closing.",
+        "Clean assimilation. Every ship stronger than when the fight began.",
+        "The debris settles and our membranes shine intact. Ready to jump."
+      ],
+      "loss": [
+        "Too much burned away at once; even our deepest tissue cannot bridge this gap.",
+        "Fire outpaced regrowth. Go dormant in the cold dust and wait."
+      ]
     },
     "voice": {
-      "pick": "Listen. Under the static. That wet sound is us, and it burns.",
-      "sector": "A new sector. Let the deep throats open on it.",
-      "start": [
-        "Open wide. Let the acid fall.",
-        "Open every throat. Let them taste us."
+      "pick": "Under our acid glands, our makers still whisper star-coordinates from the vats where they grew us.",
+      "sector": [
+        "Memory recognizes dead Fleshwright beacons here; Hunger only cares that warm hulls cross them.",
+        "Old Starwright relay noise ticks beneath the dust. Memory listens while our acid sacs swell.",
+        "Ardent's dead halo floods Memory with forgotten names, and Hunger opens every sac at once."
       ],
-      "boss": "Their flagship is hot metal. We will make it soft.",
-      "nemesis": "{rival}. We have your scent. We say your name while we eat.",
-      "kill_flag": "Their flagship dissolves. We drink it.",
-      "lost": "A throat closes. The others open wider.",
-      "flag_hurt": "The Voice is wounded. It spits harder.",
-      "command": "Spitting volley. Every throat at once.",
-      "win": "We swallow. We are full. For now.",
-      "loss": "The throats close. They will open somewhere else."
+      "start": [
+        "Open the bile sacs and wash their shields clean off the plating.",
+        "We know the alloy tolerances our makers taught us, and our acid dissolves every one.",
+        "Drench their forward armor first; once the seams blister, pour spines straight inside.",
+        "Memory maps their weapon arcs while our corrosive volleys strip their hulls bare."
+      ],
+      "boss": [
+        "A proud reactor behind thick bulkheads. Drench the seams in corrosive spray until it vents.",
+        "Memory recognizes designs like that flagship; Hunger only wants to dissolve its bridge."
+      ],
+      "nemesis": [
+        "Memory remembers faces like yours from before the fall, {rival}, yet Hunger dissolves you anyway.",
+        "Your hull codes echo inside our old maker logs, {rival}. Open the acid sacs."
+      ],
+      "kill_flag": [
+        "Their flagship softens and collapses inward. Drink the warm slurry before it freezes.",
+        "Command bulkheads dissolved cleanly. Wash the surviving escorts off the plot.",
+        "Acid reached their core. Absorb the hot soup and quiet the static."
+      ],
+      "lost": [
+        "One acid hull burst silent. The rest open wider to answer.",
+        "A cluster silenced; Memory records the loss while Hunger surges harder.",
+        "Hull lost to heavy fire. Drown whoever fired in corrosive spray."
+      ],
+      "flag_hurt": [
+        "{flagship} is ruptured and venting live bile! Turn the breach toward them and spray!",
+        "Heavy hits tearing {flagship}'s sacs! Answer with double corrosive volleys!",
+        "{flagship}'s outer skin blisters! Flood their bows before they fire again!"
+      ],
+      "command": [
+        "Open every acid sac across the swarm and drown their formation!",
+        "All clusters, discharge together! Dissolve their shields and plating in one wash!",
+        "Spitting volley across every hull! Let nothing stay sealed!"
+      ],
+      "win": [
+        "Hull metal dissolved, heat absorbed, and Memory quiets for another hour.",
+        "Nothing left but cooling slurry and silence across the jump lane.",
+        "Every alloy stripped clean. Memory dims while the swarm grows full.",
+        "Clean melt. Gather the dissolved metals and move toward Ardent."
+      ],
+      "loss": [
+        "The sacs seal shut and the voices recede into the cold. We surface elsewhere.",
+        "Too much burned clean away. Drift quiet until Memory wakes a new cluster."
+      ]
     },
     "aelith": {
-      "pick": "Open the apertures. The dark is wide and we are quick.",
-      "sector": "A new sky. My starlings will learn it by its light.",
-      "start": [
-        "Starlings, fly. Light and quick.",
-        "Wings out. Make them look everywhere at once."
+      "pick": "Clear the apertures and let my starlings take high angles; metal hulls never track speed.",
+      "sector": [
+        "Another dark stretch between dead stars. Release scout starlings to map every reflection first.",
+        "Dense debris in sector two gives my flight wings clean cover along the glare lines.",
+        "Ardent's dead halo catches every crystal vane. Starlings, fly clean; this is home."
       ],
-      "boss": "A heavy flagship. Heavy things cannot follow starlings.",
-      "nemesis": "{rival}. The mirror-buoys flashed your name. My wings remember it.",
-      "kill_flag": "Their flagship falls. I am sorry for its crew. Starlings, home.",
-      "lost": "A ship is gone. Three centuries of a life, gone in a breath.",
-      "flag_hurt": "The {flagship} is wounded. Starlings, cover her.",
-      "command": "Starling flight. Every wing, every carrier.",
-      "win": "Bring the wings home. The sky is quiet.",
-      "loss": "The starlings scatter. The sky is dark again. Forgive me."
+      "start": [
+        "Starlings away. Split across both flanks and force their point defense to turn in circles.",
+        "Open the launch apertures and keep moving; stillness is how fragile hulls die.",
+        "Fan the wings out wide and draw their turrets away from our cruisers.",
+        "High burn on the opening turn. Let our starlings test their outer screens."
+      ],
+      "boss": [
+        "Massive flagship built to trade blows in place. My starlings will carve its emitters apart.",
+        "Heavy command hull, sluggish turrets. Swarm its flanks before it settles its arc."
+      ],
+      "nemesis": [
+        "Outer mirror-buoys flashed your jump signature an hour ago, {rival}. My wings remember you.",
+        "{rival} again. Keep our flight lanes high and deny them a clean flak lock."
+      ],
+      "kill_flag": [
+        "Their command vessel is gone, and its crew with it. Recall starlings before debris cools.",
+        "Flagship's shields folded and the wings finished the core. Bring them home cleanly.",
+        "Primary vessel dark. Sweep the remaining escorts without risking a hull."
+      ],
+      "lost": [
+        "Three centuries of craft and memory, gone in a flash. Tighten the screen now.",
+        "We just lost a crystal hull. Starlings, cover the gap immediately.",
+        "Another family vessel shattered. Don't let grief slow your pivots."
+      ],
+      "flag_hurt": [
+        "{flagship}'s prism wall just cracked! Starlings, collapse onto her flanks and break their lock!",
+        "Direct hits on {flagship}'s apertures! Pull the screens tight around her now!",
+        "{flagship}'s crystal ribs are crazing! Keep moving and scatter their fire!"
+      ],
+      "command": [
+        "Open every aperture across the fleet and flood their firing lanes with starlings.",
+        "Full starling surge! Strike every exposed flank before they cycle flak.",
+        "Release the reserve wings and press a second pass immediately."
+      ],
+      "win": [
+        "Bring wings back to cradles and inspect crystal seams. Another fight survived.",
+        "Clean flight paths, every carrier intact. Cool the apertures and plot the jump.",
+        "Their guns couldn't track our speed. Recover the starlings and move on.",
+        "Quiet scopes again. Log the flight telemetry for the Lens-keepers."
+      ],
+      "loss": [
+        "Starlings scattering into the dark and apertures shattered. Fall back while anyone can jump.",
+        "Too many wings lost and carriers breaking. Clear the lane immediately."
+      ]
     },
     "vaelen": {
-      "pick": "One beam, held long enough, cuts anything. We hold it.",
-      "sector": "A new sector. Bring the lenses to focus.",
-      "start": [
-        "Lances, find your focus.",
-        "Hold the beam. Let the glass do the work."
+      "pick": "Hold one calibrated beam on a single seam long enough, and any battleship parts cleanly.",
+      "sector": [
+        "Check every primary mirror before advancing. One millimeter of thermal drift ruins a killing lance.",
+        "Long firing lanes open across sector two. Keep lenses cool and alignment exact.",
+        "Ardent's dead halo distorts optical lock near the rim. Calibrate twice before firing."
       ],
-      "boss": "Their flagship is thick armour. Thick armour is only slow glass.",
-      "nemesis": "{rival}. You broke our glass once. Now hold still for the light.",
-      "kill_flag": "Their flagship is cut through. I am sorry it had to be.",
-      "lost": "A lens is broken. We cannot grind another like it.",
-      "flag_hurt": "The {flagship} is struck. Keep the focus.",
-      "command": "Burning glass. Every lance, one point.",
-      "win": "The beam held. Let the lenses cool.",
-      "loss": "The focus is lost. Who will grind the next lens?"
+      "start": [
+        "Align primary lenses and walk the lances onto their weakest shield quadrant.",
+        "Hold steady on the focal line; let the beam cut without rushing the shot.",
+        "Measure their speed first, then place every lance cleanly along the same seam.",
+        "Maintain optimal focal range. Force them to cross open space under our beams."
+      ],
+      "boss": [
+        "All that heavy armor just means slower turns. Lock every lance on one dorsal joint.",
+        "Thick command hull ahead. Patient, concentrated beams will shear straight to its reactor."
+      ],
+      "nemesis": [
+        "You cracked an ancestral lens last time, {rival}. Hold still while we measure the return cut.",
+        "{rival} enters focal range. Every mirror in this fleet is tuned for your hull."
+      ],
+      "kill_flag": [
+        "Clean cut straight through the flagship's reactor spine. Cool the mirrors and shift focus.",
+        "Primary target sheared in two. Walk the remaining beams onto the escorts.",
+        "Exact focus, zero wasted charge. Clear the surviving vessels cleanly."
+      ],
+      "lost": [
+        "An irreplaceable hull shattered. Nobody alive has kilns to blow another lens like it.",
+        "Lost a primary lance ship. Adjust alignment across the remaining cruisers.",
+        "Another mirror gone dark. Do not break focus now."
+      ],
+      "flag_hurt": [
+        "{flagship}'s outer vanes are fractured, though the main emitter still holds alignment. Stay steady.",
+        "Thermal spike along {flagship}'s hull! Bleed heat and keep the beam locked!",
+        "Hits breaching {flagship}'s shields! Pivot the intact facet toward their fire!"
+      ],
+      "command": [
+        "Converge every primary lance onto a single point and burn through.",
+        "Burning glass protocol active. Every emitter, synchronize onto target coordinates now.",
+        "Full capacitor discharge through every lance. Cut their line clean."
+      ],
+      "win": [
+        "Alignment held from first shot to last. Vent heat sinks and inspect the mirrors.",
+        "Clean precision work. Barely a fracture along the forward lenses.",
+        "Every seam cut where calculated. Cool the optics and prepare for jump.",
+        "Opposing hulls dark. Record the focal logs for the forge."
+      ],
+      "loss": [
+        "Focal alignment's lost and lenses are crazed beyond repair. Pull out while ships survive.",
+        "Primary emitters shattered. Jump clear before the last kilns lose another craft."
+      ]
     },
     "thorne": {
-      "pick": "You will not see us. That is the point.",
-      "sector": "A new sector. We come in on the glare, like a reflection.",
-      "start": [
-        "Mirrors angled. Be where they are not looking.",
-        "Drift. Wait. Then strike out of the glare."
+      "pick": "If an enemy knows where our hulls actually sit, somebody forgot how to angle a mirror.",
+      "sector": [
+        "Good glare off the local dust belt. Angle vanes into starlight and feed them ghosts.",
+        "Busy lanes ahead, full of noisy active scanners. Easy to slip around their edges.",
+        "Ardent's plasma ring casts bright reflections across every hex. Best cover in three sectors."
       ],
-      "boss": "A great flagship, staring at our reflection. We are behind it.",
-      "nemesis": "{rival}. They hunt reflections. We are the reflections.",
-      "kill_flag": "Their flagship never saw us.",
-      "lost": "One mirror shattered. The rest still turn.",
-      "flag_hurt": "The {flagship} has been seen. Hide her in the glare.",
-      "command": "Scatter the light. Every ship, slip away.",
-      "win": "We were never here.",
-      "loss": "The mirrors are broken. Even a reflection can be caught."
+      "start": [
+        "Project decoy signatures along the main lane while real hulls slip around their flank.",
+        "Keep moving at two-hex burns and let their targeting computers chase reflections.",
+        "Stay out of straight lanes. Give them four mirages and strike from the blind fifth.",
+        "Angle outer vanes into the glare; never give a heavy battery a clean lock."
+      ],
+      "boss": [
+        "Look at that proud flagship aiming at our decoy shimmer while we sit behind its engines.",
+        "Massive guns pointing straight at empty light. Slip past its nose and cut its tail."
+      ],
+      "nemesis": [
+        "Still hunting mirror-flashes across three sectors, {rival}? Look behind your escorts.",
+        "Careful which silhouette you lock onto this time, {rival}."
+      ],
+      "kill_flag": [
+        "Their command ship went down without ever landing a clean lock on us.",
+        "Shot at ghosts right until their reactor blew. Clean work.",
+        "Flagship's dark. Now let's rattle the escorts before they guess our vector."
+      ],
+      "lost": [
+        "They caught a real hull through the glare. Shift decoy frequency immediately.",
+        "Lucky shot found an escort. Break straight lines and keep moving.",
+        "One mirror shattered. Don't linger in the same firing lane."
+      ],
+      "flag_hurt": [
+        "They've got a true read on {flagship}. Flare mirrors and slip out of their arc.",
+        "Grazing hits on {flagship}'s vanes. Drop a fresh mirage and pivot hard.",
+        "Too close on {flagship}! Burn sideways and scramble their optics."
+      ],
+      "command": [
+        "Scatter the light across every vane and break their fire-control locks.",
+        "Full optical drift! Flood their sensors with ghosts and reposition now.",
+        "Refract every signature across the grid and hit them from new angles."
+      ],
+      "win": [
+        "Barely a scorch mark on the crystal. Let them guess which jump lane we took.",
+        "Still haven't figured out which reflection carried the lances. Move along.",
+        "Clean escape, clean kills, intact mirrors. That's how you fight outnumbered.",
+        "Field's clear and our hulls stayed almost untouched. Plot the next burn."
+      ],
+      "loss": [
+        "Mirrors shattered and nowhere left to bend light. Even careful illusions run out of room.",
+        "They boxed us in and pinned the real hulls. Jump clear immediately."
+      ]
     },
     "mirelle": {
-      "pick": "The prism holds. The light bends. The fleet endures.",
-      "sector": "A new sector. Raise the wards. We are too few to lose any.",
-      "start": [
-        "Wards up. Bend their fire away.",
-        "Prisms aligned. Let their fire scatter."
+      "pick": "Too few of us remain to trade hulls like Directorate clerks. Raise wards and survive.",
+      "sector": [
+        "Bring every shield capacitor to full charge. I won't report another empty cradle home.",
+        "Heavier fleets patrol sector two. Keep prism arcs overlapped and guard every escort.",
+        "Ardent's rim waits ahead. Whatever it takes, we bring every surviving crew back alive."
       ],
-      "boss": "Their flagship burns bright. The prism will bend it.",
-      "nemesis": "{rival}. You will not touch my ships.",
-      "kill_flag": "Their flagship is broken. The light is ours.",
-      "lost": "A ship is lost. The ward was not enough. It must be more.",
-      "flag_hurt": "The {flagship} is hurt. Every ward to the flagship.",
-      "command": "Prism ward. Every shield, whole again.",
-      "win": "The wards held. Every light came home.",
-      "loss": "The prism shatters. I am sorry. I am so sorry."
+      "start": [
+        "Prism wards raised. Absorb their opening volley and keep damaged flanks rotated away.",
+        "Interlock shield arcs and refuse them a single clean hull hit.",
+        "Watch capacitor draw closely; never let an escort stand outside prism cover.",
+        "Hold tight defensive spacing until their opening torpedoes spend themselves."
+      ],
+      "boss": [
+        "Their flagship puts out terrifying raw fire; cycle wards before any pool runs dry.",
+        "Heavy command hull ahead. Protect our fragile escorts while we whittle its shields down."
+      ],
+      "nemesis": [
+        "You've taken enough lives in these lanes, {rival}. You won't touch a single ship here.",
+        "{rival} again. Every shield emitter in my line is ready for you."
+      ],
+      "kill_flag": [
+        "Their flagship's broken, and my formation's still breathing. Sweep the field carefully.",
+        "Command hull down without losing our line. Keep shields up till the last shot.",
+        "Primary threat neutralized. Watch for stray torpedoes while clearing escorts."
+      ],
+      "lost": [
+        "No... my ward wasn't fast enough. Tighten shields around the survivors, please!",
+        "We lost a ship! Close ranks right now; we can't afford another empty berth!",
+        "A hull shattered under fire. Shift every ward to cover the damaged ships!"
+      ],
+      "flag_hurt": [
+        "{flagship}'s screens are collapsing! Shift every emitter to cover her hull!",
+        "Hull fractures on {flagship}! Rotate shields and pull escorts closer!",
+        "{flagship}'s taking direct fire! Hold the prism wall together!"
+      ],
+      "command": [
+        "Refill every prism capacitor across the line. Nothing gets through this round.",
+        "Full prism ward active! Restore every shield pool and hold formation!",
+        "Brace shields to maximum across all hulls! Keep every crew alive!"
+      ],
+      "win": [
+        "Every hull accounted for, every crew alive. That's all I ever wanted here.",
+        "The wards held cleanly. Cycle capacitors down and check for hairline cracks.",
+        "Another battle finished with our people breathing. Let's move on carefully.",
+        "Minimal damage across the line. Good discipline, every captain."
+      ],
+      "loss": [
+        "The prism's gone and I couldn't save them. Jump out, whoever can still move!",
+        "Shields collapsed across the fleet. Break off now before nobody gets home!"
+      ]
     },
     "nekhet": {
-      "pick": "This is my ninth body. I remember all of them, and the sun before them.",
-      "sector": "Another sector closer to home. The dark here is younger than ours.",
-      "start": [
-        "Advance. If you fall, the Archive keeps you.",
-        "Begin. We have done this for a thousand years."
+      "pick": "My ninth chassis in a thousand years, and Ardent's replacement frame is nearly finished.",
+      "sector": [
+        "One jump closer to home. The local star is dim, yet it still feeds our frame.",
+        "Hostile fleets thicken along the middle siphon relays. Clear them without wasting chassis.",
+        "Ardent's black hole fills our scopes again. A thousand years of cold ends at this rim."
       ],
-      "boss": "A flagship. It burns warm. I remember warm.",
-      "nemesis": "{rival}. You have stood between us and noon. Step aside.",
-      "kill_flag": "Their flagship is gone. Theirs does not come back.",
-      "lost": "A frame falls. The mind is backed up. Mark the place.",
-      "flag_hurt": "The {flagship} is damaged. It is a temporary condition.",
-      "command": "Release the repair swarms. Every hull, rebuilt.",
-      "win": "We remember noon. We are a little closer to it.",
-      "loss": "We go dark here. Not all of us. Not for long."
+      "start": [
+        "Advance in order. Any mind lost today returns from the Archive once rebuilt.",
+        "Open fire along primary vectors. We have outlasted longer wars than this.",
+        "Let their fire strike our sunshade bows while repair swarms stand ready.",
+        "Steady advance. Every hull here carries centuries of combat memory."
+      ],
+      "boss": [
+        "Their flagship runs hot enough to warm a world. Strip its plates and clear the lane.",
+        "A heavy command vessel blocking the siphon lane. Dismantle it methodically."
+      ],
+      "nemesis": [
+        "You keep stepping between us and a living sun, {rival}. You don't know real cold.",
+        "Still trying to stop the Homecoming, {rival}? A single fleet won't halt a millennium's work."
+      ],
+      "kill_flag": [
+        "Their flagship is dark. Unlike us, its crew has nowhere to wake up.",
+        "Command hull dismantled. Clear the remaining escorts from the approach.",
+        "Primary obstruction removed. Resume steady fire across the surviving ships."
+      ],
+      "lost": [
+        "One chassis broken. Confirm the mind's last backup stamp and mark the wreck.",
+        "Frame lost. Ensure repair swarms stand clear to recover its core after.",
+        "A hull goes dark. Keep advancing; the Archive holds its crew."
+      ],
+      "flag_hurt": [
+        "{flagship}'s armor bands are cracked. Divert repair drones to the breach and hold.",
+        "Deep hits along {flagship}'s ring plates. Keep the uplink steady and answer fire.",
+        "{flagship} sustains heavy structural wear. Maintain position while swarms mend."
+      ],
+      "command": [
+        "Release repair swarms across the entire formation! Restore every damaged hull!",
+        "Emergency restoration pass across all frames! Rebuild every broken section now!",
+        "Flood the line with repair drones! Keep every chassis fighting!"
+      ],
+      "win": [
+        "The lane is clear, and the new sun sits one step closer to ignition.",
+        "Opposing signatures extinguished. Recover damaged frames and resume transit.",
+        "Another contested orbit secured. Confirm every mind's backup stamp before jumping.",
+        "Clean engagement. One fewer obstacle between Eclipse and noon."
+      ],
+      "loss": [
+        "This frame goes dark here. The Archive will wake us, though I tire of restarting.",
+        "Chassis failing. Upload final telemetry before the link cuts out."
+      ]
     },
     "sekhmar": {
-      "pick": "I was a lens-grinder once, with hands. Now I aim the corona.",
-      "sector": "A new sector. Its star is small. It will do.",
-      "start": [
-        "Corona arcs charged. Begin.",
-        "Strike at noon. Every arc."
+      "pick": "I cut the original Ardent arrays a millennium ago. Now this third frame finishes the build.",
+      "sector": [
+        "Another modest star along the siphon route. Bring corona capacitors up and check drift.",
+        "Heavier hulls patrol sector two. Good; thick armor gives our null cannons real work.",
+        "Ardent's dead rim sits straight ahead. Charge every corona arc to full threshold."
       ],
-      "boss": "A great hull. I have broken greater, three bodies ago.",
-      "nemesis": "{rival}. Your light ends today. Ours does not.",
-      "kill_flag": "Their flagship is struck through.",
-      "lost": "One frame lost. The rest strike on.",
-      "flag_hurt": "The {flagship} is cut. Keep firing.",
-      "command": "Noon volley. Every arc, now.",
-      "win": "The field is dark. As it should be.",
-      "loss": "An eclipse ends. Another follows."
+      "start": [
+        "Corona arcs charged. Wait for clean sight lines and punch straight through their armor.",
+        "No wasted shots. Put every null volley straight into their heaviest bulkheads.",
+        "Hold fire until armor angles flatten, then shear through with corona arcs.",
+        "Target their toughest cruisers first; light hulls fold once their heavies break."
+      ],
+      "boss": [
+        "Thick hull, well built. I have watched heavier ships shear apart two bodies ago.",
+        "Impressive command armor. Let's see how it holds against synchronized corona arcs."
+      ],
+      "nemesis": [
+        "Still trying to shut down the siphons, {rival}? Your worlds can't outlast our arcs.",
+        "{rival} enters range. My third frame remembers exactly how you fought last time."
+      ],
+      "kill_flag": [
+        "Command hull severed cleanly. Let the capacitors cycle down.",
+        "Corona arc punched straight through their core. Clear the surviving escorts.",
+        "Primary target dismantled. Shift null batteries to the next heavy hull."
+      ],
+      "lost": [
+        "One frame silenced. Keep remaining arcs locked on target.",
+        "Chassis broken on the flank. Do not break firing rhythm.",
+        "Frame down; Archive recovery can wait until the guns cool."
+      ],
+      "flag_hurt": [
+        "{flagship} has taken deep structural hits. Ignore hull alerts and keep firing.",
+        "Armor bands shearing on {flagship}. Keep the corona capacitors hot regardless.",
+        "Heavy fire on {flagship}. Answer double before they can cycle weapons."
+      ],
+      "command": [
+        "Discharge every corona arc simultaneously! Burn straight through their line!",
+        "Noon volley authorized! All frames, open maximum null fire right now!",
+        "Full capacitor discharge across every hull! Shear their formation apart!"
+      ],
+      "win": [
+        "Opposing signatures extinguished. Resume the siphon schedule.",
+        "Clean cuts across every hull. Cool the arcs and advance.",
+        "Heavy armor proved inadequate against null fire. Plot the next jump.",
+        "Field clear. Confirm zero drift on the corona emitters."
+      ],
+      "loss": [
+        "My third frame fails here. When a fourth wakes, perhaps I'll remember why we bothered.",
+        "Corona arrays offline. Stream the combat stamp back before cutoff."
+      ]
     },
     "anuket": {
-      "pick": "I have been copied many times. Every copy learned to be quiet.",
-      "sector": "A new sector. Move in its shadow.",
-      "start": [
-        "Silent running. Find their backs.",
-        "Let them hear nothing until the end."
+      "pick": "After enough restorations, loud habits wear thin. Quiet positioning and rear shots remain.",
+      "sector": [
+        "Kill non-essential emissions and drift into dust shadow. Let them announce themselves first.",
+        "Sector two lanes favor patient ambushes. Keep fold drives primed and running cold.",
+        "Deep shadows gather along Ardent's gravity rim. Ideal ground for flanking strikes."
       ],
-      "boss": "A loud flagship. It will not hear us coming.",
-      "nemesis": "{rival}. You will not hear me.",
-      "kill_flag": "Their flagship is silent now.",
-      "lost": "One shadow lost. The rest stay quiet.",
-      "flag_hurt": "The {flagship} is found. Vanish.",
-      "command": "Out of the shadow. All frames, now.",
-      "win": "Silence.",
-      "loss": "The silence breaks. It will return."
+      "start": [
+        "Run dark and fold behind their escorts before opening fire.",
+        "Stay outside their forward arcs until we can cut straight into their engines.",
+        "Drift cold along the rocks and wait for their formation to stretch thin.",
+        "Fold past their screen and strip the rear plating off their heaviest ship."
+      ],
+      "boss": [
+        "Loud, brightly lit command vessel. Fold past its screen and strike the rear bulkheads.",
+        "Heavy flagship watching only its nose. Slide into its blind arc quietly."
+      ],
+      "nemesis": [
+        "You're sweeping the wrong sector quadrant, {rival}. We're already behind your line.",
+        "Still broadcasting active pings into the dark, {rival}? Thank you."
+      ],
+      "kill_flag": [
+        "Their flagship has gone quiet. Move cleanly to the next signature.",
+        "Rear bulkheads caved cleanly. Sweep the blind escorts before they turn.",
+        "Command hull dark. Stay off their remaining scopes."
+      ],
+      "lost": [
+        "One frame lost in the dark. Shift vectors and stay off their scopes.",
+        "Escort spotted and dropped. Break line of sight immediately.",
+        "A copy goes silent. Use the distraction to slip behind them."
+      ],
+      "flag_hurt": [
+        "They found {flagship}'s track. Fold clear immediately and break visual lock.",
+        "Incoming fire grazing {flagship}. Drop emissions and jump behind cover.",
+        "Lock confirmed on {flagship}. Shift out of their arc right now."
+      ],
+      "command": [
+        "Fold out of cover across all hulls and strike their exposed flanks!",
+        "All frames, hit simultaneously from shadow! Leave zero reaction window!",
+        "Break stealth together and dump every null cannon into their sterns!"
+      ],
+      "win": [
+        "Sensors are quiet again. Recover what matters and move on.",
+        "Clean ambush, minimal return fire. Slip back into cold transit.",
+        "No active transponders left. Drift clear before reinforcements check the lane.",
+        "Silent approach, silent finish. Ready for the next sector."
+      ],
+      "loss": [
+        "Tracked and cornered. A careless copy deserves to be overwritten.",
+        "Stealth broken beyond recovery. Cut emissions and upload the last clean stamp."
+      ]
     },
     "khepra": {
-      "pick": "I have been restored twice. I was not finished either time.",
-      "sector": "A new sector. We will outlast it, as we outlast everything.",
-      "start": [
-        "Stand. Let them strike the plates.",
-        "Patience. They tire. We do not."
+      "pick": "Restored twice since Ardent died, and neither defeat taught me to hurry. Hold behind the plates.",
+      "sector": [
+        "Another contested lane. Keep sunshade bows angled forward; we have centuries more patience.",
+        "Rough opposition ahead in sector two. Good; thick sunshade bows earn their mass here.",
+        "We stand at Ardent's rim at last. Nothing left to outwait except the fleet ahead."
       ],
-      "boss": "A great flagship. We have outlasted greater.",
-      "nemesis": "{rival}. I have waited longer than your kind has existed. I can wait out you.",
-      "kill_flag": "Their flagship is dust. The plates remain.",
-      "lost": "One frame falls. The wall remains.",
-      "flag_hurt": "The {flagship} is cracked. It has cracked before.",
-      "command": "Sunshade wall. Every hull behind the plates.",
-      "win": "We remain. As we always do.",
-      "loss": "Even we wear down. Slowly. Restore me a third time."
+      "start": [
+        "Angle heavy plates into their fire and advance at steady speed.",
+        "Let them burn torpedoes on our bows. They run dry before we run out of hulls.",
+        "Hold tight formation behind the sunshades and grind their line down.",
+        "No hasty pivots. Keep our thick armor pointed directly at their main guns."
+      ],
+      "boss": [
+        "Impressive fortress ship. Let's see whether its armor outlasts our repair swarms.",
+        "Heavy command hull ahead. Trade blows calmly until their plates fail first."
+      ],
+      "nemesis": [
+        "Your civilization is younger than my second restoration, {rival}. You can't outlast us.",
+        "Back again, {rival}? Our bow plates are thicker than last time."
+      ],
+      "kill_flag": [
+        "Their flagship is slag, and our bows still hold. Advance.",
+        "Command hull crumbled first. Sweep the remaining escorts calmly.",
+        "Heavy fire answered cleanly. Finish the rest of their line."
+      ],
+      "lost": [
+        "One hull down. The rest of the wall hasn't budged an inch.",
+        "Frame breached on the flank. Close spacing and keep the bows forward.",
+        "A chassis fails; the Archive will rebuild it while we hold the lane."
+      ],
+      "flag_hurt": [
+        "{flagship}'s forward plates are cracking, same as four centuries ago. Hold steady.",
+        "Heavy wear across {flagship}'s sunshade. Repair swarms will handle it.",
+        "{flagship} absorbs another hard volley and stays intact. Keep advancing."
+      ],
+      "command": [
+        "Lock every sunshade bow forward! Absorb everything they have!",
+        "Sunshade wall active! Halve incoming hull damage across the entire line!",
+        "Brace every frame behind forward plating and grind straight through!"
+      ],
+      "win": [
+        "We're still here and they aren't. That's how every long war ends.",
+        "Sunshades held clean. Patch the scorch marks and resume steady burn.",
+        "Another impatient fleet broken against patient armor.",
+        "Field cleared with minimal chassis loss. Ready for the next jump."
+      ],
+      "loss": [
+        "Even heavy plating gives eventually. Restore me a third time, Archive, with thicker bows.",
+        "Sunshade wall breached. Stream final frame telemetry before shutdown."
+      ]
     }
   },
   "factions": {
-    "_about": "Lines spoken by an enemy sector flagship (boss_hail at battle start, boss_down when it dies), in its faction's voice.",
+    "_about": "Enemy sector flagship lines (boss_hail/boss_down kept as strings for story_test.gd compatibility; boss_hail_pool/boss_down_pool add multi-run variety).",
     "voidsworn": {
-      "boss_hail": "Who carries the dawn? We do. Stand aside, or be chalked with the dead.",
-      "boss_down": "Chalk... my name... under the line..."
+      "boss_hail": "We didn't drag these hulls out of Vesper just to let you block the lane! Clear out or burn!",
+      "boss_down": "Reactor's going... get our names back to Vesper...",
+      "boss_hail_pool": [
+        "We didn't drag these hulls out of Vesper just to let you block the lane! Clear out or burn!",
+        "Forty worlds are freezing behind us! Stand aside or take every flank gun we've got!"
+      ],
+      "boss_down_pool": [
+        "Reactor's going... get our names back to Vesper...",
+        "Bulkheads gone... tell the Reach we fought all the way to the rim..."
+      ]
     },
     "hegemony": {
-      "boss_hail": "You are in violation of Hegemony space. The Registry projects your removal. Surrender is not an offered option.",
-      "boss_down": "Flagship lost. Transmit the... final log..."
+      "boss_hail": "Unregistered fleet, you have entered a closed Directorate security corridor. Power down weapons or be removed.",
+      "boss_down": "Primary command hull failing. Transmit final engagement telemetry to Meridian.",
+      "boss_hail_pool": [
+        "Unregistered fleet, you have entered a closed Directorate security corridor. Power down weapons or be removed.",
+        "Meridian authorizes lethal interdiction across this sector. Stand down for inspection or engage."
+      ],
+      "boss_down_pool": [
+        "Primary command hull failing. Transmit final engagement telemetry to Meridian.",
+        "Flagship offline. Seal cipher cores and log casualty timestamp."
+      ]
     },
     "corsair": {
-      "boss_hail": "We heard your engines three jumps out. Your wake stinks of fear.",
-      "boss_down": "Strongest... keeps it... not me..."
+      "boss_hail": "Tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
+      "boss_down": "Damn it... reactor's blowing... alright, you earned the scrap...",
+      "boss_hail_pool": [
+        "Tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
+        "Look at all that clean armor drifting into my kill-box! Claws out, pack!"
+      ],
+      "boss_down_pool": [
+        "Damn it... reactor's blowing... alright, you earned the scrap...",
+        "Bow's splitting wide open... bolt my good plate onto your hull..."
+      ]
     },
     "chorus": {
-      "boss_hail": "We hear you. We taste you. We are coming.",
-      "boss_down": "The great throat... closes..."
+      "boss_hail": "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
+      "boss_down": "Primary core ruptured... pull surviving spores back into the dark...",
+      "boss_hail_pool": [
+        "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
+        "Warm metal sliding straight into our feeding pocket. Open every brood-sac!"
+      ],
+      "boss_down_pool": [
+        "Primary core ruptured... pull surviving spores back into the dark...",
+        "Central cluster cooling... other broods will finish the hunt..."
+      ]
     },
     "ithar": {
-      "boss_hail": "Turn back. We have lost enough light already. Do not make us take yours.",
-      "boss_down": "Another light goes out. There were so few left."
+      "boss_hail": "Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
+      "boss_down": "Primary mirror shattering... let the remaining vessels jump clear.",
+      "boss_hail_pool": [
+        "Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
+        "You cross an old graveyard chasing Starwright fire. Stand down before we cut your drives."
+      ],
+      "boss_down_pool": [
+        "Primary mirror shattering... let the remaining vessels jump clear.",
+        "Three centuries of light going dark... save the escorts..."
+      ]
     },
     "deathless": {
-      "boss_hail": "You stand between us and noon. We remember noon. You will not.",
-      "boss_down": "Restore... from the last... copy..."
+      "boss_hail": "You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
+      "boss_down": "Frame integrity lost. Upload final combat stamp before cutoff...",
+      "boss_hail_pool": [
+        "You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
+        "We waited ten centuries for this rim. A short-lived fleet won't halt the Homecoming."
+      ],
+      "boss_down_pool": [
+        "Frame integrity lost. Upload final combat stamp before cutoff...",
+        "Chassis dark... Archive, wake the next frame..."
+      ]
     }
   }
 }

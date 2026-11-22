@@ -77,7 +77,15 @@ func open(st) -> void:
 	h.add_child(t)
 	v.add_child(h)
 	var p := Label.new()
-	p.text = "She carries your colours and your Command into every fight this run. The crews will paint the name on her prow tonight."
+	var _rename_sub := {
+		"voidsworn": "This hull leads the push toward the Hollow Sun. Your crews are chalking its name along the flank plating before jump.",
+		"hegemony": "Your command vessel anchors every synchronized volley this campaign. Confirm its official Directorate designation before departure.",
+		"corsair": "Every pack in the belt will know this flagship by its transponder and bow plate. Stamp the name you want them cursing.",
+		"chorus": "This primary brood-hull guides the swarm's thermal pulse across the dark. Set the designation Memory keeps for it.",
+		"ithar": "Your flagship carries your family's optical standard toward Ardent. Confirm the name etched into its forward crystal spine.",
+		"deathless": "This chassis anchors the Homecoming and holds your command uplink. Register its vessel name in the Archive."
+	}
+	p.text = _rename_sub.get(crest.fac, "This hull carries your Command into every battle this run. Confirm its flagship name before jump.")
 	p.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_theme_font_override("font", regular)
 	p.add_theme_font_size_override("font_size", px(17))
