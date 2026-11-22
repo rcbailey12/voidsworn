@@ -480,9 +480,11 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
   $want = @{}; $files = @{}
   foreach ($d in $dirs) {
-    # Each result root must be a plain folder inside $base, never a link to another folder's bytes (review of PR 1644).
+    # Each result root must be a plain folder: $base itself (a ship job's out) or one inside it, never a link to another
+    # folder's bytes (review of PR 1644).
     $root = Get-Item -LiteralPath $d -Force -ErrorAction SilentlyContinue
-    if (-not (Test-PlainDir $root) -or -not ([IO.Path]::GetFullPath($root.FullName).StartsWith($baseFull + $sep, [StringComparison]::OrdinalIgnoreCase))) { throw "a result folder is not a plain folder in $base`: $d" }
+    $rootFull = if ($root) { [IO.Path]::GetFullPath($root.FullName).TrimEnd('\', '/') } else { '' }
+    if (-not (Test-PlainDir $root) -or -not ($rootFull.Equals($baseFull, [StringComparison]::OrdinalIgnoreCase) -or $rootFull.StartsWith($baseFull + $sep, [StringComparison]::OrdinalIgnoreCase))) { throw "a result folder is not a plain folder in $base`: $d" }
     $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
     $pending.Push($root)
     while ($pending.Count) {
