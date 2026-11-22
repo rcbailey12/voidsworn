@@ -42,16 +42,27 @@ func _repair_line(fac: String) -> String:
 	return found
 
 func _run() -> void:
-	var cases := [
-		["voidsworn", " credit", "New hulls come with a fresh lieutenant."],
-		["chorus", " biomass per 2 hull", "New hulls come with a fresh spawn-mind."],
-	]
+	# The whole label must match exactly; only the sector price is a number we read back (issue 1575 review: no loose prefix).
+	const TAIL := " per 2 hull, rounded up. A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh {who}."
+	var cases := [["voidsworn", "credit", "lieutenant"], ["chorus", "biomass", "spawn-mind"]]
+	var num := RegEx.create_from_string("^Repairs cost ([0-9]+(?:\\.[0-9]+)?) ")
 	for c in cases:
 		var t := _repair_line(c[0])
 		if t.begins_with("ERR "): _fail(c[0] + ": " + t.substr(4)); return
-		var cost := t.get_slice(" per 2 hull", 0)   # "Repairs cost 1.2 credits": the price multiplier varies by sector
-		if not t.begins_with("Repairs cost ") or not (cost + " per 2 hull").contains(c[1]) or not t.ends_with(c[2]) or (c[0] != "chorus" and cost.contains("biomass")): _fail(c[0] + ": repair line reads \"" + t + "\""); return
+		var m := num.search(t)
+		if m == null: _fail(c[0] + ": repair line reads \"" + t + "\""); return
+		var price := m.get_string(1)
+		var unit: String = c[1] if (c[1] == "biomass" or price == "1") else c[1] + "s"
+		var want := "Repairs cost " + price + " " + unit + TAIL.replace("{who}", c[2])
+		if t != want: _fail(c[0] + ": repair line reads \"" + t + "\", want \"" + want + "\""); return
 		print("ok ", c[0], ": ", t)
+	# ARTICLE_CASES: same table as contrib/opus/tools/ship_article_1551_tests.js (browser twin)
+	var CC = load("res://campaign/campaign.gd")
+	for a in [["Ember", true, "The Ember", "Ember"], ["Ember", false, "the Ember", "Ember"], ["The Unbroken", true, "The Unbroken", "Unbroken"],
+			["The Unbroken", false, "the Unbroken", "Unbroken"], ["MDV Precedent", true, "MDV Precedent", "MDV Precedent"], ["HNS Relentless", false, "HNS Relentless", "HNS Relentless"]]:
+		if CC.ship_with_article(a[0], a[1]) != a[2] or CC.ship_bare(a[0]) != a[3]:
+			_fail("ship article: %s -> \"%s\" / \"%s\"" % [a[0], CC.ship_with_article(a[0], a[1]), CC.ship_bare(a[0])]); return
+	print("ok ship article: bare, The, MDV and HNS names match the browser table")
 	print("PASS: shipyard repair text names credits and a fresh lieutenant, and biomass and a fresh spawn-mind for the Chorus")
 	quit(0)
 

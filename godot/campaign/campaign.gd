@@ -3033,7 +3033,7 @@ func applyOutcome(r) -> Array:
 		if withMod.size() > 0:
 			var s = pick(withMod); var got = []
 			changeShip(s, _pop_rand_mod.bind(got))
-			out.append("The " + str(s["name"]) + " gives up its " + modName(got[0]) + ".")
+			out.append(ship_with_article(s["name"], true) + " gives up its " + modName(got[0]) + ".")
 		elif RUN["inventory"].size() > 0:
 			var m = RUN["inventory"].pop_at(0); out.append("You hand over the " + modName(m) + " from the hold.")
 		else: out.append("You have no refits to give. The Glasswright keeper pulses warm amber and gifts the hardware anyway.")
@@ -3045,7 +3045,7 @@ func applyOutcome(r) -> Array:
 			RUN["credits"] = float(RUN["credits"]) + 80; out.append("No salvage left to find. +80 credits instead.")
 	if jt(r.get("dmgOne")):
 		var s = randShip(); var d = derive(s); var dm = jsround(float(d["maxHp"]) * float(r["dmgOne"])); s["hp"] = max(1.0, float(s["hp"]) - dm)
-		out.append("The " + str(s["name"]) + " takes " + numstr(dm) + " hull damage.")
+		out.append(ship_with_article(s["name"], true) + " takes " + numstr(dm) + " hull damage.")
 	if jt(r.get("dmgAll")):
 		for s in RUN["fleet"]: s["hp"] = max(1.0, float(s["hp"]) - jsround(float(derive(s)["maxHp"]) * float(r["dmgAll"])))
 		out.append("Every ship takes " + pct(r["dmgAll"]) + " hull damage.")
@@ -3061,7 +3061,7 @@ func applyOutcome(r) -> Array:
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["hp"]) / float(derive(a)["maxHp"]) - float(b["hp"]) / float(derive(b)["maxHp"]))[0]
 		upgraded_uid = s["uid"]
 		changeShip(s, _mk_up3)
-		s["hp"] = derive(s)["maxHp"]; out.append("The " + str(s["name"]) + " leaves the forge fully repaired at Mk " + roman(s["mk"]) + ".")
+		s["hp"] = derive(s)["maxHp"]; out.append(ship_with_article(s["name"], true) + " leaves the forge fully repaired at Mk " + roman(s["mk"]) + ".")
 	if jt(r.get("healAll")):
 		for s in RUN["fleet"]:
 			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * float(r["healAll"])))
@@ -3094,12 +3094,12 @@ func applyOutcome(r) -> Array:
 		var srt = ssort(cands.duplicate(), func(a, b): return float(a["hp"]) / float(derive(a)["maxHp"]) - float(b["hp"]) / float(derive(b)["maxHp"]))
 		var s = srt[0] if srt.size() > 0 else null
 		if s != null:
-			s["hp"] = derive(s)["maxHp"]; out.append("The " + str(s["name"]) + " is fully repaired.")
+			s["hp"] = derive(s)["maxHp"]; out.append(ship_with_article(s["name"], true) + " is fully repaired.")
 	if jt(r.get("dmgBig")):
 		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
 		if srt.size() > 0:
 			var s = srt[0]; var dm = jsround(float(derive(s)["maxHp"]) * float(r["dmgBig"])); s["hp"] = max(1.0, float(s["hp"]) - dm)
-			out.append("The " + str(s["name"]) + " takes " + numstr(dm) + " hull damage.")
+			out.append(ship_with_article(s["name"], true) + " takes " + numstr(dm) + " hull damage.")
 	if jt(r.get("xpTop")):
 		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(b["cap"]["xp"]) - float(a["cap"]["xp"]))
 		if srt.size() > 0:
@@ -3116,7 +3116,7 @@ func applyOutcome(r) -> Array:
 		var cs = ssort(RUN["fleet"].filter(func(s): return jt(HULLS[s["tpl"]].get("hangar"))), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
 		if cs.size() > 0:
 			var c = cs[0]; var got = wingPerkGrant(c)
-			out.append(("The " + str(c["name"]) + "’s wings gain a veteran perk: " + str(WING_PERKS[got]["n"]) + ".") if got != null else ("The " + str(c["name"]) + "’s wings already hold every perk they can."))
+			out.append((ship_with_article(c["name"], true) + "’s wings gain a veteran perk: " + str(WING_PERKS[got]["n"]) + ".") if got != null else (ship_with_article(c["name"], true) + "’s wings already hold every perk they can."))
 	if jt(r.get("nemIntel")):
 		var w = nemReveal()
 		var entry = BattleAPI.nem_entry(NEM_WEAK, w, nemRead()["fac"]) if w != null else null
@@ -3281,7 +3281,7 @@ func applyBeat3Outcome(r: Dictionary) -> Array:
 		if f != null:
 			var dmg = jsround(float(derive(f)["maxHp"]) * float(r["dmgFlag"]))
 			f["hp"] = max(1.0, float(f["hp"]) - dmg)
-			out.append("The " + str(f["name"]) + " takes " + numstr(dmg) + " hull damage.")
+			out.append(ship_with_article(f["name"], true) + " takes " + numstr(dmg) + " hull damage.")
 	return out
 
 # ---------------- rewards ----------------
@@ -3473,12 +3473,12 @@ func ACT_takeSalvage(a: String) -> void:
 	if k == "mod" and jt(y.get("mod")):
 		RUN["inventory"].append(y["mod"]); toast(modName(y["mod"]) + " stripped from the " + str(w["name"]) + " and stowed in the hold.")
 	elif k == "tow" and jt(y.get("tow")) and HULLS.has(w.get("tpl")) and fleetCP() + float(or_(HULLS[w["tpl"]].get("cp"), 1)) > float(RUN["cpCap"]):
-		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("No command points to crew " + ("" if str(w["name"]).begins_with("The ") else "the ") + str(w["name"]) + ". She is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
+		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("No command points to crew " + ship_with_article(w["name"]) + ". She is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	elif k == "tow" and jt(y.get("tow")):
 		var sh = newShip(w["tpl"]); sh["name"] = w["name"]; sh["hp"] = max(1.0, jsround(float(derive(sh)["maxHp"]) * 0.35)); RUN["fleet"].append(sh)
 		toast(ship_with_article(w["name"], true) + " is under tow. Patch her up at a shipyard.")
 	else:
-		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast(("" if str(w["name"]).begins_with("The ") else "The ") + str(w["name"]) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
+		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast(ship_with_article(w["name"], true) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	tel("salvage_pick", {"k": k, "cause": w.get("cause")})
 	W["wrecks"] = []
 	R["wrecks"] = []; R["stage"] = "pick"
@@ -3916,7 +3916,7 @@ func finishBattle(result: String) -> void:
 	for w in or_(summary.get("wingPerks"), []):
 		var pn = []
 		for p in w["perks"]: pn.append(str(WING_PERKS[p]["n"]))
-		msg.append("The " + str(w["ship"]) + "'s wings earn " + " and ".join(PackedStringArray(pn)) + ".")
+		msg.append(ship_with_article(str(w["ship"]), true) + "'s wings earn " + " and ".join(PackedStringArray(pn)) + ".")
 	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null

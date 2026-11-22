@@ -62,8 +62,6 @@ function saveTeachingHistory(){
   Persist.save(); // Preserve the existing pre-battle checkpoint, including its position.
 }
 // ship names in running text: 'the' before a bare or 'The' name, none before MDV/HNS prefixes; after 'a fresh', no article (issue 1551, twin of campaign.gd ship_with_article)
-function shipWithArticle(n,start){ n=String(n); if(/^(MDV|HNS) /.test(n)) return n; return (start?'The ':'the ')+n.replace(/^the /i,''); }
-function shipBare(n){ return String(n).replace(/^the /i,''); }
 function battleScreen(cfg){
   closeModal(); hideTip(); hideApp(); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');
   disposeAllViews(); clearOverlays();
@@ -118,7 +116,7 @@ function finishBattle(result){
   // v52 salvage: the field remembers what died and how, and the best wrecks are offered as salvage (Starsector / Pirates! style)
   if(result==='win') summary.wrecks=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship&&!u.captured).sort((a,b)=>(b.t.cp||0)-(a.t.cp||0)).slice(0,3).map(u=>({name:u.name,tpl:u.tpl,cls:u.t.cls,fac:u.fac,cp:u.t.cp||1,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cause:u.killCause||'blast',by:u.killedBy||null}));
   if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')}${({chorus:' survived in a detached spore-node and bonds to your next hull.',deathless:' streamed its backup clear before hull loss and awaits a fresh frame.'}[RUN.fac]||' escaped in a life pod and will take command of your next hull.')}`),1800);
-  { const msg=[...(summary.nem||[]),summary.nemWarn,summary.nemFeed,summary.nemFound,...(summary.wingPerks||[]).map(w=>`The ${w.ship}'s wings earn ${w.perks.map(p=>WING_PERKS[p].n).join(' and ')}.`)].filter(Boolean); if(msg.length) setTimeout(()=>toast(msg.join(' ')),2400); }
+  { const msg=[...(summary.nem||[]),summary.nemWarn,summary.nemFeed,summary.nemFound,...(summary.wingPerks||[]).map(w=>`${shipWithArticle(w.ship,true)}'s wings earn ${w.perks.map(p=>WING_PERKS[p].n).join(' and ')}.`)].filter(Boolean); if(msg.length) setTimeout(()=>toast(msg.join(' ')),2400); }
   tel('battle_end',{perf:(()=>{ try{ return FRAMES.summary(); }catch(e){ return null; } })(),scene:sceneCensus(),boons:B.boonStats||{},ecp:B.cp0&&B.cp0.enemy,pcp:B.cp0&&B.cp0.player,usage:B.usage,obj:B.obj?B.obj.type:'rout',shape:B.shape,adapt:(B.adapt||0)+(B.adaptWings?'w'+B.adaptWings:''),event:B.event?B.event.k:null,partial:!!B.partial,escaped:(summary.escaped||[]).length,result,kind:cfg.kind,fac:cfg.fac,rounds:B.round,kills:summary.kills,lost:summary.lost.length,prizes:summary.prizes.length,
     rams:(B.usage&&B.usage.ram)||0,boardings:(B.usage&&B.usage.board)||0,captures:(B.usage&&B.usage.cap)||0,cmdRound:B.cmd?B.cmd.round:null});
   disposeAllViews(); clearOverlays(); B=null; hideTip(); hideEnd();

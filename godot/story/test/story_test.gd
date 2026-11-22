@@ -379,10 +379,18 @@ func t_voice_live() -> void:
 	B["units"][1]["hp"] = 12   # a player revival or repair shows up too
 	v.on_event({"t": "round", "round": 2})
 	ok(float(v.units["p2"]["hp"]) == 12.0, "voice live: player hp follows the rules")
-	# Intercept transport getting through: no coward taunt
+	# Intercept transport getting through: no coward taunt. Fresh voices for both cases (issue 1575 review): the voice
+	# above has spent part of its taunt budget, so an empty answer there would not prove the exit rule.
 	B["units"][3]["dead"] = true
-	var fl: Array = v.on_event({"t": "fled", "unit": "e2", "why": "exit"})
-	ok(fl.is_empty() and not v.said.has("sit_enemy_flee"), "voice live: an Intercept exit speaks no retreat taunt")
+	var vx = Voice.new()
+	vx.setup_from_rules(R, view)
+	ok(vx.sit_spoken == 0, "voice live: the exit check starts with an unspent taunt budget")
+	var fl: Array = vx.on_event({"t": "fled", "unit": "e2", "why": "exit"})
+	ok(fl.is_empty() and not vx.said.has("sit_enemy_flee"), "voice live: an Intercept exit speaks no retreat taunt")
+	var vr = Voice.new()
+	vr.setup_from_rules(R, view)
+	var rt: Array = vr.on_event({"t": "fled", "unit": "e2", "why": "escape"})
+	ok(rt.size() == 1 and vr.said.has("sit_enemy_flee"), "voice live: a real retreat from a fresh voice does speak the taunt (%d lines)" % rt.size())
 
 
 # ---------------------------------------------------------------- 7. arc plumbing (tokens, conditions, variants)
