@@ -5,7 +5,7 @@
 const http = require('http'), fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const MOCK_KEY = 'mock_key_123', REAL = 'real_key_must_not_leave';
 const calls = [];
-let used = 0, failStems = false, fail500 = false, truncate = false;
+let used = 0, failStems = false, fail500 = false, truncate = false, slow = 0;
 const srv = http.createServer((q, r) => {
   q.on('data', () => {}); q.on('end', () => {
     const route = q.url.split('?')[0];
@@ -16,6 +16,7 @@ const srv = http.createServer((q, r) => {
     if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
     if (fail500) { r.writeHead(500); return r.end('boom'); }
     if (truncate) { used += 200; r.writeHead(200, { 'request-id': 'trunc', 'character-cost': '40', 'content-length': '5000' }); r.write(Buffer.alloc(10)); return setTimeout(() => r.socket.destroy(), 20); }
+    if (slow && route === '/v1/sound-generation') { const t = slow; return setTimeout(() => { used += 200; r.writeHead(200, { 'request-id': 'slow', 'character-cost': '40' }); r.end(Buffer.alloc(64, 7)); }, t); }
     used += route === '/v1/sound-generation' ? 200 : route === '/v1/music' ? 900 : 300;
     r.writeHead(200, { 'request-id': 'req' + calls.length, 'character-cost': '40' }); r.end(Buffer.alloc(64, calls.length % 250));
   });
@@ -156,6 +157,24 @@ const l = dns.lookup; dns.lookup = function (h, ...a) { if (!ok(h)) throw block(
   let redirectRefused = false;
   try { await fetch(base + '/v1/redirect', { redirect: 'error' }); } catch (e) { redirectRefused = true; }
   ck(redirectRefused, 'redirect: error refuses a redirect');
+  // Artoo on PR 1590 (d169ee30): two live runs on one output folder must never both pay for the same clip.
+  fs.rmSync(out, { recursive: true });
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, 'run.lock'), '{"pid":1,"started":"test"}');
+  sfxN = count('/v1/sound-generation');
+  let subN = count('/v1/user/subscription');
+  r = await run(['--base', base, '--only', 'a'], mock);
+  ck(r.code === 3 && /LOCKED: another run holds/.test(r.out) && count('/v1/sound-generation') === sfxN && count('/v1/user/subscription') === subN,
+    'a second run on a locked folder submits nothing: ' + r.out);
+  fs.unlinkSync(path.join(out, 'run.lock'));
+  sfxN = count('/v1/sound-generation');
+  slow = 1500;   // keep the first run busy so the second one surely starts while it holds the lock
+  const [r1, r2] = await Promise.all([run(['--base', base, '--only', 'a'], mock), run(['--base', base, '--only', 'a'], mock)]);
+  slow = 0;
+  const locked = [r1, r2].filter(x => /LOCKED/.test(x.out)).length, passed = [r1, r2].filter(x => /ELEVENLABS GEN PASS/.test(x.out)).length;
+  ck(count('/v1/sound-generation') === sfxN + 2 && locked === 1 && passed === 1, 'two runs at once: one makes both takes, the other submits nothing');
+  ck(!fs.existsSync(path.join(out, 'run.lock')), 'the lock is released when a run ends');
+
   console.log(`offline proof: ${calls.length} calls, all to the loopback test server ${base}; guard blocks ElevenLabs; ` +
     '"account: MOCK-not-a-real-account" lines in generator runs come from this fake server');
   srv.closeAllConnections(); srv.close();

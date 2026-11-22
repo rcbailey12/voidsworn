@@ -190,8 +190,28 @@ function done(out, rows, s) {
   return fs.existsSync(f) && !!r && r.bytes === fs.statSync(f).size;
 }
 
+// Lease (Artoo on PR 1590, d169ee30): a live run takes an exclusive run.lock in its output folder before it reads the
+// manifest or receipts or plans any paid work, so two runs on one folder can never both pay for the same clip. The lock
+// is created with 'wx' (fails if it exists) and removed when the run ends. A lock left by a crash is never stolen:
+// the run stops and says to delete run.lock once no other run is going.
 async function main() {
   const a = args(process.argv);
+  if (a.dry) return work(a);
+  fs.mkdirSync(a.out, { recursive: true });
+  const lock = path.join(a.out, 'run.lock');
+  let fd;
+  try { fd = fs.openSync(lock, 'wx'); } catch (e) {
+    let held = '';
+    try { held = fs.readFileSync(lock, 'utf8').trim(); } catch (e2) { /* unreadable */ }
+    console.log(`LOCKED: another run holds ${lock} (${held || 'no details'}). Nothing sent. If no other run is going, delete run.lock and rerun.`);
+    return 3;
+  }
+  fs.writeSync(fd, JSON.stringify({ pid: process.pid, started: new Date().toISOString() }));
+  fs.closeSync(fd);
+  try { return await work(a); } finally { try { fs.unlinkSync(lock); } catch (e) { /* already gone */ } }
+}
+
+async function work(a) {
   const list = JSON.parse(fs.readFileSync(a.list, 'utf8'));
   const steps = plan(list, a.only);
   fs.mkdirSync(a.out, { recursive: true });
