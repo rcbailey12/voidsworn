@@ -2637,8 +2637,8 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 			logm(tv(w.get("n")) + " from " + String(gh["name"]) + " burst against " + String(t["name"]) + ", catching " + ns(near.size()) + " ship" + ("s" if near.size() > 1 else "") + ".", "p" if S["side"] == "player" else "e")
 			for x in near:
 				if jt(x.get("dead")): continue
-				var qS = shieldQuad(x, gh); var shSp = float(z0(x.get("shp")))
-				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], qS); shieldDrained(x, shSp, qS); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
+				var qS = shieldQuad(x, gh); var shSp = float(z0(x.get("shp"))); var mS := events.size()
+				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], qS); shieldDrained(x, shSp, qS, mS); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
 				if x["hp"] <= 0:
 					x["killCause"] = "big"; killUnit(x, shooter)   # Spread Pattern
 	if real != null and not jt(real.get("dead")) and not jt(res.get("hits")): treeSecondKnife(real)   # Sable T2b: a torpedo that misses reloads one turn sooner than normal
@@ -3095,11 +3095,11 @@ func _spend_shield(t, quad: int, damage: float) -> void:
 # the other splash hits) goes through here: a pool under 1 point is empty, the four sides follow it, and an emptied
 # pool sends shield_down so the scene plays the break. The volley keeps its own break at its end (landVolley) and
 # skips it when one of these already sent it (_shDownSince). Twin: battle.js shieldClamp (state only).
-func shieldDrained(t, before, quad = 0) -> void:
+func shieldDrained(t, before, quad = 0, mark: int = -1) -> void:   # mark: skip when this unit's break was already sent since it (a section loss inside applyHit)
 	if t == null or jt(t.get("isSq")) or not (float(z0(t.get("shMax"))) > 0): return
 	var p := float(z0(t.get("shp")))
 	if p > 0 and p < 1: t["shp"] = 0; syncShields(t)   # the site already synced; only a clamp changes the sides
-	if float(before) > 0 and float(t["shp"]) <= 0 and not jt(t.get("dead")):
+	if float(before) > 0 and float(t["shp"]) <= 0 and not jt(t.get("dead")) and not (mark >= 0 and _shDownSince(t["id"], mark)):
 		emit({"t": "shield_down", "unit": t["id"], "quad": int(quad) if quad != null else 0})
 func _shDownSince(id, mark: int) -> bool:
 	for i in range(mark, events.size()):
@@ -3692,8 +3692,8 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			JSM.ssort(adjs, func(a, b):
 				return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
 			if adjs.size() > 0:
-				var adj = adjs[0]; var qA = shieldQuad(adj, u); var shA = float(z0(adj.get("shp")))
-				var rr = applyHit(u, w, adj, d * float(awF["n"]), qA); shieldDrained(adj, shA, qA)   # issue 1481
+				var adj = adjs[0]; var qA = shieldQuad(adj, u); var shA = float(z0(adj.get("shp"))); var mA := events.size()
+				var rr = applyHit(u, w, adj, d * float(awF["n"]), qA); shieldDrained(adj, shA, qA, mA)   # issue 1481
 				if rr.hull > 0: flt(adj, "−" + ns(rr.hull) + " hull", "#ffae42", 0) # Artoo on PR 1564: the splash shows over the ship it hit
 				if adj["hp"] <= 0: adj["killCause"] = "big"; killUnit(adj, u)
 				treeFx(u, "arcsWarm", "the corona splashes")
@@ -4128,8 +4128,8 @@ func stationFire(dq) -> void:
 	ts = ts.slice(0, 2)
 	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
 	for t in ts:
-		var qSt = shieldQuad(t, src); var shSt = float(z0(t.get("shp")))
-		var r = applyHit(att, {"crit": 0, "pierce": 0.2}, t, 12, qSt); shieldDrained(t, shSt, qSt)   # issue 1481
+		var qSt = shieldQuad(t, src); var shSt = float(z0(t.get("shp"))); var mSt := events.size()
+		var r = applyHit(att, {"crit": 0, "pierce": 0.2}, t, 12, qSt); shieldDrained(t, shSt, qSt, mSt)   # issue 1481
 		flt(t, "Station −" + ns(r.hull + r.shield), "#7fd6ff", -30)
 		logm("Station batteries hit " + String(t["name"]) + ": " + ns(r.shield) + " shield, " + ns(r.hull) + " hull.", "p")
 		if t["hp"] <= 0 and not jt(t.get("dead")):
@@ -6501,10 +6501,13 @@ func _blinkOk(u, h) -> bool:
 	for x in blinkHexes(u):
 		if x.q == h.q and x.r == h.r: return true
 	return false
-func _novaHexOk(arg) -> bool:
+func _novaHexOk(u, arg) -> bool:   # issue 1481 review: only a hex the nova can reach (novaTargets: forward arc, range 3 to 9)
 	if not (arg is Dictionary) or not (arg.get("hex") is Dictionary): return false
-	var c = arg["hex"]
-	return c.get("q") != null and c.get("r") != null and onBoard(c.q, c.r)
+	var c = arg["hex"]; var q = c.get("q"); var r = c.get("r")
+	if not ((q is int or q is float) and (r is int or r is float)): return false
+	for h in novaTargets(u):
+		if float(h["q"]) == float(q) and float(h["r"]) == float(r): return true
+	return false
 func useAbility(u, arg = null) -> bool:
 	var r = _useAbility_raw(u, arg); hook("ability", u); return r
 func _useAbility_raw(u, arg = null) -> bool:
@@ -6516,7 +6519,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "blink":
 		blinkTo = arg["hex"] if (arg is Dictionary and jt(arg.get("hex"))) else autoBlink(u)
 		if not _blinkOk(u, blinkTo): return false
-	if a == "nova" and not _novaHexOk(arg): return false
+	if a == "nova" and not _novaHexOk(u, arg): return false
 	undoSpend()
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
@@ -6583,8 +6586,8 @@ func _useAbility_raw(u, arg = null) -> bool:
 			if hdist(x, c) <= 1: hitList.append(x)
 		for x in hitList:
 			var dmg = novaDamage(u, x, c)
-			var quad = shieldQuad(x, u); var shN = float(z0(x.get("shp")))
-			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad); shieldDrained(x, shN, quad)   # issue 1481
+			var quad = shieldQuad(x, u); var shN = float(z0(x.get("shp"))); var mN := events.size()
+			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad); shieldDrained(x, shN, quad, mN)   # issue 1481
 			if jt(r.shield): flt(x, "−" + ns(r.shield), "#7fd6c8", -18)
 			flt(x, "−" + ns(r.hull), "#ff7a6e", 0)
 			logm("Spinal shell hits " + String(x["name"]) + " for " + ns(r.hull) + " hull" + ((" and " + ns(r.shield) + " shields") if jt(r.shield) else "") + ".", pe(x))

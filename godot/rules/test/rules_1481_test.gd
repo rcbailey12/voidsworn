@@ -55,6 +55,8 @@ func _init() -> void:
 		["5: a blink to a bad hex is refused before it counts or plays", c_blink_bad],
 		["5: a good blink still jumps", c_blink_good],
 		["5: a nova with no hex is refused, nothing counted", c_nova_bad],
+		["review: a nova that takes out the generator with shield left sends one break", c_nova_section],
+		["review: a nova aimed off its arc, out of range, fractional or malformed spends nothing", c_nova_aims],
 	]
 	var ok := 0; var bad := 0
 	for c in cases:
@@ -182,3 +184,30 @@ func c_nova_bad() -> Array:
 	var ok: bool = R.useAbility(u, null)
 	var counted = R.z0(B["usage"]["ab"].get("nova"))
 	return [not ok and counted == 0 and evs("ability", u["id"]).size() == 0 and float(u["abCd"]) == 0.0, "used " + str(ok) + ", counted " + str(counted)]
+# review of PR 1595 (OpenAI, finding 1): the direct spend leaves shield, the hull share destroys the mid section, and the
+# section loss empties the pool. One break, not a second one from shieldDrained with the old pool.
+func c_nova_section() -> Array:
+	fresh(["ascendant"], "hegemony", ["h_picket"]); var u = P[0]; var t = E[0]
+	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 10; t["r"] = 5; t["hp"] = 99999; t["maxHp"] = 99999
+	t["shp"] = float(t["shMax"]); R.syncShields(t); t["sec"]["mid"]["hp"] = 1; t["_calledSec"] = "mid"
+	u["abCd"] = 0; R.events.clear()
+	var ok: bool = R.useAbility(u, {"hex": {"q": 10, "r": 5}})
+	var n := evs("shield_down", t["id"]).size()
+	return [ok and bool(t["sec"]["mid"].get("broken")) and float(t["shp"]) == 0.0 and n == 1, "used " + str(ok) + ", mid broken " + str(t["sec"]["mid"].get("broken")) + ", shp " + str(t["shp"]) + ", breaks " + str(n)]
+# finding 3: only a hex novaTargets offers (forward arc, range 3 to 9); a refused aim counts nothing and keeps the cooldown
+func c_nova_aims() -> Array:
+	fresh(["ascendant"], "hegemony", ["h_picket"]); var u = P[0]
+	u["q"] = 8; u["r"] = 6; u["facing"] = 0; B["usage"] = {"ab": {}}
+	var bad := [{"hex": {"q": 3, "r": 6}}, {"hex": {"q": 9, "r": 6}}, {"hex": {"q": 10.5, "r": 6}}, {"hex": {"q": "11", "r": 6}}, {"hex": {"q": 11}}, {"q": 11, "r": 6}]
+	var legal = R.novaTargets(u)
+	var far := {}
+	for h in R.boardHexes():
+		if R.hdist(u, h) > 9 and R.inArc(u, h, "F"): far = {"q": h.q, "r": h.r}; break
+	if not far.is_empty(): bad.append({"hex": far})
+	for arg in bad:
+		u["abCd"] = 0; R.events.clear()
+		var ok: bool = R.useAbility(u, arg)
+		if ok or R.z0(B["usage"]["ab"].get("nova")) != 0 or float(u["abCd"]) != 0.0: return [false, "aim " + str(arg) + " was taken"]
+	var g = legal[0]; u["abCd"] = 0
+	var ok2: bool = R.useAbility(u, {"hex": {"q": g.q, "r": g.r}})
+	return [ok2 and R.z0(B["usage"]["ab"].get("nova")) == 1 and not far.is_empty(), "legal shot used " + str(ok2) + ", far hex " + str(far)]

@@ -1288,7 +1288,7 @@ func _play_batch(bt: Dictionary) -> void:
 		if e["t"] == "fire":
 			var grp: Array = []
 			var j := i + 1
-			while j < evs.size() and evs[j]["t"] in ["hit", "system", "shield_down", "burning"] and str(evs[j].get("target", evs[j].get("unit"))) == str(e["target"]):
+			while j < evs.size() and evs[j]["t"] in ["hit", "system", "shield_down", "burning", "section_down"] and str(evs[j].get("target", evs[j].get("unit"))) == str(e["target"]):
 				grp.append(evs[j])
 				j += 1
 			var tf := game_t
@@ -2149,6 +2149,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var land := {"t_id": str(t_id), "numbers": true, "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
 		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
 		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
+	land["break_k"] = section_break_hit(grp, int(land["break_k"]))
 	for g in grp:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
@@ -2283,6 +2284,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	for g in grp:
 		if g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
+		elif g["t"] == "section_down":   # issue 1481 review: the section loss rides in its volley now, so its log line plays here
+			var sec := str(g["section"])
+			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
 	await wait(80.0)
 	if cined:
 		await wait(900.0)
@@ -2307,6 +2311,22 @@ static func hit_arrivals(shots: Array, impacts: Array, n_hits: int) -> Array:
 
 # Issue 1211: the hit that empties the shield. The rules drain one pool (R246) hit by hit, so once it is empty no later
 # hit is absorbed: the last hit with shield damage is the one that broke it (the last hit when none was absorbed).
+# Issue 1481 review: a generator lost mid-volley (section_down, then shield_down, then more hits) breaks the shield on
+# the hit that destroyed it, not on the last hit the shield absorbed. Otherwise the usual pick stands.
+static func section_break_hit(grp: Array, k: int) -> int:
+	var seen := 0
+	var after_sec := false
+	for i in grp.size():
+		var g: Dictionary = grp[i]
+		if g["t"] == "hit":
+			seen += 1
+		elif g["t"] == "section_down":
+			after_sec = true
+		elif g["t"] == "shield_down" and after_sec and seen > 0:
+			return seen - 1
+	return k
+
+
 static func shield_break_hit(hits: Array) -> int:
 	var k := hits.size() - 1
 	for i in hits.size():

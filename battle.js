@@ -903,7 +903,7 @@ function applyHit(att,w,t,dmg,quad){
   if(locksRegen) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const sh0=s, sp0=t.shp||0; const absorbed=Math.min(shieldable,s/ion);
-  if(absorbed>0){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,sp0-absorbed*ion*lossy); if(t.shp<1) t.shp=0; if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); } // R246 (issue 371): the struck side routes power at a loss; a pool under 1 point is empty, and an empty pool drops every side at once
+  if(absorbed>0) spendShield(t,quad,absorbed*ion); // R246 (issue 371): the struck side routes power at a loss; a pool under 1 point is empty, and an empty pool drops every side at once
   shieldable-=absorbed;
   { const gc=treeSkill('glassCorrected'); if(gc&&t.side==='player'&&cmdActive('player','iron')&&!B.tr.glassUsed&&t.shMax>0&&sp0>0&&t.shp<=0){ t.shp=Math.round(t.shMax*gc.n); syncShields(t); B.tr.glassUsed=1; treeFx(t,'glassCorrected','the emptied shield refills'); } } // Brin T3a
   { const ce=treeSkill('columnEndures'); if(ce&&t.side==='player'&&cmdActive('player','iron')&&!B.tr.columnUsed&&t.shMax>0&&sp0>0&&t.shp<=0){ t.shp=Math.round(t.shMax*ce.n); syncShields(t); B.tr.columnUsed=1; treeFx(t,'columnEndures','the emptied shield refills'); } } // Maren T3a
@@ -2113,7 +2113,7 @@ async function useAbility(u,arg){
   const a=u.ab;
   // issue 1481: check the target hex first, so a bad blink or nova hex is refused before it counts or spends the undo (twin: rules.gd _useAbility_raw)
   let blinkTo=null; if(a==='blink'){ blinkTo=arg&&arg.hex?arg.hex:autoBlink(u); if(!blinkTo||blinkTo.q==null||blinkTo.r==null||!blinkHexes(u).some(x=>x.q===blinkTo.q&&x.r===blinkTo.r)) return false; }
-  if(a==='nova'&&!(arg&&arg.hex&&arg.hex.q!=null&&arg.hex.r!=null&&onBoard(arg.hex.q,arg.hex.r))) return false;
+  if(a==='nova'&&!(arg&&arg.hex&&typeof arg.hex.q==='number'&&typeof arg.hex.r==='number'&&novaTargets(u).some(h=>h.q===arg.hex.q&&h.r===arg.hex.r))) return false; // review of PR 1595: only a hex novaTargets offers
   undoSpend(); if(B.usage&&u.side==='player') B.usage.ab[u.ab]=(B.usage.ab[u.ab]||0)+1;
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; if(typeof fxText==='function') fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } if(typeof fxText==='function') fxText(u,'Tubes loaded','#f0b35a',-24); }

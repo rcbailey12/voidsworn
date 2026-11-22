@@ -47,6 +47,14 @@ func _run() -> void:
 	var tally: Array = BATTLE.end_tally(view)
 	_check(tally == [1, 1], "the end banner counts 1 ship lost and 1 killed, not the 3 wings (got %s)" % str(tally))
 
+	# review of PR 1595 (finding 2): a generator lost on the first of two hits breaks the shield on that hit, inside the volley
+	var g1 := {"t": "hit", "target": "x", "shield": 4, "hull": 3}
+	var g2 := {"t": "hit", "target": "x", "shield": 0, "hull": 9}
+	var grp := [g1, {"t": "section_down", "unit": "x", "section": "mid"}, {"t": "shield_down", "unit": "x", "quad": 0}, g2]
+	_check(BATTLE.section_break_hit(grp, BATTLE.shield_break_hit([g1, g2])) == 0, "a mid-volley generator loss breaks the shield on hit 1 of 2")
+	_check(BATTLE.section_break_hit([g1, g2, {"t": "shield_down", "unit": "x", "quad": 0}], 0) == 0, "an ordinary volley break keeps its pick")
+	var gsrc := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
+	_check(gsrc.find('"burning", "section_down"]') >= 0, "the volley groups its section loss with its hits")
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(src.find("Ryan's helpers") < 0, "the problem report toast has no developer wording")
 
@@ -65,6 +73,7 @@ func _run() -> void:
 	var b := Probe.new()
 	b.cine = "off"
 	b.follow = false
+	b.external = true   # review of PR 1595: _ready must not start its own battle; this check starts the one it reads
 	root.add_child(b)
 	await b._begin(api)
 	var t := str(me["id"])

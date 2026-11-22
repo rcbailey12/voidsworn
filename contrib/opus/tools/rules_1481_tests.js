@@ -63,6 +63,13 @@ const CASES = [
     const { B, P } = fresh(['ascendant'], 'hegemony', ['h_picket']); const u = P[0]; u.abCd = 0; B.usage = { ab: {} };
     const ok = await E('useAbility')(u, null); const counted = B.usage.ab.nova || 0;
     return [!ok && counted === 0 && u.abCd === 0, 'used ' + ok + ', counted ' + counted]; }],
+  ['review: a nova aimed off its arc, out of range, fractional or malformed spends nothing', async () => {
+    const { B, P } = fresh(['ascendant'], 'hegemony', ['h_picket']); const u = P[0]; u.q = 8; u.r = 6; u.facing = 0; B.usage = { ab: {} };
+    const bad = [{ hex: { q: 3, r: 6 } }, { hex: { q: 9, r: 6 } }, { hex: { q: 10.5, r: 6 } }, { hex: { q: '11', r: 6 } }, { hex: { q: 11 } }, { q: 11, r: 6 }];
+    const far = E('boardHexes')().find(h => E('hdist')(u, h) > 9 && E('inArc')(u, h, 'F')); if (far) bad.push({ hex: { q: far.q, r: far.r } });
+    for (const arg of bad) { u.abCd = 0; const ok = await E('useAbility')(u, arg); if (ok || (B.usage.ab.nova || 0) !== 0 || u.abCd !== 0) return [false, 'aim ' + JSON.stringify(arg) + ' was taken']; }
+    const g = E('novaTargets')(u)[0]; u.abCd = 0; const ok2 = await E('useAbility')(u, { hex: { q: g.q, r: g.r } });
+    return [ok2 && B.usage.ab.nova === 1 && !!far, 'legal shot used ' + ok2 + ', far hex ' + JSON.stringify(far)]; }],
 ];
 
 (async () => {
