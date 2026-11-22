@@ -368,6 +368,8 @@ function startBattle(cfg){
   const eliteIdx=cfg.kind==='elite'?new Set(eList.map((e,i)=>[i,HULLS[e.tpl].cp||1]).sort((x,y)=>y[1]-x[1]).slice(0,Math.ceil(eList.length/2)).map(x=>x[0])):null; // elite fights: the bigger half of their fleet are elites
   const thin=cfg.enemies?1:(RAMP.thin[s]||1)*(cfg.kind==='boss'?RAMP.escort:1); // boss fights: the escorts are leaner still, the flagship is the fight // B2: generated fleets are bigger, so each ship is a little less tough (set fleets from sims or events are not)
   eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):thin), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:thin), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
+  // issue 1480 (R384): a Nemesis in a boss fight (the revived Eclipse rival's last fight) comes in on his own flagship, his faction's biggest hull, beside the boss
+  if(cfg.kind==='boss'&&cfg.nemesis&&FACTIONS[cfg.nemesis.fac]){ const nf=cfg.nemesis.fac, ros=FACTIONS[nf].roster.filter(id=>HULLS[id]&&!HULLS[id].boss&&HULLS[id].ab!=='launch').sort((a,b)=>(HULLS[b].cp||1)-(HULLS[a].cp||1)||HULLS[b].hp-HULLS[a].hp); if(ros.length){ const u=makeUnit('enemy',ros[0],{scale:sc,dmg:dm,elite:true,fac:nf}); u.nemJoin=true; B.units.push(u); } }
   if(heatOn('h_undying')) for(const u of B.units) if(u.side==='enemy'&&!u.isSq&&!u.t.boss) u.reanimate=true;
   // enemies adapt to carrier-heavy fleets: escorts bolt on point defense
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
@@ -604,6 +606,10 @@ const FAC_RULES={
   corsair:{n:'Close in',d:'Boarding crews have extra strength, and rocket pods fire salvos that point defense can thin. Hullbreakers cannot field lance weapons.'},
   voidsworn:{n:'Line of battle',d:`Side guns hit harder after moving at least 2 hexes, and Brace covers one adjacent ally facing the same way. Carrier base prices have a ${Math.round((FAC_PRICE.voidsworn.Carrier-1)*100)}% premium before rounding.`}};
 // telemetry for the sims: per-faction counters in B.fstat (never read by rules)
+// Eclipse has no green anywhere (Ryan, Nov 21; issue 1641): its revive, reclaim and phase callouts use Eclipse violet, the sRGB form of
+// godot/fx/faction_looks.json deathless.weapon (linear 0.72, 0.55, 1.0). Every other faction keeps the green.
+const ECL_VIOLET='#ddc4ff';
+function eclCol(u){ return u&&u.fac==='deathless'?ECL_VIOLET:'#7dff9b'; }
 function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
 // Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
 // objective flagship, or the biggest Hegemony hull. Set once at battle start; when it dies or is captured, sync is lost for that side.
@@ -649,8 +655,11 @@ function legionRiseHex(u){ const occ=occMap(), ok=h=>onBoard(h.q,h.r)&&!blocks(t
 function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; if(!quiet) log(`${u.name} cannot find room to reassemble and stays dark.`,'x'); return false; }
   u.q=h.q; u.r=h.r; u.dead=false; u.riseAt=null; u.hp=Math.max(1,Math.round(u.maxHp*LEGION_HP)); u.st={fire:0,shieldOff:0,engine:0}; u.shredded=0;
   if(u.sec) for(const k of Object.keys(u.sec)){ repairSection(u,k,LEGION_HP); u.sec[k].hp=Math.max(1,Math.round(u.sec[k].max*LEGION_HP)); }
-  u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled','#7dff9b',-30); }catch(e){} } return true; }
-function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled&&legionRise(u)) out.push(u); return out; }
+  u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled',eclCol(u),-30); }catch(e){} } return true; }
+function legionTurn(side){ if(!B||B.over) return []; const out=[]; let stuck=false; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled){ if(legionRise(u)) out.push(u); else stuck=true; } if(stuck) checkEnd(); /* issue 1479: a wreck with no room stays dark, so the fight it kept open can end now */ return out; }
+// issue 1479: capitals reassembling (Eclipse legion) that rise next round; the end checks count them as present
+function riserCP(side){ return B.units.filter(u=>u.dead&&u.side===side&&u.riseAt!=null&&!u.fled&&!u.isSq).reduce((a,u)=>a+(u.t.cp||1),0); }
+function risers(side){ return B.units.filter(u=>u.dead&&u.side===side&&u.riseAt!=null&&!u.fled&&!u.isSq).length; }
 // plain-words lines for the ship panel
 function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModifierLines(u);
   if(u.fac==='hegemony'){ if(u.ripped) out.push('Links ripped out: she answers no Registry net, no synchronized fire.'); else { const a=syncAnchor(u.side); if(!(u.side==='player'&&B.round===1&&B.cfg.storyMods&&B.cfg.storyMods.syncDown)) out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); } }
@@ -677,7 +686,7 @@ function torpGhostBack(g,g0,real){ if(!real||real.dead) return; TORP_GHOST_KEYS.
 function nemWeak(k){ return !!(B&&B.nem&&B.nem.weak&&B.nem.weak.includes(k)); }
 function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u.isSq&&!u.transport); if(!es.length) return;
   const NF=(typeof NEM_FAC!=='undefined'&&NEM_FAC[N.fac])||{beh:{}}, beh=NF.beh||{}, tr=N.traits||[], ad=N.adapt||[];
-  const fl=es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
+  const fl=es.find(u=>u.nemJoin)||es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; /* issue 1480: in a boss fight he flies the flagship he came in on */ fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
   // R42 duelist (Ithar): a small elite fleet, at most four hulls, every one elite
   if(beh.strike==='duel'&&es.length>4){ const keep=new Set([fl,...es.filter(u=>u!==fl).sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)).slice(0,3)]); B.units=B.units.filter(u=>u.side!=='enemy'||u.isSq||u.transport||keep.has(u)||(u.parent&&keep.has(B.units.find(x=>x.id===u.parent)))); es=es.filter(u=>keep.has(u)); }
   if(beh.strike==='duel') for(const u of es) if(!u.elite){ u.elite=true; u.aim+=6; u.crit+=5; }
@@ -1250,6 +1259,8 @@ function cantFireReason(s,t){ if(s.braced) return 'This ship is braced, so it ho
   if(!los(s,t)) return 'Line of sight is blocked by asteroids or wreckage.';
   return 'None of the ready guns can reach that target right now.'; }
 function boardOdds(u,t){ const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)+treeRailBonus(u)), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5); const p=captureChance(u,t); return {kill:Math.round(a*.38), loss:Math.round(d*.3), chance:p, capture:p>=50}; }
+// R383 (issue 1479): the enemy ships a boarding never captures; overrunning one destroys it (twin: rules.gd boardScuttles)
+function boardScuttles(t){ return !!t&&t.side==='enemy'&&!t.captured&&!!(t.nemFlag||t.flagship||t.transport); }
 async function boardUnit(u,t){
   if(!boardTargets(u).includes(t)) return false; undoSpend();
   const hadFired=u.weapons.some(w=>w.fired); // Grax T2b: boarded after firing this round
@@ -1263,7 +1274,9 @@ async function boardUnit(u,t){
   const who=u.side==='player'?'p':'e';
   if(t.crew<=0&&(t.side==='player'||t.boss)&&!t.captured){ t.crew=Math.max(2,Math.round(t.crewMax*.15)); const s1=systemDamage(t), s2=systemDamage(t); if(typeof fxText==='function') fxText(t,'Holds the bridge','#f0b35a',-30);
     log(`${u.name}'s boarders overrun ${t.name}, but the last of its crew hold the bridge.${s1?' Saboteurs: '+s1.toLowerCase():''}${s2?', '+s2.toLowerCase():''}.`, who); if(B.usage&&t.side==='player') B.usage.overrun=(B.usage.overrun||0)+1; return true; } // your ships and sector flagships (B1, R4) are never captured: boarders cripple, they don't steal
-  if(t.crew<=0){ if(B.usage&&u.side==='player') B.usage.cap=(B.usage.cap||0)+1; if(t.anchor) syncLose(t); const old=t.side; t.side=u.side; t.crew=Math.max(3,Math.round(t.crewMax*.4)); t.captured=true; t.activated=true; t.mp=0; t.turnsLeft=0; t.braced=false; t.weapons.forEach(w=>w.fired=true);
+  if(t.crew<=0&&boardScuttles(t)){ if(typeof fxText==='function') fxText(t,'Scuttled','#f0b35a',-30); log(`Boarding parties from ${u.name} overrun ${t.name} and scuttle it.`, who);
+    t.killCause='dark'; t.hp=0; await killUnit(t,u); checkEnd(); return true; } // R383 (issue 1479): overrunning the Nemesis flagship, a hunt or flagship target or a convoy transport destroys it (twin: rules.gd boardUnit)
+  if(t.crew<=0){ if(B.usage&&u.side==='player') B.usage.cap=(B.usage.cap||0)+1; if(t.anchor) syncLose(t); for(const x of B.units) if(x.isSq&&x.parent===t.id&&x.side===t.side) x.parent=null; /* issue 1479: its old side's wings lose their carrier */ const old=t.side; t.side=u.side; t.crew=Math.max(3,Math.round(t.crewMax*.4)); t.captured=true; t.activated=true; t.mp=0; t.turnsLeft=0; t.braced=false; t.weapons.forEach(w=>w.fired=true);
     gainResolve(u.side,2); if(typeof fxText==='function') fxText(t,'Captured','#f0b35a',-30); log(`Boarding parties from ${u.name} take ${t.name}. It now fights for ${u.side==='player'?'you':'the enemy'}.`, who);
     if(typeof onCapture==='function') onCapture(t,old); checkEnd(); return true; }
   if(typeof fxText==='function') fxText(t,'\u2212'+kill+' crew','#f0b35a',-18); if(typeof fxText==='function') fxText(u,'\u2212'+loss+' crew','#ff7a6e',-18);
@@ -1290,11 +1303,11 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   if(t.fx.lastStand && !t.usedLastStand){ t.usedLastStand=true; t.hp=1; if(typeof fxText==='function') fxText(t,'Last stand','#f0b35a',-30); log(`${t.name} refuses to die! (Last stand)`,'s'); return; }
   if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); if(typeof fxText==='function') fxText(t,'Restarts','#7dff9b',-30); log(`Second ignition. ${t.name} restarts at 25% hull.`,'s'); return; }
   const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
-  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
+  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding',eclCol(t),-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
   { if(by&&by.side==='player'&&t.side==='enemy'){ if(!by.isSq&&treeSkill('scentDark')&&cmdActive('player','surge')) by.treeScent={r:B.round,from:t.id}; if(by.isSq&&by.extra&&treeSkill('broodNoStop')) by.treeNoStopKill={r:B.round,id:t.id}; } } // Razormaw T2b, Matriarch capstone 2: the kill is recorded
   { const ts=treeSkill('trophyStandard'); if(ts&&by&&by.side==='player'&&by.pflag&&t.side==='enemy'){ for(const x of alive('player')) if(!x.isSq&&!x.dead) x.treeFreeTurn=1; treeFx(by,'trophyStandard','the trophy standard turns the fleet'); } } // Hullbreakers shared C1b
-  if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
+  if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round',eclCol(t),-30); }catch(e){} }
   syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
   { const rf=treeSkill('rollingFire'); if(rf&&t.side==='enemy'&&by&&by.side==='player'&&!by.isSq&&inSync(by)&&B.tr&&!B.tr.rollingUsed){ B.tr.rollingUsed=1;
     const cand=alive('player').filter(x=>x!==by&&!x.isSq&&!x.dead&&inSync(x)&&!x.weapons.some(w=>w.fired)); let bu=null,bt=null,bi=-1,bs=-1e18;
@@ -1374,11 +1387,11 @@ function checkEnd(){ const was=!!(B&&B.over); checkEndRules(); if(B&&!was&&B.ove
 function scheduleBattleEnd(){ const b=B; if(!b||b.showcase) return; Promise.resolve().then(()=>{ if(B===b&&b.over&&!b.ending&&typeof endBattleFlow==='function'){ b.busy=false; endBattleFlow(); } }); }
 function checkEndRules(){
   if(B.over) return;
-  if(caps('enemy').length===0){ B.over='win'; return; }
+  if(caps('enemy').length===0&&risers('enemy')===0){ B.over='win'; return; } // issue 1479: an Eclipse wreck rising next round is still in the fight (twin: rules.gd risers)
   const o=B.obj;
   if(o&&o.type==='break'){ const out=B.units.filter(u=>u.exited).length; o.out=out; if(out>=o.need){ B.over='win'; log(`${out} ship${out>1?'s':''} broke through. The fleet jumps clear.`,'s'); return; }
-    if(out>0&&caps('player').length+out<o.need){ B.over='loss'; B.withdraw=true; log('Too few ships can still get through. The survivors jump clear.','e'); return; } }
-  if(caps('player').length===0 && !B.units.some(u=>u.side==='player'&&!u.dead&&u.treeOff)){ B.over='loss'; return; } // a reserve held off the field still counts (Thale B1b)
+    if(out>0&&caps('player').length+risers('player')+out<o.need){ B.over='loss'; B.withdraw=true; log('Too few ships can still get through. The survivors jump clear.','e'); return; } }
+  if(caps('player').length===0 && risers('player')===0 && !B.units.some(u=>u.side==='player'&&!u.dead&&u.treeOff)){ B.over='loss'; return; } // a reserve held off the field still counts (Thale B1b)
   if(o&&o.type==='intercept'){ const tr=B.units.filter(u=>u.transport); o.kill=tr.filter(u=>u.dead&&!u.fled).length; o.esc=tr.filter(u=>u.fled).length;
     if(o.kill>=o.need){ B.over='win'; B.routed=true; log('The convoy is broken. The escorts break off.','s'); return; }
     if(o.esc>o.total-o.need){ B.over='win'; B.partial=true; log('Enough transports got through. The escorts break off.','e'); return; } }
@@ -1389,7 +1402,7 @@ function checkEndRules(){
   // a broken fleet flees instead of being hunted down hex by hex
   if(!B.cp0||(o&&(o.type==='intercept'||o.type==='hunt'))) return;
   const bossDown=B.cfg&&B.cfg.kind==='boss'&&!B.units.some(u=>u.boss&&u.side==='enemy'&&!u.dead);
-  if(bossDown||(sideCP('enemy')<=B.cp0.enemy*.35&&!B.nemNoRout)){ // R42: a Voidsworn or Deathless Nemesis fights to the last hull
+  if(bossDown||(sideCP('enemy')+riserCP('enemy')<=B.cp0.enemy*.35&&!B.nemNoRout)){ // issue 1479: a wreck rising next round still counts toward the rout line // R42: a Voidsworn or Deathless Nemesis fights to the last hull
     B.over='win'; B.routed=true; log(bossDown?'The flagship is gone. Its escorts break and flee.':'The enemy fleet breaks and flees.','s'); }
 }
 
@@ -2118,11 +2131,11 @@ async function useAbility(u,arg){
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; if(typeof fxText==='function') fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } if(typeof fxText==='function') fxText(u,'Tubes loaded','#f0b35a',-24); }
   if(a==='focus'){ u.focus=true; if(typeof fxText==='function') fxText(u,'Focus fire','#f0b35a',-24); }
-  if(a==='phase'){ u.evBuff=25; /* v45: was 22, strictly weaker than Evasive Burn; now level (Deathless is already the strongest faction, so parity rather than a buff) */ u.mp+=2; if(typeof fxText==='function') fxText(u,'Phase shift','#7dff9b',-24); }
+  if(a==='phase'){ u.evBuff=25; /* v45: was 22, strictly weaker than Evasive Burn; now level (Deathless is already the strongest faction, so parity rather than a buff) */ u.mp+=2; if(typeof fxText==='function') fxText(u,'Phase shift',eclCol(u),-24); }
   if(a==='frenzy'){ u.focus=true; if(typeof fxText==='function') fxText(u,'Blood frenzy','#ff8fe0',-24); }
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; if(typeof fxText==='function') fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; if(typeof fxText==='function') fxText(u,'+'+h+' hull','#8ff0a0',-24); }
-  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
+  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull',eclCol(t),-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
   if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); let nf=0; for(const t of foes){ if(t.shMax>0){ const was=t.shp||0; t.shp=Math.floor(was*.5); syncShields(t); shieldClamp(t); if(t.shp<was) nf++; } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+nf+' enemy ship'+(nf===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
   if(a==='blink'){ const h=blinkTo; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ u.shp=u.shMax; syncShields(u); if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }

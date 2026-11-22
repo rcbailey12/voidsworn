@@ -104,6 +104,12 @@ Set: Ryan. Ids: agents-11, loop-05.
 1.7 **Picks, looks and money are Ryan's.** Payments, top-ups and sign-ups stay his. Why: his game and his accounts. Set: Ryan
 (AGENTS.md seat table; R126b).
 
+1.8 **Ryan's non-urgent picks go in two numbered Pick Sheets a day, Morning and Evening; he answers in the form `1=B, 2=Yes`.**
+Product and visual calls that can wait are batched there, each with its pick and one current labelled picture. Outside the
+sheets the Board interrupts him only for an emergency: PC disk under 75 GB, a key to paste, or a stuck job to kill. Why:
+"Move Ryan's non-urgent product/visual calls into two numbered Pick Sheets per day (Morning and Evening, format `1=B, 2=Yes`).
+Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck kill)." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R408).
+
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
@@ -265,6 +271,12 @@ request names who else picks the change up; the Board returns a one-off fix unle
 Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
 apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
 
+2.18 **No paid OpenAI API review of a pull request that a free seat already covers.** Artoo (ChatGPT) or the Claude code review
+seat reviews it; `[openai]` audit jobs on the API key are filed only for work no subscription seat can do. Why: "Stop filing
+paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Claude `/code-review` already covers the PR. Save
+cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
+Set: Ryan, Nov 22 (R406).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
@@ -368,13 +380,13 @@ run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), i
 process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
 older, are removed as links and never followed, and the log names each link's target; a folder another account owns
 (Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
-names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` helper folder (with any suffix, such as `opus<N>out*`, `opus1369b` or `opus1211_run6`, and playtest folders `pt<MMDD><letters>`, issue 1396) after a day untouched
 only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
 all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
 own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
 other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
-lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). When such a folder is kept, its Git checkouts (at any depth, links never followed) can still go on their own after the whole folder is 6 hours untouched, under the same lease, issue lock and process checks, when Git shows nothing in them beyond rebuildable install outputs and every local commit is in the mirror; their HEAD and status are logged first, and the out folders, pictures, logs and every file outside a checkout stay (issue 1396, Ryan's typed OK in the Board thread, Nov 20). Each janitor run also runs the job head's relay proof (`opus_job_head.ps1 dropjobs`) over every passed job attempt that still lists checkouts, so a relay that lands after the job's tail still frees them; it runs per job folder only after the same keep list, lease, issue lock, process and pause checks, removes only what that proof clears and logs the rest (Board, Nov 22; Artoo on PR 1592). A ship job's clone `<job>\repo` (its `out\result.txt` starts with ship_job's `start` line) is never removed by the janitor, whole folder or checkout-only: `publish_ship.bat` installs with it and removes it after a published PASS, and an abandoned one goes to the Board as a one-off (review of PR 1592). A checkout whose HEAD or local-branch reflog holds a commit no mirror ref reaches, or that has a second worktree, is kept (review of PR 1592). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
 no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
@@ -494,6 +506,13 @@ Only the final "safe to restart" line in pc_pause.txt means a restart is safe; a
 unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
 so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
 Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
+
+3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
+and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
+at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
+files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
+when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
 ## 4. Ships and concepts
 
@@ -940,7 +959,8 @@ Set: Ryan (R381, issue 1480).
 
 11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
 Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
-issue 1484).
+issue 1484). How: biomass pays when it covers the price, otherwise credits, one purse per purchase; a Chorus run still earns
+credits (repair stipends, ransoms, scrap, declined protocols), so biomass only would strand them (Board reading, Nov 22, PR 1627).
 
 11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
 kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan

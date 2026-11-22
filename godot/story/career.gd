@@ -333,7 +333,10 @@ func record_battle(run: Dictionary, B: Dictionary, result: String) -> Dictionary
 			award("lightning")
 		if alive == 1:
 			award("last_stand")
-		if nem_kill and int(run.get("sector", 1)) >= 3:
+		# issue 1480: only the kill that ends him (the campaign has settled the fight by now); the Eclipse rival's first
+		# Sector 3 kill only makes him reassemble for one last fight
+		var nem_dead: bool = run.get("nem") is Dictionary and _t(run["nem"].get("dead"))
+		if nem_kill and int(run.get("sector", 1)) >= 3 and nem_dead:
 			award("nemesis_slain")
 	if int(L["captures"]) >= 3 and not P["medals"].has("prize_master"):
 		award("prize_master")

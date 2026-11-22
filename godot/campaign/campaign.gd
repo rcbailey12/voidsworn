@@ -847,8 +847,8 @@ func _track_up(cls) -> void:
 func buyClassTrack(cls) -> bool:
 	if RUN == null or classTrack(cls) >= float(CLASS_TRACK_MAX): return false
 	var c = classTrackCost(cls)
-	if float(RUN["credits"]) < c: return false
-	RUN["credits"] = float(RUN["credits"]) - c; changeFleet(_track_up.bind(cls)); return true
+	if not shopCan(c): return false
+	shopPay(c); changeFleet(_track_up.bind(cls)); return true
 # Issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]),
 # and a later gain on the same hull pays that back first, so taking a hull refit off and on again never adds hull.
 # Twin: core.js changeShip.
@@ -892,6 +892,15 @@ func hullKey() -> String: return "bio" if RUN != null and RUN.get("fac") == "cho
 func hullFunds() -> float: return float(z0(RUN.get(hullKey()))) if RUN != null else 0.0
 func hullPay(c) -> void: RUN[hullKey()] = hullFunds() - float(c)
 func hullWord() -> String: return "biomass" if hullKey() == "bio" else "credits"
+# issue 1484 (R382): the Chorus pay for refits, class refit tracks, protocol rerolls and the late market in biomass when it covers the
+# price, otherwise in credits. Every other fleet pays these in credits. One purse per purchase. Twin of core.js shopKey/shopCan/shopPay/shopWord.
+func shopKey(c) -> String: return "bio" if RUN != null and RUN.get("fac") == "chorus" and float(z0(RUN.get("bio"))) >= float(c) else "credits"
+func shopCan(c) -> bool: return RUN != null and float(z0(RUN.get(shopKey(c)))) >= float(c)
+func shopPay(c) -> void:
+	var k = shopKey(c); RUN[k] = float(z0(RUN.get(k))) - float(c)
+func shopWord(c) -> String:
+	if RUN == null or RUN.get("fac") != "chorus": return ""
+	return " biomass" if shopKey(c) == "bio" or float(z0(RUN.get("credits"))) < float(c) else " credits"
 func mkCost(s) -> float: return jsround((40.0 * float(HULLS[s["tpl"]]["cp"]) * float(s["mk"]) + 30.0) * priceMult())
 func addXp(ship, n) -> void:
 	var c = ship["cap"]; c["xp"] = float(c["xp"]) + jsround(float(n) * (1.0 + float(z0(runFx().get("xpPct")))))
@@ -1846,6 +1855,17 @@ func completeNode(checkpoint := true) -> void:
 	if n != null: n["done"] = true
 	RUN["curNode"] = null; RUN.erase("inYard")
 	if checkpoint: saveRun()
+# issue 1480 (R381, RULEBOOK 11.8): a retreat puts the fleet back on the stop it came from (the visited stop one column back, or
+# the sector's start before the first column); the stop it fled stays on the map unbeaten, with the same seed and enemy
+func retreatBack() -> void:
+	var n = findNode(RUN.get("curNode")) if RUN.get("curNode") != null else null; var from = null
+	if n != null:
+		for e in RUN["map"]["edges"]:
+			var p = findNode(e[0])
+			if e[1] == n["id"] and p != null and jt(p.get("done")):
+				from = p["id"]; break
+	RUN["pos"] = from; RUN["curNode"] = null; RUN.erase("inYard")
+	saveRun()
 func _nodes() -> Array:
 	var out = []
 	for c in RUN["map"]["cols"]:
@@ -1890,6 +1910,8 @@ func _open_stop(n: Dictionary) -> void:
 
 func _enter_battle_node(n: Dictionary) -> void:
 	var kind = n["type"]; var fac = nodeFaction(n)
+	if kind == "boss" and nemNodeIs(n):   # issue 1480 (R384): he joins the boss fight
+		battleScreen({"kind": "boss", "fac": fac, "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}); return
 	if nemNodeIs(n):   # B4: the Nemesis fight (marked on the map beforehand)
 		var nem0 = nemActive(); var fa = nemBeh().get("fleet")
 		var nc = {"kind": "elite", "fac": nem0["fac"], "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}
@@ -2088,16 +2110,16 @@ func lateShopOffers() -> Array:
 	var rc = jsround(float(L["relic"]) * pm); var cc = jsround(float(L["cp"]) * pm); var out = []
 	for r in st["relics"]:
 		if L["skip"].has(r) and not st["bought"].has(r): continue   # issue 1290: an older save's yard stock never sells a skipped relic
-		out.append({"id": "relic:" + str(r), "kind": "relic", "r": r, "cost": rc, "value": 2, "ok": not st["bought"].has(r) and not RUN["relics"].has(r) and float(RUN["credits"]) >= rc, "done": st["bought"].has(r)})
+		out.append({"id": "relic:" + str(r), "kind": "relic", "r": r, "cost": rc, "value": 2, "ok": not st["bought"].has(r) and not RUN["relics"].has(r) and shopCan(rc), "done": st["bought"].has(r)})
 	var lc = float(z0(RUN.get("lateCp")))
-	out.append({"id": "cp", "kind": "cp", "cost": cc, "value": 1, "ok": not jt(st["cp"]) and lc < float(L["cpMax"]) and float(RUN["credits"]) >= cc, "done": jt(st["cp"]), "full": lc >= float(L["cpMax"])})
+	out.append({"id": "cp", "kind": "cp", "cost": cc, "value": 1, "ok": not jt(st["cp"]) and lc < float(L["cpMax"]) and shopCan(cc), "done": jt(st["cp"]), "full": lc >= float(L["cpMax"])})
 	return out
 func ACT_lateBuy(id: String) -> void:
 	var o = null
 	for x in lateShopOffers():
 		if x["id"] == id: o = x
 	if o == null or not o["ok"]: return
-	var st = yard_node["stock"]["late"]; RUN["credits"] = float(RUN["credits"]) - float(o["cost"])
+	var st = yard_node["stock"]["late"]; shopPay(o["cost"])
 	if o["kind"] == "relic":
 		st["bought"].append(o["r"]); changeFleet(func(): RUN["relics"].append(o["r"]))
 		toast(relicName(o["r"]) + " is yours. " + str(RELICS[o["r"]]["d"]))
@@ -2148,9 +2170,9 @@ func shipyardScreen(n) -> void:
 		var ct = HULLS[h]; var ccost = capturedHullPrice(ct); var cfits = cp + float(ct["cp"]) <= float(RUN["cpCap"])
 		A(acts, "buyHull", h, hullFunds() >= ccost and cfits)
 	for i in range(st["mods"].size()):
-		if not _has_num(st["sold"], i): A(acts, "buyMod", i, float(RUN["credits"]) >= jsround(float(MODULES[st["mods"][i]]["cost"]) * pm))
+		if not _has_num(st["sold"], i): A(acts, "buyMod", i, shopCan(jsround(float(MODULES[st["mods"][i]]["cost"]) * pm)))
 	for cls in fleetClasses():
-		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
+		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and shopCan(classTrackCost(cls)))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
 	if n.get("id") != null: RUN["inYard"] = n["id"]
 	else: RUN.erase("inYard")
@@ -2184,8 +2206,8 @@ func ACT_buyMod(a: String) -> void:
 	var i = int(a); var st = yard_node["stock"]
 	if i < 0 or i >= st["mods"].size(): return   # issue 1556: bounds first
 	var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
-	if _has_num(st["sold"], i) or float(RUN["credits"]) < cost: return
-	RUN["credits"] = float(RUN["credits"]) - cost
+	if _has_num(st["sold"], i) or not shopCan(cost): return
+	shopPay(cost)
 	tel("shop", {"k": "mod", "id": m, "cost": cost})
 	st["sold"].append(i); RUN["inventory"].append(m); toast(modName(m) + " is in the hold. Fit it from Refits."); shipyardScreen(yard_node)
 func ACT_repair(uid: String) -> void:
@@ -2341,6 +2363,12 @@ func eventScreen(n) -> void:
 		if n != null: n["evId"] = event["id"]
 	if n != null and jt(n.get("nemCleared")): n["nemEvent"] = event["id"]
 	if n != null: saveRun()
+	if n != null and (jt(n.get("nemCleared")) or n.get("evFight") != null):   # issue 1628: a stop whose fight choice was made (then retreated from) goes straight back to that fight (twin: campaign_run.js)
+		var evf = _event_for_faction(event); var want_k = n["evFight"] if n.get("evFight") != null else RUN["flags"].get(event["id"])
+		for i in range(evf["o"].size()):
+			var o = evf["o"][i]; var r = o.get("r")
+			if want_k == or_(o.get("k"), str(i)) and r is Dictionary and jt(r.get("fight")):
+				battleScreen(_event_battle_cfg(n, r)); return
 	show_event(_event_for_faction(event))
 func show_event(ev: Dictionary) -> void:
 	cur_event = ev
@@ -2549,7 +2577,7 @@ func nemSay(t, N) -> String:
 # without resolving anyone. Every caller passes the active commander, so the words are what they were.
 func nemWarnLine(N) -> String:
 	var st = nemBeh(N).get("strike")
-	if jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh(N).get("clock"), 1)) < float(NEM_CLOCK): return ""
+	if nemBossOnly(N) or jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh(N).get("clock"), 1)) < float(NEM_CLOCK): return ""
 	if st == "raid":
 		var canTow = RUN["fleet"].size() >= 3   # NEM-5: the warning names the tow when the fleet is big enough, since the fight can cripple a ship before the strike lands
 		return nemSay("Your next win fills his clock: he will raid", N) + " " + (numstr(jsround(float(RUN["credits"]) * 0.25)) + " credits" if float(RUN["credits"]) >= 30 else ("your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)" if canTow else "and find nothing to take")) + "."
@@ -2594,7 +2622,7 @@ func nemClockAdd(n) -> String:
 	if not jt(N) or jt(N.get("dead")): return ""
 	var step = float(n) * float(or_(nemBeh().get("clock"), 1)) if float(n) > 0 else float(n)
 	RUN["nemClock"] = clampv(jsround((nemClockGet() + step) * 2) / 2.0, 0, NEM_CLOCK)
-	if float(RUN["nemClock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(RUN.get("nemStrike")):
+	if float(RUN["nemClock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(RUN.get("nemStrike")) and not nemBossOnly(N):
 		RUN["nemStrike"] = true; var extra = nemStrike()
 		return nemSay(nemFull() + " has found your trail. Your next fight will be against his fleet." + ((" " + extra) if extra != "" else ""), N)   # #122: through nemSay (a she or an it read "his")
 	return ""
@@ -2630,16 +2658,21 @@ func nemStrike() -> String:
 # its type, so no route reaches the flagship without the meeting nemMeetingLine promises; issue 1175)
 func nemNodeIs(n, N0 = null) -> bool:
 	var N = N0 if jt(N0) else nemActive()
-	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or n["type"] == "boss": return false
+	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null: return false
+	if nemBossOnly(N): return n["type"] == "boss"   # issue 1480 (R384): the revived Eclipse rival's last fight is the Sector 3 boss battle, and no stop before it
+	if n["type"] == "boss": return false
 	var c4 = float(RUN["map"]["cols"].size() - 3)
 	if n["type"] != "battle" and n["type"] != "elite": return float(n["col"]) == c4
 	return jt(RUN.get("nemStrike")) or float(n["col"]) >= c4
+# issue 1480 (R384): the revived rival waits for the boss battle
+func nemBossOnly(N) -> bool: return jt(N) and jt(N.get("revived")) and float(RUN["sector"]) >= 3
 # Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
 func nemNodeTag(n, N0 = null) -> String: return "Nemesis meeting" if nemNodeIs(n, N0) else ""
 func nemMeetingLine(N0 = null) -> String:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N): return ""
 	if jt(N.get("dead")): return nemFull(N) + " is dead. No hunter will meet you this sector."
+	if nemBossOnly(N) and float(N["met"]) < float(RUN["sector"]): return nemSay(nemFull(N) + " came back. He waits for you in the Sector 3 boss battle.", N)
 	if float(N["met"]) >= float(RUN["sector"]): return nemSay("You have met " + nemFull(N) + " this sector. That meeting is done; the next sector brings the next hunter.", N)
 	return nemSay("You will meet " + nemFull(N) + " this sector. One meeting every sector is certain, and it comes at the latest before the rest stop. The clock is only an accelerant: every fight you win moves it at his pace, and a full clock brings the meeting sooner, never later.", N)
 func nemBattleCfg() -> Dictionary:
@@ -2752,7 +2785,10 @@ func nemScar(cause) -> void:
 func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array:
 	var N = nemActive()
 	if not jt(N): return []
-	var out = []; var beh = nemBeh(); var P = nemPr(N); N["met"] = RUN["sector"]; RUN["nemStrike"] = false; RUN["nemClock"] = 0; var back = false   # #121: any meeting resets the run's clock and strike
+	var out = []; var beh = nemBeh(); var P = nemPr(N)
+	if result == "retreat":   # issue 1480 (R381): a retreat is not the meeting
+		N["gloat"] = "retreat"; out.append(nemSay("You pull back. " + nemFull() + " holds the field, and the meeting still waits.", N)); return out
+	N["met"] = RUN["sector"]; RUN["nemStrike"] = false; RUN["nemClock"] = 0; var back = false   # #121: any meeting resets the run's clock and strike
 	if result == "win":
 		N["beaten"] = float(N["beaten"]) + 1; N["gloat"] = null
 		if jt(o.get("beat")):
@@ -3251,6 +3287,7 @@ func ACT_eventChoice(a: String) -> void:
 		r = r.duplicate(); r["payRelicAt"] = j
 	if r is Dictionary and jt(r.get("fight")):
 		var n = findNode(RUN["curNode"])
+		if n != null: n["evFight"] = or_(o.get("k"), str(i))   # issue 1628
 		if n != null and jt(n.get("nemCleared")): saveRun()
 		close_modal(); battleScreen(_event_battle_cfg(n, r)); return
 	var lines = applyOutcome(r)
@@ -3568,7 +3605,7 @@ func boonDeclineCred() -> float: return 30.0 + 10.0 * float(or_(RUN.get("sector"
 func boonRerollCost() -> float: return 25.0 + 15.0 * float(z0(RUN.get("boonRerolls") if RUN != null else null))
 # R1 (RWD-6): no reroll (and no charge) when the core has nothing beyond what is already on offer
 func boonRerollOk(p = null, minR = null) -> bool:
-	if not (RUN != null and RUN.get("reward") != null and not jt(RUN["reward"].get("rerolled")) and float(RUN["credits"]) >= boonRerollCost()): return false
+	if not (RUN != null and RUN.get("reward") != null and not jt(RUN["reward"].get("rerolled")) and shopCan(boonRerollCost())): return false
 	if p == null: return true
 	var cur = _offer_ids(or_(RUN["reward"].get("boonOffer"), []))
 	return boonOfferCan(p, minR).any(func(id): return not cur.has(id))
@@ -3582,7 +3619,7 @@ func _all_old(off: Array, old: Array) -> bool:
 	return true
 func boonReroll(p, minR) -> Variant:
 	if not boonRerollOk(p, minR): return null
-	RUN["credits"] = float(RUN["credits"]) - boonRerollCost(); RUN["boonRerolls"] = float(z0(RUN.get("boonRerolls"))) + 1; RUN["reward"]["rerolled"] = true
+	shopPay(boonRerollCost()); RUN["boonRerolls"] = float(z0(RUN.get("boonRerolls"))) + 1; RUN["reward"]["rerolled"] = true
 	var old = _offer_ids(or_(RUN["reward"].get("boonOffer"), []))
 	var off = rollBoonOffer(p, minR)
 	var k = 0
@@ -3967,7 +4004,7 @@ func finishBattle(result: String) -> void:
 	if result == "loss" or RUN["fleet"].size() == 0:
 		endRun(false); return
 	if result == "retreat":
-		completeNode(); mapScreen(); toast("The fleet jumps clear."); return
+		retreatBack(); mapScreen(); toast("The fleet jumps clear, back to the last stop. The fight is still on the map."); return   # issue 1480 (R381)
 	rewardFlow(summary)
 	if summary.get("scrapped") != null:
 		var tot = 0.0; var names = []
@@ -4003,7 +4040,7 @@ func stub_start(cfg: Dictionary) -> void:
 			"boss": jt(H.get("boss")), "weapons": ws2, "ab": H.get("ab") if jt(H.get("ab")) else null, "shMax": z0(H.get("sh")), "regen": z0(H.get("regen"))})
 	if jt(cfg.get("nemesis")):
 		for u in B["units"]:
-			if u["side"] == "enemy":
+			if u["side"] == "enemy" and not (cfg["kind"] == "boss" and jt(u.get("boss"))):   # issue 1480: in a boss fight, beside the boss
 				u["nemFlag"] = true; break
 func stub_resolve(o: String) -> void:
 	var P = B["units"].filter(func(u): return u["side"] == "player"); var E = B["units"].filter(func(u): return u["side"] == "enemy"); var loss = o == "loss"

@@ -53,6 +53,10 @@ func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a tem
 func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
 func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
 func pp(u) -> String: return "p" if u["side"] == "player" else "e"
+# Eclipse has no green anywhere (Ryan, Nov 21; issue 1641): battle.js eclCol. Eclipse violet is the sRGB form of
+# fx/faction_looks.json deathless.weapon (linear 0.72, 0.55, 1.0); every other faction keeps the green.
+const ECL_VIOLET := "#ddc4ff"
+func eclCol(u) -> String: return ECL_VIOLET if u != null and String(u.get("fac", "")) == "deathless" else "#7dff9b"
 # A floating callout over a ship (battle.js fxText): presentation only, never touches rules state
 func flt(u, text: String, color: String, dy = null) -> void:
 	if u != null: emit({"t": "float", "unit": u.get("id"), "text": text, "color": color, "dy": dy})
@@ -1403,6 +1407,16 @@ func startBattle(cfg: Dictionary) -> void:
 			JSM.ssort(pr, func(x, y): return y[1] - x[1])
 			elite = ei == pr[0][0]
 		B["units"].append(makeUnit("enemy", e["tpl"], {"scale": scale, "dmg": dmg, "elite": elite, "fac": cfg["fac"]}))
+	# issue 1480 (R384): a Nemesis in a boss fight (the revived Eclipse rival's last fight) comes in on his own flagship, his faction's biggest hull, beside the boss
+	if cfg.get("kind") == "boss" and jt(cfg.get("nemesis")) and FACTIONS.has(cfg["nemesis"].get("fac")):
+		var nf = cfg["nemesis"]["fac"]; var nros = []
+		for id in FACTIONS[nf]["roster"]:
+			if HULLS.has(id) and not jt(HULLS[id].get("boss")) and HULLS[id].get("ab") != "launch": nros.append(id)
+		JSM.ssort(nros, func(a, b):
+			var d = (HULLS[b]["cp"] if jt(HULLS[b].get("cp")) else 1) - (HULLS[a]["cp"] if jt(HULLS[a].get("cp")) else 1)
+			return d if d != 0 else HULLS[b]["hp"] - HULLS[a]["hp"])
+		if nros.size() > 0:
+			var nu = makeUnit("enemy", nros[0], {"scale": sc, "dmg": dm, "elite": true, "fac": nf}); nu["nemJoin"] = true; B["units"].append(nu)
 	if heatOn("h_undying"):
 		for u in B["units"]:
 			if u["side"] == "enemy" and not jt(u.get("isSq")) and not jt(u["t"].get("boss")): u["reanimate"] = true
@@ -2179,13 +2193,16 @@ func legionRise(u, quiet = false) -> bool:
 	u["risen"] = B["round"]; fstat("deathless", "revive")
 	emit({"t": "risen", "unit": u["id"], "q": int(u["q"]), "r": int(u["r"])})
 	if not quiet:
-		logm(String(u["name"]) + " reassembles from its wreck with " + ns(u["hp"]) + " hull. It cannot fire this round.", pp(u)); flt(u, "Reassembled", "#7dff9b", -30)
+		logm(String(u["name"]) + " reassembles from its wreck with " + ns(u["hp"]) + " hull. It cannot fire this round.", pp(u)); flt(u, "Reassembled", eclCol(u), -30)
 	return true
 func legionTurn(side) -> Array:
 	if B == null or jt(B.get("over")): return []
-	var out = []
+	var out = []; var stuck := false
 	for u in B["units"].duplicate():
-		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and B["round"] >= u["riseAt"] and not jt(u.get("fled")) and legionRise(u): out.append(u)
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and B["round"] >= u["riseAt"] and not jt(u.get("fled")):
+			if legionRise(u): out.append(u)
+			else: stuck = true
+	if stuck: checkEnd()   # issue 1479: a wreck with no room stays dark, so the fight it kept open can end now
 	return out
 func torpSalvo(w, u) -> bool: return w != null and w.get("k") == "torp" and not (u != null and jt(u.get("isSq")))   # R364: torpedoes fire now
 func torpGhost(u, sure) -> Dictionary:
@@ -2209,6 +2226,8 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	var tr = N["traits"] if N.get("traits") != null else []
 	var ad = N["adapt"] if N.get("adapt") != null else []
 	var srt = es.duplicate(); JSM.ssort(srt, func(a, b): return _byCpHp(a, b)); var fl = srt[0]
+	for u in es:   # issue 1480: in a boss fight he flies the flagship he came in on
+		if jt(u.get("nemJoin")): fl = u; break
 	fl["nemFlag"] = true; fl["elite"] = true; fl["name"] = String(N["title"]) + " " + String(N["name"]); fl["dmg"] = fl["dmg"] * (1.0 + 0.1 * z0(N.get("scars")))
 	if beh.get("strike") == "duel" and es.size() > 4: # R42 duelist (Ithar): at most four hulls
 		var rest = []
@@ -3870,6 +3889,10 @@ func boardOdds(u, t) -> Dictionary:
 	var d: float = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5)
 	var p = captureChance(u, t)
 	return {"kill": JSM.jsround(a * 0.38), "loss": JSM.jsround(d * 0.3), "chance": p, "capture": p >= 50}
+# R383 (issue 1479): the enemy ships a boarding never captures; overrunning one destroys it (kills, loot and objectives
+# read it as destroyed, and the hull never joins your fleet). Twin: battle.js boardScuttles.
+func boardScuttles(t) -> bool:
+	return t != null and t["side"] == "enemy" and not jt(t.get("captured")) and (jt(t.get("nemFlag")) or jt(t.get("flagship")) or jt(t.get("transport")))
 func boardUnit(u, t) -> bool:
 	if not JSM.has_same(boardTargets(u), t): return false
 	undoSpend()
@@ -3884,8 +3907,14 @@ func boardUnit(u, t) -> bool:
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct")) + treeRailBonus(u)) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
 	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
-	var outcome = "overrun" if (t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))) else ("capture" if t["crew"] <= 0 else "raid")
+	var holds: bool = t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))
+	var scuttle: bool = t["crew"] <= 0 and not holds and boardScuttles(t)
+	var outcome = "overrun" if holds else ("scuttle" if scuttle else ("capture" if t["crew"] <= 0 else "raid"))
 	emit({"t": "board", "unit": u["id"], "target": t["id"], "result": outcome, "kill": kill, "loss": loss})
+	if scuttle:   # R383 (issue 1479): overrunning the Nemesis flagship, a hunt or flagship target or a convoy transport destroys it
+		flt(t, "Scuttled", "#f0b35a", -30)
+		logm("Boarding parties from " + String(u["name"]) + " overrun " + String(t["name"]) + " and scuttle it.", pp(u))
+		t["killCause"] = "dark"; t["hp"] = 0; killUnit(t, u); checkEnd(); return true
 	if t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured")):
 		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); var s1 = systemDamage(t); var s2 = systemDamage(t)
 		flt(t, "Holds the bridge", "#f0b35a", -30)
@@ -3895,6 +3924,8 @@ func boardUnit(u, t) -> bool:
 	if t["crew"] <= 0:
 		if jt(B.get("usage")) and u["side"] == "player": B["usage"]["cap"] = z0(B["usage"].get("cap")) + 1
 		if jt(t.get("anchor")): syncLose(t)
+		for x in B["units"]:
+			if jt(x.get("isSq")) and x.get("parent") == t["id"] and x["side"] == t["side"]: x["parent"] = null   # issue 1479: its old side's wings lose their carrier
 		t["side"] = u["side"]; t["crew"] = max(3, JSM.jsround(t["crewMax"] * 0.4)); t["captured"] = true; t["activated"] = true; t["mp"] = 0; t["turnsLeft"] = 0; t["braced"] = false
 		for w in t["weapons"]: w["fired"] = true
 		gainResolve(u["side"], 2); flt(t, "Captured", "#f0b35a", -30); logm("Boarding parties from " + String(u["name"]) + " take " + String(t["name"]) + ". It now fights for " + ("you" if u["side"] == "player" else "the enemy") + ".", pp(u))
@@ -3949,7 +3980,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); flt(t, "Restarts", "#7dff9b", -30); logm("Second ignition. " + String(t["name"]) + " restarts at 25% hull.", "s"); return
 	var legion = legionCan(t)
 	if not legion and jt(t.get("reanimate")) and not jt(t.get("reanimated")) and not jt(t.get("pyre")) and not (t.get("fac") == "deathless" and jt(t.get("t")) and jt(t["t"].get("reanimate"))) and rnd() < (0.2 if t["side"] == "enemy" else 0.35):
-		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Rebuilding", "#7dff9b", -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
+		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Rebuilding", eclCol(t), -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
 	t["dead"] = true; t["hp"] = 0
 	if by != null and by["side"] == "player" and t["side"] == "enemy":   # Razormaw T2b, Matriarch capstone 2: the kill is recorded
 		if not jt(by.get("isSq")) and treeSkill("scentDark") != null and cmdActive("player", "surge"): by["treeScent"] = {"r": B["round"], "from": t["id"]}
@@ -3960,7 +3991,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		treeFx(by, "trophyStandard", "the trophy standard turns the fleet")   # Hullbreakers shared C1b
 	if legion:
 		t["reanimated"] = true; t["riseAt"] = B["round"] + 1; B["legion"][t["side"]]["used"] = B["legion"][t["side"]]["used"] + 1
-		logm(String(t["name"]) + " falls, but its wreck is already reassembling. It rises next round.", pp(t)); flt(t, "Reassembling: rises next round", "#7dff9b", -30)
+		logm(String(t["name"]) + " falls, but its wreck is already reassembling. It rises next round.", pp(t)); flt(t, "Reassembling: rises next round", eclCol(t), -30)
 	syncLose(t); chorusFeed(t, by)
 	var rfK = treeSkill("rollingFire")
 	if rfK != null and t["side"] == "enemy" and by != null and by["side"] == "player" and not jt(by.get("isSq")) and inSync(by) and B.get("tr") != null and not jt(B["tr"].get("rollingUsed")):
@@ -4247,13 +4278,24 @@ func checkEnd() -> void:
 	if B != null and not was and jt(B.get("over")) and B["over"] == "win":
 		for u in B["units"]:
 			if jt(u.get("dead")) and u["side"] == "player" and u.get("riseAt") != null and not jt(u.get("fled")): legionRise(u, true)
+# Issue 1479: capitals reassembling (Eclipse legion) that rise next round; the end checks count them as present
+func risers(side) -> int:
+	var n := 0
+	for u in B["units"]:
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and not jt(u.get("fled")) and not jt(u.get("isSq")): n += 1
+	return n
+func riserCP(side) -> float:
+	var s := 0.0
+	for u in B["units"]:
+		if jt(u.get("dead")) and u["side"] == side and u.get("riseAt") != null and not jt(u.get("fled")) and not jt(u.get("isSq")): s += float(u["t"]["cp"]) if jt(u["t"].get("cp")) else 1.0
+	return s
 func _has_reserve(side) -> bool:
 	for u in B["units"]:
 		if u["side"] == side and not jt(u.get("dead")) and jt(u.get("treeOff")): return true
 	return false
 func checkEndRules() -> void:
 	if jt(B.get("over")): return
-	if caps("enemy").size() == 0:
+	if caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
 		B["over"] = "win"; return
 	var o = B.get("obj")
 	if o != null and o.type == "break":
@@ -4263,9 +4305,9 @@ func checkEndRules() -> void:
 		o["out"] = out
 		if out >= o.need:
 			B["over"] = "win"; logm(ns(out) + " ship" + ("s" if out > 1 else "") + " broke through. The fleet jumps clear.", "s"); return
-		if out > 0 and caps("player").size() + out < o.need:
+		if out > 0 and caps("player").size() + risers("player") + out < o.need:
 			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
-	if caps("player").size() == 0 and not _has_reserve("player"):
+	if caps("player").size() == 0 and risers("player") == 0 and not _has_reserve("player"):
 		B["over"] = "loss"; return
 	if o != null and o.type == "intercept":
 		var kill = 0; var esc = 0
@@ -4312,7 +4354,7 @@ func checkEndRules() -> void:
 		bossDown = true
 		for u in B["units"]:
 			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
-	if bossDown or (sideCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
+	if bossDown or (sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
 		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
@@ -6533,7 +6575,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "focus":
 		u["focus"] = true; flt(u, "Focus fire", "#f0b35a", -24)
 	if a == "phase":
-		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Phase shift", "#7dff9b", -24)
+		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Phase shift", eclCol(u), -24)
 	if a == "frenzy":
 		u["focus"] = true; flt(u, "Blood frenzy", "#ff8fe0", -24)
 	if a == "overburn":
@@ -6546,7 +6588,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 			if not jt(x.get("isSq")) and hdist(x, u) <= 3 and x["hp"] < x["maxHp"]: ts.append(x)
 		JSM.ssort(ts, func(p, q): return float(p["hp"]) / p["maxHp"] - float(q["hp"]) / q["maxHp"])
 		if ts.size() > 0:
-			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h; flt(t, "+" + ns(h) + " hull", "#7dff9b", -24)
+			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h; flt(t, "+" + ns(h) + " hull", eclCol(t), -24)
 			logm(String(u["name"]) + " rebuilds " + ("its own hull" if is_same(t, u) else String(t["name"])) + " for " + ns(h) + ".", pp(u))
 	if a == "ionpulse":
 		var nf = 0

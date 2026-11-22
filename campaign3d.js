@@ -122,7 +122,7 @@ function finishBattle(result){
   disposeAllViews(); clearOverlays(); B=null; hideTip(); hideEnd();
   if(result==='win'&&RUN.fleet.length===0){ const sh=newShip(cheapHull(RUN.fac)); RUN.fleet.push(sh); ensureFlagship(); setTimeout(()=>toast(`The last ships traded themselves for the win. `+({chorus:`Your surviving spores coalesce into a fresh ${shipBare(sh.name)} to carry the brood.`,deathless:`An automated reserve berth dispatches ${shipWithArticle(sh.name)} to hold the uplink.`,corsair:`A straggling raider from the outer belt joins your pack to carry the flag: ${shipWithArticle(sh.name)}.`,ithar:`A distant picket answers your distress pulse to carry the standard: ${shipWithArticle(sh.name)}.`}[RUN.fac]||`An allied sector patrol sends ${shipWithArticle(sh.name)} to carry the flag.`)),900); tel('reinforced',{why:'pyrrhic'}); } // B1 (B-9): a win that cost every ship is still a win
   if(result==='loss' || RUN.fleet.length===0){ endRun(false); return; }
-  if(result==='retreat'){ completeNode(); mapScreen(); toast('The fleet jumps clear.'); return; }
+  if(result==='retreat'){ retreatBack(); mapScreen(); toast('The fleet jumps clear, back to the last stop. The fight is still on the map.'); return; } // issue 1480 (R381)
   rewardFlow(summary);
   const gained=runRenown()-r0; if(summary.scrapped&&summary.scrapped.length) setTimeout(()=>toast(`No command points to crew ${summary.scrapped.map(x=>x.name).join(', ')}: scrapped for ${summary.scrapped.reduce((t,x)=>t+x.cred,0)} credits.`),700);
 }

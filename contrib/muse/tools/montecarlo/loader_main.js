@@ -83,7 +83,11 @@ function loadGame(repoDir, opts = {}) {
   globalThis.innerWidth = 1280; globalThis.innerHeight = 800;
   globalThis.requestAnimationFrame = fn => setTimeout(fn, 0);
   const realST = globalThis.setTimeout;
-  globalThis.setTimeout = (fn, ms, ...rest) => { if (!ms) { queueMicrotask(() => fn(...rest)); return 0; } return realST(fn, ms, ...rest); };
+  // A delayed timer is screen dressing (a toast, a flash) that fires after its run has moved on, sometimes after the run ended and RUN
+  // is null (issue 1632: the escape-pod toast). Its error must not kill the batch, so it is counted in globalThis.__timerErrors.
+  globalThis.__timerErrors = 0;
+  const late = fn => (...a) => { try { fn(...a); } catch (e) { globalThis.__timerErrors++; } };
+  globalThis.setTimeout = (fn, ms, ...rest) => { if (!ms) { queueMicrotask(() => fn(...rest)); return 0; } return realST(late(fn), ms, ...rest); };
   const realDebug = console.debug; console.debug = () => {};
 
   geval(src);

@@ -106,8 +106,10 @@ var apply_shake = true
 # --- clock
 var now = 0.0
 var _speed = 1.0
-var _pause_until = -1.0
+var _pause_until = -1.0   # effect time; checks hold a pause open with it
+var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
 var _pause_depth = 1.0
+const SPEED_EASE := 55.0  # 1 - exp(-k / 60) = 0.6: the old per-frame lerp at 60 fps, now the same at every frame rate
 var _death_slow_left = 0.0  # real seconds, never Engine.time_scale
 var _death_hurry_until = -1.0
 
@@ -143,10 +145,8 @@ var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
 var _fov_base = -1.0        # the camera's own field of view, under the punch
 var _fov_set = -1.0         # what the punch last wrote
-# Issue 462, a Board proposal for Ryan's eye (deaths_and_hits.md, capital row): straight after a capital's core flash the
-# whole scene dims a little for a fifth of a second. Off by default (setup option "scene_dim" or VS_DEATH_DIM=1) and
-# never under reduce flashing.
-var scene_dim := false
+# R367 (issue 1399): straight after an Eclipse core flash the whole scene dims a little for a fifth of a second (never
+# under reduce flashing). Eclipse only: the general capital dim option of issue 462 is gone (R389, issue 1509).
 const DIM_LIFE := 0.20
 const DIM_DEPTH := 0.35
 var _dim_veil: MeshInstance3D = null
@@ -361,7 +361,6 @@ func setup(opts := {}) -> void:
 	# shipped Cone B (see fx_weapons._vent).
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
-	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var story := String(opts.get("death_story", OS.get_environment("VS_DEATH_STORY")))
 	if story.is_empty():
 		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "strain"))
@@ -471,17 +470,38 @@ func _process(delta: float) -> void:
 var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
 
 
+# Effect seconds over `t` real seconds while the clock eases from speed `a` to `b` (the exact integral of the ease, so the
+# time a hit pause costs is the same at any frame rate)
+static func _eased(a: float, b: float, t: float) -> float:
+	return b * t - (b - a) * (1.0 - exp(-t * SPEED_EASE)) / SPEED_EASE
+
+
 func step(delta: float) -> void:
 	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
-	var spd = 1.0
-	if now < _pause_until:
-		spd = _pause_depth
+	var base := 1.0
 	if _death_slow_left > 0.0:
 		_death_slow_left = maxf(0.0, _death_slow_left - delta)
-		spd = minf(spd, 0.35) if _death_slow_left > 0.0 else spd
-	_speed = lerpf(_speed, spd, 0.6)
-	var dt = delta * _speed
+		base = 0.35 if _death_slow_left > 0.0 else 1.0
+	var crawl_spd: float = minf(float(_pause_depth), base)
+	# issue 1558 item 4: the hit pause is real seconds. The clock drops into it at once (so a 3-frame pause lands) and
+	# crawls only for the time left in it: a long frame (30 fps, a hitch) that ends the pause is split at the boundary
+	# and eases back by real time for the rest, so a 50 ms pause crawls 50 ms at any frame rate.
+	var real := maxf(delta, 0.0)
+	var hold: bool = now < _pause_until
+	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
+	_pause_left = maxf(0.0, _pause_left - real)
+	var dt: float
+	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
+		_speed = crawl_spd
+		dt = real * _speed
+	elif crawl > 1e-6:
+		var rest := real - crawl
+		dt = crawl * crawl_spd + _eased(crawl_spd, base, rest)
+		_speed = lerpf(crawl_spd, base, 1.0 - exp(-rest * SPEED_EASE))
+	else:
+		dt = _eased(float(_speed), base, real)
+		_speed = lerpf(_speed, base, 1.0 - exp(-real * SPEED_EASE))
 	now += dt
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
@@ -1226,6 +1246,7 @@ func hurry_death() -> void:
 	skip_death_slowmo()
 	_death_hurry_until = now + 3.0
 	_pause_until = -1.0
+	_pause_left = 0.0
 	_pauses.clear()
 	_speed = 1.0
 
@@ -1263,7 +1284,7 @@ func _update_feel(delta: float) -> void:
 	for p in _pauses:
 		if float(p[0]) <= now:
 			var dur = float(p[1]) / 60.0
-			_pause_until = maxf(_pause_until, now + dur * 0.08)
+			_pause_left = maxf(_pause_left, dur)
 			_pause_depth = 0.08
 		else:
 			keep.append(p)
@@ -1317,12 +1338,11 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
-# Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
-# in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
-# whatever environment the scene uses. A second dip during one is ignored.
-# force: a faction whose own death dims the scene (R367, Eclipse), whatever the scene_dim option says.
-func dim_scene(t: float, force := false) -> void:
-	if (not scene_dim and not force) or reduce_flashing or _dim_t0 >= 0.0:
+# R367: the scene dim after an Eclipse core flash (fx_death.gd calls it for the peel death style only, R389). A black
+# veil a hair in front of the camera fades in over a quarter of the dip and out over the rest, so the whole frame (sky,
+# ships, effects) loses a little light whatever environment the scene uses. A second dip during one is ignored.
+func dim_scene(t: float) -> void:
+	if reduce_flashing or _dim_t0 >= 0.0:
 		return
 	if camera == null or not is_instance_valid(camera):
 		return
@@ -1643,6 +1663,28 @@ func remove_ship(id: String) -> void:
 func set_engine(id: String, level: float) -> void:
 	if ships.has(id):
 		(ships[id] as SHIP).engine_level = level
+
+
+# Issue 1581 (Burn and fire): before a volley that follows a move, the battle asks the guns that volley will use to start
+# turning while the hull still brakes, so the first shot leaves without waiting for the swing. The mounts are the
+# volley's own pick (fx_hull.gun_turrets: slot, weapon id, shot count) and the aim point is the volley's (the target
+# hull's centre), from the attacker's settled pose xf_end (the ship root's world transform when it stops). commit false
+# only measures: the seconds the slowest of those turrets needs to bear (the battle starts the swing that early).
+# Fixed guns have nothing to do (0). The volley itself still aims, waits for any turret not yet there, and releases.
+func pre_aim(id: String, target_id: String, xf_end: Transform3D, slot: int, weapon_id: String, n: int, commit := true) -> float:
+	if not ships.has(id) or not ships.has(target_id):
+		return 0.0
+	var sh = ships[id]
+	var tg = ships[target_id]
+	if sh.dead or sh.hull == null or (sh.hull.turrets as Array).is_empty():
+		return 0.0
+	var tl: Vector3 = xf_end.affine_inverse() * tg.to_world(tg.hull.c)
+	var need := 0.0
+	for k in sh.hull.gun_turrets(slot, weapon_id, tl, n):
+		need = maxf(need, sh.hull.turret_need(k, tl, now))
+		if commit:
+			sh.hull.turret_aim(k, tl, now)
+	return need
 
 
 func sync_ship(id: String, u: Dictionary) -> void:
@@ -2131,6 +2173,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 					(b as RigidBody3D).angular_velocity = Vector3.ZERO
 					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
+	dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	warmed = true
@@ -2150,6 +2193,13 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 		_warm_seen[smi.mesh.get_instance_id()] = true
 		var overlays := [dstate["tear_mat"] if dstate.has("tear_mat") else mat(SH.TEAR, 1)]
 		if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+		# R398: the acid death's glow, compiled before the first acid kill. The overlay's pipeline depends only on the
+		# mesh's vertex format, so one draw per format a battle has (Artoo on PR 1583: not one per hull mesh)
+		var fmt_key := "melt_warm_%d" % smi.mesh.surface_get_format(0) if smi.mesh.get_surface_count() > 0 else "melt_warm_none"
+		if not _warm_seen.has(fmt_key):
+			_warm_seen[fmt_key] = true
+			overlays.append(mat(SH.MELT_GLOW, 1))
+			stats["melt_warm_draws"] = int(stats.get("melt_warm_draws", 0)) + 1
 		for ov in overlays:
 			var wm := MeshInstance3D.new()
 			wm.mesh = smi.mesh

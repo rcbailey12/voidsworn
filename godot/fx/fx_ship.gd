@@ -14,6 +14,7 @@ const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
 const TRAIL_LIFE := 2.6
+const TRAIL_COLD_AGE := 3.5   # issue 1581: a moving ship with its drive cold (braking, a slide) ages its trail this much faster
 const IDLE_GLOW := 0.3                    # engine glow of a parked ship, as a share of cruise (r12)
 # The one scale table's class bands (issue 710, R247; docs/playbooks/scale.md): a death reads as a cruiser or a capital
 # by class, and an effect's size follows the drawn hull length through scale_k.
@@ -45,6 +46,7 @@ var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
+var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
 var _last_pos = Vector3.INF
 var _moving = 0.0
@@ -401,12 +403,17 @@ func update(fx, dt: float) -> void:
 		_eng_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+	# issue 1581 (Nov 21 audit: rear trails lingered as skid marks while the retros braked): once the battle cuts the
+	# drive cold in a flown move, the ribbon behind it shortens fast instead of hanging for its full life
+	if _moving > 0.0 and engine_level < 0.12 and not dead:
+		_trail_extra += dt * (TRAIL_COLD_AGE - 1.0)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
 		_shield_mi.visible = fx.now < _shield_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
 func _update_trails(fx, _moved: bool) -> void:
+	var _tclock: float = fx.now + _trail_extra   # the trails' clock (issue 1581)
 	if _trails.is_empty():
 		return
 	var xfm = xf()
@@ -420,11 +427,12 @@ func _update_trails(fx, _moved: bool) -> void:
 		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
-		if not dead and lvl > 0.12:
-			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (fx.now - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
-				hist.push_front([start, fx.now, lvl])
+		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
+		if not dead and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
+				hist.push_front([start, _tclock, lvl])
 				changed = true
-		while not hist.is_empty() and (hist.size() > TRAIL_PTS or fx.now - float(hist.back()[1]) >= TRAIL_LIFE):
+		while not hist.is_empty() and (hist.size() > TRAIL_PTS or _tclock - float(hist.back()[1]) >= TRAIL_LIFE):
 			hist.pop_back()
 			changed = true
 		var mi: MeshInstance3D = t["mi"]
@@ -433,15 +441,16 @@ func _update_trails(fx, _moved: bool) -> void:
 			continue
 		var mat := mi.material_override as ShaderMaterial
 		if changed:
-			t["mesh_time"] = fx.now
+			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
-		mat.set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
+	var _tclock: float = fx.now + _trail_extra
 	var hist: Array = t["hist"]
 	var mi: MeshInstance3D = t["mi"]
 	var n := hist.size()
@@ -458,7 +467,7 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
-			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
+			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
 			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
 			c1.append_array([w0, w1, float(t["seed"]), 0.0])
 	if not _trail_indices.has(n):

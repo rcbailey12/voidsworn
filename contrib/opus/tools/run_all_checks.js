@@ -140,13 +140,13 @@ function buildChecks() {
   const FAST_AUTO = new Set([
     'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_saves_1556_tests', 'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
-    'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
+    'chorus_eat_core_tests', 'chorus_biomass_1484_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
     'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
-    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
-    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'reporting_238_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
+    'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
     'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
     'ui_spec_tests', 'weapon_match_tests', 'workflow_config_tests',
   ]);
@@ -245,6 +245,11 @@ async function execute(c, baseline) {
     else if (c.kind === 'findings') verdict = classifyFindings(run, baseline);
     else if (c.kind === 'drift') verdict = classifyDrift(run, baseline);
     else verdict = classifyGeneric(run);
+    // Issue 1530: the auto-discovered job head test can pass its static checks while skipping PowerShell.
+    // GitHub's Ubuntu runner includes pwsh. Require the live suite's final verdict in CI.
+    if (c.name === 'opus_job_head_tests' && process.env.CI && verdict.result === 'PASS' && !/^PASS ps1 fixtures:/m.test(run.output)) {
+      verdict = { result: 'FAIL', detail: 'FAIL: PowerShell job head fixtures did not finish in CI (requires pwsh on Ubuntu)' };
+    }
     row.result = verdict.result;
     row.detail = verdict.detail;
   } catch (e) {
